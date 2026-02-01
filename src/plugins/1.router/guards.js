@@ -15,7 +15,8 @@ export const setupGuards = (router) => {
      * Feel free to update this logic to suit your needs
      */
     const isLoggedIn = !!(
-      useCookie("userData").value && useCookie("accessToken").value
+      //useCookie("userData").value && useCookie("accessToken").value
+      localStorage.getItem("user") && localStorage.getItem("token")
     );
 
     /*

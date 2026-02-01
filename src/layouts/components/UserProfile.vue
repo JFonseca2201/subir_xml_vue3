@@ -1,6 +1,8 @@
 <script setup>
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 import avatar1 from "@images/avatars/avatar-1.png";
+import { useRouter } from "vue-router";
+import { useLoaderStore } from '@/stores/loader'
 
 const userProfileList = [
   { type: "divider" },
@@ -41,36 +43,43 @@ const userProfileList = [
     href: "#",
   },
 ];
+
+const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+const loader = useLoaderStore()
+const router = useRouter();
+
+const logout = async () => {
+  loader.start();
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  setTimeout(() => {
+    loader.stop();
+  }, 500);
+  await router.push("/login");
+}
+
 </script>
 
 <template>
-  <VBadge
-    dot
-    bordered
-    location="bottom right"
-    offset-x="2"
-    offset-y="2"
-    color="success"
-    class="user-profile-badge"
-  >
+  <VBadge dot bordered location="bottom right" offset-x="2" offset-y="2" color="success" class="user-profile-badge">
     <VAvatar class="cursor-pointer" size="38">
-      <VImg :src="avatar1" />
+      <VImg :src="user && user.avatar ? user.avatar : avatar1" />
 
       <!-- SECTION Menu -->
       <VMenu activator="parent" width="230" location="bottom end" offset="15px">
         <VList>
           <VListItem class="px-4">
-            <div class="d-flex gap-x-2 align-center">
+            <div class="d-flex gap-x-2 align-center" v-if="user">
               <VAvatar>
-                <VImg :src="avatar1" />
+                <VImg :src="user.avatar ? user.avatar : avatar1" />
               </VAvatar>
 
               <div>
                 <div class="text-body-2 font-weight-medium text-high-emphasis">
-                  John Doe
+                  {{ user.full_name }}
                 </div>
                 <div class="text-capitalize text-caption text-disabled">
-                  Admin
+                  {{ user.role.name }}
                 </div>
               </div>
             </div>
@@ -78,11 +87,7 @@ const userProfileList = [
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">
             <template v-for="item in userProfileList" :key="item.title">
-              <VListItem
-                v-if="item.type === 'navItem'"
-                :href="item.href"
-                class="px-4"
-              >
+              <VListItem v-if="item.type === 'navItem'" :href="item.href" class="px-4">
                 <template #prepend>
                   <VIcon :icon="item.icon" size="22" />
                 </template>
@@ -98,15 +103,12 @@ const userProfileList = [
             </template>
 
             <VListItem class="px-4">
-              <VBtn
-                block
-                color="error"
-                size="small"
-                append-icon="ri-logout-box-r-line"
-                :to="{ name: 'login' }"
-              >
+              <!-- <VBtn block color="error" size="small" append-icon="ri-logout-box-r-line" :to="{ name: 'login' }">
+                
                 Logout
-              </VBtn>
+              </VBtn> -->
+              <VBtn color="error" size="small" append-icon="ri-logout-box-r-line" :loading="loader.loading"
+                :disabled="loader.loading" @click="logout">Cerrar sesión</VBtn>
             </VListItem>
           </PerfectScrollbar>
         </VList>

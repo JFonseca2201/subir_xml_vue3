@@ -9,7 +9,10 @@ import authV2LoginMaskDark from "@images/pages/auth-v2-login-mask-dark.png";
 import authV2LoginMaskLight from "@images/pages/auth-v2-login-mask-light.png";
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
 import { themeConfig } from "@themeConfig";
+import { useLoaderStore } from '@/stores/loader'
 
+const route = useRoute();
+const router = useRouter();
 const isLoading = ref(false);
 const form = ref({
   email: "laravest@gmail.com",
@@ -17,8 +20,17 @@ const form = ref({
   remember: false,
 });
 
+const loader = useLoaderStore()
+const success_login = ref(null);
+const warning_login = ref(null);
+const error_login = ref(null);
+
 const login = async () => {
-  isLoading.value = true;
+  loader.start();
+
+  success_login.value = null;
+  warning_login.value = null;
+  error_login.value = null;
   try {
 
     const resp = await $api("auth/login", {
@@ -29,22 +41,27 @@ const login = async () => {
       },
       onResponseError({ response }) {
         console.log(response);
+        error_login.value = 'Error al ingresar credenciales. Verifique usuario y contraseña.';
       }
     });
 
     console.log(resp);
+    localStorage.setItem("token", resp.access_token);
+    localStorage.setItem("user", JSON.stringify(resp.user));
+    success_login.value = "Bienvenido al sistema!"
+    setTimeout(async () => {
 
-    isLoading.value = false;
+      await nextTick(() => {
+        router.replace(route.query.to ? String(route.query.to) : '/')
+      });
+    }, 800);
+
   } catch (error) {
     console.log(error);
-    isLoading.value = false;
   } finally {
-    isLoading.value = false;
+    loader.stop()
   }
 }
-
-
-
 
 definePage({ meta: { layout: "blank", unauthenticatedOnly: true } });
 
@@ -113,9 +130,18 @@ const authV2LoginIllustration = useGenerateImageVariant(
 
                   <a class="text-primary" href="#"> Forgot Password? </a>
                 </div>
-
+              </VCol>
+              <VCol cols="12" v-if="success_login">
+                <VAlert type="success" color="success" closable="" variant="tonal">{{ success_login }}</VAlert>
+              </VCol>
+              <VCol cols="12" v-if="error_login">
+                <VAlert type="error" color="error" closable="" variant="tonal">{{ error_login }}</VAlert>
+              </VCol>
+              <VCol cols="12">
                 <!-- login button -->
-                <VBtn block type="submit"> Login </VBtn>
+                <VBtn block type="submit" :loading="loader.loading" :disabled="loader.loading">
+                  Ingresar
+                </VBtn>
               </VCol>
 
               <!-- create account -->
