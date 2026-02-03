@@ -29,13 +29,15 @@ const isRoleAddDialogVisible = ref(false);
 const isRoleEditDialogVisible = ref(false);
 const isRoleDeleteDialogVisible = ref(false);
 
+const isLoading = ref(false);
+
 const list_roles = ref([]);
 const seachQuery = ref(null);
 const role_selected_edit = ref(null);
 const role_selected_delete = ref(null);
 
 const list = async () => {
-
+    isLoading.value = true;
     try {
         const resp = await $api("role?search=" + (seachQuery.value ? seachQuery.value : ''), {
             method: 'GET',
@@ -52,7 +54,7 @@ const list = async () => {
         console.log(error);
 
     } finally {
-
+        isLoading.value = false;
     }
 }
 
@@ -123,6 +125,10 @@ onMounted(() => {
 
 <template>
     <div>
+        <!-- Overlay global -->
+        <VOverlay :model-value="isLoading" class="align-center justify-center" absolute>
+            <VProgressCircular indeterminate size="48" width="4" color="primary" />
+        </VOverlay>
         <VCard elevation="8" class="pa-6 rounded-xl border-thin">
             <!-- Título -->
             <VRow class="mb-4">

@@ -15,7 +15,7 @@ const emit = defineEmits([
     'update:isDialogVisible',
     'editRole'
 ]);
-
+const isLoading = ref(false);
 const loader = useLoaderStore();
 const name = ref(null);
 const permissions = ref([]);
@@ -104,14 +104,20 @@ const dialogVisibleUpdate = val => {
 }
 
 onMounted(() => {
+    isLoading.value = true;
     console.log(props.roleSelected);
     name.value = props.roleSelected.name;
     permissions.value = props.roleSelected.permissions_pluck;
+    isLoading.value = false;
 });
 
 </script>
 
 <template>
+    <!-- Overlay global -->
+    <VOverlay :model-value="isLoading" class="align-center justify-center" absolute>
+        <VProgressCircular indeterminate size="48" width="4" color="primary" />
+    </VOverlay>
     <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
         @update:model-value="dialogVisibleUpdate" transition="dialog-bottom-transition">
         <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
