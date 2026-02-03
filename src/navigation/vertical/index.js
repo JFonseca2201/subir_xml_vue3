@@ -1,13 +1,13 @@
 export default [
   {
     title: 'Dashboard',
-    to: { name: 'root' },
+    to: { name: 'dashboard' },
     icon: { icon: 'ri-pie-chart-box-line' },
   },
   { heading: 'Accesos' },
   {
     title: 'Roles y Permisos',
-    to: { name: 'second-page' },
+    to: { name: 'roles-permisos' },
     icon: { icon: 'ri-lock-password-line' },
   },
   {
