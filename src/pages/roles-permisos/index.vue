@@ -188,9 +188,10 @@ onMounted(() => {
 
                 <!-- Actions -->
                 <template #item.action="{ item }">
-                    <div class="d-flex align-center gap-2">
+                    <div v-if="item.id !== 1" class="d-flex align-center gap-2">
                         <VTooltip text="Editar">
                             <template #activator="{ props }">
+
                                 <IconBtn v-bind="props" size="small" color="primary" variant="text"
                                     @click="editItem(item)">
                                     <VIcon icon="ri-pencil-line" />
