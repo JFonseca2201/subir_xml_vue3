@@ -61,6 +61,11 @@ export default [
         to: 'second-page',
         icon: { icon: 'ri-radio-button-line' },
       },
+      {
+        title: 'Ingresar XML',
+        icon: { icon: 'ri-roadster-line' },
+        to: 'invoice-list',
+      },
     ],
   },
   {
