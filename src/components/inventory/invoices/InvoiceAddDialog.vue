@@ -19,7 +19,7 @@ const emit = defineEmits([
 const radioContent = [
     { title: 'Productos', value: '1', icon: 'ri-rocket-line' },
     { title: 'Gastos', value: '2', icon: 'ri-user-line' },
-    { title: 'Servicios / Mantenimiento', value: '3', icon: 'ri-vip-crown-line' },
+    { title: 'Serv. / Mant.', value: '3', icon: 'ri-vip-crown-line' },
 ];
 const selectedRadio = ref('1') // siempre string para el componente
 
@@ -125,9 +125,10 @@ onMounted(() => {
                 <VFileInput accept=".xml" label="Seleccionar archivo XML" variant="outlined" clearable
                     prepend-inner-icon="ri-file-xml-line" @change="onFileSelected" />
 
-                <!-- 🎚️ Radios con iconos -->
+                <!-- 🎚️ Radios con iconos compactos -->
                 <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
-                    :grid-column="{ sm: '4', cols: '12' }" />
+                    :grid-column="{ sm: '4', cols: '12' }" class="square-radio" />
+                <!-- Aquí se ajustan a 3/4 partes del espacio -->
 
                 <!-- ⚠️ Alertas -->
                 <div class="d-flex flex-column gap-2">
@@ -139,20 +140,46 @@ onMounted(() => {
                         {{ success }}
                     </VAlert>
                 </div>
+
             </VCardText>
 
             <!-- 🎯 Footer -->
             <VCardActions class="justify-end px-6 pb-4 gap-3">
-                <VBtn color="primary" variant="tonal" @click="storeXml">
-                    <VIcon left>ri-upload-cloud-2-line</VIcon>
-                    Importar XML
+                <VBtn variant="tonal" color="primary" @click="storeXml">
+                    <VIcon left>ri-upload-cloud-2-line</VIcon> &nbsp; Importar XML
                 </VBtn>
 
-                <VBtn variant="text" color="secondary" @click="emit('update:isDialogVisible', false)">
-                    Cancelar
+                <VBtn variant="tonal" color="error" @click="emit('update:isDialogVisible', false)">
+                    <VIcon left>ri-close-circle-line</VIcon> &nbsp; Cancelar
                 </VBtn>
             </VCardActions>
 
         </VCard>
     </VDialog>
 </template>
+
+<style scoped>
+/* 🔹 Botones de radios cuadrados y compactos */
+.square-radio button {
+    padding: 0 !important;
+    font-size: 0.6rem !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: unset !important;
+    line-height: 1 !important;
+}
+
+.square-radio .icon-class {
+    width: 16px !important;
+    height: 16px !important;
+    margin-bottom: 1px;
+}
+
+.square-radio {
+    gap: 2px;
+}
+</style>
