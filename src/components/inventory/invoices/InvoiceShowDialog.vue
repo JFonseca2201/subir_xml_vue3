@@ -12,10 +12,10 @@ const props = defineProps({
         required: true,
     },
 })
-
+const isInvoiceEditDialogVisible = ref(false);
 const emit = defineEmits(['update:isDialogVisible']);
 
-const invoice = ref({});
+const invoice = ref([]);
 const searchProduct = ref(''); // Variable para el filtro de búsqueda de productos
 
 // Método para obtener los datos de la factura
@@ -61,6 +61,19 @@ const truncate = (text, length = 50) => {
     if (!text) return '';
     return text.length > length ? text.slice(0, length) + '…' : text;
 }
+const invoiceSelected = ref(null);
+const editInvoice = (EditInvoice) => {
+    console.log(EditInvoice);
+    invoiceSelected.value = EditInvoice;
+    isInvoiceEditDialogVisible.value = true;
+}
+
+const addEditInvoiceItem = () => {
+    setTimeout(() => {
+        showItems();
+    }, 50);
+}
+
 
 onMounted(() => {
     setTimeout(() => {
@@ -123,7 +136,7 @@ onMounted(() => {
                                 </span>
                             </div>
                             <div class="text-medium-emphasis">
-                                {{ invoice?.supplier?.name || '-' }}
+                                <small>{{ invoice?.supplier?.name || '-' }}</small>
                             </div>
                         </VCol>
 
@@ -138,7 +151,7 @@ onMounted(() => {
                                 </span>
                             </div>
                             <div class="text-medium-emphasis">
-                                {{ invoice?.invoice_number || '-' }}
+                                <small>{{ invoice?.invoice_number || '-' }}</small>
                             </div>
                         </VCol>
 
@@ -153,13 +166,15 @@ onMounted(() => {
                                 </span>
                             </div>
                             <div class="text-medium-emphasis">
-                                {{
-                                    invoice?.issue_date
-                                        ? new Date(invoice.issue_date)
-                                            .toISOString()
-                                            .slice(0, 10)
-                                        : '-'
-                                }}
+                                <small>
+                                    {{
+                                        invoice?.issue_date
+                                            ? new Date(invoice.issue_date)
+                                                .toISOString()
+                                                .slice(0, 10)
+                                            : '-'
+                                    }}
+                                </small>
                             </div>
                         </VCol>
                     </VRow>
@@ -184,8 +199,8 @@ onMounted(() => {
                     <thead class="bg-primary text-white sticky-header">
                         <tr>
                             <th style="width: 50px">#</th>
-                            <th style="width: 50px">Código</th>
-                            <th>
+                            <th style="width: 150px">Código</th>
+                            <th style="width: 450px">
                                 <VIcon size="16" class="mr-1">ri-box-3-line</VIcon>
                                 Producto
                             </th>
@@ -208,6 +223,11 @@ onMounted(() => {
                             <th class="text-right">
                                 <VIcon size="16" class="mr-1">ri-money-dollar-circle-line</VIcon>
                                 Total
+                            </th>
+
+                            <th class="text-right">
+                                <VIcon size="16" class="mr-1">ri-settings-2-line</VIcon>
+                                Editar
                             </th>
                         </tr>
                     </thead>
@@ -249,7 +269,13 @@ onMounted(() => {
 
                             <td class="text-right font-weight-bold text-primary">
                                 <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
-                                }}</small>
+                                    }}</small>
+                            </td>
+
+                            <td class="text-right font-weight-bold text-primary">
+                                <IconBtn @click="editInvoice(item)">
+                                    <VIcon icon="ri-pencil-line" />
+                                </IconBtn>
                             </td>
                         </tr>
 
@@ -324,7 +350,9 @@ onMounted(() => {
                     Cerrar
                 </VBtn>
             </VCardActions>
-
+            <InvoiceEditDialog v-if="isInvoiceEditDialogVisible" v-model:isDialogVisible="isInvoiceEditDialogVisible"
+                :invoiceSelected="invoiceSelected" @editInvoiceItem="addEditInvoiceItem" />
         </VCard>
     </VDialog>
 </template>
+<!-- @editInvoiceItem="addEditInvoiceItem" -->

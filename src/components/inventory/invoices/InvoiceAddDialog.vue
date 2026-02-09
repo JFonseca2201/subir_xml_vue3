@@ -19,7 +19,8 @@ const emit = defineEmits([
 const radioContent = [
     { title: 'Productos', value: '1', icon: 'ri-rocket-line' },
     { title: 'Gastos', value: '2', icon: 'ri-user-line' },
-    { title: 'Serv. / Mant.', value: '3', icon: 'ri-vip-crown-line' },
+    { title: 'Serv./Mant.', value: '3', icon: 'ri-vip-crown-line' },
+    { title: 'Herramienta', value: '4', icon: 'ri-tools-line' },
 ];
 const selectedRadio = ref('1') // siempre string para el componente
 
@@ -127,7 +128,7 @@ onMounted(() => {
 
                 <!-- 🎚️ Radios con iconos compactos -->
                 <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
-                    :grid-column="{ sm: '4', cols: '12' }" class="square-radio" />
+                    :grid-column="{ sm: '3', cols: '12' }" class="square-radio" />
                 <!-- Aquí se ajustan a 3/4 partes del espacio -->
 
                 <!-- ⚠️ Alertas -->

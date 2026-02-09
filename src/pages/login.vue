@@ -50,11 +50,10 @@ const login = async () => {
     localStorage.setItem("user", JSON.stringify(resp.user));
     success_login.value = "Bienvenido al sistema!"
     setTimeout(async () => {
-
       await nextTick(() => {
         router.replace(route.query.to ? String(route.query.to) : '/')
       });
-    }, 800);
+    }, 500);
 
   } catch (error) {
     console.log(error);

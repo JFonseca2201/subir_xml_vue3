@@ -85,10 +85,7 @@ const showItem = (ShowInvoice) => {
     invoiceSelected.value = ShowInvoice;
 }
 
-const editInvoice = (EditInvoice) => {
-    console.log(EditInvoice);
 
-}
 const deleteInvoice = (DeleteInvoice) => {
     console.log(DeleteInvoice);
 }
