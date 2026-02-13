@@ -11,6 +11,11 @@ export default [
     icon: { icon: 'ri-lock-password-line' },
   },
   {
+    title: 'Socios',
+    to: { name: 'partners-list' },
+    icon: { icon: 'ri-group-3-line' },
+  },
+  {
     title: 'Usuarios',
     to: { name: 'second-page' },
     icon: { icon: 'ri-group-line' },
