@@ -9,20 +9,17 @@ const currentPage = ref(1);
 const totalPage = ref(0);
 
 const list_partners = ref([])
-const supplier_id = ref(null)
-
-const range_date = ref(null);
 const search = ref(null);
-
-
-
 const isLoading = ref(false);
 
 const isPartnerAddDialogVisible = ref(false);
 const isPartnerShowDialogVisible = ref(false);
+const isPartnerEditDialogVisible = ref(false);
+const isPartnerDeleteDialogVisible = ref(false);
 
 const list = async () => {
     isLoading.value = true;
+
     error_exist.value = null
     success.value = null
 
@@ -78,10 +75,38 @@ const showItem = (ShowPartner) => {
     partnerSelected.value = ShowPartner;
 }
 
+const editPartner = (editPartner) => {
+    console.log(editPartner);
+    isPartnerEditDialogVisible.value = true;
+    partnerSelected.value = editPartner;
+
+}
+
 
 const deletePartner = (DeletePartner) => {
+    partnerSelected.value = DeletePartner;
+    isPartnerDeleteDialogVisible.value = true;
     console.log(DeletePartner);
 }
+
+const confirmDeletePartner = async () => {
+    if (!partnerSelected.value) return;
+    try {
+        await $api(`partners/${partnerSelected.value.id}`, {
+            method: 'DELETE',
+            onResponseError({ response }) {
+                error_exist.value = response._data.error || 'Error al eliminar socio';
+            },
+        });
+        success.value = 'Socio eliminado correctamente';
+        await list();
+    } catch (error) {
+        error_exist.value = 'Error al eliminar socio';
+    } finally {
+        isPartnerDeleteDialogVisible.value = false;
+        partnerSelected.value = null;
+    }
+};
 
 const addPartner = (newPartner) => {
     console.log(newPartner);
@@ -94,7 +119,10 @@ const addPartner = (newPartner) => {
     }, 50);
 }
 
-
+const updatePartner = (newPartner) => {
+    console.log(newPartner);
+    list();
+}
 
 // Método de refresco para reiniciar todos los filtros
 const refresh = () => {
@@ -103,15 +131,13 @@ const refresh = () => {
     list();
 }
 
-const truncate = (text, length = 50) => {
-    if (!text) return ''
-    return text.length > length
-        ? text.slice(0, length) + '…'
-        : text
+const formatDate = (date) => {
+    if (!date) return '-'
+    const d = new Date(date)
+    return isNaN(d) ? '-' : d.toISOString().slice(0, 10)
 }
 
 onMounted(() => {
-
     list();
 })
 </script>
@@ -211,7 +237,7 @@ onMounted(() => {
                             <td class="font-weight-medium">{{ partner.id }}</td>
                             <td>{{ partner.identification }}</td>
                             <td>{{ partner.name }}</td>
-                            <td>{{ new Date(partner.created_at).toISOString().slice(0, 10) }}</td>
+                            <td>{{ formatDate(partner.created_at) }}</td>
                             <td>{{ partner.email }}</td>
                             <td>{{ partner.phone }}</td>
 
@@ -252,6 +278,11 @@ onMounted(() => {
         <PartnerAddDialog v-model:isDialogVisible="isPartnerAddDialogVisible" @addPartner="addPartner" />
         <PartnerShowDialog v-if="isPartnerShowDialogVisible" v-model:isDialogVisible="isPartnerShowDialogVisible"
             :partnerSelected="partnerSelected" />
+        <PartnerEditDialog v-if="isPartnerEditDialogVisible" v-model:isDialogVisible="isPartnerEditDialogVisible"
+            :partnerSelected="partnerSelected" @updatePartner="updatePartner" />
+        <PartnerDeleteDialog v-if="isPartnerDeleteDialogVisible && partnerSelected"
+            v-model:isDialogVisible="isPartnerDeleteDialogVisible" :partnerSelected="partnerSelected"
+            @deletePartner="confirmDeletePartner" />
 
     </div>
 </template>

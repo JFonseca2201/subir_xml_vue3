@@ -22,16 +22,6 @@
         <input id="quantity" v-model.number="form.quantity" type="number" required placeholder="0" />
       </div>
 
-      <!-- <div class="form-group">
-        <label for="category">Categoría:</label>
-        <select id="category" v-model="form.category" required>
-          <option value="">Seleccione una categoría</option>
-          <option value="electronics">Electrónica</option>
-          <option value="clothing">Ropa</option>
-          <option value="food">Alimentos</option>
-        </select>
-      </div> -->
-
       <button type="submit" class="btn-submit">Guardar Producto</button>
     </form>
   </div>
