@@ -186,34 +186,42 @@ onMounted(() => {
 
                 <!-- Filtros de búsqueda alineados con el botón Filtrar -->
                 <VRow dense>
-                    <VCol cols="12" md="3">
-                        <VTextField v-model="search" @keyup.enter="list" label="Buscar factura" variant="outlined"
-                            density="comfortable" clearable prepend-inner-icon="ri-search-line" />
+                    <VCol cols="12" md="8">
+                        <VRow>
+
+                            <VCol cols="12" md="4">
+                                <VTextField v-model="search" @keyup.enter="list" label="Buscar factura"
+                                    variant="outlined" density="comfortable" clearable
+                                    prepend-inner-icon="ri-search-line" />
+                            </VCol>
+
+                            <VCol cols="12" md="4">
+                                <VAutocomplete v-model="supplier_id" label="Proveedores" placeholder="Proveedores"
+                                    :items="providers" item-title="name" item-value="id" clearable="" />
+                            </VCol>
+
+
+                            <VCol cols="12" md="4">
+                                <AppDateTimePicker v-model="range_date" label="Rango de fecha"
+                                    placeholder="Seleccionar un rango de fechas" :config="{ mode: 'range' }" />
+                            </VCol>
+                        </VRow>
+
                     </VCol>
-
-                    <VCol cols="12" md="3">
-                        <VAutocomplete v-model="supplier_id" label="Proveedores" placeholder="Proveedores"
-                            :items="providers" item-title="name" item-value="id" clearable="" />
-                    </VCol>
-
-
-                    <VCol cols="12" md="3">
-                        <AppDateTimePicker v-model="range_date" label="Rango de fecha"
-                            placeholder="Seleccionar un rango de fechas" :config="{ mode: 'range' }" />
-                    </VCol>
-
-
-
-                    <!-- Botón Filtrar alineado con los filtros -->
-                    <VCol cols="12" md="3" class="d-flex align-end justify-end gap-4">
-                        <VBtn color="primary" size="large" rounded="" @click="list" variant="tonal">
-                            <VIcon start>ri-search-line</VIcon>
-                            Buscar
-                        </VBtn>
-                        <VBtn color="secondary" size="large" rounded="" @click="refresh" variant="tonal">
-                            <VIcon start>ri-refresh-line</VIcon>
-                            Refrescar
-                        </VBtn>
+                    <VCol cols="12" md="4">
+                        <VRow>
+                            <!-- Botón Filtrar alineado con los filtros -->
+                            <VCol cols="12" md="12" class="d-flex align-end justify-end gap-4">
+                                <VBtn color="primary" size="large" rounded="" @click="list" variant="tonal">
+                                    <VIcon start>ri-search-line</VIcon>
+                                    Buscar
+                                </VBtn>
+                                <VBtn color="secondary" size="large" rounded="" @click="refresh" variant="tonal">
+                                    <VIcon start>ri-refresh-line</VIcon>
+                                    Refrescar
+                                </VBtn>
+                            </VCol>
+                        </VRow>
                     </VCol>
                 </VRow>
             </VCardText>
