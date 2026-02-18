@@ -3,10 +3,19 @@ import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 
 const partnerSelected = ref(null);
-const success = ref(null)
-const error_exist = ref(null)
 const currentPage = ref(1);
 const totalPage = ref(0);
+
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
 
 const list_partners = ref([])
 const search = ref(null);
@@ -20,17 +29,11 @@ const isPartnerDeleteDialogVisible = ref(false);
 const list = async () => {
     isLoading.value = true;
 
-    error_exist.value = null
-    success.value = null
-
     try {
-
-
 
         let data = {
             search: search.value || '',
         };
-
         const resp = await $api("partners/index?page=" + currentPage.value + "&search=" + (search.value ? search.value : ""), {
             method: "POST",
             body: data,
@@ -44,30 +47,16 @@ const list = async () => {
         if (currentPage.value > totalPage.value && totalPage.value > 0) {
             currentPage.value = 1;
         }
-        success.value = 'Lista de socios cargada correctamente'
+        showNotification('Lista de socios cargada correctamente', 'success')
     } catch (error) {
         console.error(error)
-        error_exist.value = 'Error al cargar la lsita de socios'
+        showNotification('Error al cargar la lista de socios', 'error')
     } finally {
         isLoading.value = false;
     }
 }
-const providers = ref([]);
 
-const config = async () => {
-    try {
-        const resp = await $api("invoices/config", {
-            method: "GET",
-            onResponseError({ response }) {
-                console.log(response._data.error);
-            },
-        });
-        console.log(resp);
-        providers.value = resp.suppliers;
-    } catch (error) {
-        console.log(error);
-    }
-};
+const providers = ref([]);
 
 const showItem = (ShowPartner) => {
     console.log(ShowPartner);
@@ -82,7 +71,6 @@ const editPartner = (editPartner) => {
 
 }
 
-
 const deletePartner = (DeletePartner) => {
     partnerSelected.value = DeletePartner;
     isPartnerDeleteDialogVisible.value = true;
@@ -95,13 +83,13 @@ const confirmDeletePartner = async () => {
         await $api(`partners/${partnerSelected.value.id}`, {
             method: 'DELETE',
             onResponseError({ response }) {
-                error_exist.value = response._data.error || 'Error al eliminar socio';
+                showNotification('Error al eliminar socio', 'error');
             },
         });
-        success.value = 'Socio eliminado correctamente';
+        showNotification('Socio eliminado correctamente', 'success');
         await list();
     } catch (error) {
-        error_exist.value = 'Error al eliminar socio';
+        showNotification('Error al eliminar socio', 'error');
     } finally {
         isPartnerDeleteDialogVisible.value = false;
         partnerSelected.value = null;
@@ -109,19 +97,32 @@ const confirmDeletePartner = async () => {
 };
 
 const addPartner = (newPartner) => {
-    console.log(newPartner);
+    console.log('Agregando nuevo socio:', newPartner);
 
-    let backup = list_partners.value;
-    list_partners.value = [];
-    backup.unshift(newPartner);
-    setTimeout(() => {
-        list_partners.value = backup;
-    }, 50);
+    // Agregar el nuevo socio al inicio de la lista
+    list_partners.value.unshift(newPartner);
+
+    // Mostrar mensaje de éxito
+    showNotification('Socio agregado correctamente a la tabla', 'success');
 }
 
-const updatePartner = (newPartner) => {
-    console.log(newPartner);
-    list();
+const updatePartner = (updatedPartner) => {
+    console.log('Actualizando socio:', updatedPartner);
+
+    // Buscar el índice del socio a actualizar
+    const index = list_partners.value.findIndex(partner => partner.id === updatedPartner.id);
+
+    if (index !== -1) {
+        // Actualizar el socio en la lista
+        list_partners.value[index] = updatedPartner;
+
+        // Mostrar mensaje de éxito
+        showNotification('Socio actualizado correctamente en la tabla', 'success');
+    } else {
+        // Si no se encuentra, recargar la lista
+        console.warn('Socio no encontrado en la lista, recargando...');
+        list();
+    }
 }
 
 // Método de refresco para reiniciar todos los filtros
@@ -145,15 +146,15 @@ onMounted(() => {
 <template>
     <div class="pa-6">
 
-        <!-- 🔄 Overlay global -->
+        <!-- Overlay global -->
         <VOverlay :model-value="isLoading" class="align-center justify-center" absolute>
             <VProgressCircular indeterminate size="56" width="5" color="primary" />
         </VOverlay>
 
-        <!-- 🏛️ CARD MAESTRA -->
+        <!-- CARD MAESTRA -->
         <VCard class="elevation-4 rounded-xl">
 
-            <!-- 🧠 HEADER -->
+            <!-- HEADER -->
             <VCardText>
                 <VRow class="align-center justify-space-between">
                     <VCol cols="12" md="8">
@@ -182,7 +183,7 @@ onMounted(() => {
 
             <VDivider />
 
-            <!-- 🔍 FILTROS Y BOTÓN FILTRAR -->
+            <!-- FILTROS Y BOTÓN FILTRAR -->
             <VCardText>
 
                 <div class="d-flex align-center gap-2 mb-4">
@@ -195,13 +196,13 @@ onMounted(() => {
 
                 <!-- Filtros de búsqueda alineados con el botón Filtrar -->
                 <VRow dense>
-                    <VCol cols="12" md="3">
-                        <VTextField v-model="search" @keyup.enter="list" label="Buscar factura" variant="outlined"
+                    <VCol cols="12" md="6">
+                        <VTextField v-model="search" @keyup.enter="list" label="Buscar socio" variant="outlined"
                             density="comfortable" clearable prepend-inner-icon="ri-search-line" />
                     </VCol>
 
                     <!-- Botón Filtrar alineado con los filtros -->
-                    <VCol cols="12" md="3" class="d-flex align-end justify-end gap-4">
+                    <VCol cols="12" md="6" class="d-flex align-end justify-end gap-4">
                         <VBtn color="primary" size="large" rounded="" @click="list" variant="tonal">
                             <VIcon start>ri-search-line</VIcon>
                             Buscar
@@ -216,7 +217,7 @@ onMounted(() => {
 
             <VDivider />
 
-            <!-- 📋 TABLA -->
+            <!-- TABLA -->
             <VCardText class="pa-0">
                 <VTable hover class="text-no-wrap">
                     <thead class="bg-primary text-white">
@@ -268,13 +269,13 @@ onMounted(() => {
 
             <VDivider />
 
-            <!-- 📄 PAGINACIÓN -->
+            <!-- PAGINACIÓN -->
             <VCardActions class="justify-center pa-4">
                 <VPagination v-model="currentPage" :length="totalPage" rounded="circle" @update:modelValue="list" />
             </VCardActions>
         </VCard>
 
-        <!-- 🧾 DIALOG -->
+        <!-- DIALOG -->
         <PartnerAddDialog v-model:isDialogVisible="isPartnerAddDialogVisible" @addPartner="addPartner" />
         <PartnerShowDialog v-if="isPartnerShowDialogVisible" v-model:isDialogVisible="isPartnerShowDialogVisible"
             :partnerSelected="partnerSelected" />
@@ -283,6 +284,9 @@ onMounted(() => {
         <PartnerDeleteDialog v-if="isPartnerDeleteDialogVisible && partnerSelected"
             v-model:isDialogVisible="isPartnerDeleteDialogVisible" :partnerSelected="partnerSelected"
             @deletePartner="confirmDeletePartner" />
+
+        <!-- Notificación Toast -->
+        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 
     </div>
 </template>

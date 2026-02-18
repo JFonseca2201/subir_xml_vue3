@@ -11,7 +11,7 @@ const props = defineProps({
 
 const emit = defineEmits([
     'update:isDialogVisible',
-    /* 'addRole' */
+    'addPartner',
 ]);
 
 const newMember = ref({
@@ -87,14 +87,22 @@ function isValidEcuadorianID(id) {
 
 const warning = ref(null);
 const error_exist = ref(null);
-const success = ref(null);
 const loader = useLoaderStore()
 
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
 
 const store = async () => {
     error_exist.value = null;
     warning.value = null;
-    success.value = null;
     loader.start();
     // Validar formulario antes de enviar
     if (formRef.value && typeof formRef.value.validate === 'function') {
@@ -145,15 +153,34 @@ const store = async () => {
             },
         });
         console.log(resp);
-        success.value = "Socio ingresado con éxito"
+        showNotification('Socio ingresado con éxito', 'success');
+
+        // Crear objeto del nuevo socio para agregar a la tabla
+        const newPartner = {
+            id: resp.id || Date.now(), // Usar ID del response o timestamp temporal
+            identification: newMember.value.identification,
+            name: newMember.value.firstName + " " + newMember.value.lastName,
+            email: newMember.value.email,
+            phone: newMember.value.phone,
+            address: newMember.value.address,
+            created_at: new Date().toISOString()
+        };
+
+        // Emitir el evento para agregar el socio a la tabla
+        emit('addPartner', newPartner);
+
+        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+        setTimeout(() => {
+            onFormReset();
+        }, 1500);
+
         loader.stop();
 
     } catch (error) {
         console.log(error);
-        error_exist.value = "Error al ingresar soscio"
+        showNotification('Error al ingresar socio', 'error');
         loader.stop();
-    }
-    finally {
+    } finally {
         loader.stop();
     }
 
@@ -170,10 +197,8 @@ const onFormReset = () => {
     };
     warning.value = null;
     error_exist.value = null;
-    success.value = null;
     emit('update:isDialogVisible', false)
 };
-
 
 </script>
 <template>
@@ -243,17 +268,9 @@ const onFormReset = () => {
                             prepend-inner-icon="ri-map-pin-line" hide-details="auto" required />
                     </VCol>
 
-
-
                     <!-- Alertas de Error/Éxito -->
                     <VCol cols="12" v-if="warning">
                         <VAlert color="warning" variant="tonal" closable> {{ warning }}</VAlert>
-                    </VCol>
-                    <VCol cols="12" v-if="error_exist">
-                        <VAlert color="error" variant="tonal" closable> {{ error_exist }}</VAlert>
-                    </VCol>
-                    <VCol cols="12" v-if="success">
-                        <VAlert color="success" variant="tonal" closable> {{ success }}</VAlert>
                     </VCol>
 
                     <!-- Acciones -->
@@ -274,9 +291,10 @@ const onFormReset = () => {
 
         </VCard>
     </VDialog>
+
+    <!-- Notificación Toast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
-
-
 
 <style>
 .permissions-table {

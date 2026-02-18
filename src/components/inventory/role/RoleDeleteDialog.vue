@@ -18,6 +18,17 @@ const warning = ref(null);
 const error_exits = ref(null);
 const success = ref(null);
 
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
+
 const deleteRol = async () => {
     loader.start();
     warning.value = null;
@@ -31,10 +42,16 @@ const deleteRol = async () => {
             },
         });
         console.log(resp);
+        showNotification('Rol eliminado correctamente', 'success');
         emit("deleteRole", props.roleSelected);
-        onFormReset();
+
+        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+        setTimeout(() => {
+            onFormReset();
+        }, 1500);
     } catch (error) {
         console.log(error);
+        showNotification('Error al eliminar el rol', 'error');
     } finally {
         loader.stop();
     }
@@ -87,19 +104,14 @@ const dialogVisibleUpdate = (val) => {
                 </p>
 
                 <!-- Alerts -->
-                <VAlert v-if="warning" type="warning" variant="outlined" density="compact" class="mb-3">
+                <VAlert v-if="warning" type="warning" variant="tonal" density="compact" class="mb-3">
                     <VIcon start icon="ri-information-line" />
                     {{ warning }}
                 </VAlert>
 
-                <VAlert v-if="error_exits" type="error" variant="outlined" density="compact" class="mb-3">
+                <VAlert v-if="error_exits" type="error" variant="tonal" density="compact" class="mb-3">
                     <VIcon start icon="ri-close-circle-line" />
                     {{ error_exits }}
-                </VAlert>
-
-                <VAlert v-if="success" type="success" variant="outlined" density="compact" class="mb-3">
-                    <VIcon start icon="ri-check-line" />
-                    {{ success }}
                 </VAlert>
 
                 <!-- Actions -->
@@ -117,4 +129,7 @@ const dialogVisibleUpdate = (val) => {
             </VCardText>
         </VCard>
     </VDialog>
+
+    <!-- Notificación Toast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

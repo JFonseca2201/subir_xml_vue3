@@ -19,6 +19,17 @@ const warning = ref(null);
 const error_exist = ref(null);
 const success = ref(null);
 
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
+
 const AddEditPermissionDialog = (permission) => {
     let INDEX = permissions.value.findIndex((perm) => perm == permission);
     if (INDEX != -1) {
@@ -65,14 +76,17 @@ const store = async () => {
             }
         });
         console.log(resp);
-        success.value = resp.message;
+        showNotification(resp.message || 'Rol creado con éxito', 'success');
         emit("addRole", resp.data);
 
-        onFormReset();
+        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+        setTimeout(() => {
+            onFormReset();
+        }, 1500);
 
     } catch (error) {
         console.log(error);
-
+        showNotification('Error al crear el rol', 'error');
     } finally {
         loader.stop();
     }
@@ -184,12 +198,6 @@ onMounted(() => {
                     <VCol cols="12" v-if="warning">
                         <VAlert color="warning" variant="tonal" closable> {{ warning }}</VAlert>
                     </VCol>
-                    <VCol cols="12" v-if="error_exist">
-                        <VAlert color="error" variant="tonal" closable> {{ error_exist }}</VAlert>
-                    </VCol>
-                    <VCol cols="12" v-if="success">
-                        <VAlert color="success" variant="tonal" closable> {{ success }}</VAlert>
-                    </VCol>
 
                     <!-- Actions -->
                     <VCol cols="12" class="d-flex justify-end gap-3 mt-4">
@@ -209,6 +217,9 @@ onMounted(() => {
 
         </VCard>
     </VDialog>
+
+    <!-- Notificación Toast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
 <style>
 .permissions-table {

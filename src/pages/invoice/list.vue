@@ -3,10 +3,19 @@ import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 
 const invoiceSelected = ref(null);
-const success = ref(null)
-const error_exist = ref(null)
 const currentPage = ref(1);
 const totalPage = ref(0);
+
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
 
 const list_invoices = ref([])
 const supplier_id = ref(null)
@@ -24,13 +33,8 @@ const isInvoiceShowDialogVisible = ref(false);
 
 const list = async () => {
     isLoading.value = true;
-    error_exist.value = null
-    success.value = null
 
     try {
-
-
-
         let data = {
             type: type.value,
             search: search.value || '',
@@ -46,6 +50,7 @@ const list = async () => {
             body: data,
             onResponseError({ response }) {
                 console.log(response._data.error);
+                showNotification('Error al cargar las facturas', 'error');
             },
         });
         console.log(resp);
@@ -54,10 +59,10 @@ const list = async () => {
         if (currentPage.value > totalPage.value && totalPage.value > 0) {
             currentPage.value = 1;
         }
-        success.value = 'Facturas cargadas correctamente'
+        showNotification('Facturas cargadas correctamente', 'success')
     } catch (error) {
         console.error(error)
-        error_exist.value = 'Error al cargar las facturas'
+        showNotification('Error al cargar las facturas', 'error')
     } finally {
         isLoading.value = false;
     }
@@ -91,14 +96,13 @@ const deleteInvoice = (DeleteInvoice) => {
 }
 
 const addInvoice = (newInvoice) => {
-    console.log(newInvoice);
+    console.log('Agregando nueva factura:', newInvoice);
 
-    let backup = list_invoices.value;
-    list_invoices.value = [];
-    backup.unshift(newInvoice);
-    setTimeout(() => {
-        list_invoices.value = backup;
-    }, 50);
+    // Agregar la nueva factura al inicio de la lista
+    list_invoices.value.unshift(newInvoice);
+
+    // Mostrar notificación de éxito
+    showNotification('Factura agregada correctamente a la tabla', 'success');
 }
 
 watch([search, supplier_id, from_date, to_date], () => {
@@ -281,6 +285,9 @@ onMounted(() => {
         <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @addInvoice="addInvoice" />
         <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
             :invoiceSelected="invoiceSelected" />
+
+        <!-- Notificación Toast -->
+        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 
     </div>
 </template>

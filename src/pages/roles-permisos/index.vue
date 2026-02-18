@@ -2,6 +2,17 @@
 import RoleDeleteDialog from '@/components/inventory/role/RoleDeleteDialog.vue';
 import { useLoaderStore } from '@/stores/loader'
 const loader = useLoaderStore();
+
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
 const data = ref([]);
 const headers = [
     {
@@ -44,56 +55,68 @@ const list = async () => {
             method: 'GET',
             onResponseError({ response }) {
                 console.log(response._data.error);
+                showNotification('Error al cargar los roles', 'error');
             }
         });
 
         list_roles.value = resp.roles;
-
+        showNotification('Lista de roles cargada correctamente', 'success');
         console.log(resp);
 
     } catch (error) {
         console.log(error);
-
+        showNotification('Error al cargar la lista de roles', 'error');
     } finally {
         isLoading.value = false;
     }
 }
 
-const addNewRole = (NewRole) => {
-    console.log(NewRole);
-    let backup = list_roles.value;
-    list_roles.value = [];
-    backup.unshift(NewRole);
-    setTimeout(() => {
-        list_roles.value = backup;
-    }, 50);
+const addNewRole = (newRole) => {
+    console.log('Agregando nuevo rol:', newRole);
+
+    // Agregar el nuevo rol al inicio de la lista
+    list_roles.value.unshift(newRole);
+
+    // Mostrar notificación de éxito
+    showNotification('Rol agregado correctamente a la tabla', 'success');
 }
 
-const addEditRole = (EditRole) => {
-    console.log(EditRole);
-    let backup = list_roles.value;
-    list_roles.value = [];
-    let INDEX = backup.findIndex((rol) => rol.id == EditRole.id);
-    if (INDEX != -1) {
-        backup[INDEX] = EditRole;
+const addEditRole = (updatedRole) => {
+    console.log('Actualizando rol:', updatedRole);
+
+    // Buscar el índice del rol a actualizar
+    const index = list_roles.value.findIndex(role => role.id === updatedRole.id);
+
+    if (index !== -1) {
+        // Actualizar el rol en la lista
+        list_roles.value[index] = updatedRole;
+
+        // Mostrar notificación de éxito
+        showNotification('Rol actualizado correctamente en la tabla', 'success');
+    } else {
+        // Si no se encuentra, recargar la lista
+        console.warn('Rol no encontrado en la lista, recargando...');
+        list();
     }
-    setTimeout(() => {
-        list_roles.value = backup;
-    }, 50);
 }
 
-const addDeleteRole = (Role) => {
-    console.log(Role);
-    let backup = list_roles.value;
-    list_roles.value = [];
-    let INDEX = backup.findIndex((rol) => rol.id == Role.id);
-    if (INDEX != -1) {
-        backup.splice[INDEX];
-    }
-    setTimeout(() => {
-        list_roles.value = backup;
-    }, 50);
+const addDeleteRole = (deletedRole) => {
+    console.log('Eliminando rol:', deletedRole);
 
+    // Buscar el índice del rol a eliminar
+    const index = list_roles.value.findIndex(role => role.id === deletedRole.id);
+
+    if (index !== -1) {
+        // Eliminar el rol de la lista
+        list_roles.value.splice(index, 1);
+
+        // Mostrar notificación de éxito
+        showNotification('Rol eliminado correctamente de la tabla', 'success');
+    } else {
+        // Si no se encuentra, recargar la lista
+        console.warn('Rol no encontrado en la lista, recargando...');
+        list();
+    }
 }
 
 const permissionColor = (permission) => {
@@ -229,6 +252,9 @@ onMounted(() => {
             v-model:isDialogVisible="isRoleDeleteDialogVisible" @deleteRole="addDeleteRole"
             :roleSelected="role_selected_delete">
         </RoleDeleteDialog>
+
+        <!-- Notificación Toast -->
+        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 
     </div>
 </template>

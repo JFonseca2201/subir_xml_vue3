@@ -24,6 +24,17 @@ const error_exits = ref(null);
 const item_type = ref(1);
 const radioGroup = ref(1);
 
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
+
 const editItemInvoice = async () => {
     warning.value = null;
     success.value = null;
@@ -46,10 +57,15 @@ const editItemInvoice = async () => {
         console.log(resp);
         // emit("editInvoiceItem", resp.invoiceItem);
         emit("editInvoiceItem", resp.invoiceItem);
-        success.value = "Item editado con éxito.";
+        showNotification('Item editado con éxito', 'success');
+
+        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+        setTimeout(() => {
+            onFormReset();
+        }, 1500);
     } catch (error) {
         console.log(error);
-
+        showNotification('Error al editar el item', 'error');
     } finally {
         loader.stop();
     }
@@ -89,9 +105,6 @@ onMounted(() => {
                     <v-radio :key="4" :label="'Herramienta'" :value="4" class="mr-4"
                         :style="{ fontSize: '16px', fontWeight: '500' }" color="blue-grey darken-3" dense />
                 </v-radio-group>
-                <VCol cols="12" v-if="success">
-                    <VAlert type="success" color="success" closable="" variant="tonal">{{ success }}</VAlert>
-                </VCol>
                 <VCol cols="12" v-if="warning">
                     <VAlert type="error" color="warning" closable="" variant="tonal">{{ warning }}</VAlert>
                 </VCol>
@@ -112,6 +125,9 @@ onMounted(() => {
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <!-- Notificación Toast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
 
 <style scoped>

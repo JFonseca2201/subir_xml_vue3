@@ -86,6 +86,17 @@ const error_exist = ref(null);
 const success = ref(null);
 const loader = useLoaderStore();
 
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+    notificationMessage.value = message;
+    notificationType.value = type;
+    notificationShow.value = true;
+};
+
 // Cargar datos iniciales
 watch(() => props.partnerSelected, (val) => {
     if (val) {
@@ -153,16 +164,34 @@ const updatePartner = async () => {
             body: data,
             onResponseError({ response }) {
                 error_exist.value = response._data.error;
+                showNotification(response._data.error, 'error');
             },
         });
         console.log(resp);
+        showNotification('Socio actualizado con éxito', 'success');
 
-        emit('updatePartner', data);
-        success.value = 'Socio actualizado con éxito';
+        // Crear objeto del socio actualizado para actualizar la tabla
+        const updatedPartner = {
+            id: props.partnerSelected.id,
+            identification: editMember.value.identification,
+            name: editMember.value.fullName,
+            email: editMember.value.email,
+            phone: editMember.value.phone,
+            address: editMember.value.address,
+            created_at: props.partnerSelected.created_at // Mantener la fecha de creación original
+        };
+
+        // Emitir el evento para actualizar el socio en la tabla
+        emit('updatePartner', updatedPartner);
+
+        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+        setTimeout(() => {
+            onFormReset();
+        }, 1500);
+
         loader.stop();
-        emit('update:isDialogVisible', false);
     } catch (error) {
-        error_exist.value = 'Error al actualizar socio';
+        showNotification('Error al actualizar socio', 'error');
         loader.stop();
     } finally {
         loader.stop();
@@ -220,9 +249,6 @@ const updatePartner = async () => {
                     <VCol cols="12" v-if="error_exist">
                         <VAlert color="error" variant="tonal" closable> {{ error_exist }} </VAlert>
                     </VCol>
-                    <VCol cols="12" v-if="success">
-                        <VAlert color="success" variant="tonal" closable> {{ success }} </VAlert>
-                    </VCol>
                     <VCol cols="12" class="d-flex justify-end gap-3 mt-4">
                         <VBtn variant="outlined" color="secondary" class="text-none px-6" @click="onFormReset">
                             <VIcon start icon="ri-close-line" />
@@ -238,4 +264,7 @@ const updatePartner = async () => {
             </VForm>
         </VCard>
     </VDialog>
+
+    <!-- Notificación Toast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
