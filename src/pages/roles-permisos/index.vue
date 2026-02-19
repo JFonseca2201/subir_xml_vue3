@@ -59,7 +59,7 @@ const list = async () => {
             }
         });
 
-        list_roles.value = resp.roles;
+        list_roles.value = resp.roles.filter(role => role.id !== 1);
         showNotification('Lista de roles cargada correctamente', 'success');
         console.log(resp);
 
@@ -121,12 +121,12 @@ const addDeleteRole = (deletedRole) => {
 
 const permissionColor = (permission) => {
 
-    if (permission.includes('create')) return 'success'
-    if (permission.includes('edit')) return 'warning'
-    if (permission.includes('delete')) return 'error'
-    if (permission.includes('view') || permission.includes('read')) return 'info'
+    if (permission.startsWith('list_')) return 'success'
+    if (permission.startsWith('edit_')) return 'primary'
+    if (permission.startsWith('register_')) return 'secondary'
+    if (permission.startsWith('delete_')) return 'error'
 
-    return 'primary'
+    return 'warning'
 }
 
 const editItem = (item) => {
@@ -258,3 +258,10 @@ onMounted(() => {
 
     </div>
 </template>
+
+<style scoped>
+:deep(.v-data-table__tr td) {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+</style>

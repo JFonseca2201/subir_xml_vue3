@@ -28,3 +28,9 @@ const configStore = useConfigStore();
     </VApp>
   </VLocaleProvider>
 </template>
+
+<style>
+.v-field__input {
+  text-transform: uppercase !important;
+}
+</style>

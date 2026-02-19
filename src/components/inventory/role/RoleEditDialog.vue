@@ -190,13 +190,14 @@ onMounted(() => {
                                     <!-- PERMISOS -->
                                     <td class="px-6 py-6">
                                         <div class="permissions-wrap">
-                                            <label v-for="(permiso, index2) in item.permisos" :key="index2"
-                                                class="permission-chip">
-                                                <VCheckbox v-model="permissions" :value="permiso.permiso" hide-details
-                                                    density="compact"
-                                                    @click="AddEditPermissionDialog(permiso.permiso)" />
-                                                <span>{{ permiso.name }}</span>
-                                            </label>
+                                            <VChip v-for="(permiso, index2) in item.permisos" :key="index2"
+                                                :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
+                                                :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
+                                                class="cursor-pointer"
+                                                :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
+                                                @click="AddEditPermissionDialog(permiso.permiso)">
+                                                {{ permiso.name }}
+                                            </VChip>
                                         </div>
                                     </td>
                                 </tr>
@@ -206,16 +207,25 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" v-if="warning">
-                        <VAlert color="warning" variant="tonal" closable> {{ warning }}</VAlert>
+                        <VAlert color="warning" variant="tonal" closable class="mb-2">
+                            <template #prepend>
+                                <VIcon icon="ri-alert-line" />
+                            </template>
+                            {{ warning }}
+                        </VAlert>
                     </VCol>
                     <VCol cols="12" v-if="error_exist">
-                        <VAlert color="error" variant="tonal" closable> {{ error_exist }}</VAlert>
+                        <VAlert color="error" variant="tonal" closable class="mb-2">
+                            <template #prepend>
+                                <VIcon icon="ri-error-warning-line" />
+                            </template>
+                            {{ error_exist }}
+                        </VAlert>
                     </VCol>
 
                     <!-- Actions -->
                     <VCol cols="12" class="d-flex justify-end gap-3 mt-4">
                         <VBtn variant="outlined" color="secondary" class="text-none px-6" @click="onFormReset">
-                            <VIcon start icon="ri-close-line" />
                             Cancelar
                         </VBtn>
 
@@ -234,54 +244,44 @@ onMounted(() => {
     <!-- Notificación Toast -->
     <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
-<style>
+<style scoped>
 .permissions-table {
-    border-radius: 12px;
-    overflow: hidden;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 8px;
 }
 
 .permissions-row {
-    border-bottom: 1px solid rgba(150, 11, 11, 0.06);
+    transition: background-color 0.2s ease;
 }
 
-.permissions-row:last-child {
-    border-bottom: none;
+.permissions-row:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.permissions-row:not(:last-child) {
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .module-cell {
-    width: 260px;
+    width: 280px;
+    background-color: rgba(var(--v-theme-on-surface), 0.01);
 }
 
 .module-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    color: rgb(var(--v-theme-on-surface));
 }
 
 .module-subtitle {
-    font-size: 0.75rem;
-    color: rgba(0, 0, 0, 0.55);
+    font-size: 0.8rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
     margin-top: 4px;
 }
 
 .permissions-wrap {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 14px;
-}
-
-.permission-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background-color: rgba(0, 0, 0, 0.03);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.permission-chip:hover {
-    background-color: rgba(0, 0, 0, 0.07);
+    gap: 8px;
 }
 </style>
