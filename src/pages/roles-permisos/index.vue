@@ -72,7 +72,7 @@ const list = async () => {
 }
 
 const addNewRole = (newRole) => {
-    console.log('Agregando nuevo rol:', newRole);
+    console.log(newRole);
 
     // Agregar el nuevo rol al inicio de la lista
     list_roles.value.unshift(newRole);

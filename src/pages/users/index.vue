@@ -10,7 +10,7 @@ const loader = useLoaderStore();
 const notificationShow = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success');
-
+const roles = ref([]);
 const showNotification = (message, type = 'success') => {
     notificationMessage.value = message;
     notificationType.value = type;
@@ -62,8 +62,13 @@ const list = async () => {
 }
 
 const addNewUser = (newUser) => {
-    console.log('Agregando nuevo usuario:', newUser);
-    list_users.value.unshift(newUser);
+    // Crear una copia del usuario para evitar problemas de reactividad
+    const userToAdd = {
+        ...newUser,
+        role: { ...newUser.role } // Asegurar que role sea un objeto plano
+    };
+
+    list_users.value.unshift(userToAdd);
     showNotification('Usuario agregado correctamente', 'success');
 }
 
@@ -100,9 +105,28 @@ const deleteItem = (item) => {
     user_selected_delete.value = item;
     isUserDeleteDialogVisible.value = true;
 }
+const loadRoles = async () => {
+    try {
+        const resp = await $api("role", {
+            method: "GET",
+            onResponseError({ response }) {
+                console.error('Error al cargar roles:', response._data.error);
+            },
+        });
+
+        roles.value = resp.roles;
+        console.log('Roles cargados:', roles.value);
+
+    } catch (error) {
+        console.error('Error al cargar roles:', error);
+    }
+}
+
+
 
 onMounted(() => {
     // Descomentar cuando exista el endpoint real
+    loadRoles();
     list();
 });
 </script>
@@ -159,10 +183,28 @@ onMounted(() => {
                     </span>
                 </template>
 
+                <template #item.name="{ item }">
+                    <span>
+                        {{ item.name }}{{ item.surname ? ' ' + item.surname : '' }}
+                    </span>
+                </template>
+
                 <template #item.role.name="{ item }">
                     <VChip color="primary" variant="tonal" size="small">
-                        {{ item.role?.name || 'N/A' }}
+                        {{ item.role.name }}
                     </VChip>
+                </template>
+
+                <template #item.created_at="{ item }">
+                    <span>
+                        {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) }}
+                    </span>
                 </template>
 
                 <template #no-data>
@@ -199,7 +241,8 @@ onMounted(() => {
         </VCard>
 
         <!-- Dialogs -->
-        <!-- <UserAddDialog v-model:isDialogVisible="isUserAddDialogVisible" @addUser="addNewUser" /> -->
+        <UserAddDialog v-if="roles && roles.length > 0" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
+            @addUser="addNewUser" />
         <!-- <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible" @editUser="addEditUser" :userSelected="user_selected_edit" /> -->
         <!-- <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible" @deleteUser="addDeleteUser" :userSelected="user_selected_delete" /> -->
 
