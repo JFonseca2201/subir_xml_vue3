@@ -1,8 +1,9 @@
 <script setup>
 import { useLoaderStore } from '@/stores/loader'
-// import UserAddDialog from '@/components/inventory/users/UserAddDialog.vue';
-// import UserEditDialog from '@/components/inventory/users/UserEditDialog.vue';
-// import UserDeleteDialog from '@/components/inventory/users/UserDeleteDialog.vue';
+import UserAddDialog from '@/components/inventory/users/UserAddDialog.vue';
+import UserViewDialog from '@/components/inventory/users/UserViewDialog.vue';
+import UserEditDialog from '@/components/inventory/users/UserEditDialog.vue';
+import UserDeleteDialog from '@/components/inventory/users/UserDeleteDialog.vue';
 
 const loader = useLoaderStore();
 
@@ -29,12 +30,14 @@ const headers = [
 const isUserAddDialogVisible = ref(false);
 const isUserEditDialogVisible = ref(false);
 const isUserDeleteDialogVisible = ref(false);
+const isUserViewDialogVisible = ref(false);
 
 const isLoading = ref(false);
 const list_users = ref([]);
 const seachQuery = ref(null);
 const user_selected_edit = ref(null);
 const user_selected_delete = ref(null);
+const user_selected_view = ref(null);
 
 const list = async () => {
     isLoading.value = true;
@@ -101,9 +104,21 @@ const editItem = (item) => {
 }
 
 const deleteItem = (item) => {
+    // Proteger al usuario con ID = 1 (Super-Admin)
+    if (item.id === 1) {
+        showNotification('No se puede eliminar al usuario con ID 1 (Super-Admin)', 'error');
+        return;
+    }
+    
     console.log(item);
     user_selected_delete.value = item;
     isUserDeleteDialogVisible.value = true;
+}
+
+const viewItem = (item) => {
+    console.log(item);
+    user_selected_view.value = item;
+    isUserViewDialogVisible.value = true;
 }
 const loadRoles = async () => {
     try {
@@ -185,13 +200,13 @@ onMounted(() => {
 
                 <template #item.name="{ item }">
                     <span>
-                        {{ item.name }}{{ item.surname ? ' ' + item.surname : '' }}
+                        {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
                     </span>
                 </template>
 
                 <template #item.role.name="{ item }">
                     <VChip color="primary" variant="tonal" size="small">
-                        {{ item.role.name }}
+                        {{ item.role?.name || 'Sin rol' }}
                     </VChip>
                 </template>
 
@@ -217,6 +232,15 @@ onMounted(() => {
                 <!-- Actions -->
                 <template #item.action="{ item }">
                     <div class="d-flex align-center gap-2">
+                        <VTooltip text="Ver">
+                            <template #activator="{ props }">
+                                <IconBtn v-bind="props" size="small" color="info" variant="text"
+                                    @click="viewItem(item)">
+                                    <VIcon icon="ri-eye-line" />
+                                </IconBtn>
+                            </template>
+                        </VTooltip>
+
                         <VTooltip text="Editar">
                             <template #activator="{ props }">
                                 <IconBtn v-bind="props" size="small" color="primary" variant="text"
@@ -226,7 +250,7 @@ onMounted(() => {
                             </template>
                         </VTooltip>
 
-                        <VTooltip text="Eliminar">
+                        <VTooltip text="Eliminar" v-if="item.id !== 1">
                             <template #activator="{ props }">
                                 <IconBtn v-bind="props" size="small" color="error" variant="text"
                                     @click="deleteItem(item)">
@@ -243,8 +267,9 @@ onMounted(() => {
         <!-- Dialogs -->
         <UserAddDialog v-if="roles && roles.length > 0" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
             @addUser="addNewUser" />
-        <!-- <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible" @editUser="addEditUser" :userSelected="user_selected_edit" /> -->
-        <!-- <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible" @deleteUser="addDeleteUser" :userSelected="user_selected_delete" /> -->
+        <UserViewDialog v-if="user_selected_view" v-model:isDialogVisible="isUserViewDialogVisible" :user="user_selected_view" />
+        <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible" :userSelected="user_selected_edit" :roles="roles" @editUser="addEditUser" />
+        <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible" :userSelected="user_selected_delete" @deleteUser="addDeleteUser" />
 
         <!-- Notificación Toast -->
         <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />

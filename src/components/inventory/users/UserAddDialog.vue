@@ -126,14 +126,48 @@ const showNotification = (message, type = 'success') => {
 // Función para manejar la selección de archivo
 const handleAvatarChange = (event) => {
     const file = event.target.files[0];
-
+    
+    console.log('Archivo seleccionado:', file);
+    console.log('Tipo de archivo:', file?.type);
+    console.log('¿Empieza con image/?', file?.type?.startsWith('image/'));
+    
+    // Validar que sea una imagen
     if (file && file.type && file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (e) => {
             avatarPreview.value = e.target.result;
         };
         reader.readAsDataURL(file);
+    } else if (file) {
+        // Si no es una imagen, limpiar el campo y mostrar error
+        warning.value = 'El archivo seleccionado no es una imagen válida. Por favor selecciona un archivo de imagen.';
+        avatarPreview.value = null;
     }
+};
+
+// Función para convertir cualquier imagen a formato compatible
+const convertImageToCompatibleFormat = async (file) => {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+                resolve(convertedFile);
+            }, 'image/jpeg', 0.9);
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
 };
 
 // Función para manejar la limpieza del archivo
@@ -225,15 +259,70 @@ const store = async () => {
             formData.append("type_document", newUser.value.type_document);
         }
         if (newUser.value.avatar) {
-            formData.append("avatar", newUser.value.avatar);
+            // Convertir imagen a formato compatible si es necesario
+            const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            
+            if (!supportedFormats.includes(newUser.value.avatar.type)) {
+                console.log('Convirtiendo imagen de formato:', newUser.value.avatar.type);
+                try {
+                    const convertedFile = await convertImageToCompatibleFormat(newUser.value.avatar);
+                    formData.append("avatar", convertedFile);
+                    console.log('Imagen convertida a:', convertedFile.type);
+                } catch (error) {
+                    console.error('Error al convertir imagen:', error);
+                    warning.value = 'No se pudo convertir la imagen a un formato compatible.';
+                    return;
+                }
+            } else {
+                formData.append("avatar", newUser.value.avatar);
+            }
         }
 
         const resp = await $api("users", {
             method: "POST",
             body: formData,
             onResponseError({ response }) {
-                console.error('Error completo del backend:', response._data);
-                error_exist.value = response._data.error || response._data.message || 'Error desconocido';
+                console.error('Error completo del backend:', response);
+                console.error('Data del error:', response._data);
+                console.error('Status:', response.status);
+                console.error('StatusText:', response.statusText);
+                console.error('Errors específicos:', response._data?.errors);
+
+                // Extraer mensaje de error de forma más robusta
+                let errorMessage = 'Error desconocido';
+
+                if (response._data) {
+                    // Manejar errores específicos de base de datos
+                    if (response._data.message && response._data.message.includes('SQLSTATE[23000]')) {
+                        if (response._data.message.includes('users_identification_unique')) {
+                            errorMessage = 'La cédula de identidad ya esta registrada.';
+                        } else if (response._data.message.includes('users_email_unique')) {
+                            errorMessage = 'El correo electrónico ya esta registrado.';
+                        } else {
+                            errorMessage = 'Registro duplicado. El dato ya existe en el sistema.';
+                        }
+                    } else if (response._data.message && response._data.message.includes('avatar')) {
+                        // Errores específicos del avatar
+                        errorMessage = 'El archivo de avatar no es válido. Debe ser una imagen (JPG, PNG, GIF).';
+                    } else if (response._data.errors) {
+                        // Errores de validación Laravel
+                        const firstErrorKey = Object.keys(response._data.errors)[0];
+                        if (firstErrorKey) {
+                            errorMessage = response._data.errors[firstErrorKey][0];
+                        }
+                    } else {
+                        errorMessage = response._data.error ||
+                            response._data.message ||
+                            response._data.msg ||
+                            JSON.stringify(response._data);
+                    }
+                } else if (response.statusText) {
+                    errorMessage = response.statusText;
+                } else if (response.status) {
+                    errorMessage = `Error HTTP ${response.status}`;
+                }
+
+                error_exist.value = errorMessage;
             },
         });
 
@@ -278,12 +367,14 @@ const onFormReset = () => {
         address: null,
         gender: null,
         avatar: null,
-        role_id: '1',
+        role_id: null,
         status: '1',
         sucursale_id: '1',
         password: null,
         confirmPassword: null
     };
+    // Limpiar también la previsualización del avatar
+    avatarPreview.value = null;
     warning.value = null;
     error_exist.value = null;
     emit('update:isDialogVisible', false)
@@ -397,6 +488,15 @@ const onFormReset = () => {
                         </div>
                     </VCol>
 
+                </VRow>
+                <VRow>
+                    <!-- Validación de avatar -->
+                    <VCol cols="12" v-if="newUser.avatar && !newUser.avatar.type?.startsWith('image/')">
+                        <VAlert color="error" variant="tonal" closable>
+                            El archivo seleccionado no es una imagen válida. Por favor selecciona un archivo de imagen
+                            (JPG, PNG, GIF, etc.).
+                        </VAlert>
+                    </VCol>
                 </VRow>
                 <VRow>
                     <!-- Contraseña y Confirmar Contraseña (siempre en la misma posición) -->
