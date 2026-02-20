@@ -97,8 +97,28 @@ const addDeleteUser = (deletedUser) => {
     }
 }
 
+const viewItem = async (item) => {
+    console.log('Cargando detalles del usuario:', item);
+    try {
+        const resp = await $api(`users/${item.id}`, {
+            method: 'GET',
+            onResponseError({ response }) {
+                console.error('Error al cargar detalles del usuario:', response._data);
+                showNotification('Error al cargar detalles del usuario', 'error');
+            }
+        });
+
+        user_selected_view.value = resp.user;
+        isUserViewDialogVisible.value = true;
+        console.log('Usuario cargado:', resp.user);
+    } catch (error) {
+        console.error('Error al cargar usuario:', error);
+        showNotification('Error al cargar usuario', 'error');
+    }
+}
+
 const editItem = (item) => {
-    console.log(item);
+    console.log('Editando usuario:', item);
     user_selected_edit.value = item;
     isUserEditDialogVisible.value = true;
 }
@@ -109,17 +129,12 @@ const deleteItem = (item) => {
         showNotification('No se puede eliminar al usuario con ID 1 (Super-Admin)', 'error');
         return;
     }
-    
+
     console.log(item);
     user_selected_delete.value = item;
     isUserDeleteDialogVisible.value = true;
 }
 
-const viewItem = (item) => {
-    console.log(item);
-    user_selected_view.value = item;
-    isUserViewDialogVisible.value = true;
-}
 const loadRoles = async () => {
     try {
         const resp = await $api("role", {
@@ -267,9 +282,12 @@ onMounted(() => {
         <!-- Dialogs -->
         <UserAddDialog v-if="roles && roles.length > 0" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
             @addUser="addNewUser" />
-        <UserViewDialog v-if="user_selected_view" v-model:isDialogVisible="isUserViewDialogVisible" :user="user_selected_view" />
-        <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible" :userSelected="user_selected_edit" :roles="roles" @editUser="addEditUser" />
-        <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible" :userSelected="user_selected_delete" @deleteUser="addDeleteUser" />
+        <UserViewDialog v-if="user_selected_view" v-model:isDialogVisible="isUserViewDialogVisible"
+            :user="user_selected_view" />
+        <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible"
+            :userSelected="user_selected_edit" :roles="roles" @editUser="addEditUser" />
+        <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible"
+            :userSelected="user_selected_delete" @deleteUser="addDeleteUser" />
 
         <!-- Notificación Toast -->
         <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />

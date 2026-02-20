@@ -26,7 +26,7 @@ export default [
     children: [
       {
         title: 'Sucursales',
-        to: 'second-page',
+        to: { name: 'sucursales' },
         icon: { icon: 'ri-radio-button-line' },
       },
       {

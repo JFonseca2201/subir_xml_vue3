@@ -193,8 +193,8 @@ const loadUserData = () => {
     // Guardar avatar original y establecer previsualización
     originalAvatar.value = props.userSelected.avatar
     if (props.userSelected.avatar) {
-        const avatarUrl = props.userSelected.avatar.startsWith('http') 
-            ? props.userSelected.avatar 
+        const avatarUrl = props.userSelected.avatar.startsWith('http')
+            ? props.userSelected.avatar
             : `http://127.0.0.1:8000/storage/${props.userSelected.avatar}`
         avatarPreview.value = avatarUrl
     } else {
@@ -294,7 +294,7 @@ const onFormReset = () => {
 
             <!-- Header -->
             <div class="text-center mb-8">
-                <VIcon icon="ri-user-edit-line" size="42" color="primary" class="mb-3" />
+                <VIcon icon="ri-user-follow-line" size="42" color="primary" class="mb-3" />
                 <h4 class="text-h4 font-weight-bold mb-1">
                     Editar usuario
                 </h4>
@@ -379,8 +379,8 @@ const onFormReset = () => {
                         <VSelect v-model="editUser.status" :items="[
                             { title: 'Activo', value: '1' },
                             { title: 'Inactivo', value: '0' }
-                        ]" label="Estado" variant="outlined" density="comfortable"
-                            prepend-inner-icon="ri-toggle-line" hide-details="auto" required />
+                        ]" label="Estado" variant="outlined" density="comfortable" prepend-inner-icon="ri-toggle-line"
+                            hide-details="auto" required />
                     </VCol>
 
                     <!-- <div v-if="selectedRoleName" class="text-caption text-medium-emphasis mt-1">

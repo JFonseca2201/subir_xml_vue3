@@ -38,34 +38,17 @@ const getUserInitials = (name) => {
 
 // Corregir URL de la imagen
 const getAvatarUrl = (avatar) => {
+    console.log(avatar);
+
     if (!avatar) return null;
 
-    // Si ya es una URL completa, retornarla tal cual
-    if (avatar.startsWith('http')) {
+    // Si ya es una URL completa (http/https), retornarla tal cual
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
         return avatar;
     }
 
-    // Si empieza con users/, agregar el storage completo
-    if (avatar.startsWith('users/')) {
-        return `http://127.0.0.1:8000/storage/${avatar}`;
-    }
-
-    // Si empieza con /storage, corregir el doble slash
-    if (avatar.startsWith('/storage')) {
-        return avatar.replace('//storage', '/storage');
-    }
-
-    // Si empieza con storage/, agregar el slash inicial
-    if (avatar.startsWith('storage/')) {
-        return `http://127.0.0.1:8000/${avatar}`;
-    }
-
-    // Si no empieza con slash, agregarlo
-    if (!avatar.startsWith('/')) {
-        return `http://127.0.0.1:8000/storage/${avatar}`;
-    }
-
-    return avatar;
+    // Si no es URL completa, construir una
+    return `http://127.0.0.1:8000/storage/${avatar}`;
 };
 
 // Determinar color de estado
@@ -115,7 +98,8 @@ const closeDialog = () => {
 
             <!-- Avatar y Nombre Principal -->
             <div class="text-center mb-6">
-                <VAvatar :image="getAvatarUrl(user.avatar)" size="120" class="elevation-6 mb-3" v-if="user.avatar" />
+                <VAvatar :image="getAvatarUrl(user.avatar)" size="120" class="elevation-6 mb-3"
+                    v-if="getAvatarUrl(user.avatar)" />
                 <VAvatar size="120" color="primary" class="elevation-6 mb-3" v-else>
                     <span class="text-h4 font-weight-bold text-white">
                         {{ getUserInitials(user.name) }}
