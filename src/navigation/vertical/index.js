@@ -31,7 +31,7 @@ export default [
       },
       {
         title: 'Almacenes',
-        to: 'second-page',
+        to: { name: 'sucursales-warehouses' },
         icon: { icon: 'ri-radio-button-line' },
       },
       {

@@ -74,5 +74,8 @@ declare module 'vue' {
     UserInfoEditDialog: typeof import('./src/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
     UserViewDialog: typeof import('./src/components/inventory/users/UserViewDialog.vue')['default']
+    WarehouseAddDialog: typeof import('./src/components/inventory/config/WarehouseAddDialog.vue')['default']
+    WarehouseDeleteDialog: typeof import('./src/components/inventory/config/WarehouseDeleteDialog.vue')['default']
+    WarehouseEditDialog: typeof import('./src/components/inventory/config/WarehouseEditDialog.vue')['default']
   }
 }
