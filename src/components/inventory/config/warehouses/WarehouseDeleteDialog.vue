@@ -43,7 +43,7 @@ const confirmDelete = async () => {
     error_exist.value = null;
 
     try {
-        await $api(`warehouses/${props.warehouseSelected.id}`, {
+        const resp = await $api("warehouses/" + props.warehouseSelected.id, {
             method: 'DELETE',
             onResponseError({ response }) {
                 error_exist.value = response._data.error;
@@ -51,10 +51,12 @@ const confirmDelete = async () => {
             },
         });
 
+        console.log(resp);
+
         showNotification('Almacén eliminado correctamente', 'success');
 
         // Emitir evento para eliminar de la tabla
-        emit('deleteWarehouse', props.warehouseSelected.id);
+        emit('deleteWarehouse', props.warehouseSelected);
 
         // Cerrar diálogo
         emit('update:isDialogVisible', false);
@@ -62,6 +64,7 @@ const confirmDelete = async () => {
         loader.stop();
     } catch (error) {
         console.error('Error al eliminar almacén:', error);
+        error_exist.value = error;
         showNotification('Error al eliminar almacén', 'error');
         loader.stop();
     }
@@ -102,6 +105,11 @@ const cancelDelete = () => {
             <!-- Alertas de Error -->
             <VAlert v-if="warning" color="warning" variant="tonal" closable class="mb-4">
                 {{ warning }}
+            </VAlert>
+
+            <!-- Alertas de Error -->
+            <VAlert v-if="error_exist" color="error" variant="tonal" closable class="mb-4">
+                {{ error_exist }}
             </VAlert>
 
             <!-- Acciones -->

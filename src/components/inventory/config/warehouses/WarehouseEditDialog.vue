@@ -26,7 +26,6 @@ const warehouse = ref({
 
 const formRef = ref(null);
 
-// Reglas de validación según backend
 const requiredRule = v => !!v || 'Campo obligatorio';
 const nameRules = [
     requiredRule,
@@ -48,7 +47,6 @@ const warning = ref(null);
 const error_exist = ref(null);
 const loader = useLoaderStore();
 
-// Notificaciones
 const notificationShow = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success');
@@ -61,7 +59,7 @@ const showNotification = (message, type = 'success') => {
 
 onMounted(() => {
     console.log('Almacén seleccionado:', props.warehouseSelected);
-    const warehouseSelected = props.warehouseSelected;
+
 });
 
 const update = async () => {
@@ -69,7 +67,6 @@ const update = async () => {
     warning.value = null;
     loader.start();
 
-    // Validar formulario antes de enviar
     if (formRef.value && typeof formRef.value.validate === 'function') {
         const valid = await formRef.value.validate();
         if (!valid) {
@@ -83,43 +80,39 @@ const update = async () => {
         let data = {
             name: props.warehouseSelected.name,
             address: props.warehouseSelected.address,
-            state: warehouse.value.state, // Permitir editar estado
-            sucursale_id: 1, // Mantener sucursal
+            state: props.warehouseSelected.state,
+            sucursale_id: 1,
         };
         console.log('Actualizando almacén:', data);
 
-        const resp = await $api(`warehouses/${props.warehouseSelected.id}`, {
+        const resp = await $api('warehouses/' + props.warehouseSelected.id, {
             method: "PUT",
             body: data,
             onResponseError({ response }) {
-                error_exist.value = response._data.error;
+                error_exist.value = 'Error al actualizar almacén, verifique que no exista el almacén con el mismo nombre: ' + response;
             },
         });
         console.log(resp);
         showNotification('Almacén actualizado con éxito', 'success');
 
-        // Crear objeto del almacén actualizado
         const updatedWarehouse = {
             id: props.warehouseSelected.id,
-            name: props.warehouseSelected.name,
-            address: props.warehouseSelected.address,
+            name: props.warehouseSelected.name.toUpperCase(),
+            address: props.warehouseSelected.address.toUpperCase(),
             state: props.warehouseSelected.state,
             created_at: props.warehouseSelected.created_at
         };
-
-        // Emitir el evento para actualizar el almacén en la tabla
         emit('updateWarehouse', updatedWarehouse);
-
-        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
         setTimeout(() => {
             onFormReset();
-        }, 1500);
+        }, 500);
 
         loader.stop();
 
     } catch (error) {
         console.log(error);
-        showNotification('Error al actualizar almacén', 'error');
+        error_exist.value = 'Error al actualizar almacén, verifique que no exista el almacén con el mismo nombre';
+        //showNotification('Error al actualizar almacén', 'error');
         loader.stop();
     } finally {
         loader.stop();
@@ -130,7 +123,7 @@ const onFormReset = () => {
     warehouse.value = {
         name: '',
         address: '',
-        state: 0,
+        state: null,
     };
     warning.value = null;
     error_exist.value = null;
@@ -177,8 +170,8 @@ const onFormReset = () => {
 
                     <!-- Estado -->
                     <VCol cols="12" sm="12">
-                        <VSelect v-model="warehouseSelected.state" label="Estado" prepend-inner-icon="ri-toggle-line"
-                            variant="outlined" density="comfortable" :items="[
+                        <VSelect v-model="props.warehouseSelected.state" label="Estado"
+                            prepend-inner-icon="ri-toggle-line" variant="outlined" density="comfortable" :items="[
                                 { title: 'Activo', value: 0 },
                                 { title: 'Inactivo', value: 1 }
                             ]" required />
@@ -187,6 +180,10 @@ const onFormReset = () => {
                     <!-- Alertas de Error/Éxito -->
                     <VCol cols="12" v-if="warning">
                         <VAlert color="warning" variant="tonal" closable> {{ warning }}</VAlert>
+                    </VCol>
+                    <!-- Alertas de Error/Éxito -->
+                    <VCol cols="12" v-if="error_exist">
+                        <VAlert color="error" variant="tonal" closable> {{ error_exist }}</VAlert>
                     </VCol>
 
                     <!-- Acciones -->

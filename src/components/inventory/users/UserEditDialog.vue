@@ -51,7 +51,7 @@ const editUser = ref({
     avatar: null,
     role: null,
     status: '1',
-    sucursale_id: null, // Cambiado de '1' a null para evitar el error
+    sucursale_id: null,
     password: null,
     confirmPassword: null,
 })
@@ -172,6 +172,8 @@ const loadUserData = () => {
         r => Number(r.id) === Number(props.userSelected.role_id)
     )
 
+
+
     editUser.value = {
         id: props.userSelected.id,
         name: props.userSelected.name || '',
@@ -189,6 +191,7 @@ const loadUserData = () => {
         password: null,
         confirmPassword: null,
     }
+    console.log(editUser.value);
 
     // Guardar avatar original y establecer previsualización
     originalAvatar.value = props.userSelected.avatar

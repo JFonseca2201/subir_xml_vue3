@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
-import WarehouseAddDialog from '@/components/inventory/config/WarehouseAddDialog.vue'
-import WarehouseEditDialog from '@/components/inventory/config/WarehouseEditDialog.vue'
-import WarehouseDeleteDialog from '@/components/inventory/config/WarehouseDeleteDialog.vue'
+import WarehouseAddDialog from '@/components/inventory/config/warehouses/WarehouseAddDialog.vue'
+import WarehouseEditDialog from '@/components/inventory/config/warehouses/WarehouseEditDialog.vue'
+import WarehouseDeleteDialog from '@/components/inventory/config/warehouses/WarehouseDeleteDialog.vue'
+import NotificationToast from '@/components/common/NotificationToast.vue'
 
 const warehouseSelected = ref(null)
 
@@ -73,24 +74,19 @@ const deleteWarehouse = (DeleteWarehouse) => {
     console.log(DeleteWarehouse)
 }
 
-const confirmDeleteWarehouse = async () => {
-    if (!warehouseSelected.value) return
-    try {
-        await $api(`warehouses/${warehouseSelected.value.id}`, {
-            method: 'DELETE',
-            onResponseError({ response }) {
-                showNotification('Error al eliminar almacén', 'error')
-            },
-        })
-        showNotification('Almacén eliminado correctamente', 'success')
-        await list()
-    } catch (error) {
-        showNotification('Error al eliminar almacén', 'error')
-    } finally {
-        isWarehouseDeleteDialogVisible.value = false
-        warehouseSelected.value = null
+const confirmDeleteWarehouse = async (warehouse) => {
+    console.log(warehouse);
+    let backup = list_warehouses.value;
+    list_warehouses.value = [];
+    let INDEX = backup.findIndex((wh) => wh.id == warehouse.id);
+    if (INDEX != -1) {
+        backup.splice(INDEX, 1);
     }
-}
+    setTimeout(() => {
+        list_warehouses.value = backup;
+    }, 50);
+};
+
 
 const addWarehouse = (newWarehouse) => {
     console.log('Almacén:', newWarehouse);
@@ -217,8 +213,8 @@ onMounted(() => {
                         <tr v-for="warehouse in (list_warehouses || [])" :key="warehouse"
                             class="hover:bg-grey-lighten-4 transition">
                             <td class="font-weight-medium">{{ warehouse?.id }}</td>
-                            <td>{{ warehouse?.name }}</td>
-                            <td>{{ warehouse?.address }}</td>
+                            <td class="uppercase">{{ warehouse?.name }}</td>
+                            <td class="uppercase">{{ warehouse?.address }}</td>
                             <td>
                                 <VChip :color="Number(warehouse?.state) === 0 ? 'success' : 'error'" variant="tonal"
                                     size="small">

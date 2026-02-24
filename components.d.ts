@@ -27,6 +27,9 @@ declare module 'vue' {
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsWithIcon: typeof import('./src/@core/components/cards/CardStatisticsWithIcon.vue')['default']
     CardStatisticsWithImages: typeof import('./src/@core/components/cards/CardStatisticsWithImages.vue')['default']
+    CategorieAddDialog: typeof import('./src/components/inventory/config/categories/CategorieAddDialog.vue')['default']
+    CategorieDeleteDialog: typeof import('./src/components/inventory/config/categories/CategorieDeleteDialog.vue')['default']
+    CategorieEditDialog: typeof import('./src/components/inventory/config/categories/CategorieEditDialog.vue')['default']
     ConfirmDialog: typeof import('./src/components/dialogs/ConfirmDialog.vue')['default']
     CreateAppDialog: typeof import('./src/components/dialogs/CreateAppDialog.vue')['default']
     CustomCheckboxes: typeof import('./src/@core/components/app-form-elements/CustomCheckboxes.vue')['default']
@@ -74,8 +77,8 @@ declare module 'vue' {
     UserInfoEditDialog: typeof import('./src/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
     UserViewDialog: typeof import('./src/components/inventory/users/UserViewDialog.vue')['default']
-    WarehouseAddDialog: typeof import('./src/components/inventory/config/WarehouseAddDialog.vue')['default']
-    WarehouseDeleteDialog: typeof import('./src/components/inventory/config/WarehouseDeleteDialog.vue')['default']
-    WarehouseEditDialog: typeof import('./src/components/inventory/config/WarehouseEditDialog.vue')['default']
+    WarehouseAddDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseAddDialog.vue')['default']
+    WarehouseDeleteDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseDeleteDialog.vue')['default']
+    WarehouseEditDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseEditDialog.vue')['default']
   }
 }

@@ -256,7 +256,7 @@ onMounted(() => {
                             </template>
                         </VTooltip>
 
-                        <VTooltip text="Editar">
+                        <VTooltip text="Editar" v-if="item.id !== 1">
                             <template #activator="{ props }">
                                 <IconBtn v-bind="props" size="small" color="primary" variant="text"
                                     @click="editItem(item)">

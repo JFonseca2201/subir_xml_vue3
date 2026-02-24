@@ -25,7 +25,7 @@ export default [
     icon: { icon: 'ri-tools-line' },
     children: [
       {
-        title: 'Sucursales',
+        title: 'Establecimiento',
         to: { name: 'sucursales' },
         icon: { icon: 'ri-radio-button-line' },
       },
@@ -36,7 +36,7 @@ export default [
       },
       {
         title: 'Categorias',
-        to: 'second-page',
+        to: 'configuration-categories',
         icon: { icon: 'ri-radio-button-line' },
       },
       {
