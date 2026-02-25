@@ -40,13 +40,13 @@ export default [
         icon: { icon: 'ri-radio-button-line' },
       },
       {
-        title: 'Proveedores',
-        to: 'configuration-providers',
-        icon: { icon: 'ri-radio-button-line' },
+        title: 'Unidades',
+        to: 'configuration-units',
+        icon: { icon: 'ri-ruler-line' },
       },
       {
-        title: 'Unidades',
-        to: 'second-page',
+        title: 'Proveedores',
+        to: 'configuration-providers',
         icon: { icon: 'ri-radio-button-line' },
       },
     ],

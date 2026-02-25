@@ -69,14 +69,14 @@ const addNewProvider = (newProvider) => {
     console.log(newProvider);
     let backup = list_providers.value;
     list_providers.value = [];
-    
+
     // Asegurar que los datos se guarden en mayúsculas
     const providerToSave = {
         ...newProvider,
         name: newProvider.name ? newProvider.name.toUpperCase() : '',
         address: newProvider.address ? newProvider.address.toUpperCase() : ''
     };
-    
+
     backup.unshift(providerToSave);
     setTimeout(() => {
         list_providers.value = backup;
@@ -189,20 +189,27 @@ definePage({ meta: { permission: "settings" } });
             <VDataTable :headers="headers" :items="list_providers" :items-per-page="10" class="text-no-wrap">
                 <!-- Nombre -->
                 <template #item.name="{ item }">
-                    <div class="d-flex align-center">
-                        <VAvatar size="32" color="primary" variant="tonal">
-                            <VIcon icon="ri-building-line" />
-                        </VAvatar>
+                    <VTooltip>
+                        <template #activator="{ props }">
+                            <div class="d-flex align-center" v-bind="props">
+                                <VAvatar size="32" color="primary" variant="tonal">
+                                    <VIcon icon="ri-building-line" />
+                                </VAvatar>
 
-                        <div class="d-flex flex-column ms-3">
-                            <span class="font-weight-medium text-high-emphasis" style="text-transform: uppercase">
-                                {{ item.name }}
-                            </span>
-                            <span class="text-caption text-medium-emphasis">
-                                ID: PROV-00{{ item.id }}
-                            </span>
-                        </div>
-                    </div>
+                                <div class="d-flex flex-column ms-3">
+                                    <span class="font-weight-medium text-high-emphasis"
+                                        style="text-transform: uppercase">
+                                        {{ item.name ? (item.name.length > 25 ? item.name.substring(0, 25) + '...'
+                                            : item.name) : 'Sin nombre' }}
+                                    </span>
+                                    <span class="text-caption text-medium-emphasis">
+                                        ID: PROV-00{{ item.id }}
+                                    </span>
+                                </div>
+                            </div>
+                        </template>
+                        <span style="text-transform: uppercase">{{ item.name || 'Sin nombre' }}</span>
+                    </VTooltip>
                 </template>
                 <!-- RUC -->
                 <template #item.ruc="{ item }">

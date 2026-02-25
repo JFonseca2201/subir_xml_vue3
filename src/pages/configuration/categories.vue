@@ -17,7 +17,7 @@ const headers = [
         key: "created_at",
     },
     {
-        title: "Action",
+        title: "Acciones",
         key: "action",
     },
 ];
@@ -156,8 +156,7 @@ definePage({ meta: { permission: "settings" } });
                 <template #item.name="{ item }">
                     <div class="d-flex align-center">
                         <VAvatar size="32" :color="item.imagen ? undefined : 'primary'"
-                            :variant="!item.imagen ? 'tonal' : undefined"
-                            class="cursor-pointer"
+                            :variant="!item.imagen ? 'tonal' : undefined" class="cursor-pointer"
                             @click="viewImage(item)">
                             <VImg v-if="item.imagen" :src="item.imagen" />
                             <VIcon v-else icon="ri-folder-line" />
@@ -228,18 +227,14 @@ definePage({ meta: { permission: "settings" } });
                                 {{ categorie_selected_image?.title || 'Sin nombre' }}
                             </h4>
                         </div>
-                        
+
                         <div v-if="categorie_selected_image?.imagen" class="d-flex justify-center">
-                            <VImg 
-                                :src="categorie_selected_image.imagen" 
-                                max-width="400"
-                                max-height="300"
-                                contain
-                                class="rounded-lg elevation-4"
-                            />
+                            <VImg :src="categorie_selected_image.imagen" max-width="400" max-height="300" contain
+                                class="rounded-lg elevation-4" />
                         </div>
-                        
-                        <div v-else class="d-flex flex-column align-center justify-center pa-8 bg-grey-lighten-4 rounded-lg">
+
+                        <div v-else
+                            class="d-flex flex-column align-center justify-center pa-8 bg-grey-lighten-4 rounded-lg">
                             <VIcon icon="ri-image-line" size="64" color="grey-lighten-1" />
                             <span class="text-body-2 text-medium-emphasis mt-2">
                                 No hay imagen disponible
