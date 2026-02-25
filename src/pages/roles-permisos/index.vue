@@ -1,18 +1,12 @@
 <script setup>
 import RoleDeleteDialog from '@/components/inventory/role/RoleDeleteDialog.vue';
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
+import { $api } from '@/utils/api'
+
 const loader = useLoaderStore();
+const { showNotification } = useGlobalToast();
 
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
 const data = ref([]);
 const headers = [
     {
@@ -252,9 +246,6 @@ onMounted(() => {
             v-model:isDialogVisible="isRoleDeleteDialogVisible" @deleteRole="addDeleteRole"
             :roleSelected="role_selected_delete">
         </RoleDeleteDialog>
-
-        <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 
     </div>
 </template>

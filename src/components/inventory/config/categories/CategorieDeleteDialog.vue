@@ -1,4 +1,7 @@
 <script setup>
+import { useLoaderStore } from '@/stores/loader'
+import { $api } from '@/utils/api'
+
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
@@ -14,11 +17,26 @@ const emit = defineEmits(["update:isDialogVisible", "deleteCategorie"]);
 const warning = ref(null);
 const error_exits = ref(null);
 const success = ref(null);
+const loader = useLoaderStore();
+
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+  notificationMessage.value = message;
+  notificationType.value = type;
+  notificationShow.value = true;
+};
 
 const deleteCategorie = async () => {
   warning.value = null;
   error_exits.value = null;
   success.value = null;
+
+  loader.start();
+
   try {
     const resp = await $api("categories/" + props.categorieSelected.id, {
       method: "DELETE",
@@ -27,10 +45,14 @@ const deleteCategorie = async () => {
       },
     });
     console.log(resp);
+    showNotification("Categoría eliminada correctamente", 'success');
     emit("deleteCategorie", props.categorieSelected);
     onFormReset();
   } catch (error) {
     console.log(error);
+    showNotification('Error al eliminar la categoría', 'error');
+  } finally {
+    loader.stop();
   }
 };
 
@@ -64,9 +86,17 @@ const dialogVisibleUpdate = (val) => {
 
       <VCardText class="pt-5">
         <div class="text-center pb-6">
+          <VIcon icon="ri-delete-bin-line" size="42" color="error" class="mb-3" />
           <h4 class="text-h4 mb-2">
             Eliminar categoria : {{ props.categorieSelected.title }}
           </h4>
+        </div>
+
+        <!-- 👉 Imagen de la categoría -->
+        <div class="text-center mb-6">
+          <VAvatar v-if="props.categorieSelected.imagen" :image="props.categorieSelected.imagen" 
+            size="100" class="elevation-3 mb-3" />
+          <VIcon v-else icon="ri-image-line" size="100" color="medium-emphasis" class="mb-3" />
         </div>
 
         <!-- 👉 Form -->
@@ -96,10 +126,14 @@ const dialogVisibleUpdate = (val) => {
             </VCol>
             <!-- 👉 Submit and Cancel -->
             <VCol cols="12" class="d-flex flex-wrap justify-center gap-4">
-              <VBtn type="submit" color="error"> Eliminar </VBtn>
+              <VBtn type="submit" color="error" prepend-icon="ri-delete-bin-line"
+                :loading="loader.loading" :disabled="loader.loading">
+                Eliminar
+              </VBtn>
 
-              <VBtn color="secondary" variant="outlined" @click="onFormReset">
-                Cancel
+              <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" @click="onFormReset"
+                :disabled="loader.loading">
+                Cancelar
               </VBtn>
             </VCol>
           </VRow>
@@ -107,4 +141,9 @@ const dialogVisibleUpdate = (val) => {
       </VCardText>
     </VCard>
   </VDialog>
+
+  <!-- Notificación Toast -->
+  <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
+    {{ notificationMessage }}
+  </VSnackbar>
 </template>

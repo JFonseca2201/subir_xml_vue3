@@ -1,0 +1,19 @@
+/* Remix Icons CSS */
+@import url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css');
+
+/* Asegurar que los iconos se muestren correctamente */
+.ri-user-line:before,
+.ri-mail-line:before,
+.ri-phone-line:before,
+.ri-file-list-line:before,
+.ri-map-pin-line:before,
+.ri-men-women-line:before,
+.ri-shield-user-line:before,
+.ri-toggle-line:before,
+.ri-image-line:before,
+.ri-lock-line:before {
+  font-family: 'RemixIcon' !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

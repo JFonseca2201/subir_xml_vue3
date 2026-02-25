@@ -1,21 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const invoiceSelected = ref(null);
 const currentPage = ref(1);
 const totalPage = ref(0);
 
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+const { showNotification } = useGlobalToast();
 
 const list_invoices = ref([])
 const supplier_id = ref(null)
@@ -289,13 +281,9 @@ onMounted(() => {
             </VCardActions>
         </VCard>
 
-        <!-- 🧾 DIALOG -->
+        <!-- DIALOG -->
         <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @addInvoice="addInvoice" />
         <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
             :invoiceSelected="invoiceSelected" />
-
-        <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
-
     </div>
 </template>

@@ -24,11 +24,13 @@ const headers = [
 const isCategorieAddDialogVisible = ref(false);
 const isCategorieEditDialogVisible = ref(false);
 const isCategorieDeleteDialogVisible = ref(false);
+const isCategorieImageDialogVisible = ref(false);
 
 const list_categories = ref([]);
 const searchQuery = ref(null);
 const categorie_selected_edit = ref(null);
 const categorie_selected_delete = ref(null);
+const categorie_selected_image = ref(null);
 
 const isLoading = ref(false); // ⬅ loader global para la tabla
 
@@ -94,9 +96,15 @@ const editItem = (item) => {
     isCategorieEditDialogVisible.value = true;
     categorie_selected_edit.value = item;
 };
+
 const deleteItem = (item) => {
     isCategorieDeleteDialogVisible.value = true;
     categorie_selected_delete.value = item;
+};
+
+const viewImage = (item) => {
+    categorie_selected_image.value = item;
+    isCategorieImageDialogVisible.value = true;
 };
 
 onMounted(() => {
@@ -148,7 +156,9 @@ definePage({ meta: { permission: "settings" } });
                 <template #item.name="{ item }">
                     <div class="d-flex align-center">
                         <VAvatar size="32" :color="item.imagen ? undefined : 'primary'"
-                            :variant="!item.imagen ? 'tonal' : undefined">
+                            :variant="!item.imagen ? 'tonal' : undefined"
+                            class="cursor-pointer"
+                            @click="viewImage(item)">
                             <VImg v-if="item.imagen" :src="item.imagen" />
                             <VIcon v-else icon="ri-folder-line" />
                         </VAvatar>
@@ -195,5 +205,58 @@ definePage({ meta: { permission: "settings" } });
         <CategorieDeleteDialog v-if="categorie_selected_delete && isCategorieDeleteDialogVisible"
             v-model:isDialogVisible="isCategorieDeleteDialogVisible" :categorieSelected="categorie_selected_delete"
             @deleteCategorie="addDeleteCategorie" />
+
+        <!-- Diálogo para ver imagen de categoría -->
+        <VDialog v-model="isCategorieImageDialogVisible" max-width="600px">
+            <VCard>
+                <VCardTitle class="d-flex align-center justify-space-between pa-4">
+                    <div class="d-flex align-center gap-2">
+                        <VIcon icon="ri-image-line" color="primary" />
+                        <span>Imagen de Categoría</span>
+                    </div>
+                    <VBtn icon variant="text" @click="isCategorieImageDialogVisible = false">
+                        <VIcon icon="ri-close-line" />
+                    </VBtn>
+                </VCardTitle>
+
+                <VDivider />
+
+                <VCardText class="pa-4">
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <h4 class="text-h6 font-weight-bold">
+                                {{ categorie_selected_image?.title || 'Sin nombre' }}
+                            </h4>
+                        </div>
+                        
+                        <div v-if="categorie_selected_image?.imagen" class="d-flex justify-center">
+                            <VImg 
+                                :src="categorie_selected_image.imagen" 
+                                max-width="400"
+                                max-height="300"
+                                contain
+                                class="rounded-lg elevation-4"
+                            />
+                        </div>
+                        
+                        <div v-else class="d-flex flex-column align-center justify-center pa-8 bg-grey-lighten-4 rounded-lg">
+                            <VIcon icon="ri-image-line" size="64" color="grey-lighten-1" />
+                            <span class="text-body-2 text-medium-emphasis mt-2">
+                                No hay imagen disponible
+                            </span>
+                        </div>
+                    </div>
+                </VCardText>
+
+                <VDivider />
+
+                <VCardActions class="pa-4">
+                    <VSpacer />
+                    <VBtn color="primary" variant="elevated" @click="isCategorieImageDialogVisible = false">
+                        Cerrar
+                    </VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
     </div>
 </template>

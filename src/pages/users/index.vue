@@ -1,25 +1,18 @@
 <script setup>
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import UserAddDialog from '@/components/inventory/users/UserAddDialog.vue';
 import UserViewDialog from '@/components/inventory/users/UserViewDialog.vue';
 import UserEditDialog from '@/components/inventory/users/UserEditDialog.vue';
 import UserDeleteDialog from '@/components/inventory/users/UserDeleteDialog.vue';
 
 const loader = useLoaderStore();
-
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
+const { showNotification } = useGlobalToast();
 const roles = ref([]);
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
 
 const headers = [
     { title: 'ID', key: 'id' },
+    { title: 'Imagen', key: 'avatar', sortable: false },
     { title: 'Nombre', key: 'name' },
     { title: 'Email', key: 'email' },
     { title: 'Rol', key: 'role.name' },
@@ -53,6 +46,24 @@ const list = async () => {
 
         // Ajustar según la estructura de respuesta real
         list_users.value = resp.users || [];
+        
+        // Convertir URLs de avatar relativas a absolutas
+        list_users.value = list_users.value.map(user => ({
+            ...user,
+            avatar: user.avatar 
+                ? (user.avatar.startsWith('http') 
+                    ? user.avatar 
+                    : `http://127.0.0.1:8000${user.avatar}`)
+                : null
+        }));
+        
+        // Depurar estructura de usuarios
+        if (list_users.value.length > 0) {
+            console.log('Estructura de usuario:', list_users.value[0]);
+            console.log('Campos disponibles:', Object.keys(list_users.value[0]));
+            console.log('Avatar procesado:', list_users.value[0].avatar);
+        }
+        
         showNotification('Lista de usuarios cargada correctamente', 'success');
         console.log(resp);
 
@@ -79,7 +90,23 @@ const addEditUser = (updatedUser) => {
     console.log('Actualizando usuario:', updatedUser);
     const index = list_users.value.findIndex(user => user.id === updatedUser.id);
     if (index !== -1) {
-        list_users.value[index] = updatedUser;
+        // Preservar el avatar existente si no se proporciona uno nuevo
+        const currentUser = list_users.value[index];
+        const userToUpdate = {
+            ...updatedUser,
+            // Mantener el avatar original si el actualizado no tiene avatar
+            avatar: updatedUser.avatar || currentUser.avatar,
+            // Mantener el rol original si el actualizado no tiene objeto role
+            role: updatedUser.role || currentUser.role,
+            // Asegurar que role_id se mantenga
+            role_id: updatedUser.role_id || currentUser.role_id
+        };
+        
+        console.log('Usuario actualizado:', userToUpdate);
+        console.log('Rol del usuario:', userToUpdate.role);
+        console.log('Role ID del usuario:', userToUpdate.role_id);
+        
+        list_users.value[index] = userToUpdate;
         showNotification('Usuario actualizado correctamente', 'success');
     } else {
         list();
@@ -99,6 +126,10 @@ const addDeleteUser = (deletedUser) => {
 
 const viewItem = async (item) => {
     console.log('Cargando detalles del usuario:', item);
+    console.log('Valor del campo avatar:', item.avatar);
+    console.log('Tipo de avatar:', typeof item.avatar);
+    console.log('Avatar es null/undefined:', item.avatar == null);
+    console.log('Avatar es string vacío:', item.avatar === '');
     try {
         const resp = await $api(`users/${item.id}`, {
             method: 'GET',
@@ -213,6 +244,45 @@ onMounted(() => {
                     </span>
                 </template>
 
+                <template #item.avatar="{ item }">
+                    <div class="d-flex justify-center">
+                        <div class="cursor-pointer position-relative" @click="viewItem(item)">
+                            <!-- Imagen del avatar -->
+                            <img v-if="item.avatar" 
+                                :src="item.avatar" 
+                                class="rounded-circle elevation-2"
+                                style="width: 40px; height: 40px; object-fit: cover;"
+                                @error="console.log('Error cargando imagen:', item.avatar)"
+                                @load="console.log('Imagen cargada exitosamente:', item.avatar)"
+                            />
+                            <VAvatar v-else
+                                size="40" 
+                                class="elevation-2"
+                            >
+                                <VIcon icon="ri-user-line" size="20" />
+                            </VAvatar>
+                            
+                            <!-- Indicador de estado -->
+                            <div class="position-absolute" style="bottom: 0; right: 0;">
+                                <!-- Punto verde para activo -->
+                                <VIcon v-if="item.status == '1'" 
+                                    icon="ri-checkbox-blank-circle-fill" 
+                                    size="12" 
+                                    color="success"
+                                    class="elevation-1"
+                                />
+                                <!-- X roja para inactivo -->
+                                <VIcon v-else
+                                    icon="ri-close-circle-fill" 
+                                    size="12" 
+                                    color="error"
+                                    class="elevation-1"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
                 <template #item.name="{ item }">
                     <span>
                         {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
@@ -247,15 +317,6 @@ onMounted(() => {
                 <!-- Actions -->
                 <template #item.action="{ item }">
                     <div class="d-flex align-center gap-2">
-                        <VTooltip text="Ver">
-                            <template #activator="{ props }">
-                                <IconBtn v-bind="props" size="small" color="info" variant="text"
-                                    @click="viewItem(item)">
-                                    <VIcon icon="ri-eye-line" />
-                                </IconBtn>
-                            </template>
-                        </VTooltip>
-
                         <VTooltip text="Editar" v-if="item.id !== 1">
                             <template #activator="{ props }">
                                 <IconBtn v-bind="props" size="small" color="primary" variant="text"
@@ -288,9 +349,6 @@ onMounted(() => {
             :userSelected="user_selected_edit" :roles="roles" @editUser="addEditUser" />
         <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible"
             :userSelected="user_selected_delete" @deleteUser="addDeleteUser" />
-
-        <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 
     </div>
 </template>

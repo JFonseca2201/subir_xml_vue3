@@ -351,6 +351,7 @@
     "watchTriggerable": true,
     "watchWithFilter": true,
     "whenever": true,
-    "PERMISOS": true
+    "PERMISOS": true,
+    "useGlobalToast": true
   }
 }

@@ -5,6 +5,7 @@ import { registerPlugins } from '@core/utils/plugins'
 // Styles
 import '@core/scss/template/index.scss'
 import '@styles/styles.scss'
+import '@styles/remix-icons.css' // Importar Remix Icons CSS local
 
 // Create vue app
 const app = createApp(App)

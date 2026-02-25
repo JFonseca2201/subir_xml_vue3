@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
+import { $api } from '@/utils/api'
 
 const props = defineProps({
     isDialogVisible: {
@@ -88,17 +90,7 @@ function isValidEcuadorianID(id) {
 const warning = ref(null);
 const error_exist = ref(null);
 const loader = useLoaderStore()
-
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+const { showNotification } = useGlobalToast()
 
 const store = async () => {
     error_exist.value = null;
@@ -292,8 +284,6 @@ const onFormReset = () => {
         </VCard>
     </VDialog>
 
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
 
 <style>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -24,15 +25,7 @@ const emit = defineEmits([
 ])
 
 const loader = useLoaderStore()
-const notificationShow = ref(false)
-const notificationMessage = ref('')
-const notificationType = ref('success')
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message
-    notificationType.value = type
-    notificationShow.value = true
-}
+const { showNotification } = useGlobalToast()
 
 /* ======================================================
    🔥 ESTADO
@@ -242,8 +235,21 @@ const update = async () => {
 
         const updatedUser = {
             ...resp.user,
-            role: editUser.value.role?.name || 'Usuario'
+            // Mantener el objeto role completo, no solo el nombre
+            role: editUser.value.role || { name: 'Usuario', id: null },
+            // Mantener role_id también
+            role_id: editUser.value.role?.id || resp.user.role_id,
+            // Asegurar que el avatar se mantenga y tenga URL completa
+            avatar: resp.user.avatar 
+                ? (resp.user.avatar.startsWith('http') 
+                    ? resp.user.avatar 
+                    : `http://127.0.0.1:8000${resp.user.avatar}`)
+                : originalAvatar.value
         }
+
+        console.log('Usuario actualizado emitido:', updatedUser);
+        console.log('Role object:', updatedUser.role);
+        console.log('Role ID:', updatedUser.role_id);
 
         emit('editUser', updatedUser)
         emit('update:isDialogVisible', false)
@@ -457,7 +463,4 @@ const onFormReset = () => {
 
         </VCard>
     </VDialog>
-
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

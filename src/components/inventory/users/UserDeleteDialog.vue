@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -20,22 +21,7 @@ const emit = defineEmits([
 ]);
 
 const loader = useLoaderStore()
-
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    // Notificaciones
-    const notificationShow = ref(false);
-    const notificationMessage = ref('');
-    const notificationType = ref('success');
-
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+const { showNotification } = useGlobalToast()
 
 const confirmDelete = async () => {
     // Verificar si el usuario es super-admin (ID = 1)
@@ -166,7 +152,4 @@ const cancelDelete = () => {
             </div>
         </VCard>
     </VDialog>
-
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

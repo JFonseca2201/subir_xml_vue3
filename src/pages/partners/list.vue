@@ -1,21 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const partnerSelected = ref(null);
 const currentPage = ref(1);
 const totalPage = ref(0);
 
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+const { showNotification } = useGlobalToast();
 
 const list_partners = ref([])
 const search = ref(null);
@@ -284,9 +276,5 @@ onMounted(() => {
         <PartnerDeleteDialog v-if="isPartnerDeleteDialogVisible && partnerSelected"
             v-model:isDialogVisible="isPartnerDeleteDialogVisible" :partnerSelected="partnerSelected"
             @deletePartner="confirmDeletePartner" />
-
-        <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
-
     </div>
 </template>

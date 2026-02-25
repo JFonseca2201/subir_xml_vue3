@@ -1,23 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import WarehouseAddDialog from '@/components/inventory/config/warehouses/WarehouseAddDialog.vue'
 import WarehouseEditDialog from '@/components/inventory/config/warehouses/WarehouseEditDialog.vue'
 import WarehouseDeleteDialog from '@/components/inventory/config/warehouses/WarehouseDeleteDialog.vue'
-import NotificationToast from '@/components/common/NotificationToast.vue'
 
 const warehouseSelected = ref(null)
 
-// Notificaciones
-const notificationShow = ref(false)
-const notificationMessage = ref('')
-const notificationType = ref('success')
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message
-    notificationType.value = type
-    notificationShow.value = true
-}
+const { showNotification } = useGlobalToast();
 
 const list_warehouses = ref([])
 const search = ref(null)
@@ -256,8 +247,6 @@ onMounted(() => {
             @updateWarehouse="updateWarehouse" />
         <WarehouseDeleteDialog v-if="isWarehouseDeleteDialogVisible && warehouseSelected"
             v-model:isDialogVisible="isWarehouseDeleteDialogVisible" :warehouseSelected="warehouseSelected"
-            @deleteWarehouse="confirmDeleteWarehouse" /> <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
-
+            @deleteWarehouse="confirmDeleteWarehouse" />
     </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -111,19 +112,8 @@ function isValidEcuadorianID(id) {
 const warning = ref(null);
 const error_exist = ref(null);
 const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
-
-// Función para manejar la selección de archivo
 const handleAvatarChange = (event) => {
     const file = event.target.files[0];
     
@@ -540,7 +530,4 @@ const onFormReset = () => {
 
         </VCard>
     </VDialog>
-
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

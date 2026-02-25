@@ -1,16 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
 const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 
 // Estado
 const isLoading = ref(false)
 const formRef = ref(null)
-const notificationShow = ref(false)
-const notificationMessage = ref('')
-const notificationType = ref('success')
 
 const sucursal = ref({
     name: '',
@@ -140,20 +139,11 @@ const rules = {
 
 // Verificar si el usuario tiene rol 1 o 2 para mostrar botones
 const canEditSucursal = computed(() => {
-
-
     const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
     console.log(user.role.id);
     const userRole = user?.role.id
     return userRole === 1 || userRole === 2
 })
-
-// Notificaciones
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message
-    notificationType.value = type
-    notificationShow.value = true
-}
 
 // Cargar información de la sucursal
 const loadSucursal = async () => {
@@ -412,8 +402,5 @@ onMounted(() => {
                 </VCol>
             </VForm>
         </VCard>
-
-        <!-- Notificación Toast -->
-        <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
     </div>
 </template>

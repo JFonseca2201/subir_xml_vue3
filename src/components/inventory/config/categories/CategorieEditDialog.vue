@@ -1,4 +1,7 @@
 <script setup>
+import { useLoaderStore } from '@/stores/loader'
+import { $api } from '@/utils/api'
+
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
@@ -18,6 +21,18 @@ const state = ref(1);
 const warning = ref(null);
 const error_exits = ref(null);
 const success = ref(null);
+const loader = useLoaderStore();
+
+// Notificaciones
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
+
+const showNotification = (message, type = 'success') => {
+  notificationMessage.value = message;
+  notificationType.value = type;
+  notificationShow.value = true;
+};
 
 const update = async () => {
   warning.value = null;
@@ -36,6 +51,8 @@ const update = async () => {
   //     return;
   //   }
 
+  loader.start();
+
   let formData = new FormData();
   formData.append("title", name.value);
   if (FILE_IMAGEN.value) {
@@ -53,8 +70,10 @@ const update = async () => {
     console.log(resp);
     if (resp.message == 403) {
       error_exits.value = resp.message_text;
+      showNotification(resp.message_text, 'error');
     } else {
       success.value = "La categoria se ha editado correctamente";
+      showNotification("La categoría se ha editado correctamente", 'success');
       emit("editCategorie", resp.categorie);
       FILE_IMAGEN.value = "";
       warning.value = null;
@@ -64,6 +83,9 @@ const update = async () => {
     }
   } catch (error) {
     console.log(error);
+    showNotification('Error al editar la categoría', 'error');
+  } finally {
+    loader.stop();
   }
 };
 
@@ -77,6 +99,12 @@ const loadFile = ($event) => {
   let reader = new FileReader();
   reader.readAsDataURL(FILE_IMAGEN.value);
   reader.onloadend = () => (PREVIZUALIZA_IMAGEN.value = reader.result);
+};
+
+const clearImage = () => {
+  FILE_IMAGEN.value = null;
+  PREVIZUALIZA_IMAGEN.value = props.categorieSelected.imagen; // Restaurar imagen original
+  error_exits.value = "";
 };
 
 const onFormSubmit = () => {
@@ -106,6 +134,7 @@ onMounted(() => {
 
       <!-- 👉 Header -->
       <VCardText class="text-center pb-6">
+        <VIcon icon="ri-file-chart-line" size="42" color="primary" class="mb-3" />
         <h4 class="text-h4 font-weight-bold mb-1">Editar Categoría</h4>
         <p class="text-body-2 text-medium-emphasis">
           {{ props.categorieSelected.title }}
@@ -120,7 +149,7 @@ onMounted(() => {
           <!-- 👉 Nombre -->
           <VCol cols="12">
             <VTextField v-model="name" label="Nombre de la categoría" placeholder="Ej: Repuestos, Accesorios"
-              prepend-inner-icon="tabler-tag" />
+              prepend-inner-icon="ri-store-line" clearable />
           </VCol>
 
           <!-- 👉 Alerts -->
@@ -143,16 +172,22 @@ onMounted(() => {
           </VCol>
 
           <!-- 👉 Imagen -->
-          <VCol cols="12" md="6">
-            <VFileInput label="Imagen" prepend-inner-icon="tabler-photo" @change="loadFile($event)" />
-
-            <VImg v-if="PREVIZUALIZA_IMAGEN" :src="PREVIZUALIZA_IMAGEN" class="mt-3 rounded-lg elevation-2" height="170"
-              cover />
+          <VCol cols="12" md="12">
+            <VRow align="center">
+              <VCol cols="12" md="6">
+                <VFileInput label="Imagen de la categoría" prepend-inner-icon="ri-image-line" accept="image/*"
+                  @change="loadFile($event)" @click:clear="clearImage" clearable />
+              </VCol>
+              <VCol cols="12" md="6" class="d-flex justify-center">
+                <VAvatar v-if="PREVIZUALIZA_IMAGEN" :image="PREVIZUALIZA_IMAGEN" 
+                  size="80" class="elevation-3" />
+              </VCol>
+            </VRow>
           </VCol>
 
           <!-- 👉 Estado -->
           <VCol cols="12" md="6">
-            <VSelect v-model="state" label="Estado" prepend-inner-icon="tabler-toggle-right" :items="[
+            <VSelect v-model="state" label="Estado" prepend-inner-icon="ri-toggle-line" :items="[
               { name: 'Activo', id: 1 },
               { name: 'Inactivo', id: 2 },
             ]" item-title="name" item-value="id" eager />
@@ -162,11 +197,13 @@ onMounted(() => {
 
           <!-- 👉 Actions -->
           <VCol cols="12" class="d-flex justify-center gap-4">
-            <VBtn type="submit" color="primary" prepend-icon="tabler-edit">
+            <VBtn type="submit" color="primary" prepend-icon="ri-edit-line"
+              :loading="loader.loading" :disabled="loader.loading">
               Actualizar
             </VBtn>
 
-            <VBtn variant="outlined" color="secondary" prepend-icon="tabler-x" @click="onFormReset">
+            <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" @click="onFormReset"
+              :disabled="loader.loading">
               Cancelar
             </VBtn>
           </VCol>
@@ -174,4 +211,9 @@ onMounted(() => {
       </VForm>
     </VCard>
   </VDialog>
+
+  <!-- Notificación Toast -->
+  <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
+    {{ notificationMessage }}
+  </VSnackbar>
 </template>

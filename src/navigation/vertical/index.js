@@ -41,7 +41,7 @@ export default [
       },
       {
         title: 'Proveedores',
-        to: 'second-page',
+        to: 'configuration-providers',
         icon: { icon: 'ri-radio-button-line' },
       },
       {
