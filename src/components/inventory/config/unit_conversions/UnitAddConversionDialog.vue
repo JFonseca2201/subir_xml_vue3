@@ -152,6 +152,8 @@ watch(() => props.units, (newUnits) => {
 const loadExistingConversions = async () => {
     if (!props.unitSelected?.id) return;
     
+    loader.start();
+    
     try {
         // Intentar diferentes endpoints posibles
         let resp;
@@ -187,6 +189,8 @@ const loadExistingConversions = async () => {
     } catch (error) {
         console.error('Error al cargar conversiones:', error);
         list_units_conversions.value = [];
+    } finally {
+        loader.stop();
     }
 };
 
