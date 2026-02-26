@@ -124,6 +124,12 @@ const addConversion = (item) => {
     unit_selected_conversion.value = item;
 };
 
+// Función helper para truncar texto
+const truncateText = (text, maxLength = 25) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+};
+
 onMounted(() => {
     list();
 });
@@ -182,13 +188,14 @@ definePage({ meta: { permission: "settings" } });
                 </template>
                 <!-- DESCRIPTION -->
                 <template #item.description="{ item }">
-                    <div class="d-flex align-center">
-                        <div class="d-flex flex-column ms-3">
-                            <span class="font-weight-medium text-high-emphasis">
-                                {{ item.description }}
+                    <VTooltip>
+                        <template #activator="{ props }">
+                            <span v-bind="props" class="font-weight-medium text-high-emphasis cursor-pointer">
+                                {{ truncateText(item.description) }}
                             </span>
-                        </div>
-                    </div>
+                        </template>
+                        <span>{{ item.description || 'Sin descripción' }}</span>
+                    </VTooltip>
                 </template>
 
                 <!-- Estado -->
