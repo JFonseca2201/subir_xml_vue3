@@ -1,8 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
-import { useGlobalToast } from '@/composables/useGlobalToast'
-import UnitDeleteConversionDialog from './UnitDeleteConversionDialog.vue'
+import NotificationToast from '@/components/common/NotificationToast.vue'
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -29,10 +28,7 @@ const error_exits = ref(null);
 const success = ref(null);
 const list_units = ref([]);
 const list_units_conversions = ref([]);
-
-// Variables para diálogo de eliminación
-const isDeleteDialogVisible = ref(false);
-const conversionToDelete = ref(null);
+const isLoadingConversions = ref(false);
 
 const store = async () => {
     warning.value = null;
@@ -40,13 +36,10 @@ const store = async () => {
     success.value = null;
     loader.start();
 
-
     let data = {
         unit_id: props.unitSelected.id,
         unit_to_id: unit_to_id.value,
     };
-
-    console.log('Data a enviar:', data);
 
     try {
         const resp = await $api("unit-conversions", {
@@ -55,16 +48,7 @@ const store = async () => {
             onResponseError({ response }) {
                 console.log('Error completo:', response._data);
                 console.log('Errors específicos:', response._data.errors);
-                error_exits.value = response._data.error || response._data.message || 'Error al registrar conversión';
-                
-                // Mostrar mensaje específico del API en el toast
-                if (response._data.message) {
-                    showNotification(response._data.message, 'error');
-                } else if (response._data.error) {
-                    showNotification(response._data.error, 'error');
-                } else {
-                    showNotification('Error al registrar conversión', 'error');
-                }
+                error_exits.value = response._data.error;
             },
         });
         console.log(resp);
@@ -73,127 +57,83 @@ const store = async () => {
             showNotification(resp.message_text || resp.message || 'Error de permisos', 'error');
         } else {
             success.value = "La conversión de unidad se ha registrado correctamente";
-            showNotification('La conversión de unidad se ha registrado correctamente', 'success');
-            emit("addConversion", resp.unit_conversion);
+            showNotification('La conversión de unidad se a registrado correctamente', 'success');
+            //emit("addConversion", resp.unit);
             list_units_conversions.value.unshift(resp.unit_conversion);
             unit_to_id.value = null;
             warning.value = null;
             error_exits.value = null;
             success.value = null;
+            //onFormReset();
         }
     } catch (error) {
         console.log(error);
-        showNotification('Error al registrar unidad', 'error');
-        loader.stop();
+        error_exits.value = "Error al registrar conversión";
+        showNotification('Error al registrar conversión', 'error');
     } finally {
         loader.stop();
     }
 };
 
-const deleteConversion = async (conversionId) => {
-    loader.start();
-    try {
-        await $api(`unit-conversions/${conversionId}`, {
-            method: "DELETE"
-        });
-        
-        // Eliminar de la lista local
-        list_units_conversions.value = list_units_conversions.value.filter(conv => conv.id !== conversionId);
-        
-        showNotification('Conversión eliminada correctamente', 'success');
-        emit("deleteConversion", conversionId);
-    } catch (error) {
-        console.error('Error al eliminar conversión:', error);
-        showNotification('Error al eliminar conversión', 'error');
-    } finally {
-        loader.stop();
-    }
-};
-
-const openDeleteDialog = (conversion) => {
-    conversionToDelete.value = conversion;
-    isDeleteDialogVisible.value = true;
-};
-
-const handleDeleteConversion = (deletedConversion) => {
-    // Eliminar de la lista local
-    list_units_conversions.value = list_units_conversions.value.filter(conv => conv.id !== deletedConversion.id);
-    emit("deleteConversion", deletedConversion.id);
-};
-
-const onFormReset = () => {
+const cleanFields = () => {
     unit_to_id.value = null;
     warning.value = null;
     error_exits.value = null;
     success.value = null;
+};
+const onFormReset = () => {
+    cleanFields;
     emit("update:isDialogVisible", false);
 };
 
 const dialogVisibleUpdate = (val) => {
     emit("update:isDialogVisible", val);
+    if (!val) {
+        onFormReset();
+    }
+};
+
+// Cargar conversiones existentes de la unidad seleccionada
+const loadUnitConversions = async () => {
+    if (!props.unitSelected) return;
+
+    isLoadingConversions.value = true;
+    try {
+        const resp = await $api(`unit-conversions?unit_id=${props.unitSelected.id}`, {
+            method: "GET",
+            onResponseError({ response }) {
+                console.log('Error al cargar conversiones:', response._data.error);
+                showNotification('Error al cargar conversiones existentes', 'error');
+            },
+        });
+        console.log('Conversiones cargadas:', resp);
+        list_units_conversions.value = resp.unit_conversions || [];
+    } catch (error) {
+        console.log(error);
+        list_units_conversions.value = [];
+        showNotification('Error al cargar conversiones existentes', 'error');
+    } finally {
+        isLoadingConversions.value = false;
+    }
 };
 
 // Cargar unidades desde props cuando el componente se monta
 const loadUnits = () => {
     list_units.value = props.units || [];
-    console.log('Unidades cargadas:', list_units.value);
 };
 
 // Cargar unidades inmediatamente
 loadUnits();
 
-// Watch para actualizar las unidades cuando cambien los props
+// Watch para actualizar las unidades cuando cambian los props
 watch(() => props.units, (newUnits) => {
     list_units.value = newUnits || [];
-    console.log('Unidades actualizadas:', list_units.value);
 }, { immediate: true });
-
-// Cargar conversiones existentes de la unidad seleccionada
-const loadExistingConversions = async () => {
-    if (!props.unitSelected?.id) return;
-    
-    try {
-        // Intentar diferentes endpoints posibles
-        let resp;
-        try {
-            // Opción 1: endpoint específico por unidad
-            resp = await $api(`unit-conversions?unit_id=${props.unitSelected.id}`);
-        } catch (error1) {
-            console.log('Endpoint 1 falló, intentando endpoint 2...');
-            try {
-                // Opción 2: endpoint general y filtrar localmente
-                resp = await $api('unit-conversions');
-                // Filtrar conversiones donde la unidad sea la seleccionada
-                if (resp.unit_conversions) {
-                    resp.unit_conversions = resp.unit_conversions.filter(conv => 
-                        conv.unit_id === props.unitSelected.id || 
-                        conv.unit?.id === props.unitSelected.id
-                    );
-                }
-            } catch (error2) {
-                console.log('Endpoint 2 falló, intentando endpoint 3...');
-                try {
-                    // Opción 3: endpoint con diferentes parámetros
-                    resp = await $api(`unit-conversions?from_unit_id=${props.unitSelected.id}`);
-                } catch (error3) {
-                    console.log('Todos los endpoints fallaron, usando array vacío');
-                    resp = { unit_conversions: [] };
-                }
-            }
-        }
-        
-        list_units_conversions.value = resp.unit_conversions || [];
-        console.log('Conversiones cargadas:', list_units_conversions.value);
-    } catch (error) {
-        console.error('Error al cargar conversiones:', error);
-        list_units_conversions.value = [];
-    }
-};
 
 // Watch para cargar conversiones cuando cambia la unidad seleccionada
 watch(() => props.unitSelected, (newUnit) => {
     if (newUnit) {
-        loadExistingConversions();
+        loadUnitConversions();
     }
 }, { immediate: true });
 
@@ -217,13 +157,10 @@ const truncateText = (text, maxLength = 25) => {
             <DialogCloseBtn variant="text" size="default" @click="onFormReset" />
 
             <!-- 👉 Header -->
-            <VCardText class="text-center pb-6">
-                <VIcon icon="ri-ruler-line" size="42" color="primary" class="mb-3" />
-                <h4 class="text-h4 font-weight-bold mb-1">Nueva Conversión</h4>
-                <p class="text-body-2 text-medium-emphasis">
-                    Agrega una nueva conversión de unidad
-                </p>
-            </VCardText>
+            <VCardTitle class="d-flex align-center gap-2">
+                <VIcon icon="ri-git-repository-commits-line" />
+                <span>Agregar Conversión</span>
+            </VCardTitle>
 
             <VDivider class="mb-6" />
 
@@ -242,9 +179,9 @@ const truncateText = (text, maxLength = 25) => {
                         </div>
                     </VCol>
                     <VCol cols="2">
-                        <VBtn type="submit" color="primary" prepend-icon="ri-add-line" :loading="loader.loading"
-                            :disabled="loader.loading">
-
+                        <!-- 👉 Botón Agregar -->
+                        <VBtn type="submit" color="primary" prepend-icon="ri-add-line" :loading="loader.loading">
+                            Add
                         </VBtn>
                     </VCol>
                     <!-- Alertas -->
@@ -270,21 +207,30 @@ const truncateText = (text, maxLength = 25) => {
                     <VCol cols="12">
 
                         <VCol cols="12">
-                            <VTable class="table" v-if="list_units_conversions.length > 0">
+                            <!-- Loader para conversiones -->
+                            <VCard v-if="isLoadingConversions" class="pa-4 text-center">
+                                <VProgressCircular indeterminate size="32" width="3" color="primary" />
+                                <div class="mt-2 text-body-2 text-medium-emphasis">
+                                    Cargando conversiones...
+                                </div>
+                            </VCard>
+
+                            <!-- Tabla de conversiones -->
+                            <VTable class="table" v-else-if="list_units_conversions.length > 0">
                                 <thead>
                                     <tr>
-                                        <th>De Unidad</th>
-                                        <th>A Unidad</th>
+                                        <th>Unidad</th>
+                                        <th>Factor</th>
                                         <th>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="item in list_units_conversions" :key="item.id">
-                                        <td>{{ truncateText(props.unitSelected.name) }}</td>
-                                        <td>{{ truncateText(item.unit_to?.name || item.unit?.name) }}</td>
+                                        <td>{{ props.unitSelected.name }}</td>
+                                        <td>{{ item.unit.name }}</td>
                                         <td>
-                                            <VBtn icon variant="text" color="error" size="small" @click="openDeleteDialog(item)">
-                                                <VIcon icon="ri-delete-bin-line" />
+                                            <VBtn icon variant="text" color="primary" size="small">
+                                                <VIcon icon="ri-add-line" />
                                             </VBtn>
                                         </td>
                                     </tr>
@@ -298,15 +244,12 @@ const truncateText = (text, maxLength = 25) => {
 
                     </VCol>
 
-
-
                     <!-- 👉 Actions -->
                     <VCol cols="12" class="d-flex justify-center gap-4">
 
-
                         <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" @click="onFormReset"
                             :disabled="loader.loading">
-                            Cancelar
+                            Cerrar
                         </VBtn>
                     </VCol>
                 </VRow>
@@ -314,11 +257,6 @@ const truncateText = (text, maxLength = 25) => {
         </VCard>
     </VDialog>
 
-    <!-- Diálogo de eliminación -->
-    <UnitDeleteConversionDialog 
-        v-if="conversionToDelete && isDeleteDialogVisible"
-        v-model:isDialogVisible="isDeleteDialogVisible" 
-        :conversionToDelete="conversionToDelete"
-        @deleteConversion="handleDeleteConversion" 
-    />
+    <!-- NotificationToast -->
+    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

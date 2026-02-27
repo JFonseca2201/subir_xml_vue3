@@ -119,7 +119,6 @@ const deleteItem = (item) => {
     unit_selected_delete.value = item;
 };
 const addConversion = (item) => {
-    console.log(item);
     isUnitAddConversionDialogVisible.value = true;
     unit_selected_conversion.value = item;
 };
