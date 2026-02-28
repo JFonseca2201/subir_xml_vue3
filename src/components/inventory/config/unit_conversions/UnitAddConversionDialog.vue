@@ -1,7 +1,9 @@
 <script setup>
 import { onUnmounted, ref, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { $api } from '@/utils/api'
 import NotificationToast from '@/components/common/NotificationToast.vue'
+import UnitDeleteConversionDialog from './UnitDeleteConversionDialog.vue'
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -29,6 +31,15 @@ const success = ref(null);
 const list_units = ref([]);
 const list_units_conversions = ref([]);
 const isLoadingConversions = ref(false);
+
+// Variables para diálogo de eliminación
+const isDeleteDialogVisible = ref(false);
+const conversionToDelete = ref(null);
+
+// Variables para NotificationToast
+const notificationShow = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
 
 const store = async () => {
     warning.value = null;
@@ -143,6 +154,31 @@ const filteredUnits = computed(() => {
     return list_units.value.filter(unit => unit.id !== props.unitSelected.id);
 });
 
+// Función para abrir el diálogo de eliminar conversión
+const deleteConversion = (conversion) => {
+    conversionToDelete.value = conversion;
+    isDeleteDialogVisible.value = true;
+};
+
+// Función para manejar la eliminación después de la confirmación
+const handleConversionDeleted = (conversionId) => {
+    // Eliminar de la lista local
+    list_units_conversions.value = list_units_conversions.value.filter(item => item.id !== conversionId);
+    showNotification('Conversión eliminada correctamente', 'success');
+};
+
+// Función para obtener el nombre de la unidad hacia la que se convierte
+const getUnitToName = (conversion) => {
+    // Intentar diferentes campos donde podría estar el nombre
+    if (conversion.unit_to_name) return conversion.unit_to_name;
+    if (conversion.unit_to?.name) return conversion.unit_to.name;
+    if (conversion.unit?.name) return conversion.unit.name;
+
+    // Si no encontramos el nombre, buscar en la lista de unidades por ID
+    const unitTo = list_units.value.find(unit => unit.id === conversion.unit_to_id);
+    return unitTo ? unitTo.name : 'Unidad desconocida';
+};
+
 // Función helper para truncar texto
 const truncateText = (text, maxLength = 25) => {
     if (!text) return 'N/A';
@@ -151,7 +187,7 @@ const truncateText = (text, maxLength = 25) => {
 </script>
 
 <template>
-    <VDialog max-width="700" :model-value="props.isDialogVisible" @update:model-value="dialogVisibleUpdate" persistent>
+    <VDialog max-width="600" :model-value="props.isDialogVisible" @update:model-value="dialogVisibleUpdate" persistent>
         <VCard class="pa-sm-10 pa-5">
             <!-- 👉 Botón cerrar -->
             <DialogCloseBtn variant="text" size="default" @click="onFormReset" />
@@ -175,13 +211,13 @@ const truncateText = (text, maxLength = 25) => {
                             placeholder="Selecciona una unidad para convertir" />
 
                         <div v-if="props.unitSelected" class="mt-2 text-caption text-medium-emphasis">
-                            <strong>Unidad actual:</strong> {{ props.unitSelected.name }}
+                            <strong>Unidad actual:</strong>
+                            <h2>{{ props.unitSelected.name }}</h2>
                         </div>
                     </VCol>
                     <VCol cols="2">
                         <!-- 👉 Botón Agregar -->
                         <VBtn type="submit" color="primary" prepend-icon="ri-add-line" :loading="loader.loading">
-                            Add
                         </VBtn>
                     </VCol>
                     <!-- Alertas -->
@@ -219,18 +255,20 @@ const truncateText = (text, maxLength = 25) => {
                             <VTable class="table" v-else-if="list_units_conversions.length > 0">
                                 <thead>
                                     <tr>
-                                        <th>Unidad</th>
-                                        <th>Factor</th>
+                                        <th>Unidad de medida</th>
+                                        <!-- <th>Factor</th> -->
                                         <th>Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="item in list_units_conversions" :key="item.id">
-                                        <td>{{ props.unitSelected.name }}</td>
-                                        <td>{{ item.unit.name }}</td>
-                                        <td>
-                                            <VBtn icon variant="text" color="primary" size="small">
-                                                <VIcon icon="ri-add-line" />
+                                        <td>{{ getUnitToName(item) }}</td>
+                                        <!-- <td>{{ props.unitSelected.name }}</td> -->
+                                        <td
+                                            style=" display: flex; justify-content: center; align-items: center; padding: 0;">
+                                            <VBtn icon variant="text" color="error" size="small"
+                                                @click="deleteConversion(item)">
+                                                <VIcon icon="ri-delete-bin-line" />
                                             </VBtn>
                                         </td>
                                     </tr>
@@ -256,6 +294,11 @@ const truncateText = (text, maxLength = 25) => {
             </VForm>
         </VCard>
     </VDialog>
+
+    <!-- Diálogo de Eliminar Conversión -->
+    <UnitDeleteConversionDialog v-if="conversionToDelete" v-model:isDialogVisible="isDeleteDialogVisible"
+        :conversion="conversionToDelete" :unitSelected="props.unitSelected" :units="list_units"
+        @conversionDeleted="handleConversionDeleted" />
 
     <!-- NotificationToast -->
     <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
