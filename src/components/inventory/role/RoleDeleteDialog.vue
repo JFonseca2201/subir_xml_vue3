@@ -44,11 +44,7 @@ const deleteRol = async () => {
         console.log(resp);
         showNotification('Rol eliminado correctamente', 'success');
         emit("deleteRole", props.roleSelected);
-
-        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
-        setTimeout(() => {
-            onFormReset();
-        }, 1500);
+        onFormReset();
     } catch (error) {
         console.log(error);
         showNotification('Error al eliminar el rol', 'error');
