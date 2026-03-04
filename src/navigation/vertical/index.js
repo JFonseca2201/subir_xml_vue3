@@ -58,12 +58,12 @@ export default [
     children: [
       {
         title: 'Registrar',
-        to: 'second-page',
+        to: 'product-add',
         icon: { icon: 'ri-radio-button-line' },
       },
       {
         title: 'Listado',
-        to: 'second-page',
+        to: 'product-list',
         icon: { icon: 'ri-radio-button-line' },
       },
       {

@@ -154,8 +154,7 @@ const dialogVisibleUpdate = (val) => {
                   @change="loadFile($event)" @click:clear="clearImage" clearable />
               </VCol>
               <VCol cols="12" md="6" class="d-flex justify-center">
-                <VAvatar v-if="PREVIZUALIZA_IMAGEN" :image="PREVIZUALIZA_IMAGEN" 
-                  size="80" class="elevation-3" />
+                <VAvatar v-if="PREVIZUALIZA_IMAGEN" :image="PREVIZUALIZA_IMAGEN" size="80" class="elevation-3" />
               </VCol>
             </VRow>
           </VCol>
@@ -183,8 +182,8 @@ const dialogVisibleUpdate = (val) => {
 
           <!-- 👉 Actions -->
           <VCol cols="12" class="d-flex justify-center gap-4">
-            <VBtn type="submit" color="primary" prepend-icon="ri-save-3-line"
-              :loading="loader.loading" :disabled="loader.loading">
+            <VBtn type="submit" color="primary" prepend-icon="ri-save-3-line" :loading="loader.loading"
+              :disabled="loader.loading">
               Guardar
             </VBtn>
 
