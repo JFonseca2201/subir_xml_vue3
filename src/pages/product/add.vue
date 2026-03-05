@@ -252,10 +252,11 @@ const onFormReset = () => {
     is_gift: false,
     notes: '',
     state: 1,
-    fileData: []
-  }
-  warning.value = null
-  error_exist.value = null
+
+  };
+  fileData.value = [];
+  warning.value = null;
+  error_exist.value = null;
 }
 
 // Cargar datos iniciales (cuando esté listo el endpoint)
@@ -535,13 +536,13 @@ const loadInitialData = async () => {
 
         <!-- Botones de Acción -->
         <div class="d-flex justify-end gap-3">
-          <VBtn variant="outlined" @click="onFormReset" prepend-icon="ri-close-line">
+          <VBtn variant="outlined" @click="onFormReset" prepend-icon="ri-close-line" :disabled="isLoading">
             Cancelar
           </VBtn>
 
-          <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading" :disabled="loader.loading"
+          <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading" :disabled="loader.loading || isLoading"
             prepend-icon="ri-save-3-line">
-            Crear Producto
+            {{ product.id ? 'Actualizar Producto' : 'Crear Producto' }}
           </VBtn>
         </div>
       </VForm>

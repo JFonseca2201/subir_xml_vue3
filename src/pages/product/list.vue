@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import ViewProduct from '@/components/inventory/product/ViewProduct.vue'
+import DeleteProduct from '@/components/inventory/product/DeleteProdcut.vue'
 
 // Router
 const router = useRouter()
@@ -13,6 +14,8 @@ const products = ref([])
 const searchFormRef = ref(null)
 const productDialog = ref(false)
 const selectedProduct = ref(null)
+const deleteDialog = ref(false)
+const productToDelete = ref(null)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -143,7 +146,35 @@ const editProduct = (product) => {
 
 const deleteProduct = (product) => {
     console.log('Eliminar producto:', product)
-    // TODO: Implementar eliminación de producto
+    productToDelete.value = product
+    deleteDialog.value = true
+}
+
+const handleProductDeleted = () => {
+    console.log('🗑️ handleProductDeleted llamado', productToDelete.value)
+
+    // Eliminar el producto de la lista localmente
+    if (productToDelete.value) {
+        const index = products.value.findIndex(p => p.id === productToDelete.value.id)
+        console.log('📍 Índice encontrado:', index)
+
+        if (index > -1) {
+            products.value.splice(index, 1)
+            console.log('✅ Producto eliminado de la lista')
+
+            // Actualizar el total de paginación
+            if (pagination.value.total > 0) {
+                pagination.value.total -= 1
+                console.log('📊 Total actualizado:', pagination.value.total)
+            }
+        }
+    }
+
+    // Cerrar el diálogo y limpiar el producto seleccionado inmediatamente
+    console.log('🔒 Cerrando diálogo desde list.vue')
+    deleteDialog.value = false
+    productToDelete.value = null
+    console.log('🔒 Diálogo cerrado y producto limpiado')
 }
 
 const exportProducts = () => {
@@ -172,23 +203,30 @@ onMounted(() => {
     loadInitialData()
     searchProducts()
 })
+
+// Watcher para monitorear el diálogo
+watch(deleteDialog, (newValue) => {
+    console.log('👀 deleteDialog cambió a:', newValue)
+})
 </script><template>
-    <div class="pa-4">
-        <!-- Título y Botón Agregar -->
-        <div class="d-flex justify-space-between align-center mb-6">
-            <h1 class="text-h4 font-weight-bold">Listado de Productos</h1>
-            <VBtn color="primary" prepend-icon="ri-add-line" to="/product/add">
-                Agregar Producto
-            </VBtn>
-        </div>
+    <div class="pa-4 pa-sm-6">
+
 
         <!-- Formulario de Búsqueda -->
-        <VCard class="mb-6" elevation="2">
+        <VCard class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto" elevation="2">
+            <!-- Título y Botón Agregar -->
+            <div class="d-flex justify-space-between align-center mb-6">
+                <h1 class="text-h4 font-weight-bold">Listado de Productos</h1>
+                <VBtn color="primary" prepend-icon="ri-add-line" to="/product/add">
+                    Agregar Producto
+                </VBtn>
+            </div>
+            <VDivider />
             <VCardTitle class="d-flex align-center gap-2 pa-4">
                 <VIcon icon="ri-search-line" size="20" color="primary" />
                 Búsqueda Avanzada de Productos
             </VCardTitle>
-            <VDivider />
+
             <VCardText class="pa-4">
                 <VForm ref="searchFormRef" @submit.prevent="searchProducts">
                     <VRow>
@@ -262,20 +300,7 @@ onMounted(() => {
                     </VRow>
                 </VForm>
             </VCardText>
-        </VCard>
 
-        <!-- Resultados -->
-        <VCard elevation="2">
-            <VCardTitle class="d-flex justify-space-between align-center pa-4">
-                <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-list-check" size="20" color="primary" />
-                    <span>Resultados ({{ pagination.total }} productos)</span>
-                </div>
-                <div class="d-flex align-center gap-2">
-                    <VSelect v-model="itemsPerPage" :items="[10, 25, 50, 100]" density="compact" variant="outlined"
-                        hide-details style="width: 100px" @update:model-value="searchProducts" />
-                </div>
-            </VCardTitle>
             <VDivider />
 
             <!-- Tabla de Productos -->
@@ -352,6 +377,10 @@ onMounted(() => {
 
     <!-- Diálogo de Detalles del Producto -->
     <ViewProduct v-model:dialog="productDialog" :product="selectedProduct" />
+
+    <!-- Diálogo de Eliminación de Producto -->
+    <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
+        @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
 </template>
 
 
