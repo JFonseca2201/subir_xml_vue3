@@ -187,10 +187,11 @@ const loadInitialData = async () => {
     try {
         // Cargar categorías
         const categoriesResponse = await $api('products/config')
+        console.log('📊 Respuesta de categorías:', categoriesResponse)
         if (categoriesResponse.status === 200) {
-            categories.value = categoriesResponse.categories || []
-            warehouses.value = categoriesResponse.warehouses || []
-            units.value = categoriesResponse.units || []
+            categories.value = categoriesResponse.data.categories || []
+            warehouses.value = categoriesResponse.data.warehouses || []
+            units.value = categoriesResponse.data.units || []
             // TODO: Cargar sucursales cuando esté disponible
         }
     } catch (error) {
@@ -231,7 +232,7 @@ watch(deleteDialog, (newValue) => {
                 <VForm ref="searchFormRef" @submit.prevent="searchProducts">
                     <VRow>
                         <!-- Búsqueda General -->
-                        <VCol cols="12" md="6">
+                        <VCol cols="12" md="3">
                             <VTextField v-model="searchForm.search" label="Búsqueda General"
                                 placeholder="Buscar por descripción, SKU, código auxiliar..."
                                 prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable"
@@ -261,41 +262,54 @@ watch(deleteDialog, (newValue) => {
                                 variant="outlined" density="comfortable" hide-details="auto" clearable />
                         </VCol>
 
-                        <!-- Sucursal -->
-                        <VCol cols="12" md="3">
+
+                        <!-- <VCol cols="12" md="3">
                             <VSelect v-model="searchForm.sucursale_id" :items="sucursales" item-title="name"
                                 item-value="id" label="Sucursal" placeholder="Seleccionar"
                                 prepend-inner-icon="ri-building-line" variant="outlined" density="comfortable"
                                 hide-details="auto" clearable />
                         </VCol>
 
-                        <!-- Disponibilidad -->
+                        
                         <VCol cols="12" md="3">
                             <VSelect v-model="searchForm.disponibilidad" :items="disponibilidadOptions"
                                 item-title="label" item-value="value" label="Disponibilidad" placeholder="Seleccionar"
                                 prepend-inner-icon="ri-check-double-line" variant="outlined" density="comfortable"
                                 hide-details="auto" clearable />
-                        </VCol>
+                        </VCol> 
 
-                        <!-- Es Regalo -->
                         <VCol cols="12" md="3">
                             <VSelect v-model="searchForm.is_gift" :items="giftOptions" item-title="label"
                                 item-value="value" label="Tipo de Producto" placeholder="Seleccionar"
                                 prepend-inner-icon="ri-gift-line" variant="outlined" density="comfortable"
                                 hide-details="auto" clearable />
-                        </VCol>
+                        </VCol>-->
+
 
                         <!-- Botones de Acción -->
-                        <VCol cols="12" class="d-flex gap-2">
-                            <VBtn type="submit" color="primary" prepend-icon="ri-search-line" :loading="loading">
-                                Buscar
-                            </VBtn>
-                            <VBtn variant="outlined" prepend-icon="ri-refresh-line" @click="clearSearch">
-                                Limpiar
-                            </VBtn>
-                            <VBtn variant="text" prepend-icon="ri-download-line" @click="exportProducts">
-                                Exportar
-                            </VBtn>
+                        <VCol cols="12" md="6" class="d-flex gap-2">
+
+
+                        </VCol>
+                        <VCol cols="12" md="6" class="d-flex gap-2">
+                            <VCol cols="12" md="6" class="d-flex gap-2">
+                                <VBtn color="success" variant="tonal" prepend-icon="ri-upload-2-fill"
+                                    @click="exportProducts">
+                                    Importar
+                                </VBtn>
+                                <VBtn color="secondary" variant="tonal" prepend-icon="ri-download-2-line"
+                                    @click="exportProducts">
+                                    Exportar
+                                </VBtn>
+                            </VCol>
+                            <VCol cols="12" md="6" class="d-flex gap-2">
+                                <VBtn type="submit" color="primary" prepend-icon="ri-search-line" :loading="loading">
+                                    Buscar
+                                </VBtn>
+                                <VBtn variant="outlined" prepend-icon="ri-refresh-line" @click="clearSearch">
+                                    Limpiar
+                                </VBtn>
+                            </VCol>
                         </VCol>
                     </VRow>
                 </VForm>
