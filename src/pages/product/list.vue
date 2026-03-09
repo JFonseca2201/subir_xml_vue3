@@ -179,7 +179,7 @@ const handleProductDeleted = () => {
 
 const exportProducts = () => {
     console.log('Exportar productos')
-    // TODO: Implementar exportación
+
 }
 
 // Cargar datos iniciales
@@ -198,6 +198,26 @@ const loadInitialData = async () => {
         console.error('Error al cargar datos iniciales:', error)
     }
 }
+
+const downloadExcel = () => {
+    console.log('Descargar Excel')
+    let query_params = "";
+    if (searchForm.value.search) {
+        query_params += "&search=" + searchForm.value.search;
+    }
+    if (searchForm.value.categorie_id) {
+        query_params += "&categorie_id=" + searchForm.value.categorie_id;
+    }
+    if (searchForm.value.warehouse_id) {
+        query_params += "&warehouse_id=" + searchForm.value.warehouse_id;
+    }
+    if (searchForm.value.unit_id) {
+        query_params += "&unit_id=" + searchForm.value.unit_id;
+    }
+
+    window.open(import.meta.env.VITE_API_BASE_URL + "products-excel?z=1" + query_params, '_blank');
+}
+
 
 // Montar componente
 onMounted(() => {
@@ -293,12 +313,12 @@ watch(deleteDialog, (newValue) => {
                         </VCol>
                         <VCol cols="12" md="6" class="d-flex gap-2">
                             <VCol cols="12" md="6" class="d-flex gap-2">
-                                <VBtn color="success" variant="tonal" prepend-icon="ri-upload-2-fill"
+                                <VBtn color="error" variant="tonal" prepend-icon="ri-download-2-fill"
                                     @click="exportProducts">
                                     Importar
                                 </VBtn>
-                                <VBtn color="secondary" variant="tonal" prepend-icon="ri-download-2-line"
-                                    @click="exportProducts">
+                                <VBtn color="success" variant="tonal" prepend-icon="ri-file-excel-2-line"
+                                    @click="downloadExcel()">
                                     Exportar
                                 </VBtn>
                             </VCol>

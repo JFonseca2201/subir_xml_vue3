@@ -147,6 +147,7 @@ const loadProduct = async () => {
         const productId = route.params.id
 
         const response = await $api(`products/${productId}`)
+        console.log(response);
 
         if (response.status === 200) {
             // Cargar datos del producto
