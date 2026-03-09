@@ -186,8 +186,8 @@
                   <VIcon icon="ri-gift-line" size="16" />
                   Es Regalo
                 </div>
-                <VChip :color="product.is_gift ? 'warning' : 'grey'" size="small" variant="tonal">
-                  {{ product.is_gift ? 'Sí' : 'No' }}
+                <VChip :color="product.is_gift === 1 ? 'warning' : 'grey'" size="small" variant="tonal">
+                  {{ product.is_gift === 1 ? 'Sí' : 'No' }}
                 </VChip>
               </div>
               <div class="config-item">

@@ -140,35 +140,35 @@ const store = async () => {
     }
   }
 
-  const productData = {
-    description: product.value.description.toUpperCase().trim(),
-    sku: product.value.sku.toUpperCase().trim(),
-    code_aux: product.value.code_aux.toUpperCase().trim(),
-    uses: product.value.uses,
-    product_categorie_id: product.value.product_categorie_id || 1,
-    warehouse_id: product.value.warehouse_id || 1,
-    unit_id: product.value.unit_id || 1,
-    supplier_id: product.value.supplier_id || 1,
-
-    price: parseFloat(product.value.price) || 0,
-    price_sale: parseFloat(product.value.price_sale) || 0,
-    purchase_price: parseFloat(product.value.purchase_price) || 0,
-    tax_rate: parseFloat(product.value.tax_rate) || 0,
-    max_discount: parseFloat(product.value.max_discount) || 0,
-    discount_percentage: parseFloat(product.value.discount_percentage) || 0,
-
-    brand: product.value.brand.toUpperCase().trim(),
-    stock: parseFloat(product.value.stock) || 0,
-    item_type: parseInt(product.value.item_type) || 1,
-    min_stock: parseFloat(product.value.min_stock) || 0,
-    max_stock: parseFloat(product.value.max_stock) || 0,
-
-    is_taxable: (product.value.is_taxable === true) ? "1" : "2",
-    is_gift: (product.value.is_gift === true) ? "1" : "2",
-
-    notes: product.value.notes.trim(),
-    state: state.value,
-  }
+  /*   const productData = {
+      description: product.value.description.toUpperCase().trim(),
+      sku: product.value.sku.toUpperCase().trim(),
+      code_aux: product.value.code_aux.toUpperCase().trim(),
+      uses: product.value.uses,
+      product_categorie_id: product.value.product_categorie_id || 1,
+      warehouse_id: product.value.warehouse_id || 1,
+      unit_id: product.value.unit_id || 1,
+      supplier_id: product.value.supplier_id || 1,
+  
+      price: parseFloat(product.value.price) || 0,
+      price_sale: parseFloat(product.value.price_sale) || 0,
+      purchase_price: parseFloat(product.value.purchase_price) || 0,
+      tax_rate: parseFloat(product.value.tax_rate) || 0,
+      max_discount: parseFloat(product.value.max_discount) || 0,
+      discount_percentage: parseFloat(product.value.discount_percentage) || 0,
+  
+      brand: product.value.brand.toUpperCase().trim(),
+      stock: parseFloat(product.value.stock) || 0,
+      item_type: parseInt(product.value.item_type) || 1,
+      min_stock: parseFloat(product.value.min_stock) || 0,
+      max_stock: parseFloat(product.value.max_stock) || 0,
+  
+      is_taxable: (product.value.is_taxable === true) ? "1" : "2",
+      is_gift: (product.value.is_gift === true) ? "1" : "2",
+  
+      notes: product.value.notes.trim(),
+      state: state.value,
+    } */
   let formData = new FormData();
   formData.append("description", product.value.description);
   formData.append("sku", product.value.sku);
@@ -194,6 +194,13 @@ const store = async () => {
   formData.append("notes", product.value.notes);
   formData.append("state", state.value);
   formData.append("imagen", fileData.value[0].file);
+
+
+  /*   formData.forEach((value, key) => {
+      console.log(key, value);
+    });
+    loader.stop();
+    return; */
 
   try {
     const resp = await $api("products", {
@@ -314,7 +321,7 @@ const loadInitialData = async () => {
           <VRow>
             <VCol cols="12" md="6">
               <VTextField v-model="product.description" :rules="descriptionRules" label="Descripción del Producto"
-                placeholder="Ej. Laptop Dell XPS 15" variant="outlined" density="comfortable"
+                placeholder="Ej. AMORTIGUADOR CHEV. AVEO RH" variant="outlined" density="comfortable"
                 prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" required />
             </VCol>
 
@@ -331,7 +338,7 @@ const loadInitialData = async () => {
             </VCol>
 
             <VCol cols="12" md="4">
-              <VTextField v-model="product.brand" :rules="brandRules" label="Marca" placeholder="Ej. Dell"
+              <VTextField v-model="product.brand" :rules="brandRules" label="Marca" placeholder="Ej. MONROE"
                 variant="outlined" density="comfortable" prepend-inner-icon="ri-building-line" hide-details="auto" />
             </VCol>
 
@@ -342,7 +349,7 @@ const loadInitialData = async () => {
             </VCol>
 
             <VCol cols="12">
-              <VTextarea v-model="product.uses" label="Usos del Producto" placeholder="Ej. Oficina, Gaming, etc."
+              <VTextarea v-model="product.uses" label="Usos del Producto" placeholder="Ej.VEHÍCULO LIVIANO"
                 variant="outlined" density="comfortable" prepend-inner-icon="ri-tools-line" hide-details="auto" rows="3"
                 auto-grow />
             </VCol>
@@ -540,8 +547,8 @@ const loadInitialData = async () => {
             Cancelar
           </VBtn>
 
-          <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading" :disabled="loader.loading || isLoading"
-            prepend-icon="ri-save-3-line">
+          <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading"
+            :disabled="loader.loading || isLoading" prepend-icon="ri-save-3-line">
             {{ product.id ? 'Actualizar Producto' : 'Crear Producto' }}
           </VBtn>
         </div>

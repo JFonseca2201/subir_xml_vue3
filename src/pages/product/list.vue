@@ -64,6 +64,7 @@ const headers = [
     { title: 'Categoría', key: 'categorie.title', sortable: false },
     { title: 'Almacén', key: 'warehouse.name', sortable: false },
     { title: 'Precio Venta', key: 'price_sale', sortable: false, align: 'end' },
+    { title: 'Regalo', key: 'is_gift', sortable: false, width: '40px' },
     { title: 'Stock', key: 'stock', sortable: false, width: '100px' },
     { title: 'Estado', key: 'state', sortable: false, width: '100px' },
     { title: 'Acciones', key: 'actions', sortable: false, width: '120px' }
@@ -87,12 +88,14 @@ const searchProducts = async () => {
         })
 
         const response = await $api('products', { params })
-        console.log(response);
+
 
 
         if (response.status === 200) {
-            products.value = response.products
-            pagination.value = response.pagination
+            products.value = response.products.data
+            pagination.value = response.products.meta.total
+            console.log(products);
+
         }
     } catch (error) {
         console.error('Error al buscar productos:', error)
@@ -243,10 +246,6 @@ watch(deleteDialog, (newValue) => {
                 </VBtn>
             </div>
             <VDivider />
-            <VCardTitle class="d-flex align-center gap-2 pa-4">
-                <VIcon icon="ri-search-line" size="20" color="primary" />
-                Búsqueda Avanzada de Productos
-            </VCardTitle>
 
             <VCardText class="pa-4">
                 <VForm ref="searchFormRef" @submit.prevent="searchProducts">
@@ -375,9 +374,7 @@ watch(deleteDialog, (newValue) => {
 
                 <!-- Stock -->
                 <template #item.stock="{ item }">
-                    <VChip :color="getStockColor(item.stock, item.min_stock)" variant="tonal" size="small">
-                        {{ item.stock }}
-                    </VChip>
+                    {{ item.stock }}
                 </template>
 
                 <!-- Estado -->
@@ -385,6 +382,10 @@ watch(deleteDialog, (newValue) => {
                     <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
                         {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
                     </VChip>
+                </template>
+                <!-- Estado -->
+                <template #item.is_gift="{ item }">
+                    {{ item.is_gift === 1 ? 'Si' : 'No' }}
                 </template>
 
                 <!-- Acciones -->
