@@ -118,12 +118,6 @@ const clearSearch = () => {
     searchProducts()
 }
 
-const handleTableUpdate = (options) => {
-    currentPage.value = options.page
-    itemsPerPage.value = options.itemsPerPage
-    searchProducts()
-}
-
 const getStockColor = (stock, minStock) => {
     if (stock === 0) return 'error'
     if (stock <= minStock) return 'warning'
@@ -337,69 +331,94 @@ watch(deleteDialog, (newValue) => {
             <VDivider />
 
             <!-- Tabla de Productos -->
-            <VDataTable :headers="headers" :items="products" :loading="loading" :items-per-page="itemsPerPage"
-                :server-items-length="pagination.total" class="elevation-0" @update:options="handleTableUpdate">
-                <!-- Imagen -->
-                <template #item.imagen="{ item }">
-                    <div @click="openProductDialog(item)" class="cursor-pointer">
-                        <VAvatar v-if="item.imagen" :image="item.imagen" size="40" class="elevation-2" />
-                        <VAvatar v-else color="grey-lighten-2" size="40" class="elevation-2">
-                            <VIcon icon="ri-image-line" />
-                        </VAvatar>
-                    </div>
-                </template>
+            <VTable>
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Almacén</th>
+                        <th>Precio Venta</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="loading">
+                        <td colspan="8" class="text-center pa-4">
+                            <VProgressCircular indeterminate color="primary" />
+                        </td>
+                    </tr>
+                    <tr v-else-if="products.length === 0">
+                        <td colspan="8" class="text-center pa-4 text-medium-emphasis">
+                            No se encontraron productos
+                        </td>
+                    </tr>
+                    <tr v-for="item in products" :key="item.id">
+                        <!-- Imagen -->
+                        <td>
+                            <div @click="openProductDialog(item)" class="cursor-pointer">
+                                <VAvatar v-if="item.imagen" :image="item.imagen" size="40" class="elevation-2" />
+                                <VAvatar v-else color="grey-lighten-2" size="40" class="elevation-2">
+                                    <VIcon icon="ri-image-line" />
+                                </VAvatar>
+                            </div>
+                        </td>
 
-                <!-- Información Principal -->
-                <template #item.description="{ item }">
-                    <div>
-                        <div class="font-weight-medium">{{ item.description }}</div>
-                        <div class="text-caption text-medium-emphasis">SKU: {{ item.sku }}</div>
-                        <div v-if="item.code_aux" class="text-caption text-medium-emphasis">
-                            Código: {{ item.code_aux }}
-                        </div>
-                    </div>
-                </template>
+                        <!-- Información Principal -->
+                        <td>
+                            <div>
+                                <div class="font-weight-medium">{{ item.description }}</div>
+                                <div class="text-caption text-medium-emphasis">SKU: {{ item.sku }}</div>
+                                <div v-if="item.code_aux" class="text-caption text-medium-emphasis">
+                                    Código: {{ item.code_aux }}
+                                </div>
+                            </div>
+                        </td>
 
-                <!-- Precios -->
-                <template #item.price_sale="{ item }">
-                    <div class="text-right">
-                        <div class="font-weight-medium text-success">
-                            ${{ item.price_sale.toFixed(2) }}
-                        </div>
-                        <div v-if="item.discount_percentage > 0" class="text-caption text-warning">
-                            {{ item.discount_percentage }}% desc
-                        </div>
-                    </div>
-                </template>
+                        <!-- Categoría -->
+                        <td>{{ item.categorie?.title || '-' }}</td>
 
-                <!-- Stock -->
-                <template #item.stock="{ item }">
-                    {{ item.stock }}
-                </template>
+                        <!-- Almacén -->
+                        <td>{{ item.warehouse?.name || '-' }}</td>
 
-                <!-- Estado -->
-                <template #item.state="{ item }">
-                    <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
-                        {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
-                    </VChip>
-                </template>
-                <!-- Estado -->
-                <template #item.is_gift="{ item }">
-                    {{ item.is_gift === 1 ? 'Si' : 'No' }}
-                </template>
+                        <!-- Precios -->
+                        <td>
+                            <div class="text-right">
+                                <div class="font-weight-medium text-success">
+                                    ${{ item.price_sale?.toFixed(2) || '0.00' }}
+                                </div>
+                                <div v-if="item.discount_percentage > 0" class="text-caption text-warning">
+                                    {{ item.discount_percentage }}% desc
+                                </div>
+                            </div>
+                        </td>
 
-                <!-- Acciones -->
-                <template #item.actions="{ item }">
-                    <div class="d-flex gap-1">
-                        <VBtn icon="ri-eye-line" variant="text" size="small" color="primary"
-                            @click="viewProduct(item)" />
-                        <VBtn icon="ri-edit-line" variant="text" size="small" color="warning"
-                            @click="editProduct(item)" />
-                        <VBtn icon="ri-delete-bin-line" variant="text" size="small" color="error"
-                            @click="deleteProduct(item)" />
-                    </div>
-                </template>
-            </VDataTable>
+                        <!-- Stock -->
+                        <td>{{ item.stock || 0 }}</td>
+
+                        <!-- Estado -->
+                        <td>
+                            <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
+                                {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
+                            </VChip>
+                        </td>
+
+                        <!-- Acciones -->
+                        <td>
+                            <div class="d-flex gap-1">
+                                <VBtn icon="ri-eye-line" variant="text" size="small" color="primary"
+                                    @click="viewProduct(item)" />
+                                <VBtn icon="ri-edit-line" variant="text" size="small" color="warning"
+                                    @click="editProduct(item)" />
+                                <VBtn icon="ri-delete-bin-line" variant="text" size="small" color="error"
+                                    @click="deleteProduct(item)" />
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </VTable>
 
             <!-- Paginación -->
             <VDivider />

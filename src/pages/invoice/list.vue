@@ -6,6 +6,8 @@ import { $api } from '@/utils/api'
 const invoiceSelected = ref(null);
 const currentPage = ref(1);
 const totalPage = ref(0);
+const perPage = ref(10);
+const totalItems = ref(0);
 
 const { showNotification } = useGlobalToast();
 
@@ -33,11 +35,12 @@ const list = async () => {
             start_date: range_date.value ? range_date.value.split("to")[0] : "",
             end_date: range_date.value ? range_date.value.split("to")[1] : "",
             supplier_id: supplier_id.value || null,
+            per_page: 10, // Items por página
         };
 
-        console.log(data);
+        console.log('📋 Datos de búsqueda:', data);
 
-        const resp = await $api("invoices/index?page=" + currentPage.value + "&search=" + (search.value ? search.value : ""), {
+        const resp = await $api("invoices/index?page=" + currentPage.value, {
             method: "POST",
             body: data,
             onResponseError({ response }) {
@@ -45,15 +48,24 @@ const list = async () => {
                 showNotification('Error al cargar las facturas', 'error');
             },
         });
-        console.log(resp);
-        list_invoices.value = resp.invoices.data;
-        totalPage.value = resp.total_page;
+
+        console.log('📊 Respuesta del servidor:', resp);
+
+        // Actualizar datos según el response del backend
+        list_invoices.value = resp.invoices.data;  // Acceder al array data dentro de invoices
+        totalPage.value = resp.total_pages;
+        totalItems.value = resp.total;
+        perPage.value = resp.per_page;
+
+        // Validar página actual
         if (currentPage.value > totalPage.value && totalPage.value > 0) {
             currentPage.value = 1;
+            list(); // Recargar con la primera página
         }
+
         showNotification('Facturas cargadas correctamente', 'success')
     } catch (error) {
-        console.error(error)
+        console.error('❌ Error al cargar facturas:', error)
         showNotification('Error al cargar las facturas', 'error')
     } finally {
         isLoading.value = false;
@@ -237,15 +249,28 @@ onMounted(() => {
                     </thead>
 
                     <tbody>
-                        <tr v-for="invoice in list_invoices" :key="invoice" class="hover:bg-grey-lighten-4 transition">
+                        <tr v-if="isLoading">
+                            <td colspan="8" class="text-center pa-4">
+                                <VProgressCircular indeterminate color="primary" />
+                            </td>
+                        </tr>
+                        <tr v-else-if="!list_invoices.length">
+                            <td colspan="8" class="text-center text-medium-emphasis py-6">
+                                <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
+                                <div>No hay facturas registradas</div>
+                            </td>
+                        </tr>
+                        <tr v-else v-for="invoice in list_invoices" :key="invoice.id"
+                            class="hover:bg-grey-lighten-4 transition">
                             <td class="font-weight-medium">{{ invoice.id }}</td>
-                            <td>{{ truncate(invoice.supplier.name, 50) }}</td>
-                            <td>{{ invoice.invoice_number }}</td>
-                            <td>{{ new Date(invoice.issue_date).toISOString().slice(0, 10) }}</td>
-                            <td>${{ Number(invoice.subtotal).toFixed(2) }}</td>
-                            <td>${{ Number(invoice.tax).toFixed(2) }}</td>
+                            <td>{{ invoice.supplier?.name ? truncate(invoice.supplier.name, 50) : '-' }}</td>
+                            <td>{{ invoice.invoice_number || '-' }}</td>
+                            <td>{{ invoice.issue_date ? new Date(invoice.issue_date).toISOString().slice(0, 10) : '-' }}
+                            </td>
+                            <td>${{ Number(invoice.subtotal || 0).toFixed(2) }}</td>
+                            <td>${{ Number(invoice.tax || 0).toFixed(2) }}</td>
                             <td class="font-weight-bold text-success">
-                                ${{ Number(invoice.total).toFixed(2) }}
+                                ${{ Number(invoice.total || 0).toFixed(2) }}
                             </td>
 
                             <td class="text-center">
@@ -262,13 +287,6 @@ onMounted(() => {
                                 </div>
                             </td>
                         </tr>
-
-                        <tr v-if="!list_invoices.length">
-                            <td colspan="8" class="text-center text-medium-emphasis py-6">
-                                <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
-                                <div>No hay facturas registradas</div>
-                            </td>
-                        </tr>
                     </tbody>
                 </VTable>
             </VCardText>
@@ -277,7 +295,13 @@ onMounted(() => {
 
             <!-- 📄 PAGINACIÓN -->
             <VCardActions class="justify-center pa-4">
-                <VPagination v-model="currentPage" :length="totalPage" rounded="circle" @update:modelValue="list" />
+                <div class="d-flex flex-column align-center gap-2">
+                    <div class="text-caption text-medium-emphasis">
+                        Mostrando {{ list_invoices.length }} de {{ totalItems }} facturas
+                    </div>
+                    <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7"
+                        @update:modelValue="list" />
+                </div>
             </VCardActions>
         </VCard>
 
