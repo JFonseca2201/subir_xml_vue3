@@ -114,7 +114,7 @@ const stockRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const percentageRules = [minValueRule(0), maxPercentageRule]
 
 const calculateMaxDiscount = () => {
-    console.log('🔄 Calculando descuento máximo...')
+
     const purchasePrice = parseFloat(product.value.purchase_price) || 0
     const salePrice = parseFloat(product.value.price_sale) || 0
     const discountPercentage = parseFloat(product.value.discount_percentage) || 0
@@ -126,19 +126,28 @@ const calculateMaxDiscount = () => {
     } else {
         product.value.max_discount = 0
     }
-
-    console.log('💰 Descuentos calculados:', {
-        purchase_price: purchasePrice,
-        price_sale: salePrice,
-        discount_percentage: discountPercentage,
-        max_discount: product.value.max_discount
-    })
 }
 
 // Watchers para recalcular descuento
 watch(() => product.value.purchase_price, calculateMaxDiscount)
 watch(() => product.value.price_sale, calculateMaxDiscount)
 watch(() => product.value.tax_rate, calculateMaxDiscount)
+watch(() => product.value.discount_percentage, calculateMaxDiscount)
+
+// Computed para asegurar valores correctos de los switches
+const isTaxableSwitch = computed({
+    get: () => product.value.is_taxable === 1,
+    set: (value) => {
+        product.value.is_taxable = value ? 1 : 2
+    }
+})
+
+const isGiftSwitch = computed({
+    get: () => product.value.is_gift === 1,
+    set: (value) => {
+        product.value.is_gift = value ? 1 : 2
+    }
+})
 
 // Cargar producto existente
 const loadProduct = async () => {
@@ -150,12 +159,7 @@ const loadProduct = async () => {
         console.log(response);
 
         if (response.status === 200) {
-            // Cargar datos del producto
-            product.value = {
-                ...product.value,
-                ...response.product
-            }
-
+            product.value = response.product;
             // Asegurar que los descuentos sean números, no strings
             if (response.product.max_discount) {
                 product.value.max_discount = parseFloat(response.product.max_discount)
@@ -170,12 +174,6 @@ const loadProduct = async () => {
                     file: null // Indica que es una imagen existente
                 }]
             }
-
-            console.log('✅ Producto cargado:', product.value)
-            console.log('💰 Descuentos cargados:', {
-                max_discount: product.value.max_discount,
-                discount_percentage: product.value.discount_percentage
-            })
         } else {
             showNotification('error', 'No se pudo cargar el producto')
             router.push('/product/list')
@@ -200,18 +198,10 @@ const loadInitialData = async () => {
             }
         })
 
-        console.log('📋 Configuración de productos cargada:', resp)
         categories.value = resp.data.categories || []
         warehouses.value = resp.data.warehouses || []
         units.value = resp.data.units || []
         suppliers.value = resp.data.suppliers || []
-
-        console.log('📋 Datos iniciales cargados:', {
-            categories: resp.data.categories,
-            warehouses: resp.data.warehouses,
-            units: resp.data.units,
-            suppliers: resp.data.suppliers
-        })
     } catch (error) {
         console.error('❌ Error al cargar datos iniciales:', error)
         showNotification('Error al cargar configuración de productos', 'error')
@@ -235,26 +225,40 @@ const updateProduct = async () => {
         warning.value = null
 
         const formData = new FormData()
-        formData.append('is_taxable', product.value.is_taxable === true ? 1 : 2)
-        formData.append('is_gift', product.value.is_gift === true ? 1 : 2)
+
+        // Debug para is_taxable
+
+        formData.append('is_taxable', product.value.is_taxable === 1 ? 1 : 2)
+        formData.append('is_gift', product.value.is_gift === 1 ? 1 : 2)
+
+
 
         // Agregar todos los campos del producto
         Object.keys(product.value).forEach(key => {
+            // Excluir campos que ya se manejan manualmente y valores nulos
             if (key !== 'imagen' && key !== 'is_taxable' && key !== 'is_gift' && product.value[key] !== null) {
                 formData.append(key, product.value[key])
             }
         })
 
+
+        formData.set('is_taxable', product.value.is_taxable === 1 ? 1 : 2)
+        formData.set('is_gift', product.value.is_gift === 1 ? 1 : 2)
+
+
+
         // Agregar imagen si hay una nueva
         if (fileData.value.length > 0 && fileData.value[0].file) {
             formData.append('imagen', fileData.value[0].file)
-            console.log('📷 Imagen agregada al FormData')
         }
 
         // Agregar método PUT para actualización
         formData.append('_method', 'PUT')
 
-        console.log('📤 Enviando datos de actualización:', Object.fromEntries(formData))
+        /* formData.forEach((value, key) => {
+            console.log("campo " + key + ":", value)
+        })
+         */
 
         const response = await $api(`products/${product.value.id}`, {
             method: 'POST',
@@ -533,7 +537,11 @@ onMounted(() => {
                                         <VIcon icon="ri-receipt-line" />
                                         <span>Gravable con Impuestos</span>
                                     </div>
-                                    <VSwitch v-model="product.is_taxable" hide-details />
+
+                                    <VSwitch v-model="isTaxableSwitch" hide-details />
+                                    <div class="text-caption text-medium-emphasis mt-1">
+                                        {{ product.is_taxable === 1 ? 'Sí' : 'No' }}
+                                    </div>
                                 </div>
 
                                 <div class="d-flex align-center justify-space-between pa-3 border rounded-lg">
@@ -541,7 +549,10 @@ onMounted(() => {
                                         <VIcon icon="ri-gift-line" />
                                         <span>¿Es un regalo?</span>
                                     </div>
-                                    <VSwitch v-model="product.is_gift" hide-details />
+                                    <VSwitch v-model="isGiftSwitch" hide-details />
+                                    <div class="text-caption text-medium-emphasis mt-1">
+                                        {{ product.is_gift === 1 ? 'Sí' : 'No' }}
+                                    </div>
                                 </div>
 
                                 <VTextarea v-model="product.notes" label="Notas Adicionales"

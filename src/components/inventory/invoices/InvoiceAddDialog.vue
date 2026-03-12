@@ -161,7 +161,8 @@ const storeXml = async () => {
 
     } catch (error) {
         console.error(error)
-        showNotification(msg.value || 'Error al importar XML', 'error');
+        error_exist.value = msg.value || 'Error al importar XML'
+        //showNotification(msg.value || 'Error al importar XML', 'error');
     } finally {
         loader.stop()
     }
@@ -215,12 +216,7 @@ onMounted(() => {
                 <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
                     :grid-column="{ sm: '3', cols: '12' }" class="square-radio" />
 
-                <!-- Alertas -->
-                <div class="d-flex flex-column gap-2">
-                    <VAlert v-if="error_exist" type="error" variant="tonal" closable dense>
-                        {{ error_exist }}
-                    </VAlert>
-                </div>
+
 
                 <!-- Mostrar información del XML cargado solo si xmlData está disponible -->
                 <div v-if="xmlData && xmlData.infoTributaria" class="mt-4">
@@ -406,11 +402,17 @@ onMounted(() => {
                         </VCardText>
                     </VCard>
                 </div>
-
+                <!-- Alertas -->
+                <div class="d-flex flex-column gap-2">
+                    <VAlert v-if="error_exist" type="error" variant="tonal">
+                        {{ error_exist }}
+                    </VAlert>
+                </div>
             </VCardText>
 
             <!-- 🎯 Footer -->
             <VCardActions class="justify-end px-6 pb-4 gap-3">
+
                 <VBtn variant="tonal" color="primary" @click="storeXml" :loading="loader.loading">
                     <VIcon left>ri-upload-cloud-2-line</VIcon> &nbsp; Importar XML
                 </VBtn>

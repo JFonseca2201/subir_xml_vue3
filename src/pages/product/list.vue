@@ -31,6 +31,8 @@ const searchForm = ref({
 // Paginación
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+const totalItems = ref(0)
+const totalPages = ref(0)
 const pagination = ref({
     total: 0,
     per_page: 10,
@@ -89,13 +91,19 @@ const searchProducts = async () => {
 
         const response = await $api('products', { params })
 
-
-
         if (response.status === 200) {
-            products.value = response.products.data
-            pagination.value = response.products.meta.total
-            console.log(products);
-
+            // Acceder a los datos correctos: response.products.data
+            products.value = response.products.data || []
+            totalItems.value = response.total || 0
+            totalPages.value = response.total_pages || 0
+            pagination.value = {
+                total: response.total || 0,
+                per_page: response.per_page || 10,
+                current_page: response.current_page || 1,
+                last_page: response.total_pages || 1,
+                from: response.from || 0,
+                to: response.to || 0
+            }
         }
     } catch (error) {
         console.error('Error al buscar productos:', error)
@@ -226,6 +234,12 @@ onMounted(() => {
 watch(deleteDialog, (newValue) => {
     console.log('👀 deleteDialog cambió a:', newValue)
 })
+
+// Watcher para resetear página cuando los filtros cambian
+watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () => searchForm.value.warehouse_id, () => searchForm.value.unit_id], () => {
+    console.log('🔍 Filtros cambiados, reseteando página a 1')
+    currentPage.value = 1
+}, { deep: true })
 </script><template>
     <div class="pa-4 pa-sm-6">
 
@@ -352,7 +366,8 @@ watch(deleteDialog, (newValue) => {
                     </tr>
                     <tr v-else-if="products.length === 0">
                         <td colspan="8" class="text-center pa-4 text-medium-emphasis">
-                            No se encontraron productos
+                            <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
+                            <div>No se encontraron productos</div>
                         </td>
                     </tr>
                     <tr v-for="item in products" :key="item.id">
@@ -423,8 +438,13 @@ watch(deleteDialog, (newValue) => {
             <!-- Paginación -->
             <VDivider />
             <div class="d-flex justify-center pa-4">
-                <VPagination v-model="currentPage" :length="pagination.last_page" :total-visible="7"
-                    @update:model-value="searchProducts" />
+                <div class="d-flex flex-column align-center gap-2">
+                    <div class="text-caption text-medium-emphasis">
+                        Mostrando {{ products.length }} de {{ totalItems }} productos
+                    </div>
+                    <VPagination v-model="currentPage" :length="totalPages" :total-visible="7"
+                        @update:model-value="searchProducts" />
+                </div>
             </div>
         </VCard>
     </div>
