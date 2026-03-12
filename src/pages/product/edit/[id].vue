@@ -226,33 +226,22 @@ const updateProduct = async () => {
 
         const formData = new FormData()
 
-        // Debug para is_taxable
-
         formData.append('is_taxable', product.value.is_taxable === 1 ? 1 : 2)
         formData.append('is_gift', product.value.is_gift === 1 ? 1 : 2)
 
-
-
-        // Agregar todos los campos del producto
         Object.keys(product.value).forEach(key => {
-            // Excluir campos que ya se manejan manualmente y valores nulos
+
             if (key !== 'imagen' && key !== 'is_taxable' && key !== 'is_gift' && product.value[key] !== null) {
                 formData.append(key, product.value[key])
             }
         })
-
-
         formData.set('is_taxable', product.value.is_taxable === 1 ? 1 : 2)
         formData.set('is_gift', product.value.is_gift === 1 ? 1 : 2)
 
-
-
-        // Agregar imagen si hay una nueva
         if (fileData.value.length > 0 && fileData.value[0].file) {
             formData.append('imagen', fileData.value[0].file)
         }
 
-        // Agregar método PUT para actualización
         formData.append('_method', 'PUT')
 
         /* formData.forEach((value, key) => {
