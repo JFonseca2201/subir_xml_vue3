@@ -17,6 +17,7 @@ const emit = defineEmits(['update:isDialogVisible']);
 
 const invoice = ref([]);
 const searchProduct = ref(''); // Variable para el filtro de búsqueda de productos
+const categories = ref([]); // Variable para almacenar categorías
 
 // Método para obtener los datos de la factura
 const showItems = async () => {
@@ -44,6 +45,24 @@ const filteredItems = computed(() => {
         return item.code.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
     }) || [];
 });
+
+// Función para obtener el nombre de la categoría
+const getCategoryName = (categoryId) => {
+    const category = categories.value.find(cat => cat.id === categoryId);
+    return category ? category.title : 'Sin categoría';
+};
+
+// Cargar categorías
+const loadCategories = async () => {
+    try {
+        const response = await $api('invoices/config');
+        if (response.status === 200) {
+            categories.value = response.data || response.categories || [];
+        }
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+    }
+}
 
 // Mostrar el dialogo
 const dialogVisible = computed({
@@ -78,6 +97,7 @@ const addEditInvoiceItem = () => {
 onMounted(() => {
     setTimeout(() => {
         showItems();
+        loadCategories();
     }, 50);
 })
 </script>
@@ -204,6 +224,10 @@ onMounted(() => {
                                 <VIcon size="16" class="mr-1">ri-box-3-line</VIcon>
                                 Producto
                             </th>
+                            <th style="width: 200px">
+                                <VIcon size="16" class="mr-1">ri-folder-line</VIcon>
+                                Categoría
+                            </th>
                             <th class="text-right">
                                 <VIcon size="16" class="mr-1">ri-stack-line</VIcon>
                                 Cant.
@@ -251,6 +275,10 @@ onMounted(() => {
                                 <small>{{ (item.description) }}</small>
                             </td>
 
+                            <td class="text-medium-emphasis">
+                                <small>{{ getCategoryName(item.categorie_id) }}</small>
+                            </td>
+
                             <td class="text-right">
                                 <small>{{ item.quantity }}</small>
                             </td>
@@ -269,7 +297,7 @@ onMounted(() => {
 
                             <td class="text-right font-weight-bold text-primary">
                                 <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
-                                    }}</small>
+                                }}</small>
                             </td>
 
                             <td class="text-right font-weight-bold text-primary">

@@ -44,7 +44,6 @@ const list = async () => {
             method: "POST",
             body: data,
             onResponseError({ response }) {
-                console.log(response._data.error);
                 showNotification('Error al cargar las facturas', 'error');
             },
         });
@@ -92,6 +91,38 @@ const showItem = (ShowInvoice) => {
     console.log(ShowInvoice);
     isInvoiceShowDialogVisible.value = true;
     invoiceSelected.value = ShowInvoice;
+}
+
+const processInvoice = async (invoice) => {
+    try {
+        isLoading.value = true;
+
+        const response = await $api('products/process', {
+            method: 'POST',
+            body: {
+                invoice: invoice.id
+            },
+            onResponseError({ response }) {
+                console.log('❌ Error 422 - Response:', response._data);
+                console.log('❌ Error 422 - Datos enviados:', { invoice: invoice.id });
+                showNotification('Error al procesar la factura', 'error');
+            }
+        });
+
+        if (response.status === 200) {
+            showNotification('Factura procesada correctamente', 'success');
+            // Actualizar la factura en la lista
+            const index = list_invoices.value.findIndex(item => item.id === invoice.id);
+            if (index !== -1) {
+                list_invoices.value[index].invoice_process = 1;
+            }
+        }
+    } catch (error) {
+        console.error('Error al procesar factura:', error);
+        showNotification('Error al procesar la factura', 'error');
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 
@@ -244,18 +275,19 @@ onMounted(() => {
                             <th>Subtotal</th>
                             <th>IVA (15%)</th>
                             <th>Total</th>
+                            <th class="text-center">Estado</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr v-if="isLoading">
-                            <td colspan="8" class="text-center pa-4">
+                            <td colspan="9" class="text-center pa-4">
                                 <VProgressCircular indeterminate color="primary" />
                             </td>
                         </tr>
                         <tr v-else-if="!list_invoices.length">
-                            <td colspan="8" class="text-center text-medium-emphasis py-6">
+                            <td colspan="9" class="text-center text-medium-emphasis py-6">
                                 <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
                                 <div>No hay facturas registradas</div>
                             </td>
@@ -274,9 +306,21 @@ onMounted(() => {
                             </td>
 
                             <td class="text-center">
+                                <VChip :color="invoice.invoice_process === 1 ? 'success' : 'warning'" variant="tonal"
+                                    size="small">
+                                    {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
+                                </VChip>
+                            </td>
+
+                            <td class="text-center">
                                 <div class="d-flex justify-center gap-1">
                                     <IconBtn @click="showItem(invoice)">
                                         <VIcon icon="ri-eye-line" />
+                                    </IconBtn>
+
+                                    <IconBtn v-if="invoice.invoice_process === 2" @click="processInvoice(invoice)"
+                                        color="primary" title="Procesar Factura">
+                                        <VIcon icon="ri-check-line" />
                                     </IconBtn>
                                     <!-- <IconBtn @click="editInvoice(invoice)">
                                         <VIcon icon="ri-pencil-line" />

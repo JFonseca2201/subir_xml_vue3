@@ -23,11 +23,39 @@ const success = ref(null);
 const error_exits = ref(null);
 const item_type = ref(1);
 const radioGroup = ref(1);
+const categories = ref([]);
+const selectedCategory = ref(null);
 
 // Notificaciones
 const notificationShow = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success');
+
+// Cargar categorías
+const loadCategories = async () => {
+    try {
+        const response = await $api('invoices/config');
+        if (response.status === 200) {
+            categories.value = response.data || response.categories || [];
+            return categories.value; // Retornar las categorías
+        }
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        return [];
+    }
+}
+
+// Cargar categorías al montar el componente
+onMounted(() => {
+    loadCategories().then(() => {
+        // Establecer categoría después de cargar las categorías
+        if (props.invoiceSelected.categorie_id) {
+            selectedCategory.value = props.invoiceSelected.categorie_id;
+            console.log('🔍 Categoría establecida:', selectedCategory.value);
+            console.log('🔍 Categorías disponibles:', categories.value);
+        }
+    });
+});
 
 const showNotification = (message, type = 'success') => {
     notificationMessage.value = message;
@@ -45,7 +73,14 @@ const editItemInvoice = async () => {
         let data = {
             item_type: item_type.value,
         }
-        /* const resp = await $api(`invoices/${props.carSelected.id}`, { */
+
+        // Agregar categoría si es un producto
+        if (item_type.value === 1 && selectedCategory.value) {
+            data.categorie_id = selectedCategory.value;
+        }
+
+        console.log('🔍 Datos a enviar:', data);
+
         const resp = await $api("invoices/" + props.invoiceSelected.id, {
             method: "PUT",
             body: data,
@@ -89,26 +124,36 @@ onMounted(() => {
             </v-card-title>
 
             <v-card-text>
-                <!-- Contenedor con sombra y bordes redondeados -->
+                <v-row>
+                    <v-col cols="6">
 
-                <!-- Grupo de radio botones -->
-                <v-radio-group v-model="radioGroup" row class="justify-center">
-                    <!-- Opción Producto -->
-                    <v-radio :key="1" :label="'Producto'" :value="1" class="mr-4"
-                        :style="{ fontSize: '16px', fontWeight: '500' }" color="deep-purple accent-4" dense />
-                    <!-- Opción Gasto Común -->
-                    <v-radio :key="2" :label="'Gasto Común'" :value="2" class="mr-4"
-                        :style="{ fontSize: '16px', fontWeight: '500' }" color="teal darken-2" dense />
-                    <!-- Opción Mantenimiento o Servicio -->
-                    <v-radio :key="3" :label="'Mantenimiento o Servicio'" :value="3" class="mr-4"
-                        :style="{ fontSize: '16px', fontWeight: '500' }" color="blue-grey darken-3" dense />
-                    <v-radio :key="4" :label="'Herramienta'" :value="4" class="mr-4"
-                        :style="{ fontSize: '16px', fontWeight: '500' }" color="blue-grey darken-3" dense />
-                </v-radio-group>
-                <VCol cols="12" v-if="warning">
-                    <VAlert type="error" color="warning" closable="" variant="tonal">{{ warning }}</VAlert>
-                </VCol>
+                        <!-- Grupo de radio botones -->
+                        <v-radio-group v-model="radioGroup" row class="justify-center">
+                            <!-- Opción Producto -->
+                            <v-radio :key="1" label="Producto" :value="1" class="mr-4" />
+                            <!-- Opción Gasto Común -->
+                            <v-radio :key="2" label="Gasto Común" :value="2" class="mr-4" />
+                            <!-- Opción Mantenimiento o Servicio -->
+                            <v-radio :key="3" label="Mantenimiento o Servicio" :value="3" class="mr-4" />
+                            <!-- Opción Herramienta -->
+                            <v-radio :key="4" label="Herramienta" :value="4" class="mr-4" />
+                        </v-radio-group>
+                    </v-col>
+                    <!-- Contenedor con sombra y bordes redondeados -->
 
+                    <v-col cols="6">
+                        <!-- Selector de Categoría -->
+                        <v-select v-if="radioGroup === 1" v-model="selectedCategory" :items="categories"
+                            item-title="title" item-value="id" label="Categoría del Producto"
+                            placeholder="Selecciona una categoría" variant="outlined" density="comfortable"
+                            prepend-inner-icon="ri-folder-line" class="mt-4" hide-details="auto"
+                            :rules="[v => !!v || 'Selecciona una categoría']" />
+
+                    </v-col>
+                </v-row>
+                <v-col cols="6" v-if="warning">
+                    <v-alert type="error" color="warning" closable variant="tonal">{{ warning }}</v-alert>
+                </v-col>
             </v-card-text>
 
             <v-card-actions class="justify-center">
