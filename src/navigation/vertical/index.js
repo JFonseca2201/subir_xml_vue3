@@ -65,12 +65,7 @@ export default [
         title: 'Listado',
         to: 'product-list',
         icon: { icon: 'ri-radio-button-line' },
-      },
-      {
-        title: 'Ingresar XML',
-        icon: { icon: 'ri-roadster-line' },
-        to: 'invoice-list',
-      },
+      }
     ],
   },
   {
@@ -118,6 +113,11 @@ export default [
         title: 'Listado',
         to: 'second-page',
         icon: { icon: 'ri-bar-chart-line' },
+      },
+      {
+        title: 'Ingresar compra desde un XML',
+        icon: { icon: 'ri-roadster-line' },
+        to: 'invoice-list',
       },
     ],
   },

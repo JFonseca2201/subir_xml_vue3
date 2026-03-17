@@ -47,7 +47,18 @@ const filteredItems = computed(() => {
 });
 
 // Función para obtener el nombre de la categoría
-const getCategoryName = (categoryId) => {
+const getCategoryName = (categoryId, itemType) => {
+    // Si no es producto, mostrar mensaje específico
+    if (itemType !== 1) {
+        return 'No tiene categoría de producto';
+    }
+
+    // Si es producto pero no tiene categoría
+    if (!categoryId) {
+        return 'Sin categoría';
+    }
+
+    // Buscar categoría por ID
     const category = categories.value.find(cat => cat.id === categoryId);
     return category ? category.title : 'Sin categoría';
 };
@@ -90,6 +101,7 @@ const editInvoice = (EditInvoice) => {
 const addEditInvoiceItem = () => {
     setTimeout(() => {
         showItems();
+        loadCategories(); // Recargar categorías también
     }, 50);
 }
 
@@ -276,7 +288,7 @@ onMounted(() => {
                             </td>
 
                             <td class="text-medium-emphasis">
-                                <small>{{ getCategoryName(item.categorie_id) }}</small>
+                                <small>{{ getCategoryName(item.categorie_id, item.item_type) }}</small>
                             </td>
 
                             <td class="text-right">
@@ -297,7 +309,7 @@ onMounted(() => {
 
                             <td class="text-right font-weight-bold text-primary">
                                 <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
-                                }}</small>
+                                    }}</small>
                             </td>
 
                             <td class="text-right font-weight-bold text-primary">

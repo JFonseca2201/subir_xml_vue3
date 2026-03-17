@@ -306,6 +306,8 @@ onMounted(() => {
                             </td>
 
                             <td class="text-center">
+                                <!-- Debug temporal -->
+
                                 <VChip :color="invoice.invoice_process === 1 ? 'success' : 'warning'" variant="tonal"
                                     size="small">
                                     {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
@@ -318,8 +320,8 @@ onMounted(() => {
                                         <VIcon icon="ri-eye-line" />
                                     </IconBtn>
 
-                                    <IconBtn v-if="invoice.invoice_process === 2" @click="processInvoice(invoice)"
-                                        color="primary" title="Procesar Factura">
+                                    <IconBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2"
+                                        @click="processInvoice(invoice)" color="primary" title="Procesar Factura">
                                         <VIcon icon="ri-check-line" />
                                     </IconBtn>
                                     <!-- <IconBtn @click="editInvoice(invoice)">

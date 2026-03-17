@@ -442,7 +442,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                     <div class="text-caption text-medium-emphasis">
                         Mostrando {{ products.length }} de {{ totalItems }} productos
                     </div>
-                    <VPagination v-model="currentPage" :length="totalPages" :total-visible="7"
+                    <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
                         @update:model-value="searchProducts" />
                 </div>
             </div>
