@@ -71,7 +71,7 @@ export default [
   {
     title: 'Clientes',
     icon: { icon: 'ri-p2p-line' },
-    to: 'second-page',
+    to: 'clients-list',
   },
   {
     title: 'Vehículos',
