@@ -76,7 +76,7 @@ export default [
   {
     title: 'Vehículos',
     icon: { icon: 'ri-roadster-line' },
-    to: 'second-page',
+    to: 'vehicles-list',
   },
   {
     title: 'Ventas',
