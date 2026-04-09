@@ -136,6 +136,10 @@ const loadClientData = () => {
         clientForm.value = {
             ...props.clientData,
             user_id: userStore.id || 1,
+            // Convertir string a número para que el VSelect funcione correctamente
+            type_client: parseInt(props.clientData.type_client) || 2,
+            type_document: parseInt(props.clientData.type_document) || 2,
+            state: parseInt(props.clientData.state) || 1,
         };
     }
 }
@@ -236,7 +240,7 @@ onMounted(() => {
 
             <!-- Header -->
             <VCardText class="text-center pb-6">
-                <VIcon icon="ri-building-edit-line" size="42" color="primary" class="mb-3" />
+                <VIcon icon="ri-building-line" size="42" color="primary" class="mb-3" />
                 <h4 class="text-h4 font-weight-bold mb-1">Editar Cliente Empresa</h4>
                 <p class="text-body-2 text-medium-emphasis">
                     Modificación de datos del cliente jurídico o compañía
@@ -256,40 +260,43 @@ onMounted(() => {
                     <VCol cols="12" md="12">
                         <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
                             placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
-                            :rules="rules.full_name" required clearable />
+                            :rules="rules.full_name" required clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VSelect v-model="clientForm.type_document" :items="typeDocumentOptions" item-title="title"
                             item-value="value" label="Tipo de Documento *" prepend-inner-icon="ri-file-text-line"
-                            required clearable />
+                            required clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de RUC (13 dígitos)" prepend-inner-icon="ri-numbers-line"
-                            :rules="rules.n_document" required clearable />
+                            :rules="rules.n_document" required clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
-                            prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable />
+                            prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Constitución" type="date"
-                            prepend-inner-icon="ri-calendar-event-line" clearable />
+                            prepend-inner-icon="ri-calendar-event-line" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="6">
                         <VSelect v-model="clientForm.state" :items="stateOptions" item-title="title" item-value="value"
-                            label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado"
-                            clearable />
+                            label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VDivider class="my-6" />
@@ -301,22 +308,23 @@ onMounted(() => {
 
                     <VCol cols="12">
                         <VTextField v-model="clientForm.address" label="Dirección"
-                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
+                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="4">
                         <VTextField v-model="clientForm.region" label="Región" placeholder="Región"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                            prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="4">
                         <VTextField v-model="clientForm.provincia" label="Provincia" placeholder="Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                            prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="4">
                         <VTextField v-model="clientForm.distrito" label="Distrito" placeholder="Distrito"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                            prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>
 
                     <VDivider class="my-6" />
@@ -367,5 +375,54 @@ onMounted(() => {
     border-bottom: 2px solid #1976D2;
     padding-bottom: 8px;
     margin-bottom: 16px;
+}
+
+/* Estilos personalizados para campos más grandes */
+.v-input--density-comfortable .v-field__input {
+    min-height: 56px !important;
+    padding: 16px 12px !important;
+    font-size: 16px !important;
+}
+
+.v-input--density-comfortable .v-field {
+    border-radius: 12px !important;
+}
+
+.v-input--density-comfortable .v-field__prepend-inner {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+}
+
+.v-input--density-comfortable .v-label {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.v-input--density-comfortable.v-textarea .v-field__input {
+    min-height: 80px !important;
+    padding: 16px 12px !important;
+}
+
+.v-select .v-field__input {
+    min-height: 56px !important;
+    padding: 16px 12px !important;
+    font-size: 16px !important;
+}
+
+.v-select .v-field__append-inner {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+}
+
+/* Aumentar espaciado entre filas */
+.v-row>.v-col {
+    padding: 12px !important;
+}
+
+/* Estilos para campos deshabilitados */
+.v-input--density-comfortable.v-disabled .v-field__input {
+    opacity: 0.7;
+    background-color: #f5f5f5;
+    border-radius: 8px;
 }
 </style>
