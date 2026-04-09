@@ -53,7 +53,7 @@ const login = async () => {
       await nextTick(() => {
         router.replace(route.query.to ? String(route.query.to) : '/')
       });
-    }, 500);
+    }, 200);
 
   } catch (error) {
     console.log(error);
