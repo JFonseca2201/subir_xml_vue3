@@ -2,13 +2,16 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import VehicleEditDialog from '@/components/inventory/vehicles/VehicleEditDialog.vue'
 import VehicleDeleteDialog from '@/components/inventory/vehicles/VehicleDeleteDialog.vue'
+import { getBrandNameById, getBrandOptions } from '@/data/vehicleBrands.js'
 
-// Router
+// Router y notificaciones
 const router = useRouter()
+const { showNotification } = useGlobalToast()
 
 // Estado
 const loading = ref(false)
@@ -52,19 +55,7 @@ const vehicleTypeOptions = ref([
     { title: 'Otro', value: 'otro' }
 ])
 
-const brandOptions = ref([
-    { title: 'Toyota', value: 'toyota' },
-    { title: 'Honda', value: 'honda' },
-    { title: 'Nissan', value: 'nissan' },
-    { title: 'Chevrolet', value: 'chevrolet' },
-    { title: 'Ford', value: 'ford' },
-    { title: 'Hyundai', value: 'hyundai' },
-    { title: 'Kia', value: 'kia' },
-    { title: 'Volkswagen', value: 'volkswagen' },
-    { title: 'Mazda', value: 'mazda' },
-    { title: 'Suzuki', value: 'suzuki' },
-    { title: 'Otro', value: 'otro' }
-])
+const brandOptions = ref(getBrandOptions())
 
 // Generar opciones de años (últimos 20 años)
 const yearOptions = ref([])
@@ -128,24 +119,24 @@ const loadVehicles = async () => {
         // Manejar diferentes estructuras de respuesta
         let vehiclesData = []
 
-        // Los datos están directamente en resp, no en resp.data
+        // Los datos están en resp.vehicles según la respuesta del servidor
         if (resp && typeof resp === 'object') {
-            // Buscar datos en diferentes propiedades
-            if (Array.isArray(resp.data)) {
+            // Priorizar la propiedad 'vehicles' que es donde están los datos
+            if (resp.vehicles && Array.isArray(resp.vehicles)) {
+                vehiclesData = resp.vehicles
+                console.log('✅ Vehículos cargados (resp.vehicles):', vehiclesData.length)
+            } else if (Array.isArray(resp.data)) {
                 vehiclesData = resp.data
                 console.log('✅ Vehículos cargados (resp.data):', vehiclesData.length)
             } else if (resp.data && Array.isArray(resp.data.data)) {
                 vehiclesData = resp.data.data
                 console.log('✅ Vehículos cargados (resp.data.data):', vehiclesData.length)
-            } else if (resp.vehicles && Array.isArray(resp.vehicles)) {
-                vehiclesData = resp.vehicles
-                console.log('✅ Vehículos cargados (resp.vehicles):', vehiclesData.length)
             } else if (Array.isArray(resp)) {
                 vehiclesData = resp
                 console.log('✅ Vehículos cargados (resp directo):', vehiclesData.length)
             } else {
                 // Si no hay array, buscar una propiedad que contenga los vehículos
-                const possibleDataProps = ['data', 'vehicles', 'items', 'results', 'list']
+                const possibleDataProps = ['vehicles', 'data', 'items', 'results', 'list']
                 for (const prop of possibleDataProps) {
                     if (resp[prop] && Array.isArray(resp[prop])) {
                         vehiclesData = resp[prop]
@@ -216,11 +207,14 @@ const deleteVehicle = (vehicle) => {
 }
 
 const handleVehicleAdded = (vehicleData) => {
-    console.log("Vehículo agregado:", vehicleData)
-    if (vehicleData) {
-        vehicles.value.unshift(vehicleData)
-        totalItems.value += 1
-    }
+    console.log("📤 Vehículo agregado (datos del diálogo):", vehicleData)
+
+    // En lugar de agregar los datos localmente (que pueden estar vacíos),
+    // recargamos la lista desde la API para obtener los datos correctos
+    loadVehicles()
+
+    // Mostrar notificación de éxito
+    showNotification('Vehículo agregado correctamente', 'success')
 }
 
 const handleVehicleUpdated = (vehicleData) => {
@@ -282,58 +276,7 @@ const getVehicleTypeColor = (vehicleType) => {
     return colors[vehicleType] || 'grey'
 }
 
-// Función para probar la API
-const testAPI = async () => {
-    console.log('🧪 Iniciando prueba de API de vehículos...')
 
-    try {
-        // Probar diferentes endpoints
-        const endpoints = [
-            'vehicles',
-            'vehicles/',
-            'api/vehicles',
-            'vehicles/list',
-            'vehicles/index'
-        ]
-
-        for (const endpoint of endpoints) {
-            console.log(`🔍 Probando endpoint: ${endpoint}`)
-
-            try {
-                const resp = await $api(endpoint, {
-                    method: "GET",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                })
-
-                console.log(`✅ Endpoint ${endpoint} funcionó:`)
-                console.log('Status:', resp.status)
-                console.log('Datos:', resp.data)
-                console.log('Tipo de datos:', typeof resp.data)
-                console.log('¿Es array?', Array.isArray(resp.data))
-
-                // Si encontramos datos, mostrar mensaje de éxito
-                if (resp.data && (Array.isArray(resp.data) || resp.data.data || resp.data.vehicles)) {
-                    console.log(`🎉 ¡Endpoint ${endpoint} contiene datos!`)
-                    alert(`✅ API funcionando con endpoint: ${endpoint}\n\nRespuesta: ${JSON.stringify(resp.data, null, 2)}`)
-                    return
-                }
-
-            } catch (error) {
-                console.error(`❌ Error en endpoint ${endpoint}:`, error)
-            }
-        }
-
-        // Si ningún endpoint funcionó
-        alert('❌ Ningún endpoint de vehículos funcionó. Revisa la consola para más detalles.')
-
-    } catch (error) {
-        console.error('❌ Error general en prueba de API:', error)
-        alert(`❌ Error en prueba de API: ${error.message}`)
-    }
-}
 
 // Montar componente
 onMounted(() => {
@@ -350,9 +293,6 @@ onMounted(() => {
                 <span class="text-h5">Gestión de Vehículos</span>
             </div>
             <div class="d-flex gap-2">
-                <VBtn color="info" variant="outlined" @click="testAPI" prepend-icon="ri-test-tube-line">
-                    Probar API
-                </VBtn>
                 <VBtn color="primary" @click="addVehicle" prepend-icon="ri-add-line">
                     Agregar Vehículo
                 </VBtn>
@@ -400,6 +340,7 @@ onMounted(() => {
                         <th>Año</th>
                         <th>Color</th>
                         <th>Tipo</th>
+                        <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -425,13 +366,10 @@ onMounted(() => {
                                 </VChip>
                             </div>
                         </td>
-                        <td>
-                            {{ vehicle.brand || 'Sin marca' }}
-                            <VChip v-if="!vehicle.brand" color="warning" size="x-small" class="ml-2">
-                                Vacío
-                            </VChip>
+                        <td style="text-transform: uppercase;">
+                            {{ getBrandNameById(vehicle.brand) || 'Sin marca' }}
                         </td>
-                        <td>
+                        <td style="text-transform: uppercase;">
                             {{ vehicle.model || 'Sin modelo' }}
                             <VChip v-if="!vehicle.model" color="warning" size="x-small" class="ml-2">
                                 Vacío
@@ -439,14 +377,19 @@ onMounted(() => {
                         </td>
                         <td>{{ vehicle.year || 'N/A' }}</td>
                         <td>
-                            <VChip :color="vehicle.color?.toLowerCase() || 'grey'" variant="tonal" size="small">
-                                {{ vehicle.color || 'No especificado' }}
-                            </VChip>
+                            {{ vehicle.color?.toUpperCase() || 'No especificado' }}
+                        </td>
+                        <td style="text-transform: uppercase;">
+                            {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
                         </td>
                         <td>
-                            <VChip :color="getVehicleTypeColor(vehicle.vehicle_type)" variant="tonal" size="small">
-                                {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
+                            <VChip v-if="vehicle.status === 1" color="success">
+                                ACTIVO
                             </VChip>
+                            <VChip v-else color="error">
+                                INACTIVO
+                            </VChip>
+
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-center gap-1">

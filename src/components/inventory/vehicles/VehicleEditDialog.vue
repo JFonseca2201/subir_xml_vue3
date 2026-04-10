@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
+import { getBrandOptions, getBrandNameById, getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
+import { formatEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
 
 const props = defineProps({
     isDialogVisible: {
@@ -15,87 +17,77 @@ const props = defineProps({
 
 const emit = defineEmits(['update:isDialogVisible', 'vehicleUpdated'])
 
-// Estado del formulario
+// --- ESTADO ---
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
-const userStore = JSON.parse(localStorage.getItem('user'));
+const formRef = ref(null)
 
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
+const notificationShow = ref(false)
+const notificationMessage = ref('')
+const notificationType = ref('success')
 
 const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+    notificationMessage.value = message
+    notificationType.value = type
+    notificationShow.value = true
+}
 
-// Formulario de vehículo
+// Obtener user_id del localStorage
+const getCurrentUserId = () => {
+    try {
+        const userStore = localStorage.getItem('user')
+        if (userStore) {
+            const user = JSON.parse(userStore)
+            return user.id || user.user_id || null
+        }
+        return null
+    } catch (error) {
+        console.error('Error al obtener user_id del localStorage:', error)
+        return null
+    }
+}
+
 const vehicleForm = ref({
     id: '',
     license_plate: '',
-    brand: '',
+    brand: null,
     model: '',
     year: new Date().getFullYear(),
     color: '',
     vehicle_type: '',
     description: '',
+    status: 1, // 1 = Activo, 2 = Inactivo
+    user_id: null, // ID del usuario que crea/edita el vehículo
 })
 
-// Opciones para selects
-const vehicleTypeOptions = ref([
-    { title: 'Sedán', value: 'sedan' },
-    { title: 'Hatchback', value: 'hatchback' },
-    { title: 'Camioneta', value: 'camioneta' },
-    { title: 'SUV', value: 'suv' },
-    { title: 'Furgoneta', value: 'furgoneta' },
-    { title: 'Camión', value: 'camion' },
-    { title: 'Bus', value: 'bus' },
-    { title: 'Van', value: 'van' },
-    { title: 'Motocicleta', value: 'motocicleta' },
-    { title: 'Pickup', value: 'pickup' },
-    { title: 'Minivan', value: 'minivan' },
-    { title: 'Deportivo', value: 'deportivo' },
-    { title: 'Otro', value: 'otro' }
-])
+// --- OPCIONES ---
+const vehicleTypeOptions = [
+    { title: 'Sedán', value: 'sedan' }, { title: 'Hatchback', value: 'hatchback' },
+    { title: 'Camioneta', value: 'camioneta' }, { title: 'SUV', value: 'suv' },
+    { title: 'Furgoneta', value: 'furgoneta' }, { title: 'Camión', value: 'camion' },
+    { title: 'Bus', value: 'bus' }, { title: 'Van', value: 'van' },
+    { title: 'Motocicleta', value: 'motocicleta' }, { title: 'Pickup', value: 'pickup' },
+    { title: 'Deportivo', value: 'deportivo' }, { title: 'Otro', value: 'otro' }
+]
 
-const brandOptions = ref([
-    { title: 'Toyota', value: 'toyota' },
-    { title: 'Honda', value: 'honda' },
-    { title: 'Nissan', value: 'nissan' },
-    { title: 'Chevrolet', value: 'chevrolet' },
-    { title: 'Ford', value: 'ford' },
-    { title: 'Hyundai', value: 'hyundai' },
-    { title: 'Kia', value: 'kia' },
-    { title: 'Volkswagen', value: 'volkswagen' },
-    { title: 'Mazda', value: 'mazda' },
-    { title: 'Suzuki', value: 'suzuki' },
-    { title: 'Otro', value: 'otro' }
-])
+const colorOptions = [
+    { title: 'Rojo', value: 'rojo' }, { title: 'Azul', value: 'azul' },
+    { title: 'Verde', value: 'verde' }, { title: 'Amarillo', value: 'amarillo' },
+    { title: 'Negro', value: 'negro' }, { title: 'Blanco', value: 'blanco' },
+    { title: 'Gris', value: 'gris' }, { title: 'Plateado', value: 'plateado' },
+    { title: 'Beige', value: 'beige' }, { title: 'Otro', value: 'otro' }
+]
 
-const colorOptions = ref([
-    { title: 'Rojo', value: 'rojo' },
-    { title: 'Azul', value: 'azul' },
-    { title: 'Verde', value: 'verde' },
-    { title: 'Amarillo', value: 'amarillo' },
-    { title: 'Negro', value: 'negro' },
-    { title: 'Blanco', value: 'blanco' },
-    { title: 'Gris', value: 'gris' },
-    { title: 'Plateado', value: 'plateado' },
-    { title: 'Dorado', value: 'dorado' },
-    { title: 'Morado', value: 'morado' },
-    { title: 'Naranja', value: 'naranja' },
-    { title: 'Café', value: 'café' },
-    { title: 'Rosado', value: 'rosado' },
-    { title: 'Celeste', value: 'celeste' },
-    { title: 'Beige', value: 'beige' },
-    { title: 'Otro', value: 'otro' }
-])
+const statusOptions = [
+    { title: 'Activo', value: 1 },
+    { title: 'Inactivo', value: 2 }
+]
 
-// Generar opciones de años (últimos 20 años + 5 años futuros)
 const yearOptions = ref([])
+const brandOptions = ref(getBrandOptions())
+const brandSearchOptions = ref([])
+
 const generateYearOptions = () => {
     const currentYear = new Date().getFullYear()
     for (let i = currentYear + 5; i >= currentYear - 20; i--) {
@@ -103,321 +95,207 @@ const generateYearOptions = () => {
     }
 }
 
-// Referencias del formulario
-const formRef = ref(null)
-
-// Validación para placa ecuatoriana
-const validateEcuadorianPlate = (plate) => {
-    if (!plate) return true; // Permitir vacío si no es requerido
-
-    // Formato: ABC-1234 (vehículos particulares) o XYZ-999 (comerciales)
-    const plateRegex = /^[A-Z]{3}-\d{3,4}$/
-    return plateRegex.test(plate.toUpperCase())
+const searchBrands = (searchText) => {
+    brandSearchOptions.value = getBrandSearchOptions(searchText || '')
 }
 
-// Reglas de validación
+// --- FORMATEO DINÁMICO ---
+watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
+    if (!newValue) return
+    // Evitar formatear si está borrando
+    if (oldValue && newValue.length < oldValue.length) return
+
+    const formatted = formatEcuadorianPlate(newValue)
+    if (formatted !== newValue) {
+        vehicleForm.value.license_plate = formatted
+    }
+})
+
+// --- REGLAS ---
 const rules = {
     license_plate: [
         v => !!v || 'La placa es requerida',
-        v => (v && v.length >= 7) || 'La placa debe tener al menos 7 caracteres',
-        v => validateEcuadorianPlate(v) || 'Formato de placa inválido (ej: ABC-1234)'
+        v => plateValidationRule(v)
     ],
-    brand: [
-        v => !!v || 'La marca es requerida',
-        v => (v && v.length >= 2) || 'La marca debe tener al menos 2 caracteres'
-    ],
-    model: [
-        v => !!v || 'El modelo es requerido',
-        v => (v && v.length >= 2) || 'El modelo debe tener al menos 2 caracteres'
-    ],
-    year: [
-        v => !!v || 'El año es requerido',
-        v => (v >= 1900 && v <= new Date().getFullYear() + 5) || 'El año debe estar entre 1900 y ' + (new Date().getFullYear() + 5)
-    ],
-    color: [
-        v => !!v || 'El color es requerido'
-    ],
-    vehicle_type: [
-        v => !!v || 'El tipo de vehículo es requerido'
-    ],
-    description: [
-        v => !v || v.length <= 500 || 'La descripción no puede exceder 500 caracteres'
-    ]
+    brand: [v => !!v || 'La marca es requerida'],
+    model: [v => !!v || 'El modelo es requerido'],
+    year: [v => !!v || 'El año es requerido'],
+    color: [v => !!v || 'El color es requerido'],
+    vehicle_type: [v => !!v || 'El tipo es requerido'],
 }
 
-// Cargar datos del vehículo al montar
+// --- CARGA Y ACCIONES ---
 const loadVehicleData = () => {
-    if (props.vehicleData) {
+    if (props.vehicleData && Object.keys(props.vehicleData).length > 0) {
+        // Formatear al cargar si viene de DB sin guión
+        const rawPlate = props.vehicleData.license_plate || ''
+        const plate = rawPlate.includes('-') ? rawPlate : formatEcuadorianPlate(rawPlate)
+
+        // Asegurar que brand sea el ID numérico correcto
+        let brandValue = props.vehicleData.brand
+        console.log('Brand original:', brandValue, 'Tipo:', typeof brandValue)
+
+        if (brandValue !== null && brandValue !== undefined) {
+            if (typeof brandValue === 'string') {
+                // Si viene como nombre, buscar el ID correspondiente
+                const brandOption = brandOptions.value.find(opt =>
+                    opt.title === brandValue.toUpperCase() ||
+                    opt.title === brandValue ||
+                    opt.value.toString() === brandValue
+                )
+                if (brandOption) {
+                    brandValue = brandOption.value
+                    console.log('Brand convertido de nombre a ID:', brandValue)
+                } else {
+                    // Intentar convertir directamente a número si es un string numérico
+                    const numericBrand = parseInt(brandValue)
+                    if (!isNaN(numericBrand)) {
+                        brandValue = numericBrand
+                        console.log('Brand convertido a número:', brandValue)
+                    } else {
+                        brandValue = null
+                        console.log('Brand no encontrado, seteando a null')
+                    }
+                }
+            } else if (typeof brandValue === 'number') {
+                // Ya es número, verificar que exista en las opciones
+                const brandOption = brandOptions.value.find(opt => opt.value === brandValue)
+                if (!brandOption) {
+                    console.log('Brand ID no encontrado en opciones:', brandValue)
+                    brandValue = null
+                } else {
+                    console.log('Brand ID válido:', brandValue)
+                }
+            }
+        } else {
+            console.log('Brand es null o undefined')
+        }
+
         vehicleForm.value = {
             ...props.vehicleData,
-        };
+            license_plate: plate,
+            brand: brandValue,
+            user_id: getCurrentUserId() // Asignar el ID del usuario actual
+        }
     }
 }
 
-// Actualizar vehículo
 const updateVehicle = async () => {
-    const { valid } = await formRef.value?.validate();
-    if (!valid) return;
+    const { valid } = await formRef.value?.validate()
+    if (!valid) return
 
-    loading.value = true;
-    error.value = '';
-    success.value = '';
+    loading.value = true
+    error.value = ''
 
     try {
-        // Validar que los campos no estén vacíos antes de enviar
-        const formData = {
-            id: vehicleForm.value.id,
-            license_plate: vehicleForm.value.license_plate?.trim() || '',
-            brand: vehicleForm.value.brand?.trim() || '',
-            model: vehicleForm.value.model?.trim() || '',
-            year: vehicleForm.value.year || new Date().getFullYear(),
-            color: vehicleForm.value.color?.trim() || '',
-            vehicle_type: vehicleForm.value.vehicle_type?.trim() || '',
-            description: vehicleForm.value.description?.trim() || ''
-        };
-
-        console.log('Datos del vehículo a actualizar (limpios):', formData);
-        console.log('Validación de campos vacíos:', {
-            license_plate: !!formData.license_plate,
-            brand: !!formData.brand,
-            model: !!formData.model,
-            color: !!formData.color,
-            vehicle_type: !!formData.vehicle_type
-        });
-
         const resp = await $api(`vehicles/${vehicleForm.value.id}`, {
             method: "PUT",
-            body: formData,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            onResponseError({ response }) {
-                console.error('Error response completo:', response);
-                error.value = response._data?.message || 'Error al actualizar vehículo';
-                console.error('Error response:', response._data);
-            },
-        });
+            body: vehicleForm.value,
+        })
 
-        console.log('Respuesta del servidor:', resp);
+        showNotification('Vehículo actualizado con éxito', 'success')
 
-        if (resp.status === 200 || resp.status === 201) {
-            success.value = 'Vehículo actualizado correctamente';
-            showNotification('Vehículo actualizado correctamente', 'success');
+        setTimeout(() => {
+            emit('update:isDialogVisible', false)
+            emit('vehicleUpdated', resp.data || vehicleForm.value)
+        }, 1200)
 
-            // Emitir datos actualizados (usar resp.data o vehicleForm.value como fallback)
-            const updatedData = resp.data ?? vehicleForm.value;
-            console.log('Datos emitidos:', updatedData);
-
-            // Cerrar diálogo después de un momento
-            setTimeout(() => {
-                emit('update:isDialogVisible', false);
-                emit('vehicleUpdated', updatedData);
-            }, 1500);
-        } else {
-            error.value = resp.message || 'Error al actualizar vehículo';
-            showNotification(resp.message || 'Error al actualizar vehículo', 'error');
-        }
-    } catch (error) {
-        console.error('Error al actualizar vehículo:', error);
-        error.value = 'Error al actualizar vehículo. Intente nuevamente.';
-        showNotification('Error al actualizar vehículo. Intente nuevamente.', 'error');
+    } catch (err) {
+        error.value = err.response?._data?.message || 'Error al actualizar'
+        showNotification(error.value, 'error')
     } finally {
-        loading.value = false;
+        loading.value = false
     }
 }
 
-// Resetear formulario
-const resetForm = () => {
-    if (formRef.value) {
-        formRef.value.resetValidation();
-    }
-}
-
-// Cerrar diálogo
 const closeDialog = () => {
-    emit('update:isDialogVisible', false);
-    resetForm();
+    emit('update:isDialogVisible', false)
+    formRef.value?.resetValidation()
 }
 
-// Watch para cambios en vehicleData
-watch(() => props.vehicleData, (newData) => {
-    if (newData) {
-        loadVehicleData();
-    }
-}, { immediate: true });
+// Sincronizar cuando el prop cambie (al abrir el diálogo)
+watch(() => props.vehicleData, () => {
+    loadVehicleData()
+    searchBrands('')
+}, { deep: true })
 
-// Montar componente
 onMounted(() => {
-    generateYearOptions();
-    loadVehicleData();
-});
+    generateYearOptions()
+    loadVehicleData()
+    // Inicializar con marcas populares
+    searchBrands('')
+})
 </script>
 
 <template>
     <VDialog max-width="800" :model-value="props.isDialogVisible" @update:model-value="closeDialog" persistent>
         <VCard class="pa-sm-10 pa-5">
-            <!-- Botón cerrar -->
             <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
 
-            <!-- Header -->
             <VCardText class="text-center pb-6">
-                <VIcon icon="ri-settings-line" size="42" color="primary" class="mb-3" />
+                <VIcon icon="ri-edit-box-line" size="42" color="primary" class="mb-3" />
                 <h4 class="text-h4 font-weight-bold mb-1">Editar Vehículo</h4>
-                <p class="text-body-2 text-medium-emphasis">
-                    Modificación de datos del vehículo
-                </p>
+                <p class="text-body-2 text-medium-emphasis">Actualice la información del registro</p>
             </VCardText>
 
             <VDivider class="mb-6" />
 
-            <!-- Form -->
             <VForm ref="formRef" @submit.prevent="updateVehicle">
                 <VRow dense>
-                    <!-- Datos Principales -->
-                    <VCol cols="12">
-                        <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos Principales</h5>
+                    <VCol cols="12" md="6">
+                        <VTextField v-model="vehicleForm.license_plate" label="Placa *" placeholder="ABC-1234"
+                            prepend-inner-icon="ri-id-card-line" :rules="rules.license_plate" maxlength="9"
+                            variant="outlined" />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VTextField v-model="vehicleForm.license_plate" label="Placa *" placeholder="Ej: ABC-1234"
-                            prepend-inner-icon="ri-id-card-line" :rules="rules.license_plate" required clearable
-                            class="v-input--density-comfortable" />
+                        <VSelect v-model="vehicleForm.vehicle_type" :items="vehicleTypeOptions"
+                            label="Tipo de Vehículo *" prepend-inner-icon="ri-car-line" :rules="rules.vehicle_type" />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VSelect v-model="vehicleForm.vehicle_type" :items="vehicleTypeOptions" item-title="title"
-                            item-value="value" label="Tipo de Vehículo *" prepend-inner-icon="ri-car-line"
-                            :rules="rules.vehicle_type" required clearable class="v-input--density-comfortable" />
+                        <VAutocomplete v-model="vehicleForm.brand" :items="brandOptions" item-title="title"
+                            item-value="value" label="Marca *" prepend-inner-icon="ri-building-line"
+                            :rules="rules.brand" :filter="filterBrands" @update:search="searchBrands"
+                            no-data-text="No se encontraron marcas" clearable />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VSelect v-model="vehicleForm.brand" :items="brandOptions" item-title="title" item-value="value"
-                            label="Marca *" prepend-inner-icon="ri-building-line" :rules="rules.brand" required
-                            clearable class="v-input--density-comfortable" />
+                        <VTextField v-model="vehicleForm.model" label="Modelo *" :rules="rules.model" />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VTextField v-model="vehicleForm.model" label="Modelo *" placeholder="Ingrese modelo"
-                            prepend-inner-icon="ri-car-line" :rules="rules.model" required clearable
-                            class="v-input--density-comfortable" />
+                        <VSelect v-model="vehicleForm.year" :items="yearOptions" label="Año *" :rules="rules.year" />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VSelect v-model="vehicleForm.year" :items="yearOptions" item-title="title" item-value="value"
-                            label="Año *" prepend-inner-icon="ri-calendar-line" :rules="rules.year" required clearable
-                            class="v-input--density-comfortable" />
+                        <VSelect v-model="vehicleForm.color" :items="colorOptions" label="Color *"
+                            :rules="rules.color" />
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VSelect v-model="vehicleForm.color" :items="colorOptions" item-title="title" item-value="value"
-                            label="Color *" prepend-inner-icon="ri-palette-line" :rules="rules.color" required clearable
-                            class="v-input--density-comfortable" />
-                    </VCol>
-
-                    <VDivider class="my-6" />
-
-                    <!-- Descripción -->
-                    <VCol cols="12">
-                        <h5 class="text-h5 font-weight-bold mb-3 text-primary">Descripción</h5>
+                        <VSelect v-model="vehicleForm.status" :items="statusOptions" item-title="title"
+                            item-value="value" label="Estado del Vehículo" prepend-inner-icon="ri-toggle-line" />
                     </VCol>
 
                     <VCol cols="12">
-                        <VTextarea v-model="vehicleForm.description" label="Descripción (opcional)"
-                            placeholder="Ingrese detalles adicionales del vehículo..."
-                            prepend-inner-icon="ri-file-text-line" :rules="rules.description" rows="4" clearable
-                            class="v-input--density-comfortable" />
+                        <VTextarea v-model="vehicleForm.description" label="Descripción" rows="3" />
                     </VCol>
 
-                    <VDivider class="my-4" />
-
-                    <!-- Alerts -->
                     <VCol cols="12" v-if="error">
-                        <VAlert type="error" variant="tonal" closable @click:close="error = ''">
-                            {{ error }}
-                        </VAlert>
+                        <VAlert type="error" variant="tonal">{{ error }}</VAlert>
                     </VCol>
 
-                    <VCol cols="12" v-if="success">
-                        <VAlert type="success" variant="tonal" closable @click:close="success = ''">
-                            {{ success }}
-                        </VAlert>
-                    </VCol>
-
-                    <!-- Actions -->
-                    <VCol cols="12" class="d-flex justify-center gap-4">
-                        <VBtn type="submit" color="primary" prepend-icon="ri-save-3-line" :loading="loading"
-                            :disabled="loading">
-                            Actualizar Vehículo
-                        </VBtn>
-
-                        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" @click="closeDialog"
-                            :disabled="loading">
-                            Cancelar
-                        </VBtn>
+                    <VCol cols="12" class="d-flex justify-center gap-4 mt-4">
+                        <VBtn type="submit" color="primary" :loading="loading">Actualizar</VBtn>
+                        <VBtn variant="outlined" color="secondary" @click="closeDialog">Cancelar</VBtn>
                     </VCol>
                 </VRow>
             </VForm>
         </VCard>
     </VDialog>
 
-    <!-- Notificación Toast -->
     <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
         {{ notificationMessage }}
     </VSnackbar>
 </template>
-
-<style scoped>
-.v-card-title {
-    border-radius: 12px 12px 0 0;
-}
-
-.text-h6 {
-    color: #1976D2;
-    border-bottom: 2px solid #1976D2;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-}
-
-/* Estilos personalizados para campos más grandes */
-.v-input--density-comfortable .v-field__input {
-    min-height: 56px !important;
-    padding: 16px 12px !important;
-    font-size: 16px !important;
-}
-
-.v-input--density-comfortable .v-field {
-    border-radius: 12px !important;
-}
-
-.v-input--density-comfortable .v-field__prepend-inner {
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
-}
-
-.v-input--density-comfortable .v-label {
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}
-
-.v-input--density-comfortable.v-textarea .v-field__input {
-    min-height: 80px !important;
-    padding: 16px 12px !important;
-}
-
-.v-select .v-field__input {
-    min-height: 56px !important;
-    padding: 16px 12px !important;
-    font-size: 16px !important;
-}
-
-.v-select .v-field__append-inner {
-    padding-top: 16px !important;
-    padding-bottom: 16px !important;
-}
-
-/* Aumentar espaciado entre filas */
-.v-row>.v-col {
-    padding: 12px !important;
-}
-</style>

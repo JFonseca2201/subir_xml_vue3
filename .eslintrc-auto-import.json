@@ -359,6 +359,15 @@
     "onWatcherCleanup": true,
     "useId": true,
     "useModel": true,
-    "useTemplateRef": true
+    "useTemplateRef": true,
+    "ecuadorianPlateValidator": true,
+    "forceUpperCase": true,
+    "formatEcuadorianPlate": true,
+    "getPlateInfo": true,
+    "getPlateType": true,
+    "handlePlateInput": true,
+    "plateValidationRule": true,
+    "preventInvalidPlateChars": true,
+    "validateEcuadorianPlate": true
   }
 }

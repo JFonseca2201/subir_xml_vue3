@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 const props = defineProps({
     isDialogVisible: {
@@ -36,6 +37,20 @@ const getVehicleTypeLabel = computed(() => {
     if (!props.vehicleData?.vehicle_type) return 'No especificado'
     const option = vehicleTypeOptions.value.find(opt => opt.value === props.vehicleData.vehicle_type)
     return option ? option.title : props.vehicleData.vehicle_type
+})
+
+// Computed para obtener nombre de marca
+const getBrandName = computed(() => {
+    if (!props.vehicleData?.brand) return 'No especificada'
+    return getBrandNameById(props.vehicleData.brand)
+})
+
+// Computed para obtener estado
+const getVehicleStatus = computed(() => {
+    if (!props.vehicleData?.status) return { label: 'No especificado', color: 'grey' }
+    return props.vehicleData.status === 1
+        ? { label: 'ACTIVO', color: 'success' }
+        : { label: 'INACTIVO', color: 'error' }
 })
 
 // Computed para obtener el color con estilo
@@ -124,18 +139,18 @@ const closeDialog = () => {
                 <div class="d-flex flex-column align-center mb-4">
                     <div class="mb-4">
                         <VIcon :icon="getVehicleIcon" size="64" class="mb-3" />
-                        <div class="text-h5 font-weight-bold text-white">
+                        <div class="text-h5 font-weight-bold ">
                             {{ getVehicleTypeLabel }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Placa principal -->
-                <h2 class="text-h4 font-weight-bold mb-2 text-white">
+                <h2 class="text-h4 font-weight-bold mb-2">
                     {{ vehicleData.license_plate || 'Sin placa' }}
                 </h2>
-                <p class="text-h6 font-weight-regular mb-4 text-white opacity-90">
-                    {{ vehicleData.brand }} {{ vehicleData.model }} {{ vehicleData.year }}
+                <p class="text-h6 font-weight-regular mb-4">
+                    {{ getBrandName }} {{ vehicleData.model }} {{ vehicleData.year }}
                 </p>
             </VCardTitle>
 
@@ -162,7 +177,7 @@ const closeDialog = () => {
                                 <VCol cols="6">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Marca</div>
-                                        <div class="text-body-2 font-weight-medium">{{ vehicleData.brand }}
+                                        <div class="text-body-2 font-weight-medium">{{ getBrandName }}
                                         </div>
                                     </div>
                                 </VCol>
@@ -190,6 +205,15 @@ const closeDialog = () => {
                                             <VIcon :icon="getVehicleIcon" size="16" class="me-1" />
                                             <span class="text-body-2">{{ getVehicleTypeLabel }}</span>
                                         </div>
+                                    </div>
+                                </VCol>
+
+                                <VCol cols="12">
+                                    <div class="mb-3">
+                                        <div class="text-caption text-medium-emphasis mb-1">Estado</div>
+                                        <VChip :color="getVehicleStatus.color" variant="tonal" size="small">
+                                            {{ getVehicleStatus.label }}
+                                        </VChip>
                                     </div>
                                 </VCol>
 
@@ -253,7 +277,7 @@ const closeDialog = () => {
                                             <VIcon icon="ri-calendar-line" size="16" class="me-1 text-grey-darken-2" />
                                             <span class="text-body-2">{{ vehicleData.created_at ? new
                                                 Date(vehicleData.created_at).toLocaleDateString() : 'No especificado'
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                     </div>
                                 </VCol>
@@ -265,7 +289,7 @@ const closeDialog = () => {
                                             <VIcon icon="ri-refresh-line" size="16" class="me-1 text-grey-darken-2" />
                                             <span class="text-body-2">{{ vehicleData.updated_at ? new
                                                 Date(vehicleData.updated_at).toLocaleDateString() : 'No especificado'
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                     </div>
                                 </VCol>
