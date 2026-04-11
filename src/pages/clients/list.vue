@@ -107,9 +107,6 @@ const loadClients = async () => {
             },
         });
 
-        console.log('Respuesta completa de la API:', resp);
-        console.log('Estructura de datos:', Object.keys(resp));
-        console.log('clients en respuesta:', resp.clients);
         console.log('data en respuesta:', resp.data);
 
         clients.value = resp.clients || resp.data || [];

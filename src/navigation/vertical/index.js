@@ -11,6 +11,22 @@ export default [
     icon: { icon: 'ri-lock-password-line' },
   },
   {
+    title: 'Nomina y finanzas',
+    icon: { icon: 'ri-money-dollar-circle-line' },
+    children: [
+      {
+        title: 'Operaciones',
+        to: { name: 'finances-list' },
+        icon: { icon: 'ri-dashboard-line' },
+      },
+      {
+        title: 'Empleados',
+        to: { name: 'employees-list' },
+        icon: { icon: 'ri-group-line' },
+      },
+    ],
+  },
+  {
     title: 'Socios',
     to: { name: 'partners-list' },
     icon: { icon: 'ri-group-3-line' },
