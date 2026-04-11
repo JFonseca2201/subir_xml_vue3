@@ -333,20 +333,21 @@ onMounted(() => {
                             prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="3">
-                        <VSelect v-model="employeeForm.gender" :items="genderOptions" item-title="title"
-                            item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
-                            placeholder="Seleccione género" clearable />
-                    </VCol>
 
-                    <VCol cols="12" md="3">
+
+                    <VCol cols="12" md="6">
                         <VTextField v-model="employeeForm.birth_date" label="Fecha de Nacimiento" type="date"
                             prepend-inner-icon="ri-calendar-event-line" clearable />
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" md="8">
                         <VTextField v-model="employeeForm.address" label="Dirección"
                             placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
+                    </VCol>
+                    <VCol cols="12" md="4">
+                        <VSelect v-model="employeeForm.gender" :items="genderOptions" item-title="title"
+                            item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
+                            placeholder="Seleccione género" clearable />
                     </VCol>
 
                     <VDivider class="my-6" />

@@ -192,7 +192,9 @@ const loadEmployeeData = () => {
             user_id: userStore.id,
             // Formatear fechas para input type="date"
             birth_date: props.employeeData.birth_date ? props.employeeData.birth_date.split('T')[0] : '',
-            hire_date: props.employeeData.hire_date ? props.employeeData.hire_date.split('T')[0] : ''
+            hire_date: props.employeeData.hire_date ? props.employeeData.hire_date.split('T')[0] : '',
+            // Asegurar que el género se cargue correctamente
+            gender: props.employeeData.gender || ''
         };
         console.log('Datos del empleado cargados:', employeeForm.value);
     }
@@ -274,7 +276,7 @@ const resetForm = () => {
         address: '',
         gender: '',
         position: '',
-        salary: 0,
+        salary: '',
         hire_date: '',
         account_number: '',
         bank_name: '',
@@ -369,20 +371,21 @@ onMounted(() => {
                             prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
-                        <VSelect v-model="employeeForm.gender" :items="genderOptions" item-title="title"
-                            item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
-                            placeholder="Seleccione género" clearable />
-                    </VCol>
+
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="employeeForm.birth_date" label="Fecha de Nacimiento" type="date"
                             prepend-inner-icon="ri-calendar-event-line" clearable />
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" md="8">
                         <VTextField v-model="employeeForm.address" label="Dirección"
                             placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
+                    </VCol>
+                    <VCol cols="12" md="4">
+                        <VSelect v-model="employeeForm.gender" :items="genderOptions" item-title="title"
+                            item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
+                            placeholder="Seleccione género" clearable />
                     </VCol>
 
                     <VDivider class="my-6" />
