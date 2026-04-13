@@ -56,9 +56,9 @@ const employeeForm = ref({
 
 // Opciones para selects
 const genderOptions = ref([
-    { title: 'Masculino', value: '1' },
-    { title: 'Femenino', value: '2' },
-    { title: 'Otro', value: '3' }
+    { title: 'Masculino', value: 1 },
+    { title: 'Femenino', value: 2 },
+    { title: 'Otro', value: 3 }
 ])
 
 const statusOptions = ref([
@@ -151,7 +151,7 @@ const rules = {
         v => !v || (v && v.length <= 255) || 'La dirección no puede exceder 255 caracteres'
     ],
     gender: [
-        v => !v || ['1', '2', '3'].includes(v) || 'El género debe ser 1 (Masculino), 2 (Femenino) o 3 (Otro)'
+        v => !v || [1, 2, 3].includes(v) || 'El género debe ser 1 (Masculino), 2 (Femenino) o 3 (Otro)'
     ],
     position: [
         v => !v || (v && v.length <= 100) || 'El cargo no puede exceder 100 caracteres'
@@ -427,7 +427,7 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VSelect v-model="employeeForm.state" :items="statusOptions" item-title="title"
+                        <VSelect v-model="employeeForm.status" :items="statusOptions" item-title="title"
                             item-value="value" label="Estado" prepend-inner-icon="ri-toggle-line"
                             placeholder="Seleccione estado" clearable />
                     </VCol>
