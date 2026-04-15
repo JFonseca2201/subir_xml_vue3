@@ -28,8 +28,19 @@ export default [
   },
   {
     title: 'Socios',
-    to: { name: 'partners-list' },
     icon: { icon: 'ri-group-3-line' },
+    children: [
+      {
+        title: 'Listado',
+        to: { name: 'partners-list' },
+        icon: { icon: 'ri-list-check' },
+      },
+      {
+        title: 'Contribuciones',
+        to: { name: 'partners-contributions-list' },
+        icon: { icon: 'ri-hand-coin-line' },
+      },
+    ],
   },
   {
     title: 'Usuarios',

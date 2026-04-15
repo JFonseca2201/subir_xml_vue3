@@ -8,7 +8,19 @@ import EmployeeAddDialog from '@/components/inventory/employee/EmployeeAddDialog
 import EmployeeEditDialog from '@/components/inventory/employee/EmployeeEditDialog.vue'
 import EmployeeShowDialog from '@/components/inventory/employee/EmployeeShowDialog.vue'
 import EmployeeListDialog from '@/components/inventory/employee/EmployeeListDialog.vue'
+
+// Importar diálogos de adelantos
+import EmployeeAdvanceDialog from '@/components/inventory/employee/employee_advances/EmployeeAdvanceDialog.vue'
+import EmployeeAdvanceDeleteDialog from '@/components/inventory/employee/employee_advances/EmployeeAdvanceDeleteDialog.vue'
+
+// Importar diálogos de pagos
+import EmployeePaymentDialog from '@/components/inventory/employee/employee_payments/EmployeePaymentDialog.vue'
+import EmployeePaymentDeleteDialog from '@/components/inventory/employee/employee_payments/EmployeePaymentDeleteDialog.vue'
+
 import EmployeeDeleteDialog from '@/components/inventory/employee/EmployeeDeleteDialog.vue'
+
+// Inicializar toast
+const { showNotification } = useGlobalToast()
 
 // Estado
 const loading = ref(false)
@@ -23,6 +35,16 @@ const isShowDialogVisible = ref(false)
 const isListDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const selectedEmployee = ref(null)
+
+// Estado de diálogos de adelantos
+const isAdvanceDialogVisible = ref(false)
+const isAdvanceDeleteDialogVisible = ref(false)
+const selectedAdvance = ref(null)
+
+// Estado de diálogos de pagos
+const isPaymentDialogVisible = ref(false)
+const isPaymentDeleteDialogVisible = ref(false)
+const selectedPayment = ref(null)
 
 // Opciones de período
 const periodOptions = [
@@ -70,21 +92,82 @@ const loadEmployeeData = async () => {
         if (resp.status === 200) {
             employees.value = resp.employees || [];
             console.log('Response:', resp);
+
+            // Validar si no hay empleados y redirigir a pestaña de ingreso
+            if (!employees.value || employees.value.length === 0) {
+                // Abrir diálogo de agregar empleado automáticamente
+                isAddDialogVisible.value = true;
+                showNotification('No hay empleados registrados. Por favor, ingrese un empleado primero.', 'info');
+            }
         }
 
-        // Mantener datos simulados para adelantos y pagos (pueden agregarse APIs más tarde)
-        const mockAdvances = [
-            { id: 1, description: 'Adelanto de sueldo', amount: 200.00, date: '2024-01-15', employee: 'Carlos Rodríguez', department: 'Ventas', reason: 'Emergencia médica', status: 'pending' },
-            { id: 2, description: 'Adelanto para gastos', amount: 150.00, date: '2024-01-14', employee: 'Ana Martínez', department: 'Administración', reason: 'Viaje de trabajo', status: 'approved' }
-        ]
+        // Cargar adelantos desde la API real
+        try {
+            const advancesResp = await $api("employee-advances", {
+                method: "GET",
+                onResponseError({ response }) {
+                    console.error('Error loading advances:', response._data);
+                },
+            });
 
-        const mockPayments = [
-            { id: 1, description: 'Pago de nómina', amount: 1500.00, date: '2024-01-15', employee: 'Carlos Rodríguez', department: 'Ventas', type: 'Quincenal', method: 'transferencia' },
-            { id: 2, description: 'Pago de bono', amount: 250.00, date: '2024-01-15', employee: 'Ana Martínez', department: 'Administración', type: 'Bono productividad', method: 'efectivo' }
-        ]
+            // La API devuelve respuesta paginada, verificar si tiene la estructura correcta
+            if (advancesResp && Array.isArray(advancesResp.advances)) {
+                advances.value = advancesResp.advances.map(advance => ({
+                    ...advance,
+                    employee: advance.employee || {},
+                    description: advance.concept || 'Sin descripción',
+                    status: advance.state === 1 ? 'pending' : advance.state === 2 ? 'approved' : 'rejected'
+                }));
+            } else if (advancesResp && Array.isArray(advancesResp)) {
+                // Si la respuesta es directamente un array
+                advances.value = advancesResp.map(advance => ({
+                    ...advance,
+                    employee: advance.employee || {},
+                    description: advance.concept || 'Sin descripción',
+                    status: advance.state === 1 ? 'pending' : advance.state === 2 ? 'approved' : 'rejected'
+                }));
+            } else {
+                console.log('Respuesta de adelantos:', advancesResp);
+                advances.value = [];
+            }
+        } catch (error) {
+            console.error('Error loading advances:', error);
+            advances.value = [];
+        }
 
-        advances.value = mockAdvances
-        payments.value = mockPayments
+        // Cargar pagos desde la API real
+        try {
+            const paymentsResp = await $api("employee-payments", {
+                method: "GET",
+                onResponseError({ response }) {
+                    console.error('Error loading payments:', response._data);
+                },
+            });
+
+            // La API devuelve respuesta paginada, verificar si tiene la estructura correcta
+            if (paymentsResp && Array.isArray(paymentsResp.payments)) {
+                payments.value = paymentsResp.payments.map(payment => ({
+                    ...payment,
+                    employee: payment.employee || {},
+                    description: payment.concept || 'Sin descripción',
+                    status: payment.state === 1 ? 'active' : 'inactive'
+                }));
+            } else if (paymentsResp && Array.isArray(paymentsResp)) {
+                // Si la respuesta es directamente un array
+                payments.value = paymentsResp.map(payment => ({
+                    ...payment,
+                    employee: payment.employee || {},
+                    description: payment.concept || 'Sin descripción',
+                    status: payment.state === 1 ? 'active' : 'inactive'
+                }));
+            } else {
+                console.log('Respuesta de pagos:', paymentsResp);
+                payments.value = [];
+            }
+        } catch (error) {
+            console.error('Error loading payments:', error);
+            payments.value = [];
+        }
 
     } catch (error) {
         console.error('Error al cargar datos de empleados:', error)
@@ -121,6 +204,24 @@ const getStatusText = (status) => {
         rejected: 'Rechazado'
     }
     return texts[status] || 'Desconocido'
+}
+
+const getPaymentTypeText = (type) => {
+    const types = {
+        cash: 'Efectivo',
+        transfer: 'Transferencia',
+        check: 'Cheque'
+    }
+    return types[type] || 'Desconocido'
+}
+
+const getPaymentTypeColor = (type) => {
+    const colors = {
+        cash: 'success',
+        transfer: 'primary',
+        check: 'info'
+    }
+    return colors[type] || 'grey'
 }
 
 const getPaymentMethodIcon = (method) => {
@@ -168,6 +269,52 @@ const handleEditEmployee = (updatedEmployee) => {
     // Recargar datos después de editar
     loadEmployeeData()
     console.log('Empleado actualizado:', updatedEmployee)
+}
+
+// Funciones para adelantos
+const openAdvanceDialog = (advance = null) => {
+    selectedAdvance.value = advance
+    isAdvanceDialogVisible.value = true
+}
+
+const openAdvanceDeleteDialog = (advance) => {
+    selectedAdvance.value = advance
+    isAdvanceDeleteDialogVisible.value = true
+}
+
+const handleAdvanceSuccess = () => {
+    // Recargar datos de adelantos después de crear/editar
+    loadEmployeeData()
+    console.log('Adelanto guardado exitosamente')
+}
+
+const handleAdvanceDeleteSuccess = () => {
+    // Recargar datos de adelantos después de eliminar
+    loadEmployeeData()
+    console.log('Adelanto eliminado exitosamente')
+}
+
+// Funciones para pagos
+const openPaymentDialog = (payment = null) => {
+    selectedPayment.value = payment
+    isPaymentDialogVisible.value = true
+}
+
+const openPaymentDeleteDialog = (payment) => {
+    selectedPayment.value = payment
+    isPaymentDeleteDialogVisible.value = true
+}
+
+const handlePaymentSuccess = () => {
+    // Recargar datos de pagos después de crear/editar
+    loadEmployeeData()
+    console.log('Pago guardado exitosamente')
+}
+
+const handlePaymentDeleteSuccess = () => {
+    // Recargar datos de pagos después de eliminar
+    loadEmployeeData()
+    console.log('Pago eliminado exitosamente')
 }
 
 const handleSelectEmployee = (employee) => {
@@ -282,7 +429,8 @@ onMounted(() => {
                         <div class="mb-3">
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <h3 class="text-h6 font-weight-bold">Solicitudes de Adelanto</h3>
-                                <VBtn color="warning" variant="tonal" size="small" prepend-icon="ri-add-line">
+                                <VBtn color="warning" variant="tonal" size="small" prepend-icon="ri-add-line"
+                                    @click="openAdvanceDialog()">
                                     Nuevo Adelanto
                                 </VBtn>
                             </div>
@@ -296,7 +444,9 @@ onMounted(() => {
                                             {{ advance.description }}
                                         </VListItemTitle>
                                         <VListItemSubtitle>
-                                            {{ advance.employee }} · {{ advance.department }} · {{ advance.date }}
+                                            {{ advance.employee?.full_name || `${advance.employee?.name || ''}
+                                            ${advance.employee?.surname || ''}` }} · {{
+                                                advance.advance_date ? advance.advance_date.split('T')[0] : 'N/A' }}
                                         </VListItemSubtitle>
                                         <template #append>
                                             <div class="text-right">
@@ -304,8 +454,9 @@ onMounted(() => {
                                                     <VChip :color="getStatusColor(advance.status)" size="small">
                                                         {{ getStatusText(advance.status) }}
                                                     </VChip>
-                                                    <VChip color="warning" size="small" variant="tonal">
-                                                        {{ advance.reason }}
+                                                    <VChip v-if="advance.concept" color="info" size="small"
+                                                        variant="tonal">
+                                                        {{ advance.concept }}
                                                     </VChip>
                                                 </div>
                                                 <div class="text-warning font-weight-bold mb-1">
@@ -313,12 +464,29 @@ onMounted(() => {
                                                 </div>
                                                 <div class="d-flex gap-1">
                                                     <VBtn color="primary" variant="tonal" size="x-small"
-                                                        icon="ri-edit-line" />
+                                                        icon="ri-edit-line" @click="openAdvanceDialog(advance)" />
                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                        icon="ri-delete-bin-line" />
+                                                        icon="ri-delete-bin-line"
+                                                        @click="openAdvanceDeleteDialog(advance)" />
                                                 </div>
                                             </div>
                                         </template>
+                                    </VListItem>
+                                </VList>
+
+                                <!-- Mensaje cuando no hay adelantos -->
+                                <VList v-if="!advances || advances.length === 0">
+                                    <VListItem>
+                                        <template #prepend>
+                                            <VIcon icon="ri-hand-coin-line text-medium-emphasis" size="40" />
+                                        </template>
+                                        <VListItemTitle class="text-medium-emphasis text-center">
+                                            No existen adelantos
+                                        </VListItemTitle>
+                                        <VListItemSubtitle class="text-medium-emphasis text-center">
+                                            No hay adelantos registrados en el sistema.
+                                            Haga clic en "Nuevo Adelanto" para comenzar.
+                                        </VListItemSubtitle>
                                     </VListItem>
                                 </VList>
                             </VCard>
@@ -330,7 +498,8 @@ onMounted(() => {
                         <div class="mb-3">
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <h3 class="text-h6 font-weight-bold">Pagos Realizados</h3>
-                                <VBtn color="success" variant="tonal" size="small" prepend-icon="ri-add-line">
+                                <VBtn color="success" variant="tonal" size="small" prepend-icon="ri-add-line"
+                                    @click="openPaymentDialog()">
                                     Nuevo Pago
                                 </VBtn>
                             </div>
@@ -338,23 +507,27 @@ onMounted(() => {
                                 <VList>
                                     <VListItem v-for="payment in payments" :key="payment.id">
                                         <template #prepend>
-                                            <VIcon :icon="getPaymentMethodIcon(payment.method)" size="20" />
+                                            <VIcon icon="ri-money-dollar-box-line text-success" size="20" />
                                         </template>
                                         <VListItemTitle>
                                             {{ payment.description }}
                                         </VListItemTitle>
                                         <VListItemSubtitle>
-                                            {{ payment.employee }} · {{ payment.department }} · {{ payment.date }}
+                                            {{ payment.employee?.full_name || `${payment.employee?.name || ''}
+                                            ${payment.employee?.surname
+                                                || ''}` }} · {{ payment.payment_date ? payment.payment_date.split('T')[0] :
+                                                'N/A' }}
                                         </VListItemSubtitle>
                                         <template #append>
                                             <div class="text-right">
                                                 <div class="d-flex justify-end gap-1 mb-1">
-                                                    <VChip color="primary" size="small">
-                                                        {{ payment.type }}
-                                                    </VChip>
-                                                    <VChip :color="payment.method === 'efectivo' ? 'success' : 'info'"
+                                                    <VChip :color="getPaymentTypeColor(payment.payment_type)"
                                                         size="small" variant="tonal">
-                                                        {{ payment.method }}
+                                                        {{ getPaymentTypeText(payment.payment_type) }}
+                                                    </VChip>
+                                                    <VChip :color="payment.state === 1 ? 'success' : 'error'"
+                                                        size="small" variant="tonal">
+                                                        {{ payment.state === 1 ? 'Activo' : 'Inactivo' }}
                                                     </VChip>
                                                 </div>
                                                 <div class="text-error font-weight-bold mb-1">
@@ -362,12 +535,29 @@ onMounted(() => {
                                                 </div>
                                                 <div class="d-flex gap-1">
                                                     <VBtn color="primary" variant="tonal" size="x-small"
-                                                        icon="ri-edit-line" />
+                                                        icon="ri-edit-line" @click="openPaymentDialog(payment)" />
                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                        icon="ri-delete-bin-line" />
+                                                        icon="ri-delete-bin-line"
+                                                        @click="openPaymentDeleteDialog(payment)" />
                                                 </div>
                                             </div>
                                         </template>
+                                    </VListItem>
+                                </VList>
+
+                                <!-- Mensaje cuando no hay pagos -->
+                                <VList v-if="!payments || payments.length === 0">
+                                    <VListItem>
+                                        <template #prepend>
+                                            <VIcon icon="ri-money-dollar-box-line text-medium-emphasis" size="40" />
+                                        </template>
+                                        <VListItemTitle class="text-medium-emphasis text-center">
+                                            No existen pagos
+                                        </VListItemTitle>
+                                        <VListItemSubtitle class="text-medium-emphasis text-center">
+                                            No hay pagos registrados en el sistema.
+                                            Haga clic en "Nuevo Pago" para comenzar.
+                                        </VListItemSubtitle>
                                     </VListItem>
                                 </VList>
                             </VCard>
@@ -394,14 +584,22 @@ onMounted(() => {
                                             {{ employee.name }} {{ employee.surname }}
                                         </VListItemTitle>
                                         <VListItemSubtitle>
-                                            <div>
-                                                {{ employee.position || 'N/A' }}
-                                            </div>
-                                            <div>
-                                                {{ employee.sucursal?.name || 'N/A' }}
-                                            </div>
-                                            <div>
-                                                {{ employee.hire_date ? employee.hire_date.split('T')[0] : 'N/A' }}
+                                            <div class="d-flex flex-column gap-1">
+                                                <div>
+                                                    {{ employee.position || 'N/A' }}
+                                                </div>
+                                                <div>
+                                                    {{ employee.sucursal?.name || 'N/A' }}
+                                                </div>
+                                                <div>
+                                                    {{ employee.hire_date ? employee.hire_date.split('T')[0] : 'N/A' }}
+                                                </div>
+                                                <div class="d-flex align-center gap-1">
+                                                    <VIcon icon="ri-hand-coin-line text-warning" size="16" />
+                                                    <span class="text-warning font-weight-medium">
+                                                        Adelantos: {{ formatCurrency(employee.pending_advances || 0) }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </VListItemSubtitle>
                                         <template #append>
@@ -463,11 +661,29 @@ onMounted(() => {
     <EmployeeShowDialog v-if="selectedEmployee" v-model:isDialogVisible="isShowDialogVisible"
         :employeeData="selectedEmployee" />
 
+    <EmployeeListDialog v-if="isListDialogVisible" v-model:isDialogVisible="isListDialogVisible"></EmployeeListDialog>
+    <EmployeeShowDialog v-if="selectedEmployee" v-model:isDialogVisible="isShowDialogVisible"
+        :employeeData="selectedEmployee" />
+
     <EmployeeListDialog v-if="isListDialogVisible" v-model:isDialogVisible="isListDialogVisible"
         @selectEmployee="handleSelectEmployee" />
 
     <EmployeeDeleteDialog v-if="selectedEmployee" v-model:isDialogVisible="isDeleteDialogVisible"
         :employeeData="selectedEmployee" @deleteEmployee="handleDeleteEmployee" />
+
+    <!-- Diálogos de Pagos -->
+    <EmployeePaymentDialog v-model="isPaymentDialogVisible" :paymentData="selectedPayment" :employees="employees"
+        @success="handlePaymentSuccess" />
+
+    <EmployeePaymentDeleteDialog v-model="isPaymentDeleteDialogVisible" :paymentData="selectedPayment"
+        @success="handlePaymentDeleteSuccess" />
+
+    <!-- Diálogos de Adelantos -->
+    <EmployeeAdvanceDialog v-model="isAdvanceDialogVisible" :advanceData="selectedAdvance" :employees="employees"
+        @success="handleAdvanceSuccess" />
+
+    <EmployeeAdvanceDeleteDialog v-model="isAdvanceDeleteDialogVisible" :advanceData="selectedAdvance"
+        @success="handleAdvanceDeleteSuccess" />
 </template>
 
 <style scoped>

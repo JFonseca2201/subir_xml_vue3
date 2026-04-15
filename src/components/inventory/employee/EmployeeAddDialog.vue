@@ -38,9 +38,9 @@ const employeeForm = ref({
     email: '',
     birth_date: '',
     address: '',
-    gender: '',
+    gender: null,
     position: '',
-    salary: '',
+    salary: 0,
     hire_date: '',
     account_number: '',
     bank_name: '',
@@ -284,7 +284,7 @@ onMounted(() => {
     <VDialog max-width="800" v-model="props.isDialogVisible" persistent>
         <VCard class="pa-sm-10 pa-5">
             <!-- Botón cerrar -->
-            <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
+            <VBtn variant="text" size="default" @click="closeDialog" icon="ri-close-line" />
 
             <!-- Header -->
             <VCardText class="text-center pb-6">
@@ -304,6 +304,15 @@ onMounted(() => {
                     <VCol cols="12">
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos Personales</h5>
                     </VCol>
+                    <VCol cols="12" md="6">
+                        <VTextField v-model="employeeForm.dni" label="Cédula de Identidad *"
+                            placeholder="Ingrese Cédula" prepend-inner-icon="ri-id-card-line" :rules="rules.dni"
+                            required clearable />
+                    </VCol>
+                    <VCol cols="12" md="6">
+                        <VTextField v-model="employeeForm.email" label="Email" placeholder="Ingrese email"
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
+                    </VCol>
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="employeeForm.name" label="Nombres *" placeholder="Ingrese nombres"
@@ -316,24 +325,10 @@ onMounted(() => {
                             prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
                             @input="generateFullName" clearable />
                     </VCol>
-
-                    <VCol cols="12" md="6">
-                        <VTextField v-model="employeeForm.dni" label="DNI/Cédula de Identidad *"
-                            placeholder="Ingrese DNI/Cédula" prepend-inner-icon="ri-id-card-line" :rules="rules.dni"
-                            required clearable />
-                    </VCol>
-
                     <VCol cols="12" md="6">
                         <VTextField v-model="employeeForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable />
                     </VCol>
-
-                    <VCol cols="12" md="6">
-                        <VTextField v-model="employeeForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
-                    </VCol>
-
-
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="employeeForm.birth_date" label="Fecha de Nacimiento" type="date"
@@ -387,8 +382,6 @@ onMounted(() => {
                             placeholder="Nombre del banco" prepend-inner-icon="ri-bank-line" :rules="rules.bank_name"
                             clearable />
                     </VCol>
-
-
 
                     <VDivider class="my-4" />
 

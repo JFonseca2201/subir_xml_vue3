@@ -29,6 +29,7 @@ declare module 'vue-router/auto-routes' {
     'finances-list': RouteRecordInfo<'finances-list', '/finances/list', Record<never, never>, Record<never, never>>,
     'invoice-list': RouteRecordInfo<'invoice-list', '/invoice/list', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'partners-contributions-list': RouteRecordInfo<'partners-contributions-list', '/partners/contributions/list', Record<never, never>, Record<never, never>>,
     'partners-list': RouteRecordInfo<'partners-list', '/partners/list', Record<never, never>, Record<never, never>>,
     'product-add': RouteRecordInfo<'product-add', '/product/add', Record<never, never>, Record<never, never>>,
     'product-edit-id': RouteRecordInfo<'product-edit-id', '/product/edit/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
