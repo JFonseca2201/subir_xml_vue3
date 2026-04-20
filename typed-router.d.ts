@@ -38,6 +38,7 @@ declare module 'vue-router/auto-routes' {
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,
     'sucursales': RouteRecordInfo<'sucursales', '/sucursales', Record<never, never>, Record<never, never>>,
     'sucursales-warehouses': RouteRecordInfo<'sucursales-warehouses', '/sucursales/warehouses', Record<never, never>, Record<never, never>>,
+    'transfers-list': RouteRecordInfo<'transfers-list', '/transfers/list', Record<never, never>, Record<never, never>>,
     'users': RouteRecordInfo<'users', '/users', Record<never, never>, Record<never, never>>,
     'vehicles-list': RouteRecordInfo<'vehicles-list', '/vehicles/list', Record<never, never>, Record<never, never>>,
   }

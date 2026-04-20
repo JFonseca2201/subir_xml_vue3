@@ -24,6 +24,11 @@ export default [
         to: { name: 'employees-list' },
         icon: { icon: 'ri-group-line' },
       },
+      {
+        title: 'Transferencias',
+        to: { name: 'transfers-list' },
+        icon: { icon: 'ri-exchange-line' },
+      },
     ],
   },
   {

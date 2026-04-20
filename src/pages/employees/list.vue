@@ -3,50 +3,39 @@ import { ref, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
-// Importar diálogos de empleados
+// --- IMPORTACIÓN DE DIÁLOGOS ---
 import EmployeeAddDialog from '@/components/inventory/employee/EmployeeAddDialog.vue'
 import EmployeeEditDialog from '@/components/inventory/employee/EmployeeEditDialog.vue'
 import EmployeeShowDialog from '@/components/inventory/employee/EmployeeShowDialog.vue'
-import EmployeeListDialog from '@/components/inventory/employee/EmployeeListDialog.vue'
-
-// Importar diálogos de adelantos
 import EmployeeAdvanceDialog from '@/components/inventory/employee/employee_advances/EmployeeAdvanceDialog.vue'
 import EmployeeAdvanceDeleteDialog from '@/components/inventory/employee/employee_advances/EmployeeAdvanceDeleteDialog.vue'
-
-// Importar diálogos de pagos
 import EmployeePaymentDialog from '@/components/inventory/employee/employee_payments/EmployeePaymentDialog.vue'
 import EmployeePaymentDeleteDialog from '@/components/inventory/employee/employee_payments/EmployeePaymentDeleteDialog.vue'
-
 import EmployeeDeleteDialog from '@/components/inventory/employee/EmployeeDeleteDialog.vue'
 
-// Inicializar toast
 const { showNotification } = useGlobalToast()
 
-// Estado
+// --- ESTADO ---
 const loading = ref(false)
 const selectedPeriod = ref('today')
 const transactionType = ref('payroll')
-const employees = ref([]);
+const employees = ref([])
+const advances = ref([])
+const payments = ref([])
 
-// Estado de diálogos
+// --- ESTADO DE DIÁLOGOS ---
 const isAddDialogVisible = ref(false)
 const isEditDialogVisible = ref(false)
 const isShowDialogVisible = ref(false)
-const isListDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const selectedEmployee = ref(null)
-
-// Estado de diálogos de adelantos
 const isAdvanceDialogVisible = ref(false)
 const isAdvanceDeleteDialogVisible = ref(false)
 const selectedAdvance = ref(null)
-
-// Estado de diálogos de pagos
 const isPaymentDialogVisible = ref(false)
 const isPaymentDeleteDialogVisible = ref(false)
 const selectedPayment = ref(null)
 
-// Opciones de período
 const periodOptions = [
     { title: 'Hoy', value: 'today' },
     { title: 'Esta semana', value: 'week' },
@@ -54,667 +43,367 @@ const periodOptions = [
     { title: 'Año', value: 'year' }
 ]
 
-// Datos de adelantos, pagos y nómina
-const advances = ref([])
-const payments = ref([])
-const payroll = ref([])
-
-// Computed properties
+// --- COMPUTED PROPERTIES ---
 const totalAdvances = computed(() => {
-    return advances.value.reduce((sum, advance) => sum + advance.amount, 0)
+    return (advances.value || []).reduce((sum, item) => sum + Number(item.amount || 0), 0)
 })
 
 const totalPayments = computed(() => {
-    return payments.value.reduce((sum, payment) => sum + payment.amount, 0)
-})
-
-const totalPayroll = computed(() => {
-    return payroll.value.reduce((sum, item) => sum + item.amount, 0)
+    return (payments.value || []).reduce((sum, item) => sum + Number(item.amount || 0), 0)
 })
 
 const netEmployeeCost = computed(() => {
     return totalPayments.value - totalAdvances.value
 })
 
-// Métodos
+// --- MÉTODOS DE CARGA ---
 const loadEmployeeData = async () => {
     loading.value = true
     try {
-        // Cargar datos de empleados desde la API real
-        const resp = await $api("employees", {
-            method: "GET",
-            onResponseError({ response }) {
-                console.error('Error response:', response._data);
-            },
-        });
+        const resp = await $api("employees", { method: "GET" })
+        if (resp && resp.status === 200) {
+            employees.value = (resp.employees || []).map(emp => ({
+                ...emp,
+                sucursal_display: emp.sucursal?.name || 'Luxury Evys',
+                id_display: emp.dni || 'No asignada'
+            }))
 
-
-        if (resp.status === 200) {
-            employees.value = resp.employees || [];
-            console.log('Response:', resp);
-
-            // Validar si no hay empleados y redirigir a pestaña de ingreso
-            if (!employees.value || employees.value.length === 0) {
-                // Abrir diálogo de agregar empleado automáticamente
-                isAddDialogVisible.value = true;
-                showNotification('No hay empleados registrados. Por favor, ingrese un empleado primero.', 'info');
+            if (employees.value.length === 0) {
+                isAddDialogVisible.value = true
             }
         }
 
-        // Cargar adelantos desde la API real
-        try {
-            const advancesResp = await $api("employee-advances", {
-                method: "GET",
-                onResponseError({ response }) {
-                    console.error('Error loading advances:', response._data);
-                },
-            });
+        const advancesResp = await $api("employee-advances", { method: "GET" })
+        const rawAdvances = advancesResp.advances || advancesResp || []
+        advances.value = Array.isArray(rawAdvances) ? rawAdvances.map(adv => ({
+            ...adv,
+            employee: adv.employee || { name: 'Desconocido', surname: '' },
+            description: adv.concept || 'Sin descripción',
+            status: adv.state === 1 ? 'pending' : adv.state === 2 ? 'approved' : 'rejected'
+        })) : []
 
-            // La API devuelve respuesta paginada, verificar si tiene la estructura correcta
-            if (advancesResp && Array.isArray(advancesResp.advances)) {
-                advances.value = advancesResp.advances.map(advance => ({
-                    ...advance,
-                    employee: advance.employee || {},
-                    description: advance.concept || 'Sin descripción',
-                    status: advance.state === 1 ? 'pending' : advance.state === 2 ? 'approved' : 'rejected'
-                }));
-            } else if (advancesResp && Array.isArray(advancesResp)) {
-                // Si la respuesta es directamente un array
-                advances.value = advancesResp.map(advance => ({
-                    ...advance,
-                    employee: advance.employee || {},
-                    description: advance.concept || 'Sin descripción',
-                    status: advance.state === 1 ? 'pending' : advance.state === 2 ? 'approved' : 'rejected'
-                }));
-            } else {
-                console.log('Respuesta de adelantos:', advancesResp);
-                advances.value = [];
-            }
-        } catch (error) {
-            console.error('Error loading advances:', error);
-            advances.value = [];
-        }
-
-        // Cargar pagos desde la API real
-        try {
-            const paymentsResp = await $api("employee-payments", {
-                method: "GET",
-                onResponseError({ response }) {
-                    console.error('Error loading payments:', response._data);
-                },
-            });
-
-            // La API devuelve respuesta paginada, verificar si tiene la estructura correcta
-            if (paymentsResp && Array.isArray(paymentsResp.payments)) {
-                payments.value = paymentsResp.payments.map(payment => ({
-                    ...payment,
-                    employee: payment.employee || {},
-                    description: payment.concept || 'Sin descripción',
-                    status: payment.state === 1 ? 'active' : 'inactive'
-                }));
-            } else if (paymentsResp && Array.isArray(paymentsResp)) {
-                // Si la respuesta es directamente un array
-                payments.value = paymentsResp.map(payment => ({
-                    ...payment,
-                    employee: payment.employee || {},
-                    description: payment.concept || 'Sin descripción',
-                    status: payment.state === 1 ? 'active' : 'inactive'
-                }));
-            } else {
-                console.log('Respuesta de pagos:', paymentsResp);
-                payments.value = [];
-            }
-        } catch (error) {
-            console.error('Error loading payments:', error);
-            payments.value = [];
-        }
+        const paymentsResp = await $api("employee-payments", { method: "GET" })
+        const rawPayments = paymentsResp.payments || paymentsResp || []
+        payments.value = Array.isArray(rawPayments) ? rawPayments.map(pay => ({
+            ...pay,
+            employee: pay.employee || { name: 'Desconocido', surname: '' },
+            description: pay.concept || 'Sin descripción',
+            status: pay.state === 1 ? 'active' : 'inactive'
+        })) : []
 
     } catch (error) {
-        console.error('Error al cargar datos de empleados:', error)
-        // En caso de error crítico, usar datos simulados
-        const mockPayroll = [
-            { id: 1, name: 'Carlos Rodríguez', department: 'Ventas', position: 'Vendedor Senior', salary: 1500.00, type: 'Quincenal', status: 'Activo', hireDate: '2022-03-15', bankAccount: '0012345678' }
-        ]
-        payroll.value = mockPayroll
+        console.error('Error al cargar datos:', error)
+        showNotification('Error al conectar con el servidor', 'error')
     } finally {
         loading.value = false
     }
 }
 
+// --- HELPERS ---
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-EC', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(amount)
+    const value = Number(amount || 0)
+    return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(value)
 }
 
 const getStatusColor = (status) => {
-    const colors = {
-        pending: 'warning',
-        approved: 'success',
-        rejected: 'error'
-    }
+    const colors = { pending: 'warning', approved: 'success', rejected: 'error' }
     return colors[status] || 'grey'
 }
 
 const getStatusText = (status) => {
-    const texts = {
-        pending: 'Pendiente',
-        approved: 'Aprobado',
-        rejected: 'Rechazado'
-    }
+    const texts = { pending: 'Pendiente', approved: 'Aprobado', rejected: 'Rechazado' }
     return texts[status] || 'Desconocido'
 }
 
 const getPaymentTypeText = (type) => {
-    const types = {
-        cash: 'Efectivo',
-        transfer: 'Transferencia',
-        check: 'Cheque'
-    }
+    const types = { cash: 'Efectivo', transfer: 'Transferencia', check: 'Cheque' }
     return types[type] || 'Desconocido'
 }
 
 const getPaymentTypeColor = (type) => {
-    const colors = {
-        cash: 'success',
-        transfer: 'primary',
-        check: 'info'
-    }
+    const colors = { cash: 'success', transfer: 'primary', check: 'info' }
     return colors[type] || 'grey'
 }
 
-const getPaymentMethodIcon = (method) => {
-    const icons = {
-        efectivo: 'ri-money-dollar-circle-line text-success',
-        transferencia: 'ri-bank-line text-primary',
-        cheque: 'ri-file-text-line text-info'
-    }
-    return icons[method] || 'ri-money-dollar-line'
-}
+// --- MANEJO DE DIÁLOGOS ---
+const openAddDialog = () => { isAddDialogVisible.value = true }
+const openEditDialog = (employee) => { selectedEmployee.value = employee; isEditDialogVisible.value = true }
+const openShowDialog = (employee) => { selectedEmployee.value = employee; isShowDialogVisible.value = true }
+const openDeleteDialog = (employee) => { selectedEmployee.value = employee; isDeleteDialogVisible.value = true }
+const openAdvanceDialog = (advance = null) => { selectedAdvance.value = advance; isAdvanceDialogVisible.value = true }
+const openAdvanceDeleteDialog = (advance) => { selectedAdvance.value = advance; isAdvanceDeleteDialogVisible.value = true }
+const openPaymentDialog = (payment = null) => { selectedPayment.value = payment; isPaymentDialogVisible.value = true }
+const openPaymentDeleteDialog = (payment) => { selectedPayment.value = payment; isPaymentDeleteDialogVisible.value = true }
+const onSuccessAction = () => { loadEmployeeData() }
 
-// Métodos para manejar diálogos
-const openAddDialog = () => {
-    console.log("Dialog de agregar empleado abierto");
-    isAddDialogVisible.value = true
-}
-
-const openEditDialog = (employee) => {
-    selectedEmployee.value = employee
-    isEditDialogVisible.value = true
-}
-
-const openShowDialog = (employee) => {
-    selectedEmployee.value = employee
-    isShowDialogVisible.value = true
-}
-
-const openListDialog = () => {
-    isListDialogVisible.value = true
-}
-
-const openDeleteDialog = (employee) => {
-    selectedEmployee.value = employee
-    isDeleteDialogVisible.value = true
-}
-
-// Event handlers para los diálogos
-const handleAddEmployee = (newEmployee) => {
-    // Recargar datos después de agregar
-    loadEmployeeData()
-    console.log('Empleado agregado:', newEmployee)
-}
-
-const handleEditEmployee = (updatedEmployee) => {
-    // Recargar datos después de editar
-    loadEmployeeData()
-    console.log('Empleado actualizado:', updatedEmployee)
-}
-
-// Funciones para adelantos
-const openAdvanceDialog = (advance = null) => {
-    selectedAdvance.value = advance
-    isAdvanceDialogVisible.value = true
-}
-
-const openAdvanceDeleteDialog = (advance) => {
-    selectedAdvance.value = advance
-    isAdvanceDeleteDialogVisible.value = true
-}
-
-const handleAdvanceSuccess = () => {
-    // Recargar datos de adelantos después de crear/editar
-    loadEmployeeData()
-    console.log('Adelanto guardado exitosamente')
-}
-
-const handleAdvanceDeleteSuccess = () => {
-    // Recargar datos de adelantos después de eliminar
-    loadEmployeeData()
-    console.log('Adelanto eliminado exitosamente')
-}
-
-// Funciones para pagos
-const openPaymentDialog = (payment = null) => {
-    selectedPayment.value = payment
-    isPaymentDialogVisible.value = true
-}
-
-const openPaymentDeleteDialog = (payment) => {
-    selectedPayment.value = payment
-    isPaymentDeleteDialogVisible.value = true
-}
-
-const handlePaymentSuccess = () => {
-    // Recargar datos de pagos después de crear/editar
-    loadEmployeeData()
-    console.log('Pago guardado exitosamente')
-}
-
-const handlePaymentDeleteSuccess = () => {
-    // Recargar datos de pagos después de eliminar
-    loadEmployeeData()
-    console.log('Pago eliminado exitosamente')
-}
-
-const handleSelectEmployee = (employee) => {
-    selectedEmployee.value = employee
-    console.log('Empleado seleccionado:', employee)
-}
-
-const handleDeleteEmployee = (employeeId) => {
-    // Recargar datos después de eliminar
-    loadEmployeeData()
-    console.log('Empleado eliminado:', employeeId)
-}
-
-// Montar componente
 onMounted(() => {
     loadEmployeeData()
 })
 </script>
 
 <template>
-    <div class="employees-dashboard">
-        <!-- Header -->
-        <VCard class="mb-6" elevation="2">
-            <VCardTitle class="d-flex align-center justify-space-between pa-4">
+    <div class="employees-dashboard pa-4">
+        <VCard class="mb-6 rounded-lg elevation-1" border>
+            <VCardTitle class="d-flex flex-column flex-sm-row align-sm-center justify-space-between pa-4 gap-4">
                 <div class="d-flex align-center">
                     <VIcon icon="ri-group-line" size="32" color="primary" class="me-3" />
                     <div>
-                        <h1 class="text-h4 font-weight-bold mb-1">Gestión de Empleados</h1>
-                        <p class="text-body-2 text-medium-emphasis">Adelantos, pagos y control de nómina</p>
+                        <h1 class="text-h4 font-weight-black color-title mb-0">Gestión de Empleados</h1>
+                        <p class="text-body-2 text-medium-emphasis mb-0">Luxury Evys - Nómina y Pagos</p>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <VSelect v-model="selectedPeriod" :items="periodOptions" item-title="title" item-value="value"
-                        label="Período" variant="outlined" density="compact" style="width: 150px" />
-                    <VBtn color="primary" prepend-icon="ri-refresh-line" @click="loadEmployeeData" :loading="loading">
+                    <VBtn color="primary" variant="tonal" prepend-icon="ri-refresh-line" @click="loadEmployeeData"
+                        :loading="loading">
                         Actualizar
                     </VBtn>
                 </div>
             </VCardTitle>
         </VCard>
 
-        <!-- Resumen General -->
         <VRow class="mb-6">
             <VCol cols="12" md="4">
-                <VCard class="elevation-2" variant="tonal" color="warning">
-                    <VCardText class="text-center pa-4">
-                        <VIcon icon="ri-hand-coin-line" size="32" color="warning" class="mb-2" />
-                        <div class="text-h6 font-weight-bold mb-1">Total Adelantos</div>
-                        <div class="text-h4 font-weight-bold text-warning">
-                            {{ formatCurrency(totalAdvances) }}
+                <VCard class="rounded-xl soft-warning-card" variant="flat" border>
+                    <VCardText class="text-center pa-6">
+                        <VIcon icon="ri-hand-coin-line" size="40" color="warning" class="mb-2" />
+                        <div class="text-subtitle-1 font-weight-medium text-warning-dark">Total Adelantos</div>
+                        <div class="text-h3 font-weight-black text-warning-dark">{{ formatCurrency(totalAdvances) }}
                         </div>
-                        <div class="text-caption">{{ advances.length }} solicitudes</div>
                     </VCardText>
                 </VCard>
             </VCol>
             <VCol cols="12" md="4">
-                <VCard class="elevation-2" variant="tonal" color="success">
-                    <VCardText class="text-center pa-4">
-                        <VIcon icon="ri-money-dollar-box-line" size="32" color="success" class="mb-2" />
-                        <div class="text-h6 font-weight-bold mb-1">Total Pagos</div>
-                        <div class="text-h4 font-weight-bold text-success">
-                            {{ formatCurrency(totalPayments) }}
+                <VCard class="rounded-xl soft-success-card" variant="flat" border>
+                    <VCardText class="text-center pa-6">
+                        <VIcon icon="ri-money-dollar-box-line" size="40" color="success" class="mb-2" />
+                        <div class="text-subtitle-1 font-weight-medium text-success-dark">Total Pagos</div>
+                        <div class="text-h3 font-weight-black text-success-dark">{{ formatCurrency(totalPayments) }}
                         </div>
-                        <div class="text-caption">{{ payments.length }} pagos realizados</div>
                     </VCardText>
                 </VCard>
             </VCol>
             <VCol cols="12" md="4">
-                <VCard class="elevation-2" variant="tonal" color="primary">
-                    <VCardText class="text-center pa-4">
-                        <VIcon icon="ri-calculator-line" size="32" color="primary" class="mb-2" />
-                        <div class="text-h6 font-weight-bold mb-1">Costo Neto</div>
-                        <div class="text-h4 font-weight-bold text-primary">
-                            {{ formatCurrency(netEmployeeCost) }}
+                <VCard class="rounded-xl soft-primary-card" variant="flat" border>
+                    <VCardText class="text-center pa-6">
+                        <VIcon icon="ri-calculator-line" size="40" color="primary" class="mb-2" />
+                        <div class="text-subtitle-1 font-weight-medium text-primary-dark">Costo Neto</div>
+                        <div class="text-h3 font-weight-black text-primary-dark">{{ formatCurrency(netEmployeeCost) }}
                         </div>
-                        <div class="text-caption">Pagos - Adelantos</div>
                     </VCardText>
                 </VCard>
             </VCol>
         </VRow>
 
-        <!-- Contenido Principal -->
-        <VCard class="elevation-2">
-            <VCardTitle class="pa-3">
-                <div class="d-flex align-center">
-                    <VIcon icon="ri-exchange-line" size="20" class="me-2" />
-                    <span class="text-h6">Operaciones de Empleados</span>
-                </div>
-            </VCardTitle>
+        <VCard elevation="1" class="rounded-lg" border>
+            <VTabs v-model="transactionType" color="primary" grow>
+                <VTab value="payroll">
+                    <VIcon icon="ri-file-list-3-line" class="me-2" />Nómina
+                </VTab>
+                <VTab value="advances">
+                    <VIcon icon="ri-hand-coin-line" class="me-2" />Adelantos
+                </VTab>
+                <VTab value="payments">
+                    <VIcon icon="ri-money-dollar-box-line" class="me-2" />Pagos
+                </VTab>
+            </VTabs>
 
-            <VCardText class="pa-4">
-                <!-- Tabs -->
-                <VTabs v-model="transactionType" class="mb-4">
-                    <VTab value="payroll">
-                        <VIcon icon="ri-file-list-3-line" class="me-1" />
-                        Nómina
-                    </VTab>
-                    <VTab value="advances">
-                        <VIcon icon="ri-hand-coin-line" class="me-1" />
-                        Adelantos
-                    </VTab>
-                    <VTab value="payments">
-                        <VIcon icon="ri-money-dollar-box-line" class="me-1" />
-                        Pagos
-                    </VTab>
-                </VTabs>
+            <VWindow v-model="transactionType" class="pa-4">
+                <VWindowItem value="payroll">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                        <h3 class="text-h6 font-weight-bold">Empleados Registrados</h3>
+                        <VBtn color="primary" variant="elevated" prepend-icon="ri-user-add-line" @click="openAddDialog">
+                            Agregar Empleado</VBtn>
+                    </div>
+                    <VList border class="rounded-lg">
+                        <VListItem v-for="employee in employees" :key="employee.id" class="pa-4 transaction-row">
+                            <template #prepend>
+                                <VAvatar color="primary" variant="tonal" size="48">
+                                    <VIcon icon="ri-user-3-line" />
+                                </VAvatar>
+                            </template>
 
-                <!-- Contenido de los tabs -->
-                <VWindow v-model="transactionType">
-                    <!-- Tab de Adelantos -->
-                    <VWindowItem value="advances">
-                        <div class="mb-3">
-                            <div class="d-flex align-center justify-space-between mb-2">
-                                <h3 class="text-h6 font-weight-bold">Solicitudes de Adelanto</h3>
-                                <VBtn color="warning" variant="tonal" size="small" prepend-icon="ri-add-line"
-                                    @click="openAdvanceDialog()">
-                                    Nuevo Adelanto
-                                </VBtn>
-                            </div>
-                            <VCard variant="outlined">
-                                <VList>
-                                    <VListItem v-for="advance in advances" :key="advance.id">
-                                        <template #prepend>
-                                            <VIcon icon="ri-hand-coin-line text-warning" size="20" />
-                                        </template>
-                                        <VListItemTitle>
-                                            {{ advance.description }}
-                                        </VListItemTitle>
-                                        <VListItemSubtitle>
-                                            {{ advance.employee?.full_name || `${advance.employee?.name || ''}
-                                            ${advance.employee?.surname || ''}` }} · {{
-                                                advance.advance_date ? advance.advance_date.split('T')[0] : 'N/A' }}
-                                        </VListItemSubtitle>
-                                        <template #append>
-                                            <div class="text-right">
-                                                <div class="d-flex justify-end gap-1 mb-1">
-                                                    <VChip :color="getStatusColor(advance.status)" size="small">
-                                                        {{ getStatusText(advance.status) }}
-                                                    </VChip>
-                                                    <VChip v-if="advance.concept" color="info" size="small"
-                                                        variant="tonal">
-                                                        {{ advance.concept }}
-                                                    </VChip>
-                                                </div>
-                                                <div class="text-warning font-weight-bold mb-1">
-                                                    -{{ formatCurrency(advance.amount) }}
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <VBtn color="primary" variant="tonal" size="x-small"
-                                                        icon="ri-edit-line" @click="openAdvanceDialog(advance)" />
-                                                    <VBtn color="error" variant="tonal" size="x-small"
-                                                        icon="ri-delete-bin-line"
-                                                        @click="openAdvanceDeleteDialog(advance)" />
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </VListItem>
-                                </VList>
+                            <VListItemTitle class="text-subtitle-1 color-title text-uppercase">
+                                {{ employee.name }} {{ employee.surname }}
+                            </VListItemTitle>
 
-                                <!-- Mensaje cuando no hay adelantos -->
-                                <VList v-if="!advances || advances.length === 0">
-                                    <VListItem>
-                                        <template #prepend>
-                                            <VIcon icon="ri-hand-coin-line text-medium-emphasis" size="40" />
-                                        </template>
-                                        <VListItemTitle class="text-medium-emphasis text-center">
-                                            No existen adelantos
-                                        </VListItemTitle>
-                                        <VListItemSubtitle class="text-medium-emphasis text-center">
-                                            No hay adelantos registrados en el sistema.
-                                            Haga clic en "Nuevo Adelanto" para comenzar.
-                                        </VListItemSubtitle>
-                                    </VListItem>
-                                </VList>
-                            </VCard>
-                        </div>
-                    </VWindowItem>
+                            <VListItemSubtitle class="mt-1">
+                                <div
+                                    class="d-flex flex-wrap align-center gap-x-4 gap-y-1 text-caption text-medium-emphasis">
+                                    <span class="d-flex align-center text-uppercase">
+                                        <VIcon icon="ri-briefcase-line" size="14" class="me-1" />
+                                        {{ employee.position || 'MECÁNICO GENERAL' }}
+                                    </span>
+                                    <span class="d-flex align-center">
+                                        <VIcon icon="ri-id-card-line" size="14" class="me-1" />
+                                        {{ employee.id_display }}
+                                    </span>
+                                    <span class="d-flex align-center sucursal-text">
+                                        <VIcon icon="ri-map-pin-line" size="14" class="me-1" />
+                                        {{ employee.sucursal_display }}
+                                    </span>
 
-                    <!-- Tab de Pagos -->
-                    <VWindowItem value="payments">
-                        <div class="mb-3">
-                            <div class="d-flex align-center justify-space-between mb-2">
-                                <h3 class="text-h6 font-weight-bold">Pagos Realizados</h3>
-                                <VBtn color="success" variant="tonal" size="small" prepend-icon="ri-add-line"
-                                    @click="openPaymentDialog()">
-                                    Nuevo Pago
-                                </VBtn>
-                            </div>
-                            <VCard variant="outlined">
-                                <VList>
-                                    <VListItem v-for="payment in payments" :key="payment.id">
-                                        <template #prepend>
-                                            <VIcon icon="ri-money-dollar-box-line text-success" size="20" />
-                                        </template>
-                                        <VListItemTitle>
-                                            {{ payment.description }}
-                                        </VListItemTitle>
-                                        <VListItemSubtitle>
-                                            {{ payment.employee?.full_name || `${payment.employee?.name || ''}
-                                            ${payment.employee?.surname
-                                                || ''}` }} · {{ payment.payment_date ? payment.payment_date.split('T')[0] :
-                                                'N/A' }}
-                                        </VListItemSubtitle>
-                                        <template #append>
-                                            <div class="text-right">
-                                                <div class="d-flex justify-end gap-1 mb-1">
-                                                    <VChip :color="getPaymentTypeColor(payment.payment_type)"
-                                                        size="small" variant="tonal">
-                                                        {{ getPaymentTypeText(payment.payment_type) }}
-                                                    </VChip>
-                                                    <VChip :color="payment.state === 1 ? 'success' : 'error'"
-                                                        size="small" variant="tonal">
-                                                        {{ payment.state === 1 ? 'Activo' : 'Inactivo' }}
-                                                    </VChip>
-                                                </div>
-                                                <div class="text-error font-weight-bold mb-1">
-                                                    -{{ formatCurrency(payment.amount) }}
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <VBtn color="primary" variant="tonal" size="x-small"
-                                                        icon="ri-edit-line" @click="openPaymentDialog(payment)" />
-                                                    <VBtn color="error" variant="tonal" size="x-small"
-                                                        icon="ri-delete-bin-line"
-                                                        @click="openPaymentDeleteDialog(payment)" />
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </VListItem>
-                                </VList>
+                                    <VChip v-if="Number(employee.pending_advances || 0) > 0" color="warning"
+                                        size="x-small" variant="tonal" class="font-weight-bold">
+                                        DEUDA: {{ formatCurrency(employee.pending_advances) }}
+                                    </VChip>
+                                </div>
+                            </VListItemSubtitle>
 
-                                <!-- Mensaje cuando no hay pagos -->
-                                <VList v-if="!payments || payments.length === 0">
-                                    <VListItem>
-                                        <template #prepend>
-                                            <VIcon icon="ri-money-dollar-box-line text-medium-emphasis" size="40" />
-                                        </template>
-                                        <VListItemTitle class="text-medium-emphasis text-center">
-                                            No existen pagos
-                                        </VListItemTitle>
-                                        <VListItemSubtitle class="text-medium-emphasis text-center">
-                                            No hay pagos registrados en el sistema.
-                                            Haga clic en "Nuevo Pago" para comenzar.
-                                        </VListItemSubtitle>
-                                    </VListItem>
-                                </VList>
-                            </VCard>
-                        </div>
-                    </VWindowItem>
-                    <!-- Tab de Empleados -->
-                    <VWindowItem value="payroll">
-                        <div class="mb-3">
-                            <div class="d-flex align-center justify-space-between mb-2">
-                                <h3 class="text-h6 font-weight-bold">Listado de Empleados</h3>
-                                <VBtn color="primary" variant="tonal" size="small" prepend-icon="ri-user-add-line"
-                                    @click="openAddDialog">
-                                    Agregar Empleado
-                                </VBtn>
-                            </div>
-                            <VCard variant="outlined">
-                                <VList>
-                                    <VListItem v-if="employees && employees.length > 0" v-for="employee in employees"
-                                        :key="employee.id">
-                                        <template #prepend>
-                                            <VIcon icon="ri-user-3-line text-primary" size="20" />
-                                        </template>
-                                        <VListItemTitle>
-                                            {{ employee.name }} {{ employee.surname }}
-                                        </VListItemTitle>
-                                        <VListItemSubtitle>
-                                            <div class="d-flex flex-column gap-1">
-                                                <div>
-                                                    {{ employee.position || 'N/A' }}
-                                                </div>
-                                                <div>
-                                                    {{ employee.sucursal?.name || 'N/A' }}
-                                                </div>
-                                                <div>
-                                                    {{ employee.hire_date ? employee.hire_date.split('T')[0] : 'N/A' }}
-                                                </div>
-                                                <div class="d-flex align-center gap-1">
-                                                    <VIcon icon="ri-hand-coin-line text-warning" size="16" />
-                                                    <span class="text-warning font-weight-medium">
-                                                        Adelantos: {{ formatCurrency(employee.pending_advances || 0) }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </VListItemSubtitle>
-                                        <template #append>
-                                            <div class="text-right">
-                                                <div class="d-flex justify-end gap-1 mb-1">
-                                                    <VChip :color="employee.status === 1 ? 'success' : 'error'"
-                                                        size="small">
-                                                        {{ employee.status === 1 ? 'Activo' : 'Inactivo' }}
-                                                    </VChip>
-                                                    <VChip color="info" size="small" variant="tonal">
-                                                        Mensual
-                                                    </VChip>
-                                                </div>
-                                                <div class="text-primary font-weight-bold mb-1">
-                                                    {{ employee.bank_name }}
-                                                </div>
-                                                <div class="text-caption text-medium-emphasis mb-1">
-                                                    Cta: {{ employee.account_number }}
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <VBtn color="primary" variant="tonal" size="x-small"
-                                                        icon="ri-edit-line" @click="openEditDialog(employee)" />
-                                                    <VBtn color="error" variant="tonal" size="x-small"
-                                                        icon="ri-delete-bin-line" @click="openDeleteDialog(employee)" />
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </VListItem>
+                            <template #append>
+                                <div class="d-flex align-center gap-1">
+                                    <VBtn icon="ri-eye-line" variant="text" color="info" size="small"
+                                        @click="openShowDialog(employee)" />
+                                    <VBtn icon="ri-pencil-line" variant="text" color="primary" size="small"
+                                        @click="openEditDialog(employee)" />
+                                    <VBtn icon="ri-delete-bin-line" variant="text" color="error" size="small"
+                                        @click="openDeleteDialog(employee)" />
+                                </div>
+                            </template>
+                        </VListItem>
+                    </VList>
+                </VWindowItem>
 
-                                    <!-- Mensaje cuando no hay empleados -->
-                                    <VListItem v-if="!employees || employees.length === 0">
-                                        <template #prepend>
-                                            <VIcon icon="ri-user-unfollow-line text-warning" size="20" />
-                                        </template>
-                                        <VListItemTitle class="text-warning">
-                                            No existe nómina registrada
-                                        </VListItemTitle>
-                                        <VListItemSubtitle>
-                                            No hay empleados registrados en el sistema.
-                                            Haga clic en "Agregar Empleado" para comenzar.
-                                        </VListItemSubtitle>
-                                    </VListItem>
-                                </VList>
-                            </VCard>
-                        </div>
-                    </VWindowItem>
-                </VWindow>
-            </VCardText>
+                <VWindowItem value="advances">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                        <h3 class="text-h6 font-weight-bold">Adelantos</h3>
+                        <VBtn color="warning" variant="elevated" prepend-icon="ri-add-line"
+                            @click="openAdvanceDialog()">Nuevo</VBtn>
+                    </div>
+                    <VList border class="rounded-lg">
+                        <VListItem v-for="advance in advances" :key="advance.id" class="pa-4 transaction-row">
+                            <VListItemTitle class="color-title text-h6 text-uppercase">{{
+                                advance.description }}
+                            </VListItemTitle>
+                            <VListItemSubtitle class="text-caption">
+                                {{ advance.employee?.name }} • {{ advance.advance_date?.split('T')[0] }}
+                            </VListItemSubtitle>
+                            <template #append>
+                                <div class="text-right">
+                                    <div class="text-h6 font-weight-black text-warning-dark">-{{
+                                        formatCurrency(advance.amount) }}</div>
+                                    <VChip :color="getStatusColor(advance.status)" size="x-small" variant="tonal">{{
+                                        getStatusText(advance.status) }}</VChip>
+                                    <div class="d-flex gap-1 justify-end mt-2">
+                                        <VBtn icon="ri-pencil-line" size="x-small" variant="text" color="primary"
+                                            @click="openAdvanceDialog(advance)" />
+                                        <VBtn icon="ri-delete-bin-line" size="x-small" variant="text" color="error"
+                                            @click="openAdvanceDeleteDialog(advance)" />
+                                    </div>
+                                </div>
+                            </template>
+                        </VListItem>
+                    </VList>
+                </VWindowItem>
+
+                <VWindowItem value="payments">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                        <h3 class="text-h6 font-weight-bold">Pagos</h3>
+                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-line"
+                            @click="openPaymentDialog()">Nuevo</VBtn>
+                    </div>
+                    <VList border class="rounded-lg">
+                        <VListItem v-for="payment in payments" :key="payment.id" class="pa-4 transaction-row">
+                            <VListItemTitle class="color-title text-h6 text-uppercase">{{
+                                payment.description }}
+                            </VListItemTitle>
+                            <VListItemSubtitle class="text-caption">
+                                {{ payment.employee?.name }} • {{ payment.payment_date?.split('T')[0] }}
+                            </VListItemSubtitle>
+                            <template #append>
+                                <div class="text-right">
+                                    <div class="text-h6 font-weight-black text-success-dark">{{
+                                        formatCurrency(payment.amount) }}</div>
+                                    <VChip :color="getPaymentTypeColor(payment.payment_type)" size="x-small"
+                                        variant="tonal">{{ getPaymentTypeText(payment.payment_type) }}</VChip>
+                                    <div class="d-flex gap-1 justify-end mt-2">
+                                        <VBtn icon="ri-pencil-line" size="x-small" variant="text" color="primary"
+                                            @click="openPaymentDialog(payment)" />
+                                        <VBtn icon="ri-delete-bin-line" size="x-small" variant="text" color="error"
+                                            @click="openPaymentDeleteDialog(payment)" />
+                                    </div>
+                                </div>
+                            </template>
+                        </VListItem>
+                    </VList>
+                </VWindowItem>
+            </VWindow>
         </VCard>
+
+        <EmployeeAddDialog v-if="isAddDialogVisible" v-model:isDialogVisible="isAddDialogVisible"
+            @addEmployee="onSuccessAction" />
+        <EmployeeEditDialog v-if="selectedEmployee" v-model:isDialogVisible="isEditDialogVisible"
+            :employeeData="selectedEmployee" @editEmployee="onSuccessAction" />
+        <EmployeeShowDialog v-if="selectedEmployee" v-model:isDialogVisible="isShowDialogVisible"
+            :employeeData="selectedEmployee" />
+        <EmployeeDeleteDialog v-if="selectedEmployee" v-model:isDialogVisible="isDeleteDialogVisible"
+            :employeeData="selectedEmployee" @deleteEmployee="onSuccessAction" />
+        <EmployeeAdvanceDialog v-model="isAdvanceDialogVisible" :advanceData="selectedAdvance" :employees="employees"
+            @success="onSuccessAction" />
+        <EmployeeAdvanceDeleteDialog v-model="isAdvanceDeleteDialogVisible" :advanceData="selectedAdvance"
+            @success="onSuccessAction" />
+        <EmployeePaymentDialog v-model="isPaymentDialogVisible" :paymentData="selectedPayment" :employees="employees"
+            @success="onSuccessAction" />
+        <EmployeePaymentDeleteDialog v-model="isPaymentDeleteDialogVisible" :paymentData="selectedPayment"
+            @success="onSuccessAction" />
     </div>
-
-    <!-- Diálogos de Empleados -->
-    <EmployeeAddDialog v-if="isAddDialogVisible" v-model:isDialogVisible="isAddDialogVisible"
-        @addEmployee="handleAddEmployee" />
-
-    <EmployeeEditDialog v-if="selectedEmployee" v-model:isDialogVisible="isEditDialogVisible"
-        :employeeData="selectedEmployee" @editEmployee="handleEditEmployee" />
-
-    <EmployeeShowDialog v-if="selectedEmployee" v-model:isDialogVisible="isShowDialogVisible"
-        :employeeData="selectedEmployee" />
-
-    <EmployeeListDialog v-if="isListDialogVisible" v-model:isDialogVisible="isListDialogVisible"></EmployeeListDialog>
-    <EmployeeShowDialog v-if="selectedEmployee" v-model:isDialogVisible="isShowDialogVisible"
-        :employeeData="selectedEmployee" />
-
-    <EmployeeListDialog v-if="isListDialogVisible" v-model:isDialogVisible="isListDialogVisible"
-        @selectEmployee="handleSelectEmployee" />
-
-    <EmployeeDeleteDialog v-if="selectedEmployee" v-model:isDialogVisible="isDeleteDialogVisible"
-        :employeeData="selectedEmployee" @deleteEmployee="handleDeleteEmployee" />
-
-    <!-- Diálogos de Pagos -->
-    <EmployeePaymentDialog v-model="isPaymentDialogVisible" :paymentData="selectedPayment" :employees="employees"
-        @success="handlePaymentSuccess" />
-
-    <EmployeePaymentDeleteDialog v-model="isPaymentDeleteDialogVisible" :paymentData="selectedPayment"
-        @success="handlePaymentDeleteSuccess" />
-
-    <!-- Diálogos de Adelantos -->
-    <EmployeeAdvanceDialog v-model="isAdvanceDialogVisible" :advanceData="selectedAdvance" :employees="employees"
-        @success="handleAdvanceSuccess" />
-
-    <EmployeeAdvanceDeleteDialog v-model="isAdvanceDeleteDialogVisible" :advanceData="selectedAdvance"
-        @success="handleAdvanceDeleteSuccess" />
 </template>
 
 <style scoped>
 .employees-dashboard {
-    padding: 0;
+    background-color: #f8fafc;
+    min-height: 100vh;
 }
 
-.text-success {
-    color: #4caf50 !important;
+.color-title {
+    color: #0f172a;
 }
 
-.text-error {
-    color: #f44336 !important;
+/* Control de texto largo para la sucursal */
+.sucursal-text {
+    max-width: 350px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
 }
 
-.text-info {
-    color: #2196f3 !important;
+/* Colores Pastel Suaves */
+.soft-warning-card {
+    background-color: #fff9e6 !important;
+    border-color: #ffe082 !important;
 }
 
-.text-warning {
-    color: #ff9800 !important;
+.text-warning-dark {
+    color: #b26a00 !important;
 }
 
-.text-primary {
-    color: #1976d2 !important;
+.soft-success-card {
+    background-color: #e8f5e9 !important;
+    border-color: #a5d6a7 !important;
 }
 
-/* Responsive */
-@media (max-width: 1280px) {
-    .employees-dashboard .v-row>.v-col {
-        margin-bottom: 16px;
-    }
+.text-success-dark {
+    color: #1b5e20 !important;
+}
+
+.soft-primary-card {
+    background-color: #e3f2fd !important;
+    border-color: #90caf9 !important;
+}
+
+.text-primary-dark {
+    color: #0d47a1 !important;
+}
+
+.transaction-row {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.transaction-row:last-child {
+    border-bottom: none;
+}
+
+.gap-x-4 {
+    column-gap: 16px;
 }
 </style>
