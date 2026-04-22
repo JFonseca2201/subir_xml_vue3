@@ -85,18 +85,14 @@
 
                                     <div class="flex-grow-1">
                                         <div class="text-subtitle-1 font-weight-bold color-title text-uppercase">
-                                            {{ transfer.from_account?.bank_name }} → {{ transfer.to_account?.bank_name
-                                            }}
+                                            {{ getAccountDisplayName(transfer.from_account) }} → {{
+                                                getAccountDisplayName(transfer.to_account) }}
                                         </div>
                                         <div class="text-caption text-medium-emphasis d-flex align-center">
                                             <VIcon icon="ri-arrow-right-line" size="14" class="mr-1" />
-                                            {{ transfer.from_account?.bank_name }} ({{
-                                                transfer.from_account?.account_name
-                                                || '****' }})
+                                            {{ formatAccountDisplay(transfer.from_account) }}
                                             →
-                                            {{ transfer.to_account?.bank_name }} ({{ transfer.to_account?.account_name
-                                                ||
-                                                '****' }})
+                                            {{ formatAccountDisplay(transfer.to_account) }}
                                         </div>
                                         <div v-if="transfer.description" class="text-caption text-medium-emphasis mt-1">
                                             <VIcon icon="ri-file-text-line" size="14" class="mr-1" />
@@ -129,10 +125,11 @@
             </VCol>
         </VRow>
 
-        <!-- Diálogos -->
-        <TransferAddDialog v-model="isAddDialogVisible" @success="onSuccess" />
-        <TransferEditDialog v-model="isEditDialogVisible" :transfer-data="selectedTransfer" @success="onSuccess" />
-        <TransferDeleteDialog v-model="isDeleteDialogVisible" :transfer-data="selectedTransfer" @success="onSuccess" />
+        <TransferAddDialog v-model="isAddDialogVisible" @success="(data) => onSuccess('add', data)" />
+        <TransferEditDialog v-model="isEditDialogVisible" :transfer-data="selectedTransfer"
+            @success="(data) => onSuccess('edit', data)" />
+        <TransferDeleteDialog v-model="isDeleteDialogVisible" :transfer-data="selectedTransfer"
+            @success="() => onSuccess('delete')" />
     </div>
 </template>
 
@@ -144,26 +141,25 @@ import TransferAddDialog from '@/components/inventory/transfers/TransferAddDialo
 import TransferEditDialog from '@/components/inventory/transfers/TransferEditDialog.vue'
 import TransferDeleteDialog from '@/components/inventory/transfers/TransferDeleteDialog.vue'
 
+// IMPORTACIÓN ÚNICA DESDE HELPERS
+import { getAccountDisplayName, formatAccountDisplay } from '@/utils/helpers'
+
 const { showNotification } = useGlobalToast()
 
-// --- ESTADO ---
 const isLoading = ref(false)
 const rawTransfers = ref([])
 const accounts = ref([])
 const search = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
-const totalItems = ref(0)
 const selectedFromAccount = ref(null)
 const selectedToAccount = ref(null)
 
-// --- ESTADO DE DIÁLOGOS ---
 const isAddDialogVisible = ref(false)
 const isEditDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const selectedTransfer = ref(null)
 
-// --- OPCIONES ---
 const monthOptions = [
     { label: 'Enero', value: 1 }, { label: 'Febrero', value: 2 }, { label: 'Marzo', value: 3 },
     { label: 'Abril', value: 4 }, { label: 'Mayo', value: 5 }, { label: 'Junio', value: 6 },
@@ -173,12 +169,11 @@ const monthOptions = [
 
 const accountOptions = computed(() => {
     return accounts.value.map(account => ({
-        label: `${getAccountDisplayName(account.bank_name, account.name)} (${account.last_four || account.account_number?.slice(-4) || '****'})`,
+        label: formatAccountDisplay(account),
         value: account.id
     }))
 })
 
-// --- COMPUTED PROPERTIES ---
 const groupedTransfers = computed(() => {
     const groups = {}
     rawTransfers.value.forEach(item => {
@@ -187,7 +182,7 @@ const groupedTransfers = computed(() => {
         const y = d.getUTCFullYear()
         const key = `${m}-${y}`
         if (!groups[key]) {
-            groups[key] = { monthYear: key, month: m, year: y, monthName: getMonthName(m), totalAmount: 0, items: [] }
+            groups[key] = { monthYear: key, month: m, year: y, monthName: monthOptions.find(mo => mo.value === m)?.label || '', totalAmount: 0, items: [] }
         }
         groups[key].items.push(item)
         groups[key].totalAmount += parseFloat(item.amount || 0)
@@ -195,56 +190,15 @@ const groupedTransfers = computed(() => {
     return Object.values(groups).sort((a, b) => b.year - a.year || b.month - a.month)
 })
 
-const globalSummary = computed(() => {
-    const total = rawTransfers.value.reduce((acc, item) => acc + parseFloat(item.amount || 0), 0)
-    return { total, count: rawTransfers.value.length }
-})
+const globalSummary = computed(() => ({
+    total: rawTransfers.value.reduce((acc, item) => acc + parseFloat(item.amount || 0), 0),
+    count: rawTransfers.value.length
+}))
 
-// --- FUNCIONES DE UTILIDAD ---
 const getDay = (dateStr) => dateStr ? new Date(dateStr).getUTCDate() : '??'
 const getMonthShort = (dateStr) => dateStr ? new Date(dateStr).toLocaleDateString('es-ES', { month: 'short', timeZone: 'UTC' }).toUpperCase().replace('.', '') : '...'
 const formatCurrency = (val) => Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const getMonthName = (val) => monthOptions.find(m => m.value === val)?.label || ''
 
-// Función para personalizar nombres de cuentas
-const getAccountDisplayName = (bankName, accountName) => {
-    const name = bankName || accountName || ''
-
-    // Si el nombre está vacío o es nulo, intentar detectar por otros campos
-    if (!name || name.trim() === '') {
-        return 'CAJA CHICA' // Por defecto para cuentas sin nombre
-    }
-
-    // Mapeo de nombres personalizados
-    const nameMap = {
-        'caja chica': 'CAJA CHICA',
-        'cajachica': 'CAJA CHICA',
-        'caja_chica': 'CAJA CHICA',
-        'small box': 'CAJA CHICA',
-        'petty cash': 'CAJA CHICA',
-        'caja': 'CAJA',
-        'cash': 'CAJA',
-        'banco pichincha': 'CAJA',
-        'pichincha': 'CAJA',
-        'banco guayaquil': 'BANCOS',
-        'guayaquil': 'BANCOS',
-        'bank': 'BANCOS',
-        'bancos': 'BANCOS'
-    }
-
-    // Buscar coincidencia (ignorando mayúsculas/minúsculas)
-    const lowerName = name.toLowerCase().trim()
-    for (const [key, value] of Object.entries(nameMap)) {
-        if (lowerName.includes(key)) {
-            return value
-        }
-    }
-
-    // Si no hay coincidencia, usar el nombre original en mayúsculas
-    return name.toUpperCase() || 'CUENTA'
-}
-
-// --- MÉTODOS ---
 const resetAndLoad = () => { currentPage.value = 1; loadTransfers() }
 
 const loadTransfers = async () => {
@@ -256,10 +210,37 @@ const loadTransfers = async () => {
         if (selectedToAccount.value) params.append('to_account_id', selectedToAccount.value)
 
         const resp = await $api(`transfers?${params.toString()}`, { method: 'GET' })
-        rawTransfers.value = resp.data || []
+        console.log('Respuesta de transferencias:', resp)
+
+        const transfers = resp.data || []
+        console.log('Transferencias cargadas:', transfers.length)
+
+        // Detectar duplicados por ID
+        const transferIds = transfers.map(t => t.id)
+        const uniqueIds = [...new Set(transferIds)]
+        if (transferIds.length !== uniqueIds.length) {
+            console.warn('Se detectaron transferencias duplicadas:', {
+                total: transferIds.length,
+                unicas: uniqueIds.length,
+                duplicadas: transferIds.length - uniqueIds.length
+            })
+        }
+
+        // Mostrar detalles de cada transferencia para depuración
+        transfers.forEach((transfer, index) => {
+            console.log(`Transferencia ${index + 1}:`, {
+                id: transfer.id,
+                amount: transfer.amount,
+                from_account: transfer.from_account?.name,
+                to_account: transfer.to_account?.name,
+                date: transfer.transfer_date
+            })
+        })
+
+        rawTransfers.value = transfers
         totalPages.value = resp.last_page || 1
-        totalItems.value = resp.total || 0
     } catch (e) {
+        console.error('Error al cargar transferencias:', e)
         showNotification('Error al cargar transferencias', 'error')
     } finally {
         isLoading.value = false
@@ -268,52 +249,67 @@ const loadTransfers = async () => {
 
 const loadAccounts = async () => {
     try {
-        const resp = await $api('available-accounts', { method: 'GET' })
-        console.log('Raw API response from available-accounts:', resp)
+        const resp = await $api('transfer-accounts', { method: 'GET' })
+        console.log('Respuesta de cuentas:', resp)
 
-        // Usar el formato correcto: resp.accounts
-        let accountsData = []
-        if (resp && resp.accounts && Array.isArray(resp.accounts)) {
-            accountsData = resp.accounts
-        } else if (resp && resp.data && Array.isArray(resp.data)) {
-            accountsData = resp.data
-        } else if (resp && Array.isArray(resp)) {
-            accountsData = resp
-        } else {
-            console.warn('Unexpected response format:', resp)
-        }
+        const accountsData = resp.accounts || resp.data || resp || []
+        console.log('Cuentas cargadas:', accountsData.length)
+
+        // Mostrar detalles de cada cuenta para depuración
+        accountsData.forEach((account, index) => {
+            console.log(`Cuenta ${index + 1}:`, {
+                id: account.id,
+                name: account.name,
+                type: account.type,
+                bank_name: account.bank_name,
+                current_balance: account.current_balance,
+                display_name: getAccountDisplayName(account)
+            })
+        })
 
         accounts.value = accountsData
-        console.log('Processed accounts data:', accounts.value)
-
-        if (accounts.value.length === 0) {
-            console.warn('No accounts found in response')
-            showNotification('No se encontraron cuentas disponibles', 'warning')
-        }
     } catch (e) {
-        console.error('Error loading accounts:', e)
-        showNotification('Error al cargar las cuentas disponibles', 'error')
-        accounts.value = []
+        console.error('Error al cargar cuentas:', e)
+        showNotification('Error al cargar cuentas', 'error')
     }
 }
 
-// --- MANEJO DE DIÁLOGOS ---
 const openAddDialog = () => isAddDialogVisible.value = true
-const openEditDialog = (transfer) => { selectedTransfer.value = transfer; isEditDialogVisible.value = true }
-const openDeleteDialog = (transfer) => { selectedTransfer.value = transfer; isDeleteDialogVisible.value = true }
-const onSuccess = () => {
-    console.log('onSuccess called - reloading transfer data')
+const openEditDialog = (t) => { selectedTransfer.value = t; isEditDialogVisible.value = true }
+const openDeleteDialog = (t) => { selectedTransfer.value = t; isDeleteDialogVisible.value = true }
 
-    // Forzar refresco con un pequeño delay para asegurar que el backend procese
+const onSuccess = (operation, data) => {
+    // Limpiar selección inmediatamente
+    selectedTransfer.value = null
+
+    // Actualizar datos localmente según la operación
+    if (operation === 'add' && data) {
+        // Añadir nueva transferencia al inicio del listado
+        rawTransfers.value.unshift(data)
+        console.log('Transferencia añadida localmente:', data)
+    } else if (operation === 'edit' && data) {
+        // Actualizar transferencia existente
+        const index = rawTransfers.value.findIndex(t => t.id === data.id)
+        if (index !== -1) {
+            rawTransfers.value[index] = data
+            console.log('Transferencia actualizada localmente:', data)
+        }
+    } else if (operation === 'delete' && selectedTransfer.value) {
+        // Eliminar transferencia del listado
+        const index = rawTransfers.value.findIndex(t => t.id === selectedTransfer.value.id)
+        if (index !== -1) {
+            rawTransfers.value.splice(index, 1)
+            console.log('Transferencia eliminada localmente:', selectedTransfer.value)
+        }
+    }
+
+    // Solo recargar cuentas para actualizar saldos (con delay menor)
     setTimeout(() => {
-        loadTransfers()
-        loadAccounts() // También recargar cuentas por si hay cambios en saldos
-        selectedTransfer.value = null
-        console.log('Transfer data reload triggered')
+        console.log('Actualizando saldos de cuentas...')
+        loadAccounts()
     }, 500)
 }
 
-// --- LIFECYCLE ---
 onMounted(() => {
     loadTransfers()
     loadAccounts()
@@ -340,7 +336,6 @@ onMounted(() => {
     z-index: 10;
 }
 
-/* Estilos para el diseño */
 .month-icon-box {
     background: #f0f4ff;
     padding: 8px;
@@ -363,10 +358,6 @@ onMounted(() => {
 .date-section {
     min-width: 50px;
     color: #4a5568;
-}
-
-.action-section {
-    min-width: 100px;
 }
 
 .leading-tight {

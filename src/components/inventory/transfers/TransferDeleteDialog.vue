@@ -26,16 +26,18 @@
                         <VCol cols="12">
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Cuenta Origen:</span>
-                                <span class="font-weight-medium">{{ transferData.from_account?.bank_name }}</span>
+                                <span class="font-weight-medium">{{ getAccountDisplayName(transferData.from_account)
+                                }}</span>
                             </div>
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Cuenta Destino:</span>
-                                <span class="font-weight-medium">{{ transferData.to_account?.bank_name }}</span>
+                                <span class="font-weight-medium">{{ getAccountDisplayName(transferData.to_account)
+                                }}</span>
                             </div>
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Monto:</span>
                                 <span class="font-weight-bold text-error">${{ formatCurrency(transferData.amount)
-                                }}</span>
+                                    }}</span>
                             </div>
                             <div class="d-flex align-center justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Fecha:</span>
@@ -86,6 +88,7 @@
 import { ref, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName, formatAccountDisplay } from '@/utils/helpers'
 
 const props = defineProps({
     modelValue: {
@@ -112,6 +115,7 @@ const isVisible = computed({
 })
 
 // Métodos
+
 const formatCurrency = (value) => {
     if (isNaN(value) || value === null) return '0.00'
     return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })

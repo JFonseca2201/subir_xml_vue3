@@ -368,6 +368,8 @@
     "handlePlateInput": true,
     "plateValidationRule": true,
     "preventInvalidPlateChars": true,
-    "validateEcuadorianPlate": true
+    "validateEcuadorianPlate": true,
+    "formatAccountDisplay": true,
+    "getAccountDisplayName": true
   }
 }

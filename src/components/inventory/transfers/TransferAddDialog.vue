@@ -121,6 +121,7 @@
 import { ref, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName, formatAccountDisplay } from '@/utils/helpers'
 
 const props = defineProps({
     modelValue: {
@@ -154,7 +155,7 @@ const isVisible = computed({
 
 const accountOptions = computed(() => {
     return accounts.value.map(account => ({
-        label: `${getAccountDisplayName(account.bank_name, account.name)} (${account.last_four || account.account_number?.slice(-4) || '****'}) - Saldo: $${formatCurrency(account.current_balance)}`,
+        label: `${formatAccountDisplay(account)} - Saldo: $${formatCurrency(account.current_balance)}`,
         value: account.id,
         account: account
     }))
@@ -198,8 +199,8 @@ const rules = {
 const loadAvailableAccounts = async () => {
     loadingAccounts.value = true
     try {
-        const resp = await $api('available-accounts', { method: 'GET' })
-        console.log('Raw API response from available-accounts (AddDialog):', resp)
+        const resp = await $api('transfer-accounts', { method: 'GET' })
+        console.log('Raw API response from transfer-accounts (AddDialog):', resp)
 
         // Usar el formato correcto: resp.accounts
         let accountsData = []
@@ -229,43 +230,6 @@ const loadAvailableAccounts = async () => {
     }
 }
 
-// Función para personalizar nombres de cuentas
-const getAccountDisplayName = (bankName, accountName) => {
-    const name = bankName || accountName || ''
-
-    // Si el nombre está vacío o es nulo, intentar detectar por otros campos
-    if (!name || name.trim() === '') {
-        return 'CAJA CHICA' // Por defecto para cuentas sin nombre
-    }
-
-    // Mapeo de nombres personalizados
-    const nameMap = {
-        'caja chica': 'CAJA CHICA',
-        'cajachica': 'CAJA CHICA',
-        'caja_chica': 'CAJA CHICA',
-        'small box': 'CAJA CHICA',
-        'petty cash': 'CAJA CHICA',
-        'caja': 'CAJA',
-        'cash': 'CAJA',
-        'banco pichincha': 'CAJA',
-        'pichincha': 'CAJA',
-        'banco guayaquil': 'BANCOS',
-        'guayaquil': 'BANCOS',
-        'bank': 'BANCOS',
-        'bancos': 'BANCOS'
-    }
-
-    // Buscar coincidencia (ignorando mayúsculas/minúsculas)
-    const lowerName = name.toLowerCase().trim()
-    for (const [key, value] of Object.entries(nameMap)) {
-        if (lowerName.includes(key)) {
-            return value
-        }
-    }
-
-    // Si no hay coincidencia, usar el nombre original en mayúsculas
-    return name.toUpperCase() || 'CUENTA'
-}
 
 const formatCurrency = (value) => {
     if (isNaN(value) || value === null) return '0.00'
@@ -295,12 +259,18 @@ const handleSubmit = async () => {
 
     loading.value = true
     try {
+        const requestBody = {
+            ...form.value,
+            amount: parseFloat(form.value.amount)
+        }
+
+        console.log('Datos que se enviarán al backend:', requestBody)
+        console.log('from_account_id:', requestBody.from_account_id)
+        console.log('to_account_id:', requestBody.to_account_id)
+
         const resp = await $api('transfers', {
             method: 'POST',
-            body: {
-                ...form.value,
-                amount: parseFloat(form.value.amount)
-            }
+            body: requestBody
         })
 
         console.log('Transfer creation response:', resp)
@@ -313,6 +283,7 @@ const handleSubmit = async () => {
         closeDialog()
     } catch (error) {
         console.error('Error creating transfer:', error)
+        console.error('Error response:', error.response?._data)
         const message = error.response?._data?.message || 'Error al realizar la transferencia'
         showNotification(message, 'error')
     } finally {

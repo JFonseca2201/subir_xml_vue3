@@ -23,6 +23,12 @@
                     </VCol>
 
                     <VCol cols="12" md="6">
+                        <VSelect v-model="form.account_id" :items="accountOptions" item-title="label" item-value="id"
+                            label="Cuenta *" prepend-inner-icon="ri-bank-line" :rules="[rules.required]" required
+                            placeholder="Seleccione una cuenta" />
+                    </VCol>
+
+                    <VCol cols="12" md="6">
                         <VTextField v-model="form.amount" label="Monto *" type="number"
                             prepend-inner-icon="ri-money-dollar-circle-line" :rules="[rules.required, rules.minAmount]"
                             required placeholder="0.00" step="0.01">
@@ -67,23 +73,20 @@
 import { ref, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName } from '@/utils/helpers'
 
+// Definir props de forma más explícita
 const props = defineProps({
-    modelValue: {
-        type: Boolean,
-        default: false
-    },
-    advanceData: {
-        type: Object,
-        default: null
-    },
-    employees: {
-        type: Array,
-        default: () => []
-    }
+    modelValue: Boolean,
+    advanceData: Object,
+    employees: Array
 })
 
-const emit = defineEmits(['update:modelValue', 'success'])
+// Definir emits de forma más explícita
+const emit = defineEmits({
+    'update:modelValue': null,
+    'success': null
+})
 
 const { showNotification } = useGlobalToast()
 const formRef = ref(null)
@@ -97,8 +100,12 @@ const form = ref({
     concept: null,
     state: 1,
     user_id: null,
-    sucursale_id: null
+    sucursale_id: null,
+    account_id: null // Agregado para cumplir con la validación del backend
 })
+
+// Estado para cuentas
+const accounts = ref(props.accounts)
 
 // Opciones para selects
 const stateOptions = ref([
@@ -125,7 +132,7 @@ const isVisible = computed({
     set: (value) => emit('update:modelValue', value)
 })
 
-const isEditing = computed(() => !!props.advanceData)
+const isEditing = computed(() => !!props.advanceData?.id)
 
 const employeeOptions = computed(() => {
     return props.employees.map(emp => ({
@@ -134,11 +141,36 @@ const employeeOptions = computed(() => {
     }))
 })
 
+const accountOptions = computed(() => {
+    if (!accounts.value || !Array.isArray(accounts.value)) return []
+    return accounts.value.map(account => ({
+        id: account.id,
+        label: getAccountDisplayName(account)
+    }))
+})
+
+// Función para formatear moneda
+const formatCurrency = (value) => {
+    if (isNaN(value) || value === null) return '0.00'
+    return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// Función para cargar cuentas
+const loadAccounts = async () => {
+    try {
+        const resp = await $api('transfer-accounts', { method: 'GET' })
+        accounts.value = resp.accounts || resp.data || resp || []
+    } catch (error) {
+        console.error('Error al cargar cuentas:', error)
+    }
+}
+
 // Métodos
 const loadAdvanceData = () => {
     if (props.advanceData && props.advanceData.id) {
         form.value = {
             employee_id: props.advanceData.employee_id || '',
+            account_id: props.advanceData.account_id || null,
             amount: props.advanceData.amount || '',
             advance_date: props.advanceData.advance_date ? props.advanceData.advance_date.split('T')[0] : '',
             concept: props.advanceData.concept || '',
@@ -152,6 +184,7 @@ const loadAdvanceData = () => {
 const resetForm = () => {
     form.value = {
         employee_id: null,
+        account_id: null,
         amount: 0,
         advance_date: null,
         concept: null,
@@ -219,15 +252,20 @@ const saveAdvance = async () => {
 }
 
 // Watchers
-watch(() => props.modelValue, (newValue) => {
-    if (newValue) {
-        loadAdvanceData()
+watch(() => props.modelValue, (val) => {
+    if (val) {
+        loadAccounts()
+        resetForm()
     }
 })
 
-watch(() => props.advanceData, () => {
-    if (props.modelValue) {
+watch(() => props.advanceData, (newData) => {
+    if (newData) {
         loadAdvanceData()
     }
-}, { deep: true })
+}, { immediate: true })
+
+watch(() => props.accounts, (newAccounts) => {
+    accounts.value = newAccounts
+})
 </script>

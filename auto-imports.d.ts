@@ -50,9 +50,11 @@ declare global {
   const emailValidator: typeof import('./src/@core/utils/validators.js')['emailValidator']
   const extendRef: typeof import('@vueuse/core')['extendRef']
   const forceUpperCase: typeof import('./src/utils/ecuadorianPlateValidator.js')['forceUpperCase']
+  const formatAccountDisplay: typeof import('./src/utils/helpers.js')['formatAccountDisplay']
   const formatDate: typeof import('./src/@core/utils/formatters.js')['formatDate']
   const formatDateToMonthShort: typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']
   const formatEcuadorianPlate: typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']
+  const getAccountDisplayName: typeof import('./src/utils/helpers.js')['getAccountDisplayName']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
@@ -415,9 +417,11 @@ declare module 'vue' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly emailValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['emailValidator']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly formatAccountDisplay: UnwrapRef<typeof import('./src/utils/helpers.js')['formatAccountDisplay']>
     readonly formatDate: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
+    readonly getAccountDisplayName: UnwrapRef<typeof import('./src/utils/helpers.js')['getAccountDisplayName']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
@@ -765,9 +769,11 @@ declare module '@vue/runtime-core' {
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly emailValidator: UnwrapRef<typeof import('./src/@core/utils/validators.js')['emailValidator']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
+    readonly formatAccountDisplay: UnwrapRef<typeof import('./src/utils/helpers.js')['formatAccountDisplay']>
     readonly formatDate: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDate']>
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
+    readonly getAccountDisplayName: UnwrapRef<typeof import('./src/utils/helpers.js')['getAccountDisplayName']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
