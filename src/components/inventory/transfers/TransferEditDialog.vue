@@ -261,9 +261,17 @@ const handleSubmit = async () => {
         })
 
         console.log('Transfer update response:', resp)
+        console.log('Response status:', resp.status)
+        console.log('Response data:', resp.data)
+        console.log('Response keys:', Object.keys(resp))
 
         // Manejar diferentes formatos de respuesta exitosa
-        if (resp.status === 200 || resp.status === 201 || resp.data) {
+        // Considerar exitosa si: tiene status 200/201, tiene data, o no tiene error explícito
+        const isSuccess = (resp.status === 200 || resp.status === 201) ||
+            resp.data ||
+            (!resp.error && !resp.message?.includes('error'))
+
+        if (isSuccess) {
             showNotification('Transferencia actualizada exitosamente', 'success')
 
             // Emitir evento success con delay para asegurar que el componente padre lo procese
@@ -272,6 +280,7 @@ const handleSubmit = async () => {
                 closeDialog()
             }, 100)
         } else {
+            console.warn('Unexpected response format:', resp)
             showNotification('Respuesta inesperada del servidor', 'warning')
         }
     } catch (error) {
