@@ -37,7 +37,8 @@
                             <div class="text-caption text-medium-emphasis">Tipo</div>
                             <div class="font-weight-bold">
                                 <VChip :color="flowData.flow_type === 'income' ? 'success' : 'error'" size="small">
-                                    <VIcon :icon="flowData.flow_type === 'income' ? 'ri-arrow-up-line' : 'ri-arrow-down-line'" 
+                                    <VIcon
+                                        :icon="flowData.flow_type === 'income' ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"
                                         size="16" class="mr-1" />
                                     {{ flowData.flow_type === 'income' ? 'Ingreso' : 'Egreso' }}
                                 </VChip>
@@ -45,8 +46,10 @@
                         </VCol>
                         <VCol cols="12" sm="6">
                             <div class="text-caption text-medium-emphasis">Monto</div>
-                            <div class="font-weight-bold" :class="flowData.flow_type === 'income' ? 'text-success' : 'text-error'">
-                                {{ flowData.flow_type === 'income' ? '+' : '-' }}{{ formatCurrency(flowData.total_amount) }}
+                            <div class="font-weight-bold"
+                                :class="flowData.flow_type === 'income' ? 'text-success' : 'text-error'">
+                                {{ flowData.flow_type === 'income' ? '+' : '-' }}{{
+                                    formatCurrency(flowData.total_amount) }}
                             </div>
                         </VCol>
                         <VCol cols="12" sm="6">
@@ -58,7 +61,7 @@
                         <VCol cols="12" sm="6">
                             <div class="text-caption text-medium-emphasis">Cuenta</div>
                             <div class="font-weight-bold">
-                                {{ getAccountTypeName(flowData.account_type) }}
+                                {{ getAccountTypeName(flowData.account_id) }}
                             </div>
                         </VCol>
                         <VCol cols="12" v-if="flowData.description">
@@ -91,7 +94,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
@@ -107,6 +110,22 @@ const emit = defineEmits({
 
 const { showNotification } = useGlobalToast()
 const loading = ref(false)
+const accounts = ref([])
+
+// Función para cargar cuentas desde la API
+const loadAccounts = async () => {
+    try {
+        console.log('🔍 Cargando cuentas para DailyCashFlowDeleteDialog...')
+        const resp = await $api('transfer-accounts', { method: 'GET' })
+        console.log('🔍 Accounts response:', resp)
+
+        accounts.value = resp.accounts || resp.data || resp || []
+        console.log('✅ Cuentas cargadas:', accounts.value)
+    } catch (error) {
+        console.error('❌ Error al cargar cuentas:', error)
+        accounts.value = []
+    }
+}
 
 // Computed properties
 const isVisible = computed({
@@ -132,18 +151,35 @@ const formatCurrency = (val) => {
     })
 }
 
-const getAccountTypeName = (type) => {
+const getAccountTypeName = (accountId) => {
+    // Si hay cuentas cargadas, usar el nombre real desde la API
+    if (accounts.value && Array.isArray(accounts.value)) {
+        const account = accounts.value.find(acc => acc.id === accountId)
+        if (account) {
+            return account.name || 'Desconocido'
+        }
+    }
+
+    // Fallback a nombres por defecto si no hay datos de la API
     const types = {
         1: 'Caja Chica',
-        2: 'Caja',
-        3: 'Bancos'
+        2: 'Banco Pichincha',
+        3: 'Banco Guayaquil'
     }
-    return types[type] || 'Desconocido'
+    return types[accountId] || 'Desconocido'
 }
 
 const closeDialog = () => {
     isVisible.value = false
 }
+
+// Watch para cargar cuentas cuando se abre el diálogo
+watch(() => props.modelValue, (val) => {
+    if (val) {
+        console.log('Diálogo de eliminación abierto, cargando cuentas...')
+        loadAccounts()
+    }
+}, { immediate: true })
 
 const confirmDelete = async () => {
     if (!props.flowData?.id) {
@@ -154,7 +190,7 @@ const confirmDelete = async () => {
     loading.value = true
     try {
         console.log('Eliminando movimiento:', props.flowData.id)
-        
+
         const resp = await $api(`daily-cash-flows/${props.flowData.id}`, {
             method: 'DELETE'
         })
@@ -169,14 +205,14 @@ const confirmDelete = async () => {
     } catch (error) {
         console.error('Error al eliminar movimiento:', error)
         console.error('Error response:', error.response?._data)
-        
+
         let message = 'Error al eliminar el movimiento'
         if (error.response?._data?.message) {
             message = error.response._data.message
         } else if (error.response?._data?.error) {
             message = error.response._data.error
         }
-        
+
         showNotification(message, 'error')
     } finally {
         loading.value = false

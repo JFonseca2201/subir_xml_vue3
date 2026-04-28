@@ -27,6 +27,8 @@ declare module 'vue' {
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsWithIcon: typeof import('./src/@core/components/cards/CardStatisticsWithIcon.vue')['default']
     CardStatisticsWithImages: typeof import('./src/@core/components/cards/CardStatisticsWithImages.vue')['default']
+    CashClosingDialog: typeof import('./src/components/inventory/cash-balance/CashClosingDialog.vue')['default']
+    CashOpeningDialog: typeof import('./src/components/inventory/cash-balance/CashOpeningDialog.vue')['default']
     CategorieAddDialog: typeof import('./src/components/inventory/config/categories/CategorieAddDialog.vue')['default']
     CategorieDeleteDialog: typeof import('./src/components/inventory/config/categories/CategorieDeleteDialog.vue')['default']
     CategorieEditDialog: typeof import('./src/components/inventory/config/categories/CategorieEditDialog.vue')['default']

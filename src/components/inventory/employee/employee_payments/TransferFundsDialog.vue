@@ -16,8 +16,9 @@
                     <VCol cols="12" md="6">
                         <VSelect v-model="form.from_account_id" :items="availableAccounts" item-title="display_name"
                             item-value="id" label="Cuenta de Origen *" prepend-inner-icon="ri-bank-card-line"
-                            :rules="[rules.required, rules.differentAccounts]" required placeholder="Seleccione cuenta de origen"
-                            :disabled="loadingAccounts" :loading="loadingAccounts">
+                            :rules="[rules.required, rules.differentAccounts]" required
+                            placeholder="Seleccione cuenta de origen" :disabled="loadingAccounts"
+                            :loading="loadingAccounts">
                             <template #append-inner>
                                 <VProgressCircular v-if="loadingAccounts" indeterminate size="16" width="2" />
                             </template>
@@ -25,7 +26,7 @@
                         <div v-if="form.from_account_id && fromAccount" class="text-caption text-medium-emphasis mt-1">
                             <div class="d-flex align-center gap-1">
                                 <VIcon icon="ri-bank-card-line" size="14" />
-                                <span class="font-weight-medium">{{ fromAccount.bank_name }}</span>
+                                <span class="font-weight-medium">{{ getAccountDisplayName(fromAccount) }}</span>
                                 <span>•••• {{ fromAccount.last_four }}</span>
                             </div>
                             <div class="text-info">Saldo disponible: ${{ formatCurrency(fromAccount.balance) }}</div>
@@ -35,8 +36,9 @@
                     <VCol cols="12" md="6">
                         <VSelect v-model="form.to_account_id" :items="availableAccounts" item-title="display_name"
                             item-value="id" label="Cuenta de Destino *" prepend-inner-icon="ri-bank-card-line"
-                            :rules="[rules.required, rules.differentAccounts]" required placeholder="Seleccione cuenta de destino"
-                            :disabled="loadingAccounts" :loading="loadingAccounts">
+                            :rules="[rules.required, rules.differentAccounts]" required
+                            placeholder="Seleccione cuenta de destino" :disabled="loadingAccounts"
+                            :loading="loadingAccounts">
                             <template #append-inner>
                                 <VProgressCircular v-if="loadingAccounts" indeterminate size="16" width="2" />
                             </template>
@@ -44,7 +46,7 @@
                         <div v-if="form.to_account_id && toAccount" class="text-caption text-medium-emphasis mt-1">
                             <div class="d-flex align-center gap-1">
                                 <VIcon icon="ri-bank-card-line" size="14" />
-                                <span class="font-weight-medium">{{ toAccount.bank_name }}</span>
+                                <span class="font-weight-medium">{{ getAccountDisplayName(toAccount) }}</span>
                                 <span>•••• {{ toAccount.last_four }}</span>
                             </div>
                             <div class="text-success">Saldo actual: ${{ formatCurrency(toAccount.balance) }}</div>
@@ -53,8 +55,8 @@
 
                     <VCol cols="12" md="6">
                         <VTextField v-model="form.amount" label="Monto a Transferir *" type="number"
-                            prepend-inner-icon="ri-money-dollar-circle-line" :rules="[rules.required, rules.sufficientFunds]"
-                            required placeholder="0.00" step="0.01">
+                            prepend-inner-icon="ri-money-dollar-circle-line"
+                            :rules="[rules.required, rules.sufficientFunds]" required placeholder="0.00" step="0.01">
                             <template #append-inner>
                                 <span class="text-medium-emphasis">USD</span>
                             </template>
@@ -62,8 +64,9 @@
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <VTextField v-model="form.description" label="Descripción" prepend-inner-icon="ri-file-text-line"
-                            placeholder="Motivo de la transferencia" rows="3" auto-grow />
+                        <VTextField v-model="form.description" label="Descripción"
+                            prepend-inner-icon="ri-file-text-line" placeholder="Motivo de la transferencia" rows="3"
+                            auto-grow />
                     </VCol>
                 </VRow>
 
@@ -82,9 +85,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName } from '@/utils/helpers'
 
 const props = defineProps({
     modelValue: {
@@ -133,11 +137,11 @@ const rules = {
         const num = parseFloat(value)
         if (isNaN(num)) return 'El monto debe ser un número válido'
         if (num <= 0) return 'El monto debe ser mayor a 0'
-        
+
         if (fromAccount.value && num > parseFloat(fromAccount.value.balance)) {
             return `Fondos insuficientes. Saldo disponible: $${formatCurrency(fromAccount.value.balance)}`
         }
-        
+
         return true
     }
 }
@@ -154,7 +158,7 @@ const loadAccounts = async () => {
         if (resp.status === 200) {
             availableAccounts.value = resp.data.map(account => ({
                 ...account,
-                display_name: `${account.bank_name} •••• ${account.last_four} - Saldo: $${formatCurrency(account.balance || 0)}`
+                display_name: `${getAccountDisplayName(account)} •••• ${account.last_four} - Saldo: $${formatCurrency(account.balance || 0)}`
             }))
         }
     } catch (error) {

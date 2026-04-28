@@ -370,6 +370,7 @@
     "preventInvalidPlateChars": true,
     "validateEcuadorianPlate": true,
     "formatAccountDisplay": true,
-    "getAccountDisplayName": true
+    "getAccountDisplayName": true,
+    "useFinances": true
   }
 }

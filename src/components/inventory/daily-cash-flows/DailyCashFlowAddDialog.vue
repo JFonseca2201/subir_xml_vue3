@@ -182,10 +182,7 @@ const paymentMethodOptions = ref([
     { label: 'Transferencia', value: 'transfer' }
 ])
 
-const bankOptions = ref([
-    { label: 'Banco Pichincha', id: 2 },
-    { label: 'Banco Guayaquil', id: 3 }
-])
+const bankOptions = ref([])
 
 const paymentStatusOptions = ref([
     { label: 'Completo', value: 'complete' },
@@ -274,8 +271,7 @@ const handleSubmit = async () => {
             ...form.value,
             total_amount: parseFloat(form.value.total_amount),
             source_id: form.value.source_id ? parseInt(form.value.source_id) : null,
-            user_id: user?.id || null,
-            account_type: form.value.account_id // Mapear account_id a account_type para el backend
+            user_id: user?.id || null
         }
 
         console.log('📤 Datos que se enviarán al backend:', requestBody)
@@ -306,8 +302,32 @@ const handleSubmit = async () => {
 // Función para cargar cuentas
 const loadAccounts = async () => {
     try {
+        console.log('🔍 Cargando cuentas para DailyCashFlowAddDialog...')
         const resp = await $api('transfer-accounts', { method: 'GET' })
+        console.log('🔍 Accounts response:', resp)
+
         accounts.value = resp.accounts || resp.data || resp || []
+
+        // Cargar bankOptions para transferencias (solo cuentas bancarias)
+        if (resp && resp.data && Array.isArray(resp.data)) {
+            // Filtrar solo cuentas bancarias para transferencias
+            const bankAccounts = resp.data.filter(account => account.type === 'bank')
+            bankOptions.value = bankAccounts.map(account => ({
+                label: account.name,
+                id: account.id
+            }))
+            console.log('✅ Cuentas bancarias cargadas:', bankOptions.value)
+        } else if (resp && Array.isArray(resp)) {
+            const bankAccounts = resp.filter(account => account.type === 'bank')
+            bankOptions.value = bankAccounts.map(account => ({
+                label: account.name,
+                id: account.id
+            }))
+            console.log('✅ Cuentas bancarias cargadas (direct array):', bankOptions.value)
+        } else {
+            console.log('⚠️ No se encontraron cuentas bancarias en API')
+            bankOptions.value = []
+        }
     } catch (error) {
         console.error('Error al cargar cuentas:', error)
     }
@@ -317,6 +337,7 @@ const loadAccounts = async () => {
 watch(() => props.modelValue, (val) => {
     if (val) {
         console.log('Diálogo abierto, estableciendo valores iniciales')
+        loadAccounts() // Cargar cuentas desde la API
         // Establecer valores iniciales según el método de pago
         if (form.value.payment_method === 'cash') {
             form.value.account_id = 1

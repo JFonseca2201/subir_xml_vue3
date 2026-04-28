@@ -34,7 +34,7 @@
                                     </div>
                                     <div class="text-right">
                                         <div class="text-caption text-medium-emphasis">Banco</div>
-                                        <div class="font-weight-medium">{{ fromAccount.bank_name }}</div>
+                                        <div class="font-weight-medium">{{ getAccountDisplayName(fromAccount) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -52,7 +52,8 @@
                                 <div class="d-flex align-center justify-space-between">
                                     <div>
                                         <div class="text-caption text-medium-emphasis">Banco</div>
-                                        <div class="font-weight-medium text-success">{{ toAccount.bank_name }}</div>
+                                        <div class="font-weight-medium text-success">{{ getAccountDisplayName(toAccount)
+                                            }}</div>
                                     </div>
                                     <div class="text-right">
                                         <div class="text-caption text-medium-emphasis">Cuenta</div>

@@ -31,15 +31,15 @@
                     </VCol>
 
                     <VCol cols="12" md="12">
-                        <VSelect v-model="form.account_id" :items="availableAccounts" item-title="bank_name"
-                            item-value="id" label="Cuenta de Destino *" prepend-inner-icon="ri-bank-card-line"
-                            :rules="[rules.required]" :loading="loadingAccounts" persistent-placeholder>
+                        <VSelect v-model="form.account_id" :items="accountOptions" item-title="label" item-value="id"
+                            label="Cuenta de Destino *" prepend-inner-icon="ri-bank-card-line" :rules="[rules.required]"
+                            :loading="loadingAccounts" persistent-placeholder>
                             <template #selection="{ item }">
-                                {{ item.raw.bank_name }}
+                                {{ item.raw.label }}
                             </template>
 
                             <template #item="{ props, item }">
-                                <VListItem v-bind="props" :title="item.raw.bank_name"
+                                <VListItem v-bind="props" :title="item.raw.label"
                                     :subtitle="item.raw.id === 3 ? 'Cuenta principal' : `Saldo: $${formatCurrency(item.raw.balance)}`" />
                             </template>
                         </VSelect>
@@ -47,7 +47,8 @@
                         <div v-if="selectedAccount" class="text-caption text-medium-emphasis mt-1">
                             <div class="d-flex align-center gap-1">
                                 <VIcon icon="ri-bank-card-line" size="14" />
-                                <span class="font-weight-bold text-primary">{{ selectedAccount.bank_name }}</span>
+                                <span class="font-weight-bold text-primary">{{ getAccountDisplayName(selectedAccount)
+                                    }}</span>
                             </div>
                         </div>
                     </VCol>
@@ -71,6 +72,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName } from '@/utils/helpers'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -84,9 +86,16 @@ const loading = ref(false)
 
 // 1. IMPORTANTE: Inicializamos con el objeto del Banco de Guayaquil ya cargado
 const availableAccounts = ref([
-    { id: 3, bank_name: 'BANCO DE GUAYAQUIL', last_four: '0000', balance: 0 }
+    { id: 3, name: 'BANCO DE GUAYAQUIL', last_four: '0000', balance: 0 }
 ])
 const loadingAccounts = ref(false)
+
+const accountOptions = computed(() => {
+    return availableAccounts.value.map(account => ({
+        ...account,
+        label: getAccountDisplayName(account)
+    }))
+})
 
 const form = ref({
     partner_id: null,

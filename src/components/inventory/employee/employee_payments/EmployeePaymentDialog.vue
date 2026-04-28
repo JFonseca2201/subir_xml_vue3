@@ -57,7 +57,7 @@
                         <div v-if="form.account_id && selectedAccount" class="text-caption text-medium-emphasis mt-1">
                             <div class="d-flex align-center gap-1">
                                 <VIcon icon="ri-bank-card-line" size="14" />
-                                <span class="font-weight-medium">{{ selectedAccount.bank_name }}</span>
+                                <span class="font-weight-medium">{{ getAccountDisplayName(selectedAccount) }}</span>
                                 <span>•••• {{ selectedAccount.last_four }}</span>
                             </div>
                             <div class="text-info">Saldo disponible: ${{ formatCurrency(selectedAccount.balance) }}
@@ -94,7 +94,7 @@
                                     <VListItemTitle>{{ advance.concept || 'Adelanto de efectivo' }}</VListItemTitle>
                                     <template v-slot:append>
                                         <span class="font-weight-medium text-error">-${{ formatCurrency(advance.amount)
-                                        }}</span>
+                                            }}</span>
                                     </template>
                                 </VListItem>
                             </VList>
@@ -142,9 +142,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName } from '@/utils/helpers'
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },
@@ -248,7 +249,7 @@ const loadAvailableAccounts = async () => {
         if (resp.status === 200) {
             availableAccounts.value = resp.data.map(account => ({
                 ...account,
-                display_name: `${account.bank_name} •••• ${account.last_four} - Saldo: $${formatCurrency(account.balance || 0)}`
+                display_name: `${getAccountDisplayName(account)} •••• ${account.last_four} - Saldo: $${formatCurrency(account.balance || 0)}`
             }))
         }
     } catch (error) {

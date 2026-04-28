@@ -1,5 +1,6 @@
 <script setup>
 import { defineEmits, defineProps } from 'vue'
+import { getAccountDisplayName } from '@/utils/helpers'
 
 const props = defineProps({
     isDialogVisible: {
@@ -156,8 +157,8 @@ const getDepartmentColor = department => {
                                     <VIcon icon="ri-bank-line" size="20" class="me-2 text-success" />
                                     <div>
                                         <div class="text-caption text-medium-emphasis">Banco</div>
-                                        <div class="font-weight-medium text-uppercase">{{ props.employeeData.bank_name
-                                        }}</div>
+                                        <div class="font-weight-medium text-uppercase">{{
+                                            getAccountDisplayName(props.employeeData) }}</div>
                                     </div>
                                 </div>
                             </VCol>

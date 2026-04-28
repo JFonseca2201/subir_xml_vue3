@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useLoaderStore } from '@/stores/loader'
+import { ref, computed, watch, onMounted } from 'vue'
+import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getAccountDisplayName } from '@/utils/helpers'
 import { $api } from '@/utils/api'
 
 const loader = useLoaderStore()
@@ -599,7 +600,7 @@ onMounted(() => {
                                                         {{ account.type === 'cash' ? 'Efectivo' : 'Bancaria' }}
                                                     </VChip>
                                                     <span v-if="account.bank_name" class="text-caption">{{
-                                                        account.bank_name }}</span>
+                                                        getAccountDisplayName(account) }}</span>
                                                 </div>
 
                                                 <div class="d-flex align-center gap-2">
