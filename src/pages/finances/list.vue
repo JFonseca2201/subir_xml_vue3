@@ -173,6 +173,14 @@ const paginatedExpensesGroupedByDay = computed(() => {
     return groupMovementsByDay(paginatedExpenses.value)
 })
 
+const incomesGroupedByDay = computed(() => {
+    return groupMovementsByDay(allIncomes.value)
+})
+
+const expensesGroupedByDay = computed(() => {
+    return groupMovementsByDay(allExpenses.value)
+})
+
 const totalPagesIncomes = computed(() => {
     return Math.ceil(allIncomes.value.length / itemsPerPage.value)
 })
@@ -754,7 +762,7 @@ onMounted(async () => {
         </VCard>
 
         <!-- Contenido Principal - Dos Columnas -->
-        <VRow>
+        <VRow class="match-height">
             <!-- Columna Izquierda - Caja Diaria -->
             <VCol cols="12" lg="6">
                 <VCard class="h-100" elevation="2">
@@ -930,8 +938,9 @@ onMounted(async () => {
                                             Nuevo Ingreso
                                         </VBtn>
                                     </div>
-                                    <div v-if="paginatedIncomesGroupedByDay && paginatedIncomesGroupedByDay.length > 0">
-                                        <div v-for="day in paginatedIncomesGroupedByDay" :key="day.date">
+                                    <div v-if="incomesGroupedByDay && incomesGroupedByDay.length > 0"
+                                        class="scroll-container flex-grow-1">
+                                        <div v-for="day in incomesGroupedByDay" :key="day.date">
                                             <VCard v-if="day.income && day.income.length > 0" variant="outlined"
                                                 class="mb-3">
                                                 <VCardSubtitle class="d-flex align-center justify-space-between pa-3">
@@ -984,25 +993,6 @@ onMounted(async () => {
                                                 </VList>
                                             </VCard>
                                         </div>
-
-                                        <!-- Controles de Paginación -->
-                                        <div v-if="allIncomes.length > itemsPerPage" class="mt-4">
-                                            <VPagination v-model="currentPage" :length="totalPagesIncomes"
-                                                :total-visible="5" color="primary" variant="tonal"
-                                                class="justify-center" />
-                                            <div class="text-center mt-2 text-caption text-medium-emphasis">
-                                                Mostrando {{ paginatedIncomes.length }} de {{ allIncomes.length }}
-                                                ingresos
-                                            </div>
-                                        </div>
-
-                                        <div v-else-if="!paginatedIncomesGroupedByDay || paginatedIncomesGroupedByDay.length === 0"
-                                            class="text-center py-8 empty-state">
-                                            <VIcon icon="ri-arrow-down-circle-line" size="48" color="disabled" />
-                                            <p class="mt-2 text-h6">No hay ingresos aun</p>
-                                            <p class="text-body-2 text-medium-emphasis">No se han registrado ingresos
-                                                para el día de hoy</p>
-                                        </div>
                                     </div>
                                 </div>
                             </VWindowItem>
@@ -1017,9 +1007,9 @@ onMounted(async () => {
                                             Nuevo Egreso
                                         </VBtn>
                                     </div>
-                                    <div
-                                        v-if="paginatedExpensesGroupedByDay && paginatedExpensesGroupedByDay.length > 0">
-                                        <div v-for="day in paginatedExpensesGroupedByDay" :key="day.date">
+                                    <div v-if="expensesGroupedByDay && expensesGroupedByDay.length > 0"
+                                        class="scroll-container flex-grow-1">
+                                        <div v-for="day in expensesGroupedByDay" :key="day.date">
                                             <VCard v-if="day.expenses && day.expenses.length > 0" variant="outlined"
                                                 class="mb-3">
                                                 <VCardSubtitle class="d-flex align-center justify-space-between pa-3">
@@ -1073,25 +1063,13 @@ onMounted(async () => {
                                                 </VList>
                                             </VCard>
                                         </div>
-
-                                        <!-- Controles de Paginación -->
-                                        <div v-if="allExpenses.length > itemsPerPage" class="mt-4">
-                                            <VPagination v-model="currentPage" :length="totalPagesExpenses"
-                                                :total-visible="5" color="primary" variant="tonal"
-                                                class="justify-center" />
-                                            <div class="text-center mt-2 text-caption text-medium-emphasis">
-                                                Mostrando {{ paginatedExpenses.length }} de {{ allExpenses.length }}
-                                                egresos
-                                            </div>
-                                        </div>
-
-                                        <div v-else-if="!paginatedExpensesGroupedByDay || paginatedExpensesGroupedByDay.length === 0"
-                                            class="text-center py-8 empty-state">
-                                            <VIcon icon="ri-arrow-up-circle-line" size="48" color="disabled" />
-                                            <p class="mt-2 text-h6">No hay egresos aun</p>
-                                            <p class="text-body-2 text-medium-emphasis">No se han registrado egresos
-                                                para el día de hoy</p>
-                                        </div>
+                                    </div>
+                                    <div v-else-if="!expensesGroupedByDay || expensesGroupedByDay.length === 0"
+                                        class="text-center py-8 empty-state flex-grow-1">
+                                        <VIcon icon="ri-arrow-up-circle-line" size="48" color="disabled" />
+                                        <p class="mt-2 text-h6">No hay egresos aun</p>
+                                        <p class="text-body-2 text-medium-emphasis">No se han registrado egresos
+                                            para el día de hoy</p>
                                     </div>
                                 </div>
                             </VWindowItem>
@@ -1128,6 +1106,12 @@ onMounted(async () => {
 .movement-list {
     max-height: 400px;
     overflow-y: auto;
+}
+
+.scroll-container {
+    max-height: 800px;
+    overflow-y: auto;
+    flex-grow: 1;
 }
 
 .text-success {
