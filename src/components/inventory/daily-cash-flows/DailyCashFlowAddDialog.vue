@@ -142,6 +142,7 @@ const form = ref({
     payment_status: 'complete',
     payment_method: 'cash',
     account_id: 1,
+    account_type: 1, // Add account_type field as integer
     source_type: 'other',
     source_id: '',
     description: ''
@@ -214,13 +215,17 @@ const onPaymentMethodChange = (paymentMethod) => {
     console.log('Método de pago cambiado a:', paymentMethod)
 
     if (paymentMethod === 'cash') {
-        // Si es efectivo, account_id = 1 (Caja Chica)
+        // Si es efectivo, account_id = 1 (Caja Chica) y account_type = 1
         form.value.account_id = 1
+        form.value.account_type = 1
         console.log('Account_id establecido a 1 para efectivo')
+        console.log('Account_type establecido a 1 para efectivo')
     } else if (paymentMethod === 'transfer') {
-        // Si es transferencia, limpiar account_id para que el usuario seleccione
+        // Si es transferencia, limpiar account_id para que el usuario seleccione y account_type = null (se establecerá cuando se seleccione banco)
         form.value.account_id = null
+        form.value.account_type = null
         console.log('Account_id limpiado para transferencia, usuario debe seleccionar banco')
+        console.log('Account_type establecido a null para transferencia')
     }
 }
 
@@ -240,6 +245,7 @@ const resetForm = () => {
         payment_status: 'complete',
         payment_method: 'cash',
         account_id: 1,
+        account_type: 1,
         source_type: 'other',
         source_id: '',
         description: ''
@@ -292,8 +298,27 @@ const handleSubmit = async () => {
     } catch (error) {
         console.error('Error al crear movimiento:', error)
         console.error('Error response:', error.response?._data)
-        const message = error.response?._data?.message || 'Error al crear el movimiento'
-        showNotification(message, 'error')
+        console.error('Error status:', error.response?.status)
+        console.error('Error statusText:', error.response?.statusText)
+
+        // Try to get detailed error messages
+        let errorMessage = 'Error al crear el movimiento'
+        if (error.response?._data) {
+            if (error.response._data.message) {
+                errorMessage = error.response._data.message
+            }
+            if (error.response._data.errors) {
+                console.error('Validation errors:', error.response._data.errors)
+                // If there are field-specific errors, show them
+                const errors = error.response._data.errors
+                const firstError = Object.values(errors)[0]
+                if (firstError && Array.isArray(firstError)) {
+                    errorMessage = firstError[0]
+                }
+            }
+        }
+
+        showNotification(errorMessage, 'error')
     } finally {
         loading.value = false
     }
@@ -309,9 +334,9 @@ const loadAccounts = async () => {
         accounts.value = resp.accounts || resp.data || resp || []
 
         // Cargar bankOptions para transferencias (solo cuentas bancarias)
-        if (resp && resp.data && Array.isArray(resp.data)) {
+        if (resp && resp.accounts && Array.isArray(resp.accounts)) {
             // Filtrar solo cuentas bancarias para transferencias
-            const bankAccounts = resp.data.filter(account => account.type === 'bank')
+            const bankAccounts = resp.accounts.filter(account => account.type === 'bank')
             bankOptions.value = bankAccounts.map(account => ({
                 label: account.name,
                 id: account.id
@@ -333,6 +358,14 @@ const loadAccounts = async () => {
     }
 }
 
+// Watch para actualizar account_type cuando cambia account_id
+watch(() => form.value.account_id, (newAccountId) => {
+    if (form.value.payment_method === 'transfer' && newAccountId) {
+        form.value.account_type = newAccountId
+        console.log('Account_type actualizado a:', newAccountId, 'para transferencia')
+    }
+})
+
 // Watch para cargar cuentas cuando se abre el diálogo
 watch(() => props.modelValue, (val) => {
     if (val) {
@@ -341,6 +374,7 @@ watch(() => props.modelValue, (val) => {
         // Establecer valores iniciales según el método de pago
         if (form.value.payment_method === 'cash') {
             form.value.account_id = 1
+            form.value.account_type = 1
         }
     }
 }, { immediate: true })

@@ -27,6 +27,7 @@ const form = ref({
     payment_status: null,
     payment_method: null,
     account_id: null,
+    account_type: null, // Add missing account_type field
     source_type: null,
     source_id: null,
     description: ''
@@ -111,7 +112,7 @@ const loadFlowData = () => {
                 sourceType = 'sale' // Ventas por defecto para ingresos
                 console.log('💵 Estableciendo source_type por defecto para income:', sourceType)
             } else if (flowType === 'expense') {
-                sourceType = 'expense' // Gastos por defecto para egresos
+                sourceType = 'purchase' // Compras por defecto para egresos
                 console.log('💸 Estableciendo source_type por defecto para expense:', sourceType)
             } else {
                 sourceType = 'other' // Otro por defecto
@@ -194,6 +195,7 @@ const loadFlowData = () => {
             payment_status: 'complete',
             payment_method: paymentMethod,
             account_id: finalAccountId ? Number(finalAccountId) : null,
+            account_type: finalAccountId ? Number(finalAccountId) : null, // Add account_type as integer
             source_type: sourceType,
             source_id: finalSourceId,
             description: props.flowData.description || ''
@@ -285,8 +287,28 @@ const handleSubmit = async () => {
         closeDialog()
     } catch (error) {
         console.error('Error al actualizar movimiento:', error)
-        const message = error.response?._data?.message || 'Error al actualizar el movimiento'
-        showNotification(message, 'error')
+        console.error('Error response:', error.response?._data)
+        console.error('Error status:', error.response?.status)
+        console.error('Error statusText:', error.response?.statusText)
+
+        // Try to get detailed error messages
+        let errorMessage = 'Error al actualizar el movimiento'
+        if (error.response?._data) {
+            if (error.response._data.message) {
+                errorMessage = error.response._data.message
+            }
+            if (error.response._data.errors) {
+                console.error('Validation errors:', error.response._data.errors)
+                // If there are field-specific errors, show them
+                const errors = error.response._data.errors
+                const firstError = Object.values(errors)[0]
+                if (firstError && Array.isArray(firstError)) {
+                    errorMessage = firstError[0]
+                }
+            }
+        }
+
+        showNotification(errorMessage, 'error')
     } finally {
         loading.value = false
     }
@@ -380,6 +402,14 @@ watch(() => props.flowData, async (newData) => {
         }
         console.log('🎯 Ejecutando loadFlowData...')
         loadFlowData()
+    }
+})
+
+// Watch para actualizar account_type cuando cambia account_id
+watch(() => form.value.account_id, (newAccountId) => {
+    if (newAccountId && form.value.payment_method === 'transfer') {
+        form.value.account_type = newAccountId
+        console.log('Account_type actualizado a:', newAccountId, 'para transferencia en edición')
     }
 })
 

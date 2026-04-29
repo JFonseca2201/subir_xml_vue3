@@ -181,6 +181,72 @@ const expensesGroupedByDay = computed(() => {
     return groupMovementsByDay(allExpenses.value)
 })
 
+// Headers para la tabla de movimientos
+const movementHeaders = ref([
+    { title: 'TIPO', key: 'type', sortable: true },
+    { title: 'IDENTIFICADOR', key: 'identifier', sortable: true },
+    { title: 'DESCRIPCIÓN', key: 'description', sortable: true },
+    { title: 'CUENTA', key: 'account', sortable: true },
+    { title: 'MÉTODO', key: 'method', sortable: true },
+    { title: 'MONTO', key: 'amount', sortable: true },
+    { title: 'FECHA', key: 'date', sortable: true },
+    { title: 'ACCIONES', key: 'actions', sortable: false }
+])
+
+// Computed property para movimientos con información de cuentas
+const allMovementsWithAccounts = computed(() => {
+    return allMovements.value.map(movement => ({
+        ...movement,
+        // Asegurar que tenga account_id
+        account_id: movement.account_id || getDefaultAccountId(movement.payment_method),
+        // Formatear fecha
+        formatted_date: formatDateLocal(movement.flow_date)
+    }))
+})
+
+// Función para obtener nombre de cuenta
+const getAccountName = (accountId) => {
+    if (!accountId) return 'Sin cuenta'
+
+    // Buscar en accounts.value (del backend)
+    if (accounts.value && Array.isArray(accounts.value)) {
+        const account = accounts.value.find(acc => acc.id === accountId)
+        if (account) return account.name
+    }
+
+    // Fallback a nombres por defecto
+    const defaultNames = {
+        1: 'Caja Chica',
+        2: 'Caja (Banco Pichincha)',
+        3: 'Bancos (Banco Guayaquil)'
+    }
+
+    return defaultNames[accountId] || `Cuenta ${accountId}`
+}
+
+// Función para obtener tipo de cuenta basado en source_type
+const getAccountType = (sourceType) => {
+    const types = {
+        'sale': 'Venta',
+        'purchase': 'Compra',
+        'partner_contribution': 'Aporte Socio',
+        'employee_payment': 'Pago Empleado',
+        'employee_advance': 'Adelanto Empleado',
+        'transfer': 'Transferencia',
+        'other': 'Otro'
+    }
+
+    return types[sourceType] || 'General'
+}
+
+// Función para obtener cuenta por defecto según método de pago
+const getDefaultAccountId = (paymentMethod) => {
+    if (paymentMethod === 'transfer') {
+        return 2 // Cuenta bancaria por defecto para transferencias
+    }
+    return 1 // Caja Chica por defecto para efectivo
+}
+
 const totalPagesIncomes = computed(() => {
     return Math.ceil(allIncomes.value.length / itemsPerPage.value)
 })
@@ -325,75 +391,50 @@ const loadFinanceData = async () => {
             console.log(`Movimiento ${index}: type=${movement.type}, flow_type=${movement.flow_type}, amount=${movement.total_amount}`)
         })
 
-        const netBalance = totalIncome - totalExpenses
-
-        // Calcular saldos por cuenta usando datos dinámicos de la API
+        // Usar saldos y totales calculados por el backend
         let accountBalances = []
+        let openingBalance = 0
+        let currentBalance = 0
 
-        if (accounts.value.length > 0) {
-            // Incluir siempre la Caja Chica (efectivo)
-            accountBalances.push({
-                id: 1,
-                name: 'Caja Chica',
-                bank_name: null,
-                balance: 0
-            })
+        if (response.summary) {
+            openingBalance = parseFloat(response.summary.opening_balance || 0)
+            currentBalance = parseFloat(response.summary.current_balance || 0)
+            console.log(' Usando totales calculados por el backend:', { openingBalance, currentBalance })
+        }
 
-            // Incluir cuentas bancarias de la API
-            accounts.value.forEach(account => {
-                // Evitar duplicar la Caja Chica si ya existe en la API
-                if (account.id !== 1) {
-                    accountBalances.push({
-                        id: account.id,
-                        name: account.name,
-                        bank_name: account.bank_name,
-                        balance: 0
-                    })
+        // Usar cuentas del backend y asegurar que todas estén presentes
+        if (accounts.value && Array.isArray(accounts.value) && accounts.value.length > 0) {
+            // Combinar cuentas del backend con cuentas por defecto para asegurar que todas estén
+            const defaultAccounts = [
+                { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
+                { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
+                { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
+            ]
+
+            accountBalances = defaultAccounts.map(defaultAccount => {
+                const backendAccount = accounts.value.find(acc => acc.id === defaultAccount.id)
+                return {
+                    id: defaultAccount.id,
+                    name: defaultAccount.name,
+                    bank_name: defaultAccount.bank_name,
+                    balance: backendAccount?.balance || 0 // Usar balance del backend si existe
                 }
             })
-
-            console.log('📊 Cuentas configuradas (incluyendo Caja Chica):', accountBalances)
+            console.log('?? Combinando backend con cuentas por defecto:', accountBalances)
         } else {
-            // Fallback a cuentas por defecto si no hay datos de API
+            // Fallback a cuentas por defecto si el backend no responde
             accountBalances = [
                 { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
                 { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
                 { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
             ]
+            console.log('?? Usando cuentas por defecto (sin backend):', accountBalances)
         }
-
-        // Calcular saldo por cuenta basado en los movimientos
-        allMovements.forEach(flow => {
-            let targetAccountId = flow.account_id
-
-            // Si no hay account_id, asignar basado en el método de pago
-            if (!targetAccountId) {
-                if (flow.method === 'Transferencia' || flow.payment_method === 'transfer') {
-                    targetAccountId = 2 // Cuenta bancaria por defecto
-                } else {
-                    targetAccountId = 1 // Caja Chica por defecto para efectivo
-                }
-                console.log('🔄 Asignando movimiento sin account_id:', flow.method, '-> cuenta ID:', targetAccountId)
-            }
-
-            const accountIndex = accountBalances.findIndex(acc => acc.id === targetAccountId)
-            if (accountIndex !== -1) {
-                if (flow.flow_type === 'income') {
-                    accountBalances[accountIndex].balance += parseFloat(flow.total_amount || 0)
-                    console.log('💰 Añadiendo ingreso a cuenta', targetAccountId, ':', flow.total_amount)
-                } else if (flow.flow_type === 'expense') {
-                    accountBalances[accountIndex].balance -= parseFloat(flow.total_amount || 0)
-                    console.log('💸 Restando egreso de cuenta', targetAccountId, ':', flow.total_amount)
-                }
-            } else {
-                console.log('⚠️ No se encontró cuenta con ID:', targetAccountId)
-            }
-        })
 
         // Mapear datos al formato existente
         dailyCash.value = {
-            opening_balance: 0,
-            current_balance: netBalance,
+            opening_balance: openingBalance,
+            current_balance: currentBalance,
             total_income: totalIncome,
             total_expenses: totalExpenses,
             movements: allMovements.map(flow => ({
@@ -466,7 +507,7 @@ const loadFinanceData = async () => {
         console.log('Resumen final:', {
             total_income: totalIncome,
             total_expenses: totalExpenses,
-            net_balance: netBalance,
+            net_balance: currentBalance,
             movements_count: allMovements.length
         })
 
@@ -575,13 +616,30 @@ const getDocumentPrefix = (flowType, sourceType) => {
 }
 
 const groupMovementsByDay = (movements) => {
-    console.log('🗂️ groupMovementsByDay llamado con movements:', movements)
+    console.log('?? groupMovementsByDay llamado con movements:', movements)
     const grouped = {}
 
     movements.forEach(movement => {
-        console.log('📋 Procesando movement:', movement)
-        // Usar el campo date que ya está formateado
-        const date = movement.date
+        console.log('?? Procesando movement:', movement)
+        console.log('?? Campos del movement:', {
+            id: movement.id,
+            flow_type: movement.flow_type,
+            date: movement.date,
+            flow_date: movement.flow_date,
+            formatted_date: movement.formatted_date
+        })
+
+        // Usar el campo date que ya está formateado, si no hay, formatearlo
+        let date = movement.date
+        if (!date && movement.flow_date) {
+            date = formatDateLocal(movement.flow_date)
+            console.log('?? Fecha formateada:', date)
+        }
+
+        if (!date) {
+            console.log('?? No hay fecha para el movement:', movement)
+            return // Saltar este movimiento si no hay fecha
+        }
 
         if (!grouped[date]) {
             grouped[date] = {
@@ -593,16 +651,17 @@ const groupMovementsByDay = (movements) => {
             }
         }
 
+        // Usar type en lugar de flow_type
         if (movement.type === 'income') {
-            console.log('✅ Movimiento de INGRESO detectado:', movement)
+            console.log('?? Movimiento de INGRESO detectado:', movement)
             grouped[date].income.push(movement)
             grouped[date].totalIncome += parseFloat(movement.total_amount || 0)
         } else if (movement.type === 'expense') {
-            console.log('❌ Movimiento de EGRESO detectado:', movement)
+            console.log('?? Movimiento de EGRESO detectado:', movement)
             grouped[date].expenses.push(movement)
             grouped[date].totalExpenses += parseFloat(movement.total_amount || 0)
         } else {
-            console.log('⚠️ Movimiento con tipo NO RECONOCIDO:', movement.type, movement)
+            console.log('?? Movimiento con tipo NO RECONOCIDO:', movement.type, movement)
         }
     })
 
@@ -613,7 +672,7 @@ const groupMovementsByDay = (movements) => {
         return dateB - dateA
     })
 
-    console.log('📊 Resultado final de groupMovementsByDay:', result)
+    console.log('?? Resultado final de groupMovementsByDay:', result)
     return result
 }
 
@@ -981,11 +1040,13 @@ onMounted(async () => {
                                                                 </div>
                                                                 <div class="d-flex gap-1">
                                                                     <VBtn color="primary" variant="tonal" size="x-small"
-                                                                        icon="ri-edit-line"
-                                                                        @click="openEditCashFlowDialog(income)" />
+                                                                        @click="openEditCashFlowDialog(income)">
+                                                                        <VIcon icon="ri-edit-line" size="14" />
+                                                                    </VBtn>
                                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                                        icon="ri-delete-bin-line"
-                                                                        @click="openDeleteCashFlowDialog(income)" />
+                                                                        @click="deleteCashFlow(income.id)">
+                                                                        <VIcon icon="ri-delete-bin-line" size="14" />
+                                                                    </VBtn>
                                                                 </div>
                                                             </div>
                                                         </template>
@@ -993,6 +1054,13 @@ onMounted(async () => {
                                                 </VList>
                                             </VCard>
                                         </div>
+                                    </div>
+                                    <div v-else-if="!incomesGroupedByDay || incomesGroupedByDay.length === 0"
+                                        class="text-center py-8 empty-state flex-grow-1">
+                                        <VIcon icon="ri-arrow-down-circle-line" size="48" color="disabled" />
+                                        <p class="mt-2 text-h6">No hay ingresos aun</p>
+                                        <p class="text-body-2 text-medium-emphasis">No se han registrado ingresos
+                                            para el día de hoy</p>
                                     </div>
                                 </div>
                             </VWindowItem>
@@ -1039,9 +1107,8 @@ onMounted(async () => {
                                                             </div>
                                                         </VListItemTitle>
                                                         <VListItemSubtitle>
-                                                            <VChip :color="getCategoryColor(expense.category)"
-                                                                size="small" class="mb-1">
-                                                                {{ expense.method || 'Compra' }}
+                                                            <VChip color="error" variant="tonal" size="small">
+                                                                {{ expense.method || 'Gasto' }}
                                                             </VChip>
                                                         </VListItemSubtitle>
                                                         <template #append>
@@ -1051,11 +1118,13 @@ onMounted(async () => {
                                                                 </div>
                                                                 <div class="d-flex gap-1">
                                                                     <VBtn color="primary" variant="tonal" size="x-small"
-                                                                        icon="ri-edit-line"
-                                                                        @click="openEditCashFlowDialog(expense)" />
+                                                                        @click="openEditCashFlowDialog(expense)">
+                                                                        <VIcon icon="ri-edit-line" size="14" />
+                                                                    </VBtn>
                                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                                        icon="ri-delete-bin-line"
-                                                                        @click="openDeleteCashFlowDialog(expense)" />
+                                                                        @click="deleteCashFlow(expense.id)">
+                                                                        <VIcon icon="ri-delete-bin-line" size="14" />
+                                                                    </VBtn>
                                                                 </div>
                                                             </div>
                                                         </template>
