@@ -48,6 +48,42 @@ const totalItems = ref(0)
 // Variable para almacenar cuentas dinámicamente
 const accounts = ref([])
 
+// Función para calcular balances de cuentas
+const calculateAccountBalances = () => {
+    let accountBalances = []
+
+    // Usar cuentas del backend y asegurar que todas estén presentes
+    if (accounts.value && Array.isArray(accounts.value) && accounts.value.length > 0) {
+        // Combinar cuentas del backend con cuentas por defecto para asegurar que todas estén
+        const defaultAccounts = [
+            { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
+            { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
+            { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
+        ]
+
+        accountBalances = defaultAccounts.map(defaultAccount => {
+            const backendAccount = accounts.value.find(acc => acc.id === defaultAccount.id)
+            return {
+                id: defaultAccount.id,
+                name: defaultAccount.name,
+                bank_name: defaultAccount.bank_name,
+                balance: backendAccount?.balance || 0 // Usar balance del backend si existe
+            }
+        })
+        console.log('?? Combinando backend con cuentas por defecto:', accountBalances)
+    } else {
+        // Si no hay cuentas del backend, usar cuentas por defecto con balance 0
+        accountBalances = [
+            { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
+            { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
+            { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
+        ]
+        console.log('?? Usando cuentas por defecto:', accountBalances)
+    }
+
+    return accountBalances
+}
+
 // Función para cargar cuentas desde la API
 const loadAccounts = async () => {
     try {
@@ -55,11 +91,34 @@ const loadAccounts = async () => {
         const resp = await $api('transfer-accounts', { method: 'GET' })
         console.log(' Accounts response:', resp)
 
-        accounts.value = resp.accounts || resp.data || resp || []
-        console.log(' Cuentas cargadas:', accounts.value)
+        const newAccounts = resp.accounts || resp.data || resp || []
+        console.log(' Nuevas cuentas recibidas:', newAccounts)
+
+        // Verificar si los balances cambiaron
+        if (accounts.value.length > 0) {
+            console.log(' Comparando balances anteriores vs nuevos:')
+            newAccounts.forEach(newAcc => {
+                const oldAcc = accounts.value.find(a => a.id === newAcc.id)
+                if (oldAcc && oldAcc.balance !== newAcc.balance) {
+                    console.log(`  Cuenta ${newAcc.name}: ${oldAcc.balance} -> ${newAcc.balance}`)
+                }
+            })
+        }
+
+        accounts.value = newAccounts
+        console.log(' Cuentas actualizadas:', accounts.value)
+
+        // Actualizar dailyCash.account_balances inmediatamente
+        const updatedBalances = calculateAccountBalances()
+        dailyCash.value.account_balances = updatedBalances
+        console.log('?? Balances actualizados en dailyCash.account_balances:', updatedBalances)
+
     } catch (error) {
         console.error(' Error al cargar cuentas:', error)
         accounts.value = []
+        // También actualizar con valores por defecto en caso de error
+        const defaultBalances = calculateAccountBalances()
+        dailyCash.value.account_balances = defaultBalances
     }
 }
 
@@ -273,14 +332,25 @@ const formatDateLocal = (dateString) => {
 
     // Si viene como ISO string (ej: "2026-04-22T14:30:00"), procesarla
     try {
+        // Para fechas UTC, usar métodos UTC para evitar conversión de zona horaria
         const date = new Date(dateString)
 
-        // Obtener componentes locales sin problemas de zona horaria
-        const day = String(date.getDate()).padStart(2, '0')
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const year = date.getFullYear()
+        // Verificar si es una fecha UTC (viene de la base de datos)
+        if (dateString.includes('T') || dateString.includes('-')) {
+            // Usar componentes UTC para mantener la fecha original de la BD
+            const day = String(date.getUTCDate()).padStart(2, '0')
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+            const year = date.getUTCFullYear()
 
-        return `${day}/${month}/${year}`
+            return `${day}/${month}/${year}`
+        } else {
+            // Para fechas locales, usar componentes locales
+            const day = String(date.getDate()).padStart(2, '0')
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const year = date.getFullYear()
+
+            return `${day}/${month}/${year}`
+        }
     } catch (error) {
         console.error('Error formatting date:', error)
         return dateString
@@ -402,34 +472,8 @@ const loadFinanceData = async () => {
             console.log(' Usando totales calculados por el backend:', { openingBalance, currentBalance })
         }
 
-        // Usar cuentas del backend y asegurar que todas estén presentes
-        if (accounts.value && Array.isArray(accounts.value) && accounts.value.length > 0) {
-            // Combinar cuentas del backend con cuentas por defecto para asegurar que todas estén
-            const defaultAccounts = [
-                { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
-                { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
-                { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
-            ]
-
-            accountBalances = defaultAccounts.map(defaultAccount => {
-                const backendAccount = accounts.value.find(acc => acc.id === defaultAccount.id)
-                return {
-                    id: defaultAccount.id,
-                    name: defaultAccount.name,
-                    bank_name: defaultAccount.bank_name,
-                    balance: backendAccount?.balance || 0 // Usar balance del backend si existe
-                }
-            })
-            console.log('?? Combinando backend con cuentas por defecto:', accountBalances)
-        } else {
-            // Fallback a cuentas por defecto si el backend no responde
-            accountBalances = [
-                { id: 1, name: 'Caja Chica', bank_name: null, balance: 0 },
-                { id: 2, name: 'Caja', bank_name: 'Banco Pichincha', balance: 0 },
-                { id: 3, name: 'Bancos', bank_name: 'Banco Guayaquil', balance: 0 }
-            ]
-            console.log('?? Usando cuentas por defecto (sin backend):', accountBalances)
-        }
+        // Usar la función centralizada para calcular balances de cuentas
+        accountBalances = calculateAccountBalances()
 
         // Mapear datos al formato existente
         dailyCash.value = {
@@ -726,21 +770,34 @@ const openDeleteCashFlowDialog = (flow) => {
     isDeleteCashFlowDialogVisible.value = true
 }
 
-const onCashFlowSuccess = (operation, data) => {
+const onCashFlowSuccess = async (operation, data) => {
     selectedCashFlow.value = null
+
+    console.log('?? onCashFlowSuccess llamado con:', { operation, data })
 
     if (operation === 'add' && data) {
         // Recargar todos los datos para mantener consistencia
         loadFinanceData()
-        console.log('Flujo añadido, recargando datos:', data)
+        // Actualizar balances de cuentas en tiempo real
+        await loadAccounts()
+        console.log('Flujo añadido, recargando datos y balances:', data)
     } else if (operation === 'edit' && data) {
         // Recargar todos los datos para mantener consistencia
         loadFinanceData()
-        console.log('Flujo editado, recargando datos:', data)
-    } else if (operation === 'delete' && data) {
+        // Actualizar balances de cuentas en tiempo real
+        await loadAccounts()
+        console.log('Flujo editado, recargando datos y balances:', data)
+    } else if (operation === 'delete') {
+        console.log('?? Operación de eliminación detectada, data:', data)
         // Recargar todos los datos para mantener consistencia
-        loadFinanceData()
-        console.log('Flujo eliminado, recargando datos:', data)
+        await loadFinanceData()
+        console.log('?? loadFinanceData completado en eliminación')
+        // Actualizar balances de cuentas en tiempo real
+        await loadAccounts()
+        console.log('?? loadAccounts completado en eliminación')
+        console.log('Flujo eliminado, recargando datos y balances:', data)
+    } else {
+        console.log('?? Operación no reconocida o sin datos:', { operation, data })
     }
 
     // Cerrar diálogos
@@ -1044,7 +1101,7 @@ onMounted(async () => {
                                                                         <VIcon icon="ri-edit-line" size="14" />
                                                                     </VBtn>
                                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                                        @click="deleteCashFlow(income.id)">
+                                                                        @click="openDeleteCashFlowDialog(income)">
                                                                         <VIcon icon="ri-delete-bin-line" size="14" />
                                                                     </VBtn>
                                                                 </div>
@@ -1122,7 +1179,7 @@ onMounted(async () => {
                                                                         <VIcon icon="ri-edit-line" size="14" />
                                                                     </VBtn>
                                                                     <VBtn color="error" variant="tonal" size="x-small"
-                                                                        @click="deleteCashFlow(expense.id)">
+                                                                        @click="openDeleteCashFlowDialog(expense)">
                                                                         <VIcon icon="ri-delete-bin-line" size="14" />
                                                                     </VBtn>
                                                                 </div>
@@ -1156,7 +1213,7 @@ onMounted(async () => {
             :flow-data="selectedCashFlow" @success="(data) => onCashFlowSuccess('edit', data)" />
 
         <DailyCashFlowDeleteDialog v-if="isDeleteCashFlowDialogVisible" v-model="isDeleteCashFlowDialogVisible"
-            :flow-data="selectedCashFlow" @success="() => onCashFlowSuccess('delete')" />
+            :flow-data="selectedCashFlow" @success="(data) => onCashFlowSuccess('delete', data)" />
 
         <!-- Diálogos de Caja -->
         <CashOpeningDialog v-if="isCashOpeningDialogVisible" v-model="isCashOpeningDialogVisible"

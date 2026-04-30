@@ -29,7 +29,7 @@
                                     <div>
                                         <div class="text-caption text-medium-emphasis">Saldo disponible</div>
                                         <div class="text-h6 font-weight-bold text-primary">
-                                            ${{ formatCurrency(fromAccount.current_balance) }}
+                                            ${{ formatCurrency(fromAccount.balance) }}
                                         </div>
                                     </div>
                                     <div class="text-right">
@@ -53,7 +53,7 @@
                                     <div>
                                         <div class="text-caption text-medium-emphasis">Banco</div>
                                         <div class="font-weight-medium text-success">{{ getAccountDisplayName(toAccount)
-                                            }}</div>
+                                        }}</div>
                                     </div>
                                     <div class="text-right">
                                         <div class="text-caption text-medium-emphasis">Cuenta</div>
@@ -72,10 +72,10 @@
 
                             <!-- Validación visual -->
                             <div v-if="form.amount && fromAccount" class="mt-2">
-                                <div v-if="parseFloat(form.amount) > parseFloat(fromAccount.current_balance)"
+                                <div v-if="parseFloat(form.amount) > parseFloat(fromAccount.balance)"
                                     class="text-caption text-error d-flex align-center">
                                     <VIcon icon="ri-error-warning-line" size="16" class="mr-1" />
-                                    Saldo insuficiente. Disponible: ${{ formatCurrency(fromAccount.current_balance) }}
+                                    Saldo insuficiente. Disponible: ${{ formatCurrency(fromAccount.balance) }}
                                 </div>
                                 <div v-else class="text-caption text-success d-flex align-center">
                                     <VIcon icon="ri-checkbox-circle-line" size="16" class="mr-1" />
@@ -156,7 +156,7 @@ const isVisible = computed({
 
 const accountOptions = computed(() => {
     return accounts.value.map(account => ({
-        label: `${formatAccountDisplay(account)} - Saldo: $${formatCurrency(account.current_balance)}`,
+        label: `${formatAccountDisplay(account)} - Saldo: $${formatCurrency(account.balance)}`,
         value: account.id,
         account: account
     }))
@@ -181,7 +181,7 @@ const isFormValid = computed(() => {
         form.value.to_account_id &&
         form.value.amount &&
         parseFloat(form.value.amount) > 0 &&
-        (!fromAccount.value || parseFloat(form.value.amount) <= parseFloat(fromAccount.value.current_balance)) &&
+        (!fromAccount.value || parseFloat(form.value.amount) <= parseFloat(fromAccount.value.balance)) &&
         form.value.transfer_date
 })
 
@@ -192,7 +192,7 @@ const rules = {
     differentAccount: value => value !== form.value.from_account_id || 'La cuenta destino debe ser diferente a la origen',
     sufficientBalance: value => {
         if (!fromAccount.value) return true
-        return parseFloat(value) <= parseFloat(fromAccount.value.current_balance) || 'Saldo insuficiente'
+        return parseFloat(value) <= parseFloat(fromAccount.value.balance) || 'Saldo insuficiente'
     }
 }
 
@@ -283,8 +283,29 @@ const handleSubmit = async () => {
         emit('success', resp.data || resp)
         closeDialog()
     } catch (error) {
-        console.error('Error creating transfer:', error)
-        console.error('Error response:', error.response?._data)
+        console.error('=== TRANSFER ERROR DEBUG ===')
+        console.error('Full error object:', error)
+        console.error('Error name:', error.name)
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+
+        if (error.response) {
+            console.error('Response status:', error.response.status)
+            console.error('Response status text:', error.response.statusText)
+            console.error('Response headers:', error.response.headers)
+            console.error('Response data:', error.response._data)
+            console.error('Response data JSON:', JSON.stringify(error.response._data, null, 2))
+        } else {
+            console.error('No response in error object')
+        }
+
+        console.error('Request details:', {
+            url: 'http://127.0.0.1:8000/api/transfers',
+            method: 'POST',
+            body: requestBody
+        })
+        console.error('=== END TRANSFER ERROR DEBUG ===')
+
         const message = error.response?._data?.message || 'Error al realizar la transferencia'
         showNotification(message, 'error')
     } finally {
