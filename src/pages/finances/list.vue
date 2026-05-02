@@ -33,10 +33,16 @@ const selectedPeriod = ref('today')
 const showAddTransactionDialog = ref(false)
 const transactionType = ref('income')
 
-// Estado para diálogos de flujo de caja
+// Estados de diálogos
+const isCashOpeningDialogVisible = ref(false)
+const isCashClosingDialogVisible = ref(false)
 const isAddCashFlowDialogVisible = ref(false)
 const isEditCashFlowDialogVisible = ref(false)
 const isDeleteCashFlowDialogVisible = ref(false)
+
+// Estado de sesión de caja
+const hasOpenCashSession = ref(false)
+const isLoadingCashSessionStatus = ref(false)
 const selectedCashFlow = ref(null)
 const selectedFlowType = ref('income')
 
@@ -126,7 +132,17 @@ const loadAccounts = async () => {
 const checkOpenCashSession = async () => {
     try {
         console.log(' Verificando sesión de caja abierta...')
-        const response = await $api('cash-sessions/open', { method: 'GET' })
+        const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
+
+        if (!user?.id) {
+            console.log(' No hay usuario autenticado')
+            return false
+        }
+
+        const response = await $api('cash-sessions/open', {
+            method: 'GET',
+            params: { user_id: user.id }
+        })
         console.log(' Open session response:', response)
 
         // Guardar información de la sesión abierta si existe
@@ -144,8 +160,8 @@ const checkOpenCashSession = async () => {
 }
 
 // Estado para diálogos de caja
-const isCashOpeningDialogVisible = ref(false)
-const isCashClosingDialogVisible = ref(false)
+/* const isCashOpeningDialogVisible = ref(false)
+const isCashClosingDialogVisible = ref(false) */
 const cashBalance = ref(null)
 
 // Opciones de período
@@ -418,11 +434,11 @@ const loadFinanceData = async () => {
 
             // Calcular totales
             totalIncome = allMovements
-                .filter(flow => flow.flow_type === 'income')
+                .filter(flow => flow.flow_type === 'income' || flow.type === 'income')
                 .reduce((sum, flow) => sum + parseFloat(flow.total_amount || 0), 0)
 
             totalExpenses = allMovements
-                .filter(flow => flow.flow_type === 'expense')
+                .filter(flow => flow.flow_type === 'expense' || flow.type === 'expense')
                 .reduce((sum, flow) => sum + parseFloat(flow.total_amount || 0), 0)
 
             console.log('Totales calculados - Ingresos:', totalIncome, 'Egresos:', totalExpenses)
@@ -438,9 +454,9 @@ const loadFinanceData = async () => {
                             day_name: day.day_name
                         })
 
-                        if (flow.flow_type === 'income') {
+                        if (flow.flow_type === 'income' || flow.type === 'income') {
                             totalIncome += parseFloat(flow.total_amount || 0)
-                        } else if (flow.flow_type === 'expense') {
+                        } else if (flow.flow_type === 'expense' || flow.type === 'expense') {
                             totalExpenses += parseFloat(flow.total_amount || 0)
                         }
                     })
@@ -483,8 +499,8 @@ const loadFinanceData = async () => {
             total_expenses: totalExpenses,
             movements: allMovements.map(flow => ({
                 id: flow.id,
-                type: flow.flow_type,
-                order_number: flow.order_number ? `${getDocumentPrefix(flow.flow_type, flow.source_type)}${flow.order_number.padStart(5, '0')}` : null,
+                type: flow.flow_type || flow.type,
+                order_number: flow.order_number ? `${getDocumentPrefix(flow.flow_type || flow.type, flow.source_type)}${flow.order_number.padStart(5, '0')}` : null,
                 description: flow.description,
                 total_amount: flow.total_amount,
                 date: flow.formatted_date || formatDateLocal(flow.flow_date),
@@ -500,10 +516,10 @@ const loadFinanceData = async () => {
         // Mantener la estructura existente para transactions con datos completos
         transactions.value = {
             income: allMovements
-                .filter(flow => flow.flow_type === 'income')
+                .filter(flow => flow.flow_type === 'income' || flow.type === 'income')
                 .map(flow => ({
                     id: flow.id,
-                    flow_type: flow.flow_type,
+                    type: flow.flow_type || flow.type,
                     flow_date: flow.flow_date,
                     order_number: flow.order_number,
                     description: flow.description,
@@ -523,10 +539,10 @@ const loadFinanceData = async () => {
                     client: flow.order_number || 'N/A'
                 })),
             expenses: allMovements
-                .filter(flow => flow.flow_type === 'expense')
+                .filter(flow => flow.flow_type === 'expense' || flow.type === 'expense')
                 .map(flow => ({
                     id: flow.id,
-                    flow_type: flow.flow_type,
+                    type: flow.flow_type || flow.type,
                     flow_date: flow.flow_date,
                     order_number: flow.order_number,
                     description: flow.description,
@@ -667,7 +683,7 @@ const groupMovementsByDay = (movements) => {
         console.log('?? Procesando movement:', movement)
         console.log('?? Campos del movement:', {
             id: movement.id,
-            flow_type: movement.flow_type,
+            type: movement.type,
             date: movement.date,
             flow_date: movement.flow_date,
             formatted_date: movement.formatted_date
@@ -695,17 +711,17 @@ const groupMovementsByDay = (movements) => {
             }
         }
 
-        // Usar type en lugar de flow_type
-        if (movement.type === 'income') {
+        // Usar flow_type o type en groupMovementsByDay
+        if (movement.flow_type === 'income' || movement.type === 'income') {
             console.log('?? Movimiento de INGRESO detectado:', movement)
             grouped[date].income.push(movement)
             grouped[date].totalIncome += parseFloat(movement.total_amount || 0)
-        } else if (movement.type === 'expense') {
+        } else if (movement.flow_type === 'expense' || movement.type === 'expense') {
             console.log('?? Movimiento de EGRESO detectado:', movement)
             grouped[date].expenses.push(movement)
             grouped[date].totalExpenses += parseFloat(movement.total_amount || 0)
         } else {
-            console.log('?? Movimiento con tipo NO RECONOCIDO:', movement.type, movement)
+            console.log('?? Movimiento con tipo NO RECONOCIDO:', movement.flow_type, movement.type, movement)
         }
     })
 
@@ -729,6 +745,45 @@ const openAddCashFlowDialog = (flowType = 'income') => {
     isAddCashFlowDialogVisible.value = true
 }
 
+// Función para verificar estado de sesión de caja
+const checkCashSessionStatus = async () => {
+    try {
+        isLoadingCashSessionStatus.value = true
+        const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
+        const token = localStorage.getItem("token")
+
+        if (!user?.id || !token) {
+            console.log('🔍 No hay usuario autenticado o token válido')
+            hasOpenCashSession.value = false
+            return
+        }
+
+        // Usar el endpoint correcto para verificar si hay sesión abierta
+        const resp = await $api('cash-sessions/check-open', {
+            method: 'GET',
+            params: { user_id: user.id }
+        })
+
+        hasOpenCashSession.value = resp.status === 200 && resp.has_open_session
+        console.log('🔍 Estado de sesión de caja:', hasOpenCashSession.value ? 'Abierta' : 'Cerrada')
+
+    } catch (error) {
+        console.log('🔍 Error al verificar estado de sesión de caja:', error)
+        hasOpenCashSession.value = false
+
+        // Manejar diferentes tipos de error
+        if (error.response?.status === 401) {
+            console.log('🔍 Usuario no autenticado - sesión de caja deshabilitada')
+        } else if (error.response?.status === 404) {
+            console.log('🔍 No hay sesión de caja abierta')
+        } else {
+            console.error('❌ Error inesperado al verificar sesión de caja:', error)
+        }
+    } finally {
+        isLoadingCashSessionStatus.value = false
+    }
+}
+
 // Métodos para diálogos de caja
 const openCashOpeningDialog = () => {
     console.log('🔓 Abriendo diálogo de apertura de caja')
@@ -746,12 +801,14 @@ const onCashOpeningSuccess = (data) => {
     console.log('Apertura de caja exitosa:', data)
     showNotification('Caja abierta correctamente', 'success')
     loadFinanceData() // Recargar datos para actualizar el estado
+    checkCashSessionStatus() // Verificar nuevo estado de sesión
 }
 
 const onCashClosingSuccess = (data) => {
     console.log('Cierre de caja exitoso:', data)
     showNotification('Caja cerrada correctamente', 'success')
     loadFinanceData() // Recargar datos para actualizar el estado
+    checkCashSessionStatus() // Verificar nuevo estado de sesión
 }
 
 const openEditCashFlowDialog = (flow) => {
@@ -852,6 +909,7 @@ const changeItemsPerPage = (items) => {
 onMounted(async () => {
     await loadAccounts() // Cargar cuentas primero
     loadFinanceData() // Luego cargar datos financieros
+    checkCashSessionStatus() // Verificar estado de sesión de caja
 })
 </script>
 
@@ -889,13 +947,19 @@ onMounted(async () => {
                                 <span class="text-h6">Caja</span>
                             </div>
                             <div class="d-flex gap-2">
-                                <VBtn color="success" variant="tonal" size="small" prepend-icon="ri-lock-unlock-line"
+                                <VBtn v-if="!hasOpenCashSession && !isLoadingCashSessionStatus" color="success"
+                                    variant="tonal" size="small" prepend-icon="ri-lock-unlock-line"
                                     @click="openCashOpeningDialog">
                                     Apertura
                                 </VBtn>
-                                <VBtn color="error" variant="tonal" size="small" prepend-icon="ri-lock-2-line"
+                                <VBtn v-if="hasOpenCashSession && !isLoadingCashSessionStatus" color="error"
+                                    variant="tonal" size="small" prepend-icon="ri-lock-2-line"
                                     @click="openCashClosingDialog">
                                     Cierre
+                                </VBtn>
+                                <VBtn v-if="isLoadingCashSessionStatus" color="grey" variant="tonal" size="small"
+                                    prepend-icon="ri-loader-4-line" disabled>
+                                    Verificando...
                                 </VBtn>
                             </div>
                         </div>

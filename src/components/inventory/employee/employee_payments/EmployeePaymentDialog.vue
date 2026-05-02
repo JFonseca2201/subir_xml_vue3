@@ -245,12 +245,17 @@ const formatCurrency = (value) => {
 const loadAvailableAccounts = async () => {
     loadingAccounts.value = true
     try {
-        const resp = await $api('accounts', { method: 'GET' })
+        console.log('Cargando cuentas disponibles para pagos de empleados...')
+        const resp = await $api('available-accounts', { method: 'GET' })
+        console.log('Respuesta de available-accounts:', resp)
+        
         if (resp.status === 200) {
-            availableAccounts.value = resp.data.map(account => ({
+            availableAccounts.value = resp.accounts.map(account => ({
                 ...account,
-                display_name: `${getAccountDisplayName(account)} •••• ${account.last_four} - Saldo: $${formatCurrency(account.balance || 0)}`
+                balance: account.current_balance || 0, // Usar current_balance como balance
+                display_name: `${getAccountDisplayName(account)} - Saldo: $${formatCurrency(account.current_balance || 0)}`
             }))
+            console.log('Cuentas cargadas:', availableAccounts.value)
         }
     } catch (error) {
         console.error('Error loading accounts:', error)

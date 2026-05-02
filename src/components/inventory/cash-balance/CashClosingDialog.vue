@@ -161,6 +161,32 @@
                             </VCard>
                         </VCol>
 
+                        <!-- Ajuste de Saldos de Cuentas -->
+                        <VCol cols="12">
+                            <h5 class="text-h6 font-weight-bold mb-3 text-primary">
+                                <VIcon icon="ri-bank-line" class="me-2" />
+                                Ajuste de Saldos de Cuentas al Cierre
+                            </h5>
+                        </VCol>
+
+                        <VCol cols="12" md="6">
+                            <VTextField v-model.number="form.banco_pichincha_balance" label="Banco Pichincha (Caja)"
+                                type="number" step="0.01" prepend-inner-icon="ri-bank-line" variant="outlined"
+                                prefix="$" />
+                            <div class="text-caption text-medium-emphasis mt-1">
+                                Saldo final en Banco Pichincha
+                            </div>
+                        </VCol>
+
+                        <VCol cols="12" md="6">
+                            <VTextField v-model.number="form.banco_guayaquil_balance" label="Banco Guayaquil (Bancos)"
+                                type="number" step="0.01" prepend-inner-icon="ri-bank-line" variant="outlined"
+                                prefix="$" />
+                            <div class="text-caption text-medium-emphasis mt-1">
+                                Saldo final en Banco Guayaquil
+                            </div>
+                        </VCol>
+
                         <!-- Balance del Sistema -->
                         <VCol cols="12" v-if="systemBalance">
                             <VCard variant="outlined" class="pa-4" :class="balanceStatusClass">
@@ -173,12 +199,14 @@
                                         <span class="font-weight-bold">Total Efectivo:</span>
                                         <span class="text-h6">${{ formatCurrency(totalCash) }}</span>
                                     </div>
+                                    <div class="d-flex justify-space-between align-center mb-2">
+                                        <span class="font-weight-bold">Total Bancos:</span>
+                                        <span class="text-h6">${{ formatCurrency(totalBanks) }}</span>
+                                    </div>
                                     <VDivider class="my-2" />
                                     <div class="d-flex justify-space-between align-center">
-                                        <span class="font-weight-bold">Diferencia:</span>
-                                        <span class="text-h5" :class="differenceClass">
-                                            {{ differenceText }}
-                                        </span>
+                                        <span class="font-weight-bold">Total General:</span>
+                                        <span class="text-h5 text-primary">${{ formatCurrency(totalGeneral) }}</span>
                                     </div>
                                     <div class="mt-2">
                                         <VChip :color="balanceStatusColor" variant="tonal" size="small">
@@ -249,7 +277,10 @@ const form = ref({
     coin_25_count: 0,
     coin_10_count: 0,
     coin_5_count: 0,
-    coin_1_cent_count: 0
+    coin_1_cent_count: 0,
+    // Saldos de cuentas
+    banco_pichincha_balance: 0,
+    banco_guayaquil_balance: 0
 })
 
 // Computed
@@ -296,9 +327,17 @@ const totalCash = computed(() => {
     return totalBills.value + totalCoins.value
 })
 
+const totalBanks = computed(() => {
+    return (form.value.banco_pichincha_balance || 0) + (form.value.banco_guayaquil_balance || 0)
+})
+
+const totalGeneral = computed(() => {
+    return totalCash.value + totalBanks.value
+})
+
 const difference = computed(() => {
     if (props.systemBalance === null) return 0
-    return totalCash.value - props.systemBalance
+    return totalGeneral.value - props.systemBalance
 })
 
 // Status del balance
@@ -369,7 +408,7 @@ const formatCurrency = (value) => {
 const loadAccounts = async () => {
     try {
         console.log('🔍 Cargando cuentas para cierre de caja...')
-        const resp = await $api('cash-balance/accounts', { method: 'GET' })
+        const resp = await $api('transfer-accounts', { method: 'GET' })
         console.log('🔍 Accounts response:', resp)
 
         if (resp && Array.isArray(resp)) {
@@ -378,6 +417,9 @@ const loadAccounts = async () => {
         } else if (resp && resp.data && Array.isArray(resp.data)) {
             accounts.value = resp.data
             console.log('✅ Cuentas cargadas desde resp.data:', accounts.value)
+        } else if (resp && resp.accounts && Array.isArray(resp.accounts)) {
+            accounts.value = resp.accounts
+            console.log('✅ Cuentas cargadas desde resp.accounts:', accounts.value)
         } else {
             console.log('⚠️ No se encontraron cuentas en API, usando cuentas por defecto')
             accounts.value = [
@@ -415,7 +457,9 @@ const resetForm = () => {
         coin_25_count: 0,
         coin_10_count: 0,
         coin_5_count: 0,
-        coin_1_cent_count: 0
+        coin_1_cent_count: 0,
+        banco_pichincha_balance: 0,
+        banco_guayaquil_balance: 0
     }
     if (formRef.value) {
         formRef.value.resetValidation()
@@ -441,7 +485,7 @@ const handleSubmit = async () => {
 
         console.log('📤 Enviando cierre de caja:', requestBody)
 
-        const resp = await $api('cash-balance/close', {
+        const resp = await $api('cash-sessions/close', {
             method: 'POST',
             body: requestBody
         })

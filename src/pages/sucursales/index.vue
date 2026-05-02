@@ -2,8 +2,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import { getAccountDisplayName } from '@/utils/helpers'
-import { $api } from '@/utils/api'
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
