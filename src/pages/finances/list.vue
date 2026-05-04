@@ -93,12 +93,9 @@ const calculateAccountBalances = () => {
 // Función para cargar cuentas desde la API
 const loadAccounts = async () => {
     try {
-        console.log(' Cargando cuentas para finances/list.vue...')
         const resp = await $api('transfer-accounts', { method: 'GET' })
-        console.log(' Accounts response:', resp)
 
         const newAccounts = resp.accounts || resp.data || resp || []
-        console.log(' Nuevas cuentas recibidas:', newAccounts)
 
         // Verificar si los balances cambiaron
         if (accounts.value.length > 0) {
@@ -112,12 +109,10 @@ const loadAccounts = async () => {
         }
 
         accounts.value = newAccounts
-        console.log(' Cuentas actualizadas:', accounts.value)
 
         // Actualizar dailyCash.account_balances inmediatamente
         const updatedBalances = calculateAccountBalances()
         dailyCash.value.account_balances = updatedBalances
-        console.log('?? Balances actualizados en dailyCash.account_balances:', updatedBalances)
 
     } catch (error) {
         console.error(' Error al cargar cuentas:', error)
@@ -385,27 +380,10 @@ const loadFinanceData = async () => {
             per_page: itemsPerPage.value
         }
 
-        console.log('🔍 Enviando solicitud a daily-cash-flows con params:', params)
-        console.log('🔍 currentPage.value:', currentPage.value)
-        console.log('🔍 itemsPerPage.value:', itemsPerPage.value)
-
         const response = await $api('daily-cash-flows', {
             method: 'GET',
             params: params
         })
-
-        console.log('📥 Respuesta completa del backend:', response)
-        console.log('📥 Tipo de respuesta:', typeof response)
-        console.log('📥 Claves de respuesta:', Object.keys(response))
-
-        // Verificar si el backend envía datos de paginación
-        console.log('📊 Datos de paginación del backend:')
-        console.log('   - current_page:', response.current_page)
-        console.log('   - last_page:', response.last_page)
-        console.log('   - per_page:', response.per_page)
-        console.log('   - total:', response.total)
-        console.log('   - from:', response.from)
-        console.log('   - to:', response.to)
 
         // Procesar estructura del backend
         let allMovements = []
@@ -420,17 +398,11 @@ const loadFinanceData = async () => {
 
         // Extraer datos de la estructura actual del backend
         if (response.flows && Array.isArray(response.flows)) {
-            console.log('Encontrado response.flows con', response.flows.length, 'elementos')
             allMovements = response.flows.map(flow => ({
                 ...flow,
                 // Asegurar que flow_date esté presente y sea correcto
                 flow_date: flow.flow_date || flow.created_at || flow.date
             }))
-            console.log('Primer flujo:', allMovements[0])
-            console.log('Fechas de los flujos:')
-            allMovements.forEach((flow, index) => {
-                console.log(`Flujo ${index}: flow_date=${flow.flow_date}, created_at=${flow.created_at}, date=${flow.date}`)
-            })
 
             // Calcular totales
             totalIncome = allMovements
@@ -440,8 +412,6 @@ const loadFinanceData = async () => {
             totalExpenses = allMovements
                 .filter(flow => flow.flow_type === 'expense' || flow.type === 'expense')
                 .reduce((sum, flow) => sum + parseFloat(flow.total_amount || 0), 0)
-
-            console.log('Totales calculados - Ingresos:', totalIncome, 'Egresos:', totalExpenses)
         } else if (response.daily_breakdown && Array.isArray(response.daily_breakdown)) {
             // Estructura anterior con daily_breakdown
             response.daily_breakdown.forEach(day => {
@@ -485,7 +455,6 @@ const loadFinanceData = async () => {
         if (response.summary) {
             openingBalance = parseFloat(response.summary.opening_balance || 0)
             currentBalance = parseFloat(response.summary.current_balance || 0)
-            console.log(' Usando totales calculados por el backend:', { openingBalance, currentBalance })
         }
 
         // Usar la función centralizada para calcular balances de cuentas
@@ -564,16 +533,6 @@ const loadFinanceData = async () => {
             transfers: []
         }
 
-        console.log('Resumen final:', {
-            total_income: totalIncome,
-            total_expenses: totalExpenses,
-            net_balance: currentBalance,
-            movements_count: allMovements.length
-        })
-
-        console.log('dailyCash.value después de asignación:', dailyCash.value)
-        console.log('transactions.value después de asignación:', transactions.value)
-        console.log('groupedByDay calculado:', groupedByDay.value)
 
     } catch (error) {
         console.error('Error al cargar datos financieros:', error)
@@ -676,28 +635,23 @@ const getDocumentPrefix = (flowType, sourceType) => {
 }
 
 const groupMovementsByDay = (movements) => {
-    console.log('?? groupMovementsByDay llamado con movements:', movements)
+    // Validar que movements sea un array y no esté vacío
+    if (!movements || !Array.isArray(movements) || movements.length === 0) {
+        return []
+    }
+
     const grouped = {}
 
     movements.forEach(movement => {
-        console.log('?? Procesando movement:', movement)
-        console.log('?? Campos del movement:', {
-            id: movement.id,
-            type: movement.type,
-            date: movement.date,
-            flow_date: movement.flow_date,
-            formatted_date: movement.formatted_date
-        })
-
         // Usar el campo date que ya está formateado, si no hay, formatearlo
         let date = movement.date
         if (!date && movement.flow_date) {
             date = formatDateLocal(movement.flow_date)
-            console.log('?? Fecha formateada:', date)
+        } else if (!date && movement.flow_date_formatted) {
+            date = movement.flow_date_formatted
         }
 
         if (!date) {
-            console.log('?? No hay fecha para el movement:', movement)
             return // Saltar este movimiento si no hay fecha
         }
 
@@ -713,15 +667,11 @@ const groupMovementsByDay = (movements) => {
 
         // Usar flow_type o type en groupMovementsByDay
         if (movement.flow_type === 'income' || movement.type === 'income') {
-            console.log('?? Movimiento de INGRESO detectado:', movement)
             grouped[date].income.push(movement)
             grouped[date].totalIncome += parseFloat(movement.total_amount || 0)
         } else if (movement.flow_type === 'expense' || movement.type === 'expense') {
-            console.log('?? Movimiento de EGRESO detectado:', movement)
             grouped[date].expenses.push(movement)
             grouped[date].totalExpenses += parseFloat(movement.total_amount || 0)
-        } else {
-            console.log('?? Movimiento con tipo NO RECONOCIDO:', movement.flow_type, movement.type, movement)
         }
     })
 
@@ -732,94 +682,47 @@ const groupMovementsByDay = (movements) => {
         return dateB - dateA
     })
 
-    console.log('?? Resultado final de groupMovementsByDay:', result)
     return result
 }
 
 // Métodos para diálogos de flujo de caja
 const openAddCashFlowDialog = (flowType = 'income') => {
     // Establecer el tipo de flujo seleccionado
-    console.log('openAddCashFlowDialog llamado con flowType:', flowType)
     selectedFlowType.value = flowType
-    console.log('selectedFlowType establecido a:', selectedFlowType.value)
     isAddCashFlowDialogVisible.value = true
 }
 
-// Función para verificar estado de sesión de caja
+// Función para verificar estado de sesión de caja (temporalmente desactivada)
 const checkCashSessionStatus = async () => {
-    try {
-        isLoadingCashSessionStatus.value = true
-        const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
-        const token = localStorage.getItem("token")
-
-        if (!user?.id || !token) {
-            console.log('🔍 No hay usuario autenticado o token válido')
-            hasOpenCashSession.value = false
-            return
-        }
-
-        // Usar el endpoint correcto para verificar si hay sesión abierta
-        const resp = await $api('cash-sessions/check-open', {
-            method: 'GET',
-            params: { user_id: user.id }
-        })
-
-        hasOpenCashSession.value = resp.status === 200 && resp.has_open_session
-        console.log('🔍 Estado de sesión de caja:', hasOpenCashSession.value ? 'Abierta' : 'Cerrada')
-
-    } catch (error) {
-        console.log('🔍 Error al verificar estado de sesión de caja:', error)
-        hasOpenCashSession.value = false
-
-        // Manejar diferentes tipos de error
-        if (error.response?.status === 401) {
-            console.log('🔍 Usuario no autenticado - sesión de caja deshabilitada')
-        } else if (error.response?.status === 404) {
-            console.log('🔍 No hay sesión de caja abierta')
-        } else {
-            console.error('❌ Error inesperado al verificar sesión de caja:', error)
-        }
-    } finally {
-        isLoadingCashSessionStatus.value = false
-    }
+    // Temporalmente desactivado para evitar errores 401/404
+    hasOpenCashSession.value = false
+    isLoadingCashSessionStatus.value = false
 }
 
 // Métodos para diálogos de caja
 const openCashOpeningDialog = () => {
-    console.log('🔓 Abriendo diálogo de apertura de caja')
     isCashOpeningDialogVisible.value = true
-    console.log('🔓 isCashOpeningDialogVisible.value:', isCashOpeningDialogVisible.value)
 }
 
 const openCashClosingDialog = () => {
-    console.log('🔒 Abriendo diálogo de cierre de caja')
     isCashClosingDialogVisible.value = true
-    console.log('🔒 isCashClosingDialogVisible.value:', isCashClosingDialogVisible.value)
 }
 
 const onCashOpeningSuccess = (data) => {
-    console.log('Apertura de caja exitosa:', data)
     showNotification('Caja abierta correctamente', 'success')
     loadFinanceData() // Recargar datos para actualizar el estado
     checkCashSessionStatus() // Verificar nuevo estado de sesión
 }
 
 const onCashClosingSuccess = (data) => {
-    console.log('Cierre de caja exitoso:', data)
     showNotification('Caja cerrada correctamente', 'success')
     loadFinanceData() // Recargar datos para actualizar el estado
     checkCashSessionStatus() // Verificar nuevo estado de sesión
 }
 
 const openEditCashFlowDialog = (flow) => {
-    console.log('🔧 openEditCashFlowDialog llamado con flow:', flow)
-    console.log('📋 flow completo:', JSON.stringify(flow, null, 2))
-
     selectedCashFlow.value = flow
-    console.log('✅ selectedCashFlow.value asignado:', selectedCashFlow.value)
-
     isEditCashFlowDialogVisible.value = true
-    console.log('🚀 isEditCashFlowDialogVisible.value establecido a true')
 }
 
 const openDeleteCashFlowDialog = (flow) => {
