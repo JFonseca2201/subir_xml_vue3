@@ -228,15 +228,8 @@ const handleClientFinalUpdated = (clientData) => {
         return;
     }
 
-    // Actualizar cliente en el listado localmente (sin recargar API)
-    const index = clients.value.findIndex(client => client.id === clientData.id);
-    if (index !== -1) {
-        clients.value.splice(index, 1, clientData);
-        console.log("Cliente actualizado en posición:", index);
-    } else {
-        console.warn("Cliente no encontrado en el listado, recargando...");
-        loadClients(); // Fallback: recargar si no se encuentra
-    }
+    // Recargar la lista para obtener los datos actualizados desde la API
+    loadClients();
 }
 
 const handleClientCompanyUpdated = (clientData) => {
@@ -248,15 +241,8 @@ const handleClientCompanyUpdated = (clientData) => {
         return;
     }
 
-    // Actualizar cliente en el listado localmente (sin recargar API)
-    const index = clients.value.findIndex(client => client.id === clientData.id);
-    if (index !== -1) {
-        clients.value.splice(index, 1, clientData);
-        console.log("Cliente actualizado en posición:", index);
-    } else {
-        console.warn("Cliente no encontrado en el listado, recargando...");
-        loadClients(); // Fallback: recargar si no se encuentra
-    }
+    // Recargar la lista para obtener los datos actualizados desde la API
+    loadClients();
 }
 
 // Truncar texto

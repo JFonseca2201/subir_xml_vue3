@@ -56,6 +56,7 @@ const vehicleForm = ref({
     vehicle_type: '',
     description: '',
     user_id: null, // ID del usuario que crea el vehículo
+    status: 1, // Estado activo por defecto (1 = activo, 2 = inactivo)
 })
 
 // --- LÓGICA DE FORMATEO ---
@@ -126,6 +127,7 @@ const resetForm = () => {
         vehicle_type: '',
         description: '',
         user_id: getCurrentUserId(), // Asignar el ID del usuario actual
+        status: 1, // Estado activo por defecto (1 = activo, 2 = inactivo)
     }
     formRef.value?.resetValidation()
 }

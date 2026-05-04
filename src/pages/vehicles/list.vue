@@ -357,6 +357,9 @@ onMounted(() => {
                         </td>
                     </tr>
                     <tr v-else v-for="vehicle in vehicles" :key="vehicle.id" class="hover:bg-grey-lighten-4 transition">
+                        <!-- Debug: log del status -->
+                        {{ console.log('🚗 Vehículo ID:', vehicle.id, 'Status:', vehicle.status, 'Tipo:', typeof
+                            vehicle.status) }}
                         <td class="font-weight-medium">{{ vehicle.id }}</td>
                         <td>
                             <div class="font-weight-bold">
@@ -383,13 +386,12 @@ onMounted(() => {
                             {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
                         </td>
                         <td>
-                            <VChip v-if="vehicle.status === 1" color="success">
+                            <VChip v-if="parseInt(vehicle.status) === 1" color="success" size="small">
                                 ACTIVO
                             </VChip>
-                            <VChip v-else color="error">
+                            <VChip v-else color="error" size="small">
                                 INACTIVO
                             </VChip>
-
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-center gap-1">

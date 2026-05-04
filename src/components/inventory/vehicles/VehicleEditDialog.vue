@@ -171,10 +171,24 @@ const loadVehicleData = () => {
             console.log('Brand es null o undefined')
         }
 
+        // Asegurar que el status sea un número válido (1 o 2)
+        let statusValue = props.vehicleData.status
+        if (statusValue === null || statusValue === undefined || statusValue === '') {
+            statusValue = 1 // Por defecto activo si no viene valor
+        } else {
+            statusValue = parseInt(statusValue)
+            if (isNaN(statusValue) || (statusValue !== 1 && statusValue !== 2)) {
+                statusValue = 1 // Por defecto activo si el valor no es válido
+            }
+        }
+
+        console.log('Status del vehículo:', statusValue, 'Tipo:', typeof statusValue)
+
         vehicleForm.value = {
             ...props.vehicleData,
             license_plate: plate,
             brand: brandValue,
+            status: statusValue, // Asegurar que el status sea correcto
             user_id: getCurrentUserId() // Asignar el ID del usuario actual
         }
     }

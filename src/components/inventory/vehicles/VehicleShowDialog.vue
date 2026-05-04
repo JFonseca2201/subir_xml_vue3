@@ -48,7 +48,7 @@ const getBrandName = computed(() => {
 // Computed para obtener estado
 const getVehicleStatus = computed(() => {
     if (!props.vehicleData?.status) return { label: 'No especificado', color: 'grey' }
-    return props.vehicleData.status === 1
+    return parseInt(props.vehicleData.status) === 1
         ? { label: 'ACTIVO', color: 'success' }
         : { label: 'INACTIVO', color: 'error' }
 })
@@ -277,7 +277,7 @@ const closeDialog = () => {
                                             <VIcon icon="ri-calendar-line" size="16" class="me-1 text-grey-darken-2" />
                                             <span class="text-body-2">{{ vehicleData.created_at ? new
                                                 Date(vehicleData.created_at).toLocaleDateString() : 'No especificado'
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </VCol>
@@ -289,7 +289,7 @@ const closeDialog = () => {
                                             <VIcon icon="ri-refresh-line" size="16" class="me-1 text-grey-darken-2" />
                                             <span class="text-body-2">{{ vehicleData.updated_at ? new
                                                 Date(vehicleData.updated_at).toLocaleDateString() : 'No especificado'
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </VCol>
