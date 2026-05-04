@@ -8,6 +8,10 @@ import EmployeeEditDialog from '@/components/inventory/employees/EmployeeEditDia
 import EmployeeViewDialog from '@/components/inventory/employees/EmployeeViewDialog.vue'
 import EmployeeDeleteDialog from '@/components/inventory/employees/EmployeeDeleteDialog.vue'
 
+// Loader y notificaciones
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
+
 // Estado
 const loading = ref(false)
 const employees = ref([])
@@ -88,7 +92,7 @@ const onEmployeeUpdated = (updatedEmployee) => {
 }
 
 const searchEmployees = async () => {
-    loading.value = true
+    loader.start()
     try {
         const params = {
             page: currentPage.value,
@@ -120,8 +124,9 @@ const searchEmployees = async () => {
         }
     } catch (error) {
         console.error('Error al buscar empleados:', error)
+        showNotification('Error al cargar empleados', 'error')
     } finally {
-        loading.value = false
+        loader.stop()
     }
 }
 
@@ -240,7 +245,8 @@ onMounted(() => {
 
                         <!-- Botones de Acción -->
                         <VCol cols="12" md="3" class="d-flex gap-2">
-                            <VBtn type="submit" color="primary" prepend-icon="ri-search-line" :loading="loading">
+                            <VBtn type="submit" color="primary" variant="tonal" prepend-icon="ri-search-line"
+                                :loading="loader.loading">
                                 Buscar
                             </VBtn>
                             <VBtn variant="outlined" prepend-icon="ri-refresh-line" @click="clearSearch">
@@ -268,7 +274,7 @@ onMounted(() => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="loading">
+                    <tr v-if="loader.loading">
                         <td colspan="8" class="text-center pa-4">
                             <VProgressCircular indeterminate color="primary" />
                         </td>

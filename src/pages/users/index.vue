@@ -33,7 +33,7 @@ const user_selected_delete = ref(null);
 const user_selected_view = ref(null);
 
 const list = async () => {
-    isLoading.value = true;
+    loader.start();
     try {
         // Endpoint provisional 'users'
         const resp = await $api("users?search=" + (seachQuery.value ? seachQuery.value : ''), {
@@ -46,24 +46,24 @@ const list = async () => {
 
         // Ajustar según la estructura de respuesta real
         list_users.value = resp.users || [];
-        
+
         // Convertir URLs de avatar relativas a absolutas
         list_users.value = list_users.value.map(user => ({
             ...user,
-            avatar: user.avatar 
-                ? (user.avatar.startsWith('http') 
-                    ? user.avatar 
+            avatar: user.avatar
+                ? (user.avatar.startsWith('http')
+                    ? user.avatar
                     : `http://127.0.0.1:8000${user.avatar}`)
                 : null
         }));
-        
+
         // Depurar estructura de usuarios
         if (list_users.value.length > 0) {
             console.log('Estructura de usuario:', list_users.value[0]);
             console.log('Campos disponibles:', Object.keys(list_users.value[0]));
             console.log('Avatar procesado:', list_users.value[0].avatar);
         }
-        
+
         showNotification('Lista de usuarios cargada correctamente', 'success');
         console.log(resp);
 
@@ -71,7 +71,7 @@ const list = async () => {
         console.log(error);
         showNotification('Error al cargar la lista de usuarios', 'error');
     } finally {
-        isLoading.value = false;
+        loader.stop();
     }
 }
 
@@ -101,11 +101,11 @@ const addEditUser = (updatedUser) => {
             // Asegurar que role_id se mantenga
             role_id: updatedUser.role_id || currentUser.role_id
         };
-        
+
         console.log('Usuario actualizado:', userToUpdate);
         console.log('Rol del usuario:', userToUpdate.role);
         console.log('Role ID del usuario:', userToUpdate.role_id);
-        
+
         list_users.value[index] = userToUpdate;
         showNotification('Usuario actualizado correctamente', 'success');
     } else {
@@ -221,7 +221,7 @@ onMounted(() => {
                 <VCol cols="12" md="5">
                     <VTextField label="Buscar usuario" placeholder="Ej: Juan Perez" prepend-inner-icon="ri-search-line"
                         clearable density="comfortable" variant="outlined" hide-details @keyup.enter="list"
-                        v-model="seachQuery" />
+                        v-model="seachQuery" :loading="loader.loading" />
                 </VCol>
 
                 <VCol cols="12" md="4" class="d-flex justify-end gap-3">
@@ -236,108 +236,119 @@ onMounted(() => {
             <VDivider class="mb-4" />
 
             <!-- Tabla -->
-            <VDataTable :headers="headers" :items="list_users" :items-per-page="10"
-                class="text-no-wrap elevation-1 rounded-lg">
-                <template #item.id="{ item }">
-                    <span color="primary" variant="tonal" size="small">
-                        {{ item.id }}
-                    </span>
-                </template>
+            <VTable class="text-no-wrap elevation-1 rounded-lg">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Fecha Reg.</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="loader.loading">
+                        <td colspan="7" class="text-center pa-4">
+                            <VProgressCircular indeterminate color="primary" />
+                        </td>
+                    </tr>
+                    <tr v-else-if="!list_users.length">
+                        <td colspan="7" class="text-center text-medium-emphasis py-6">
+                            <VIcon size="32" class="mb-2">ri-database-2-line</VIcon>
+                            <div>No hay usuarios disponibles</div>
+                        </td>
+                    </tr>
+                    <tr v-else v-for="item in list_users" :key="item.id">
+                        <!-- ID -->
+                        <td>
+                            <span color="primary" variant="tonal" size="small">
+                                {{ item.id }}
+                            </span>
+                        </td>
 
-                <template #item.avatar="{ item }">
-                    <div class="d-flex justify-center">
-                        <div class="cursor-pointer position-relative" @click="viewItem(item)">
-                            <!-- Imagen del avatar -->
-                            <img v-if="item.avatar" 
-                                :src="item.avatar" 
-                                class="rounded-circle elevation-2"
-                                style="width: 40px; height: 40px; object-fit: cover;"
-                                @error="console.log('Error cargando imagen:', item.avatar)"
-                                @load="console.log('Imagen cargada exitosamente:', item.avatar)"
-                            />
-                            <VAvatar v-else
-                                size="40" 
-                                class="elevation-2"
-                            >
-                                <VIcon icon="ri-user-line" size="20" />
-                            </VAvatar>
-                            
-                            <!-- Indicador de estado -->
-                            <div class="position-absolute" style="bottom: 0; right: 0;">
-                                <!-- Punto verde para activo -->
-                                <VIcon v-if="item.status == '1'" 
-                                    icon="ri-checkbox-blank-circle-fill" 
-                                    size="12" 
-                                    color="success"
-                                    class="elevation-1"
-                                />
-                                <!-- X roja para inactivo -->
-                                <VIcon v-else
-                                    icon="ri-close-circle-fill" 
-                                    size="12" 
-                                    color="error"
-                                    class="elevation-1"
-                                />
+                        <!-- Avatar -->
+                        <td>
+                            <div class="d-flex justify-center">
+                                <div class="cursor-pointer position-relative" @click="viewItem(item)">
+                                    <!-- Imagen del avatar -->
+                                    <img v-if="item.avatar" :src="item.avatar" class="rounded-circle elevation-2"
+                                        style="width: 40px; height: 40px; object-fit: cover;"
+                                        @error="console.log('Error cargando imagen:', item.avatar)"
+                                        @load="console.log('Imagen cargada exitosamente:', item.avatar)" />
+                                    <VAvatar v-else size="40" class="elevation-2">
+                                        <VIcon icon="ri-user-line" size="20" />
+                                    </VAvatar>
+
+                                    <!-- Indicador de estado -->
+                                    <div class="position-absolute" style="bottom: 0; right: 0;">
+                                        <!-- Punto verde para activo -->
+                                        <VIcon v-if="item.status == '1'" icon="ri-checkbox-blank-circle-fill" size="12"
+                                            color="success" class="elevation-1" />
+                                        <!-- X roja para inactivo -->
+                                        <VIcon v-else icon="ri-close-circle-fill" size="12" color="error"
+                                            class="elevation-1" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </template>
+                        </td>
 
-                <template #item.name="{ item }">
-                    <span>
-                        {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
-                    </span>
-                </template>
+                        <!-- Nombre -->
+                        <td>
+                            <span>
+                                {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
+                            </span>
+                        </td>
 
-                <template #item.role.name="{ item }">
-                    <VChip color="primary" variant="tonal" size="small">
-                        {{ item.role?.name || 'Sin rol' }}
-                    </VChip>
-                </template>
+                        <!-- Email -->
+                        <td>{{ item.email }}</td>
 
-                <template #item.created_at="{ item }">
-                    <span>
-                        {{ new Date(item.created_at).toLocaleDateString('es-EC', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        }) }}
-                    </span>
-                </template>
+                        <!-- Rol -->
+                        <td>
+                            <VChip color="primary" variant="tonal" size="small">
+                                {{ item.role?.name || 'Sin rol' }}
+                            </VChip>
+                        </td>
 
-                <template #no-data>
-                    <div class="text-center text-medium-emphasis py-6">
-                        <VIcon icon="ri-database-2-line" size="36" class="mb-2" />
-                        <div>No hay usuarios disponibles</div>
-                    </div>
-                </template>
+                        <!-- Fecha -->
+                        <td>
+                            <span>
+                                {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) }}
+                            </span>
+                        </td>
 
-                <!-- Actions -->
-                <template #item.action="{ item }">
-                    <div class="d-flex align-center gap-2">
-                        <VTooltip text="Editar" v-if="item.id !== 1">
-                            <template #activator="{ props }">
-                                <IconBtn v-bind="props" size="small" color="primary" variant="text"
-                                    @click="editItem(item)">
-                                    <VIcon icon="ri-pencil-line" />
-                                </IconBtn>
-                            </template>
-                        </VTooltip>
+                        <!-- Acciones -->
+                        <td>
+                            <div class="d-flex align-center gap-2">
+                                <VTooltip text="Editar" v-if="item.id !== 1">
+                                    <template #activator="{ props }">
+                                        <IconBtn v-bind="props" size="small" color="primary" variant="text"
+                                            @click="editItem(item)">
+                                            <VIcon icon="ri-pencil-line" />
+                                        </IconBtn>
+                                    </template>
+                                </VTooltip>
 
-                        <VTooltip text="Eliminar" v-if="item.id !== 1">
-                            <template #activator="{ props }">
-                                <IconBtn v-bind="props" size="small" color="error" variant="text"
-                                    @click="deleteItem(item)">
-                                    <VIcon icon="ri-delete-bin-line" />
-                                </IconBtn>
-                            </template>
-                        </VTooltip>
-                    </div>
-                </template>
-
-            </VDataTable>
+                                <VTooltip text="Eliminar" v-if="item.id !== 1">
+                                    <template #activator="{ props }">
+                                        <IconBtn v-bind="props" size="small" color="error" variant="text"
+                                            @click="deleteItem(item)">
+                                            <VIcon icon="ri-delete-bin-line" />
+                                        </IconBtn>
+                                    </template>
+                                </VTooltip>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </VTable>
         </VCard>
 
         <!-- Dialogs -->

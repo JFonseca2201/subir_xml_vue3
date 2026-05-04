@@ -1,13 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 const partnerSelected = ref(null);
 const currentPage = ref(1);
 const totalPage = ref(0);
-
-const { showNotification } = useGlobalToast();
 
 const list_partners = ref([])
 const search = ref(null);
@@ -19,7 +20,7 @@ const isPartnerEditDialogVisible = ref(false);
 const isPartnerDeleteDialogVisible = ref(false);
 
 const list = async () => {
-    isLoading.value = true;
+    loader.start();
 
     try {
 
@@ -44,7 +45,7 @@ const list = async () => {
         console.error(error)
         showNotification('Error al cargar la lista de socios', 'error')
     } finally {
-        isLoading.value = false;
+        loader.stop();
     }
 }
 
@@ -195,7 +196,8 @@ onMounted(() => {
 
                     <!-- Botón Filtrar alineado con los filtros -->
                     <VCol cols="12" md="6" class="d-flex align-end justify-end gap-4">
-                        <VBtn color="primary" size="large" rounded="" @click="list" variant="tonal">
+                        <VBtn color="primary" size="large" rounded="" @click="list" variant="tonal"
+                            :loading="loader.loading">
                             <VIcon start>ri-search-line</VIcon>
                             Buscar
                         </VBtn>
@@ -226,7 +228,19 @@ onMounted(() => {
                     </thead>
 
                     <tbody>
-                        <tr v-for="partner in list_partners" :key="partner" class="hover:bg-grey-lighten-4 transition">
+                        <tr v-if="loader.loading">
+                            <td colspan="8" class="text-center pa-4">
+                                <VProgressCircular indeterminate color="primary" />
+                            </td>
+                        </tr>
+                        <tr v-else-if="!list_partners.length">
+                            <td colspan="8" class="text-center text-medium-emphasis py-6">
+                                <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
+                                <div>No hay soci@s registrad@s</div>
+                            </td>
+                        </tr>
+                        <tr v-else v-for="partner in list_partners" :key="partner"
+                            class="hover:bg-grey-lighten-4 transition">
                             <td class="font-weight-medium">{{ partner.id }}</td>
                             <td>{{ partner.identification }}</td>
                             <td>{{ partner.name }}</td>
@@ -246,13 +260,6 @@ onMounted(() => {
                                         <VIcon icon="ri-delete-bin-6-line" color="error" />
                                     </IconBtn>
                                 </div>
-                            </td>
-                        </tr>
-
-                        <tr v-if="!list_partners.length">
-                            <td colspan="8" class="text-center text-medium-emphasis py-6">
-                                <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
-                                <div>No hay soci@s registrad@s</div>
                             </td>
                         </tr>
                     </tbody>
