@@ -32,6 +32,23 @@ export default [
     to: { name: 'roles-permisos' },
     icon: { icon: 'ri-lock-password-line' },
   },
+  { heading: 'Finanzas' },
+  {
+    title: 'Finanzas',
+    icon: { icon: 'ri-bank-line' },
+    children: [
+      {
+        title: 'Cuentas',
+        to: { name: 'accounts-index' },
+        icon: { icon: 'ri-bank-card-line' },
+      },
+      {
+        title: 'Operaciones',
+        to: 'second-page',
+        icon: { icon: 'ri-exchange-funds-line' },
+      },
+    ]
+  },
   {
     title: 'Configuraciones',
     icon: { icon: 'ri-tools-line' },

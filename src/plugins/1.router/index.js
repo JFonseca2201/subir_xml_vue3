@@ -42,6 +42,11 @@ const router = createRouter({
           name: "roles-permisos",
           component: () => import("@/pages/roles-permisos/index.vue"),
         },
+        {
+          path: "/finanzas/tesoreria",
+          name: "accounts-index",
+          component: () => import("@/pages/accounts/index.vue"),
+        },
       ],
     ].map((route) => recursiveLayouts(route)),
   ],
