@@ -35,6 +35,8 @@ const totalBalance = ref(0)
 const loading = ref(false)
 const showAccountDialog = ref(false)
 const editingAccount = ref(null)
+const showDeleteDialog = ref(false)
+const accountToDelete = ref(null)
 
 // Headers para la tabla
 const headers = [
@@ -168,26 +170,35 @@ const onAccountUpdated = () => {
     showNotification('Cuenta actualizada exitosamente', 'success')
 }
 
-const deleteAccount = async (account) => {
-    if (!confirm(`¿Estás seguro de eliminar la cuenta "${account.name}"? Esta acción no se puede deshacer.`)) {
-        return
-    }
+const deleteAccount = (account) => {
+    accountToDelete.value = account
+    showDeleteDialog.value = true
+}
+
+const confirmDeleteAccount = async () => {
+    if (!accountToDelete.value) return
 
     loader.start()
 
     try {
-        await $api(`accounts/${account.id}`, {
+        await $api(`accounts/${accountToDelete.value.id}`, {
             method: 'DELETE'
         })
 
         loadAccounts()
         showNotification('Cuenta eliminada exitosamente', 'success')
+        closeDeleteDialog()
     } catch (error) {
         showNotification('Error al eliminar la cuenta', 'error')
         console.error('Error al eliminar cuenta:', error)
     } finally {
         loader.stop()
     }
+}
+
+const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    accountToDelete.value = null
 }
 
 // Montar componente - la carga se maneja en el watch
@@ -386,6 +397,46 @@ onMounted(() => {
     <!-- Diálogo de Formulario de Cuentas -->
     <AccountFormDialog v-model="showAccountDialog" :account-data="editingAccount" @account-created="onAccountCreated"
         @account-updated="onAccountUpdated" />
+
+    <!-- Diálogo de Confirmación de Eliminación -->
+    <VDialog v-model="showDeleteDialog" max-width="400">
+        <VCard>
+            <VCardTitle class="pa-4 pb-2">
+                <div class="d-flex align-center justify-space-between">
+                    <div class="d-flex align-center gap-2">
+                        <VIcon color="error" size="24">ri-delete-bin-line</VIcon>
+                        <span class="text-h6 font-weight-bold">Eliminar Cuenta</span>
+                    </div>
+                    <VBtn icon="ri-close-line" variant="text" size="small" @click="closeDeleteDialog" />
+                </div>
+            </VCardTitle>
+
+            <VDivider />
+
+            <VCardText class="pa-4">
+                <div class="text-body-1 mb-2">
+                    ¿Estás seguro de eliminar la cuenta <strong>"{{ accountToDelete?.name }}"</strong>?
+                </div>
+                <div class="text-medium-emphasis text-body-2">
+                    Esta acción no se puede deshacer. La cuenta y todos sus datos asociados serán eliminados
+                    permanentemente.
+                </div>
+            </VCardText>
+
+            <VDivider />
+
+            <VCardActions class="pa-4">
+                <VSpacer />
+                <VBtn variant="outlined" @click="closeDeleteDialog" :disabled="loader.loading">
+                    Cancelar
+                </VBtn>
+                <VBtn color="error" variant="elevated" @click="confirmDeleteAccount" :loading="loader.loading"
+                    prepend-icon="ri-delete-bin-line">
+                    Eliminar
+                </VBtn>
+            </VCardActions>
+        </VCard>
+    </VDialog>
 </template>
 
 <style scoped>

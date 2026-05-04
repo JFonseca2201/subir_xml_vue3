@@ -179,14 +179,17 @@ const dialogTitle = computed(() => {
         <VCard>
             <!-- Header -->
             <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center gap-3">
-                    <VIcon :icon="isEditing ? 'ri-edit-line' : 'ri-add-circle-line'" color="primary" size="28" />
-                    <div>
-                        <h3 class="text-h5 font-weight-bold">{{ dialogTitle }}</h3>
-                        <span class="text-medium-emphasis text-body-2">
-                            {{ isEditing ? 'Modificar cuenta' : 'Completa los datos para crear una nueva cuenta' }}
-                        </span>
+                <div class="d-flex align-center justify-space-between">
+                    <div class="d-flex align-center gap-3">
+                        <VIcon :icon="isEditing ? 'ri-edit-line' : 'ri-add-circle-line'" color="primary" size="28" />
+                        <div>
+                            <h3 class="text-h5 font-weight-bold">{{ dialogTitle }}</h3>
+                            <span class="text-medium-emphasis text-body-2">
+                                {{ isEditing ? 'Modificar cuenta' : 'Completa los datos para crear una nueva cuenta' }}
+                            </span>
+                        </div>
                     </div>
+                    <VBtn icon="ri-close-line" variant="text" size="small" @click="closeDialog" />
                 </div>
             </VCardTitle>
 
