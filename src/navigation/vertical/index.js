@@ -4,21 +4,33 @@ export default [
     to: { name: 'dashboard' },
     icon: { icon: 'ri-pie-chart-box-line' },
   },
-  { heading: 'Accesos' },
+  { heading: 'Personas' },
   {
-    title: 'Roles y Permisos',
-    to: { name: 'roles-permisos' },
-    icon: { icon: 'ri-lock-password-line' },
-  },
-  {
-    title: 'Socios',
-    to: { name: 'partners-list' },
-    icon: { icon: 'ri-group-3-line' },
+    title: 'Gestión de Personal',
+    icon: { icon: 'ri-team-line' },
+    children: [
+      {
+        title: 'Empleados',
+        to: { name: 'employees-list' },
+        icon: { icon: 'ri-user-3-line' },
+      },
+      {
+        title: 'Socios',
+        to: { name: 'partners-list' },
+        icon: { icon: 'ri-group-3-line' },
+      }
+    ]
   },
   {
     title: 'Usuarios',
     to: { name: 'users' },
     icon: { icon: 'ri-group-line' },
+  },
+  { heading: 'Accesos' },
+  {
+    title: 'Roles y Permisos',
+    to: { name: 'roles-permisos' },
+    icon: { icon: 'ri-lock-password-line' },
   },
   {
     title: 'Configuraciones',
