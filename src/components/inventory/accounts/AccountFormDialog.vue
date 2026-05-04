@@ -40,6 +40,7 @@ const accountForm = ref({
     type: 'bank',
     bank_name: '',
     initial_balance: 0,
+    is_active: true,
     is_system: false
 })
 
@@ -85,6 +86,7 @@ const resetForm = () => {
         type: 'bank',
         bank_name: '',
         initial_balance: 0,
+        is_active: true,
         is_system: false
     }
     formRef.value?.resetValidation()
@@ -99,6 +101,7 @@ watch(() => props.accountData, (newData) => {
             type: newData.type || 'bank',
             bank_name: newData.bank_name || '',
             initial_balance: newData.initial_balance || 0,
+            is_active: newData.is_active ?? true,
             is_system: newData.is_system || false
         }
     } else {
@@ -270,7 +273,8 @@ const dialogTitle = computed(() => {
                 <VBtn variant="outlined" @click="closeDialog" :disabled="loader.loading">
                     Cancelar
                 </VBtn>
-                <VBtn color="primary" @click="saveAccount" :loading="loader.loading" prepend-icon="ri-save-line">
+                <VBtn color="primary" variant="elevated" @click="saveAccount" :loading="loader.loading"
+                    prepend-icon="ri-save-line">
                     {{ isEditing ? 'Actualizar' : 'Crear' }}
                 </VBtn>
             </VCardActions>

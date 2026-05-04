@@ -168,6 +168,28 @@ const onAccountUpdated = () => {
     showNotification('Cuenta actualizada exitosamente', 'success')
 }
 
+const deleteAccount = async (account) => {
+    if (!confirm(`¿Estás seguro de eliminar la cuenta "${account.name}"? Esta acción no se puede deshacer.`)) {
+        return
+    }
+
+    loader.start()
+
+    try {
+        await $api(`accounts/${account.id}`, {
+            method: 'DELETE'
+        })
+
+        loadAccounts()
+        showNotification('Cuenta eliminada exitosamente', 'success')
+    } catch (error) {
+        showNotification('Error al eliminar la cuenta', 'error')
+        console.error('Error al eliminar cuenta:', error)
+    } finally {
+        loader.stop()
+    }
+}
+
 // Montar componente - la carga se maneja en el watch
 onMounted(() => {
     console.log('🚀 Componente montado - Usuario actual:', currentUser.value)
@@ -343,9 +365,14 @@ onMounted(() => {
                             <!-- Acciones -->
                             <td>
                                 <div class="d-flex gap-1">
-                                    <VBtn icon="ri-edit-line" variant="text" size="small" color="primary"
+                                    <VBtn icon="ri-edit-line" variant="elevated" size="small" color="primary"
                                         :disabled="!!account.is_system" @click="openEditDialog(account)" title="Editar">
                                         <VIcon icon="ri-edit-line" />
+                                    </VBtn>
+                                    <VBtn icon="ri-delete-bin-line" variant="elevated" size="small" color="error"
+                                        :disabled="!!account.is_system" @click="deleteAccount(account)"
+                                        title="Eliminar">
+                                        <VIcon icon="ri-delete-bin-line" />
                                     </VBtn>
                                 </div>
                             </td>
