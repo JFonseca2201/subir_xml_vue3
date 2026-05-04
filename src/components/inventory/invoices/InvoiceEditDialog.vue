@@ -49,8 +49,8 @@ const loadCategories = async () => {
 onMounted(() => {
     loadCategories().then(() => {
         // Establecer categoría después de cargar las categorías
-        if (props.invoiceSelected.categorie_id) {
-            selectedCategory.value = props.invoiceSelected.categorie_id;
+        if (props.invoiceSelected.product_categorie_id) {
+            selectedCategory.value = props.invoiceSelected.product_categorie_id;
             console.log('🔍 Categoría establecida:', selectedCategory.value);
             console.log('🔍 Categorías disponibles:', categories.value);
         }
@@ -76,12 +76,12 @@ const editItemInvoice = async () => {
 
         // Agregar categoría si es un producto
         if (item_type.value === 1 && selectedCategory.value) {
-            data.categorie_id = selectedCategory.value;
+            data.product_categorie_id = selectedCategory.value;
         }
 
         console.log('🔍 Datos a enviar:', data);
 
-        const resp = await $api("invoices/" + props.invoiceSelected.id, {
+        const resp = await $api("invoice-items/" + props.invoiceSelected.id, {
             method: "PUT",
             body: data,
             onResponseError({ response }) {

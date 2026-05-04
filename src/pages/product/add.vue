@@ -145,7 +145,7 @@ const store = async () => {
       sku: product.value.sku.toUpperCase().trim(),
       code_aux: product.value.code_aux.toUpperCase().trim(),
       uses: product.value.uses,
-      product_categorie_id: product.value.product_categorie_id || 1,
+      product_categorie_id: product.value.product_categorie_id || null,
       warehouse_id: product.value.warehouse_id || 1,
       unit_id: product.value.unit_id || 1,
       supplier_id: product.value.supplier_id || 1,
@@ -175,9 +175,9 @@ const store = async () => {
   formData.append("code_aux", product.value.code_aux);
   formData.append("uses", product.value.uses);
   formData.append("product_categorie_id", product.value.product_categorie_id);
-  formData.append("warehouse_id", product.value.warehouse_id);
-  formData.append("unit_id", product.value.unit_id);
-  formData.append("supplier_id", product.value.supplier_id);
+  formData.append("warehouse_id", product.value.warehouse_id || 1);
+  formData.append("unit_id", product.value.unit_id || 1);
+  formData.append("supplier_id", product.value.supplier_id || 1);
   formData.append("price", product.value.price_sale);
   formData.append("price_sale", product.value.price_sale);
   formData.append("purchase_price", product.value.purchase_price);

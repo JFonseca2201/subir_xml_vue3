@@ -98,11 +98,21 @@ const editInvoice = (EditInvoice) => {
     isInvoiceEditDialogVisible.value = true;
 }
 
-const addEditInvoiceItem = () => {
-    setTimeout(() => {
-        showItems();
-        loadCategories(); // Recargar categorías también
-    }, 50);
+const addEditInvoiceItem = (updatedItem) => {
+    // Actualizar el item específico en la lista sin recargar toda la factura
+    if (updatedItem && invoice.value?.invoice_items) {
+        const itemIndex = invoice.value.invoice_items.findIndex(item => item.id === updatedItem.id);
+        if (itemIndex !== -1) {
+            // Actualizar el item con los nuevos datos
+            invoice.value.invoice_items[itemIndex] = {
+                ...invoice.value.invoice_items[itemIndex],
+                ...updatedItem
+            };
+        }
+    }
+
+    // También recargar categorías por si hay cambios
+    loadCategories();
 }
 
 
@@ -288,7 +298,7 @@ onMounted(() => {
                             </td>
 
                             <td class="text-medium-emphasis">
-                                <small>{{ getCategoryName(item.categorie_id, item.item_type) }}</small>
+                                <small>{{ getCategoryName(item.product_categorie_id, item.item_type) }}</small>
                             </td>
 
                             <td class="text-right">

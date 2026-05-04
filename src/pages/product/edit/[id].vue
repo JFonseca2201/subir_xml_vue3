@@ -230,9 +230,12 @@ const updateProduct = async () => {
         formData.append('is_gift', product.value.is_gift === 1 ? 1 : 2)
 
         Object.keys(product.value).forEach(key => {
-
             if (key !== 'imagen' && key !== 'is_taxable' && key !== 'is_gift' && product.value[key] !== null) {
-                formData.append(key, product.value[key])
+                let value = product.value[key]
+                if (key === 'warehouse_id' || key === 'unit_id' || key === 'supplier_id') {
+                    value = value || 1
+                }
+                formData.append(key, value)
             }
         })
         formData.set('is_taxable', product.value.is_taxable === 1 ? 1 : 2)

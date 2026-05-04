@@ -90,6 +90,8 @@ const searchProducts = async () => {
         })
 
         const response = await $api('products', { params })
+        console.log(response);
+
 
         if (response.status === 200) {
             // Acceder a los datos correctos: response.products.data
