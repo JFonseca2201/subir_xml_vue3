@@ -44,7 +44,7 @@ export default [
       },
       {
         title: 'Operaciones',
-        to: 'second-page',
+        to: { name: 'operations-index' },
         icon: { icon: 'ri-exchange-funds-line' },
       },
     ]
