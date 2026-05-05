@@ -52,6 +52,11 @@ const router = createRouter({
           name: "operations-index",
           component: () => import("@/pages/operations/index.vue"),
         },
+        {
+          path: "/finanzas/aportes",
+          name: "aportes-index",
+          component: () => import("@/pages/aportes/index.vue"),
+        },
       ],
     ].map((route) => recursiveLayouts(route)),
   ],

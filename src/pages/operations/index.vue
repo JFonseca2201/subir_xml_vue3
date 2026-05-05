@@ -34,14 +34,7 @@ const loading = ref(false)
 
 // Datos para las cards principales
 const mainCards = ref([
-    {
-        title: 'Gestión de Empleados',
-        description: 'Pagos y adelantos al personal',
-        icon: 'ri-user-3-line',
-        color: '#6366F1',
-        buttonText: 'Gestionar',
-        action: 'manage-employees'
-    },
+
     {
         title: 'Socios',
         description: 'Aportes de capital',
@@ -49,6 +42,14 @@ const mainCards = ref([
         color: '#10B981',
         buttonText: 'Registrar aporte',
         action: 'register-contribution'
+    },
+    {
+        title: 'Gestión de Empleados',
+        description: 'Pagos y adelantos al personal',
+        icon: 'ri-user-3-line',
+        color: '#6366F1',
+        buttonText: 'Gestionar',
+        action: 'manage-employees'
     },
     {
         title: 'Ingresos y Gastos',
@@ -164,7 +165,8 @@ const handleCardAction = (action) => {
             router.push('/employees')
             break
         case 'register-contribution':
-            showNotification('Función de Registrar Aporte en desarrollo', 'info')
+            showNotification('Navegando a Aportes de Capital...', 'info')
+            router.push({ name: 'aportes-index' })
             break
         case 'new-movement':
             showNotification('Función de Nuevo Movimiento en desarrollo', 'info')
@@ -276,12 +278,12 @@ onMounted(() => {
                         <div class="summary-item">
                             <span class="summary-label">Ingresos del mes</span>
                             <span class="summary-value income">{{ formatCurrency(financialSummary.monthlyIncome)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Egresos del mes</span>
                             <span class="summary-value expense">{{ formatCurrency(financialSummary.monthlyExpense)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="summary-item total">
                             <span class="summary-label">Balance actual</span>

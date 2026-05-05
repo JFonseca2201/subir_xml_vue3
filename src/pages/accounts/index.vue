@@ -45,7 +45,7 @@ const headers = [
     { title: 'Nombre', key: 'name', sortable: true },
     { title: 'Tipo', key: 'type', sortable: true },
     { title: 'Banco', key: 'bank_name', sortable: true },
-    { title: 'Saldo Inicial', key: 'initial_balance', sortable: true },
+    { title: 'Saldo Actual', key: 'saldo_actual', sortable: true },
     { title: 'Acciones', key: 'actions', sortable: false }
 ]
 
@@ -83,8 +83,8 @@ const loadAccounts = async () => {
 
         // Calcular saldo total
         totalBalance.value = accounts.value.reduce((sum, account) => {
-            const balance = parseFloat(account.initial_balance || 0)
-            console.log(`💰 Cuenta ${account.id}: balance=${account.initial_balance}, parsed=${balance}`)
+            const balance = parseFloat(account.saldo_actual || 0)
+            console.log(`💰 Cuenta ${account.id}: saldo_actual=${account.saldo_actual}, parsed=${balance}`)
             return sum + balance
         }, 0)
 
@@ -302,7 +302,7 @@ onMounted(() => {
                             <th>Nombre</th>
                             <th>Tipo</th>
                             <th>Banco</th>
-                            <th>Saldo Inicial</th>
+                            <th>Saldo Actual</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -369,7 +369,7 @@ onMounted(() => {
                             <!-- Saldo Inicial -->
                             <td>
                                 <div class="text-right font-weight-medium">
-                                    {{ formatCurrency(account.initial_balance || 0) }}
+                                    {{ formatCurrency(account.saldo_actual || 0) }}
                                 </div>
                             </td>
 
