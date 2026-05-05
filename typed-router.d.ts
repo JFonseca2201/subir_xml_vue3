@@ -27,8 +27,10 @@ declare module 'vue-router/auto-routes' {
     'configuration-units': RouteRecordInfo<'configuration-units', '/configuration/units', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
     'employees-list': RouteRecordInfo<'employees-list', '/employees/list', Record<never, never>, Record<never, never>>,
+    'finances-list': RouteRecordInfo<'finances-list', '/finances/list', Record<never, never>, Record<never, never>>,
     'invoice-list': RouteRecordInfo<'invoice-list', '/invoice/list', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'partners-contributions-list': RouteRecordInfo<'partners-contributions-list', '/partners/contributions/list', Record<never, never>, Record<never, never>>,
     'partners-list': RouteRecordInfo<'partners-list', '/partners/list', Record<never, never>, Record<never, never>>,
     'product-add': RouteRecordInfo<'product-add', '/product/add', Record<never, never>, Record<never, never>>,
     'product-edit-id': RouteRecordInfo<'product-edit-id', '/product/edit/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
@@ -37,6 +39,7 @@ declare module 'vue-router/auto-routes' {
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,
     'sucursales': RouteRecordInfo<'sucursales', '/sucursales', Record<never, never>, Record<never, never>>,
     'sucursales-warehouses': RouteRecordInfo<'sucursales-warehouses', '/sucursales/warehouses', Record<never, never>, Record<never, never>>,
+    'transfers-list': RouteRecordInfo<'transfers-list', '/transfers/list', Record<never, never>, Record<never, never>>,
     'users': RouteRecordInfo<'users', '/users', Record<never, never>, Record<never, never>>,
     'vehicles-list': RouteRecordInfo<'vehicles-list', '/vehicles/list', Record<never, never>, Record<never, never>>,
   }

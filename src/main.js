@@ -10,7 +10,8 @@ import '@styles/remix-icons.css' // Importar Remix Icons CSS local
 // Create vue app
 const app = createApp(App)
 
-
+// Registrar la directiva v-intersect personalizada
+app.directive('intersect', () => import('@/plugins/directives/intersect.js').default)
 
 // Register plugins
 registerPlugins(app)

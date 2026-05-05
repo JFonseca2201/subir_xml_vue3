@@ -34,6 +34,7 @@ export default [
   },
   { heading: 'Finanzas' },
   {
+<<<<<<< HEAD
     title: 'Finanzas',
     icon: { icon: 'ri-bank-line' },
     children: [
@@ -48,6 +49,48 @@ export default [
         icon: { icon: 'ri-exchange-funds-line' },
       },
     ]
+=======
+    title: 'Nomina y finanzas',
+    icon: { icon: 'ri-money-dollar-circle-line' },
+    children: [
+      {
+        title: 'Operaciones',
+        to: { name: 'finances-list' },
+        icon: { icon: 'ri-dashboard-line' },
+      },
+      {
+        title: 'Empleados',
+        to: { name: 'employees-list' },
+        icon: { icon: 'ri-group-line' },
+      },
+      {
+        title: 'Transferencias',
+        to: { name: 'transfers-list' },
+        icon: { icon: 'ri-exchange-line' },
+      },
+    ],
+  },
+  {
+    title: 'Socios',
+    icon: { icon: 'ri-group-3-line' },
+    children: [
+      {
+        title: 'Listado',
+        to: { name: 'partners-list' },
+        icon: { icon: 'ri-list-check' },
+      },
+      {
+        title: 'Contribuciones',
+        to: { name: 'partners-contributions-list' },
+        icon: { icon: 'ri-hand-coin-line' },
+      },
+    ],
+  },
+  {
+    title: 'Usuarios',
+    to: { name: 'users' },
+    icon: { icon: 'ri-group-line' },
+>>>>>>> 080ee9e2f24bd3319718de13730fec91b70fc55d
   },
   {
     title: 'Configuraciones',
