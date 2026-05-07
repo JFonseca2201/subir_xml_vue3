@@ -44,12 +44,12 @@ const mainCards = ref([
         action: 'register-contribution'
     },
     {
-        title: 'Gestión de Empleados',
+        title: 'Gestión de Pagos',
         description: 'Pagos y adelantos al personal',
         icon: 'ri-user-3-line',
         color: '#6366F1',
         buttonText: 'Gestionar',
-        action: 'manage-employees'
+        action: 'employee-expenses'
     },
     {
         title: 'Ingresos y Gastos',
@@ -160,9 +160,11 @@ const chartData = ref([
 // Funciones de acción
 const handleCardAction = (action) => {
     switch (action) {
-        case 'manage-employees':
-            showNotification('Navegando a Gestión de Empleados...', 'info')
-            router.push('/employees')
+        case 'employee-expenses':
+            showNotification('Navegando a Gestión de Pagos...', 'info')
+            router.push('/finanzas/employee-expenses')
+            console.log("HACE EL INGRESO A GESTIOND E PAGOS Y AVANCES");
+
             break
         case 'register-contribution':
             showNotification('Navegando a Aportes de Capital...', 'info')
@@ -278,12 +280,12 @@ onMounted(() => {
                         <div class="summary-item">
                             <span class="summary-label">Ingresos del mes</span>
                             <span class="summary-value income">{{ formatCurrency(financialSummary.monthlyIncome)
-                                }}</span>
+                            }}</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Egresos del mes</span>
                             <span class="summary-value expense">{{ formatCurrency(financialSummary.monthlyExpense)
-                                }}</span>
+                            }}</span>
                         </div>
                         <div class="summary-item total">
                             <span class="summary-label">Balance actual</span>
