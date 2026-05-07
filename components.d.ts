@@ -61,6 +61,7 @@ declare module 'vue' {
     CustomRadiosWithIcon: typeof import('./src/@core/components/app-form-elements/CustomRadiosWithIcon.vue')['default']
     CustomRadiosWithImage: typeof import('./src/@core/components/app-form-elements/CustomRadiosWithImage.vue')['default']
     DeleteEmployeeAdvanceDialog: typeof import('./src/components/inventory/employee-expenses/DeleteEmployeeAdvanceDialog.vue')['default']
+    DeleteEmployeePaymentDialog: typeof import('./src/components/inventory/employee-expenses/DeleteEmployeePaymentDialog.vue')['default']
     DeleteProdcut: typeof import('./src/components/inventory/product/DeleteProdcut.vue')['default']
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
     EditEmployeeAdvanceDialog: typeof import('./src/components/inventory/employee-expenses/EditEmployeeAdvanceDialog.vue')['default']

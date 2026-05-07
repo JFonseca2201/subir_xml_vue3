@@ -103,4 +103,11 @@ export default defineConfig({
       './src/**/*.vue',
     ],
   },
+  define: {
+    'process.env': {},
+    __VUE_OPTIONS__: {
+      warnNoDeprecations: false,
+      suppressExperimentalWarning: true
+    }
+  },
 })

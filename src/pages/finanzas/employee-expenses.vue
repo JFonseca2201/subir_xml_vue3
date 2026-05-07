@@ -18,10 +18,13 @@ const selectedType = ref('all')
 
 // Dialog state
 const showAddPaymentDialog = ref(false)
+const showEditPaymentDialog = ref(false)
+const showDeletePaymentDialog = ref(false)
 const showAddAdvanceDialog = ref(false)
 const showEditAdvanceDialog = ref(false)
 const showDeleteAdvanceDialog = ref(false)
 const selectedAdvance = ref(null)
+const selectedPayment = ref(null)
 
 // Authorization
 const currentUser = computed(() => ({
@@ -204,6 +207,16 @@ const openDeleteAdvanceDialog = (advance) => {
     showDeleteAdvanceDialog.value = true
 }
 
+const openEditPaymentDialog = (payment) => {
+    selectedPayment.value = payment
+    showEditPaymentDialog.value = true
+}
+
+const openDeletePaymentDialog = (payment) => {
+    selectedPayment.value = payment
+    showDeletePaymentDialog.value = true
+}
+
 const handleAdvanceCreated = (newAdvance) => {
     if (!newAdvance) return
 
@@ -275,19 +288,57 @@ const handleAdvanceUpdated = (updatedAdvance) => {
 const handleAdvanceDeleted = (advanceId) => {
     if (!advanceId) return
 
-    // Eliminar el adelanto de la lista local
-    const index = expenses.value.findIndex(expense => expense.id === advanceId && expense.type === 'advance')
+    const index = expenses.value.findIndex(item => item.id === advanceId)
     if (index !== -1) {
         const deletedAdvance = expenses.value[index]
         expenses.value.splice(index, 1)
 
-        // Actualizar el resumen
-        summary.value.total_advances -= Number(deletedAdvance.amount)
-        summary.value.total_general -= Number(deletedAdvance.amount)
-    }
+        // Recargar los datos para obtener los totales correctos del backend
+        loadExpenses()
 
+        console.log('Adelanto eliminado:', deletedAdvance)
+        console.log('Recargando datos para actualizar totales...')
+    }
     showDeleteAdvanceDialog.value = false
-    selectedAdvance.value = null
+}
+
+const handlePaymentUpdated = (updatedPayment) => {
+    if (!updatedPayment) return
+
+    const index = expenses.value.findIndex(item => item.id === updatedPayment.id)
+    if (index !== -1) {
+        // Preservar los datos existentes y solo actualizar los campos modificados
+        const existingPayment = expenses.value[index]
+        const mergedPayment = {
+            ...existingPayment, // Mantener todos los datos existentes
+            ...updatedPayment, // Sobreescribir con los datos actualizados
+            type: 'payment',
+            // Asegurar que estos campos no se pierdan
+            employee_name: updatedPayment.employee_name || existingPayment.employee_name,
+            date: updatedPayment.payment_date || updatedPayment.date || existingPayment.date
+        }
+
+        expenses.value[index] = mergedPayment
+        console.log('Pago actualizado:', mergedPayment)
+    }
+    showEditPaymentDialog.value = false
+}
+
+const handlePaymentDeleted = (paymentId) => {
+    if (!paymentId) return
+
+    const index = expenses.value.findIndex(item => item.id === paymentId)
+    if (index !== -1) {
+        const deletedPayment = expenses.value[index]
+        expenses.value.splice(index, 1)
+
+        // Recargar los datos para obtener los totales correctos del backend
+        loadExpenses()
+
+        console.log('Pago eliminado:', deletedPayment)
+        console.log('Recargando datos para actualizar totales...')
+    }
+    showDeletePaymentDialog.value = false
 }
 
 const formatCurrency = (value) => {
@@ -519,9 +570,11 @@ onMounted(() => {
                                             icon="ri-delete-bin-line" variant="text" size="small" color="grey-lighten-2"
                                             title="Adelanto ya pagado - no se puede eliminar" disabled />
                                         <VBtn v-if="item.type === 'payment'" icon="ri-edit-line" variant="text"
-                                            size="small" color="primary" title="Editar pago" disabled />
+                                            size="small" color="primary" title="Editar pago"
+                                            @click="openEditPaymentDialog(item)" />
                                         <VBtn v-if="item.type === 'payment'" icon="ri-delete-bin-line" variant="text"
-                                            size="small" color="error" title="Eliminar pago" disabled />
+                                            size="small" color="error" title="Eliminar pago"
+                                            @click="openDeletePaymentDialog(item)" />
                                     </div>
                                 </td>
                             </tr>
@@ -546,6 +599,10 @@ onMounted(() => {
             @updated="handleAdvanceUpdated" />
         <DeleteEmployeeAdvanceDialog v-model="showDeleteAdvanceDialog" :advance="selectedAdvance"
             @deleted="handleAdvanceDeleted" />
+        <EditEmployeePaymentDialog v-model="showEditPaymentDialog" :expense="selectedPayment"
+            @updated="handlePaymentUpdated" />
+        <DeleteEmployeePaymentDialog v-model="showDeletePaymentDialog" :payment="selectedPayment"
+            @deleted="handlePaymentDeleted" />
     </div>
 </template>
 

@@ -16,7 +16,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['update:modelValue', 'created'])
+const emit = defineEmits(['update:modelValue', 'created', 'refresh'])
 
 // Estado
 const formRef = ref(null)
@@ -494,7 +494,7 @@ onMounted(() => {
             <VDivider />
 
             <!-- Footer -->
-            <VCardActions class="pa-6">
+            <VCardActions class="pa-6 d-flex justify-end">
                 <VSpacer />
                 <VBtn variant="outlined" prepend-icon="ri-close-line" @click="closeDialog" :disabled="loading">
                     Cancelar
