@@ -163,8 +163,6 @@ const handleCardAction = (action) => {
         case 'employee-expenses':
             //showNotification('Navegando a Gestión de Pagos...', 'info')
             router.push('/finanzas/employee-expenses')
-
-
             break
         case 'register-contribution':
             //showNotification('Navegando a Aportes de Capital...', 'info')
@@ -280,12 +278,12 @@ onMounted(() => {
                         <div class="summary-item">
                             <span class="summary-label">Ingresos del mes</span>
                             <span class="summary-value income">{{ formatCurrency(financialSummary.monthlyIncome)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Egresos del mes</span>
                             <span class="summary-value expense">{{ formatCurrency(financialSummary.monthlyExpense)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="summary-item total">
                             <span class="summary-label">Balance actual</span>
