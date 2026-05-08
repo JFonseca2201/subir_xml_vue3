@@ -44,11 +44,11 @@ const mainCards = ref([
         action: 'register-contribution'
     },
     {
-        title: 'Gestión de Pagos',
+        title: 'Gestión de pagos nómina',
         description: 'Pagos y adelantos al personal',
         icon: 'ri-user-3-line',
         color: '#6366F1',
-        buttonText: 'Gestionar',
+        buttonText: 'Registrar pagos/adelantos',
         action: 'employee-expenses'
     },
     {

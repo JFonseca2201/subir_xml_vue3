@@ -1,73 +1,3 @@
-<template>
-    <VDialog v-model="show" max-width="500" persistent>
-        <VCard>
-            <!-- Header -->
-            <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center gap-3">
-                    <VIcon icon="ri-edit-line" color="info" size="28" />
-                    <div>
-                        <h3 class="text-h5 font-weight-bold">Editar Adelanto</h3>
-                        <span class="text-medium-emphasis text-body-2">
-                            Modifica los datos del adelanto
-                        </span>
-                    </div>
-                </div>
-            </VCardTitle>
-            <VDivider />
-
-            <VForm ref="formRef" @submit.prevent="handleSubmit">
-                <VCardText class="pa-4">
-                    <VRow>
-                        <VCol cols="12">
-                            <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id"
-                                label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VSelect v-model="form.account_id" :items="accounts" item-title="name" item-value="id"
-                                label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
-                                :rules="[v => !!v && v > 0]" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.description" label="Descripción"
-                                placeholder="Descripción del adelanto" :rules="[v => !!v]" />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.advance_date" label="Fecha" type="date" :rules="[v => !!v]"
-                                required />
-                        </VCol>
-                    </VRow>
-                </VCardText>
-
-                <VDivider />
-                <VCardActions class="pa-4">
-                    <VBtn color="default" variant="outlined" @click="closeDialog" prepend-icon="ri-close-line">
-                        Cancelar
-                    </VBtn>
-                    <VBtn color="primary" type="submit" :loading="loading" :disabled="loading"
-                        prepend-icon="ri-edit-line">
-                        {{ isEditing ? 'Actualizar' : 'Crear' }} Adelanto
-                    </VBtn>
-                </VCardActions>
-            </VForm>
-        </VCard>
-    </VDialog>
-</template>
-
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { $api } from '@/utils/api'
@@ -326,30 +256,96 @@ watch(() => show.value, async (newVal) => {
         await loadEmployees()
         await loadAccounts()
 
-        if (props.expense && isEditing.value) {
-            // Cargar datos del adelanto cuando se abre para editar
-            console.log('Cargando datos del adelanto al abrir diálogo:', props.expense)
-            console.log('employee_id:', props.expense.employee_id, 'Tipo:', typeof props.expense.employee_id)
-            console.log('account_id:', props.expense.account_id, 'Tipo:', typeof props.expense.account_id)
-            console.log('Empleados disponibles:', employees.value)
-            console.log('Cuentas disponibles:', accounts.value)
+        // Cargar datos del adelanto cuando se abre para editar
+        console.log('Cargando datos del adelanto al abrir diálogo:', props.expense)
+        console.log('employee_id:', props.expense.employee_id, 'Tipo:', typeof props.expense.employee_id)
+        console.log('account_id:', props.expense.account_id, 'Tipo:', typeof props.expense.account_id)
+        console.log('Empleados disponibles:', employees.value)
+        console.log('Cuentas disponibles:', accounts.value)
 
-            // Usar nextTick para asegurar que los datos se carguen después de que empleados y cuentas estén disponibles
-            await nextTick()
+        // Usar nextTick para asegurar que los datos se carguen después de que empleados y cuentas estén disponibles
+        await nextTick()
 
-            form.value.employee_id = props.expense.employee_id
-            form.value.account_id = props.expense.account_id
-            form.value.amount = props.expense.amount
-            form.value.description = props.expense.description
-            form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
+        form.value.employee_id = props.expense.employee_id
+        form.value.account_id = props.expense.account_id
+        form.value.amount = props.expense.amount
+        form.value.description = props.expense.description
+        form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
 
-            console.log('Formulario cargado:', form.value)
-            console.log('Empleado encontrado:', employees.value.find(emp => emp.id === props.expense.employee_id))
-            console.log('Cuenta encontrada:', accounts.value.find(acc => acc.id === props.expense.account_id))
-        }
-    } else if (!isEditing.value) {
-        // Resetear formulario cuando se cierra si no está en modo edición
-        resetForm()
+        console.log('Formulario cargado:', form.value)
+        console.log('Empleado encontrado:', employees.value.find(emp => emp.id === props.expense.employee_id))
+        console.log('Cuenta encontrada:', accounts.value.find(acc => acc.id === props.expense.account_id))
     }
 })
 </script>
+<template>
+    <VDialog v-model="show" max-width="500" persistent>
+        <VCard>
+            <!-- Header -->
+            <VCardTitle class="pa-6 pb-4">
+                <div class="d-flex align-center gap-3">
+                    <VIcon icon="ri-edit-line" color="info" size="28" />
+                    <div>
+                        <h3 class="text-h5 font-weight-bold">Editar Adelanto</h3>
+                        <span class="text-medium-emphasis text-body-2">
+                            Modifica los datos del adelanto
+                        </span>
+                    </div>
+                </div>
+            </VCardTitle>
+            <VDivider />
+
+            <VForm ref="formRef" @submit.prevent="handleSubmit">
+                <VCardText class="pa-4">
+                    <VRow>
+                        <VCol cols="12">
+                            <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id"
+                                label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VSelect v-model="form.account_id" :items="accounts" item-title="name" item-value="id"
+                                label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
+                                :rules="[v => !!v && v > 0]" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.description" label="Descripción"
+                                placeholder="Descripción del adelanto" :rules="[v => !!v]" />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.advance_date" label="Fecha" type="date" :rules="[v => !!v]"
+                                required />
+                        </VCol>
+                    </VRow>
+                </VCardText>
+
+                <VDivider />
+                <VCardText class="pa-4" />
+                <VDivider />
+                <VCardActions class="pa-4 d-flex justify-end">
+                    <VBtn color="default" variant="outlined" @click="closeDialog" prepend-icon="ri-close-line">
+                        Cancelar
+                    </VBtn>
+                    <VBtn color="primary" variant="elevated" type="submit" :loading="loading" :disabled="loading"
+                        prepend-icon="ri-edit-line">
+                        Actualizar Adelanto
+                    </VBtn>
+                </VCardActions>
+            </VForm>
+        </VCard>
+    </VDialog>
+</template>

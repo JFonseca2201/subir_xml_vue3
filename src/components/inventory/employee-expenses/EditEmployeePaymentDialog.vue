@@ -1,83 +1,5 @@
-<template>
-    <VDialog v-model="show" max-width="500" persistent>
-        <VCard>
-            <!-- Header -->
-            <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center gap-3">
-                    <VIcon icon="ri-edit-line" color="info" size="28" />
-                    <div>
-                        <h3 class="text-h5 font-weight-bold">Editar Pago</h3>
-                        <span class="text-medium-emphasis text-body-2">
-                            Modifica los datos del pago
-                        </span>
-                    </div>
-                </div>
-            </VCardTitle>
-            <VDivider />
-            <VForm ref="formRef" @submit.prevent="handleSubmit">
-                <VCardText class="pa-4">
-                    <VRow>
-                        <VCol cols="12">
-                            <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id"
-                                label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VSelect v-model="form.account_id" :items="accounts" item-title="display_name"
-                                item-value="id" label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]"
-                                required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
-                                :rules="[v => !!v && v > 0]" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text"
-                                item-value="value" label="Método de Pago" placeholder="Seleccionar método"
-                                :rules="[v => !!v || 'El método de pago es requerido']" required />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.description" label="Descripción"
-                                placeholder="Descripción del pago" :rules="[v => !!v]" />
-                        </VCol>
-                    </VRow>
-
-                    <VRow>
-                        <VCol cols="12">
-                            <VTextField v-model="form.payment_date" label="Fecha" type="date" :rules="[v => !!v]"
-                                required />
-                        </VCol>
-                    </VRow>
-                </VCardText>
-                <VDivider />
-                <VCardActions class="pa-4 d-flex justify-end">
-                    <VBtn color="default" variant="outlined" @click="closeDialog">
-                        Cancelar
-                    </VBtn>
-                    <VBtn color="primary" type="submit" :loading="loading" :disabled="loading">
-                        {{ isEditing ? 'Actualizar' : 'Crear' }} Pago
-                    </VBtn>
-
-                </VCardActions>
-            </VForm>
-
-        </VCard>
-    </VDialog>
-</template>
-
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { $api } from '@/utils/api'
 
 // Props
@@ -285,28 +207,42 @@ watch(() => props.expense, (newVal) => {
     if (newVal) {
         console.log('🔍 EditPayment - Cargando datos del pago:', newVal)
 
-        // Cargar otros datos básicos que no dependen de empleados/cuentas
-        if (newVal.amount) {
-            form.value.amount = newVal.amount
-            console.log('🔍 EditPayment - amount asignado:', newVal.amount)
-        }
-        if (newVal.description) {
-            form.value.description = newVal.description
-        }
-        if (newVal.payment_date) {
-            form.value.payment_date = newVal.payment_date
-        }
+        // Esperar un ciclo para asegurar que el formulario esté listo
+        nextTick(() => {
+            // Cargar todos los datos del pago
+            form.value.amount = newVal.amount || null
+            form.value.description = newVal.description || ''
+            // Convertir fecha a formato yyyy-MM-dd para input date
+            const dateValue = newVal.payment_date || newVal.date || new Date().toISOString().split('T')[0]
+            if (dateValue && typeof dateValue === 'string') {
+                // Si está en formato dd/MM/yyyy, convertirlo
+                if (dateValue.includes('/')) {
+                    const [day, month, year] = dateValue.split('/')
+                    form.value.payment_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+                } else {
+                    form.value.payment_date = dateValue
+                }
+            } else {
+                form.value.payment_date = new Date().toISOString().split('T')[0]
+            }
+            form.value.payment_method = newVal.payment_method || 'TRANSFERENCIA'
 
-        // Si ya tenemos empleados y cuentas cargados, asignar los IDs
-        if (employees.value.length > 0 && accounts.value.length > 0) {
-            assignEmployeeAndAccountIds(newVal)
-        } else {
-            // Si no, guardar los datos para asignar después de cargar
-            console.log('🔍 EditPayment - Empleados/Cuentas no cargados, esperando...')
-            setTimeout(() => assignEmployeeAndAccountIds(newVal), 100)
-        }
+            console.log('🔍 EditPayment - amount asignado:', form.value.amount)
+            console.log('🔍 EditPayment - description asignado:', form.value.description)
+            console.log('🔍 EditPayment - payment_date asignado:', form.value.payment_date)
+            console.log('🔍 EditPayment - payment_method asignado:', form.value.payment_method)
 
-        console.log('🔍 EditPayment - Formulario actualizado:', form.value)
+            // Si ya tenemos empleados y cuentas cargados, asignar los IDs
+            if (employees.value.length > 0 && accounts.value.length > 0) {
+                assignEmployeeAndAccountIds(newVal)
+            } else {
+                // Si no, guardar los datos para asignar después de cargar
+                console.log('🔍 EditPayment - Empleados/Cuentas no cargados, esperando...')
+                setTimeout(() => assignEmployeeAndAccountIds(newVal), 100)
+            }
+
+            console.log('🔍 EditPayment - Formulario actualizado:', form.value)
+        })
     }
 }, { immediate: true })
 
@@ -362,9 +298,6 @@ const assignEmployeeAndAccountIds = (paymentData) => {
 watch(() => show.value, (newVal) => {
     console.log('🔍 EditPayment - Dialog show changed:', newVal)
     if (newVal) {
-        if (!isEditing.value) {
-            resetForm()
-        }
         console.log('🔍 EditPayment - Cargando empleados y cuentas...')
         loadEmployees()
         loadAccounts()
@@ -381,9 +314,85 @@ watch([employees, accounts], () => {
 
 // Lifecycle
 onMounted(() => {
-    if (isEditing.value) {
-        loadEmployees()
-        loadAccounts()
-    }
+    loadEmployees()
+    loadAccounts()
 })
 </script>
+<template>
+    <VDialog v-model="show" max-width="500" persistent>
+        <VCard>
+            <!-- Header -->
+            <VCardTitle class="pa-6 pb-4">
+                <div class="d-flex align-center gap-3">
+                    <VIcon icon="ri-edit-line" color="info" size="28" />
+                    <div>
+                        <h3 class="text-h5 font-weight-bold">Editar Pago</h3>
+                        <span class="text-medium-emphasis text-body-2">
+                            Modifica los datos del pago
+                        </span>
+                    </div>
+                </div>
+            </VCardTitle>
+            <VDivider />
+            <VForm ref="formRef" @submit.prevent="handleSubmit">
+                <VCardText class="pa-4">
+                    <VRow>
+                        <VCol cols="12">
+                            <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id"
+                                label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VSelect v-model="form.account_id" :items="accounts" item-title="display_name"
+                                item-value="id" label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]"
+                                required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
+                                :rules="[v => !!v && v > 0]" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text"
+                                item-value="value" label="Método de Pago" placeholder="Seleccionar método"
+                                :rules="[v => !!v || 'El método de pago es requerido']" required />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.description" label="Descripción"
+                                placeholder="Descripción del pago" :rules="[v => !!v]" />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol cols="12">
+                            <VTextField v-model="form.payment_date" label="Fecha" type="date" :rules="[v => !!v]"
+                                required />
+                        </VCol>
+                    </VRow>
+                </VCardText>
+                <VDivider />
+                <VCardActions class="pa-4 d-flex justify-end">
+                    <VBtn color="default" variant="outlined" @click="closeDialog" prepend-icon="ri-close-line">
+                        Cancelar
+                    </VBtn>
+                    <VBtn color="primary" variant="elevated" type="submit" :loading="loading" :disabled="loading"
+                        prepend-icon="ri-edit-line">
+                        Actualizar Pago
+                    </VBtn>
+
+                </VCardActions>
+            </VForm>
+
+        </VCard>
+    </VDialog>
+</template>
