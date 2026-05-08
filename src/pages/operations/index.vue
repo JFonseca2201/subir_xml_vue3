@@ -57,7 +57,7 @@ const mainCards = ref([
         icon: 'ri-exchange-dollar-line',
         color: '#F59E0B',
         buttonText: 'Nuevo movimiento',
-        action: 'new-movement'
+        action: 'movements-index'
     },
     {
         title: 'Transferencias',
@@ -168,8 +168,11 @@ const handleCardAction = (action) => {
             //showNotification('Navegando a Aportes de Capital...', 'info')
             router.push({ name: 'aportes-index' })
             break
-        case 'new-movement':
-            showNotification('Función de Nuevo Movimiento en desarrollo', 'info')
+        case 'movements-index':
+            //showNotification('Función de Nuevo Movimiento en desarrollo', 'info')
+            console.log("Dirigiendose a movimientos");
+
+            router.push({ name: 'movements-index' })
             break
         case 'transfer':
             showNotification('Función de Transferencia en desarrollo', 'info')
