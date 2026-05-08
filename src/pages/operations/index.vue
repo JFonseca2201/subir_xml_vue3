@@ -161,13 +161,13 @@ const chartData = ref([
 const handleCardAction = (action) => {
     switch (action) {
         case 'employee-expenses':
-            showNotification('Navegando a Gestión de Pagos...', 'info')
+            //showNotification('Navegando a Gestión de Pagos...', 'info')
             router.push('/finanzas/employee-expenses')
-            console.log("HACE EL INGRESO A GESTIOND E PAGOS Y AVANCES");
+
 
             break
         case 'register-contribution':
-            showNotification('Navegando a Aportes de Capital...', 'info')
+            //showNotification('Navegando a Aportes de Capital...', 'info')
             router.push({ name: 'aportes-index' })
             break
         case 'new-movement':
