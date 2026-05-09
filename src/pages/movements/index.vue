@@ -335,12 +335,12 @@ onMounted(() => {
                         <VTable class="day-table mb-6">
                             <thead>
                                 <tr>
-                                    <th class="text-left" style="width: 60px;">ID</th>
-                                    <th class="text-left" style="width: 120px;">Orden</th>
+                                    <th class="text-left" style="width: 20px;">ID</th>
+                                    <th class="text-left" style="width: 100px;">Orden</th>
+                                    <th class="text-left" style="width: 80px;">Tipo</th>
+                                    <th class="text-left" style="min-width: 80px;">Concepto</th>
                                     <th class="text-left" style="width: 100px;">Tipo</th>
-                                    <th class="text-left" style="min-width: 140px;">Concepto</th>
-                                    <th class="text-right" style="width: 120px;">Monto</th>
-                                    <th class="text-left" style="width: 140px;">Transferencia</th>
+                                    <th class="text-right" style="width: 140px;">Monto</th>
                                     <th class="text-center" style="width: 80px;">Acciones</th>
                                 </tr>
                             </thead>
@@ -370,12 +370,6 @@ onMounted(() => {
                                             <span class="font-weight-medium">{{ movement.description }}</span>
                                         </div>
                                     </td>
-                                    <td class="text-right">
-                                        <span class="font-weight-bold text-h6"
-                                            :class="movement.type === 0 ? 'text-success' : 'text-error'">
-                                            {{ movement.type === 0 ? '+' : '-' }} {{ formatCurrency(movement.amount) }}
-                                        </span>
-                                    </td>
                                     <td>
                                         <div class="d-flex flex-column align-left">
                                             <div class="d-flex align-left">
@@ -391,9 +385,14 @@ onMounted(() => {
                                             <span class="text-medium-emphasis text-sm">{{ movement.account_label
                                                 }}</span>
                                         </div>
-
-
                                     </td>
+                                    <td class="text-right">
+                                        <span class="font-weight-bold text-h6"
+                                            :class="movement.type === 0 ? 'text-success' : 'text-error'">
+                                            {{ movement.type === 0 ? '+' : '-' }} {{ formatCurrency(movement.amount) }}
+                                        </span>
+                                    </td>
+
                                     <td class="text-center">
                                         <VBtn icon="ri-edit-line" variant="text" size="small" color="primary"
                                             @click="editMovement(movement)" title="Editar movimiento" />
