@@ -1,0 +1,594 @@
+// ============================================
+// INVENTORY MODULE STYLES
+// Global SCSS for all inventory components
+// ============================================
+
+// ============================================
+// PARTNER COMPONENTS
+// ============================================
+
+// Partner Add/Edit/Delete/Show Dialogs
+.partner-dialog {
+    &__header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    &__icon {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(var(--v-theme-primary), 0.12);
+    }
+
+    &__title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: rgb(var(--v-theme-on-surface));
+    }
+
+    &__subtitle {
+        font-size: 0.875rem;
+        color: rgba(0, 0, 0, 0.55);
+    }
+}
+
+// Partner List Page
+.partner-list {
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    &__row {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    &__empty {
+        padding: 3rem;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.55);
+    }
+
+    &__info-card {
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+}
+
+// Partner Permissions
+.permissions-table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.permissions-row {
+    border-bottom: 1px solid rgba(150, 11, 11, 0.06);
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.module-cell {
+    width: 260px;
+}
+
+.module-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.module-subtitle {
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.55);
+    margin-top: 4px;
+}
+
+.permissions-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+}
+
+.permission-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.03);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.07);
+    }
+}
+
+// ============================================
+// ACCOUNT COMPONENTS
+// ============================================
+
+// Account Form Dialog
+.account-form {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__subtitle {
+        font-size: 0.875rem;
+        color: rgba(0, 0, 0, 0.55);
+        margin-top: 0.25rem;
+    }
+}
+
+// Account List Page
+.account-list {
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__summary-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0.02));
+        border: 1px solid rgba(var(--v-theme-primary), 0.12);
+    }
+
+    &__balance {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgb(var(--v-theme-primary));
+    }
+
+    &__table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    &__row {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        &--highlighted {
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+    }
+}
+
+// ============================================
+// VEHICLE COMPONENTS
+// ============================================
+
+// Vehicle Add/Edit/Delete/Show Dialogs
+.vehicle-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__subtitle {
+        font-size: 0.875rem;
+        color: rgba(0, 0, 0, 0.55);
+        margin-top: 0.25rem;
+    }
+
+    &__info-section {
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    &__info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+    }
+}
+
+// Vehicle List Page
+.vehicle-list {
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    &__row {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    &__empty {
+        padding: 3rem;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.55);
+    }
+}
+
+// ============================================
+// EMPLOYEE COMPONENTS
+// ============================================
+
+.employee-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__info-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+    }
+}
+
+// ============================================
+// PROVIDER COMPONENTS
+// ============================================
+
+.provider-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}
+
+// ============================================
+// APORTE COMPONENTS
+// ============================================
+
+.aporte-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(var(--v-theme-success), 0.08), rgba(var(--v-theme-success), 0.02));
+    }
+
+    &__amount {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: rgb(var(--v-theme-success));
+    }
+
+    // Estilos para inputs modernos extraídos de AporteCreateDialog
+    .v-field {
+        border-radius: 12px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+        transition: all 0.3s ease !important;
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            transform: translateY(-1px);
+        }
+
+        &--focused {
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15) !important;
+            border-color: #667eea !important;
+        }
+
+        &__input {
+            font-size: 15px;
+            padding: 16px;
+        }
+
+        &__prepend-inner {
+            padding-right: 8px;
+        }
+    }
+}
+
+// ============================================
+// CLIENT COMPONENTS
+// ============================================
+
+.client-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}
+
+// ============================================
+// USER COMPONENTS
+// ============================================
+
+.user-dialog {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    &__avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(var(--v-theme-primary), 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+// ============================================
+// SHARED COMPONENTS
+// ============================================
+
+// Dialog sections
+.dialog-section {
+    padding: 1.5rem;
+
+    &__title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(0, 0, 0, 0.55);
+        margin-bottom: 1rem;
+    }
+}
+
+// Form actions
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+// Alert containers
+.alert-container {
+    margin-bottom: 1rem;
+}
+
+// Empty states
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.55);
+
+    &__icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    &__text {
+        font-size: 1rem;
+    }
+}
+
+// Data tables enhancements
+.data-table {
+    border-radius: 12px;
+    overflow: hidden;
+
+    &__header {
+        background: rgb(var(--v-theme-primary));
+        color: rgb(var(--v-theme-on-primary));
+    }
+
+    &__row {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    &__empty {
+        padding: 3rem;
+        text-align: center;
+    }
+}
+
+// ============================================
+// MOVEMENTS COMPONENTS
+// ============================================
+
+.bg-green-lighten-4 {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.bg-red-lighten-4 {
+    background-color: rgba(244, 67, 54, 0.1) !important;
+}
+
+.bg-blue-lighten-4 {
+    background-color: rgba(33, 150, 243, 0.1) !important;
+}
+
+.movement-table {
+    border-radius: 12px;
+    overflow: hidden;
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.025em;
+    }
+
+    td {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    tr:hover td {
+        background-color: #f8f9fa;
+    }
+}
+
+.day-header {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+}
+
+.day-table {
+    @extend .movement-table;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    th {
+        background-color: #f5f5f5;
+    }
+}
+
+// ============================================
+// INVOICE COMPONENTS
+// ============================================
+
+.invoice-dialog {
+    background-color: #ffffff;
+    border-radius: 16px;
+
+    &.elevation-12 {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .v-card-title {
+        font-weight: 600;
+        font-size: 20px;
+    }
+
+    .v-btn {
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 12px;
+        transition: background-color 0.3s ease;
+    }
+
+    .v-radio-group .v-radio {
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+}
+
+// ============================================
+// EMPLOYEE EXPENSES COMPONENTS
+// ============================================
+
+.expense-table {
+    @extend .movement-table; // Hereda estilos base de las tablas de movements
+}
+
+.expense-row {
+    @extend .movement-table;
+}
+
+.text-orange-darken-2 {
+    color: #e65100 !important;
+}
+
+.bg-orange-lighten-4 {
+    background-color: rgba(251, 140, 0, 0.1) !important;
+}

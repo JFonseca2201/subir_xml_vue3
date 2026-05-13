@@ -4,6 +4,7 @@ import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
+import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 
 // Router y seguridad
 const router = useRouter()
@@ -31,6 +32,7 @@ const canAccessOperations = computed(() => {
 // Estado del componente
 const operations = ref([])
 const loading = ref(false)
+const isTransferDialogVisible = ref(false)
 
 // Datos para las cards principales
 const mainCards = ref([
@@ -60,11 +62,11 @@ const mainCards = ref([
         action: 'movements-index'
     },
     {
-        title: 'Transferencias',
-        description: 'Transferencias entre cuentas',
+        title: 'Transferencias internas',
+        description: 'Transferencias entre cuentas de la compañia',
         icon: 'ri-arrow-left-right-line',
         color: '#8B5CF6',
-        buttonText: 'Transferir',
+        buttonText: 'Nueva transferecia',
         action: 'transfer'
     }
 ])
@@ -175,7 +177,8 @@ const handleCardAction = (action) => {
             router.push({ name: 'movements-index' })
             break
         case 'transfer':
-            showNotification('Función de Transferencia en desarrollo', 'info')
+            console.log(router.getRoutes());
+            router.push('/transfers');
             break
     }
 }
@@ -322,6 +325,9 @@ onMounted(() => {
                 </div>
             </div>
         </div>
+
+        <!-- Diálogos -->
+        <TransferDialog v-model="isTransferDialogVisible" />
     </div>
 </template>
 

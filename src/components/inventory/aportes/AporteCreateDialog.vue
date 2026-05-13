@@ -195,7 +195,7 @@ onMounted(() => {
 </script>
 <template>
     <VDialog v-model="show" max-width="500" persistent>
-        <VCard>
+        <VCard class="aporte-dialog">
             <!-- Header -->
             <VCardTitle class="pa-6 pb-4">
                 <div class="d-flex align-center justify-space-between">
@@ -317,30 +317,3 @@ onMounted(() => {
         </VCard>
     </VDialog>
 </template>
-<style scoped>
-/* Estilos para inputs modernos */
-:deep(.v-field) {
-    border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.3s ease !important;
-}
-
-:deep(.v-field:hover) {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-    transform: translateY(-1px);
-}
-
-:deep(.v-field--focused) {
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15) !important;
-    border-color: #667eea !important;
-}
-
-:deep(.v-field__input) {
-    font-size: 15px;
-    padding: 16px;
-}
-
-:deep(.v-field__prepend-inner) {
-    padding-right: 8px;
-}
-</style>

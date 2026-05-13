@@ -176,15 +176,15 @@ const dialogTitle = computed(() => {
 
 <template>
     <VDialog :model-value="modelValue" @update:model-value="closeDialog" max-width="600" persistent>
-        <VCard>
+        <VCard class="account-form">
             <!-- Header -->
-            <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center justify-space-between">
-                    <div class="d-flex align-center gap-3">
+            <VCardTitle class="account-form__header pa-6 pb-4">
+                <div class="d-flex align-center justify-space-between w-100">
+                    <div class="account-form__title d-flex align-center gap-3">
                         <VIcon :icon="isEditing ? 'ri-edit-line' : 'ri-add-circle-line'" color="primary" size="28" />
                         <div>
                             <h3 class="text-h5 font-weight-bold">{{ dialogTitle }}</h3>
-                            <span class="text-medium-emphasis text-body-2">
+                            <span class="account-form__subtitle text-medium-emphasis text-body-2">
                                 {{ isEditing ? 'Modificar cuenta' : 'Completa los datos para crear una nueva cuenta' }}
                             </span>
                         </div>

@@ -116,11 +116,11 @@ const { showNotification } = useGlobalToast()
 
 const handleAvatarChange = (event) => {
     const file = event.target.files[0];
-    
+
     console.log('Archivo seleccionado:', file);
     console.log('Tipo de archivo:', file?.type);
     console.log('¿Empieza con image/?', file?.type?.startsWith('image/'));
-    
+
     // Validar que sea una imagen
     if (file && file.type && file.type.startsWith('image/')) {
         const reader = new FileReader();
@@ -141,12 +141,12 @@ const convertImageToCompatibleFormat = async (file) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        
+
         img.onload = () => {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            
+
             canvas.toBlob((blob) => {
                 const convertedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
                     type: 'image/jpeg',
@@ -155,7 +155,7 @@ const convertImageToCompatibleFormat = async (file) => {
                 resolve(convertedFile);
             }, 'image/jpeg', 0.9);
         };
-        
+
         img.src = URL.createObjectURL(file);
     });
 };
@@ -251,7 +251,7 @@ const store = async () => {
         if (newUser.value.avatar) {
             // Convertir imagen a formato compatible si es necesario
             const supportedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            
+
             if (!supportedFormats.includes(newUser.value.avatar.type)) {
                 console.log('Convirtiendo imagen de formato:', newUser.value.avatar.type);
                 try {
@@ -374,7 +374,7 @@ const onFormReset = () => {
 <template>
     <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
         @update:model-value="val => emit('update:isDialogVisible', val)" transition="dialog-bottom-transition">
-        <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
+        <VCard class="user-dialog pa-6 pa-sm-10 rounded-xl elevation-10">
 
             <!-- Close -->
             <DialogCloseBtn variant="text" size="small" class="position-absolute top-0 end-0 ma-4"

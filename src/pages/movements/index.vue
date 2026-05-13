@@ -1,28 +1,40 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
+import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import IncomeDialog from '@/components/inventory/finances-records/IncomeDialog.vue'
 import ExpenseDialog from '@/components/inventory/finances-records/ExpenseDialog.vue'
+import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.vue'
+import GroupedMovementsTable from '@/components/inventory/finances-records/GroupedMovementsTable.vue'
 
-// Temporal inline notification function
-const showNotification = (message, type = 'info') => {
-    console.log(`[${type.toUpperCase()}] ${message}`)
-    // TODO: Replace with proper import when server restarts
-}
+// Composable instances
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 
 // Estado del diálogo
 const showIncomeDialog = ref(false)
 const showExpenseDialog = ref(false)
-const loading = ref(false)
 
 // Datos reactivos
 const movements = ref([])
 const editingMovement = ref(null)
+const showDeleteDialog = ref(false)
+const movementToDelete = ref(null)
+
+// Filtrar movimientos
+const incomeMovements = computed(() => {
+    return movements.value.filter(m => m.type === 0)
+})
+
+const expenseMovements = computed(() => {
+    return movements.value.filter(m => m.type === 1)
+})
 
 // Computados
 const totals = computed(() => {
-    const income = movements.value.filter(m => m.type === 0).reduce((acc, m) => acc + parseFloat(m.amount), 0)
-    const expenses = movements.value.filter(m => m.type === 1).reduce((acc, m) => acc + parseFloat(m.amount), 0)
+    const income = incomeMovements.value.reduce((acc, m) => acc + parseFloat(m.amount), 0)
+    const expenses = expenseMovements.value.reduce((acc, m) => acc + parseFloat(m.amount), 0)
     return {
         income,
         expenses,
@@ -30,7 +42,7 @@ const totals = computed(() => {
     }
 })
 
-// Agrupar movimientos por día
+// Agrupar movimientos por día (ambos ingresos y egresos)
 const groupedMovements = computed(() => {
     const groups = {}
 
@@ -112,7 +124,17 @@ const openExpenseDialog = () => {
 }
 
 const editMovement = (movement) => {
-    editingMovement.value = movement
+    // Asegurarse de pasar las distribuciones de pago bajo el nombre correcto
+    let movementForEdit = { ...movement }
+    // Compatibilidad: si viene como paymentDistributions (camelCase) o payment_distributions (snake_case)
+    if (movement.paymentDistributions) {
+        movementForEdit.payment_distributions = movement.paymentDistributions
+    }
+    // Si no existe payment_distributions pero sí paymentDistributions, igualar
+    if (!movementForEdit.payment_distributions && movement.payment_distributions) {
+        movementForEdit.payment_distributions = movement.payment_distributions
+    }
+    editingMovement.value = movementForEdit
     if (movement.type === 0) {
         showIncomeDialog.value = true
     } else {
@@ -130,28 +152,72 @@ const closeExpenseDialog = () => {
     editingMovement.value = null
 }
 
-const saveIncome = async (payload) => {
+const deleteMovement = (movement) => {
+    movementToDelete.value = movement
+    showDeleteDialog.value = true
+}
+
+const confirmDelete = async () => {
     try {
-        const data = {
-            ...payload,
-            type: 0
+        await $api(`finance-records/${movementToDelete.value.id}`, {
+            method: 'DELETE'
+        })
+
+        showNotification(`${movementToDelete.value.type === 0 ? 'Ingreso' : 'Egreso'} eliminado exitosamente`, 'success')
+
+        // Eliminar dinámicamente el movimiento
+        const index = movements.value.findIndex(m => m.id === movementToDelete.value.id)
+        if (index !== -1) {
+            movements.value.splice(index, 1)
         }
 
+        closeDeleteDialog()
+    } catch (error) {
+        console.error('Error al eliminar movimiento:', error)
+        showNotification('Error al eliminar movimiento', 'error')
+    }
+}
+
+const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    movementToDelete.value = null
+}
+
+const saveIncome = async (data) => {
+    try {
         if (editingMovement.value) {
-            await $api(`finance-records/${editingMovement.value.id}`, {
+            const response = await $api(`finance-records/${editingMovement.value.id}`, {
                 method: 'PUT',
                 body: data
             })
             showNotification('Ingreso actualizado exitosamente', 'success')
+
+            // Actualizar dinámicamente el movimiento editado
+            if (response?.data) {
+                console.log('Updated movement data:', response.data)
+                const index = movements.value.findIndex(m => m.id === editingMovement.value.id)
+                console.log('Movement index found:', index)
+                console.log('Old movement amount:', movements.value[index]?.amount)
+                console.log('New movement amount:', response.data.amount)
+                if (index !== -1) {
+                    movements.value[index] = response.data
+                    console.log('Movement updated in list, new amount:', movements.value[index].amount)
+                }
+            }
         } else {
-            await $api('finance-records', {
+            const response = await $api('finance-records', {
                 method: 'POST',
                 body: data
             })
             showNotification('Ingreso creado exitosamente', 'success')
+
+            // Añadir dinámicamente el nuevo movimiento
+            if (response?.data) {
+                const newMovements = Array.isArray(response.data) ? response.data : [response.data]
+                movements.value.unshift(...newMovements)
+            }
         }
 
-        await loadMovements()
         closeIncomeDialog()
     } catch (error) {
         console.error('Error al guardar ingreso:', error)
@@ -159,28 +225,36 @@ const saveIncome = async (payload) => {
     }
 }
 
-const saveExpense = async (payload) => {
+const saveExpense = async (data) => {
     try {
-        const data = {
-            ...payload,
-            type: 1
-        }
-
         if (editingMovement.value) {
-            await $api(`finance-records/${editingMovement.value.id}`, {
+            const response = await $api(`finance-records/${editingMovement.value.id}`, {
                 method: 'PUT',
                 body: data
             })
             showNotification('Egreso actualizado exitosamente', 'success')
+
+            // Actualizar dinámicamente el movimiento editado
+            if (response?.data) {
+                const index = movements.value.findIndex(m => m.id === editingMovement.value.id)
+                if (index !== -1) {
+                    movements.value[index] = response.data
+                }
+            }
         } else {
-            await $api('finance-records', {
+            const response = await $api('finance-records', {
                 method: 'POST',
                 body: data
             })
             showNotification('Egreso creado exitosamente', 'success')
+
+            // Añadir dinámicamente el nuevo movimiento
+            if (response?.data) {
+                const newMovements = Array.isArray(response.data) ? response.data : [response.data]
+                movements.value.unshift(...newMovements)
+            }
         }
 
-        await loadMovements()
         closeExpenseDialog()
     } catch (error) {
         console.error('Error al guardar egreso:', error)
@@ -188,21 +262,30 @@ const saveExpense = async (payload) => {
     }
 }
 
+const handleMovementDeleted = (movementId) => {
+    console.log('Movement deleted:', movementId)
+    // Eliminar dinámicamente el movimiento
+    const index = movements.value.findIndex(m => m.id === movementId)
+    if (index !== -1) {
+        movements.value.splice(index, 1)
+    }
+}
+
 const loadMovements = async () => {
-    loading.value = true
+    loader.start()
     try {
         const response = await $api('finance-records')
         console.log('API Response:', response)
 
-        // Asegurar que movements.value sea siempre un array
-        movements.value = Array.isArray(response) ? response : (response?.data || [])
+        // Extraer el array de la propiedad data
+        movements.value = response?.data || []
         console.log('Movements loaded:', movements.value)
     } catch (error) {
         console.error('Error al cargar movimientos:', error)
         showNotification('Error al cargar movimientos', 'error')
         movements.value = [] // Asegurar array vacío en caso de error
     } finally {
-        loading.value = false
+        loader.stop()
     }
 }
 
@@ -284,200 +367,108 @@ onMounted(() => {
             </VCol>
         </VRow>
 
-        <!-- Tabla de Movimientos -->
-        <VCard class="rounded-lg elevation-4">
-            <VCardTitle class="pa-4 pb-2">
-                <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-exchange-line" />
-                    <span class="text-h6 font-weight-medium">Movimientos Recientes</span>
-                </div>
-            </VCardTitle>
-            <VDivider />
-            <VCardText class="pa-0">
-                <!-- Loading State -->
-                <div v-if="loading" class="d-flex justify-center pa-12">
-                    <VProgressCircular indeterminate color="primary" size="48" />
-                </div>
 
-                <!-- Tabla con Vuetify agrupada por día -->
-                <div v-else class="movement-table">
-                    <template v-for="group in groupedMovements" :key="group.date">
-                        <!-- Encabezado del día con totales -->
-                        <div class="day-header bg-light-grey-lighten-4 pa-3 mb-2 rounded-lg">
-                            <div class="d-flex justify-space-between align-center">
-                                <div class="d-flex align-center gap-3">
-                                    <VIcon size="20" color="primary">ri-calendar-2-line</VIcon>
-                                    <span class="text-h6 font-weight-bold">{{ formatDate(group.date) }}</span>
-                                </div>
-                                <div class="d-flex gap-4">
-                                    <div class="text-center">
-                                        <span class="text-caption text-medium-emphasis">Ingresos</span>
-                                        <div class="text-success font-weight-bold">{{ formatCurrency(group.dailyIncome)
-                                            }}</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <span class="text-caption text-medium-emphasis">Egresos</span>
-                                        <div class="text-error font-weight-bold">{{ formatCurrency(group.dailyExpenses)
-                                            }}</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <span class="text-caption text-medium-emphasis">Balance</span>
-                                        <div class="font-weight-bold"
-                                            :class="group.dailyBalance >= 0 ? 'text-primary' : 'text-warning'">
-                                            {{ formatCurrency(group.dailyBalance) }}
-                                        </div>
-                                    </div>
-                                </div>
+        <!-- Movimientos Agrupados por Día -->
+        <div v-if="!loader.loading && groupedMovements.length > 0">
+            <VCard v-for="day in groupedMovements" :key="day.date" class="mb-6">
+                <VCardTitle class="pa-4 bg-grey-lighten-4">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <h3 class="text-h6 font-weight-medium">{{ formatDate(day.date) }}</h3>
+                            <p class="text-medium-emphasis text-body-2 mb-0">
+                                {{ day.movements.length }} movimiento{{ day.movements.length !== 1 ? 's' : '' }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success text-body-2">
+                                Ingresos: +{{ formatCurrency(day.dailyIncome) }}
+                            </div>
+                            <div class="text-error text-body-2">
+                                Egresos: -{{ formatCurrency(day.dailyExpenses) }}
+                            </div>
+                            <div class="font-weight-bold"
+                                :class="day.dailyBalance >= 0 ? 'text-primary' : 'text-warning'">
+                                Balance: {{ formatCurrency(day.dailyBalance) }}
                             </div>
                         </div>
+                    </div>
+                </VCardTitle>
+                <VDivider />
+                <VCardText class="pa-0">
+                    <VTable class="day-table">
+                        <thead>
+                            <tr>
+                                <th>OT/FACT</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Monto</th>
+                                <th>Cuenta</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="movement in day.movements" :key="movement.id">
+                                <td>
+                                    {{ movement.work_order_number || movement.invoice_number }}
+                                </td>
+                                <td>
+                                    <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal"
+                                        size="small">
+                                        {{ movement.type === 0 ? 'INGRESO' : 'EGRESO' }}
+                                    </VChip>
+                                </td>
+                                <td>{{ movement.description }}</td>
+                                <!-- Mostrar siempre el monto total -->
+                                <td :class="movement.type === 0 ? 'text-success' : 'text-error'"
+                                    class="font-weight-bold">
+                                    {{ movement.type === 0 ? '+' : '-' }}{{ formatCurrency(movement.amount) }}
+                                </td>
+                                <!-- Mostrar cuenta principal o resumen de cuentas -->
+                                <td>
+                                    <span
+                                        v-if="movement.payment_distributions && movement.payment_distributions.length > 1">
+                                        {{ movement.payment_distributions.length }} cuentas
+                                    </span>
+                                    <span v-else>
+                                        {{ movement.account_label || movement.account_id }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <VBtn size="small" variant="text" color="primary" @click="editMovement(movement)">
+                                        <VIcon size="20">ri-edit-line</VIcon>
+                                    </VBtn>
+                                    <VBtn size="small" variant="text" color="error" @click="deleteMovement(movement)">
+                                        <VIcon size="20">ri-delete-bin-line</VIcon>
+                                    </VBtn>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </VTable>
+                </VCardText>
+            </VCard>
+        </div>
 
-                        <!-- Tabla de movimientos del día -->
-                        <VTable class="day-table mb-6">
-                            <thead>
-                                <tr>
-                                    <th class="text-left" style="width: 20px;">ID</th>
-                                    <th class="text-left" style="width: 100px;">Orden</th>
-                                    <th class="text-left" style="width: 80px;">Tipo</th>
-                                    <th class="text-left" style="min-width: 80px;">Concepto</th>
-                                    <th class="text-left" style="width: 100px;">Tipo</th>
-                                    <th class="text-right" style="width: 140px;">Monto</th>
-                                    <th class="text-center" style="width: 80px;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody style="text-transform:uppercase">
-                                <tr v-for="movement in group.movements" :key="movement.id"
-                                    class="hover:bg-grey-lighten-4">
-                                    <td>
-                                        <VChip size="small" variant="tonal" color="grey-lighten-1">
-                                            {{ movement.id }}
-                                        </VChip>
-                                    </td>
-                                    <td>
-                                        {{ movement.type === 0 ? ('OT-' + movement.work_order_number || '-') :
-                                            ('G-' + movement.invoice_number || '-') }}
-                                    </td>
-                                    <td>
-                                        <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal"
-                                            size="small">
-                                            <VIcon start>
-                                                {{ movement.type === 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line' }}
-                                            </VIcon>
-                                            {{ movement.type === 0 ? 'INGRESO' : 'EGRESO' }}
-                                        </VChip>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <span class="font-weight-medium">{{ movement.description }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column align-left">
-                                            <div class="d-flex align-left">
-                                                <VIcon start size="16">
-                                                    {{ movement.payment_method === 'transfer' ? 'ri-bank-line' :
-                                                        'ri-money-dollar-circle-line' }}
-                                                </VIcon>
-                                                <span class="font-weight-medium">
-                                                    {{ movement.payment_method === 'transfer' ? 'Transferencia' :
-                                                        'Efectivo' }}
-                                                </span>
-                                            </div>
-                                            <span class="text-medium-emphasis text-sm">{{ movement.account_label
-                                                }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-right">
-                                        <span class="font-weight-bold text-h6"
-                                            :class="movement.type === 0 ? 'text-success' : 'text-error'">
-                                            {{ movement.type === 0 ? '+' : '-' }} {{ formatCurrency(movement.amount) }}
-                                        </span>
-                                    </td>
-
-                                    <td class="text-center">
-                                        <VBtn icon="ri-edit-line" variant="text" size="small" color="primary"
-                                            @click="editMovement(movement)" title="Editar movimiento" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </VTable>
-                    </template>
-                </div>
-
-                <!-- Empty State -->
-                <div v-if="!loading && movements.length === 0" class="text-center pa-12">
-                    <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
-                    <h3 class="text-h5 mb-2">No hay movimientos registrados</h3>
-                    <p class="text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
-                </div>
-            </VCardText>
-        </VCard>
+        <!-- Empty State -->
+        <div v-if="!loader.loading && incomeMovements.length === 0 && expenseMovements.length === 0"
+            class="text-center pa-12">
+            <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
+            <h3 class="text-h5 mb-2">No hay movimientos registrados</h3>
+            <p class="text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
+        </div>
+        <div v-if="!loader.loading && incomeMovements.length === 0 && expenseMovements.length === 0"
+            class="text-center pa-12">
+            <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
+            <h3 class="text-h5 mb-2">No hay movimientos registrados</h3>
+            <p class="text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
+        </div>
 
         <!-- Diálogo de Ingreso -->
         <IncomeDialog v-model="showIncomeDialog" :editing-movement="editingMovement" @saved="saveIncome" />
 
         <!-- Diálogo de Egreso -->
         <ExpenseDialog v-model="showExpenseDialog" :editing-movement="editingMovement" @saved="saveExpense" />
+
+        <!-- Delete Dialog -->
+        <DeleteDialog v-model="showDeleteDialog" :movement="movementToDelete" @confirm="confirmDelete" />
     </div>
 </template>
-
-<style scoped>
-.bg-green-lighten-4 {
-    background-color: rgba(76, 175, 80, 0.1) !important;
-}
-
-.bg-red-lighten-4 {
-    background-color: rgba(244, 67, 54, 0.1) !important;
-}
-
-.bg-blue-lighten-4 {
-    background-color: rgba(33, 150, 243, 0.1) !important;
-}
-
-.movement-table {
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.movement-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.025em;
-}
-
-.movement-table td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.movement-table tr:hover td {
-    background-color: #f8f9fa;
-}
-
-.day-header {
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    margin-bottom: 16px;
-}
-
-.day-table {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.day-table th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.025em;
-}
-
-.day-table td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.day-table tr:hover td {
-    background-color: #f8f9fa;
-}
-</style>

@@ -1,5 +1,7 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 const props = defineProps({
     isDialogVisible: {
         type: Boolean,
@@ -18,6 +20,7 @@ const onFormReset = () => emit("update:isDialogVisible", false);
 
 
 const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 const warning = ref(null);
 const success = ref(null);
 const error_exits = ref(null);
@@ -25,11 +28,6 @@ const item_type = ref(1);
 const radioGroup = ref(1);
 const categories = ref([]);
 const selectedCategory = ref(null);
-
-// Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
 
 // Cargar categorías
 const loadCategories = async () => {
@@ -56,12 +54,6 @@ onMounted(() => {
         }
     });
 });
-
-const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
 
 const editItemInvoice = async () => {
     warning.value = null;
@@ -118,7 +110,7 @@ onMounted(() => {
 
 <template>
     <v-dialog v-model="props.isDialogVisible" max-width="700">
-        <v-card class="elevation-15 rounded-xl">
+        <v-card class="invoice-dialog elevation-15 rounded-xl">
             <v-card-title class="headline text-center text-primary">
                 Editar {{ props.invoiceSelected.description }}
             </v-card-title>
@@ -170,48 +162,4 @@ onMounted(() => {
             </v-card-actions>
         </v-card>
     </v-dialog>
-
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
-
-<style scoped>
-/* Mejorar la interacción de los radio buttons */
-.v-radio-group .v-radio {
-    transition: all 0.3s ease;
-}
-
-.v-radio-group .v-radio:hover {
-    transform: scale(1.05);
-    /* Efecto de animación al pasar el mouse */
-}
-
-/* Estilos para los botones con bordes redondeados y sombras */
-.v-btn {
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 12px;
-}
-
-/* Mejora de los títulos y textos dentro de la tarjeta */
-.v-card-title {
-    font-weight: 600;
-    font-size: 20px;
-}
-
-/* Estilo para el contenedor con la tarjeta */
-.v-card {
-    background-color: #ffffff;
-    border-radius: 16px;
-}
-
-/* Sombra suave y borde redondeado de la tarjeta */
-.v-card.elevation-12 {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Botones con transición de color */
-.v-btn:hover {
-    transition: background-color 0.3s ease;
-}
-</style>

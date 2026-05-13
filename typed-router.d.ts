@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     'invoice-list': RouteRecordInfo<'invoice-list', '/invoice/list', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'movements': RouteRecordInfo<'movements', '/movements', Record<never, never>, Record<never, never>>,
+    'movements-daily-report': RouteRecordInfo<'movements-daily-report', '/movements/DailyReport', Record<never, never>, Record<never, never>>,
     'operations': RouteRecordInfo<'operations', '/operations', Record<never, never>, Record<never, never>>,
     'partners-list': RouteRecordInfo<'partners-list', '/partners/list', Record<never, never>, Record<never, never>>,
     'product-add': RouteRecordInfo<'product-add', '/product/add', Record<never, never>, Record<never, never>>,
@@ -41,6 +42,7 @@ declare module 'vue-router/auto-routes' {
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,
     'sucursales': RouteRecordInfo<'sucursales', '/sucursales', Record<never, never>, Record<never, never>>,
     'sucursales-warehouses': RouteRecordInfo<'sucursales-warehouses', '/sucursales/warehouses', Record<never, never>, Record<never, never>>,
+    'transfers': RouteRecordInfo<'transfers', '/transfers', Record<never, never>, Record<never, never>>,
     'users': RouteRecordInfo<'users', '/users', Record<never, never>, Record<never, never>>,
     'vehicles-list': RouteRecordInfo<'vehicles-list', '/vehicles/list', Record<never, never>, Record<never, never>>,
   }

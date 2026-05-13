@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import AddEmployeeAdvanceDialog from '@/components/inventory/employee-expenses/AddEmployeeAdvanceDialog.vue'
 import EditEmployeeAdvanceDialog from '@/components/inventory/employee-expenses/EditEmployeeAdvanceDialog.vue'
 import DeleteEmployeeAdvanceDialog from '@/components/inventory/employee-expenses/DeleteEmployeeAdvanceDialog.vue'
@@ -13,7 +15,8 @@ const summary = ref({
     total_advances: 0,
     total_general: 0
 })
-const loading = ref(false)
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 const selectedType = ref('all')
 
 // Dialog state
@@ -74,7 +77,7 @@ const getAccountName = (accountId) => {
 }
 
 const loadExpenses = async () => {
-    loading.value = true
+    loader.start()
 
     try {
         // Cargar datos reales de la API
@@ -182,7 +185,7 @@ const loadExpenses = async () => {
         summary.value.total_advances = parseFloat(fallbackData.summary.total_advances) || 0
         summary.value.total_general = parseFloat(fallbackData.summary.total_general) || 0
     } finally {
-        loading.value = false
+        loader.stop()
     }
 }
 const openAddAdvanceDialog = () => {
@@ -495,7 +498,7 @@ onMounted(() => {
 
             <VCardText class="pa-4">
                 <!-- Loading State -->
-                <div v-if="loading" class="d-flex justify-center pa-12">
+                <div v-if="loader.loading" class="d-flex justify-center pa-12">
                     <VProgressCircular indeterminate color="primary" size="48" />
                 </div>
 
@@ -605,52 +608,3 @@ onMounted(() => {
             @deleted="handlePaymentDeleted" />
     </div>
 </template>
-
-
-
-<style scoped>
-.bg-blue-lighten-4 {
-    background-color: rgba(33, 150, 243, 0.1) !important;
-}
-
-.bg-green-lighten-4 {
-    background-color: rgba(76, 175, 80, 0.1) !important;
-}
-
-.bg-orange-lighten-4 {
-    background-color: rgba(251, 140, 0, 0.1) !important;
-}
-
-.expense-table {
-    border-collapse: collapse;
-    width: 100%;
-    font-size: 14px;
-}
-
-.expense-table th {
-    background-color: #f5f5f5;
-    padding: 12px 8px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #e0e0e0;
-    color: #424242;
-}
-
-.expense-table td {
-    padding: 12px 8px;
-    border-bottom: 1px solid #e0e0e0;
-    vertical-align: middle;
-}
-
-.expense-row:hover {
-    background-color: #f8f9fa;
-}
-
-.expense-row:hover td {
-    background-color: #f8f9fa !important;
-}
-
-.text-orange-darken-2 {
-    color: #e65100 !important;
-}
-</style>

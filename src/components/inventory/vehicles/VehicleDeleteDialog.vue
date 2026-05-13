@@ -215,39 +215,3 @@ const cancelDelete = () => {
         </VCard>
     </VDialog>
 </template>
-
-<style scoped>
-.v-card {
-    overflow: hidden;
-}
-
-.v-card-title {
-    line-height: 1.2;
-}
-
-.text-caption {
-    font-size: 0.75rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-/* Animaciones suaves */
-.v-card {
-    transition: all 0.3s ease;
-}
-
-.v-card:hover {
-    transform: translateY(-2px);
-}
-
-/* Bordes redondeados */
-.v-card.rounded-lg {
-    border-radius: 12px !important;
-}
-
-/* Sombras personalizadas */
-.v-card.elevation-8 {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-</style>

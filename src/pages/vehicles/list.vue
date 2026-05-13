@@ -438,25 +438,3 @@ onMounted(() => {
     <VehicleDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :vehicleSelected="vehicleToDelete"
         @deleteVehicle="handleVehicleDeleted" />
 </template>
-
-<style scoped>
-.vehicle-table {
-    border-collapse: collapse;
-}
-
-.vehicle-table th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-}
-
-.vehicle-table td {
-    vertical-align: middle;
-}
-
-.hover\:bg-grey-lighten-4:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    transition: background-color 0.2s ease;
-}
-</style>

@@ -145,7 +145,7 @@ onMounted(() => {
         </VOverlay>
 
         <!-- CARD MAESTRA -->
-        <VCard class="elevation-4 rounded-xl">
+        <VCard class="partner-list elevation-4 rounded-xl">
 
             <!-- HEADER -->
             <VCardText>
@@ -213,7 +213,7 @@ onMounted(() => {
 
             <!-- TABLA -->
             <VCardText class="pa-0">
-                <VTable hover class="text-no-wrap">
+                <VTable hover class="partner-list__table text-no-wrap">
                     <thead class="bg-primary text-white">
                         <tr>
                             <th>#</th>

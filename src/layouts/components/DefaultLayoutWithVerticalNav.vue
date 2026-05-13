@@ -49,11 +49,7 @@ watch([
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
-        <IconBtn
-          id="vertical-nav-toggle-btn"
-          class="ms-n2 d-lg-none"
-          @click="toggleVerticalOverlayNavActive(true)"
-        >
+        <IconBtn id="vertical-nav-toggle-btn" class="ms-n2 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
           <VIcon icon="ri-menu-line" />
         </IconBtn>
 
@@ -61,10 +57,8 @@ watch([
 
         <VSpacer />
 
-        <NavBarI18n
-          v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
-          :languages="themeConfig.app.i18n.langConfig"
-        />
+        <NavBarI18n v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
+          :languages="themeConfig.app.i18n.langConfig" />
         <UserProfile />
       </div>
     </template>
@@ -73,12 +67,15 @@ watch([
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component }">
-      <Suspense
-        :timeout="0"
-        @fallback="isFallbackStateActive = true"
-        @resolve="isFallbackStateActive = false"
-      >
-        <Component :is="Component" />
+      <Suspense>
+        <template #default>
+          <Component :is="Component" />
+        </template>
+        <template #fallback>
+          <div class="d-flex justify-center align-center" style="height: 200px;">
+            <VProgressCircular indeterminate color="primary" />
+          </div>
+        </template>
       </Suspense>
     </RouterView>
 
@@ -89,7 +86,7 @@ watch([
 
     <!-- 👉 Customizer -->
     <!-- <TheCustomizer /> -->
-    
+
     <!-- 👉 Global Toast -->
     <GlobalToast />
   </VerticalNavLayout>
@@ -97,13 +94,23 @@ watch([
 
 <style lang="scss">
 @keyframes rotate-180 {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(180deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(180deg);
+  }
 }
 
 @keyframes rotate-back-180 {
-  from { transform: rotate(180deg); }
-  to { transform: rotate(0deg); }
+  from {
+    transform: rotate(180deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
 }
 
 .layout-vertical-nav {

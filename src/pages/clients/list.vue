@@ -414,25 +414,3 @@ onMounted(() => {
     <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :clientSelected="clientToDelete"
         @deleteClient="handleClientDeleted" />
 </template>
-
-<style scoped>
-.client-table {
-    border-collapse: collapse;
-}
-
-.client-table th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-}
-
-.client-table td {
-    vertical-align: middle;
-}
-
-.hover\:bg-grey-lighten-4:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-    transition: background-color 0.2s ease;
-}
-</style>

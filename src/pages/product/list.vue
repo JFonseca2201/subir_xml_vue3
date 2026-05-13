@@ -458,21 +458,3 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
     <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
         @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
 </template>
-
-
-
-<style scoped>
-.v-data-table {
-    border-radius: 0;
-}
-
-.drop-zone {
-    border: 2px dashed rgba(var(--v-theme-primary), 0.3);
-    transition: all 0.3s ease;
-}
-
-.drop-zone:hover {
-    border-color: rgb(var(--v-theme-primary));
-    background-color: rgba(var(--v-theme-primary), 0.05);
-}
-</style>

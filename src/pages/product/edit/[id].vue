@@ -585,34 +585,3 @@ onMounted(() => {
         </VCard>
     </div>
 </template>
-
-<style scoped>
-/* Drop zone simple */
-.drop-zone {
-    border: 2px dashed rgba(var(--v-theme-primary), 0.3);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.drop-zone:hover {
-    border-color: rgb(var(--v-theme-primary));
-    background-color: rgba(var(--v-theme-primary), 0.05);
-}
-
-/* Utilidades básicas */
-.position-relative {
-    position: relative;
-}
-
-.position-absolute {
-    position: absolute;
-}
-
-.top-0 {
-    top: 0;
-}
-
-.right-0 {
-    right: 0;
-}
-</style>

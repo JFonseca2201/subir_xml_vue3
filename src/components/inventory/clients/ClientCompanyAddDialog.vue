@@ -403,16 +403,3 @@ onMounted(() => {
         {{ notificationMessage }}
     </VSnackbar>
 </template>
-
-<style scoped>
-.v-card-title {
-    border-radius: 12px 12px 0 0;
-}
-
-.text-h6 {
-    color: #1976D2;
-    border-bottom: 2px solid #1976D2;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-}
-</style>

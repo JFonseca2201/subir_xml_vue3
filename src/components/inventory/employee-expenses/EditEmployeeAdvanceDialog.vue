@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { $api } from '@/utils/api'
+import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 
 // Props
 const props = defineProps({
@@ -21,7 +23,9 @@ const emit = defineEmits(['update:modelValue', 'updated'])
 const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
-const loading = ref(false)
+
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 
 // Computed
 const show = computed({
@@ -58,58 +62,6 @@ const resetForm = () => {
     formRef.value?.reset()
 }
 
-// Función para mostrar notificaciones toast
-const showToast = (message, type = 'info') => {
-    // Crear elemento toast
-    const toast = document.createElement('div')
-    toast.className = `toast toast-${type}`
-    toast.textContent = message
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
-        color: white;
-        border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        z-index: 9999;
-        font-size: 14px;
-        max-width: 300px;
-        word-wrap: break-word;
-        animation: slideIn 0.3s ease-out;
-    `
-
-    // Agregar al DOM
-    document.body.appendChild(toast)
-
-    // Remover automáticamente después de 4 segundos
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast)
-        }
-    }, 4000)
-}
-
-// Agregar animación CSS si no existe
-if (!document.querySelector('#toast-styles')) {
-    const style = document.createElement('style')
-    style.id = 'toast-styles'
-    style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    `
-    document.head.appendChild(style)
-}
-
 const closeDialog = () => {
     show.value = false
     setTimeout(() => {
@@ -121,7 +73,7 @@ const handleSubmit = async () => {
     const { valid } = await formRef.value.validate()
     if (!valid) return
 
-    loading.value = true
+    loader.start()
 
     try {
         const payload = {
@@ -139,7 +91,7 @@ const handleSubmit = async () => {
             body: payload
         })
 
-        showToast('Adelanto actualizado exitosamente', 'success')
+        showNotification('Adelanto actualizado exitosamente', 'success')
         emit('updated', response)
         closeDialog()
     } catch (error) {
@@ -150,21 +102,21 @@ const handleSubmit = async () => {
             const errorData = error.data
             if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
                 // Mostrar mensaje amigable de saldo insuficiente
-                showToast('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + errorData.saldo_disponible + '\nMonto solicitado: $' + errorData.monto_solicitado, 'error')
+                showNotification('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + errorData.saldo_disponible + '\nMonto solicitado: $' + errorData.monto_solicitado, 'error')
                 return
             }
 
             // Manejar otros errores de validación
             if (errorData.message) {
-                showToast(errorData.message, 'error')
+                showNotification(errorData.message, 'error')
                 return
             }
         }
 
         // Error genérico
-        showToast('Error al guardar el adelanto. Por favor, intente nuevamente.', 'error')
+        showNotification('Error al guardar el adelanto. Por favor, intente nuevamente.', 'error')
     } finally {
-        loading.value = false
+        loader.stop()
     }
 }
 
@@ -280,10 +232,10 @@ watch(() => show.value, async (newVal) => {
 </script>
 <template>
     <VDialog v-model="show" max-width="500" persistent>
-        <VCard>
+        <VCard class="employee-dialog">
             <!-- Header -->
-            <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center gap-3">
+            <VCardTitle class="employee-dialog__header">
+                <div class="employee-dialog__title">
                     <VIcon icon="ri-edit-line" color="info" size="28" />
                     <div>
                         <h3 class="text-h5 font-weight-bold">Editar Adelanto</h3>
@@ -293,7 +245,6 @@ watch(() => show.value, async (newVal) => {
                     </div>
                 </div>
             </VCardTitle>
-            <VDivider />
 
             <VForm ref="formRef" @submit.prevent="handleSubmit">
                 <VCardText class="pa-4">
@@ -340,8 +291,8 @@ watch(() => show.value, async (newVal) => {
                     <VBtn color="default" variant="outlined" @click="closeDialog" prepend-icon="ri-close-line">
                         Cancelar
                     </VBtn>
-                    <VBtn color="primary" variant="elevated" type="submit" :loading="loading" :disabled="loading"
-                        prepend-icon="ri-edit-line">
+                    <VBtn color="primary" variant="elevated" type="submit" :loading="loader.loading"
+                        :disabled="loader.loading" prepend-icon="ri-edit-line">
                         Actualizar Adelanto
                     </VBtn>
                 </VCardActions>
