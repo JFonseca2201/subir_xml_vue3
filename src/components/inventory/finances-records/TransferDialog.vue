@@ -7,6 +7,10 @@ const props = defineProps({
     modelValue: {
         type: Boolean,
         default: false
+    },
+    transferData: {
+        type: Object,
+        default: null
     }
 })
 
@@ -19,9 +23,9 @@ const accounts = ref([])
 const { showNotification } = useGlobalToast()
 
 const form = ref({
-    source_account_id: null,
-    destination_account_id: null,
-    amount: null,
+    from_account_id: null,
+    to_account_id: null,
+    amount: '',
     description: '',
     transfer_date: new Date().toISOString().split('T')[0]
 })
@@ -31,6 +35,8 @@ const show = computed({
     get: () => props.modelValue,
     set: (value) => emit('update:modelValue', value)
 })
+
+const isEditing = computed(() => !!props.transferData)
 
 // Cargar cuentas desde la API
 const loadAccounts = async () => {
@@ -48,9 +54,9 @@ const loadAccounts = async () => {
 
 const resetForm = () => {
     form.value = {
-        source_account_id: null,
-        destination_account_id: null,
-        amount: null,
+        from_account_id: null,
+        to_account_id: null,
+        amount: '',
         description: '',
         transfer_date: new Date().toISOString().split('T')[0]
     }
@@ -59,14 +65,13 @@ const resetForm = () => {
 
 const closeDialog = () => {
     show.value = false
-    setTimeout(resetForm, 200)
 }
 
 const handleSubmit = async () => {
     const { valid } = await formRef.value.validate()
     if (!valid) return
 
-    if (form.value.source_account_id === form.value.destination_account_id) {
+    if (form.value.from_account_id === form.value.to_account_id) {
         showNotification('La cuenta de origen y destino no pueden ser la misma', 'warning')
         return
     }
@@ -74,13 +79,15 @@ const handleSubmit = async () => {
     loading.value = true
 
     try {
-        // TODO: Ajusta este endpoint según la ruta de tu API en Laravel
-        const response = await $api('transfers', {
-            method: 'POST',
+        const method = isEditing.value ? 'PUT' : 'POST'
+        const endpoint = isEditing.value ? `transfers/${props.transferData.id}` : 'transfers'
+
+        const response = await $api(endpoint, {
+            method: method,
             body: form.value
         })
 
-        showNotification('Transferencia realizada exitosamente', 'success')
+        showNotification(`Transferencia ${isEditing.value ? 'actualizada' : 'realizada'} exitosamente`, 'success')
         emit('transferred', response)
         closeDialog()
     } catch (error) {
@@ -93,8 +100,21 @@ const handleSubmit = async () => {
 
 watch(() => show.value, (newVal) => {
     if (newVal) {
-        resetForm()
-        loadAccounts()
+        loadAccounts().then(() => {
+            if (props.transferData) {
+                form.value = {
+                    from_account_id: props.transferData.from_account_id || props.transferData.source_account_id || null,
+                    to_account_id: props.transferData.to_account_id || props.transferData.destination_account_id || null,
+                    amount: props.transferData.amount || '',
+                    description: props.transferData.description,
+                    transfer_date: props.transferData.transfer_date
+                        ? props.transferData.transfer_date.split('T')[0]
+                        : (props.transferData.created_at ? props.transferData.created_at.split('T')[0] : new Date().toISOString().split('T')[0])
+                }
+            } else {
+                resetForm()
+            }
+        })
     }
 })
 </script>
@@ -108,7 +128,8 @@ watch(() => show.value, (newVal) => {
                     <div class="d-flex align-center gap-3">
                         <VIcon icon="ri-arrow-left-right-line" color="primary" size="28" />
                         <div>
-                            <h3 class="text-h5 font-weight-bold">Transferencia entre Cuentas</h3>
+                            <h3 class="text-h5 font-weight-bold">
+                                {{ isEditing ? 'Editar Transferencia' : 'Transferenciaentre Cuentas' }}</h3>
                             <span class="text-medium-emphasis text-body-2">
                                 Mueve fondos de una cuenta a otra
                             </span>
@@ -125,31 +146,21 @@ watch(() => show.value, (newVal) => {
                 <VForm ref="formRef" @submit.prevent="handleSubmit">
                     <VRow>
                         <VCol cols="12" md="6">
-                            <VSelect v-model="form.source_account_id" :items="accounts" item-value="id"
+                            <VSelect v-model="form.from_account_id" :items="accounts" item-value="id"
                                 item-title="display_name" label="Cuenta Origen *" placeholder="Desde dónde"
                                 :rules="[v => !!v || 'Requerido']" variant="outlined" density="comfortable"
                                 prepend-inner-icon="ri-bank-card-line" />
-                            <VSelect v-model="form.source_account_id" :items="accounts" item-value="id"
-                                item-title="display_name" label="Cuenta Origen *" placeholder="Desde dónde"
-                                :rules="[v => !!v || 'Requerido']" variant="outlined" density="comfortable"
-                                prepend-inner-icon="ri-bank-card-line" />
+
                         </VCol>
                         <VCol cols="12" md="6">
-                            <VSelect v-model="form.destination_account_id" :items="accounts" item-value="id"
+
+                            <VSelect v-model="form.to_account_id" :items="accounts" item-value="id"
                                 item-title="display_name" label="Cuenta Destino *" placeholder="Hacia dónde"
-                                :rules="[v => !!v || 'Requerido', v => v !== form.source_account_id || 'Debe ser diferente al origen']"
-                                variant="outlined" density="comfortable" prepend-inner-icon="ri-bank-card-fill" />
-                            <VSelect v-model="form.destination_account_id" :items="accounts" item-value="id"
-                                item-title="display_name" label="Cuenta Destino *" placeholder="Hacia dónde"
-                                :rules="[v => !!v || 'Requerido', v => v !== form.source_account_id || 'Debe ser diferente al origen']"
+                                :rules="[v => !!v || 'Requerido', v => v !== form.from_account_id || 'Debe ser diferente al origen']"
                                 variant="outlined" density="comfortable" prepend-inner-icon="ri-bank-card-fill" />
                         </VCol>
                         <VCol cols="12" md="6">
-                            <VTextField v-model="form.amount" label="Monto a Transferir *" placeholder="0.00"
-                                type="number" prefix="$"
-                                :rules="[v => !!v || 'Requerido', v => v > 0 || 'El monto debe ser mayor a 0']"
-                                variant="outlined" density="comfortable"
-                                prepend-inner-icon="ri-money-dollar-circle-line" />
+
                             <VTextField v-model="form.amount" label="Monto a Transferir *" placeholder="0.00"
                                 type="number" prefix="$"
                                 :rules="[v => !!v || 'Requerido', v => v > 0 || 'El monto debe ser mayor a 0']"
@@ -157,9 +168,7 @@ watch(() => show.value, (newVal) => {
                                 prepend-inner-icon="ri-money-dollar-circle-line" />
                         </VCol>
                         <VCol cols="12" md="6">
-                            <VTextField v-model="form.transfer_date" label="Fecha *" type="date"
-                                :rules="[v => !!v || 'Requerido']" variant="outlined" density="comfortable"
-                                prepend-inner-icon="ri-calendar-line" />
+
                             <VTextField v-model="form.transfer_date" label="Fecha *" type="date"
                                 :rules="[v => !!v || 'Requerido']" variant="outlined" density="comfortable"
                                 prepend-inner-icon="ri-calendar-line" />
@@ -188,7 +197,7 @@ watch(() => show.value, (newVal) => {
 
                 <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" @click="handleSubmit"
                     :loading="loading">
-                    Confirmar Transferencia
+                    {{ isEditing ? 'Actualizar Transferencia' : 'Confirmar Transferencia' }}
                 </VBtn>
             </VCardActions>
         </VCard>

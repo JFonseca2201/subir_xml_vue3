@@ -33,6 +33,9 @@ const resumen = ref({
 })
 const loading = ref(false)
 const showTransferDialog = ref(false)
+const editingTransfer = ref(null)
+const showDeleteDialog = ref(false)
+const transferToDelete = ref(null)
 
 // Cargar listado de transferencias
 const loadTransfers = async () => {
@@ -43,15 +46,37 @@ const loadTransfers = async () => {
         const response = await $api('transfers')
 
         // Adaptación dependiendo de cómo devuelva tu API los datos
+        console.log(response);
+
+        let dataArray = []
+
         if (response.data) {
-            transfers.value = response.data
-            resumen.value = response.resumen || {
-                total_hoy: 0,
-                total_mes: 0,
-                total_general: 0
-            }
+            dataArray = response.data
         } else if (Array.isArray(response)) {
-            transfers.value = response
+            dataArray = response
+        }
+
+        transfers.value = dataArray
+
+        // Cálculo del resumen en frontend (Respaldo por si la API no lo envía)
+        const today = new Date().toISOString().split('T')[0]
+        const currentMonth = today.substring(0, 7)
+
+        let totalHoy = 0, totalMes = 0, totalGeneral = 0
+
+        dataArray.forEach(t => {
+            const amount = parseFloat(t.amount || 0)
+            const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
+
+            totalGeneral += amount
+            if (tDate === today) totalHoy += amount
+            if (tDate.substring(0, 7) === currentMonth) totalMes += amount
+        })
+
+        resumen.value = response.resumen || {
+            total_hoy: totalHoy,
+            total_mes: totalMes,
+            total_general: totalGeneral
         }
 
         showNotification('Transferencias cargadas correctamente', 'success')
@@ -65,7 +90,40 @@ const loadTransfers = async () => {
 }
 
 const openTransferDialog = () => {
+    editingTransfer.value = null
     showTransferDialog.value = true
+}
+
+// Funciones de Edición y Eliminación
+const openEditDialog = (transfer) => {
+    editingTransfer.value = transfer
+    showTransferDialog.value = true
+}
+
+const deleteTransfer = (transfer) => {
+    transferToDelete.value = transfer
+    showDeleteDialog.value = true
+}
+
+const confirmDeleteTransfer = async () => {
+    if (!transferToDelete.value) return
+    loader.start()
+    try {
+        await $api(`transfers/${transferToDelete.value.id}`, { method: 'DELETE' })
+        showNotification('Transferencia eliminada exitosamente', 'success')
+        loadTransfers()
+        closeDeleteDialog()
+    } catch (error) {
+        console.error('Error al eliminar:', error)
+        showNotification('Error al eliminar transferencia', 'error')
+    } finally {
+        loader.stop()
+    }
+}
+
+const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    transferToDelete.value = null
 }
 
 // Función que se ejecuta cuando el TransferDialog emite 'transferred'
@@ -189,16 +247,17 @@ onMounted(() => {
                             <th>Cuenta Destino</th>
                             <th>Descripción / Motivo</th>
                             <th>Monto</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="text-transform: uppercase;">
                         <tr v-if="loading">
-                            <td colspan="5" class="text-center pa-4">
+                            <td colspan="6" class="text-center pa-4">
                                 <VProgressCircular indeterminate color="primary" />
                             </td>
                         </tr>
                         <tr v-else-if="!transfers.length">
-                            <td colspan="5" class="text-center text-medium-emphasis py-8">
+                            <td colspan="6" class="text-center text-medium-emphasis py-8">
                                 <VIcon size="48" class="mb-2">ri-arrow-left-right-line</VIcon>
                                 <div class="text-h6 mb-1">No hay transferencias registradas</div>
                             </td>
@@ -219,6 +278,18 @@ onMounted(() => {
                             </td>
                             <td>{{ transfer.description || 'Sin descripción' }}</td>
                             <td class="font-weight-bold text-primary">{{ formatCurrency(transfer.amount) }}</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-center gap-1">
+                                    <VBtn icon="ri-edit-line" variant="elevated" size="small" color="primary"
+                                        @click="openEditDialog(transfer)" title="Editar">
+                                        <VIcon icon="ri-edit-line" />
+                                    </VBtn>
+                                    <VBtn icon="ri-delete-bin-line" variant="elevated" size="small" color="error"
+                                        @click="deleteTransfer(transfer)" title="Eliminar">
+                                        <VIcon icon="ri-delete-bin-line" />
+                                    </VBtn>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </VTable>
@@ -227,5 +298,38 @@ onMounted(() => {
     </div>
 
     <!-- Modal de transferencias -->
-    <TransferDialog v-model="showTransferDialog" @transferred="onTransferred" />
+    <TransferDialog v-model="showTransferDialog" :transfer-data="editingTransfer" @transferred="onTransferred" />
+
+    <!-- Modal Confirmar Eliminación -->
+    <VDialog v-model="showDeleteDialog" max-width="400">
+        <VCard>
+            <VCardTitle class="pa-4 pb-2">
+                <div class="d-flex align-center justify-space-between">
+                    <div class="d-flex align-center gap-2">
+                        <VIcon color="error" size="24">ri-delete-bin-line</VIcon>
+                        <span class="text-h6 font-weight-bold">Eliminar Transferencia</span>
+                    </div>
+                    <VBtn icon="ri-close-line" variant="text" size="small" @click="closeDeleteDialog" />
+                </div>
+            </VCardTitle>
+            <VDivider />
+            <VCardText class="pa-4">
+                <div class="text-body-1 mb-2">
+                    ¿Estás seguro de eliminar esta transferencia por <strong>{{ formatCurrency(transferToDelete?.amount)
+                        }}</strong>?
+                </div>
+                <div class="text-medium-emphasis text-body-2">
+                    Esta acción no se puede deshacer y los saldos volverán a su estado anterior.
+                </div>
+            </VCardText>
+            <VDivider />
+            <VCardActions class="pa-4 d-flex justify-end">
+                <VBtn variant="outlined" @click="closeDeleteDialog" :disabled="loading">Cancelar</VBtn>
+                <VBtn color="error" variant="elevated" @click="confirmDeleteTransfer" :loading="loading"
+                    prepend-icon="ri-delete-bin-line">
+                    Eliminar
+                </VBtn>
+            </VCardActions>
+        </VCard>
+    </VDialog>
 </template>
