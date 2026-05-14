@@ -49,6 +49,7 @@ export default [
       },
     ]
   },
+  { heading: 'Configuraciones' },
   {
     title: 'Configuraciones',
     icon: { icon: 'ri-tools-line' },

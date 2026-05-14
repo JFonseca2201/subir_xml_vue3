@@ -6,37 +6,35 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 
-// Router y seguridad
+// --- Router y Seguridad ---
 const router = useRouter()
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 
-// Obtener usuario actual del localStorage
 const currentUser = computed(() => {
     const userStr = localStorage.getItem('user')
     return userStr ? JSON.parse(userStr) : null
 })
 
-// Validación de seguridad - solo rol_id === 1 puede acceder
 const canAccessOperations = computed(() => {
     const user = currentUser.value
     const roleId = user?.role?.id
-    console.log('🔍 Debug - Usuario actual:', user)
-    console.log('🔍 Debug - role:', user?.role)
-    console.log('🔍 Debug - role.id:', roleId)
-    console.log('🔍 Debug - Tipo de role.id:', typeof roleId)
-    console.log('🔍 Debug - ¿Puede acceder?:', user && roleId === 1)
     return user && roleId === 1
 })
 
-// Estado del componente
-const operations = ref([])
-const loading = ref(false)
+// --- Estado del Componente ---
+const recentMovements = ref([]) // Datos agrupados para el template
 const isTransferDialogVisible = ref(false)
 
-// Datos para las cards principales
-const mainCards = ref([
+const financialSummary = ref({
+    monthlyIncome: 0,
+    monthlyExpense: 0,
+    currentBalance: 0,
+    lastTransfer: { amount: 0, from: 'N/A', to: 'N/A', date: '-' },
+    alerts: []
+})
 
+const mainCards = [
     {
         title: 'Socios',
         description: 'Aportes de capital',
@@ -63,127 +61,119 @@ const mainCards = ref([
     },
     {
         title: 'Transferencias internas',
-        description: 'Transferencias entre cuentas de la compañia',
+        description: 'Transferencias entre cuentas',
         icon: 'ri-arrow-left-right-line',
         color: '#8B5CF6',
-        buttonText: 'Nueva transferecia',
+        buttonText: 'Nueva transferencia',
         action: 'transfer'
     }
-])
+]
 
-// Datos de movimientos recientes agrupados por día
-const recentMovements = ref([
-    {
-        date: 'Hoy',
-        movements: [
-            {
-                id: 1,
-                type: 'income',
-                description: 'Pago de cliente #1234',
-                amount: 1250.00,
-                account: 'Banco Guayaquil',
-                method: 'transfer',
-                time: '14:30'
-            },
-            {
-                id: 2,
-                type: 'expense',
-                description: 'Compra de insumos',
-                amount: 450.00,
-                account: 'Caja Chica',
-                method: 'cash',
-                time: '10:15'
+// --- Lógica de Procesamiento ---
+
+// Agrupa la lista plana del backend en el formato que requiere el v-for anidado
+const groupMovementsByDate = (movements) => {
+    if (!movements || !Array.isArray(movements)) return []
+
+    const groups = {}
+    movements.forEach(m => {
+        const rawDate = m.entry_date || 'Sin fecha'
+        const dateKey = rawDate !== 'Sin fecha' ? rawDate.split('T')[0] : 'Sin fecha'
+
+        if (!groups[dateKey]) {
+            let displayDate = 'Sin fecha'
+            if (rawDate !== 'Sin fecha') {
+                displayDate = new Intl.DateTimeFormat('es-EC', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    timeZone: 'UTC'
+                }).format(new Date(rawDate))
+                // Capitalizar primera letra
+                displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1)
             }
-        ]
-    },
-    {
-        date: 'Ayer',
-        movements: [
-            {
-                id: 3,
-                type: 'income',
-                description: 'Venta de servicios',
-                amount: 890.00,
-                account: 'Banco Guayaquil',
-                method: 'transfer',
-                time: '16:45'
-            },
-            {
-                id: 4,
-                type: 'expense',
-                description: 'Pago de servicios básicos',
-                amount: 320.00,
-                account: 'Banco Guayaquil',
-                method: 'transfer',
-                time: '09:20'
+            groups[dateKey] = { dateKey, date: displayDate, movements: [] }
+        }
+
+        // 1. Extraer y mejorar la descripción
+        let finalDesc = m.description || m.movable?.descripcion || 'Movimiento General'
+        if (finalDesc.trim().endsWith(':') && m.movable?.descripcion) {
+            // Une descripciones cortadas, ej: "Aporte de socio: " + "APORTE DE CAPITAL"
+            finalDesc = `${finalDesc.trim()} ${m.movable.descripcion}`
+        }
+
+        // 2. Extraer el origen/módulo de forma legible
+        let moduleName = 'General'
+        if (m.movable_type) {
+            const type = m.movable_type.split('\\').pop()
+            const typeMap = { 'AporteCapital': 'Aporte de Capital', 'EmployeeExpense': 'Gasto de Empleado', 'Income': 'Ingreso Manual', 'Expense': 'Egreso Manual' }
+            moduleName = typeMap[type] || type
+        }
+
+        // 3. Extraer el método de pago real priorizando metadata o movable
+        let method = m.metadata?.metodo || m.movable?.metodo_pago || m.movable?.payment_method || m.metadata?.payment_method || m.payment_method || 'EFECTIVO'
+
+        method = method.toUpperCase()
+        if (method === 'TRANSFER') method = 'TRANSFERENCIA'
+        if (method === 'CASH') method = 'EFECTIVO'
+
+        groups[dateKey].movements.push({
+            id: m.id,
+            type: m.type, // 'income' | 'expense'
+            description: finalDesc,
+            module: moduleName,
+            method: method,
+            time: m.created_at ? new Date(m.created_at).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+            amount: parseFloat(m.amount || 0)
+        })
+    })
+
+    // Ordenar por fecha descendente
+    return Object.values(groups).sort((a, b) => {
+        if (a.dateKey === 'Sin fecha') return 1;
+        if (b.dateKey === 'Sin fecha') return -1;
+        return new Date(b.dateKey) - new Date(a.dateKey);
+    })
+}
+
+const dashboardOptions = async () => {
+    loader.start()
+    try {
+        const response = await $api('/dashboard-financiero')
+        console.log(response);
+
+        // Asignar el resumen del backend al estado
+        if (response.summary) {
+            financialSummary.value = {
+                ...financialSummary.value,
+                monthlyIncome: response.summary.monthlyIncome,
+                monthlyExpense: response.summary.monthlyExpense,
+                currentBalance: response.summary.currentBalance
             }
-        ]
-    },
-    {
-        date: 'Lunes 5 Mayo',
-        movements: [
-            {
-                id: 5,
-                type: 'income',
-                description: 'Ingreso por ventas',
-                amount: 2100.00,
-                account: 'Caja Chica',
-                method: 'cash',
-                time: '18:30'
-            }
-        ]
-    }
-])
+        }
 
-// Datos del panel inteligente
-const financialSummary = ref({
-    monthlyIncome: 15420.00,
-    monthlyExpense: 8750.00,
-    currentBalance: 6670.00,
-    lastTransfer: {
-        amount: 500.00,
-        from: 'Banco Guayaquil',
-        to: 'Caja Chica',
-        date: '2026-05-04'
-    },
-    alerts: [
-        'Gastos elevados esta semana'
-    ]
-})
+        // Procesar movimientos recientes
+        recentMovements.value = groupMovementsByDate(response.movements)
 
-// Datos para el gráfico
-const chartData = ref([
-    { week: 'Sem 1', income: 3200, expense: 2100 },
-    { week: 'Sem 2', income: 4100, expense: 2800 },
-    { week: 'Sem 3', income: 3800, expense: 2200 },
-    { week: 'Sem 4', income: 4320, expense: 1650 }
-])
-
-// Funciones de acción
-const handleCardAction = (action) => {
-    switch (action) {
-        case 'employee-expenses':
-            //showNotification('Navegando a Gestión de Pagos...', 'info')
-            router.push('/finanzas/employee-expenses')
-            break
-        case 'register-contribution':
-            //showNotification('Navegando a Aportes de Capital...', 'info')
-            router.push({ name: 'aportes-index' })
-            break
-        case 'movements-index':
-            //showNotification('Función de Nuevo Movimiento en desarrollo', 'info')
-            console.log("Dirigiendose a movimientos");
-
-            router.push({ name: 'movements-index' })
-            break
-        case 'transfer':
-            console.log(router.getRoutes());
-            router.push('/transfers');
-            break
+    } catch (error) {
+        console.error('Error al cargar datos del dashboard:', error)
+        showNotification('No se pudieron cargar los datos financieros', 'error')
+    } finally {
+        loader.stop()
     }
 }
 
-// Formatear moneda
+// --- Utilidades ---
+const handleCardAction = (action) => {
+    switch (action) {
+        case 'employee-expenses': router.push('/finanzas/employee-expenses'); break
+        case 'register-contribution': router.push({ name: 'aportes-index' }); break
+        case 'movements-index': router.push({ name: 'movements-index' }); break
+        case 'transfer': isTransferDialogVisible.value = true; break
+    }
+}
+
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-EC', {
         style: 'currency',
@@ -191,13 +181,13 @@ const formatCurrency = (value) => {
     }).format(value)
 }
 
-// Montar componente - la carga se maneja en el watch
 onMounted(() => {
-    console.log('🚀 Dashboard de Operaciones montado - Usuario actual:', currentUser.value)
+    dashboardOptions()
 })
 </script>
 
 <template>
+    <!-- Pantalla de Bloqueo -->
     <div v-if="!canAccessOperations" class="d-flex justify-center align-center" style="height: 400px">
         <VCard class="pa-6 text-center">
             <VIcon size="64" color="error" class="mb-4">ri-lock-line</VIcon>
@@ -209,8 +199,8 @@ onMounted(() => {
         </VCard>
     </div>
 
+    <!-- Dashboard Principal -->
     <div v-else class="dashboard-container">
-        <!-- Header -->
         <div class="dashboard-header">
             <div class="header-content">
                 <i class="ri-exchange-funds-line header-icon"></i>
@@ -219,7 +209,7 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- SECCIÓN SUPERIOR - CARDS PRINCIPALES -->
+        <!-- Cards de Acceso Rápido -->
         <div class="main-cards-section">
             <div class="cards-grid">
                 <div v-for="card in mainCards" :key="card.title" class="main-card"
@@ -239,42 +229,60 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- SECCIÓN INFERIOR - LAYOUT EN 2 COLUMNAS -->
         <div class="content-section">
-            <!-- COLUMNA IZQUIERDA: MOVIMIENTOS RECIENTES -->
+            <!-- Columna Movimientos -->
             <div class="movements-column">
                 <div class="section-header">
                     <i class="ri-history-line"></i>
                     <h2>Movimientos Recientes</h2>
                 </div>
-                <div class="movements-list">
-                    <div v-for="day in recentMovements" :key="day.date" class="day-group">
+
+                <div v-if="recentMovements.length === 0" class="pa-5 text-center text-secondary">
+                    No hay movimientos registrados este mes.
+                </div>
+
+                <div class="movements-list" style="max-height: 500px; overflow-y: auto; text-transform: capitalize;">
+                    <div v-for="day in recentMovements" :key="day.dateKey" class="day-group">
                         <div class="day-header">{{ day.date }}</div>
+
                         <div v-for="movement in day.movements" :key="movement.id" class="movement-item">
+                            <!-- Icono -->
                             <div class="movement-icon" :class="movement.type">
                                 <i :class="movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'"></i>
                             </div>
-                            <div class="movement-details">
+
+                            <!-- Detalles (Este debe tener flex: 1 para empujar el monto a la derecha) -->
+                            <div class="movement-details" style="flex: 1;">
                                 <div class="movement-description">{{ movement.description }}</div>
                                 <div class="movement-meta">
-                                    <span class="movement-account">{{ movement.account }}</span>
-                                    <span class="movement-method">{{ movement.method === 'cash' ? 'Efectivo' :
-                                        'Transferencia' }}</span>
-                                    <span class="movement-time">{{ movement.time }}</span>
+                                    <span class="movement-account" style="display:flex; align-items:center; gap: 4px;">
+                                        <i class="ri-folder-open-line"></i> {{ movement.module }}
+                                    </span>
+                                    <span class="separator">•</span>
+                                    <span class="movement-method" style="display:flex; align-items:center; gap: 4px;">
+                                        <i
+                                            :class="movement.method === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'"></i>
+                                        {{ movement.method === 'TRANSFERENCIA' ? 'Transferencia' : 'Efectivo' }}
+                                    </span>
+                                    <span class="separator">•</span>
+                                    <span class="movement-time" style="display:flex; align-items:center; gap: 4px;">
+                                        <i class="ri-time-line"></i> {{ movement.time }}
+                                    </span>
                                 </div>
                             </div>
+
+                            <!-- Monto alineado a la derecha -->
                             <div class="movement-amount" :class="movement.type">
-                                {{ movement.type === 'income' ? '+' : '-' }}${{
-                                    formatCurrency(movement.amount).replace('$', '') }}
+                                {{ movement.type === 'income' ? '+' : '-' }}
+                                {{ formatCurrency(movement.amount) }}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: PANEL INTELIGENTE -->
+            <!-- Columna Lateral -->
             <div class="panel-column">
-                <!-- Resumen Financiero -->
                 <div class="panel-card">
                     <div class="panel-header">
                         <i class="ri-pie-chart-line"></i>
@@ -284,12 +292,12 @@ onMounted(() => {
                         <div class="summary-item">
                             <span class="summary-label">Ingresos del mes</span>
                             <span class="summary-value income">{{ formatCurrency(financialSummary.monthlyIncome)
-                                }}</span>
+                            }}</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">Egresos del mes</span>
                             <span class="summary-value expense">{{ formatCurrency(financialSummary.monthlyExpense)
-                                }}</span>
+                            }}</span>
                         </div>
                         <div class="summary-item total">
                             <span class="summary-label">Balance actual</span>
@@ -298,8 +306,6 @@ onMounted(() => {
                     </div>
                 </div>
 
-
-                <!-- Información Adicional -->
                 <div class="panel-card">
                     <div class="panel-header">
                         <i class="ri-information-line"></i>
@@ -312,7 +318,6 @@ onMounted(() => {
                                 <div class="info-label">Última transferencia</div>
                                 <div class="info-value">
                                     {{ formatCurrency(financialSummary.lastTransfer.amount) }}
-                                    {{ financialSummary.lastTransfer.from }} → {{ financialSummary.lastTransfer.to }}
                                 </div>
                                 <div class="info-date">{{ financialSummary.lastTransfer.date }}</div>
                             </div>
@@ -326,18 +331,16 @@ onMounted(() => {
             </div>
         </div>
 
-        <!-- Diálogos -->
         <TransferDialog v-model="isTransferDialogVisible" />
     </div>
 </template>
 
 <style scoped>
-/* Variables de color */
-:root {
+/* Tu CSS se mantiene igual, es excelente */
+.dashboard-container {
     --primary-color: #3B82F6;
     --success-color: #10B981;
     --warning-color: #F59E0B;
-    --info-color: #8B5CF6;
     --expense-color: #EF4444;
     --income-color: #10B981;
     --background: #F8FAFC;
@@ -345,52 +348,28 @@ onMounted(() => {
     --text-primary: #1E293B;
     --text-secondary: #64748B;
     --border-color: #E2E8F0;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
-/* Contenedor principal */
-.dashboard-container {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--background);
     min-height: 100vh;
     padding: 24px;
 }
 
-/* Header */
 .dashboard-header {
-    margin-bottom: 32px;
-}
-
-.header-content {
     text-align: center;
+    margin-bottom: 32px;
 }
 
 .header-icon {
     font-size: 48px;
     color: var(--primary-color);
-    margin-bottom: 16px;
 }
 
 .header-title {
     font-size: 32px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 0 0 8px 0;
-    line-height: 1.2;
-}
-
-.header-subtitle {
-    font-size: 16px;
-    color: var(--text-secondary);
-    margin: 0;
-    font-weight: 400;
-}
-
-/* SECCIÓN SUPERIOR - CARDS PRINCIPALES */
-.main-cards-section {
-    margin-bottom: 48px;
 }
 
 .cards-grid {
@@ -403,220 +382,114 @@ onMounted(() => {
 .main-card {
     background: var(--surface);
     border-radius: 16px;
-    padding: 32px;
+    padding: 24px;
     box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.main-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--card-color);
+    border-top: 4px solid var(--card-color);
+    transition: transform 0.2s;
 }
 
 .main-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
 }
 
 .card-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     background: var(--card-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
-}
-
-.card-icon i {
-    font-size: 24px;
+    margin-bottom: 16px;
     color: white;
-}
-
-.card-content {
-    text-align: left;
-}
-
-.card-title {
     font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-}
-
-.card-description {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0 0 24px 0;
-    line-height: 1.5;
 }
 
 .card-button {
     background: var(--card-color);
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
     width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 8px;
 }
 
-.card-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.card-button i {
-    font-size: 16px;
-}
-
-/* SECCIÓN INFERIOR - LAYOUT EN 2 COLUMNAS */
 .content-section {
     display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 32px;
+    grid-template-columns: 1fr 380px;
+    gap: 30px;
 }
 
-/* COLUMNA IZQUIERDA: MOVIMIENTOS RECIENTES */
-.movements-column {
+.movements-column,
+.panel-card {
     background: var(--surface);
     border-radius: 16px;
     padding: 24px;
-    box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-}
-
-.section-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.section-header i {
-    font-size: 24px;
-    color: var(--primary-color);
-}
-
-.section-header h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.movements-list {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.day-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    box-shadow: var(--shadow-md);
 }
 
 .day-header {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 8px 0;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 12px;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 .movement-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: var(--background);
-    border-radius: 12px;
-    transition: all 0.2s ease;
-}
-
-.movement-item:hover {
-    background: #F1F5F9;
-}
-
-.movement-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.movement-icon.income {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--income-color);
-}
-
-.movement-icon.expense {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--expense-color);
-}
-
-.movement-icon i {
-    font-size: 18px;
-}
-
-.movement-details {
-    flex: 1;
-    min-width: 0;
+    gap: 15px;
+    padding: 12px;
+    background: #fbfcfd;
+    border-radius: 10px;
+    margin-bottom: 10px;
 }
 
 .movement-description {
-    font-size: 14px;
     font-weight: 500;
+    font-size: 14px;
     color: var(--text-primary);
-    margin-bottom: 4px;
 }
 
 .movement-meta {
     display: flex;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
     font-size: 12px;
     color: var(--text-secondary);
+    margin-top: 4px;
 }
 
-.movement-account {
-    font-weight: 500;
+.movement-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.movement-method {
-    padding: 2px 6px;
-    background: var(--border-color);
-    border-radius: 4px;
-    font-size: 11px;
+.movement-icon.income {
+    background: #e6f7f0;
+    color: var(--income-color);
+}
+
+.movement-icon.expense {
+    background: #fdeeee;
+    color: var(--expense-color);
 }
 
 .movement-amount {
-    font-size: 16px;
-    font-weight: 600;
-    flex-shrink: 0;
+    font-weight: 700;
 }
 
 .movement-amount.income {
@@ -627,267 +500,22 @@ onMounted(() => {
     color: var(--expense-color);
 }
 
-/* COLUMNA DERECHA: PANEL INTELIGENTE */
-.panel-column {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.panel-card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-}
-
-.panel-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.panel-header i {
-    font-size: 20px;
-    color: var(--primary-color);
-}
-
-.panel-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-/* Resumen Financiero */
-.summary-items {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
 .summary-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.summary-item:last-child {
-    border-bottom: none;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .summary-item.total {
-    padding-top: 16px;
     border-top: 2px solid var(--primary-color);
-    border-bottom: none;
+    margin-top: 10px;
+    font-weight: 700;
 }
 
-.summary-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.summary-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.summary-value.income {
-    color: var(--income-color);
-}
-
-.summary-value.expense {
-    color: var(--expense-color);
-}
-
-/* Gráfico */
-.chart-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.chart-bars {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    height: 120px;
-    gap: 8px;
-}
-
-.chart-bar-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-}
-
-.bar {
-    width: 100%;
-    min-height: 8px;
-    border-radius: 4px 4px 0 0;
-    transition: height 0.3s ease;
-}
-
-.bar.income {
-    background: var(--income-color);
-}
-
-.bar.expense {
-    background: var(--expense-color);
-}
-
-.bar-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-align: center;
-}
-
-.chart-legend {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-}
-
-.legend-color.income {
-    background: var(--income-color);
-}
-
-.legend-color.expense {
-    background: var(--expense-color);
-}
-
-/* Información Adicional */
-.additional-info {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.info-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px;
-    background: var(--background);
-    border-radius: 8px;
-}
-
-.info-item i {
-    color: var(--primary-color);
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.info-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 2px;
-}
-
-.info-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-}
-
-.info-date {
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-
-.alert-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: rgba(245, 158, 11, 0.1);
-    border-radius: 8px;
-    color: var(--warning-color);
-    font-size: 13px;
-}
-
-.alert-item i {
-    font-size: 14px;
-    flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 1000px) {
     .content-section {
         grid-template-columns: 1fr;
-        gap: 24px;
-    }
-
-    .panel-column {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 24px;
-    }
-}
-
-@media (max-width: 768px) {
-    .dashboard-container {
-        padding: 16px;
-    }
-
-    .cards-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .main-card {
-        padding: 24px;
-    }
-
-    .content-section {
-        gap: 20px;
-    }
-
-    .movement-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .movement-amount {
-        align-self: flex-end;
-    }
-}
-
-@media (max-width: 480px) {
-    .header-title {
-        font-size: 24px;
-    }
-
-    .card-button {
-        padding: 14px 16px;
-        font-size: 13px;
-    }
-
-    .movement-meta {
-        flex-wrap: wrap;
-        gap: 8px;
     }
 }
 </style>

@@ -50,6 +50,12 @@ const show = computed({
     set: (value) => emit('update:modelValue', value)
 })
 
+const selectedEmployeeSalary = computed(() => {
+    if (!form.value.employee_id) return 0
+    const emp = employees.value.find(e => e.id === form.value.employee_id)
+    return emp ? parseFloat(emp.salary || 0) : 0
+})
+
 // Función para mostrar notificaciones toast
 const showToast = (message, type = 'info') => {
     // Crear elemento toast
@@ -282,13 +288,10 @@ watch(() => form.value.employee_id, async (employeeId) => {
         const employeeSalary = selectedEmployee ? parseFloat(selectedEmployee.salary) : 0
         const availableEarnings = earnings !== null ? earnings : employeeSalary
 
-        // Calcular monto máximo permitido (ganancias - adelantos)
-        const maxPaymentAmount = availableEarnings - totalPendingAdvances.value
-
-        // Establecer monto sugerido automáticamente
-        if (maxPaymentAmount > 0) {
-            form.value.amount = maxPaymentAmount.toFixed(2)
-            console.log(`Monto sugerido: $${maxPaymentAmount.toFixed(2)} (Disponible: $${availableEarnings.toFixed(2)} - Adelantos: $${totalPendingAdvances.value.toFixed(2)})`)
+        // Establecer el monto sugerido automáticamente al sueldo base sin deducciones
+        if (availableEarnings > 0) {
+            form.value.amount = availableEarnings.toFixed(2)
+            console.log(`Monto sugerido: $${availableEarnings.toFixed(2)} (El backend descontará los adelantos automáticamente)`)
         }
 
         // Mostrar mensaje sobre adelantos si hay
@@ -380,7 +383,7 @@ onMounted(() => {
                                 :rules="[
                                     v => !!v || 'El monto es requerido',
                                     v => v > 0 || 'El monto debe ser mayor a 0'
-                                ]" variant="outlined" density="comfortable">
+                                ]" variant="outlined" density="comfortable" disabled>
                                 <template #prepend-inner>
                                     <VIcon color="primary" size="20">ri-money-dollar-box-line</VIcon>
                                 </template>
@@ -443,7 +446,7 @@ onMounted(() => {
 
 
                         <!-- Método de Pago -->
-                        <VCol cols="12" md="6">
+                        <VCol cols="12" md="6" v-show="false">
                             <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text"
                                 item-value="value" label="Método de Pago *" placeholder="Selecciona método"
                                 :rules="[v => !!v || 'El método de pago es requerido']" variant="outlined"
@@ -452,6 +455,19 @@ onMounted(() => {
                                     <VIcon color="primary" size="20">ri-money-dollar-circle-line</VIcon>
                                 </template>
                             </VSelect>
+                        </VCol>
+
+                        <!-- Sueldo Base (Reemplazo temporal) -->
+                        <VCol cols="12" md="6">
+                            <VCard v-if="form.employee_id" variant="tonal" color="success"
+                                class="h-100 d-flex flex-column align-center justify-center pa-2"
+                                style="border: 1px dashed currentColor; min-height: 56px;">
+                                <div class="text-caption font-weight-bold text-uppercase mb-1" style="line-height: 1;">
+                                    A Recibir (Sueldo - Adelantos)</div>
+                                <div class="text-h6 font-weight-black">${{ Math.max(0, selectedEmployeeSalary -
+                                    totalPendingAdvances).toFixed(2)
+                                }}</div>
+                            </VCard>
                         </VCol>
 
                         <!-- Fecha -->

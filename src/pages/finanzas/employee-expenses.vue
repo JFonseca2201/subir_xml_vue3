@@ -141,39 +141,7 @@ const loadExpenses = async () => {
 
     } catch (error) {
         console.error('Error al cargar gastos de empleados:', error)
-        // En caso de error, cargar datos mock como fallback
-        const fallbackData = {
-            payments: [
-                {
-                    id: 1,
-                    employee_name: 'CRISTIAN AGUIRRE',
-                    amount: 500,
-                    description: 'pago gerente general',
-                    account_name: 'Bancos',
-                    payment_method: 'TRANSFERENCIA',
-                    date: '05/05/2026',
-                    created_by: 'Super-Admin',
-                    type: 'payment'
-                },
-                {
-                    id: 2,
-                    employee_name: 'JUAN FONSECA',
-                    amount: 250,
-                    description: 'pago mensual',
-                    account_name: 'Bancos',
-                    payment_method: 'TRANSFERENCIA',
-                    date: '05/05/2026',
-                    created_by: 'Super-Admin',
-                    type: 'payment'
-                }
-            ],
-            advances: [],
-            summary: {
-                total_payments: 750,
-                total_advances: 0,
-                total_general: 750
-            }
-        }
+        showNotification('Error al cargar los gastos de empleados. Por favor, intenta nuevamente.', 'error')
 
         const allExpenses = [
             ...(fallbackData.payments || []),
@@ -406,7 +374,7 @@ onMounted(() => {
         <!-- Header -->
         <div class="d-flex justify-space-between align-center mb-6">
             <div>
-                <h2 class="text-h4 font-weight-bold">Gastos de Empleados</h2>
+                <h2 class="text-h4 font-weight-bold">Pagos</h2>
                 <p class="text-medium-emphasis mb-0">Gestiona los pagos y adelantos a empleados</p>
             </div>
             <div class="d-flex gap-3">
@@ -596,15 +564,42 @@ onMounted(() => {
         </VCard>
 
         <!-- Diálogos -->
-        <AddEmployeeAdvanceDialog v-model="showAddAdvanceDialog" :accounts="[]" @created="handleAdvanceCreated" />
-        <AddEmployeePaymentDialog v-model="showAddPaymentDialog" :accounts="[]" @created="handlePaymentCreated" />
-        <EditEmployeeAdvanceDialog v-model="showEditAdvanceDialog" :expense="selectedAdvance"
-            @updated="handleAdvanceUpdated" />
-        <DeleteEmployeeAdvanceDialog v-model="showDeleteAdvanceDialog" :advance="selectedAdvance"
-            @deleted="handleAdvanceDeleted" />
-        <EditEmployeePaymentDialog v-model="showEditPaymentDialog" :expense="selectedPayment"
-            @updated="handlePaymentUpdated" />
-        <DeleteEmployeePaymentDialog v-model="showDeletePaymentDialog" :payment="selectedPayment"
-            @deleted="handlePaymentDeleted" />
+        <AddEmployeeAdvanceDialog v-if="showAddAdvanceDialog" v-model="showAddAdvanceDialog" :accounts="[]"
+            @created="handleAdvanceCreated" />
+        <AddEmployeePaymentDialog v-if="showAddPaymentDialog" v-model="showAddPaymentDialog" :accounts="[]"
+            @created="handlePaymentCreated" />
+        <EditEmployeeAdvanceDialog v-if="showEditAdvanceDialog" v-model="showEditAdvanceDialog"
+            :expense="selectedAdvance" @updated="handleAdvanceUpdated" />
+        <DeleteEmployeeAdvanceDialog v-if="showDeleteAdvanceDialog" :advance="selectedAdvance"
+            v-model="showDeleteAdvanceDialog" @deleted="handleAdvanceDeleted" />
+        <EditEmployeePaymentDialog v-if="showEditPaymentDialog" v-model="showEditPaymentDialog"
+            :expense="selectedPayment" @updated="handlePaymentUpdated" />
+        <DeleteEmployeePaymentDialog v-if="showDeletePaymentDialog" v-model="showDeletePaymentDialog"
+            :payment="selectedPayment" @deleted="handlePaymentDeleted" />
     </div>
 </template>
+
+<style scoped>
+.expense-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.expense-table th {
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.expense-table td {
+    padding: 18px 12px;
+    /* Mayor separación vertical (arriba y abajo) */
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.expense-row:hover td {
+    background-color: rgba(var(--v-theme-on-surface), 0.04);
+}
+</style>

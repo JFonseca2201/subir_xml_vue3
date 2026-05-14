@@ -209,9 +209,14 @@ onMounted(() => {
                                     label="Empleado" placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
                             </VCol>
 
-                            <VCol cols="12">
+                            <VCol cols="6">
                                 <VSelect v-model="form.account_id" :items="accounts" item-title="name" item-value="id"
                                     label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]" required />
+                            </VCol>
+                            <VCol cols="6">
+                                <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text"
+                                    item-value="value" label="Método de Pago" placeholder="Seleccionar método de pago"
+                                    :rules="[v => !!v]" required />
                             </VCol>
 
                             <VCol cols="12">
@@ -224,21 +229,17 @@ onMounted(() => {
                                     placeholder="Descripción del adelanto" :rules="[v => !!v]" />
                             </VCol>
 
-                            <VCol cols="12">
+                            <VCol cols="6">
                                 <VTextField v-model="form.advance_date" label="Fecha" type="date" :rules="[v => !!v]"
                                     required />
                             </VCol>
 
-                            <VCol cols="12">
+                            <VCol cols="6">
                                 <VTextField v-model="form.payment_date" label="Fecha de Pago" type="date"
                                     :rules="[v => !!v]" required />
                             </VCol>
 
-                            <VCol cols="12">
-                                <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text"
-                                    item-value="value" label="Método de Pago" placeholder="Seleccionar método de pago"
-                                    :rules="[v => !!v]" required />
-                            </VCol>
+
                         </VRow>
 
                     </VCardText>
