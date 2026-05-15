@@ -43,7 +43,7 @@ const role_selected_edit = ref(null);
 const role_selected_delete = ref(null);
 
 const list = async () => {
-    isLoading.value = true;
+    loader.start();
     try {
         const resp = await $api("role?search=" + (seachQuery.value ? seachQuery.value : ''), {
             method: 'GET',
@@ -61,7 +61,7 @@ const list = async () => {
         console.log(error);
         showNotification('Error al cargar la lista de roles', 'error');
     } finally {
-        isLoading.value = false;
+        loader.stop();
     }
 }
 
@@ -170,7 +170,7 @@ onMounted(() => {
                 <VCol cols="12" md="5">
                     <VTextField label="Buscar rol" placeholder="Ej: Administrador" prepend-inner-icon="ri-search-line"
                         clearable density="comfortable" variant="outlined" hide-details @keyup.enter="list"
-                        v-model="seachQuery" />
+                        v-model="seachQuery" :loading="loader.loading" />
                 </VCol>
 
                 <VCol cols="12" md="4" class="d-flex justify-end gap-3">
@@ -186,7 +186,7 @@ onMounted(() => {
 
             <!-- Tabla -->
             <VDataTable :headers="headers" :items="list_roles" :items-per-page="10"
-                class="text-no-wrap elevation-1 rounded-lg">
+                class="text-no-wrap elevation-1 rounded-lg" :loading="loader.loading">
                 <template #item.id="{ item }">
                     <span color="primary" variant="tonal" size="small">
                         {{ item.id }}

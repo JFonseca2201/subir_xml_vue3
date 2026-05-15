@@ -367,9 +367,13 @@ onMounted(() => {
             </VCol>
         </VRow>
 
+        <!-- Estado de carga -->
+        <div v-if="loader.loading" class="text-center pa-12">
+            <VProgressCircular indeterminate color="primary" size="48" width="4" />
+        </div>
 
         <!-- Movimientos Agrupados por Día -->
-        <div v-if="!loader.loading && groupedMovements.length > 0">
+        <div v-else-if="groupedMovements.length > 0">
             <VCard v-for="day in groupedMovements" :key="day.date" class="mb-6">
                 <VCardTitle class="pa-4 bg-grey-lighten-4">
                     <div class="d-flex justify-space-between align-center">
@@ -449,12 +453,6 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-if="!loader.loading && incomeMovements.length === 0 && expenseMovements.length === 0"
-            class="text-center pa-12">
-            <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
-            <h3 class="text-h5 mb-2">No hay movimientos registrados</h3>
-            <p class="text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
-        </div>
         <div v-if="!loader.loading && incomeMovements.length === 0 && expenseMovements.length === 0"
             class="text-center pa-12">
             <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>

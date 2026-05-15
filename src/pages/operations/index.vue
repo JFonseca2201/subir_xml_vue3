@@ -24,6 +24,7 @@ const canAccessOperations = computed(() => {
 
 // --- Estado del Componente ---
 const recentMovements = ref([]) // Datos agrupados para el template
+const loading = ref(true)
 const isTransferDialogVisible = ref(false)
 
 const financialSummary = ref({
@@ -139,6 +140,7 @@ const groupMovementsByDate = (movements) => {
 
 const dashboardOptions = async () => {
     loader.start()
+    loading.value = true
     try {
         const response = await $api('/dashboard-financiero')
         console.log(response);
@@ -160,6 +162,7 @@ const dashboardOptions = async () => {
         console.error('Error al cargar datos del dashboard:', error)
         showNotification('No se pudieron cargar los datos financieros', 'error')
     } finally {
+        loading.value = false
         loader.stop()
     }
 }
@@ -209,27 +212,45 @@ onMounted(() => {
             </div>
         </div>
 
+
         <!-- Cards de Acceso Rápido -->
         <div class="main-cards-section">
             <div class="cards-grid">
                 <div v-for="card in mainCards" :key="card.title" class="main-card"
                     :style="{ '--card-color': card.color }">
-                    <div class="card-icon">
-                        <i :class="card.icon"></i>
+
+                    <!-- Contenedor alineado al centro verticalmente -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; height: 40px;">
+
+                        <!-- Izquierda: Caja del Icono -->
+                        <div class="card-icon"
+                            style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; font-size: 1.5rem; box-sizing: border-box;">
+                            <i :class="card.icon"></i>
+                        </div>
+
+                        <!-- Derecha: Botón Flecha (idéntico en altura y comportamiento de caja) -->
+                        <button @click="handleCardAction(card.action)" class="card-button"
+                            style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 8px; padding: 0; border: none; margin: 0; cursor: pointer; font-size: 1.2rem; box-sizing: border-box; line-height: 1;">
+                            <i class="ri-arrow-right-line"></i>
+                        </button>
+
                     </div>
+
                     <div class="card-content">
                         <h3 class="card-title">{{ card.title }}</h3>
                         <p class="card-description">{{ card.description }}</p>
-                        <button @click="handleCardAction(card.action)" class="card-button">
-                            {{ card.buttonText }}
-                            <i class="ri-arrow-right-line"></i>
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="content-section">
+        <!-- Estado de Carga -->
+        <div v-if="loading" class="d-flex justify-center align-center py-12 my-12">
+            <VProgressCircular indeterminate color="primary" size="48" width="5" />
+        </div>
+
+        <div v-else class="content-section">
             <!-- Columna Movimientos -->
             <div class="movements-column">
                 <div class="section-header">
@@ -241,7 +262,8 @@ onMounted(() => {
                     No hay movimientos registrados este mes.
                 </div>
 
-                <div class="movements-list" style="max-height: 500px; overflow-y: auto; text-transform: capitalize;">
+                <div v-else class="movements-list"
+                    style="max-height: 500px; overflow-y: auto; text-transform: capitalize;">
                     <div v-for="day in recentMovements" :key="day.dateKey" class="day-group">
                         <div class="day-header">{{ day.date }}</div>
 

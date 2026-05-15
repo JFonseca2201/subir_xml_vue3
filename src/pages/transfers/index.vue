@@ -59,18 +59,24 @@ const loadTransfers = async () => {
         transfers.value = dataArray
 
         // Cálculo del resumen en frontend (Respaldo por si la API no lo envía)
-        const today = new Date().toISOString().split('T')[0]
+        const todayObj = new Date()
+        const today = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0')
         const currentMonth = today.substring(0, 7)
 
         let totalHoy = 0, totalMes = 0, totalGeneral = 0
 
-        dataArray.forEach(t => {
-            const amount = parseFloat(t.amount || 0)
-            const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
+        dataArray.forEach(group => {
+            // Soporte dinámico para la nueva estructura agrupada (o si viene plana)
+            const items = group.transfers || [group]
 
-            totalGeneral += amount
-            if (tDate === today) totalHoy += amount
-            if (tDate.substring(0, 7) === currentMonth) totalMes += amount
+            items.forEach(t => {
+                const amount = parseFloat(t.amount || 0)
+                const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
+
+                totalGeneral += amount
+                if (tDate === today) totalHoy += amount
+                if (tDate.substring(0, 7) === currentMonth) totalMes += amount
+            })
         })
 
         resumen.value = response.resumen || {
@@ -142,8 +148,15 @@ const formatCurrency = (value) => {
 // Formatear Fecha
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })
+    try {
+        // Extraer solo la parte de la fecha (YYYY-MM-DD) para evitar el desfase de zona horaria
+        const datePart = dateString.split('T')[0].split(' ')[0]
+        const [year, month, day] = datePart.split('-')
+        const date = new Date(year, month - 1, day)
+        return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })
+    } catch (e) {
+        return dateString
+    }
 }
 
 // Montar componente
@@ -228,73 +241,88 @@ onMounted(() => {
         </VRow>
 
         <!-- Tabla de Historial -->
-        <VCard class="rounded-lg elevation-4">
-            <VCardTitle class="pa-4 pb-2">
-                <div class="d-flex align-center gap-2">
-                    <VIcon color="primary">ri-history-line</VIcon>
-                    <span class="text-h5 font-weight-bold">Historial de Transferencias</span>
-                </div>
-            </VCardTitle>
+        <div class="d-flex align-center gap-2 mb-4 mt-8">
+            <VIcon color="primary" size="32">ri-history-line</VIcon>
+            <span class="text-h5 font-weight-bold">Historial de Transferencias</span>
+        </div>
 
-            <VDivider />
+        <div v-if="loading" class="text-center pa-4">
+            <VProgressCircular indeterminate color="primary" />
+        </div>
 
-            <VCardText class="pa-0">
-                <VTable class="elevation-0">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Cuenta Origen</th>
-                            <th>Cuenta Destino</th>
-                            <th>Descripción / Motivo</th>
-                            <th>Monto</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody style="text-transform: uppercase;">
-                        <tr v-if="loading">
-                            <td colspan="6" class="text-center pa-4">
-                                <VProgressCircular indeterminate color="primary" />
-                            </td>
-                        </tr>
-                        <tr v-else-if="!transfers.length">
-                            <td colspan="6" class="text-center text-medium-emphasis py-8">
-                                <VIcon size="48" class="mb-2">ri-arrow-left-right-line</VIcon>
-                                <div class="text-h6 mb-1">No hay transferencias registradas</div>
-                            </td>
-                        </tr>
-                        <tr v-else v-for="transfer in transfers" :key="transfer.id">
-                            <td>{{ formatDate(transfer.transfer_date || transfer.created_at) }}</td>
-                            <td>
-                                <VChip color="error" variant="tonal" size="small">
-                                    <VIcon start icon="ri-arrow-up-line" />
-                                    {{ transfer.source_account?.name || 'Origen' }}
-                                </VChip>
-                            </td>
-                            <td>
-                                <VChip color="success" variant="tonal" size="small">
-                                    <VIcon start icon="ri-arrow-down-line" />
-                                    {{ transfer.destination_account?.name || 'Destino' }}
-                                </VChip>
-                            </td>
-                            <td>{{ transfer.description || 'Sin descripción' }}</td>
-                            <td class="font-weight-bold text-primary">{{ formatCurrency(transfer.amount) }}</td>
-                            <td class="text-center">
-                                <div class="d-flex justify-center gap-1">
-                                    <VBtn icon="ri-edit-line" variant="elevated" size="small" color="primary"
-                                        @click="openEditDialog(transfer)" title="Editar">
-                                        <VIcon icon="ri-edit-line" />
-                                    </VBtn>
-                                    <VBtn icon="ri-delete-bin-line" variant="elevated" size="small" color="error"
-                                        @click="deleteTransfer(transfer)" title="Eliminar">
-                                        <VIcon icon="ri-delete-bin-line" />
-                                    </VBtn>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </VTable>
-            </VCardText>
-        </VCard>
+        <div v-else-if="!transfers.length" class="text-center pa-12">
+            <VIcon size="64" color="medium-emphasis" class="mb-4">ri-arrow-left-right-line</VIcon>
+            <h3 class="text-h5 mb-2">No hay transferencias registradas</h3>
+            <p class="text-medium-emphasis">Comienza registrando tu primera transferencia</p>
+        </div>
+
+        <div v-else>
+            <VCard v-for="group in transfers" :key="group.label" class="mb-6">
+                <VCardTitle class="pa-4 bg-grey-lighten-4">
+                    <div class="d-flex justify-space-between align-center">
+                        <div>
+                            <h3 class="text-h6 font-weight-medium">
+                                <VIcon start icon="ri-calendar-line" size="small" />
+                                {{ group.label }}
+                            </h3>
+                            <p class="text-medium-emphasis text-body-2 mb-0">
+                                {{ group.transfers.length }} transferencia{{ group.transfers.length !== 1 ? 's' : '' }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="font-weight-bold text-primary">
+                                Total: {{formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount ||
+                                0), 0)) }}
+                            </div>
+                        </div>
+                    </div>
+                </VCardTitle>
+                <VDivider />
+                <VCardText class="pa-0">
+                    <VTable class="day-table">
+                        <thead>
+                            <tr>
+                                <th>Cuenta Origen</th>
+                                <th>Cuenta Destino</th>
+                                <th>Descripción / Motivo</th>
+                                <th>Monto</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody style="text-transform: uppercase;">
+                            <tr v-for="transfer in group.transfers" :key="transfer.id">
+                                <td>
+                                    <VChip color="error" variant="tonal" size="small">
+                                        <VIcon start icon="ri-arrow-up-line" />
+                                        {{ transfer.source_account?.name || 'Origen' }}
+                                    </VChip>
+                                </td>
+                                <td>
+                                    <VChip color="success" variant="tonal" size="small">
+                                        <VIcon start icon="ri-arrow-down-line" />
+                                        {{ transfer.destination_account?.name || 'Destino' }}
+                                    </VChip>
+                                </td>
+                                <td>{{ transfer.description || 'Sin descripción' }}</td>
+                                <td class="font-weight-bold text-primary">{{ formatCurrency(transfer.amount) }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-center gap-1">
+                                        <VBtn size="small" variant="text" color="primary"
+                                            @click="openEditDialog(transfer)" title="Editar">
+                                            <VIcon size="20">ri-edit-line</VIcon>
+                                        </VBtn>
+                                        <VBtn size="small" variant="text" color="error"
+                                            @click="deleteTransfer(transfer)" title="Eliminar">
+                                            <VIcon size="20">ri-delete-bin-line</VIcon>
+                                        </VBtn>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </VTable>
+                </VCardText>
+            </VCard>
+        </div>
     </div>
 
     <!-- Modal de transferencias -->
