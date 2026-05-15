@@ -46,8 +46,10 @@ export default [
         title: 'Operaciones',
         to: { name: 'operations-index' },
         icon: { icon: 'ri-exchange-funds-line' },
+        //activeMatch: 'operations-index',
+        activeMatch: /operations-index|transfers-index|employee-expenses-index|aportes-index|movements-index/,
       },
-    ]
+    ],
   },
   { heading: 'Configuraciones' },
   {

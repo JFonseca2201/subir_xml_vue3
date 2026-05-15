@@ -11,17 +11,17 @@ const dateRange = ref({
 
 const formatDate = (date) => {
     if (!date) return 'N/A'
-    
+
     try {
         const dateObj = new Date(date)
         if (isNaN(dateObj.getTime())) {
             return 'Fecha inválida'
         }
-        
+
         const day = String(dateObj.getDate()).padStart(2, '0')
         const month = String(dateObj.getMonth() + 1).padStart(2, '0')
         const year = dateObj.getFullYear()
-        
+
         return `${day}/${month}/${year}`
     } catch (error) {
         console.error('Error al formatear fecha:', error, date)
@@ -47,7 +47,7 @@ const loadReport = async () => {
             method: 'POST',
             body: dateRange.value
         })
-        
+
         reportData.value = response.data || response
         loading.value = false
     } catch (error) {
@@ -69,12 +69,12 @@ onMounted(() => {
     const today = new Date()
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-    
+
     dateRange.value = {
         start_date: firstDay.toISOString().split('T')[0],
         end_date: lastDay.toISOString().split('T')[0]
     }
-    
+
     loadReport()
 })
 </script>
@@ -109,19 +109,11 @@ onMounted(() => {
             <VCardText class="pa-4">
                 <VRow>
                     <VCol cols="12" md="6">
-                        <VTextField 
-                            v-model="dateRange.start_date" 
-                            label="Fecha Inicio" 
-                            type="date" 
-                            placeholder="YYYY-MM-DD"
-                            hide-details />
+                        <VTextField v-model="dateRange.start_date" label="Fecha Inicio" type="date"
+                            placeholder="YYYY-MM-DD" hide-details />
                     </VCol>
                     <VCol cols="12" md="6">
-                        <VTextField 
-                            v-model="dateRange.end_date" 
-                            label="Fecha Fin" 
-                            type="date" 
-                            placeholder="YYYY-MM-DD"
+                        <VTextField v-model="dateRange.end_date" label="Fecha Fin" type="date" placeholder="YYYY-MM-DD"
                             hide-details />
                     </VCol>
                 </VRow>
@@ -176,8 +168,7 @@ onMounted(() => {
                                 </div>
                             </td>
                             <td class="text-center">
-                                <span 
-                                    class="font-weight-bold"
+                                <span class="font-weight-bold"
                                     :class="item.balance >= 0 ? 'text-success' : 'text-error'">
                                     {{ formatCurrency(item.balance) }}
                                 </span>
@@ -186,12 +177,7 @@ onMounted(() => {
                     </tbody>
                 </VTable>
 
-                <!-- Empty State -->
-                <div v-else-if="!loading && reportData.length === 0" class="text-center pa-12">
-                    <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
-                    <h3 class="text-h5 mb-2">No hay datos para mostrar</h3>
-                    <p class="text-medium-emphasis">Selecciona un rango de fechas para generar el reporte</p>
-                </div>
+
             </VCardText>
         </VCard>
     </div>

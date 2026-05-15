@@ -170,7 +170,7 @@ const handleCardAction = (action) => {
         case 'employee-expenses': router.push('/finanzas/employee-expenses'); break
         case 'register-contribution': router.push({ name: 'aportes-index' }); break
         case 'movements-index': router.push({ name: 'movements-index' }); break
-        case 'transfer': isTransferDialogVisible.value = true; break
+        case 'transfer': router.push('/transfers'); break
     }
 }
 
@@ -248,7 +248,8 @@ onMounted(() => {
                         <div v-for="movement in day.movements" :key="movement.id" class="movement-item">
                             <!-- Icono -->
                             <div class="movement-icon" :class="movement.type">
-                                <i :class="movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'"></i>
+                                <i
+                                    :class="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"></i>
                             </div>
 
                             <!-- Detalles (Este debe tener flex: 1 para empujar el monto a la derecha) -->
@@ -273,7 +274,7 @@ onMounted(() => {
 
                             <!-- Monto alineado a la derecha -->
                             <div class="movement-amount" :class="movement.type">
-                                {{ movement.type === 'income' ? '+' : '-' }}
+                                {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                                 {{ formatCurrency(movement.amount) }}
                             </div>
                         </div>
@@ -334,188 +335,3 @@ onMounted(() => {
         <TransferDialog v-model="isTransferDialogVisible" />
     </div>
 </template>
-
-<style scoped>
-/* Tu CSS se mantiene igual, es excelente */
-.dashboard-container {
-    --primary-color: #3B82F6;
-    --success-color: #10B981;
-    --warning-color: #F59E0B;
-    --expense-color: #EF4444;
-    --income-color: #10B981;
-    --background: #F8FAFC;
-    --surface: #FFFFFF;
-    --text-primary: #1E293B;
-    --text-secondary: #64748B;
-    --border-color: #E2E8F0;
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-
-    font-family: 'Inter', sans-serif;
-    background: var(--background);
-    min-height: 100vh;
-    padding: 24px;
-}
-
-.dashboard-header {
-    text-align: center;
-    margin-bottom: 32px;
-}
-
-.header-icon {
-    font-size: 48px;
-    color: var(--primary-color);
-}
-
-.header-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin-bottom: 48px;
-}
-
-.main-card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: var(--shadow-md);
-    border-top: 4px solid var(--card-color);
-    transition: transform 0.2s;
-}
-
-.main-card:hover {
-    transform: translateY(-5px);
-}
-
-.card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    background: var(--card-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
-    color: white;
-    font-size: 20px;
-}
-
-.card-button {
-    background: var(--card-color);
-    color: white;
-    border: none;
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.content-section {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 30px;
-}
-
-.movements-column,
-.panel-card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
-}
-
-.day-header {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 5px;
-    margin-bottom: 15px;
-}
-
-.movement-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px;
-    background: #fbfcfd;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-.movement-description {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-primary);
-}
-
-.movement-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-.movement-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.movement-icon.income {
-    background: #e6f7f0;
-    color: var(--income-color);
-}
-
-.movement-icon.expense {
-    background: #fdeeee;
-    color: var(--expense-color);
-}
-
-.movement-amount {
-    font-weight: 700;
-}
-
-.movement-amount.income {
-    color: var(--income-color);
-}
-
-.movement-amount.expense {
-    color: var(--expense-color);
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.summary-item.total {
-    border-top: 2px solid var(--primary-color);
-    margin-top: 10px;
-    font-weight: 700;
-}
-
-@media (max-width: 1000px) {
-    .content-section {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
