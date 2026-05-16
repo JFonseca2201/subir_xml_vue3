@@ -18,6 +18,7 @@ const showExpenseDialog = ref(false)
 
 // Datos reactivos
 const movements = ref([])
+const accounts = ref([])
 const editingMovement = ref(null)
 const showDeleteDialog = ref(false)
 const movementToDelete = ref(null)
@@ -289,7 +290,37 @@ const loadMovements = async () => {
     }
 }
 
+const loadAccounts = async () => {
+    try {
+        const response = await $api('accounts')
+        accounts.value = response || []
+    } catch (error) {
+        console.error('Error al cargar cuentas:', error)
+    }
+}
+
+const getAccountName = (movement) => {
+    if (movement.payment_distributions && movement.payment_distributions.length > 1) {
+        return `${movement.payment_distributions.length} cuentas`
+    }
+
+    let accountId = movement.account_id
+    if (movement.payment_distributions && movement.payment_distributions.length === 1) {
+        accountId = movement.payment_distributions[0].account_id || movement.payment_distributions[0].account || accountId
+    }
+
+    if (accountId) {
+        const account = accounts.value.find(acc => String(acc.id) === String(accountId))
+        if (account) {
+            return account.name || account.account_name || account.description || `Cuenta ${accountId}`
+        }
+    }
+
+    return movement.account_label || movement.account_name || accountId || 'Desconocida'
+}
+
 onMounted(() => {
+    loadAccounts()
     loadMovements()
 })
 
@@ -410,7 +441,7 @@ onMounted(() => {
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody style="text-transform: uppercase;">
                             <tr v-for="movement in day.movements" :key="movement.id">
                                 <td>
                                     {{ movement.work_order_number || movement.invoice_number }}
@@ -429,13 +460,7 @@ onMounted(() => {
                                 </td>
                                 <!-- Mostrar cuenta principal o resumen de cuentas -->
                                 <td>
-                                    <span
-                                        v-if="movement.payment_distributions && movement.payment_distributions.length > 1">
-                                        {{ movement.payment_distributions.length }} cuentas
-                                    </span>
-                                    <span v-else>
-                                        {{ movement.account_label || movement.account_id }}
-                                    </span>
+                                    <span>{{ getAccountName(movement) }}</span>
                                 </td>
                                 <td>
                                     <VBtn size="small" variant="text" color="primary" @click="editMovement(movement)">
