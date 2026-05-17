@@ -42,7 +42,7 @@ const clientForm = ref({
     user_id: 1,
     sucursale_id: 1,
     state: 1,
-    gender: '',
+    gender: null,
     ubigeo_region: '',
     ubigeo_provincia: '',
     ubigeo_ciudad: '',
@@ -189,17 +189,33 @@ const saveClient = async () => {
             success.value = 'Cliente guardado correctamente';
             showNotification('Cliente guardado correctamente', 'success');
 
-            // Limpiar formulario
-            resetForm();
+
 
             // Cerrar diálogo después de un momento
             setTimeout(() => {
                 emit('update:isDialogVisible', false);
-                // Emitir datos actualizados (usar resp.data o clientForm.value como fallback)
-                const updatedData = resp.data || clientForm.value;
+                // Emitir datos actualizados con todos los campos necesarios
+                // Usar los datos de la respuesta del servidor si están disponibles
+                const serverData = resp.data || resp.client || resp;
+                const updatedData = {
+                    ...clientForm.value,
+                    id: serverData?.id || serverData?.client?.id,
+                    full_name: clientForm.value.full_name || `${clientForm.value.name} ${clientForm.value.surname}`,
+                    name: clientForm.value.name,
+                    surname: clientForm.value.surname,
+                    type_client: clientForm.value.type_client.toString(),
+                    type_document: clientForm.value.type_document.toString(),
+                    state: parseInt(clientForm.value.state), // Enviar como número para comparación correcta
+                    phone: clientForm.value.phone,
+                    email: clientForm.value.email,
+                    n_document: clientForm.value.n_document,
+                    address: clientForm.value.address,
+                };
                 console.log('Datos emitidos:', updatedData);
                 emit('addClientFinal', updatedData);
-            }, 1500);
+                // Limpiar formulario después de emitir los datos
+                resetForm();
+            }, 25);
         } else {
             error.value = resp.message || 'Error al guardar cliente';
             showNotification(resp.message || 'Error al guardar cliente', 'error');
@@ -283,65 +299,56 @@ onMounted(() => {
 
             <!-- 👉 Form -->
             <VForm ref="formRef" @submit.prevent="saveClient">
-                <VRow dense>
+                <VRow>
                     <!-- 👉 Datos Personales -->
                     <VCol cols="12">
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos Personales</h5>
                     </VCol>
-
-                    <VCol cols="12" md="6">
-                        <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
-                            prepend-inner-icon="ri-user-3-line" :rules="rules.name" required @input="generateFullName"
-                            clearable />
-                    </VCol>
-
-                    <VCol cols="12" md="6">
-                        <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
-                            prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
-                            @input="generateFullName" clearable />
-                    </VCol>
-
-                    <!-- <VCol cols="12">
-                        <VTextField v-model="clientForm.full_name" label="Nombre Completo"
-                            placeholder="Se genera automáticamente" prepend-inner-icon="ri-user-smile-line" readonly
-                            disabled />
-                    </VCol> -->
-
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.type_document" :items="typeDocumentOptions" item-title="title"
                             item-value="value" label="Tipo de Documento *" prepend-inner-icon="ri-file-text-line"
                             required clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de documento" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
+                        <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
+                            prepend-inner-icon="ri-user-3-line" :rules="rules.name" required @input="generateFullName"
+                            clearable />
+                    </VCol>
+
+                    <VCol cols="12" md="6" class="mb-3">
+                        <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
+                            prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
+                            @input="generateFullName" clearable />
+                    </VCol>
+
+
+
+
+
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
                             prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.gender" :items="genderOptions" item-title="title"
                             item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
                             placeholder="Seleccione género" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
-                        <VSelect v-model="clientForm.state" :items="stateOptions" item-title="title" item-value="value"
-                            label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado"
-                            clearable />
-                    </VCol>
-
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Nacimiento" type="date"
                             prepend-inner-icon="ri-calendar-event-line" clearable />
                     </VCol>
@@ -353,22 +360,22 @@ onMounted(() => {
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Ubicación</h5>
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
                             placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.region" label="Región" placeholder="Región"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.provincia" label="Provincia" placeholder="Provincia"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.distrito" label="Distrito" placeholder="Distrito"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>

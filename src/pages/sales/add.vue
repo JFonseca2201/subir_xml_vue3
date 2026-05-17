@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -35,6 +35,7 @@ const paymentMethods = [
 const clients = ref([])
 const vehicles = ref([])
 const products = ref([])
+const accounts = ref([])
 
 // Estado del formulario
 const sale = ref({
@@ -51,7 +52,55 @@ const sale = ref({
     items: []
 })
 
+// Watch para cambiar estado de pago cuando es crédito
+const onCreditChange = () => {
+    if (sale.value.is_credited) {
+        sale.value.payment_status = 'pending'
+    } else {
+        sale.value.payment_status = 'paid'
+    }
+}
+
+// Generar número de documento según tipo
+const generateDocumentNumber = (type) => {
+    const today = new Date()
+    const dateStr = today.getFullYear() +
+        String(today.getMonth() + 1).padStart(2, '0') +
+        String(today.getDate()).padStart(2, '0')
+    
+    const prefixes = {
+        'quote': 'COT',
+        'sale_note': 'NV',
+        'invoice': 'FAC'
+    }
+    
+    const prefix = prefixes[type] || 'DOC'
+    const randomNum = String(Math.floor(Math.random() * 999)).padStart(3, '0')
+    
+    return `${prefix}-${dateStr}-${randomNum}`
+}
+
+// Watch para regenerar número cuando cambia el tipo de documento
+const onDocumentTypeChange = () => {
+    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+}
+
+// Pagos distribuidos
+const paymentDistributions = ref([])
+
+// Inicializar con un pago distribuido cuando hay items
+const initializePaymentDistribution = () => {
+    if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
+        paymentDistributions.value.push({
+            account_id: 1, // Caja Chica por defecto para efectivo
+            amount: 0,
+            payment_method: 'Efectivo'
+        })
+    }
+}
+
 const searchProduct = ref(null)
+const isClearingSearch = ref(false)
 
 // Reglas de validación
 const requiredRule = v => !!v || 'Campo obligatorio'
@@ -66,10 +115,11 @@ const getClientName = (c) => {
 const loadInitialData = async () => {
     isLoading.value = true
     try {
-        const [clientsRes, vehiclesRes, productsRes] = await Promise.all([
+        const [clientsRes, vehiclesRes, productsRes, accountsRes] = await Promise.all([
             $api('clients', { params: { per_page: 1000 } }),
             $api('vehicles', { params: { per_page: 1000 } }),
-            $api('products', { params: { per_page: 1000 } })
+            $api('products', { params: { per_page: 1000 } }),
+            $api('accounts', { params: { per_page: 1000 } })
         ])
 
         const extractArray = (res, key) => {
@@ -83,10 +133,16 @@ const loadInitialData = async () => {
 
         clients.value = extractArray(clientsRes, 'clients')
         vehicles.value = extractArray(vehiclesRes, 'vehicles')
-        products.value = extractArray(productsRes, 'products')
+        const rawProducts = extractArray(productsRes, 'products')
+        // Agregar campo de búsqueda combinado para productos
+        products.value = rawProducts.map(p => ({
+            ...p,
+            searchText: `${p.name || ''} ${p.code || ''} ${p.description || ''}`.toLowerCase()
+        }))
+        accounts.value = extractArray(accountsRes, 'accounts')
 
-        // Autogenerar número de documento de ejemplo
-        sale.value.document_number = 'DOC-' + Math.floor(Math.random() * 1000000)
+        // Generar número de documento según tipo
+        sale.value.document_number = generateDocumentNumber(sale.value.document_type)
 
     } catch (error) {
         console.error('Error al cargar datos:', error)
@@ -101,7 +157,91 @@ const removeItem = (index) => {
     sale.value.items.splice(index, 1)
 }
 
+// Gestión de pagos distribuidos
+const addPaymentDistribution = () => {
+    const newPayment = {
+        account_id: null,
+        amount: 0,
+        payment_method: 'Efectivo'
+    }
+    paymentDistributions.value.push(newPayment)
+    // Asignar cuenta automáticamente si es efectivo
+    if (newPayment.payment_method === 'Efectivo') {
+        // Siempre asignar account_id 1 (Caja Chica) para efectivo
+        newPayment.account_id = 1
+    }
+}
+
+const removePaymentDistribution = (index) => {
+    // No permitir eliminar si es el último pago
+    if (paymentDistributions.value.length > 1) {
+        paymentDistributions.value.splice(index, 1)
+    }
+}
+
+// Asignar cuenta automáticamente según método de pago
+const onPaymentMethodChange = (dist, newMethod) => {
+    if (newMethod === 'Efectivo') {
+        // Caja Chica (account_id 1)
+        const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+        dist.account_id = cajaChica ? cajaChica.id : 1
+    } else if (newMethod === 'Transferencia') {
+        // No asignar automáticamente, dejar que el usuario elija
+        dist.account_id = null
+    }
+}
+
+// Watch para asignar cuenta automáticamente cuando se inicializa un pago
+const initializePaymentAccount = (dist) => {
+    if (dist.payment_method === 'Efectivo') {
+        // Siempre asignar Caja Chica (account_id 1) para efectivo
+        const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+        dist.account_id = cajaChica ? cajaChica.id : 1
+    }
+}
+
+const totalDistributed = computed(() => {
+    return paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
+})
+
+const remainingAmount = computed(() => {
+    return total.value - totalDistributed.value
+})
+
+const getPaymentIcon = (method) => {
+    const icons = {
+        'Efectivo': 'ri-money-dollar-circle-line',
+        'Transferencia': 'ri-bank-transfer-line',
+        'Tarjeta de Crédito': 'ri-bank-card-line',
+        'Tarjeta de Débito': 'ri-bank-card-2-line'
+    }
+    return icons[method] || 'ri-money-dollar-circle-line'
+}
+
 const onProductSelected = (product) => {
+    // Solo procesar si es un objeto (producto seleccionado)
+    if (product && typeof product === 'object') {
+        const existingItem = sale.value.items.find(i => i.product_id === product.id)
+        if (existingItem) {
+            existingItem.quantity++
+        } else {
+            sale.value.items.push({
+                product_id: product.id,
+                description: product.description || product.name || '',
+                quantity: 1,
+                price: product.price_sale || product.price || 0,
+                discount: 0
+            })
+        }
+        // Inicializar pago distribuido si es el primer item
+        initializePaymentDistribution()
+        // Limpiar campo de búsqueda
+        searchProduct.value = null
+    }
+}
+
+const onProductItemClick = (product) => {
+    // Manejar clic en el item de la lista
     if (product) {
         const existingItem = sale.value.items.find(i => i.product_id === product.id)
         if (existingItem) {
@@ -115,19 +255,30 @@ const onProductSelected = (product) => {
                 discount: 0
             })
         }
-        setTimeout(() => {
-            searchProduct.value = null
-        }, 10)
+        // Inicializar pago distribuido si es el primer item
+        initializePaymentDistribution()
+        // Limpiar campo de búsqueda
+        searchProduct.value = null
     }
+}
+
+const onSearchUpdate = (value) => {
+    // No hacer nada, el filtrado se maneja con searchText
 }
 
 // Cálculos
 const TAX_RATE = 0.15 // 15% IVA
 
+const grossSubtotal = computed(() => {
+    return sale.value.items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+})
+
+const totalDiscount = computed(() => {
+    return sale.value.items.reduce((sum, item) => sum + (Number(item.discount) || 0), 0)
+})
+
 const subtotal = computed(() => {
-    return sale.value.items.reduce((sum, item) => {
-        return sum + ((item.quantity * item.price) - item.discount)
-    }, 0)
+    return grossSubtotal.value - totalDiscount.value
 })
 
 const taxAmount = computed(() => {
@@ -148,9 +299,25 @@ const submitForm = async () => {
         if (!valid) return
     }
 
+    // Validar que haya un cliente seleccionado
+    if (!sale.value.client_id) {
+        showNotification('Debe seleccionar un cliente para continuar', 'warning')
+        return
+    }
+
+    // Validar que haya al menos un producto/servicio
     if (sale.value.items.length === 0) {
         showNotification('Debe agregar al menos un producto o servicio', 'warning')
         return
+    }
+
+    // Validar pagos distribuidos solo si no es cotización
+    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+        const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
+        if (Math.abs(totalDist - total.value) > 0.01) {
+            showNotification('La suma de los pagos debe ser igual al total', 'warning')
+            return
+        }
     }
 
     loader.start()
@@ -161,6 +328,11 @@ const submitForm = async () => {
             subtotal: subtotal.value,
             tax_amount: taxAmount.value,
             total: total.value
+        }
+
+        // Enviar pagos distribuidos solo si no es cotización
+        if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+            payload.payment_distributions = paymentDistributions.value
         }
 
         const response = await $api('sales', {
@@ -218,7 +390,7 @@ onMounted(() => {
                             <VSelect v-model="sale.document_type" :items="documentTypes" item-title="title"
                                 item-value="value" label="Tipo de Documento" :rules="[requiredRule]" variant="outlined"
                                 density="comfortable" prepend-inner-icon="ri-file-list-3-line" hide-details="auto"
-                                required />
+                                required @update:model-value="onDocumentTypeChange" />
                         </VCol>
                         <VCol cols="12" md="4">
                             <VTextField v-model="sale.document_number" label="Número de Documento"
@@ -270,10 +442,16 @@ onMounted(() => {
                         </h2>
                     </div>
                     <div class="mb-4">
-                        <VAutocomplete v-model="searchProduct" :items="products" item-title="description" return-object
-                            label="Buscar y agregar producto" placeholder="Escribe para buscar un producto..."
+                        <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :items="products" item-title="searchText" return-object
+                            label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código o descripción..."
                             prepend-inner-icon="ri-search-line" variant="outlined" clearable
-                            @update:model-value="onProductSelected" />
+                            @update:search="onSearchUpdate" no-filter>
+                            <template v-slot:item="{ props, item }">
+                                <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
+                                    :subtitle="item.raw.code ? `Código: ${item.raw.code}` : ''" 
+                                    @click="onProductItemClick(item.raw)" />
+                            </template>
+                        </VAutocomplete>
                     </div>
                     <div class="border rounded-lg overflow-x-auto">
                         <VTable class="text-no-wrap">
@@ -331,27 +509,161 @@ onMounted(() => {
                 <!-- Totales y Pagos -->
                 <VRow>
                     <VCol cols="12" md="6">
-                        <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                            <VIcon icon="ri-wallet-3-line" class="mr-2" /> Configuración de Pago
-                        </h2>
-                        <VRow>
-                            <VCol cols="12" sm="6">
-                                <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title"
-                                    item-value="value" label="Estado de Pago" :rules="[requiredRule]" variant="outlined"
-                                    density="comfortable" prepend-inner-icon="ri-money-dollar-circle-line"
-                                    hide-details="auto" />
-                            </VCol>
-                            <VCol cols="12" sm="6">
-                                <VSelect v-model="sale.payment_method" :items="paymentMethods" item-title="title"
-                                    item-value="value" label="Método de Pago" :rules="[requiredRule]" variant="outlined"
-                                    density="comfortable" prepend-inner-icon="ri-bank-card-line" hide-details="auto" />
-                            </VCol>
-                            <VCol cols="12">
-                                <VSwitch v-model="sale.is_credited" label="Venta a Crédito" color="primary"
-                                    hide-details />
-                            </VCol>
-                        </VRow>
-                        <div class="mt-4">
+                        <!-- Mensaje informativo cuando no hay items -->
+                        <VAlert v-if="sale.items.length === 0" type="info" variant="tonal" class="mb-4" border="start">
+                            <template v-slot:prepend>
+                                <VIcon icon="ri-information-line" />
+                            </template>
+                            <div class="text-body-2">
+                                <strong>Agrega productos o servicios</strong> para ver las opciones de pago
+                            </div>
+                        </VAlert>
+
+                        <template v-if="sale.document_type !== 'quote' && sale.items.length > 0">
+                            <!-- Card principal de configuración de pago -->
+                            <VCard class="mb-4 elevation-3 border-thin">
+                                <VCardText class="pa-5">
+                                    <!-- Header con gradiente -->
+                                    <div class="d-flex align-center mb-5 pa-4 rounded-lg bg-gradient-to-r from-primary to-primary-darken-1">
+                                        <VAvatar color="white" size="52" class="mr-4">
+                                            <VIcon icon="ri-wallet-3-line" size="30" color="primary" />
+                                        </VAvatar>
+                                        <div class="text-white">
+                                            <h2 class="text-h5 font-weight-bold mb-1">Forma de Pago</h2>
+                                            <p class="text-body-2 opacity-90 mb-0">Configura cómo recibirás el pago de ${{ total.toFixed(2) }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Estado de pago -->
+                                    <div class="mb-4">
+                                        <label class="text-subtitle-2 font-weight-medium mb-2 d-block text-primary">
+                                            <VIcon icon="ri-money-dollar-circle-line" size="18" class="mr-1" />
+                                            Estado del pago
+                                        </label>
+                                        <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title"
+                                            item-value="value" :rules="[requiredRule]" variant="outlined"
+                                            density="comfortable" prepend-inner-icon="ri-flag-line"
+                                            hide-details="auto" bg-color="grey-lighten-5" rounded="lg" />
+                                    </div>
+
+                                    <!-- Opción de crédito -->
+                                    <div class="mb-4">
+                                        <VCard variant="outlined" class="pa-3 rounded-lg cursor-pointer hover-bg-grey-lighten-4"
+                                            :class="sale.is_credited ? 'border-primary bg-primary-lighten-5' : ''"
+                                            @click="onCreditChange">
+                                            <div class="d-flex align-center">
+                                                <VIcon :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                                                    :color="sale.is_credited ? 'primary' : 'grey'" size="24" class="mr-2" />
+                                                <div>
+                                                    <div class="text-body-2 font-weight-medium">Venta a crédito</div>
+                                                    <div class="text-caption text-medium-emphasis">Pago diferido</div>
+                                                </div>
+                                            </div>
+                                        </VCard>
+                                    </div>
+                                </VCardText>
+                            </VCard>
+
+                            <!-- Pagos distribuidos (siempre visible) -->
+                            <VCard variant="outlined" class="border-primary border-opacity-50 elevation-2">
+                                <VCardText class="pa-4">
+                                    <div class="d-flex justify-space-between align-center mb-4">
+                                        <div class="d-flex align-center">
+                                            <VAvatar color="success" size="40" class="mr-3 elevation-2">
+                                                <VIcon icon="ri-spreadsheet-line" size="24" />
+                                            </VAvatar>
+                                            <div>
+                                                <h3 class="text-subtitle-1 font-weight-bold mb-0">Pagos</h3>
+                                                <p class="text-caption text-medium-emphasis mb-0">Total: ${{ total.toFixed(2) }} - Distribuido: ${{ totalDistributed.toFixed(2) }}</p>
+                                            </div>
+                                        </div>
+                                        <VBtn color="primary" variant="elevated" prepend-icon="ri-add-circle-line"
+                                            @click="addPaymentDistribution" size="small" class="elevation-2">
+                                            Agregar Pago
+                                        </VBtn>
+                                    </div>
+
+                                    <!-- Tabla de pagos -->
+                                    <div class="border rounded-lg overflow-hidden">
+                                        <VTable class="text-no-wrap">
+                                            <thead class="bg-grey-lighten-4">
+                                                <tr>
+                                                    <th style="width: 50px;">#</th>
+                                                    <th style="width: 200px;">Forma de Pago</th>
+                                                    <th style="width: 200px;">Cuenta</th>
+                                                    <th style="width: 150px;">Monto</th>
+                                                    <th style="width: 50px;"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(dist, index) in paymentDistributions" :key="index">
+                                                    <td class="pa-2 text-center font-weight-medium">{{ index + 1 }}</td>
+                                                    <td class="pa-2">
+                                                        <VSelect v-model="dist.payment_method" :items="paymentMethods"
+                                                            item-title="title" item-value="value" label="Forma de pago"
+                                                            variant="outlined" density="compact" hide-details="auto"
+                                                            :rules="[requiredRule]" bg-color="white"
+                                                            prepend-inner-icon="ri-secure-payment-line"
+                                                            @update:model-value="(val) => onPaymentMethodChange(dist, val)" />
+                                                    </td>
+                                                    <td class="pa-2">
+                                                        <VSelect v-if="dist.payment_method === 'Transferencia'" 
+                                                            v-model="dist.account_id" 
+                                                            :items="accounts.filter(a => a.name?.toLowerCase().includes('pichincha') || a.name?.toLowerCase().includes('guayaquil'))" 
+                                                            item-title="name" item-value="id" label="Cuenta bancaria" variant="outlined" density="compact"
+                                                            hide-details="auto" :rules="[requiredRule]" bg-color="white"
+                                                            prepend-inner-icon="ri-bank-line" />
+                                                        <VTextField v-else 
+                                                            :value="dist.payment_method === 'Efectivo' ? 'Caja Chica' : ''" 
+                                                            label="Cuenta" variant="outlined" density="compact" 
+                                                            hide-details="auto" bg-color="grey-lighten-4" readonly
+                                                            prepend-inner-icon="ri-bank-line" />
+                                                        <!-- Campo oculto para account_id cuando es efectivo -->
+                                                        <input type="hidden" v-if="dist.payment_method === 'Efectivo'" v-model="dist.account_id" />
+                                                    </td>
+                                                    <td class="pa-2">
+                                                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01"
+                                                            label="Monto" variant="outlined" density="compact" hide-details="auto"
+                                                            :rules="[requiredRule]" prefix="$" bg-color="white"
+                                                            prepend-inner-icon="ri-money-dollar-circle-line" />
+                                                    </td>
+                                                    <td class="pa-2 text-center">
+                                                        <VBtn icon="ri-delete-bin-line" variant="text" color="error" size="small"
+                                                            @click="removePaymentDistribution(index)"
+                                                            :disabled="paymentDistributions.length === 1" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </VTable>
+                                    </div>
+
+                                    <!-- Resumen de pagos -->
+                                    <VCard v-if="paymentDistributions.length > 0" variant="tonal" class="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 elevation-2">
+                                        <VCardText class="pa-4">
+                                            <div class="d-flex flex-column gap-3">
+                                                <div class="d-flex justify-space-between align-center">
+                                                    <span class="text-body-2 font-weight-medium">Total distribuido:</span>
+                                                    <VChip color="primary" size="small" variant="elevated" class="elevation-1">
+                                                        ${{ totalDistributed.toFixed(2) }}
+                                                    </VChip>
+                                                </div>
+                                                <VDivider />
+                                                <div class="d-flex justify-space-between align-center">
+                                                    <span class="text-body-2 font-weight-bold">Falta por distribuir:</span>
+                                                    <VChip :color="remainingAmount >= 0 ? 'success' : 'error'" size="small" variant="elevated" class="elevation-1">
+                                                        ${{ remainingAmount.toFixed(2) }}
+                                                    </VChip>
+                                                </div>
+                                            </div>
+                                        </VCardText>
+                                    </VCard>
+                                </VCardText>
+                            </VCard>
+                        </template>
+                        <div :class="sale.document_type !== 'quote' ? 'mt-4' : ''">
+                            <h2 v-if="sale.document_type === 'quote'" class="text-h6 font-weight-medium mb-4 d-flex align-center">
+                                <VIcon icon="ri-edit-2-line" class="mr-2" /> Notas Adicionales
+                            </h2>
                             <VTextarea v-model="sale.observations" label="Observaciones"
                                 placeholder="Notas adicionales..." variant="outlined" density="comfortable"
                                 prepend-inner-icon="ri-edit-2-line" hide-details="auto" rows="3" />
@@ -361,17 +673,31 @@ onMounted(() => {
                     <VCol cols="12" md="6">
                         <VCard variant="tonal" class="pa-4 bg-grey-lighten-4">
                             <h2 class="text-h6 font-weight-medium mb-4 text-right">Resumen</h2>
+                            
                             <div class="d-flex justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Subtotal:</span>
+                                <span>${{ grossSubtotal.toFixed(2) }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-space-between mb-2 text-error" v-if="totalDiscount > 0">
+                                <span class="text-medium-emphasis">Descuento:</span>
+                                <span>-${{ totalDiscount.toFixed(2) }}</span>
+                            </div>
+                            
+                            <div class="d-flex justify-space-between mb-2">
+                                <span class="text-medium-emphasis">Base Imponible:</span>
                                 <span>${{ subtotal.toFixed(2) }}</span>
                             </div>
+
                             <div class="d-flex justify-space-between mb-2" v-if="sale.document_type === 'invoice'">
                                 <span class="text-medium-emphasis">IVA (15%):</span>
                                 <span>${{ taxAmount.toFixed(2) }}</span>
                             </div>
+                            
                             <VDivider class="my-3" />
+                            
                             <div class="d-flex justify-space-between align-center">
-                                <span class="text-h6 font-weight-bold">Total a Pagar:</span>
+                                <span class="text-h6 font-weight-bold">{{ sale.document_type === 'quote' ? 'Total Cotizado:' : 'Total a Pagar:' }}</span>
                                 <span class="text-h5 font-weight-bold text-primary">${{ total.toFixed(2) }}</span>
                             </div>
                         </VCard>

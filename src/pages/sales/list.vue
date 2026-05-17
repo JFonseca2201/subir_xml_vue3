@@ -18,6 +18,7 @@ const searchForm = ref({
     payment_status: null,
     start_date: null,
     end_date: null,
+    search: null, // Búsqueda por nombre o cédula
 })
 
 // Paginación
@@ -85,7 +86,8 @@ const clearSearch = () => {
         document_type: null,
         payment_status: null,
         start_date: null,
-        end_date: null
+        end_date: null,
+        search: null
     }
     currentPage.value = 1
     loadSales()
@@ -152,6 +154,68 @@ const editSale = (sale) => {
     router.push(`/sales/edit/${sale.id}`)
 }
 
+const generatePDF = async () => {
+    try {
+        const params = {
+            ...searchForm.value
+        }
+        
+        // Limpiar parámetros nulos o vacíos
+        Object.keys(params).forEach(key => {
+            if (params[key] === null || params[key] === '') {
+                delete params[key]
+            }
+        })
+
+        const response = await $api('sales/pdf', {
+            method: 'POST',
+            body: params,
+            responseType: 'blob'
+        })
+
+        // Crear un blob y descargar el PDF
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `ventas_${new Date().toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        showNotification('Reporte PDF generado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al generar PDF:', error)
+        showNotification('Error al generar el reporte PDF', 'error')
+    }
+}
+
+const generateSinglePDF = async (sale) => {
+    try {
+        const response = await $api(`sales/${sale.id}/pdf`, {
+            method: 'GET',
+            responseType: 'blob'
+        })
+
+        // Crear un blob y descargar el PDF
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${sale.document_type}_${sale.document_number}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        showNotification('PDF generado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al generar PDF:', error)
+        showNotification('Error al generar el PDF', 'error')
+    }
+}
+
 const cancelSale = async (sale) => {
     if (sale.status === 'canceled') return
 
@@ -189,47 +253,58 @@ onMounted(() => {
 <template>
     <div class="pa-4 pa-sm-6">
         <VCard class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto">
-            <!-- Título y Botón Agregar -->
             <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
                 <div>
                     <h1 class="text-h4 font-weight-bold mb-1">Ventas y Cotizaciones</h1>
                     <p class="text-medium-emphasis mb-0">Historial de transacciones y servicios</p>
                 </div>
-                <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add" size="large">
-                    Nueva Venta
-                </VBtn>
+                <div class="d-flex gap-3">
+                    <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" size="large">
+                        Generar PDF
+                    </VBtn>
+                    <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add" size="large">
+                        Nueva Venta
+                    </VBtn>
+                </div>
             </div>
 
             <VDivider class="mb-6" />
 
-            <!-- Formulario de Búsqueda -->
             <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
                 <VRow class="mb-2">
                     <VCol cols="12" sm="6" md="3">
-                        <VSelect v-model="searchForm.document_type" :items="documentTypeOptions"
-                            label="Tipo de Documento" placeholder="Todos" prepend-inner-icon="ri-file-list-3-line"
-                            variant="outlined" density="comfortable" hide-details="auto" clearable />
+                        <VTextField v-model="searchForm.search" label="Buscar por nombre o cédula"
+                            placeholder="Nombre o cédula del cliente..."
+                            prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable"
+                            hide-details="auto" clearable />
                     </VCol>
 
-                    <VCol cols="12" sm="6" md="3">
-                        <VSelect v-model="searchForm.payment_status" :items="paymentStatusOptions"
-                            label="Estado de Pago" placeholder="Todos" prepend-inner-icon="ri-money-dollar-circle-line"
-                            variant="outlined" density="comfortable" hide-details="auto" clearable />
+                    <VCol cols="12" sm="6" md="2">
+                        <VSelect v-model="searchForm.document_type" :items="documentTypeOptions" item-title="title"
+                            item-value="value" label="Tipo" placeholder="Todos"
+                            prepend-inner-icon="ri-file-list-3-line" variant="outlined" density="comfortable"
+                            hide-details="auto" clearable />
                     </VCol>
 
-                    <VCol cols="12" sm="6" md="3">
-                        <VTextField v-model="searchForm.start_date" type="date" label="Desde (Atención)"
+                    <VCol cols="12" sm="6" md="2">
+                        <VSelect v-model="searchForm.payment_status" :items="paymentStatusOptions" item-title="title"
+                            item-value="value" label="Estado Pago" placeholder="Todos"
+                            prepend-inner-icon="ri-money-dollar-circle-line" variant="outlined" density="comfortable"
+                            hide-details="auto" clearable />
+                    </VCol>
+
+                    <VCol cols="12" sm="6" md="2">
+                        <VTextField v-model="searchForm.start_date" type="date" label="Desde"
                             prepend-inner-icon="ri-calendar-line" variant="outlined" density="comfortable"
                             hide-details="auto" clearable />
                     </VCol>
 
-                    <VCol cols="12" sm="6" md="3">
-                        <VTextField v-model="searchForm.end_date" type="date" label="Hasta (Atención)"
+                    <VCol cols="12" sm="6" md="2">
+                        <VTextField v-model="searchForm.end_date" type="date" label="Hasta"
                             prepend-inner-icon="ri-calendar-event-line" variant="outlined" density="comfortable"
                             hide-details="auto" clearable />
                     </VCol>
 
-                    <!-- Botones de Acción -->
                     <VCol cols="12" class="d-flex justify-end gap-3 mt-2">
                         <VBtn variant="tonal" color="secondary" prepend-icon="ri-refresh-line" @click="clearSearch">
                             Limpiar
@@ -243,7 +318,6 @@ onMounted(() => {
 
             <VDivider class="mb-4" />
 
-            <!-- Tabla de Ventas -->
             <VTable class="text-no-wrap">
                 <thead>
                     <tr>
@@ -257,116 +331,105 @@ onMounted(() => {
                         <th class="font-weight-bold text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr v-if="loading">
+                <tbody v-if="loading">
+                    <tr>
                         <td colspan="8" class="text-center pa-6">
                             <VProgressCircular indeterminate color="primary" size="40" />
                             <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
                         </td>
                     </tr>
-                    <tr v-else-if="!sales || sales.length === 0">
+                </tbody>
+                <tbody v-else-if="!sales || sales.length === 0">
+                    <tr>
                         <td colspan="8" class="text-center pa-8 text-medium-emphasis">
                             <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-file-text-line</VIcon>
                             <div class="text-h6">No se encontraron ventas</div>
                             <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
                         </td>
                     </tr>
-                    <template v-else>
-                        <tr v-for="item in sales" :key="item.id" class="align-middle">
-                            <!-- Documento -->
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <VChip :color="getDocumentTypeInfo(item.document_type).color" size="x-small"
-                                        class="mb-1 align-self-start font-weight-bold" variant="flat">
-                                        {{ getDocumentTypeInfo(item.document_type).text }}
-                                    </VChip>
-                                    <span class="font-weight-medium">{{ item.document_number }}</span>
-                                </div>
-                            </td>
+                </tbody>
+                <tbody v-else style="text-transform: uppercase;">
+                    <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
+                        class="align-middle">
+                        <td>
+                            <div class="d-flex flex-column" v-if="item">
+                                <VChip :color="getDocumentTypeInfo(item.document_type)?.color || 'grey'" size="x-small"
+                                    class="mb-1 align-self-start font-weight-bold" variant="flat">
+                                    {{ getDocumentTypeInfo(item.document_type)?.text || item.document_type }}
+                                </VChip>
+                                <span class="font-weight-medium">{{ item.document_number }}</span>
+                            </div>
+                        </td>
 
-                            <!-- Fecha -->
-                            <td>
-                                <div class="d-flex align-center">
-                                    <VIcon size="16" class="mr-2 text-medium-emphasis">ri-calendar-todo-line</VIcon>
-                                    <span>{{ formatDate(item.service_date) }}</span>
-                                </div>
-                            </td>
+                        <td>
+                            <div class="d-flex align-center" v-if="item">
+                                <VIcon size="16" class="mr-2 text-medium-emphasis">ri-calendar-todo-line</VIcon>
+                                <span>{{ formatDate(item.service_date) }}</span>
+                            </div>
+                        </td>
 
-                            <!-- Cliente -->
-                            <td>
+                        <td>
+                            <div v-if="item">
                                 <div class="font-weight-medium">{{ getClientName(item.client) }}</div>
                                 <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis">
                                     Doc: {{ item.client.n_document }}
                                 </div>
-                            </td>
+                            </div>
+                        </td>
 
-                            <!-- Vehículo -->
-                            <td>
-                                <template v-if="item.vehicle">
-                                    <VChip size="small" variant="outlined" color="primary" class="font-weight-bold">
-                                        {{ item.vehicle.license_plate }}
-                                    </VChip>
-                                </template>
-                                <span v-else class="text-medium-emphasis text-caption">-</span>
-                            </td>
-
-                            <!-- Total -->
-                            <td class="text-right">
-                                <div class="font-weight-bold text-body-1"
-                                    :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
-                                    {{ formatCurrency(item.total) }}
-                                </div>
-                            </td>
-
-                            <!-- Cobro -->
-                            <td class="text-center">
-                                <VChip :color="getPaymentStatusInfo(item.payment_status).color" variant="tonal"
-                                    size="small">
-                                    {{ getPaymentStatusInfo(item.payment_status).text }}
+                        <td>
+                            <template v-if="item?.vehicle">
+                                <VChip size="small" variant="outlined" color="primary" class="font-weight-bold">
+                                    {{ item.vehicle.license_plate }}
                                 </VChip>
-                            </td>
+                            </template>
+                            <span v-else class="text-medium-emphasis text-caption">-</span>
+                        </td>
 
-                            <!-- Estado -->
-                            <td class="text-center">
-                                <VChip :color="getStatusInfo(item.status).color" variant="text" size="small">
-                                    <VIcon start :icon="getStatusInfo(item.status).icon" />
-                                    {{ getStatusInfo(item.status).text }}
-                                </VChip>
-                            </td>
+                        <td class="text-right">
+                            <div v-if="item" class="font-weight-bold text-body-1"
+                                :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
+                                {{ formatCurrency(item.total) }}
+                            </div>
+                        </td>
 
-                            <!-- Acciones -->
-                            <td>
-                                <div class="d-flex justify-center gap-1">
-                                    <VTooltip text="Ver Detalle" location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <VBtn icon="ri-eye-line" variant="text" size="small" color="info"
-                                                v-bind="props" @click="viewSale(item)" />
-                                        </template>
-                                    </VTooltip>
+                        <td class="text-center">
+                            <VChip v-if="item" :color="getPaymentStatusInfo(item.payment_status)?.color || 'grey'"
+                                variant="tonal" size="small">
+                                {{ getPaymentStatusInfo(item.payment_status)?.text || item.payment_status }}
+                            </VChip>
+                        </td>
 
-                                    <VTooltip text="Editar (Info Operativa)" location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <VBtn icon="ri-edit-line" variant="text" size="small" color="warning"
-                                                v-bind="props" :disabled="item.status === 'canceled'"
-                                                @click="editSale(item)" />
-                                        </template>
-                                    </VTooltip>
+                        <td class="text-center">
+                            <VChip v-if="item" :color="getStatusInfo(item.status)?.color || 'grey'" variant="text"
+                                size="small">
+                                <VIcon start :icon="getStatusInfo(item.status)?.icon || 'ri-question-line'" />
+                                {{ getStatusInfo(item.status)?.text || item.status }}
+                            </VChip>
+                        </td>
 
-                                    <VTooltip text="Anular" location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <VBtn icon="ri-close-circle-line" variant="text" size="small" color="error"
-                                                v-bind="props" :disabled="item.status === 'canceled'"
-                                                @click="cancelSale(item)" />
-                                        </template>
-                                    </VTooltip>
-                                </div>
-                            </td>
-                        </tr>
-                    </template>
+                        <td>
+                            <div class="d-flex justify-center gap-1" v-if="item">
+
+                                <VBtn icon="ri-file-pdf-line" variant="text" size="small" color="success"
+                                    title="Generar PDF" @click="generateSinglePDF(item)" />
+
+                                <VBtn icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
+                                    @click="viewSale(item)" />
+
+                                <VBtn icon="ri-edit-line" variant="text" size="small" color="warning"
+                                    title="Editar (Info Operativa)" :disabled="item.status === 'canceled'"
+                                    @click="editSale(item)" />
+
+                                <VBtn icon="ri-close-circle-line" variant="text" size="small" color="error"
+                                    title="Anular" :disabled="item.status === 'canceled'" @click="cancelSale(item)" />
+
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </VTable>
 
-            <!-- Paginación -->
             <VDivider class="mt-2" />
             <div class="d-flex justify-center pa-4">
                 <div class="d-flex flex-column align-center gap-2">

@@ -251,49 +251,49 @@ onMounted(() => {
 
             <!-- Form -->
             <VForm ref="formRef" @submit.prevent="updateClient">
-                <VRow dense>
+                <VRow>
                     <!-- Datos de la Empresa -->
                     <VCol cols="12">
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos de la Empresa</h5>
                     </VCol>
 
-                    <VCol cols="12" md="12">
+                    <VCol cols="12" md="12" class="mb-3">
                         <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
                             placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
                             :rules="rules.full_name" required clearable class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.type_document" :items="typeDocumentOptions" item-title="title"
                             item-value="value" label="Tipo de Documento *" prepend-inner-icon="ri-file-text-line"
                             required clearable class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de RUC (13 dígitos)" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable
                             class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
                             prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable
                             class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Constitución" type="date"
                             prepend-inner-icon="ri-calendar-event-line" clearable
                             class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.state" :items="stateOptions" item-title="title" item-value="value"
                             label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado" clearable
                             class="v-input--density-comfortable" />
@@ -306,23 +306,23 @@ onMounted(() => {
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Contacto y Ubicación</h5>
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
                             placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable
                             class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.region" label="Región" placeholder="Región"
                             prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.provincia" label="Provincia" placeholder="Provincia"
                             prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.distrito" label="Distrito" placeholder="Distrito"
                             prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
                     </VCol>

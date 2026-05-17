@@ -183,7 +183,7 @@ const saveClient = async () => {
             type_client: clientForm.value.type_client.toString(),
             type_document: clientForm.value.type_document.toString(),
             state: clientForm.value.state.toString(),
-            name: clientForm.value.razon_social, // Usar razón social como name
+            name: clientForm.value.full_name, // Usar full_name como name
             surname: '', // Las empresas no tienen apellido
         };
 
@@ -204,17 +204,32 @@ const saveClient = async () => {
             success.value = 'Cliente empresa guardado correctamente';
             showNotification('Cliente empresa guardado correctamente', 'success');
 
-            // Limpiar formulario
-            resetForm();
-
             // Cerrar diálogo después de un momento
             setTimeout(() => {
                 emit('update:isDialogVisible', false);
-                // Emitir datos actualizados (usar resp.data o clientForm.value como fallback)
-                const updatedData = resp.data || clientForm.value;
+                // Emitir datos actualizados con todos los campos necesarios
+                // Usar prioritariamente los datos del servidor
+                const serverData = resp.data || resp.client || resp;
+                const updatedData = {
+                    ...serverData,
+                    id: serverData?.id || serverData?.client?.id,
+                    full_name: serverData?.full_name || serverData?.name || clientForm.value.full_name,
+                    name: serverData?.name || clientForm.value.full_name,
+                    surname: serverData?.surname || '',
+                    type_client: serverData?.type_client?.toString() || clientForm.value.type_client.toString(),
+                    type_document: serverData?.type_document?.toString() || clientForm.value.type_document.toString(),
+                    state: serverData?.state || parseInt(clientForm.value.state) || 1,
+                    phone: serverData?.phone || clientForm.value.phone || '',
+                    email: serverData?.email || clientForm.value.email || '',
+                    n_document: serverData?.n_document || clientForm.value.n_document || '',
+                    address: serverData?.address || clientForm.value.address || '',
+                };
+                console.log('Datos del servidor:', serverData);
                 console.log('Datos emitidos:', updatedData);
                 emit('addClientCompany', updatedData);
-            }, 1500);
+                // Limpiar formulario después de emitir los datos
+                resetForm();
+            }, 100);
         } else {
             error.value = resp.message || 'Error al guardar cliente';
             showNotification(resp.message || 'Error al guardar cliente', 'error');
@@ -243,7 +258,7 @@ const resetForm = () => {
         user_id: 1,
         sucursale_id: 1,
         state: 1,
-        gender: '',
+        gender: null,
         ubigeo_region: '',
         ubigeo_provincia: '',
         ubigeo_ciudad: '',
@@ -294,46 +309,45 @@ onMounted(() => {
 
             <!-- 👉 Form -->
             <VForm ref="formRef" @submit.prevent="saveClient">
-                <VRow dense>
+                <VRow>
                     <!-- 👉 Datos Personales -->
                     <VCol cols="12">
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos de la Empresa</h5>
                     </VCol>
-
-                    <VCol cols="12" md="12">
-                        <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
-                            placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
-                            :rules="rules.full_name" required clearable />
-                    </VCol>
-
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.type_document" :items="typeDocumentOptions" item-title="title"
                             item-value="value" label="Tipo de Documento *" prepend-inner-icon="ri-file-text-line"
                             required clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de RUC (13 dígitos)" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="12" class="mb-3">
+                        <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
+                            placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
+                            :rules="rules.full_name" required clearable />
+                    </VCol>
+
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
                             prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Constitución" type="date"
                             prepend-inner-icon="ri-calendar-event-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.state" :items="stateOptions" item-title="title" item-value="value"
                             label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado"
                             clearable />
@@ -346,22 +360,22 @@ onMounted(() => {
                         <h5 class="text-h5 font-weight-bold mb-3 text-primary">Contacto y Ubicación</h5>
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
                             placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.region" label="Región" placeholder="Región"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.provincia" label="Provincia" placeholder="Provincia"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="4">
+                    <VCol cols="12" md="4" class="mb-3">
                         <VTextField v-model="clientForm.distrito" label="Distrito" placeholder="Distrito"
                             prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>

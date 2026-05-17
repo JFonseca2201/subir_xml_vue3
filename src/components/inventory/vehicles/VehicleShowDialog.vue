@@ -165,8 +165,8 @@ const closeDialog = () => {
                                 <span class="text-h6 font-weight-bold">Información Principal</span>
                             </VCardTitle>
 
-                            <VRow dense>
-                                <VCol cols="12">
+                            <VRow>
+                                <VCol cols="12" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Placa</div>
                                         <div class="text-body-1 font-weight-bold">{{ vehicleData.license_plate }}
@@ -174,7 +174,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="6">
+                                <VCol cols="6" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Marca</div>
                                         <div class="text-body-2 font-weight-medium">{{ getBrandName }}
@@ -182,7 +182,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="6">
+                                <VCol cols="6" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Modelo</div>
                                         <div class="text-body-2 font-weight-medium">{{ vehicleData.model }}
@@ -190,7 +190,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="6">
+                                <VCol cols="6" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Año</div>
                                         <div class="text-body-2">{{ vehicleData.year }}
@@ -198,7 +198,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="6">
+                                <VCol cols="6" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Tipo</div>
                                         <div class="d-flex align-center">
@@ -208,7 +208,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="12">
+                                <VCol cols="12" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Estado</div>
                                         <VChip :color="getVehicleStatus.color" variant="tonal" size="small">
@@ -217,7 +217,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="12">
+                                <VCol cols="12" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Color</div>
                                         <div class="d-flex align-center gap-2">
@@ -239,8 +239,8 @@ const closeDialog = () => {
                                 <span class="text-h6 font-weight-bold">Descripción</span>
                             </VCardTitle>
 
-                            <VRow dense>
-                                <VCol cols="12">
+                            <VRow>
+                                <VCol cols="12" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-body-2 text-pre-wrap">
                                             {{ vehicleData.description || 'No hay descripción disponible' }}
@@ -259,8 +259,8 @@ const closeDialog = () => {
                                 <span class="text-h6 font-weight-bold">Información del Sistema</span>
                             </VCardTitle>
 
-                            <VRow dense>
-                                <VCol cols="12" md="4">
+                            <VRow>
+                                <VCol cols="12" md="4" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">ID del Vehículo</div>
                                         <div class="d-flex align-center">
@@ -270,7 +270,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="12" md="4">
+                                <VCol cols="12" md="4" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Fecha de Creación</div>
                                         <div class="d-flex align-center">
@@ -282,7 +282,7 @@ const closeDialog = () => {
                                     </div>
                                 </VCol>
 
-                                <VCol cols="12" md="4">
+                                <VCol cols="12" md="4" class="mb-3">
                                     <div class="mb-3">
                                         <div class="text-caption text-medium-emphasis mb-1">Última Actualización</div>
                                         <div class="d-flex align-center">
