@@ -159,7 +159,7 @@ const generatePDF = async () => {
         const params = {
             ...searchForm.value
         }
-        
+
         // Limpiar parámetros nulos o vacíos
         Object.keys(params).forEach(key => {
             if (params[key] === null || params[key] === '') {
@@ -195,21 +195,20 @@ const generateSinglePDF = async (sale) => {
     try {
         const response = await $api(`sales/${sale.id}/pdf`, {
             method: 'GET',
-            responseType: 'blob'
+            //responseType: 'blob'
         })
+        console.log('Respuesta cruda:', response)
 
-        // Crear un blob y descargar el PDF
+        // 1. Crear el blob con el tipo MIME correcto para PDF
         const blob = new Blob([response], { type: 'application/pdf' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${sale.document_type}_${sale.document_number}.pdf`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
 
-        showNotification('PDF generado exitosamente', 'success')
+        // 2. Crear una URL temporal para el navegador
+        const url = window.URL.createObjectURL(blob)
+
+        // 3. Abrir la URL en una nueva pestaña en lugar de simular el clic de descarga
+        window.open(url, '_blank')
+
+        showNotification('PDF cargado exitosamente', 'success')
     } catch (error) {
         console.error('Error al generar PDF:', error)
         showNotification('Error al generar el PDF', 'error')
@@ -274,16 +273,14 @@ onMounted(() => {
                 <VRow class="mb-2">
                     <VCol cols="12" sm="6" md="3">
                         <VTextField v-model="searchForm.search" label="Buscar por nombre o cédula"
-                            placeholder="Nombre o cédula del cliente..."
-                            prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable"
-                            hide-details="auto" clearable />
+                            placeholder="Nombre o cédula del cliente..." prepend-inner-icon="ri-search-line"
+                            variant="outlined" density="comfortable" hide-details="auto" clearable />
                     </VCol>
 
                     <VCol cols="12" sm="6" md="2">
                         <VSelect v-model="searchForm.document_type" :items="documentTypeOptions" item-title="title"
-                            item-value="value" label="Tipo" placeholder="Todos"
-                            prepend-inner-icon="ri-file-list-3-line" variant="outlined" density="comfortable"
-                            hide-details="auto" clearable />
+                            item-value="value" label="Tipo" placeholder="Todos" prepend-inner-icon="ri-file-list-3-line"
+                            variant="outlined" density="comfortable" hide-details="auto" clearable />
                     </VCol>
 
                     <VCol cols="12" sm="6" md="2">
