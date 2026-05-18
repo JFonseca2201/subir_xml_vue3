@@ -140,35 +140,35 @@ const store = async () => {
     }
   }
 
-  /*   const productData = {
-      description: product.value.description.toUpperCase().trim(),
-      sku: product.value.sku.toUpperCase().trim(),
-      code_aux: product.value.code_aux.toUpperCase().trim(),
-      uses: product.value.uses,
-      product_categorie_id: product.value.product_categorie_id || null,
-      warehouse_id: product.value.warehouse_id || 1,
-      unit_id: product.value.unit_id || 1,
-      supplier_id: product.value.supplier_id || 1,
-  
-      price: parseFloat(product.value.price) || 0,
-      price_sale: parseFloat(product.value.price_sale) || 0,
-      purchase_price: parseFloat(product.value.purchase_price) || 0,
-      tax_rate: parseFloat(product.value.tax_rate) || 0,
-      max_discount: parseFloat(product.value.max_discount) || 0,
-      discount_percentage: parseFloat(product.value.discount_percentage) || 0,
-  
-      brand: product.value.brand.toUpperCase().trim(),
-      stock: parseFloat(product.value.stock) || 0,
-      item_type: parseInt(product.value.item_type) || 1,
-      min_stock: parseFloat(product.value.min_stock) || 0,
-      max_stock: parseFloat(product.value.max_stock) || 0,
-  
-      is_taxable: (product.value.is_taxable === true) ? "1" : "2",
-      is_gift: (product.value.is_gift === true) ? "1" : "2",
-  
-      notes: product.value.notes.trim(),
-      state: state.value,
-    } */
+  const productData = {
+    description: product.value.description.toUpperCase().trim(),
+    sku: product.value.sku.toUpperCase().trim(),
+    code_aux: product.value.code_aux.toUpperCase().trim(),
+    uses: product.value.uses,
+    product_categorie_id: product.value.product_categorie_id || null,
+    warehouse_id: product.value.warehouse_id || 1,
+    unit_id: product.value.unit_id || 1,
+    supplier_id: product.value.supplier_id || 1,
+
+    price: parseFloat(product.value.price) || 0,
+    price_sale: parseFloat(product.value.price_sale) || 0,
+    purchase_price: parseFloat(product.value.purchase_price) || 0,
+    tax_rate: parseFloat(product.value.tax_rate) || 0,
+    max_discount: parseFloat(product.value.max_discount) || 0,
+    discount_percentage: parseFloat(product.value.discount_percentage) || 0,
+
+    brand: product.value.brand.toUpperCase().trim(),
+    stock: parseFloat(product.value.stock) || 0,
+    item_type: parseInt(product.value.item_type) || 1,
+    min_stock: parseFloat(product.value.min_stock) || 0,
+    max_stock: parseFloat(product.value.max_stock) || 0,
+
+    is_taxable: (product.value.is_taxable === true) ? "1" : "2",
+    is_gift: (product.value.is_gift === true) ? "1" : "2",
+
+    notes: product.value.notes.trim(),
+    state: state.value,
+  }
   let formData = new FormData();
   formData.append("description", product.value.description);
   formData.append("sku", product.value.sku);
@@ -223,6 +223,7 @@ const store = async () => {
     showNotification('Error al crear producto', 'error')
   } finally {
     loader.stop()
+    isLoading.value = false;
   }
 }
 
