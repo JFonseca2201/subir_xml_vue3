@@ -67,16 +67,16 @@ const generateDocumentNumber = (type) => {
     const dateStr = today.getFullYear() +
         String(today.getMonth() + 1).padStart(2, '0') +
         String(today.getDate()).padStart(2, '0')
-    
+
     const prefixes = {
         'quote': 'COT',
         'sale_note': 'NV',
         'invoice': 'FAC'
     }
-    
+
     const prefix = prefixes[type] || 'DOC'
     const randomNum = String(Math.floor(Math.random() * 999)).padStart(3, '0')
-    
+
     return `${prefix}-${dateStr}-${randomNum}`
 }
 
@@ -137,7 +137,8 @@ const loadInitialData = async () => {
         // Agregar campo de búsqueda combinado para productos
         products.value = rawProducts.map(p => ({
             ...p,
-            searchText: `${p.name || ''} ${p.code || ''} ${p.description || ''}`.toLowerCase()
+            searchText: `${p.name || ''} ${p.code || ''} ${p.description || ''}`.toLowerCase(),
+            displayTitle: p.name || p.description || ''
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 
@@ -240,30 +241,10 @@ const onProductSelected = (product) => {
     }
 }
 
-const onProductItemClick = (product) => {
-    // Manejar clic en el item de la lista
-    if (product) {
-        const existingItem = sale.value.items.find(i => i.product_id === product.id)
-        if (existingItem) {
-            existingItem.quantity++
-        } else {
-            sale.value.items.push({
-                product_id: product.id,
-                description: product.description || product.name || '',
-                quantity: 1,
-                price: product.price_sale || product.price || 0,
-                discount: 0
-            })
-        }
-        // Inicializar pago distribuido si es el primer item
-        initializePaymentDistribution()
-        // Limpiar campo de búsqueda
-        searchProduct.value = null
-    }
-}
-
-const onSearchUpdate = (value) => {
-    // No hacer nada, el filtrado se maneja con searchText
+const productFilter = (value, query, item) => {
+    if (query == null || query === '') return true
+    const searchText = item?.raw?.searchText || ''
+    return searchText.includes(query.toLowerCase())
 }
 
 // Cálculos
@@ -442,14 +423,14 @@ onMounted(() => {
                         </h2>
                     </div>
                     <div class="mb-4">
-                        <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :items="products" item-title="searchText" return-object
-                            label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código o descripción..."
+                        <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :items="products"
+                            item-title="displayTitle" return-object label="Buscar y agregar producto"
+                            placeholder="Escribe para buscar por nombre, código o descripción..."
                             prepend-inner-icon="ri-search-line" variant="outlined" clearable
-                            @update:search="onSearchUpdate" no-filter>
+                            :custom-filter="productFilter" @update:model-value="onProductSelected">
                             <template v-slot:item="{ props, item }">
                                 <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                                    :subtitle="item.raw.code ? `Código: ${item.raw.code}` : ''" 
-                                    @click="onProductItemClick(item.raw)" />
+                                    :subtitle="item.raw.code ? `Código: ${item.raw.code}` : ''" />
                             </template>
                         </VAutocomplete>
                     </div>
@@ -524,13 +505,15 @@ onMounted(() => {
                             <VCard class="mb-4 elevation-3 border-thin">
                                 <VCardText class="pa-5">
                                     <!-- Header con gradiente -->
-                                    <div class="d-flex align-center mb-5 pa-4 rounded-lg bg-gradient-to-r from-primary to-primary-darken-1">
+                                    <div
+                                        class="d-flex align-center mb-5 pa-4 rounded-lg bg-gradient-to-r from-primary to-primary-darken-1">
                                         <VAvatar color="white" size="52" class="mr-4">
                                             <VIcon icon="ri-wallet-3-line" size="30" color="primary" />
                                         </VAvatar>
                                         <div class="text-white">
                                             <h2 class="text-h5 font-weight-bold mb-1">Forma de Pago</h2>
-                                            <p class="text-body-2 opacity-90 mb-0">Configura cómo recibirás el pago de ${{ total.toFixed(2) }}</p>
+                                            <p class="text-body-2 opacity-90 mb-0">Configura cómo recibirás el pago de
+                                                ${{ total.toFixed(2) }}</p>
                                         </div>
                                     </div>
 
@@ -540,20 +523,23 @@ onMounted(() => {
                                             <VIcon icon="ri-money-dollar-circle-line" size="18" class="mr-1" />
                                             Estado del pago
                                         </label>
-                                        <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title"
-                                            item-value="value" :rules="[requiredRule]" variant="outlined"
-                                            density="comfortable" prepend-inner-icon="ri-flag-line"
+                                        <VSelect v-model="sale.payment_status" :items="paymentStatuses"
+                                            item-title="title" item-value="value" :rules="[requiredRule]"
+                                            variant="outlined" density="comfortable" prepend-inner-icon="ri-flag-line"
                                             hide-details="auto" bg-color="grey-lighten-5" rounded="lg" />
                                     </div>
 
                                     <!-- Opción de crédito -->
                                     <div class="mb-4">
-                                        <VCard variant="outlined" class="pa-3 rounded-lg cursor-pointer hover-bg-grey-lighten-4"
+                                        <VCard variant="outlined"
+                                            class="pa-3 rounded-lg cursor-pointer hover-bg-grey-lighten-4"
                                             :class="sale.is_credited ? 'border-primary bg-primary-lighten-5' : ''"
                                             @click="onCreditChange">
                                             <div class="d-flex align-center">
-                                                <VIcon :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                                                    :color="sale.is_credited ? 'primary' : 'grey'" size="24" class="mr-2" />
+                                                <VIcon
+                                                    :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                                                    :color="sale.is_credited ? 'primary' : 'grey'" size="24"
+                                                    class="mr-2" />
                                                 <div>
                                                     <div class="text-body-2 font-weight-medium">Venta a crédito</div>
                                                     <div class="text-caption text-medium-emphasis">Pago diferido</div>
@@ -574,7 +560,9 @@ onMounted(() => {
                                             </VAvatar>
                                             <div>
                                                 <h3 class="text-subtitle-1 font-weight-bold mb-0">Pagos</h3>
-                                                <p class="text-caption text-medium-emphasis mb-0">Total: ${{ total.toFixed(2) }} - Distribuido: ${{ totalDistributed.toFixed(2) }}</p>
+                                                <p class="text-caption text-medium-emphasis mb-0">Total: ${{
+                                                    total.toFixed(2) }} - Distribuido: ${{ totalDistributed.toFixed(2)
+                                                    }}</p>
                                             </div>
                                         </div>
                                         <VBtn color="primary" variant="elevated" prepend-icon="ri-add-circle-line"
@@ -607,29 +595,31 @@ onMounted(() => {
                                                             @update:model-value="(val) => onPaymentMethodChange(dist, val)" />
                                                     </td>
                                                     <td class="pa-2">
-                                                        <VSelect v-if="dist.payment_method === 'Transferencia'" 
-                                                            v-model="dist.account_id" 
-                                                            :items="accounts.filter(a => a.name?.toLowerCase().includes('pichincha') || a.name?.toLowerCase().includes('guayaquil'))" 
-                                                            item-title="name" item-value="id" label="Cuenta bancaria" variant="outlined" density="compact"
-                                                            hide-details="auto" :rules="[requiredRule]" bg-color="white"
+                                                        <VSelect v-if="dist.payment_method === 'Transferencia'"
+                                                            v-model="dist.account_id" :items="accounts"
+                                                            item-title="name" item-value="id" label="Cuenta bancaria"
+                                                            variant="outlined" density="compact" hide-details="auto"
+                                                            :rules="[requiredRule]" bg-color="white"
                                                             prepend-inner-icon="ri-bank-line" />
-                                                        <VTextField v-else 
-                                                            :value="dist.payment_method === 'Efectivo' ? 'Caja Chica' : ''" 
-                                                            label="Cuenta" variant="outlined" density="compact" 
+                                                        <VTextField v-else
+                                                            :value="dist.payment_method === 'Efectivo' ? 'Caja Chica' : ''"
+                                                            label="Cuenta" variant="outlined" density="compact"
                                                             hide-details="auto" bg-color="grey-lighten-4" readonly
                                                             prepend-inner-icon="ri-bank-line" />
                                                         <!-- Campo oculto para account_id cuando es efectivo -->
-                                                        <input type="hidden" v-if="dist.payment_method === 'Efectivo'" v-model="dist.account_id" />
+                                                        <input type="hidden" v-if="dist.payment_method === 'Efectivo'"
+                                                            v-model="dist.account_id" />
                                                     </td>
                                                     <td class="pa-2">
-                                                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01"
-                                                            label="Monto" variant="outlined" density="compact" hide-details="auto"
+                                                        <VTextField v-model.number="dist.amount" type="number" min="0"
+                                                            step="0.01" label="Monto" variant="outlined"
+                                                            density="compact" hide-details="auto"
                                                             :rules="[requiredRule]" prefix="$" bg-color="white"
                                                             prepend-inner-icon="ri-money-dollar-circle-line" />
                                                     </td>
                                                     <td class="pa-2 text-center">
-                                                        <VBtn icon="ri-delete-bin-line" variant="text" color="error" size="small"
-                                                            @click="removePaymentDistribution(index)"
+                                                        <VBtn icon="ri-delete-bin-line" variant="text" color="error"
+                                                            size="small" @click="removePaymentDistribution(index)"
                                                             :disabled="paymentDistributions.length === 1" />
                                                     </td>
                                                 </tr>
@@ -638,19 +628,24 @@ onMounted(() => {
                                     </div>
 
                                     <!-- Resumen de pagos -->
-                                    <VCard v-if="paymentDistributions.length > 0" variant="tonal" class="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 elevation-2">
+                                    <VCard v-if="paymentDistributions.length > 0" variant="tonal"
+                                        class="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 elevation-2">
                                         <VCardText class="pa-4">
                                             <div class="d-flex flex-column gap-3">
                                                 <div class="d-flex justify-space-between align-center">
-                                                    <span class="text-body-2 font-weight-medium">Total distribuido:</span>
-                                                    <VChip color="primary" size="small" variant="elevated" class="elevation-1">
+                                                    <span class="text-body-2 font-weight-medium">Total
+                                                        distribuido:</span>
+                                                    <VChip color="primary" size="small" variant="elevated"
+                                                        class="elevation-1">
                                                         ${{ totalDistributed.toFixed(2) }}
                                                     </VChip>
                                                 </div>
                                                 <VDivider />
                                                 <div class="d-flex justify-space-between align-center">
-                                                    <span class="text-body-2 font-weight-bold">Falta por distribuir:</span>
-                                                    <VChip :color="remainingAmount >= 0 ? 'success' : 'error'" size="small" variant="elevated" class="elevation-1">
+                                                    <span class="text-body-2 font-weight-bold">Falta por
+                                                        distribuir:</span>
+                                                    <VChip :color="remainingAmount >= 0 ? 'success' : 'error'"
+                                                        size="small" variant="elevated" class="elevation-1">
                                                         ${{ remainingAmount.toFixed(2) }}
                                                     </VChip>
                                                 </div>
@@ -661,7 +656,8 @@ onMounted(() => {
                             </VCard>
                         </template>
                         <div :class="sale.document_type !== 'quote' ? 'mt-4' : ''">
-                            <h2 v-if="sale.document_type === 'quote'" class="text-h6 font-weight-medium mb-4 d-flex align-center">
+                            <h2 v-if="sale.document_type === 'quote'"
+                                class="text-h6 font-weight-medium mb-4 d-flex align-center">
                                 <VIcon icon="ri-edit-2-line" class="mr-2" /> Notas Adicionales
                             </h2>
                             <VTextarea v-model="sale.observations" label="Observaciones"
@@ -673,17 +669,17 @@ onMounted(() => {
                     <VCol cols="12" md="6">
                         <VCard variant="tonal" class="pa-4 bg-grey-lighten-4">
                             <h2 class="text-h6 font-weight-medium mb-4 text-right">Resumen</h2>
-                            
+
                             <div class="d-flex justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Subtotal:</span>
                                 <span>${{ grossSubtotal.toFixed(2) }}</span>
                             </div>
-                            
+
                             <div class="d-flex justify-space-between mb-2 text-error" v-if="totalDiscount > 0">
                                 <span class="text-medium-emphasis">Descuento:</span>
                                 <span>-${{ totalDiscount.toFixed(2) }}</span>
                             </div>
-                            
+
                             <div class="d-flex justify-space-between mb-2">
                                 <span class="text-medium-emphasis">Base Imponible:</span>
                                 <span>${{ subtotal.toFixed(2) }}</span>
@@ -693,11 +689,13 @@ onMounted(() => {
                                 <span class="text-medium-emphasis">IVA (15%):</span>
                                 <span>${{ taxAmount.toFixed(2) }}</span>
                             </div>
-                            
+
                             <VDivider class="my-3" />
-                            
+
                             <div class="d-flex justify-space-between align-center">
-                                <span class="text-h6 font-weight-bold">{{ sale.document_type === 'quote' ? 'Total Cotizado:' : 'Total a Pagar:' }}</span>
+                                <span class="text-h6 font-weight-bold">
+                                    {{ sale.document_type === 'quote' ? 'Total Cotizado:' : 'Totala Pagar:' }}
+                                </span>
                                 <span class="text-h5 font-weight-bold text-primary">${{ total.toFixed(2) }}</span>
                             </div>
                         </VCard>
@@ -712,7 +710,7 @@ onMounted(() => {
                     </VBtn>
                     <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
                         :loading="loader.loading">
-                        Registrar Documento
+                        Registrar
                     </VBtn>
                 </div>
             </VForm>
