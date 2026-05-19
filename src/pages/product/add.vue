@@ -4,9 +4,11 @@ import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 const dropZoneRef = ref()
 const fileData = ref([])
 const { open, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
+const router = useRouter();
 function onDrop(DroppedFiles) {
   DroppedFiles?.forEach(file => {
     if (file.type.slice(0, 6) !== 'image/') {
@@ -75,8 +77,13 @@ const product = ref({
   is_gift: false,
   notes: '',
   state: 1,
+  user_id: null
 })
 
+const userId = ref(null);
+const getUserId = () => {
+  userId.value = localStorage.getItem('user_id');
+}
 
 const requiredRule = v => !!v || 'Campo obligatorio'
 const minLengthRule = (min) => v => !v || v.length >= min || `Mínimo ${min} caracteres`
@@ -94,7 +101,7 @@ const priceRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const discountRules = [minValueRule(0), maxDecimalRule(2)]
 const stockRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const percentageRules = [minValueRule(0), maxPercentageRule]
-
+const backRoute = ref('/product/list')
 const calculateMaxDiscount = () => {
   console.log('🔄 Calculando descuento máximo...')
   const purchasePrice = parseFloat(product.value.purchase_price) || 0
@@ -194,13 +201,14 @@ const store = async () => {
   formData.append("notes", product.value.notes);
   formData.append("state", state.value);
   formData.append("imagen", fileData.value[0].file);
+  formData.append("user_id", userId.value);
 
 
-  /*   formData.forEach((value, key) => {
-      console.log(key, value);
-    });
-    loader.stop();
-    return; */
+  /* formData.forEach((value, key) => {
+    console.log(key, value);
+  });
+  loader.stop();
+  return; */
 
   try {
     const resp = await $api("products", {
@@ -544,7 +552,7 @@ const loadInitialData = async () => {
 
         <!-- Botones de Acción -->
         <div class="d-flex justify-end gap-3">
-          <VBtn variant="outlined" @click="onFormReset" prepend-icon="ri-close-line" :disabled="isLoading">
+          <VBtn variant="outlined" @click="router.push(backRoute)" prepend-icon="ri-close-line" :disabled="isLoading">
             Cancelar
           </VBtn>
 

@@ -3,6 +3,8 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
+import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
 
 // Router & Composables
 const router = useRouter()
@@ -12,13 +14,18 @@ const { showNotification } = useGlobalToast()
 const loading = ref(false)
 const sales = ref([])
 
+// Estado de los diálogos
+const isViewDialogVisible = ref(false)
+const isDeleteDialogVisible = ref(false)
+const selectedSale = ref(null)
+
 // Formulario de búsqueda
 const searchForm = ref({
     document_type: null,
     payment_status: null,
     start_date: null,
     end_date: null,
-    search: null, // Búsqueda por nombre o cédula
+    search: null, // Búsqueda por nombre, cédula o placa de vehículo
 })
 
 // Paginación
@@ -142,8 +149,22 @@ const getStatusInfo = (status) => {
 }
 
 // Acciones
-const viewSale = (sale) => {
-    router.push(`/sales/view/${sale.id}`)
+const viewSale = async (sale) => {
+    try {
+        loading.value = true
+        const response = await $api(`sales/${sale.id}`)
+        if (response?.success || response?.data) {
+            selectedSale.value = response.data || response
+            isViewDialogVisible.value = true
+        } else {
+            showNotification('Error al cargar los detalles de la venta', 'error')
+        }
+    } catch (error) {
+        console.error('Error al cargar venta:', error)
+        showNotification('Error al cargar los detalles de la venta', 'error')
+    } finally {
+        loading.value = false
+    }
 }
 
 const editSale = (sale) => {
@@ -215,27 +236,14 @@ const generateSinglePDF = async (sale) => {
     }
 }
 
-const cancelSale = async (sale) => {
+const cancelSale = (sale) => {
     if (sale.status === 'canceled') return
+    selectedSale.value = sale
+    isDeleteDialogVisible.value = true
+}
 
-    if (!window.confirm(`¿Está seguro de anular el documento ${sale.document_number}? Esta acción revertirá el stock y anulará la transacción.`)) {
-        return
-    }
-
-    try {
-        const response = await $api(`sales/${sale.id}`, {
-            method: 'DELETE'
-        })
-
-        if (response?.success) {
-            showNotification('Venta anulada correctamente', 'success')
-            loadSales()
-        }
-    } catch (error) {
-        console.error('Error al anular venta:', error)
-        const errMsg = error.response?._data?.message || 'Error al procesar la anulación'
-        showNotification(errMsg, 'error')
-    }
+const handleDeleteSale = (sale) => {
+    loadSales()
 }
 
 // Watchers
@@ -272,8 +280,8 @@ onMounted(() => {
             <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
                 <VRow class="mb-2">
                     <VCol cols="12" sm="6" md="3">
-                        <VTextField v-model="searchForm.search" label="Buscar por nombre o cédula"
-                            placeholder="Nombre o cédula del cliente..." prepend-inner-icon="ri-search-line"
+                        <VTextField v-model="searchForm.search" label="Buscar por nombre, cédula o placa"
+                            placeholder="Nombre, cédula o placa del vehículo..." prepend-inner-icon="ri-search-line"
                             variant="outlined" density="comfortable" hide-details="auto" clearable />
                     </VCol>
 
@@ -349,11 +357,7 @@ onMounted(() => {
                     <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
                         class="align-middle">
                         <td>
-                            <div class="d-flex flex-column" v-if="item">
-                                <VChip :color="getDocumentTypeInfo(item.document_type)?.color || 'grey'" size="x-small"
-                                    class="mb-1 align-self-start font-weight-bold" variant="flat">
-                                    {{ getDocumentTypeInfo(item.document_type)?.text || item.document_type }}
-                                </VChip>
+                            <div class="d-flex flex-column" v-if="item">                                
                                 <span class="font-weight-medium">{{ item.document_number }}</span>
                             </div>
                         </td>
@@ -438,5 +442,12 @@ onMounted(() => {
                 </div>
             </div>
         </VCard>
+
+        <!-- Dialogs -->
+        <SaleViewDialog v-if="isViewDialogVisible" v-model:isDialogVisible="isViewDialogVisible"
+            :saleData="selectedSale" />
+
+        <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
+            :saleSelected="selectedSale" @deleteSale="handleDeleteSale" />
     </div>
 </template>

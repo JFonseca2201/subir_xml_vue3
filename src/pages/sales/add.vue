@@ -8,6 +8,11 @@ import { useLoaderStore } from '@/stores/loader'
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+const userId = ref(null)
+const getUserId = () => {
+    const userData = JSON.parse(localStorage.getItem('user'))
+    userId.value = userData ? userData.id : null
+}
 
 const formRef = ref(null)
 const isLoading = ref(false)
@@ -49,7 +54,8 @@ const sale = ref({
     is_credited: false,
     payment_method: 'Efectivo',
     observations: '',
-    items: []
+    items: [],
+    user_id: userId.value,
 })
 
 // Watch para cambiar estado de pago cuando es crédito
@@ -273,8 +279,35 @@ const total = computed(() => {
     return subtotal.value + taxAmount.value
 })
 
+// Computed para verificar si es cotización
+const isQuote = computed(() => {
+    return sale.value.document_type === 'quote'
+})
+
+// Computed para verificar si se puede convertir a venta
+const canConvertToSale = computed(() => {
+    return isQuote.value && sale.value.status !== 'canceled' && sale.value.items.length > 0
+})
+
+// Computed para obtener el cliente seleccionado
+const selectedClient = computed(() => {
+    if (!sale.value.client_id) return null
+    return clients.value.find(c => c.id === sale.value.client_id)
+})
+
+// Computed para obtener el vehículo seleccionado
+const selectedVehicle = computed(() => {
+    if (!sale.value.vehicle_id) return null
+    return vehicles.value.find(v => v.id === sale.value.vehicle_id)
+})
+
 // Envío del formulario
 const submitForm = async () => {
+    getUserId();
+    sale.value.user_id = userId.value;
+    console.log(userId.value);
+
+    //return
     if (formRef.value) {
         const { valid } = await formRef.value.validate()
         if (!valid) return
@@ -411,6 +444,68 @@ onMounted(() => {
                                 hide-details="auto" />
                         </VCol>
                     </VRow>
+                </div>
+
+                <VDivider class="mb-6" />
+
+                <!-- Información del Cliente -->
+                <div class="mb-6" v-if="selectedClient">
+                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
+                        <VIcon icon="ri-user-line" class="mr-2" /> Información del Cliente
+                    </h2>
+                    <VCard class="pa-4" variant="tonal" color="blue-lighten-5">
+                        <VRow>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Nombre Completo</div>
+                                    <div class="text-body-1 font-weight-medium">{{ getClientName(selectedClient) }}</div>
+                                </div>
+                            </VCol>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Documento</div>
+                                    <div class="text-body-2">{{ selectedClient.n_document || '-' }}</div>
+                                </div>
+                            </VCol>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Teléfono</div>
+                                    <div class="text-body-2">{{ selectedClient.phone || '-' }}</div>
+                                </div>
+                            </VCol>
+                        </VRow>
+                    </VCard>
+                </div>
+
+                <VDivider class="mb-6" />
+
+                <!-- Información del Vehículo -->
+                <div class="mb-6" v-if="selectedVehicle">
+                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
+                        <VIcon icon="ri-car-line" class="mr-2" /> Información del Vehículo
+                    </h2>
+                    <VCard class="pa-4" variant="tonal" color="green-lighten-5">
+                        <VRow>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Placa</div>
+                                    <div class="text-body-1 font-weight-medium">{{ selectedVehicle.license_plate }}</div>
+                                </div>
+                            </VCol>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Marca y Modelo</div>
+                                    <div class="text-body-2">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
+                                </div>
+                            </VCol>
+                            <VCol cols="12" md="4">
+                                <div class="mb-2">
+                                    <div class="text-caption text-medium-emphasis mb-1">Año</div>
+                                    <div class="text-body-2">{{ selectedVehicle.year || '-' }}</div>
+                                </div>
+                            </VCol>
+                        </VRow>
+                    </VCard>
                 </div>
 
                 <VDivider class="mb-6" />
