@@ -5,6 +5,10 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 
+import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
+import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
+import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
+
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
@@ -102,6 +106,43 @@ const initializePaymentDistribution = () => {
             amount: 0,
             payment_method: 'Efectivo'
         })
+    }
+}
+
+// Estado de diálogos y manejadores
+const isClientFinalAddDialogVisible = ref(false)
+const isClientCompanyAddDialogVisible = ref(false)
+const isVehicleAddDialogVisible = ref(false)
+
+const handleClientAdded = async (clientData) => {
+    if (clientData) {
+        const newId = clientData.id || Date.now()
+        const newClient = { ...clientData, id: newId }
+
+        const exists = clients.value.find(c => (c.n_document && c.n_document === newClient.n_document) || c.id === newId)
+        if (!exists) {
+            // Al reasignar el arreglo forzamos a que Vuetify detecte el cambio instantáneamente
+            clients.value = [newClient, ...clients.value]
+        }
+
+        await nextTick()
+        sale.value.client_id = exists ? exists.id : newId
+    }
+}
+
+const handleVehicleAdded = async (vehicleData) => {
+    if (vehicleData) {
+        const newId = vehicleData.id || Date.now()
+        const newVehicle = { ...vehicleData, id: newId }
+
+        const exists = vehicles.value.find(v => (v.license_plate && v.license_plate === newVehicle.license_plate) || v.id === newId)
+        if (!exists) {
+            // Al reasignar el arreglo forzamos a que Vuetify detecte el cambio instantáneamente
+            vehicles.value = [newVehicle, ...vehicles.value]
+        }
+
+        await nextTick()
+        sale.value.vehicle_id = exists ? exists.id : newId
     }
 }
 
@@ -253,6 +294,14 @@ const productFilter = (value, query, item) => {
     return searchText.includes(query.toLowerCase())
 }
 
+const clientFilter = (value, query, item) => {
+    if (query == null || query === '') return true
+    const client = item?.raw
+    if (!client) return false
+    const searchText = `${getClientName(client)} ${client.n_document || ''}`.toLowerCase()
+    return searchText.includes(query.toLowerCase())
+}
+
 // Cálculos
 const TAX_RATE = 0.15 // 15% IVA
 
@@ -396,9 +445,21 @@ onMounted(() => {
             <VForm ref="formRef" @submit.prevent="submitForm">
                 <!-- Datos Generales -->
                 <div class="mb-6">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-file-info-line" class="mr-2" /> Datos Generales
-                    </h2>
+                    <VCard class="elevation-2 mb-4">
+                        <VCardText class="pa-4">
+                            <div
+                                class="d-flex align-center pa-3 rounded-lg bg-gradient-to-r from-blue to-blue-darken-1">
+                                <VAvatar color="white" size="48" class="mr-3">
+                                    <VIcon icon="ri-file-list-3-line" size="28" color="blue" />
+                                </VAvatar>
+                                <div class="text-white">
+                                    <h2 class="text-h5 font-weight-bold mb-1">Información del Documento</h2>
+                                    <p class="text-body-2 opacity-90 mb-0">Configura los datos principales de la venta
+                                    </p>
+                                </div>
+                            </div>
+                        </VCardText>
+                    </VCard>
                     <VRow>
                         <VCol cols="12" md="4">
                             <VSelect v-model="sale.document_type" :items="documentTypes" item-title="title"
@@ -417,26 +478,53 @@ onMounted(() => {
                                 prepend-inner-icon="ri-calendar-line" hide-details="auto" required />
                         </VCol>
                         <VCol cols="12" md="4">
-                            <VAutocomplete v-model="sale.client_id" :items="clients" :item-title="getClientName"
-                                item-value="id" label="Cliente" :rules="[requiredRule]" variant="outlined"
-                                density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto" required
-                                placeholder="Seleccionar cliente" clearable>
-                                <template v-slot:item="{ props, item }">
-                                    <VListItem v-bind="props" :title="getClientName(item.raw)"
-                                        :subtitle="item.raw?.n_document" />
-                                </template>
-                            </VAutocomplete>
+                            <VRow class="align-center">
+                                <VCol cols="10">
+                                    <VAutocomplete v-model="sale.client_id" :items="clients" :item-title="getClientName"
+                                        item-value="id" label="Cliente" :rules="[requiredRule]" variant="outlined"
+                                        density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto"
+                                        required placeholder="Buscar por nombre o documento" clearable
+                                        :custom-filter="clientFilter">
+                                        <template v-slot:item="{ props, item }">
+                                            <VListItem v-bind="props" :title="getClientName(item.raw)"
+                                                :subtitle="item.raw?.n_document" />
+                                        </template>
+                                    </VAutocomplete>
+                                </VCol>
+                                <VCol cols="2">
+                                    <VBtn color="primary" variant="elevated" class="mt-2" size="large"
+                                        prepend-icon="ri-user-add-line">
+                                        <VMenu activator="parent">
+                                            <VList>
+                                                <VListItem @click="isClientFinalAddDialogVisible = true"
+                                                    prepend-icon="ri-user-line" title="Cliente Final" />
+                                                <VListItem @click="isClientCompanyAddDialogVisible = true"
+                                                    prepend-icon="ri-building-line" title="Cliente Empresa" />
+                                            </VList>
+                                        </VMenu>
+                                    </VBtn>
+                                </VCol>
+                            </VRow>
                         </VCol>
                         <VCol cols="12" md="4">
-                            <VAutocomplete v-model="sale.vehicle_id" :items="vehicles" item-title="license_plate"
-                                item-value="id" label="Vehículo (Opcional)" variant="outlined" density="comfortable"
-                                prepend-inner-icon="ri-car-line" hide-details="auto" placeholder="Seleccionar vehículo"
-                                clearable>
-                                <template v-slot:item="{ props, item }">
-                                    <VListItem v-bind="props" :title="item.raw.license_plate"
-                                        :subtitle="`${item.raw.brand || ''} ${item.raw.model || ''}`" />
-                                </template>
-                            </VAutocomplete>
+                            <VRow class="align-center">
+                                <VCol cols="10">
+                                    <VAutocomplete v-model="sale.vehicle_id" :items="vehicles"
+                                        item-title="license_plate" item-value="id" label="Vehículo (Opcional)"
+                                        variant="outlined" density="comfortable" prepend-inner-icon="ri-car-line"
+                                        hide-details="auto" placeholder="Seleccionar vehículo" clearable>
+                                        <template v-slot:item="{ props, item }">
+                                            <VListItem v-bind="props" :title="item.raw.license_plate"
+                                                :subtitle="`${item.raw.brand || ''} ${item.raw.model || ''}`" />
+                                        </template>
+                                    </VAutocomplete>
+                                </VCol>
+                                <VCol cols="2">
+                                    <VBtn color="primary" variant="elevated" class="mt-2" size="large"
+                                        prepend-icon="ri-car-line" @click="isVehicleAddDialogVisible = true">
+                                    </VBtn>
+                                </VCol>
+                            </VRow>
                         </VCol>
                         <VCol cols="12" md="4">
                             <VTextField v-model="sale.mileage" label="Kilometraje (Opcional)" type="number"
@@ -448,75 +536,106 @@ onMounted(() => {
 
                 <VDivider class="mb-6" />
 
-                <!-- Información del Cliente -->
-                <div class="mb-6" v-if="selectedClient">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-user-line" class="mr-2" /> Información del Cliente
-                    </h2>
-                    <VCard class="pa-4" variant="tonal" color="blue-lighten-5">
-                        <VRow>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Nombre Completo</div>
-                                    <div class="text-body-1 font-weight-medium">{{ getClientName(selectedClient) }}</div>
+                <!-- Información del Cliente y Vehículo en dos columnas -->
+                <VRow>
+                    <!-- Información del Cliente -->
+                    <VCol cols="12" md="4" v-if="selectedClient">
+                        <VCard variant="outlined" class="border-primary border-opacity-25 rounded-lg">
+                            <VCardItem class="pa-3">
+                                <div class="d-flex align-center gap-3">
+                                    <VAvatar color="primary" variant="tonal" size="40">
+                                        <VIcon icon="ri-user-line" size="24" />
+                                    </VAvatar>
+                                    <div class="flex-grow-1">
+                                        <div class="text-subtitle-1 font-weight-bold text-truncate">{{
+                                            selectedClient.n_document || '-' }}
+                                        </div>
+                                        <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-id-card-line" size="14" class="mr-1" /> {{
+                                                    selectedClient.address ||
+                                                    '-' }}
+                                            </span>
+                                            <span>•</span>
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-phone-line" size="14" class="mr-1" /> {{
+                                                    selectedClient.phone || '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Documento</div>
-                                    <div class="text-body-2">{{ selectedClient.n_document || '-' }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Teléfono</div>
-                                    <div class="text-body-2">{{ selectedClient.phone || '-' }}</div>
-                                </div>
-                            </VCol>
-                        </VRow>
-                    </VCard>
-                </div>
+                            </VCardItem>
+                        </VCard>
+                    </VCol>
 
-                <VDivider class="mb-6" />
+                    <!-- Información del Vehículo -->
+                    <VCol cols="12" md="4" v-if="selectedVehicle">
+                        <VCard variant="outlined" class="border-success border-opacity-25 rounded-lg">
+                            <VCardItem class="pa-3">
+                                <div class="d-flex align-center gap-3">
+                                    <VAvatar color="success" variant="tonal" size="40">
+                                        <VIcon icon="ri-car-line" size="24" />
+                                    </VAvatar>
+                                    <div class="flex-grow-1">
+                                        <div class="text-subtitle-1 font-weight-bold text-truncate">{{
+                                            selectedVehicle.license_plate }}
+                                        </div>
+                                        <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-car-washing-line" size="14" class="mr-1" /> {{
+                                                    selectedVehicle.brand }}
+                                                {{ selectedVehicle.model }}
+                                            </span>
+                                            <span>•</span>
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-calendar-event-line" size="14" class="mr-1" /> {{
+                                                    selectedVehicle.year
+                                                    || '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </VCardItem>
+                        </VCard>
+                    </VCol>
+                </VRow>
 
-                <!-- Información del Vehículo -->
-                <div class="mb-6" v-if="selectedVehicle">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-car-line" class="mr-2" /> Información del Vehículo
-                    </h2>
-                    <VCard class="pa-4" variant="tonal" color="green-lighten-5">
-                        <VRow>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Placa</div>
-                                    <div class="text-body-1 font-weight-medium">{{ selectedVehicle.license_plate }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Marca y Modelo</div>
-                                    <div class="text-body-2">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Año</div>
-                                    <div class="text-body-2">{{ selectedVehicle.year || '-' }}</div>
-                                </div>
-                            </VCol>
-                        </VRow>
-                    </VCard>
-                </div>
+                <!-- Mensaje cuando no hay cliente seleccionado -->
+                <VRow v-if="!selectedClient">
+                    <VCol cols="8">
+                        <VAlert type="info" variant="tonal" class="mb-4" border="start">
+                            <template v-slot:prepend>
+                                <VIcon icon="ri-information-line" size="24" />
+                            </template>
+                            <div class="text-body-1">
+                                <strong class="d-block mb-1">Selecciona un cliente</strong>
+                                Para ver la información detallada del cliente y su vehículo, primero selecciona un
+                                cliente en el
+                                formulario superior.
+                            </div>
+                        </VAlert>
+                    </VCol>
 
-                <VDivider class="mb-6" />
+                </VRow>
+
+                <VDivider class="mb-6 mt-3" />
 
                 <!-- Detalle de Venta -->
                 <div class="mb-6">
-                    <div class="d-flex justify-space-between align-center mb-4">
-                        <h2 class="text-h6 font-weight-medium d-flex align-center">
-                            <VIcon icon="ri-shopping-cart-2-line" class="mr-2" /> Detalle de Venta
-                        </h2>
-                    </div>
+                    <VCard class="elevation-2 mb-4">
+                        <VCardText class="pa-4">
+                            <div
+                                class="d-flex align-center pa-3 rounded-lg bg-gradient-to-r from-indigo to-indigo-darken-1">
+                                <VAvatar color="white" size="48" class="mr-3">
+                                    <VIcon icon="ri-shopping-cart-2-line" size="28" color="indigo" />
+                                </VAvatar>
+                                <div class="text-white">
+                                    <h2 class="text-h5 font-weight-bold mb-1">Detalle de Venta</h2>
+                                    <p class="text-body-2 opacity-90 mb-0">Productos y servicios del documento</p>
+                                </div>
+                            </div>
+                        </VCardText>
+                    </VCard>
                     <div class="mb-4">
                         <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :items="products"
                             item-title="displayTitle" return-object label="Buscar y agregar producto"
@@ -810,5 +929,13 @@ onMounted(() => {
                 </div>
             </VForm>
         </VCard>
+
+        <!-- Diálogos de creación rápida -->
+        <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible"
+            v-model:isDialogVisible="isClientFinalAddDialogVisible" @addClientFinal="handleClientAdded" />
+        <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
+            v-model:isDialogVisible="isClientCompanyAddDialogVisible" @addClientCompany="handleClientAdded" />
+        <VehicleAddDialog v-if="isVehicleAddDialogVisible" v-model:isDialogVisible="isVehicleAddDialogVisible"
+            @addVehicle="handleVehicleAdded" />
     </div>
 </template>

@@ -357,7 +357,7 @@ onMounted(() => {
                     <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
                         class="align-middle">
                         <td>
-                            <div class="d-flex flex-column" v-if="item">                                
+                            <div class="d-flex flex-column" v-if="item">
                                 <span class="font-weight-medium">{{ item.document_number }}</span>
                             </div>
                         </td>

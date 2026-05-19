@@ -33,6 +33,7 @@ const paymentMethods = [
     { title: 'Tarjeta de Débito', value: 'Tarjeta de Débito' }
 ]
 
+const clients = ref([])
 const vehicles = ref([])
 const products = ref([])
 const accounts = ref([])
@@ -92,6 +93,16 @@ const onCreditChange = () => {
         sale.value.payment_status = 'pending'
     } else {
         sale.value.payment_status = 'paid'
+    }
+}
+
+// Watch para regenerar número cuando cambia el tipo de documento
+const onDocumentTypeChange = () => {
+    // Solo permitir cambiar de cotización a venta, no viceversa
+    if (sale.value.document_type !== 'quote' && sale.value.document_type !== '') {
+        // Si ya es una venta (nota de venta o factura), no permitir cambiar a cotización
+        showNotification('Solo las cotizaciones pueden convertirse a ventas', 'warning')
+        return
     }
 }
 
@@ -190,6 +201,14 @@ const productFilter = (value, query, item) => {
     return searchText.includes(query.toLowerCase())
 }
 
+const clientFilter = (value, query, item) => {
+    if (query == null || query === '') return true
+    const client = item?.raw
+    if (!client) return false
+    const searchText = `${getClientName(client)} ${client.n_document || ''}`.toLowerCase()
+    return searchText.includes(query.toLowerCase())
+}
+
 // Cálculos
 const TAX_RATE = 0.15
 
@@ -229,7 +248,8 @@ const canConvertToSale = computed(() => {
 // Computed para obtener el cliente seleccionado
 const selectedClient = computed(() => {
     if (!sale.value.client_id) return null
-    return sale.value.client
+    // Buscar en la lista de clientes cargados
+    return clients.value.find(c => c.id === sale.value.client_id) || sale.value.client
 })
 
 // Computed para obtener el vehículo seleccionado
@@ -242,8 +262,9 @@ const selectedVehicle = computed(() => {
 const loadSaleData = async () => {
     isLoading.value = true
     try {
-        const [saleRes, vehiclesRes, productsRes, accountsRes] = await Promise.all([
+        const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes] = await Promise.all([
             $api(`sales/${route.params.id}`),
+            $api('clients', { params: { per_page: 1000 } }),
             $api('vehicles', { params: { per_page: 1000 } }),
             $api('products', { params: { per_page: 1000 } }),
             $api('accounts', { params: { per_page: 1000 } })
@@ -286,6 +307,7 @@ const loadSaleData = async () => {
             }))
         }
 
+        clients.value = extractArray(clientsRes, 'clients')
         vehicles.value = extractArray(vehiclesRes, 'vehicles')
         const rawProducts = extractArray(productsRes, 'products')
         products.value = rawProducts.map(p => ({
@@ -413,62 +435,58 @@ onMounted(() => {
             </div>
 
             <VForm ref="formRef" @submit.prevent="submitForm">
-                <!-- Información de Solo Lectura -->
+                <!-- Datos Generales -->
                 <div class="mb-6">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-file-info-line" class="mr-2" /> Información del Documento
-                    </h2>
-                    <VCard class="pa-4" variant="tonal" color="grey-lighten-4">
-                        <VRow>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Tipo de Documento</div>
-                                    <VSelect v-model="sale.document_type" :items="documentTypes" item-title="title"
-                                        item-value="value" variant="outlined" density="comfortable" hide-details="auto"
-                                        :disabled="sale.status === 'canceled' || !isQuote" />
+                    <VCard class="elevation-2 mb-4">
+                        <VCardText class="pa-4">
+                            <div
+                                class="d-flex align-center pa-3 rounded-lg bg-gradient-to-r from-blue to-blue-darken-1">
+                                <VAvatar color="white" size="48" class="mr-3">
+                                    <VIcon icon="ri-file-list-3-line" size="28" color="blue" />
+                                </VAvatar>
+                                <div class="text-white">
+                                    <h2 class="text-h5 font-weight-bold mb-1">Información del Documento</h2>
+                                    <p class="text-body-2 opacity-90 mb-0">Configura los datos principales de la venta
+                                    </p>
                                 </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Número de Documento</div>
-                                    <div class="text-body-1 font-weight-medium">{{ sale.document_number }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Estado</div>
-                                    <VChip :color="sale.status === 'completed' ? 'success' : sale.status === 'pending' ? 'warning' : 'error'" size="small">
-                                        {{ sale.status === 'completed' ? 'Completada' : sale.status === 'pending' ? 'Pendiente' : 'Anulada' }}
-                                    </VChip>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="6">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Cliente</div>
-                                    <div class="text-body-1 font-weight-medium">{{ getClientName(sale.client) }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="6">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Documento del Cliente</div>
-                                    <div class="text-body-2">{{ sale.client?.n_document || '-' }}</div>
-                                </div>
-                            </VCol>
-                        </VRow>
+                            </div>
+                        </VCardText>
                     </VCard>
-                </div>
-
-                <VDivider class="mb-6" />
-
-                <!-- Campos Editables -->
-                <div class="mb-6">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-edit-line" class="mr-2" /> Información Editable
-                    </h2>
                     <VRow>
                         <VCol cols="12" md="4">
+                            <VSelect v-model="sale.document_type" :items="documentTypes" item-title="title"
+                                item-value="value" label="Tipo de Documento" :rules="[requiredRule]" variant="outlined"
+                                density="comfortable" prepend-inner-icon="ri-file-list-3-line" hide-details="auto"
+                                required
+                                :disabled="sale.status === 'canceled' || (sale.document_type !== 'quote' && sale.document_type !== '')"
+                                @update:model-value="onDocumentTypeChange" />
+                        </VCol>
+                        <VCol cols="12" md="4">
+                            <VTextField v-model="sale.document_number" label="Número de Documento"
+                                :rules="[requiredRule]" variant="outlined" density="comfortable"
+                                prepend-inner-icon="ri-hashtag" hide-details="auto" required readonly />
+                        </VCol>
+                        <VCol cols="12" md="4">
+                            <VTextField v-model="sale.service_date" label="Fecha de Servicio" type="date"
+                                :rules="[requiredRule]" variant="outlined" density="comfortable"
+                                prepend-inner-icon="ri-calendar-line" hide-details="auto" required
+                                :disabled="sale.status === 'canceled'" />
+                        </VCol>
+                        <VCol cols="12" md="4">
+                            <VAutocomplete v-model="sale.client_id" :items="clients" :item-title="getClientName"
+                                item-value="id" label="Cliente" :rules="[requiredRule]" variant="outlined"
+                                density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto" required
+                                placeholder="Buscar por nombre o documento" clearable
+                                :disabled="sale.status === 'canceled'" :custom-filter="clientFilter">
+                                <template v-slot:item="{ props, item }">
+                                    <VListItem v-bind="props" :title="getClientName(item.raw)"
+                                        :subtitle="item.raw?.n_document" />
+                                </template>
+                            </VAutocomplete>
+                        </VCol>
+                        <VCol cols="12" md="4">
                             <VAutocomplete v-model="sale.vehicle_id" :items="vehicles" item-title="license_plate"
-                                item-value="id" label="Vehículo" variant="outlined" density="comfortable"
+                                item-value="id" label="Vehículo (Opcional)" variant="outlined" density="comfortable"
                                 prepend-inner-icon="ri-car-line" hide-details="auto" placeholder="Seleccionar vehículo"
                                 clearable :disabled="sale.status === 'canceled'">
                                 <template v-slot:item="{ props, item }">
@@ -478,97 +496,100 @@ onMounted(() => {
                             </VAutocomplete>
                         </VCol>
                         <VCol cols="12" md="4">
-                            <VTextField v-model="sale.mileage" label="Kilometraje" type="number"
+                            <VTextField v-model="sale.mileage" label="Kilometraje (Opcional)" type="number"
                                 variant="outlined" density="comfortable" prepend-inner-icon="ri-speed-up-line"
                                 hide-details="auto" :disabled="sale.status === 'canceled'" />
-                        </VCol>
-                        <VCol cols="12" md="4">
-                            <VTextField v-model="sale.service_date" label="Fecha de Servicio" type="date"
-                                variant="outlined" density="comfortable" prepend-inner-icon="ri-calendar-line"
-                                hide-details="auto" :disabled="sale.status === 'canceled'" />
-                        </VCol>
-                        <VCol cols="12">
-                            <VTextarea v-model="sale.observations" label="Observaciones" variant="outlined"
-                                density="comfortable" prepend-inner-icon="ri-file-text-line" hide-details="auto"
-                                rows="3" :disabled="sale.status === 'canceled'" />
                         </VCol>
                     </VRow>
                 </div>
 
                 <VDivider class="mb-6" />
 
-                <!-- Información del Cliente -->
-                <div class="mb-6" v-if="selectedClient">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-user-line" class="mr-2" /> Información del Cliente
-                    </h2>
-                    <VCard class="pa-4" variant="tonal" color="blue-lighten-5">
-                        <VRow>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Nombre Completo</div>
-                                    <div class="text-body-1 font-weight-medium">{{ getClientName(selectedClient) }}</div>
+                <!-- Información del Cliente y Vehículo en dos columnas -->
+                <VRow>
+                    <!-- Información del Cliente -->
+                    <VCol cols="12" md="6" v-if="selectedClient">
+                        <VCard variant="outlined" class="border-primary border-opacity-25 rounded-lg">
+                            <VCardItem class="pa-3">
+                                <div class="d-flex align-center gap-3">
+                                    <VAvatar color="primary" variant="tonal" size="40">
+                                        <VIcon icon="ri-user-line" size="24" />
+                                    </VAvatar>
+                                    <div class="flex-grow-1">
+                                        <div class="text-subtitle-1 font-weight-bold text-truncate">{{
+                                            selectedClient.n_document || '-' }}
+                                        </div>
+                                        <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-id-card-line" size="14" class="mr-1" /> {{
+                                                    selectedClient.n_document ||
+                                                    '-' }}
+                                            </span>
+                                            <span>•</span>
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-phone-line" size="14" class="mr-1" /> {{
+                                                    selectedClient.phone || '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Documento</div>
-                                    <div class="text-body-2">{{ selectedClient.n_document || '-' }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Teléfono</div>
-                                    <div class="text-body-2">{{ selectedClient.phone || '-' }}</div>
-                                </div>
-                            </VCol>
-                        </VRow>
-                    </VCard>
-                </div>
+                            </VCardItem>
+                        </VCard>
+                    </VCol>
 
-                <VDivider class="mb-6" />
-
-                <!-- Información del Vehículo -->
-                <div class="mb-6" v-if="selectedVehicle">
-                    <h2 class="text-h6 font-weight-medium mb-4 d-flex align-center">
-                        <VIcon icon="ri-car-line" class="mr-2" /> Información del Vehículo
-                    </h2>
-                    <VCard class="pa-4" variant="tonal" color="green-lighten-5">
-                        <VRow>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Placa</div>
-                                    <div class="text-body-1 font-weight-medium">{{ selectedVehicle.license_plate }}</div>
+                    <!-- Información del Vehículo -->
+                    <VCol cols="12" md="6" v-if="selectedVehicle">
+                        <VCard variant="outlined" class="border-success border-opacity-25 rounded-lg">
+                            <VCardItem class="pa-3">
+                                <div class="d-flex align-center gap-3">
+                                    <VAvatar color="success" variant="tonal" size="40">
+                                        <VIcon icon="ri-car-line" size="24" />
+                                    </VAvatar>
+                                    <div class="flex-grow-1">
+                                        <div class="text-subtitle-1 font-weight-bold text-truncate">{{
+                                            selectedVehicle.license_plate }}
+                                        </div>
+                                        <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-car-washing-line" size="14" class="mr-1" /> {{
+                                                    selectedVehicle.brand }}
+                                                {{ selectedVehicle.model }}
+                                            </span>
+                                            <span>•</span>
+                                            <span class="d-flex align-center">
+                                                <VIcon icon="ri-calendar-event-line" size="14" class="mr-1" /> {{
+                                                    selectedVehicle.year
+                                                    || '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Marca y Modelo</div>
-                                    <div class="text-body-2">{{ selectedVehicle.brand }} {{ selectedVehicle.model }}</div>
-                                </div>
-                            </VCol>
-                            <VCol cols="12" md="4">
-                                <div class="mb-2">
-                                    <div class="text-caption text-medium-emphasis mb-1">Año</div>
-                                    <div class="text-body-2">{{ selectedVehicle.year || '-' }}</div>
-                                </div>
-                            </VCol>
-                        </VRow>
-                    </VCard>
-                </div>
+                            </VCardItem>
+                        </VCard>
+                    </VCol>
+                </VRow>
 
                 <VDivider class="mb-6" />
 
                 <!-- Detalle de Venta -->
                 <div class="mb-6">
-                    <div class="d-flex justify-space-between align-center mb-4">
-                        <h2 class="text-h6 font-weight-medium d-flex align-center">
-                            <VIcon icon="ri-shopping-cart-2-line" class="mr-2" /> Detalle de Productos/Servicios
-                        </h2>
-                    </div>
+                    <VCard class="elevation-2 mb-4">
+                        <VCardText class="pa-4">
+                            <div
+                                class="d-flex align-center pa-3 rounded-lg bg-gradient-to-r from-indigo to-indigo-darken-1">
+                                <VAvatar color="white" size="48" class="mr-3">
+                                    <VIcon icon="ri-shopping-cart-2-line" size="28" color="indigo" />
+                                </VAvatar>
+                                <div class="text-white">
+                                    <h2 class="text-h5 font-weight-bold mb-1">Detalle de Venta</h2>
+                                    <p class="text-body-2 opacity-90 mb-0">Productos y servicios del documento</p>
+                                </div>
+                            </div>
+                        </VCardText>
+                    </VCard>
                     <div class="mb-4">
-                        <VAutocomplete v-model="searchProduct" :items="products"
-                            item-title="displayTitle" return-object label="Buscar y agregar producto"
+                        <VAutocomplete v-model="searchProduct" :items="products" item-title="displayTitle" return-object
+                            label="Buscar y agregar producto"
                             placeholder="Escribe para buscar por nombre, código o descripción..."
                             prepend-inner-icon="ri-search-line" variant="outlined" clearable
                             :custom-filter="productFilter" @update:model-value="onProductSelected"
@@ -806,49 +827,75 @@ onMounted(() => {
                                 </VCardText>
                             </VCard>
                         </template>
+
+                        <!-- Notas y Observaciones -->
+                        <div :class="sale.document_type !== 'quote' ? 'mt-4' : ''">
+                            <h2 v-if="sale.document_type === 'quote'"
+                                class="text-h6 font-weight-medium mb-4 d-flex align-center">
+                                <VIcon icon="ri-edit-2-line" class="mr-2" /> Notas Adicionales
+                            </h2>
+                            <VTextarea v-model="sale.observations" label="Observaciones"
+                                placeholder="Notas adicionales..." variant="outlined" density="comfortable"
+                                prepend-inner-icon="ri-edit-2-line" hide-details="auto" rows="3"
+                                :disabled="sale.status === 'canceled'" />
+                        </div>
                     </VCol>
 
                     <VCol cols="12" md="6">
-                        <!-- Totales -->
-                        <VCard class="mb-4" elevation="3">
-                            <VCardText class="pa-5">
-                                <h3 class="text-h6 font-weight-bold mb-4 d-flex align-center">
-                                    <VIcon icon="ri-money-dollar-circle-line" class="mr-2" /> Totales
-                                </h3>
-                                <div class="d-flex justify-space-between align-center mb-3">
-                                    <span class="text-body-2">Subtotal</span>
-                                    <span class="text-body-1 font-weight-medium">{{ formatCurrency(subtotal) }}</span>
-                                </div>
-                                <div class="d-flex justify-space-between align-center mb-3">
-                                    <span class="text-body-2">IVA (15%)</span>
-                                    <span class="text-body-1 font-weight-medium">{{ formatCurrency(taxAmount) }}</span>
-                                </div>
-                                <VDivider class="my-3" />
-                                <div class="d-flex justify-space-between align-center">
-                                    <span class="text-h6 font-weight-bold">Total</span>
-                                    <span class="text-h5 font-weight-bold text-primary">{{ formatCurrency(total) }}</span>
-                                </div>
-                            </VCardText>
+                        <!-- Resumen -->
+                        <VCard variant="tonal" class="pa-4 bg-grey-lighten-4">
+                            <h2 class="text-h6 font-weight-medium mb-4 text-right">Resumen</h2>
+
+                            <div class="d-flex justify-space-between mb-2">
+                                <span class="text-medium-emphasis">Subtotal:</span>
+                                <span>${{ grossSubtotal.toFixed(2) }}</span>
+                            </div>
+
+                            <div class="d-flex justify-space-between mb-2 text-error" v-if="totalDiscount > 0">
+                                <span class="text-medium-emphasis">Descuento:</span>
+                                <span>-${{ totalDiscount.toFixed(2) }}</span>
+                            </div>
+
+                            <div class="d-flex justify-space-between mb-2">
+                                <span class="text-medium-emphasis">Base Imponible:</span>
+                                <span>${{ subtotal.toFixed(2) }}</span>
+                            </div>
+
+                            <div class="d-flex justify-space-between mb-2" v-if="sale.document_type === 'invoice'">
+                                <span class="text-medium-emphasis">IVA (15%):</span>
+                                <span>${{ taxAmount.toFixed(2) }}</span>
+                            </div>
+
+                            <VDivider class="my-3" />
+
+                            <div class="d-flex justify-space-between align-center">
+                                <span class="text-h6 font-weight-bold">
+                                    {{ sale.document_type === 'quote' ? 'Total Cotizado:' : 'Total a Pagar:' }}
+                                </span>
+                                <span class="text-h5 font-weight-bold text-primary">${{ total.toFixed(2) }}</span>
+                            </div>
                         </VCard>
 
                         <!-- Alerta de conversión -->
-                        <VAlert v-if="canConvertToSale" type="warning" variant="tonal" class="mb-4" border="start">
+                        <VAlert v-if="canConvertToSale" type="warning" variant="tonal" class="mt-4" border="start">
                             <template v-slot:prepend>
                                 <VIcon icon="ri-exclamation-line" />
                             </template>
                             <div class="text-body-2">
-                                <strong>Esta es una cotización</strong>. Puedes convertirla en una venta cambiando el tipo de documento.
+                                <strong>Esta es una cotización</strong>. Puedes convertirla en una venta cambiando el
+                                tipo de documento.
                             </div>
                         </VAlert>
                     </VCol>
                 </VRow>
 
-                <!-- Botones de Acción -->
-                <div class="d-flex justify-end gap-3">
-                    <VBtn color="default" variant="outlined" prepend-icon="ri-close-line" to="/sales/list">
+                <!-- Acciones -->
+                <div class="d-flex justify-end gap-3 mt-8">
+                    <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" to="/sales/list"
+                        :disabled="loader.loading">
                         Cancelar
                     </VBtn>
-                    <VBtn color="primary" variant="elevated" prepend-icon="ri-save-line" type="submit"
+                    <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
                         :loading="loader.loading" :disabled="sale.status === 'canceled'">
                         Guardar Cambios
                     </VBtn>
