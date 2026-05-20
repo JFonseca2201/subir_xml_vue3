@@ -4,9 +4,11 @@ import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 const dropZoneRef = ref()
 const fileData = ref([])
 const { open, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
+const router = useRouter();
 function onDrop(DroppedFiles) {
   DroppedFiles?.forEach(file => {
     if (file.type.slice(0, 6) !== 'image/') {
@@ -77,7 +79,6 @@ const product = ref({
   state: 1,
 })
 
-
 const requiredRule = v => !!v || 'Campo obligatorio'
 const minLengthRule = (min) => v => !v || v.length >= min || `Mínimo ${min} caracteres`
 const maxLengthRule = (max) => v => !v || v.length <= max || `Máximo ${max} caracteres`
@@ -94,7 +95,7 @@ const priceRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const discountRules = [minValueRule(0), maxDecimalRule(2)]
 const stockRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const percentageRules = [minValueRule(0), maxPercentageRule]
-
+const backRoute = ref('/product/list')
 const calculateMaxDiscount = () => {
   console.log('🔄 Calculando descuento máximo...')
   const purchasePrice = parseFloat(product.value.purchase_price) || 0
@@ -111,7 +112,6 @@ watch(() => product.value.discount_percentage, () => {
   }
 })
 onMounted(() => {
-
   loadInitialData()
 })
 
@@ -125,6 +125,7 @@ const itemTypes = ref([
   { label: 'Herramienta', value: '3', name: 'tool' }
 ])
 const state = ref(1)
+
 
 const store = async () => {
   error_exist.value = null
@@ -140,67 +141,76 @@ const store = async () => {
     }
   }
 
-  /*   const productData = {
-      description: product.value.description.toUpperCase().trim(),
-      sku: product.value.sku.toUpperCase().trim(),
-      code_aux: product.value.code_aux.toUpperCase().trim(),
-      uses: product.value.uses,
-      product_categorie_id: product.value.product_categorie_id || null,
-      warehouse_id: product.value.warehouse_id || 1,
-      unit_id: product.value.unit_id || 1,
-      supplier_id: product.value.supplier_id || 1,
-  
-      price: parseFloat(product.value.price) || 0,
-      price_sale: parseFloat(product.value.price_sale) || 0,
-      purchase_price: parseFloat(product.value.purchase_price) || 0,
-      tax_rate: parseFloat(product.value.tax_rate) || 0,
-      max_discount: parseFloat(product.value.max_discount) || 0,
-      discount_percentage: parseFloat(product.value.discount_percentage) || 0,
-  
-      brand: product.value.brand.toUpperCase().trim(),
-      stock: parseFloat(product.value.stock) || 0,
-      item_type: parseInt(product.value.item_type) || 1,
-      min_stock: parseFloat(product.value.min_stock) || 0,
-      max_stock: parseFloat(product.value.max_stock) || 0,
-  
-      is_taxable: (product.value.is_taxable === true) ? "1" : "2",
-      is_gift: (product.value.is_gift === true) ? "1" : "2",
-  
-      notes: product.value.notes.trim(),
-      state: state.value,
-    } */
-  let formData = new FormData();
-  formData.append("description", product.value.description);
-  formData.append("sku", product.value.sku);
-  formData.append("code_aux", product.value.code_aux);
-  formData.append("uses", product.value.uses);
-  formData.append("product_categorie_id", product.value.product_categorie_id);
-  formData.append("warehouse_id", product.value.warehouse_id || 1);
-  formData.append("unit_id", product.value.unit_id || 1);
-  formData.append("supplier_id", product.value.supplier_id || 1);
-  formData.append("price", product.value.price_sale);
-  formData.append("price_sale", product.value.price_sale);
-  formData.append("purchase_price", product.value.purchase_price);
-  formData.append("tax_rate", product.value.tax_rate);
-  formData.append("max_discount", product.value.max_discount);
-  formData.append("discount_percentage", product.value.discount_percentage);
-  formData.append("brand", product.value.brand);
-  formData.append("stock", product.value.stock);
-  formData.append("item_type", product.value.item_type);
-  formData.append("min_stock", product.value.min_stock);
-  formData.append("max_stock", product.value.max_stock);
-  formData.append("is_taxable", product.value.is_taxable === false ? "1" : "2");
-  formData.append("is_gift", product.value.is_gift === false ? "1" : "2");
-  formData.append("notes", product.value.notes);
-  formData.append("state", state.value);
-  formData.append("imagen", fileData.value[0].file);
+  // Validación de imagen obligatoria (evita error fatal al leer fileData.value[0])
+  if (!fileData.value || fileData.value.length === 0) {
+    loader.stop()
+    warning.value = 'Es obligatorio adjuntar una imagen para el producto.'
+    showNotification('Falta la imagen del producto', 'warning')
+    return
+  }
 
+  // Validación lógica de stock
+  const minStock = parseFloat(product.value.min_stock) || 0
+  const maxStock = parseFloat(product.value.max_stock) || 0
+  if (maxStock > 0 && minStock > maxStock) {
+    loader.stop()
+    warning.value = 'El stock mínimo no puede ser mayor que el stock máximo.'
+    showNotification('Error en los valores de stock', 'warning')
+    return
+  }
 
-  /*   formData.forEach((value, key) => {
-      console.log(key, value);
-    });
-    loader.stop();
-    return; */
+  // Obtener y validar el ID del usuario desde localStorage
+  const activeUserId = JSON.parse(localStorage.getItem('user'))?.id;
+  if (!activeUserId) {
+    loader.stop()
+    warning.value = 'No se ha podido identificar al usuario activo. Por favor, recarga la página o inicia sesión nuevamente.'
+    showNotification('Error de sesión', 'error')
+    return
+  }
+
+  const payload = {
+    description: product.value.description.toUpperCase().trim(),
+    sku: product.value.sku.toUpperCase().trim(),
+    code_aux: product.value.code_aux.toUpperCase().trim(),
+    uses: product.value.uses,
+    product_categorie_id: product.value.product_categorie_id || null,
+    warehouse_id: product.value.warehouse_id || 1,
+    unit_id: product.value.unit_id || 1,
+    supplier_id: product.value.supplier_id || 1,
+
+    price: parseFloat(product.value.price_sale) || 0,
+    price_sale: parseFloat(product.value.price_sale) || 0,
+    purchase_price: parseFloat(product.value.purchase_price) || 0,
+    tax_rate: parseFloat(product.value.tax_rate) || 0,
+    max_discount: parseFloat(product.value.max_discount) || 0,
+    discount_percentage: parseFloat(product.value.discount_percentage) || 0,
+
+    brand: product.value.brand.toUpperCase().trim(),
+    stock: parseFloat(product.value.stock) || 0,
+    item_type: parseInt(product.value.item_type) || 1,
+    min_stock: parseFloat(product.value.min_stock) || 0,
+    max_stock: parseFloat(product.value.max_stock) || 0,
+
+    is_taxable: product.value.is_taxable ? "1" : "2",
+    is_gift: product.value.is_gift ? "1" : "2",
+
+    notes: product.value.notes.trim(),
+    state: state.value,
+    user_id: activeUserId,
+    imagen: fileData.value[0].file,
+  }
+
+  const formData = new FormData();
+  for (const key in payload) {
+    if (payload[key] !== null && payload[key] !== undefined)
+      formData.append(key, payload[key]);
+  }
+
+  /* formData.forEach((value, key) => {
+    console.log(key, value);
+  });
+  loader.stop();
+  return; */
 
   try {
     const resp = await $api("products", {
@@ -223,6 +233,7 @@ const store = async () => {
     showNotification('Error al crear producto', 'error')
   } finally {
     loader.stop()
+    isLoading.value = false;
   }
 }
 
@@ -259,7 +270,7 @@ const onFormReset = () => {
     is_gift: false,
     notes: '',
     state: 1,
-
+    user_id: null
   };
   fileData.value = [];
   warning.value = null;
@@ -268,6 +279,8 @@ const onFormReset = () => {
 
 // Cargar datos iniciales (cuando esté listo el endpoint)
 const loadInitialData = async () => {
+  product.user = JSON.parse(localStorage.getItem('user')) || null;
+  console.log('Cargando configuración de productos para el usuario ID:', product.user.id);
   isLoading.value = true;
   try {
     const resp = await $api(`products/config`, {
@@ -543,7 +556,7 @@ const loadInitialData = async () => {
 
         <!-- Botones de Acción -->
         <div class="d-flex justify-end gap-3">
-          <VBtn variant="outlined" @click="onFormReset" prepend-icon="ri-close-line" :disabled="isLoading">
+          <VBtn variant="outlined" @click="router.push(backRoute)" prepend-icon="ri-close-line" :disabled="isLoading">
             Cancelar
           </VBtn>
 

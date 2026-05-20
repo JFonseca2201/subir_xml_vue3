@@ -183,9 +183,13 @@ const handleClientFinalAdded = (clientData) => {
     console.log("Cliente final agregado:", clientData);
 
     // Agregar nuevo cliente al listado localmente (sin recargar API)
-    if (clientData) {
+    if (clientData && clientData.id) {
         clients.value.unshift(clientData); // Agregar al principio
         totalItems.value += 1; // Incrementar contador
+    } else {
+        console.error("Datos del cliente inválidos o sin ID:", clientData);
+        // Recargar la lista para obtener los datos actualizados
+        loadClients();
     }
 }
 
@@ -196,12 +200,17 @@ const addClient = () => {
 
 const handleClientCompanyAdded = (clientData) => {
     console.log("Cliente empresa agregado:", clientData);
+    console.log("Campos específicos:", {
+        full_name: clientData?.full_name,
+        n_document: clientData?.n_document,
+        phone: clientData?.phone,
+        email: clientData?.email,
+        id: clientData?.id
+    });
 
-    // Agregar nuevo cliente al listado localmente (sin recargar API)
-    if (clientData) {
-        clients.value.unshift(clientData); // Agregar al principio
-        totalItems.value += 1; // Incrementar contador
-    }
+    // Recargar la lista para obtener los datos actualizados desde el servidor
+    // Esto es más confiable que intentar agregar datos localmente
+    loadClients();
 }
 
 const editClient = (client) => {
@@ -339,7 +348,7 @@ onMounted(() => {
                     </tr>
                     <tr v-else v-for="client in clients" :key="client.id" class="hover:bg-grey-lighten-4 transition">
                         <td class="font-weight-medium">{{ client.id }}</td>
-                        <td>
+                        <td style="text-transform: uppercase;">
                             <div class="font-weight-medium">{{ client.full_name || `${client.name} ${client.surname}` }}
                             </div>
                             <div class="text-caption text-medium-emphasis">{{ client.address }}</div>
@@ -356,7 +365,7 @@ onMounted(() => {
                             <div class="font-weight-medium">{{ client.n_document }}</div>
                         </td>
                         <td>{{ client.phone || '-' }}</td>
-                        <td>{{ client.email || '-' }}</td>
+                        <td style="text-transform: lowercase;">{{ client.email || '-' }}</td>
                         <td>
                             <VChip :color="client.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
                                 {{ client.state === 1 ? 'Activo' : 'Inactivo' }}

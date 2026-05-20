@@ -255,44 +255,44 @@ onMounted(() => {
             <VDivider class="mb-6" />
 
             <VForm ref="formRef" @submit.prevent="updateVehicle">
-                <VRow dense>
-                    <VCol cols="12" md="6">
+                <VRow>
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="vehicleForm.license_plate" label="Placa *" placeholder="ABC-1234"
                             prepend-inner-icon="ri-id-card-line" :rules="rules.license_plate" maxlength="9"
                             variant="outlined" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="vehicleForm.vehicle_type" :items="vehicleTypeOptions"
                             label="Tipo de Vehículo *" prepend-inner-icon="ri-car-line" :rules="rules.vehicle_type" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VAutocomplete v-model="vehicleForm.brand" :items="brandOptions" item-title="title"
                             item-value="value" label="Marca *" prepend-inner-icon="ri-building-line"
                             :rules="rules.brand" :filter="filterBrands" @update:search="searchBrands"
                             no-data-text="No se encontraron marcas" clearable />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="vehicleForm.model" label="Modelo *" :rules="rules.model" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="vehicleForm.year" :items="yearOptions" label="Año *" :rules="rules.year" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="vehicleForm.color" :items="colorOptions" label="Color *"
                             :rules="rules.color" />
                     </VCol>
 
-                    <VCol cols="12" md="6">
+                    <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="vehicleForm.status" :items="statusOptions" item-title="title"
                             item-value="value" label="Estado del Vehículo" prepend-inner-icon="ri-toggle-line" />
                     </VCol>
 
-                    <VCol cols="12">
+                    <VCol cols="12" class="mb-3">
                         <VTextarea v-model="vehicleForm.description" label="Descripción" rows="3" />
                     </VCol>
 

@@ -306,7 +306,7 @@ onMounted(() => {
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="text-transform: UPPERCASE">
                         <tr v-if="loader.loading">
                             <td colspan="7" class="text-center pa-4">
                                 <VProgressCircular indeterminate color="primary" />

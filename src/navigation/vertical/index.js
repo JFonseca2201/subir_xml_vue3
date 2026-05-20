@@ -116,12 +116,12 @@ export default [
     children: [
       {
         title: 'Registrar',
-        to: 'second-page',
+        to: 'sales-add',
         icon: { icon: 'ri-radio-button-line' },
       },
       {
         title: 'Listado',
-        to: 'second-page',
+        to: 'sales-list',
         icon: { icon: 'ri-radio-button-line' },
       },
     ],
