@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import ViewProduct from '@/components/inventory/product/ViewProduct.vue'
 import DeleteProduct from '@/components/inventory/product/DeleteProdcut.vue'
+import ImportProductsDialog from '@/components/inventory/product/ImportProductsDialog.vue'
 
 // Router
 const router = useRouter()
@@ -16,6 +17,7 @@ const productDialog = ref(false)
 const selectedProduct = ref(null)
 const deleteDialog = ref(false)
 const productToDelete = ref(null)
+const importDialog = ref(false)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -184,9 +186,14 @@ const handleProductDeleted = () => {
     console.log('🔒 Diálogo cerrado y producto limpiado')
 }
 
-const exportProducts = () => {
-    console.log('Exportar productos')
 
+const importProducts = () => {
+    importDialog.value = true
+}
+
+const handleProductsImported = () => {
+    currentPage.value = 1
+    searchProducts()
 }
 
 // Cargar datos iniciales
@@ -291,39 +298,12 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                                 variant="outlined" density="comfortable" hide-details="auto" clearable />
                         </VCol>
 
-
-                        <!-- <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.sucursale_id" :items="sucursales" item-title="name"
-                                item-value="id" label="Sucursal" placeholder="Seleccionar"
-                                prepend-inner-icon="ri-building-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol>
-
-                        
-                        <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.disponibilidad" :items="disponibilidadOptions"
-                                item-title="label" item-value="value" label="Disponibilidad" placeholder="Seleccionar"
-                                prepend-inner-icon="ri-check-double-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol> 
-
-                        <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.is_gift" :items="giftOptions" item-title="label"
-                                item-value="value" label="Tipo de Producto" placeholder="Seleccionar"
-                                prepend-inner-icon="ri-gift-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol>-->
-
-
-                        <!-- Botones de Acción -->
                         <VCol cols="12" md="6" class="d-flex gap-2">
-
-
                         </VCol>
                         <VCol cols="12" md="6" class="d-flex gap-2">
                             <VCol cols="12" md="6" class="d-flex gap-2">
                                 <VBtn color="error" variant="tonal" prepend-icon="ri-download-2-fill"
-                                    @click="exportProducts">
+                                    @click="importProducts">
                                     Importar
                                 </VBtn>
                                 <VBtn color="success" variant="tonal" prepend-icon="ri-file-excel-2-line"
@@ -457,4 +437,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
     <!-- Diálogo de Eliminación de Producto -->
     <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
         @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
+
+    <!-- Diálogo de Importación de Excel -->
+    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
 </template>

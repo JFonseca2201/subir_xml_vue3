@@ -68,6 +68,8 @@ declare module 'vue' {
     GlobalToast: typeof import('./src/components/common/GlobalToast.vue')['default']
     GroupedMovementsTable: typeof import('./src/components/inventory/finances-records/GroupedMovementsTable.vue')['default']
     I18n: typeof import('./src/@core/components/I18n.vue')['default']
+    ImportExcelProduct: typeof import('./src/components/inventory/product/ImportExcelProduct.vue')['default']
+    ImportProductsDialog: typeof import('./src/components/inventory/product/ImportProductsDialog.vue')['default']
     IncomeDialog: typeof import('./src/components/inventory/finances-records/IncomeDialog.vue')['default']
     InvoiceAddDialog: typeof import('./src/components/inventory/invoices/InvoiceAddDialog.vue')['default']
     InvoiceDeleteDialog: typeof import('./src/components/inventory/invoices/InvoiceDeleteDialog.vue')['default']
