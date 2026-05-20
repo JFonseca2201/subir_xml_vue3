@@ -94,7 +94,7 @@ const brandSearchOptions = ref([])
 
 const generateYearOptions = () => {
     const currentYear = new Date().getFullYear()
-    for (let i = currentYear + 5; i >= currentYear - 20; i--) {
+    for (let i = currentYear + 5; i >= currentYear - 40; i--) {
         yearOptions.value.push({ title: i.toString(), value: i })
     }
 }
@@ -155,7 +155,7 @@ const saveVehicle = async () => {
         setTimeout(() => {
             emit('update:isDialogVisible', false)
             emit('addVehicle', resp.data || resp)
-        }, 1200)
+        }, 25)
 
     } catch (err) {
         error.value = err.response?._data?.message || 'Error al guardar vehículo'

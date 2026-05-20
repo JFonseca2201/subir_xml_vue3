@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
@@ -71,28 +72,15 @@ const onCreditChange = () => {
     }
 }
 
-// Generar número de documento según tipo
-const generateDocumentNumber = (type) => {
-    const today = new Date()
-    const dateStr = today.getFullYear() +
-        String(today.getMonth() + 1).padStart(2, '0') +
-        String(today.getDate()).padStart(2, '0')
-
-    const prefixes = {
-        'quote': 'COT',
-        'sale_note': 'NV',
-        'invoice': 'FAC'
-    }
-
-    const prefix = prefixes[type] || 'DOC'
-    const randomNum = String(Math.floor(Math.random() * 999)).padStart(3, '0')
-
-    return `${prefix}-${dateStr}-${randomNum}`
+// Generar número de documento OT- secuencial
+const generateOTDocumentNumber = (lastNumber) => {
+    const newNumber = (lastNumber || 0) + 1
+    return 'OT-' + String(newNumber).padStart(7, '0')
 }
 
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = () => {
-    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+    // El número de documento es OT- secuencial, no cambia por tipo
 }
 
 // Pagos distribuidos
@@ -131,9 +119,22 @@ const handleClientAdded = async (clientData) => {
 }
 
 const handleVehicleAdded = async (vehicleData) => {
+    console.log(vehicleData);
+
     if (vehicleData) {
-        const newId = vehicleData.id || Date.now()
-        const newVehicle = { ...vehicleData, id: newId }
+        // Extract vehicle from response structure
+        const vehicle = vehicleData.vehicle || vehicleData
+        const newId = vehicle.id || Date.now()
+        const brandId = typeof vehicle.brand === 'object' ? vehicle.brand.id : vehicle.brand
+        const brandName = brandId ? getBrandNameById(brandId) : ''
+        const parts = [vehicle.license_plate, brandName, vehicle.model].filter(p => p !== undefined && p !== null)
+        const displayTitle = parts.length > 0 ? parts.join(' - ') : vehicle.license_plate || 'Vehículo'
+        const newVehicle = {
+            ...vehicle,
+            id: newId,
+            brand: brandId,
+            displayTitle
+        }
 
         const exists = vehicles.value.find(v => (v.license_plate && v.license_plate === newVehicle.license_plate) || v.id === newId)
         if (!exists) {
@@ -162,11 +163,12 @@ const getClientName = (c) => {
 const loadInitialData = async () => {
     isLoading.value = true
     try {
-        const [clientsRes, vehiclesRes, productsRes, accountsRes] = await Promise.all([
+        const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes] = await Promise.all([
             $api('clients', { params: { per_page: 1000 } }),
             $api('vehicles', { params: { per_page: 1000 } }),
             $api('products', { params: { per_page: 1000 } }),
-            $api('accounts', { params: { per_page: 1000 } })
+            $api('accounts', { params: { per_page: 1000 } }),
+            $api('sales', { params: { per_page: 1 } })
         ])
 
         const extractArray = (res, key) => {
@@ -179,7 +181,19 @@ const loadInitialData = async () => {
         }
 
         clients.value = extractArray(clientsRes, 'clients')
-        vehicles.value = extractArray(vehiclesRes, 'vehicles')
+        const rawVehicles = extractArray(vehiclesRes, 'vehicles')
+        // Agregar campo de búsqueda combinado para vehículos
+        vehicles.value = rawVehicles.map(v => {
+            const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
+            const brandName = brandId ? getBrandNameById(brandId) : ''
+            const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
+            const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
+            return {
+                ...v,
+                brand: brandId,
+                displayTitle
+            }
+        })
         const rawProducts = extractArray(productsRes, 'products')
         // Agregar campo de búsqueda combinado para productos
         products.value = rawProducts.map(p => ({
@@ -189,8 +203,17 @@ const loadInitialData = async () => {
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 
-        // Generar número de documento según tipo
-        sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+        // Obtener el último número de documento OT-
+        const sales = extractArray(salesRes, 'data')
+        let lastNumber = 0
+        if (sales && sales.length > 0) {
+            const lastSale = sales[0]
+            const match = lastSale.document_number?.match(/OT-?(\d+)/i)
+            if (match) {
+                lastNumber = parseInt(match[1])
+            }
+        }
+        sale.value.document_number = generateOTDocumentNumber(lastNumber)
 
     } catch (error) {
         console.error('Error al cargar datos:', error)
@@ -515,7 +538,7 @@ onMounted(() => {
                                         hide-details="auto" placeholder="Seleccionar vehículo" clearable>
                                         <template v-slot:item="{ props, item }">
                                             <VListItem v-bind="props" :title="item.raw.license_plate"
-                                                :subtitle="`${item.raw.brand || ''} ${item.raw.model || ''}`" />
+                                                :subtitle="`${item.raw.model || ''}`" />
                                         </template>
                                     </VAutocomplete>
                                 </VCol>
@@ -583,8 +606,7 @@ onMounted(() => {
                                         <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
                                             <span class="d-flex align-center">
                                                 <VIcon icon="ri-car-washing-line" size="14" class="mr-1" /> {{
-                                                    selectedVehicle.brand }}
-                                                {{ selectedVehicle.model }}
+                                                    selectedVehicle.model || '-' }}
                                             </span>
                                             <span>•</span>
                                             <span class="d-flex align-center">
@@ -602,16 +624,13 @@ onMounted(() => {
 
                 <!-- Mensaje cuando no hay cliente seleccionado -->
                 <VRow v-if="!selectedClient">
-                    <VCol cols="8">
+                    <VCol cols="3">
                         <VAlert type="info" variant="tonal" class="mb-4" border="start">
                             <template v-slot:prepend>
-                                <VIcon icon="ri-information-line" size="24" />
+                                <VIcon icon="ri-information-line" size="14" />
                             </template>
                             <div class="text-body-1">
-                                <strong class="d-block mb-1">Selecciona un cliente</strong>
-                                Para ver la información detallada del cliente y su vehículo, primero selecciona un
-                                cliente en el
-                                formulario superior.
+                                <strong class="d-block mb-1">Selecciona un cliente</strong>Seleccione un cliente.
                             </div>
                         </VAlert>
                     </VCol>

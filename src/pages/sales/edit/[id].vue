@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -308,7 +309,19 @@ const loadSaleData = async () => {
         }
 
         clients.value = extractArray(clientsRes, 'clients')
-        vehicles.value = extractArray(vehiclesRes, 'vehicles')
+        const rawVehicles = extractArray(vehiclesRes, 'vehicles')
+        // Agregar campo de búsqueda combinado para vehículos
+        vehicles.value = rawVehicles.map(v => {
+            const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
+            const brandName = brandId ? getBrandNameById(brandId) : ''
+            const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
+            const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
+            return {
+                ...v,
+                brand: brandId,
+                displayTitle
+            }
+        })
         const rawProducts = extractArray(productsRes, 'products')
         products.value = rawProducts.map(p => ({
             ...p,
@@ -491,7 +504,7 @@ onMounted(() => {
                                 clearable :disabled="sale.status === 'canceled'">
                                 <template v-slot:item="{ props, item }">
                                     <VListItem v-bind="props" :title="item.raw.license_plate"
-                                        :subtitle="`${item.raw.brand || ''} ${item.raw.model || ''}`" />
+                                        :subtitle="`${item.raw.model || ''}`" />
                                 </template>
                             </VAutocomplete>
                         </VCol>
@@ -552,8 +565,7 @@ onMounted(() => {
                                         <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
                                             <span class="d-flex align-center">
                                                 <VIcon icon="ri-car-washing-line" size="14" class="mr-1" /> {{
-                                                    selectedVehicle.brand }}
-                                                {{ selectedVehicle.model }}
+                                                    selectedVehicle.model || '-' }}
                                             </span>
                                             <span>•</span>
                                             <span class="d-flex align-center">

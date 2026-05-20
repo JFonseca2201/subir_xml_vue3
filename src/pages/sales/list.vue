@@ -18,6 +18,7 @@ const sales = ref([])
 const isViewDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const selectedSale = ref(null)
+const viewLoading = ref(false)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -151,7 +152,7 @@ const getStatusInfo = (status) => {
 // Acciones
 const viewSale = async (sale) => {
     try {
-        loading.value = true
+        viewLoading.value = true
         const response = await $api(`sales/${sale.id}`)
         if (response?.success || response?.data) {
             selectedSale.value = response.data || response
@@ -163,7 +164,7 @@ const viewSale = async (sale) => {
         console.error('Error al cargar venta:', error)
         showNotification('Error al cargar los detalles de la venta', 'error')
     } finally {
-        loading.value = false
+        viewLoading.value = false
     }
 }
 
