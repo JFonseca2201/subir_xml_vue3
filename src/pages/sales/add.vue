@@ -198,8 +198,8 @@ const loadInitialData = async () => {
         // Agregar campo de búsqueda combinado para productos
         products.value = rawProducts.map(p => ({
             ...p,
-            searchText: `${p.name || ''} ${p.code || ''} ${p.description || ''}`.toLowerCase(),
-            displayTitle: p.name || p.description || ''
+            searchText: ` ${p.sku || ''} ${p.description || ''}`.toLowerCase(),
+            displayTitle: p.description || ''
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 

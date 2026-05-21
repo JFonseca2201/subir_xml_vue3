@@ -171,11 +171,6 @@ onMounted(() => {
 <template>
     <div class="pa-6">
 
-        <!-- 🔄 Overlay global -->
-        <VOverlay :model-value="isLoading" class="align-center justify-center" absolute>
-            <VProgressCircular indeterminate size="56" width="5" color="primary" />
-        </VOverlay>
-
         <!-- 🏛️ CARD MAESTRA -->
         <VCard class="elevation-4 rounded-xl">
 

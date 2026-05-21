@@ -193,7 +193,8 @@ const importProducts = () => {
 
 const handleProductsImported = () => {
     currentPage.value = 1
-    searchProducts()
+    searchProducts();
+    importDialog.value = false
 }
 
 // Cargar datos iniciales
@@ -245,9 +246,16 @@ watch(deleteDialog, (newValue) => {
 })
 
 // Watcher para resetear página cuando los filtros cambian
+let filterTimeout = null
 watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () => searchForm.value.warehouse_id, () => searchForm.value.unit_id], () => {
     console.log('🔍 Filtros cambiados, reseteando página a 1')
     currentPage.value = 1
+
+    // Búsqueda en tiempo real con debounce de 500ms
+    if (filterTimeout) clearTimeout(filterTimeout)
+    filterTimeout = setTimeout(() => {
+        searchProducts()
+    }, 500)
 }, { deep: true })
 </script><template>
     <div class="pa-4 pa-sm-6">
@@ -439,5 +447,5 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
 
     <!-- Diálogo de Importación de Excel -->
-    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
+    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported()" />
 </template>
