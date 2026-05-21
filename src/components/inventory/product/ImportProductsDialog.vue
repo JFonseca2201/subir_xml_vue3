@@ -22,15 +22,6 @@ const { showNotification } = useGlobalToast()
 let selectedFile = null
 const error_exist = ref(null)
 
-const onFileSelected = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        selectedFile = file;
-        error_exist.value = null;
-    } else {
-        selectedFile = null;
-    }
-}
 
 const importExcel = async () => {
     error_exist.value = null
