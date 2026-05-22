@@ -72,15 +72,28 @@ const onCreditChange = () => {
     }
 }
 
-// Generar número de documento OT- secuencial
-const generateOTDocumentNumber = (lastNumber) => {
-    const newNumber = (lastNumber || 0) + 1
-    return 'OT-' + String(newNumber).padStart(7, '0')
+const lastOtNumber = ref(0)
+const lastCotNumber = ref(0)
+
+// Generar número de documento secuencial
+const generateDocumentNumber = (type) => {
+    if (type === 'quote') {
+        const newNumber = lastCotNumber.value + 1
+        return 'COT-' + String(newNumber).padStart(7, '0')
+    } else {
+        const newNumber = lastOtNumber.value + 1
+        return 'OT-' + String(newNumber).padStart(7, '0')
+    }
 }
 
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = () => {
-    // El número de documento es OT- secuencial, no cambia por tipo
+    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+    if (sale.value.document_type === 'quote') {
+        sale.value.payment_status = 'pending'
+    } else {
+        sale.value.payment_status = sale.value.is_credited ? 'pending' : 'paid'
+    }
 }
 
 // Pagos distribuidos
@@ -168,7 +181,7 @@ const loadInitialData = async () => {
             $api('vehicles', { params: { per_page: 1000 } }),
             $api('products', { params: { per_page: 1000 } }),
             $api('accounts', { params: { per_page: 1000 } }),
-            $api('sales', { params: { per_page: 1 } })
+            $api('sales', { params: { per_page: 1000 } })
         ])
 
         const extractArray = (res, key) => {
@@ -203,17 +216,31 @@ const loadInitialData = async () => {
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 
-        // Obtener el último número de documento OT-
+        // Obtener el último número de documento OT- y COT-
         const sales = extractArray(salesRes, 'data')
-        let lastNumber = 0
+        let maxOt = 0
+        let maxCot = 0
         if (sales && sales.length > 0) {
-            const lastSale = sales[0]
-            const match = lastSale.document_number?.match(/OT-?(\d+)/i)
-            if (match) {
-                lastNumber = parseInt(match[1])
-            }
+            sales.forEach(s => {
+                if (s.document_number?.toUpperCase().startsWith('OT-')) {
+                    const match = s.document_number.match(/OT-?(\d+)/i)
+                    if (match) {
+                        const num = parseInt(match[1])
+                        if (num > maxOt) maxOt = num
+                    }
+                } else if (s.document_number?.toUpperCase().startsWith('COT-')) {
+                    const match = s.document_number.match(/COT-?(\d+)/i)
+                    if (match) {
+                        const num = parseInt(match[1])
+                        if (num > maxCot) maxCot = num
+                    }
+                }
+            })
         }
-        sale.value.document_number = generateOTDocumentNumber(lastNumber)
+        lastOtNumber.value = maxOt
+        lastCotNumber.value = maxCot
+
+        sale.value.document_number = generateDocumentNumber(sale.value.document_type)
 
     } catch (error) {
         console.error('Error al cargar datos:', error)
@@ -436,6 +463,11 @@ const submitForm = async () => {
     loader.start()
 
     try {
+        // Asegurarnos de que las cotizaciones siempre se guarden como pendientes
+        if (sale.value.document_type === 'quote') {
+            sale.value.payment_status = 'pending'
+        }
+
         const payload = {
             ...sale.value,
             subtotal: subtotal.value,

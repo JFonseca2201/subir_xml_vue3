@@ -108,14 +108,15 @@ watch(() => props.editingMovement, (newVal) => {
 
 const resetForm = () => {
     form.value = {
-        type: 0,
-        account_id: 1,
-        payment_method: 'cash',
-        amount: '',
+        type: 0, // TYPE_INCOME
+        account_id: 1, // ACCOUNT_CASH
         work_order_number: '',
         invoice_number: '',
         description: '',
-        entry_date: new Date().toISOString().split('T')[0]
+        entry_date: new Date().toISOString().split('T')[0],
+        payments: [
+            { account_id: 1, amount: 0 }
+        ]
     }
 }
 

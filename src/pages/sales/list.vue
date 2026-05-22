@@ -237,6 +237,35 @@ const generateSinglePDF = async (sale) => {
     }
 }
 
+const downloadSinglePDF = async (sale) => {
+    try {
+        const response = await $api(`sales/${sale.id}/pdf`, {
+            method: 'GET',
+        })
+
+        // Crear el blob con el tipo MIME correcto para PDF
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+
+        // Formatear el nombre del cliente (quitando caracteres especiales y reemplazando espacios por guiones bajos)
+        const clientName = getClientName(sale.client).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_')
+        const docNumber = sale.document_number || 'Documento'
+
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${docNumber}_${clientName}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        showNotification('PDF descargado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al descargar PDF:', error)
+        showNotification('Error al descargar el PDF', 'error')
+    }
+}
+
 const cancelSale = (sale) => {
     if (sale.status === 'canceled') return
     selectedSale.value = sale
@@ -332,14 +361,13 @@ onMounted(() => {
                         <th class="font-weight-bold">Cliente</th>
                         <th class="font-weight-bold">Vehículo</th>
                         <th class="font-weight-bold text-right">Total</th>
-                        <th class="font-weight-bold text-center">Cobro</th>
                         <th class="font-weight-bold text-center">Estado</th>
                         <th class="font-weight-bold text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody v-if="loading">
                     <tr>
-                        <td colspan="8" class="text-center pa-6">
+                        <td colspan="7" class="text-center pa-6">
                             <VProgressCircular indeterminate color="primary" size="40" />
                             <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
                         </td>
@@ -347,7 +375,7 @@ onMounted(() => {
                 </tbody>
                 <tbody v-else-if="!sales || sales.length === 0">
                     <tr>
-                        <td colspan="8" class="text-center pa-8 text-medium-emphasis">
+                        <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                             <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-file-text-line</VIcon>
                             <div class="text-h6">No se encontraron ventas</div>
                             <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
@@ -396,13 +424,6 @@ onMounted(() => {
                         </td>
 
                         <td class="text-center">
-                            <VChip v-if="item" :color="getPaymentStatusInfo(item.payment_status)?.color || 'grey'"
-                                variant="tonal" size="small">
-                                {{ getPaymentStatusInfo(item.payment_status)?.text || item.payment_status }}
-                            </VChip>
-                        </td>
-
-                        <td class="text-center">
                             <VChip v-if="item" :color="getStatusInfo(item.status)?.color || 'grey'" variant="text"
                                 size="small">
                                 <VIcon start :icon="getStatusInfo(item.status)?.icon || 'ri-question-line'" />
@@ -414,7 +435,10 @@ onMounted(() => {
                             <div class="d-flex justify-center gap-1" v-if="item">
 
                                 <VBtn icon="ri-file-pdf-line" variant="text" size="small" color="success"
-                                    title="Generar PDF" @click="generateSinglePDF(item)" />
+                                    title="Ver PDF" @click="generateSinglePDF(item)" />
+
+                                <VBtn icon="ri-download-2-line" variant="text" size="small" color="primary"
+                                    title="Descargar PDF" @click="downloadSinglePDF(item)" />
 
                                 <VBtn icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
                                     @click="viewSale(item)" />
