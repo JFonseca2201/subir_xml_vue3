@@ -371,6 +371,33 @@ const submitForm = async () => {
         return
     }
 
+    // Validar stock solo si no es cotización
+    if (sale.value.document_type !== 'quote') {
+        for (const item of sale.value.items) {
+            if (item.product_id) {
+                const product = products.value.find(p => p.id === item.product_id)
+                if (product && product.stock < item.quantity) {
+                    showNotification(`Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`, 'error')
+                    return
+                }
+            }
+        }
+    }
+
+    // Validar descuentos máximos
+    for (const item of sale.value.items) {
+        if (item.product_id) {
+            const product = products.value.find(p => p.id === item.product_id)
+            if (product && product.max_discount !== null && product.max_discount !== undefined) {
+                const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
+                if (item.discount > maxDiscountAmount) {
+                    showNotification(`Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`, 'error')
+                    return
+                }
+            }
+        }
+    }
+
     // Validar pagos distribuidos solo si no es cotización
     if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
         const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
