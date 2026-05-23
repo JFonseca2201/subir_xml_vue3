@@ -500,6 +500,90 @@ const submitForm = async () => {
     }
 }
 
+// Despachar venta con pago pendiente
+const dispatchSale = async () => {
+    getUserId();
+    sale.value.user_id = userId.value;
+
+    if (formRef.value) {
+        const { valid } = await formRef.value.validate()
+        if (!valid) return
+    }
+
+    // Validar que haya un cliente seleccionado
+    if (!sale.value.client_id) {
+        showNotification('Debe seleccionar un cliente para continuar', 'warning')
+        return
+    }
+
+    // Validar que haya al menos un producto/servicio
+    if (sale.value.items.length === 0) {
+        showNotification('Debe agregar al menos un producto o servicio', 'warning')
+        return
+    }
+
+    // Validar stock
+    for (const item of sale.value.items) {
+        if (item.product_id) {
+            const product = products.value.find(p => p.id === item.product_id)
+            if (product && product.stock < item.quantity) {
+                showNotification(`Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`, 'error')
+                return
+            }
+        }
+    }
+
+    // Validar descuentos máximos
+    for (const item of sale.value.items) {
+        if (item.product_id) {
+            const product = products.value.find(p => p.id === item.product_id)
+            if (product && product.max_discount !== null && product.max_discount !== undefined) {
+                const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
+                if (item.discount > maxDiscountAmount) {
+                    showNotification(`Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`, 'error')
+                    return
+                }
+            }
+        }
+    }
+
+    loader.start()
+
+    try {
+        const payload = {
+            document_number: sale.value.document_number,
+            client_id: sale.value.client_id,
+            vehicle_id: sale.value.vehicle_id,
+            user_id: userId.value,
+            mileage: sale.value.mileage,
+            service_date: sale.value.service_date,
+            subtotal: subtotal.value,
+            tax_amount: taxAmount.value,
+            total: total.value,
+            observations: sale.value.observations,
+            items: sale.value.items
+        }
+
+        const response = await $api('sales/dispatch', {
+            method: 'POST',
+            body: payload
+        })
+
+        if (response.success || response.status === 201 || response.status === 200) {
+            showNotification('Venta despachada correctamente con pago pendiente', 'success')
+            router.push('/sales/list')
+        } else {
+            showNotification(response.message || 'Error al despachar', 'error')
+        }
+    } catch (error) {
+        console.error('Error al despachar venta', error)
+        const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+        showNotification(errMsg, 'error')
+    } finally {
+        loader.stop()
+    }
+}
+
 onMounted(() => {
     loadInitialData()
 })
@@ -999,6 +1083,10 @@ onMounted(() => {
                     <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" to="/sales/list"
                         :disabled="loader.loading">
                         Cancelar
+                    </VBtn>
+                    <VBtn v-if="sale.document_type !== 'quote'" color="warning" variant="elevated" prepend-icon="ri-truck-line"
+                        :loading="loader.loading" @click.prevent="dispatchSale">
+                        Despachar (Pago Pendiente)
                     </VBtn>
                     <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
                         :loading="loader.loading">

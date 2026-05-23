@@ -17,8 +17,22 @@ const sales = ref([])
 // Estado de los diálogos
 const isViewDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
+const isPaymentDialogVisible = ref(false)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
+
+// Estado del formulario de pago
+const paymentForm = ref({
+    payment_method: 'efectivo',
+    convert_to_invoice: false
+})
+
+const paymentMethodOptions = [
+    { title: 'Efectivo', value: 'efectivo' },
+    { title: 'Tarjeta', value: 'tarjeta' },
+    { title: 'Transferencia', value: 'transferencia' },
+    { title: 'Cheque', value: 'cheque' }
+]
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -276,6 +290,42 @@ const handleDeleteSale = (sale) => {
     loadSales()
 }
 
+// Registrar pago
+const openPaymentDialog = (sale) => {
+    if (sale.payment_status !== 'pending') {
+        showNotification('Solo se puede registrar pago para ventas pendientes', 'warning')
+        return
+    }
+    selectedSale.value = sale
+    paymentForm.value = {
+        payment_method: 'efectivo',
+        convert_to_invoice: false
+    }
+    isPaymentDialogVisible.value = true
+}
+
+const registerPayment = async () => {
+    if (!selectedSale.value) return
+
+    try {
+        const response = await $api(`sales/${selectedSale.value.id}/register-payment`, {
+            method: 'POST',
+            body: paymentForm.value
+        })
+
+        if (response?.success) {
+            showNotification('Pago registrado correctamente', 'success')
+            isPaymentDialogVisible.value = false
+            loadSales()
+        } else {
+            showNotification(response?.message || 'Error al registrar el pago', 'error')
+        }
+    } catch (error) {
+        console.error('Error al registrar pago:', error)
+        showNotification('Error al registrar el pago', 'error')
+    }
+}
+
 // Watchers
 watch(currentPage, () => {
     loadSales()
@@ -447,6 +497,9 @@ onMounted(() => {
                                     title="Editar (Info Operativa)" :disabled="item.status === 'canceled'"
                                     @click="editSale(item)" />
 
+                                <VBtn v-if="item.payment_status === 'pending'" icon="ri-money-dollar-circle-line" variant="text" size="small" color="success"
+                                    title="Registrar Pago" @click="openPaymentDialog(item)" />
+
                                 <VBtn icon="ri-close-circle-line" variant="text" size="small" color="error"
                                     title="Anular" :disabled="item.status === 'canceled'" @click="cancelSale(item)" />
 
@@ -474,5 +527,28 @@ onMounted(() => {
 
         <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
             :saleSelected="selectedSale" @deleteSale="handleDeleteSale" />
+
+        <!-- Payment Dialog -->
+        <VDialog v-model="isPaymentDialogVisible" max-width="500">
+            <VCard>
+                <VCardTitle class="text-h5">Registrar Pago</VCardTitle>
+                <VCardText>
+                    <div class="mb-4">
+                        <p class="text-body-1">Venta: <strong>{{ selectedSale?.document_number }}</strong></p>
+                        <p class="text-body-1">Total: <strong>{{ formatCurrency(selectedSale?.total) }}</strong></p>
+                    </div>
+
+                    <VSelect v-model="paymentForm.payment_method" :items="paymentMethodOptions" item-title="title"
+                        item-value="value" label="Método de Pago" variant="outlined" density="comfortable" />
+
+                    <VCheckbox v-model="paymentForm.convert_to_invoice" label="Convertir a Factura" class="mt-4" />
+                </VCardText>
+                <VCardActions>
+                    <VSpacer />
+                    <VBtn color="secondary" variant="text" @click="isPaymentDialogVisible = false">Cancelar</VBtn>
+                    <VBtn color="primary" @click="registerPayment">Registrar Pago</VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
     </div>
 </template>
