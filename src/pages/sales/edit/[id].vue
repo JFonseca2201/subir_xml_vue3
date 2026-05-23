@@ -200,16 +200,29 @@ const onProductSelected = (product) => {
 
 const productFilter = (value, query, item) => {
     if (query == null || query === '') return true
-    const searchText = item?.raw?.searchText || ''
-    return searchText.includes(query.toLowerCase())
+
+    const q = String(query).toLowerCase().trim()
+    if (!q) return true
+
+    const raw = item?.raw
+    if (!raw) return false
+
+    // Convertir de forma segura cada campo a texto minúscula para comparación
+    const sku = String(raw.sku || '').toLowerCase()
+    const name = String(raw.name || '').toLowerCase()
+    const desc = String(raw.description || '').toLowerCase()
+
+    return sku.includes(q) || sku.includes(q) || name.includes(q) || desc.includes(q)
 }
 
 const clientFilter = (value, query, item) => {
     if (query == null || query === '') return true
-    const client = item?.raw
-    if (!client) return false
-    const searchText = `${getClientName(client)} ${client.n_document || ''}`.toLowerCase()
-    return searchText.includes(query.toLowerCase())
+    const q = String(query).toLowerCase().trim()
+    const raw = item?.raw
+    if (!raw) return false
+    const n_doc = String(raw.n_document || '').toLowerCase()
+    const name = String(getClientName(raw)).toLowerCase()
+    return name.includes(q) || n_doc.includes(q)
 }
 
 // Cálculos
@@ -327,8 +340,8 @@ const loadSaleData = async () => {
         const rawProducts = extractArray(productsRes, 'products')
         products.value = rawProducts.map(p => ({
             ...p,
-            searchText: `${p.name || ''} ${p.code || ''} ${p.description || ''}`.toLowerCase(),
-            displayTitle: p.name || p.description || ''
+            searchText: `${p.sku || ''} ${p.sku || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
+            displayTitle: p.description || p.name || ''
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 
@@ -498,21 +511,20 @@ onMounted(() => {
                     <h2 class="text-h5 font-weight-bold mb-4">Selecciona el Tipo de Documento</h2>
                     <div class="d-flex gap-4 flex-wrap">
                         <!-- Cotización: Solo visible si es cotización original -->
-                        <VCard
-                            v-if="sale.document_type === 'quote'"
-                            :class="[
-                                sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25',
-                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
-                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
-                            ]"
-                            variant="outlined"
-                            @click="sale.status !== 'canceled' && (sale.document_type = 'quote'); onDocumentTypeChange()"
-                        >
+                        <VCard v-if="sale.document_type === 'quote'" :class="[
+                            sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25',
+                            sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                            'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                        ]" variant="outlined"
+                            @click="sale.status !== 'canceled' && (sale.document_type = 'quote'); onDocumentTypeChange()">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-file-text-line" size="36" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-file-text-line" size="36"
+                                        :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
                                     Cotización
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -522,21 +534,20 @@ onMounted(() => {
                         </VCard>
 
                         <!-- Nota de Venta: Solo visible si es nota de venta -->
-                        <VCard
-                            v-if="sale.document_type === 'sale_note'"
-                            :class="[
-                                sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25',
-                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
-                                'cursor-not-allowed opacity-75',
-                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
-                            ]"
-                            variant="outlined"
-                        >
+                        <VCard v-if="sale.document_type === 'sale_note'" :class="[
+                            sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25',
+                            sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                            'cursor-not-allowed opacity-75',
+                            'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                        ]" variant="outlined">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-file-list-3-line" size="36" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-file-list-3-line" size="36"
+                                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
                                     Nota de Venta
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -546,21 +557,20 @@ onMounted(() => {
                         </VCard>
 
                         <!-- Factura: Solo visible si es factura -->
-                        <VCard
-                            v-if="sale.document_type === 'invoice'"
-                            :class="[
-                                sale.document_type === 'invoice' ? 'border-purple border-2 bg-purple-lighten-5' : 'border-opacity-25',
-                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
-                                'cursor-not-allowed opacity-75',
-                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
-                            ]"
-                            variant="outlined"
-                        >
+                        <VCard v-if="sale.document_type === 'invoice'" :class="[
+                            sale.document_type === 'invoice' ? 'border-purple border-2 bg-purple-lighten-5' : 'border-opacity-25',
+                            sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                            'cursor-not-allowed opacity-75',
+                            'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                        ]" variant="outlined">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'invoice' ? 'purple' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-bill-line" size="36" :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'invoice' ? 'purple' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-bill-line" size="36"
+                                        :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'invoice' ? 'text-purple' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'invoice' ? 'text-purple' : 'text-grey'">
                                     Factura
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -576,7 +586,8 @@ onMounted(() => {
                     <VAlert color="info" variant="tonal" class="mb-4" border="start">
                         <div class="d-flex align-center">
                             <VIcon icon="ri-information-line" class="mr-2" />
-                            <span class="text-body-2">Los campos marcados con <strong class="text-error">*</strong> son obligatorios</span>
+                            <span class="text-body-2">Los campos marcados con <strong class="text-error">*</strong> son
+                                obligatorios</span>
                         </div>
                     </VAlert>
                     <VRow>
@@ -708,13 +719,13 @@ onMounted(() => {
                     <div class="mb-4">
                         <VAutocomplete v-model="searchProduct" :items="products" item-title="displayTitle" return-object
                             label="Buscar y agregar producto"
-                            placeholder="Escribe para buscar por nombre, código o descripción..."
+                            placeholder="Escribe para buscar por nombre, código, SKU o descripción..."
                             prepend-inner-icon="ri-search-line" variant="outlined" clearable
                             :custom-filter="productFilter" @update:model-value="onProductSelected"
                             :disabled="sale.status === 'canceled'">
                             <template v-slot:item="{ props, item }">
                                 <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                                    :subtitle="item.raw.code ? `Código: ${item.raw.code}` : ''" />
+                                    :subtitle="(item.raw.sku || item.raw.sku) ? `Código/SKU: ${item.raw.sku || item.raw.sku}` : ''" />
                             </template>
                         </VAutocomplete>
                     </div>
@@ -1009,7 +1020,8 @@ onMounted(() => {
 
                 <!-- Acciones -->
                 <div class="d-flex justify-end gap-3 mt-8">
-                    <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start" closable @click:close="showValidationError = false">
+                    <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start"
+                        closable @click:close="showValidationError = false">
                         <div class="d-flex align-center">
                             <VIcon icon="ri-error-warning-line" class="mr-2" />
                             <span class="text-body-2">{{ validationErrorMessage }}</span>

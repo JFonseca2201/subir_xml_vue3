@@ -180,11 +180,11 @@ const loadInitialData = async () => {
     try {
         // Cargar datos en paralelo con menos registros para mejorar rendimiento
         const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes] = await Promise.all([
-            $api('clients', { params: { per_page: 100 } }),
-            $api('vehicles', { params: { per_page: 100 } }),
-            $api('products', { params: { per_page: 100 } }),
+            $api('clients', { params: { per_page: 1000 } }),
+            $api('vehicles', { params: { per_page: 1000 } }),
+            $api('products', { params: { per_page: 1000 } }),
             $api('accounts', { params: { per_page: 100 } }),
-            $api('sales', { params: { per_page: 50 } })
+            $api('sales', { params: { per_page: 1000 } }) // Elevado a 1000 para evitar duplicados en la numeración correlativa
         ])
 
         const extractArray = (res, key) => {
@@ -214,8 +214,8 @@ const loadInitialData = async () => {
         // Agregar campo de búsqueda combinado para productos
         products.value = rawProducts.map(p => ({
             ...p,
-            searchText: ` ${p.sku || ''} ${p.description || ''}`.toLowerCase(),
-            displayTitle: p.description || ''
+            searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
+            displayTitle: p.description || p.name || ''
         }))
         accounts.value = extractArray(accountsRes, 'accounts')
 
@@ -343,16 +343,30 @@ const onProductSelected = (product) => {
 
 const productFilter = (value, query, item) => {
     if (query == null || query === '') return true
-    const searchText = item?.raw?.searchText || ''
-    return searchText.includes(query.toLowerCase())
+
+    const q = String(query).toLowerCase().trim()
+    if (!q) return true
+
+    const raw = item?.raw
+    if (!raw) return false
+
+    // Convertir de forma segura cada campo a texto minúscula para comparación
+    const sku = String(raw.sku || '').toLowerCase()
+    const code = String(raw.code || '').toLowerCase()
+    const name = String(raw.name || '').toLowerCase()
+    const desc = String(raw.description || '').toLowerCase()
+
+    return sku.includes(q) || code.includes(q) || name.includes(q) || desc.includes(q)
 }
 
 const clientFilter = (value, query, item) => {
     if (query == null || query === '') return true
-    const client = item?.raw
-    if (!client) return false
-    const searchText = `${getClientName(client)} ${client.n_document || ''}`.toLowerCase()
-    return searchText.includes(query.toLowerCase())
+    const q = String(query).toLowerCase().trim()
+    const raw = item?.raw
+    if (!raw) return false
+    const n_doc = String(raw.n_document || '').toLowerCase()
+    const name = String(getClientName(raw)).toLowerCase()
+    return name.includes(q) || n_doc.includes(q)
 }
 
 // Cálculos
@@ -647,14 +661,15 @@ onMounted(() => {
                         <VCard
                             :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
                             class="flex-1 min-w-00 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all"
-                            variant="outlined"
-                            @click="sale.document_type = 'quote'; onDocumentTypeChange()"
-                        >
+                            variant="outlined" @click="sale.document_type = 'quote'; onDocumentTypeChange()">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-file-text-line" size="36" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-file-text-line" size="36"
+                                        :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
                                     Cotización
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -666,14 +681,15 @@ onMounted(() => {
                         <VCard
                             :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'"
                             class="flex-1 min-w-00 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all"
-                            variant="outlined"
-                            @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
-                        >
+                            variant="outlined" @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-file-list-3-line" size="36" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-file-list-3-line" size="36"
+                                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
                                     Nota de Venta
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -685,14 +701,15 @@ onMounted(() => {
                         <VCard
                             :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'"
                             class="flex-1 min-w-00 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all"
-                            variant="outlined"
-                            @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
-                        >
+                            variant="outlined" @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
                             <VCardText class="pa-6 text-center">
-                                <VAvatar :color="sale.document_type === 'invoice' ? 'grey-lighten-2' : 'grey-lighten-2'" size="64" class="mb-3">
-                                    <VIcon icon="ri-file-list-3-line" size="36" :color="sale.document_type === 'invoice' ? 'red' : 'grey'" />
+                                <VAvatar :color="sale.document_type === 'invoice' ? 'grey-lighten-2' : 'grey-lighten-2'"
+                                    size="64" class="mb-3">
+                                    <VIcon icon="ri-file-list-3-line" size="36"
+                                        :color="sale.document_type === 'invoice' ? 'red' : 'grey'" />
                                 </VAvatar>
-                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'">
+                                <div class="text-h6 font-weight-bold mb-1"
+                                    :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'">
                                     Factura
                                 </div>
                                 <div class="text-caption text-medium-emphasis">
@@ -874,12 +891,12 @@ onMounted(() => {
                     <div class="mb-4">
                         <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :items="products"
                             item-title="displayTitle" return-object label="Buscar y agregar producto"
-                            placeholder="Escribe para buscar por nombre, código o descripción..."
+                            placeholder="Escribe para buscar por nombre, código, SKU o descripción..."
                             prepend-inner-icon="ri-search-line" variant="outlined" clearable
                             :custom-filter="productFilter" @update:model-value="onProductSelected">
                             <template v-slot:item="{ props, item }">
                                 <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                                    :subtitle="item.raw.code ? `Código: ${item.raw.code}` : ''" />
+                                    :subtitle="(item.raw.code || item.raw.sku) ? `Código/SKU: ${item.raw.code || item.raw.sku}` : ''" />
                             </template>
                         </VAutocomplete>
                     </div>
@@ -1153,7 +1170,8 @@ onMounted(() => {
 
                 <!-- Acciones -->
                 <div class="d-flex justify-end gap-3 mt-8">
-                    <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start" closable @click:close="showValidationError = false">
+                    <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start"
+                        closable @click:close="showValidationError = false">
                         <div class="d-flex align-center">
                             <VIcon icon="ri-error-warning-line" class="mr-2" />
                             <span class="text-body-2">{{ validationErrorMessage }}</span>
@@ -1165,8 +1183,8 @@ onMounted(() => {
                         :disabled="loader.loading">
                         Cancelar
                     </VBtn>
-                    <VBtn v-if="sale.document_type !== 'quote'" color="warning" variant="elevated" prepend-icon="ri-truck-line"
-                        :loading="loader.loading" @click.prevent="dispatchSale">
+                    <VBtn v-if="sale.document_type !== 'quote'" color="warning" variant="elevated"
+                        prepend-icon="ri-truck-line" :loading="loader.loading" @click.prevent="dispatchSale">
                         Despachar (Pago Pendiente)
                     </VBtn>
                     <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
