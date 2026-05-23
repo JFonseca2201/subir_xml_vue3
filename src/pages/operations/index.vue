@@ -288,12 +288,15 @@ onMounted(() => {
                             <i class="ri-history-line"></i>
                             <h2>Movimientos Recientes</h2>
                         </div>
-                        <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" :loading="pdfLoading" size="small">
+                        <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" :loading="pdfLoading"
+                            size="small">
                             Generar PDF
                         </VBtn>
                     </div>
                 </div>
-
+                <br>
+                <hr>
+                <br>
                 <div v-if="recentMovements.length === 0" class="pa-5 text-center text-secondary">
                     No hay movimientos registrados este mes.
                 </div>
