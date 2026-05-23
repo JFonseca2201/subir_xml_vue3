@@ -13,6 +13,7 @@ const { showNotification } = useGlobalToast()
 // Estado general
 const loading = ref(false)
 const sales = ref([])
+const pdfLoading = ref(false)
 
 // Estado de los diálogos
 const isViewDialogVisible = ref(false)
@@ -191,6 +192,7 @@ const editSale = (sale) => {
 }
 
 const generatePDF = async () => {
+    pdfLoading.value = true
     try {
         const params = {
             ...searchForm.value
@@ -224,6 +226,8 @@ const generatePDF = async () => {
     } catch (error) {
         console.error('Error al generar PDF:', error)
         showNotification('Error al generar el reporte PDF', 'error')
+    } finally {
+        pdfLoading.value = false
     }
 }
 
@@ -346,7 +350,7 @@ onMounted(() => {
                     <p class="text-medium-emphasis mb-0">Historial de transacciones y servicios</p>
                 </div>
                 <div class="d-flex gap-3">
-                    <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" size="large">
+                    <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" size="large" :loading="pdfLoading">
                         Generar PDF
                     </VBtn>
                     <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add" size="large">

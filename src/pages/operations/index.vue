@@ -26,6 +26,7 @@ const canAccessOperations = computed(() => {
 const recentMovements = ref([]) // Datos agrupados para el template
 const loading = ref(true)
 const isTransferDialogVisible = ref(false)
+const pdfLoading = ref(false)
 
 const financialSummary = ref({
     monthlyIncome: 0,
@@ -184,6 +185,34 @@ const formatCurrency = (value) => {
     }).format(value)
 }
 
+const generatePDF = async () => {
+    pdfLoading.value = true
+    try {
+        const response = await $api('financial-movements/pdf', {
+            method: 'POST',
+            responseType: 'blob'
+        })
+
+        // Crear un blob y descargar el PDF
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `reporte_financiero_${new Date().toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+
+        showNotification('Reporte PDF generado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al generar PDF:', error)
+        showNotification('Error al generar el reporte PDF', 'error')
+    } finally {
+        pdfLoading.value = false
+    }
+}
+
 onMounted(() => {
     dashboardOptions()
 })
@@ -254,8 +283,15 @@ onMounted(() => {
             <!-- Columna Movimientos -->
             <div class="movements-column">
                 <div class="section-header">
-                    <i class="ri-history-line"></i>
-                    <h2>Movimientos Recientes</h2>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="ri-history-line"></i>
+                            <h2>Movimientos Recientes</h2>
+                        </div>
+                        <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generatePDF" :loading="pdfLoading" size="small">
+                            Generar PDF
+                        </VBtn>
+                    </div>
                 </div>
 
                 <div v-if="recentMovements.length === 0" class="pa-5 text-center text-secondary">

@@ -13,6 +13,8 @@ const loader = useLoaderStore()
 
 const formRef = ref(null)
 const isLoading = ref(false)
+const showValidationError = ref(false)
+const validationErrorMessage = ref('')
 
 // Opciones
 const documentTypes = [
@@ -360,14 +362,22 @@ const loadSaleData = async () => {
 
 // Envío del formulario
 const submitForm = async () => {
+    showValidationError.value = false
+    validationErrorMessage.value = ''
+
     if (formRef.value) {
         const { valid } = await formRef.value.validate()
-        if (!valid) return
+        if (!valid) {
+            showValidationError.value = true
+            validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+            return
+        }
     }
 
     // Validar que haya al menos un producto/servicio
     if (sale.value.items.length === 0) {
-        showNotification('Debe agregar al menos un producto o servicio', 'warning')
+        showValidationError.value = true
+        validationErrorMessage.value = 'Debe agregar al menos un producto o servicio'
         return
     }
 
@@ -377,7 +387,8 @@ const submitForm = async () => {
             if (item.product_id) {
                 const product = products.value.find(p => p.id === item.product_id)
                 if (product && product.stock < item.quantity) {
-                    showNotification(`Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`, 'error')
+                    showValidationError.value = true
+                    validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
                     return
                 }
             }
@@ -391,7 +402,8 @@ const submitForm = async () => {
             if (product && product.max_discount !== null && product.max_discount !== undefined) {
                 const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
                 if (item.discount > maxDiscountAmount) {
-                    showNotification(`Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`, 'error')
+                    showValidationError.value = true
+                    validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
                     return
                 }
             }
@@ -402,7 +414,8 @@ const submitForm = async () => {
     if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
         const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
         if (Math.abs(totalDist - total.value) > 0.01) {
-            showNotification('La suma de los pagos debe ser igual al total', 'warning')
+            showValidationError.value = true
+            validationErrorMessage.value = 'La suma de los pagos debe ser igual al total'
             return
         }
     }
@@ -466,7 +479,12 @@ onMounted(() => {
             <div
                 class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4 border-b pb-4">
                 <div>
-                    <h1 class="text-h4 font-weight-bold mb-1">Editar Venta</h1>
+                    <div class="d-flex align-center">
+                        <VAvatar color="white" size="48" class="mr-3">
+                            <VIcon icon="ri-edit-line" size="32" color="primary" />
+                        </VAvatar>
+                        <h1 class="text-h4 font-weight-bold mb-1"> Editar Venta</h1>
+                    </div>
                     <p class="text-medium-emphasis mb-0">Edita la información de la venta o cotización</p>
                 </div>
                 <VBtn color="primary" variant="elevated" prepend-icon="ri-arrow-left-line" to="/sales/list">
@@ -475,48 +493,109 @@ onMounted(() => {
             </div>
 
             <VForm ref="formRef" @submit.prevent="submitForm">
+                <!-- Selección de Tipo de Documento con Botones Grandes -->
+                <div v-if="!isLoading && sale.document_type" class="mb-6">
+                    <h2 class="text-h5 font-weight-bold mb-4">Selecciona el Tipo de Documento</h2>
+                    <div class="d-flex gap-4 flex-wrap">
+                        <!-- Cotización: Solo visible si es cotización original -->
+                        <VCard
+                            v-if="sale.document_type === 'quote'"
+                            :class="[
+                                sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25',
+                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                            ]"
+                            variant="outlined"
+                            @click="sale.status !== 'canceled' && (sale.document_type = 'quote'); onDocumentTypeChange()"
+                        >
+                            <VCardText class="pa-6 text-center">
+                                <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="64" class="mb-3">
+                                    <VIcon icon="ri-file-text-line" size="36" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
+                                </VAvatar>
+                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
+                                    Cotización
+                                </div>
+                                <div class="text-caption text-medium-emphasis">
+                                    Documento de presupuesto
+                                </div>
+                            </VCardText>
+                        </VCard>
+
+                        <!-- Nota de Venta: Solo visible si es nota de venta -->
+                        <VCard
+                            v-if="sale.document_type === 'sale_note'"
+                            :class="[
+                                sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25',
+                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                                'cursor-not-allowed opacity-75',
+                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                            ]"
+                            variant="outlined"
+                        >
+                            <VCardText class="pa-6 text-center">
+                                <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="64" class="mb-3">
+                                    <VIcon icon="ri-file-list-3-line" size="36" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
+                                </VAvatar>
+                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
+                                    Nota de Venta
+                                </div>
+                                <div class="text-caption text-medium-emphasis">
+                                    Documento de venta
+                                </div>
+                            </VCardText>
+                        </VCard>
+
+                        <!-- Factura: Solo visible si es factura -->
+                        <VCard
+                            v-if="sale.document_type === 'invoice'"
+                            :class="[
+                                sale.document_type === 'invoice' ? 'border-purple border-2 bg-purple-lighten-5' : 'border-opacity-25',
+                                sale.status === 'canceled' ? 'cursor-not-allowed opacity-50' : '',
+                                'cursor-not-allowed opacity-75',
+                                'flex-1 min-w-200 cursor-pointer rounded-xl elevation-2 hover:elevation-4 transition-all'
+                            ]"
+                            variant="outlined"
+                        >
+                            <VCardText class="pa-6 text-center">
+                                <VAvatar :color="sale.document_type === 'invoice' ? 'purple' : 'grey-lighten-2'" size="64" class="mb-3">
+                                    <VIcon icon="ri-bill-line" size="36" :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
+                                </VAvatar>
+                                <div class="text-h6 font-weight-bold mb-1" :class="sale.document_type === 'invoice' ? 'text-purple' : 'text-grey'">
+                                    Factura
+                                </div>
+                                <div class="text-caption text-medium-emphasis">
+                                    Documento fiscal
+                                </div>
+                            </VCardText>
+                        </VCard>
+                    </div>
+                </div>
+
                 <!-- Datos Generales -->
                 <div class="mb-6">
-                    <VCard class="elevation-2 mb-4">
-                        <VCardText class="pa-4">
-                            <div
-                                class="d-flex align-center pa-3 rounded-lg bg-gradient-to-r from-blue to-blue-darken-1">
-                                <VAvatar color="white" size="48" class="mr-3">
-                                    <VIcon icon="ri-file-list-3-line" size="28" color="blue" />
-                                </VAvatar>
-                                <div class="text-white">
-                                    <h2 class="text-h5 font-weight-bold mb-1">Información del Documento</h2>
-                                    <p class="text-body-2 opacity-90 mb-0">Configura los datos principales de la venta
-                                    </p>
-                                </div>
-                            </div>
-                        </VCardText>
-                    </VCard>
+                    <VAlert color="info" variant="tonal" class="mb-4" border="start">
+                        <div class="d-flex align-center">
+                            <VIcon icon="ri-information-line" class="mr-2" />
+                            <span class="text-body-2">Los campos marcados con <strong class="text-error">*</strong> son obligatorios</span>
+                        </div>
+                    </VAlert>
                     <VRow>
                         <VCol cols="12" md="4">
-                            <VSelect v-model="sale.document_type" :items="documentTypes" item-title="title"
-                                item-value="value" label="Tipo de Documento" :rules="[requiredRule]" variant="outlined"
-                                density="comfortable" prepend-inner-icon="ri-file-list-3-line" hide-details="auto"
-                                required
-                                :disabled="sale.status === 'canceled' || (sale.document_type !== 'quote' && sale.document_type !== '')"
-                                @update:model-value="onDocumentTypeChange" />
-                        </VCol>
-                        <VCol cols="12" md="4">
-                            <VTextField v-model="sale.document_number" label="Número de Documento"
+                            <VTextField v-model="sale.document_number" label="Número de Documento *"
                                 :rules="[requiredRule]" variant="outlined" density="comfortable"
-                                prepend-inner-icon="ri-hashtag" hide-details="auto" required readonly />
+                                prepend-inner-icon="ri-hashtag" hide-details="auto" required readonly color="primary" />
                         </VCol>
                         <VCol cols="12" md="4">
-                            <VTextField v-model="sale.service_date" label="Fecha de Servicio" type="date"
+                            <VTextField v-model="sale.service_date" label="Fecha de Servicio *" type="date"
                                 :rules="[requiredRule]" variant="outlined" density="comfortable"
                                 prepend-inner-icon="ri-calendar-line" hide-details="auto" required
-                                :disabled="sale.status === 'canceled'" />
+                                :disabled="sale.status === 'canceled'" color="primary" />
                         </VCol>
                         <VCol cols="12" md="4">
                             <VAutocomplete v-model="sale.client_id" :items="clients" :item-title="getClientName"
-                                item-value="id" label="Cliente" :rules="[requiredRule]" variant="outlined"
+                                item-value="id" label="Cliente *" :rules="[requiredRule]" variant="outlined"
                                 density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto" required
-                                placeholder="Buscar por nombre o documento" clearable
+                                placeholder="Buscar por nombre o documento" clearable color="primary"
                                 :disabled="sale.status === 'canceled'" :custom-filter="clientFilter">
                                 <template v-slot:item="{ props, item }">
                                     <VListItem v-bind="props" :title="getClientName(item.raw)"
@@ -930,6 +1009,14 @@ onMounted(() => {
 
                 <!-- Acciones -->
                 <div class="d-flex justify-end gap-3 mt-8">
+                    <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start" closable @click:close="showValidationError = false">
+                        <div class="d-flex align-center">
+                            <VIcon icon="ri-error-warning-line" class="mr-2" />
+                            <span class="text-body-2">{{ validationErrorMessage }}</span>
+                        </div>
+                    </VAlert>
+                </div>
+                <div class="d-flex justify-end gap-3">
                     <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" to="/sales/list"
                         :disabled="loader.loading">
                         Cancelar
