@@ -120,7 +120,16 @@ const saveWorkOrder = async () => {
         router.push('/work-orders')
     } catch (error) {
         console.error('Error al crear orden de trabajo:', error)
-        showNotification('Error al crear la orden de trabajo', 'error')
+        if (error.response && error.response.data) {
+            const errorData = error.response.data
+            if (errorData.error === 'stock_insufficient' || errorData.error === 'discount_exceeded') {
+                showNotification(errorData.message, 'error')
+            } else {
+                showNotification(errorData.message || 'Error al crear la orden de trabajo', 'error')
+            }
+        } else {
+            showNotification('Error al crear la orden de trabajo', 'error')
+        }
     } finally {
         isLoading.value = false
     }

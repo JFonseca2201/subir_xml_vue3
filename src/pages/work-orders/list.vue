@@ -113,6 +113,36 @@ const goToSale = (workOrderId) => {
     router.push({ path: '/sales/add', query: { work_order_id: workOrderId } })
 }
 
+const downloadPDF = async (workOrderId) => {
+    try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`http://127.0.0.1:8000/api/work-orders/${workOrderId}/pdf`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/pdf'
+            }
+        })
+
+        if (response.ok) {
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `orden-trabajo-${workOrderId}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+            showNotification('PDF descargado exitosamente', 'success')
+        } else {
+            showNotification('Error al descargar el PDF', 'error')
+        }
+    } catch (error) {
+        console.error('Error al descargar PDF:', error)
+        showNotification('Error al descargar el PDF', 'error')
+    }
+}
+
 const getClientName = (client) => {
     if (!client) return 'N/A'
     return client.full_name || `${client.name || ''} ${client.surname || ''}`.trim() || 'N/A'
@@ -256,6 +286,12 @@ onMounted(() => {
                                                         <VIcon icon="ri-shopping-cart-line" />
                                                     </template>
                                                     <VListItemTitle>Generar Venta</VListItemTitle>
+                                                </VListItem>
+                                                <VListItem v-if="workOrder.sale" @click="downloadPDF(workOrder.id)">
+                                                    <template v-slot:prepend>
+                                                        <VIcon icon="ri-file-pdf-line" />
+                                                    </template>
+                                                    <VListItemTitle>Descargar PDF</VListItemTitle>
                                                 </VListItem>
                                             </VList>
                                         </VMenu>
