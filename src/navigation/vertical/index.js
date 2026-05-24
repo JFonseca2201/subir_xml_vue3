@@ -127,6 +127,17 @@ export default [
     ],
   },
   {
+    title: 'Taller',
+    icon: { icon: 'ri-tools-line' },
+    children: [
+      {
+        title: 'Órdenes de Trabajo',
+        to: 'work-orders-list',
+        icon: { icon: 'ri-file-list-3-line' },
+      },
+    ],
+  },
+  {
     title: 'Devolución',
     icon: { icon: 'ri-loop-right-line' },
     to: 'second-page',

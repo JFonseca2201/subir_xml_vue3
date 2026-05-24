@@ -62,6 +62,11 @@ const router = createRouter({
           name: "movements-index",
           component: () => import("@/pages/movements/index.vue"),
         },
+        {
+          path: "/work-orders",
+          name: "work-orders-list",
+          component: () => import("@/pages/work-orders/list.vue"),
+        },
       ],
     ].map((route) => recursiveLayouts(route)),
   ],

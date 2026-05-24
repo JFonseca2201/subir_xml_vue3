@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
@@ -11,6 +11,7 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 const userId = ref(null)
@@ -55,6 +56,7 @@ const sale = ref({
     document_number: '',
     client_id: null,
     vehicle_id: null,
+    work_order_id: null,
     mileage: null,
     service_date: new Date().toISOString().substr(0, 10),
     payment_status: 'paid',
@@ -116,6 +118,9 @@ const initializePaymentDistribution = () => {
 const isClientFinalAddDialogVisible = ref(false)
 const isClientCompanyAddDialogVisible = ref(false)
 const isVehicleAddDialogVisible = ref(false)
+const isWorkOrderImportDialogVisible = ref(false)
+const readyWorkOrders = ref([])
+const isLoadingWorkOrders = ref(false)
 
 const handleClientAdded = async (clientData) => {
     if (clientData) {
@@ -160,6 +165,49 @@ const handleVehicleAdded = async (vehicleData) => {
         await nextTick()
         sale.value.vehicle_id = exists ? exists.id : newId
     }
+}
+
+// Función para cargar órdenes listas para facturar
+const loadReadyWorkOrders = async () => {
+    isLoadingWorkOrders.value = true
+    try {
+        const response = await $api('work-orders/ready-to-invoice')
+        readyWorkOrders.value = response.data || []
+    } catch (error) {
+        console.error('Error al cargar órdenes listas:', error)
+        showNotification('Error al cargar las órdenes listas para facturar', 'error')
+    } finally {
+        isLoadingWorkOrders.value = false
+    }
+}
+
+// Función para seleccionar una orden de trabajo
+const selectWorkOrder = (workOrder) => {
+    sale.value.work_order_id = workOrder.id
+    sale.value.client_id = workOrder.client_id
+    sale.value.vehicle_id = workOrder.vehicle_id
+    sale.value.mileage = workOrder.mileage
+
+    // Importar items de la orden de trabajo
+    if (workOrder.items && workOrder.items.length > 0) {
+        sale.value.items = workOrder.items.map(item => ({
+            product_id: item.product_id,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            discount: item.discount || 0,
+            subtotal: item.subtotal,
+        }))
+    }
+
+    isWorkOrderImportDialogVisible.value = false
+    showNotification('Orden de trabajo importada exitosamente', 'success')
+}
+
+// Abrir diálogo de importación de órdenes de trabajo
+const openWorkOrderImportDialog = () => {
+    loadReadyWorkOrders()
+    isWorkOrderImportDialogVisible.value = true
 }
 
 const searchProduct = ref(null)
@@ -373,7 +421,11 @@ const clientFilter = (value, query, item) => {
 const TAX_RATE = 0.15 // 15% IVA
 
 const grossSubtotal = computed(() => {
-    return sale.value.items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+    return sale.value.items.reduce((sum, item) => {
+        const price = item.price || item.unit_price || 0
+        const quantity = item.quantity || 0
+        return sum + (quantity * parseFloat(price))
+    }, 0)
 })
 
 const totalDiscount = computed(() => {
@@ -470,13 +522,21 @@ const submitForm = async () => {
             const product = products.value.find(p => p.id === item.product_id)
             if (product && product.max_discount !== null && product.max_discount !== undefined) {
                 const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
-                if (item.discount > maxDiscountAmount) {
+                const itemDiscount = Number(item.discount) || 0
+                if (itemDiscount > maxDiscountAmount) {
                     showValidationError.value = true
-                    validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
+                    validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${itemDiscount.toFixed(2)}`
                     return
                 }
             }
         }
+    }
+
+    // Validar que haya al menos un método de pago solo si es venta (invoice o sale_note)
+    if ((sale.value.document_type === 'invoice' || sale.value.document_type === 'sale_note') && paymentDistributions.value.length === 0) {
+        showValidationError.value = true
+        validationErrorMessage.value = 'Debe agregar al menos un método de pago para la venta'
+        return
     }
 
     // Validar pagos distribuidos solo si no es cotización
@@ -624,8 +684,41 @@ const dispatchSale = async () => {
     }
 }
 
-onMounted(() => {
-    loadInitialData()
+onMounted(async () => {
+    await loadInitialData()
+    
+    // Verificar si hay un work_order_id en el query parameter
+    const workOrderId = route.query.work_order_id
+    if (workOrderId) {
+        try {
+            const workOrderRes = await $api(`work-orders/${workOrderId}`)
+            const workOrder = workOrderRes.data || workOrderRes
+            
+            if (workOrder) {
+                sale.value.work_order_id = workOrder.id
+                sale.value.client_id = workOrder.client_id
+                sale.value.vehicle_id = workOrder.vehicle_id
+                sale.value.mileage = workOrder.mileage
+
+                // Importar items de la orden de trabajo
+                if (workOrder.items && workOrder.items.length > 0) {
+                    sale.value.items = workOrder.items.map(item => ({
+                        product_id: item.product_id,
+                        description: item.description,
+                        quantity: item.quantity,
+                        price: item.unit_price || 0,
+                        discount: item.discount || 0,
+                        subtotal: item.subtotal,
+                    }))
+                }
+                
+                showNotification('Orden de trabajo importada exitosamente', 'success')
+            }
+        } catch (error) {
+            console.error('Error al importar orden de trabajo:', error)
+            showNotification('Error al importar la orden de trabajo', 'error')
+        }
+    }
 })
 </script>
 
@@ -722,6 +815,13 @@ onMounted(() => {
 
                 <!-- Datos Generales -->
                 <div class="mb-6">
+                    <div class="d-flex align-center justify-space-between mb-4">
+                        <h3 class="text-h6 font-weight-bold">Datos Generales</h3>
+                        <VBtn color="info" variant="outlined" prepend-icon="ri-file-list-3-line" size="small"
+                            @click="openWorkOrderImportDialog">
+                            Importar Orden de Trabajo
+                        </VBtn>
+                    </div>
                     <VRow>
                         <VCol cols="12" md="4">
                             <VTextField v-model="sale.document_number" label="Número de Documento *"
@@ -1202,5 +1302,57 @@ onMounted(() => {
             v-model:isDialogVisible="isClientCompanyAddDialogVisible" @addClientCompany="handleClientAdded" />
         <VehicleAddDialog v-if="isVehicleAddDialogVisible" v-model:isDialogVisible="isVehicleAddDialogVisible"
             @addVehicle="handleVehicleAdded" />
+
+        <!-- Diálogo de importación de orden de trabajo -->
+        <VDialog v-model="isWorkOrderImportDialogVisible" max-width="800px">
+            <VCard>
+                <VCardTitle class="pa-4">
+                    <div class="d-flex align-center justify-space-between">
+                        <span class="text-h6">Importar Orden de Trabajo</span>
+                        <VBtn icon="ri-close-line" variant="text" @click="isWorkOrderImportDialogVisible = false" />
+                    </div>
+                </VCardTitle>
+                <VDivider />
+                <VCardText class="pa-4">
+                    <div v-if="isLoadingWorkOrders" class="text-center pa-8">
+                        <VProgressCircular indeterminate color="primary" size="48" />
+                        <p class="mt-4 text-body-2">Cargando órdenes listas para facturar...</p>
+                    </div>
+                    <div v-else-if="readyWorkOrders.length === 0" class="text-center pa-8">
+                        <VIcon icon="ri-file-list-3-line" size="64" color="grey-lighten-1" />
+                        <p class="mt-4 text-body-2 text-grey">
+                            No hay órdenes de trabajo listas para facturar
+                        </p>
+                    </div>
+                    <VTable v-else>
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Vehículo</th>
+                                <th>Kilometraje</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="workOrder in readyWorkOrders" :key="workOrder.id">
+                                <td>
+                                    <span class="font-weight-bold">{{ workOrder.number }}</span>
+                                </td>
+                                <td>{{ getClientName(workOrder.client) }}</td>
+                                <td>{{ workOrder.vehicle ? `${workOrder.vehicle.brand} ${workOrder.vehicle.model} - ${workOrder.vehicle.license_plate}` : 'N/A' }}</td>
+                                <td>{{ workOrder.mileage || 'N/A' }}</td>
+                                <td>
+                                    <VBtn size="small" color="primary" variant="outlined"
+                                        @click="selectWorkOrder(workOrder)">
+                                        Seleccionar
+                                    </VBtn>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </VTable>
+                </VCardText>
+            </VCard>
+        </VDialog>
     </div>
 </template>
