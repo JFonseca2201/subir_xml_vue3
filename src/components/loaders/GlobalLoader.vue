@@ -1,7 +1,5 @@
 <template>
-    <VOverlay :model-value="isLoading" class="align-center justify-center" absolute persistent>
-        <VProgressCircular indeterminate size="48" width="4" color="primary" />
-    </VOverlay>
+  <!-- Global loader in use -->
 </template>
 
 <script setup>

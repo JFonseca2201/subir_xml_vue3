@@ -1,232 +1,287 @@
 <script setup>
 import { useLoaderStore } from '@/stores/loader'
+
 const props = defineProps({
-    isDialogVisible: {
-        type: Boolean,
-        required: true,
-    },
+  isDialogVisible: {
+    type: Boolean,
+    required: true,
+  },
 })
 
 const emit = defineEmits([
-    'update:isDialogVisible',
-    'addRole'
-]);
+  'update:isDialogVisible',
+  'addRole',
+])
 
-const loader = useLoaderStore();
-const name = ref(null);
-const permissions = ref([]);
-const warning = ref(null);
-const error_exist = ref(null);
-const success = ref(null);
+const loader = useLoaderStore()
+const name = ref(null)
+const permissions = ref([])
+const warning = ref(null)
+const error_exist = ref(null)
+const success = ref(null)
 
 // Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
+const notificationShow = ref(false)
+const notificationMessage = ref('')
+const notificationType = ref('success')
 
 const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+  notificationMessage.value = message
+  notificationType.value = type
+  notificationShow.value = true
+}
 
-const AddEditPermissionDialog = (permission) => {
-    let INDEX = permissions.value.findIndex((perm) => perm == permission);
-    if (INDEX != -1) {
-        permissions.value.splice(INDEX, 1);
-    } else {
-        permissions.value.push(permission);
-    }
-    console.log(permissions);
+const AddEditPermissionDialog = permission => {
+  let INDEX = permissions.value.findIndex(perm => perm == permission)
+  if (INDEX != -1) {
+    permissions.value.splice(INDEX, 1)
+  } else {
+    permissions.value.push(permission)
+  }
+  console.log(permissions)
 }
 
 
 const store = async () => {
-    loader.start();
-    warning.value = null;
-    error_exist.value = null;
-    success.value = null;
+  loader.start()
+  warning.value = null
+  error_exist.value = null
+  success.value = null
 
-    if (!name.value) {
-        setTimeout(() => {
-            warning.value = "Se debe ingresar un nombre de rol";
-        }, 50);
-        loader.stop();
-        return;
-    }
-    if (permissions.value.length == 0) {
-        setTimeout(() => {
-            warning.value = "Seleccione uno o más permisos.";
-        }, 50);
-        loader.stop();
-        return;
-    }
+  if (!name.value) {
+    setTimeout(() => {
+      warning.value = "Se debe ingresar un nombre de rol"
+    }, 50)
+    loader.stop()
+    
+    return
+  }
+  if (permissions.value.length == 0) {
+    setTimeout(() => {
+      warning.value = "Seleccione uno o más permisos."
+    }, 50)
+    loader.stop()
+    
+    return
+  }
 
-    let data = {
-        name: name.value,
-        permissions: permissions.value
-    }
+  let data = {
+    name: name.value,
+    permissions: permissions.value,
+  }
 
-    try {
-        const resp = await $api("role", {
-            method: 'POST',
-            body: data,
-            onResponseError({ response }) {
-                error_exist.value = response._data.errors.name[0];
-            }
-        });
-        console.log(resp);
-        showNotification(resp.message || 'Rol creado con éxito', 'success');
-        emit("addRole", resp.data);
+  try {
+    const resp = await $api("role", {
+      method: 'POST',
+      body: data,
+      onResponseError({ response }) {
+        error_exist.value = response._data.errors.name[0]
+      },
+    })
 
-        // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
-        setTimeout(() => {
-            onFormReset();
-        }, 1500);
+    console.log(resp)
+    showNotification(resp.message || 'Rol creado con éxito', 'success')
+    emit("addRole", resp.data)
 
-    } catch (error) {
-        console.log(error);
-        showNotification('Error al crear el rol', 'error');
-    } finally {
-        loader.stop();
-    }
+    // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+    setTimeout(() => {
+      onFormReset()
+    }, 1500)
+
+  } catch (error) {
+    console.log(error)
+    showNotification('Error al crear el rol', 'error')
+  } finally {
+    loader.stop()
+  }
 }
 
 
 
 
 const onFormSubmit = () => {
-    emit('update:isDialogVisible', false)
+  emit('update:isDialogVisible', false)
 }
 
 const onFormReset = () => {
-    name.value = null;
-    permissions.value = [];
-    warning.value = null;
-    error_exist.value = null;
-    success.value = null;
+  name.value = null
+  permissions.value = []
+  warning.value = null
+  error_exist.value = null
+  success.value = null
 
-    emit('update:isDialogVisible', false)
+  emit('update:isDialogVisible', false)
 }
 
 const dialogVisibleUpdate = val => {
-    emit('update:isDialogVisible', val)
+  emit('update:isDialogVisible', val)
 }
 
 onMounted(() => {
-    loader.stop();
-    warning.value = null;
-    error_exist.value = null;
-    success.value = null;
-});
-
+  loader.stop()
+  warning.value = null
+  error_exist.value = null
+  success.value = null
+})
 </script>
 
 <template>
-    <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
-        @update:model-value="dialogVisibleUpdate" transition="dialog-bottom-transition">
-        <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
+  <VDialog
+    :width="$vuetify.display.smAndDown ? 'auto' : 720"
+    :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition"
+    @update:model-value="dialogVisibleUpdate"
+  >
+    <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
+      <!-- Close -->
+      <DialogCloseBtn
+        variant="text"
+        size="small"
+        class="position-absolute top-0 end-0 ma-4"
+        @click="onFormReset"
+      />
 
-            <!-- Close -->
-            <DialogCloseBtn variant="text" size="small" class="position-absolute top-0 end-0 ma-4"
-                @click="onFormReset" />
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <VIcon
+          icon="ri-shield-user-line"
+          size="42"
+          color="primary"
+          class="mb-3"
+        />
+        <h4 class="text-h4 font-weight-bold mb-1">
+          Crear nuevo rol
+        </h4>
+        <p class="text-body-2 text-medium-emphasis">
+          Define permisos y accesos para el sistema
+        </p>
+      </div>
 
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <VIcon icon="ri-shield-user-line" size="42" color="primary" class="mb-3" />
-                <h4 class="text-h4 font-weight-bold mb-1">
-                    Crear nuevo rol
-                </h4>
-                <p class="text-body-2 text-medium-emphasis">
-                    Define permisos y accesos para el sistema
-                </p>
-            </div>
+      <!-- Form -->
+      <VForm @submit.prevent="store">
+        <VRow>
+          <!-- Nombre -->
+          <VCol cols="12">
+            <VTextField
+              v-model="name"
+              label="Nombre del rol"
+              placeholder="Ej. Administrador"
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="ri-user-settings-line"
+              hide-details
+            />
+          </VCol>
+          <!-- Roles y permisos -->
+          <VCol cols="12">
+            <VTable class="elevation-0 permissions-table">
+              <thead>
+                <tr>
+                  <th class="px-6 py-4 text-body-2 text-medium-emphasis">
+                    Módulo
+                  </th>
+                  <th class="px-6 py-4 text-body-2 text-medium-emphasis">
+                    Acciones permitidas
+                  </th>
+                </tr>
+              </thead>
 
-            <!-- Form -->
-            <VForm @submit.prevent="store()">
-                <VRow>
-                    <!-- Nombre -->
-                    <VCol cols="12">
-                        <VTextField v-model="name" label="Nombre del rol" placeholder="Ej. Administrador"
-                            variant="outlined" density="comfortable" prepend-inner-icon="ri-user-settings-line"
-                            hide-details />
-                    </VCol>
-                    <!-- Roles y permisos -->
-                    <VCol cols="12">
-                        <VTable class="elevation-0 permissions-table">
+              <tbody>
+                <tr
+                  v-for="(item, index) in PERMISOS"
+                  :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                  class="permissions-row"
+                >
+                  <!-- MÓDULO -->
+                  <td class="px-6 py-6 align-top module-cell">
+                    <div class="module-name">
+                      {{ item.name }}
+                    </div>
+                    <div class="module-subtitle">
+                      Gestión del módulo
+                    </div>
+                  </td>
 
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                                        Módulo
-                                    </th>
-                                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                                        Acciones permitidas
-                                    </th>
-                                </tr>
-                            </thead>
+                  <!-- PERMISOS -->
+                  <td class="px-6 py-6">
+                    <div class="permissions-wrap">
+                      <VChip
+                        v-for="(permiso, index2) in item.permisos"
+                        :key="index2"
+                        :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
+                        :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
+                        class="cursor-pointer"
+                        :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
+                        @click="AddEditPermissionDialog(permiso.permiso)"
+                      >
+                        {{ permiso.name }}
+                      </VChip>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCol>
 
-                            <tbody>
-                                <tr v-for="(item, index) in PERMISOS" :key="index" class="permissions-row">
-                                    <!-- MÓDULO -->
-                                    <td class="px-6 py-6 align-top module-cell">
-                                        <div class="module-name">
-                                            {{ item.name }}
-                                        </div>
-                                        <div class="module-subtitle">
-                                            Gestión del módulo
-                                        </div>
-                                    </td>
+          <VCol
+            v-if="warning"
+            cols="12"
+          >
+            <VAlert
+              color="warning"
+              variant="tonal"
+              closable
+              class="mb-2"
+            >
+              <template #prepend>
+                <VIcon icon="ri-alert-line" />
+              </template>
+              {{ warning }}
+            </VAlert>
+          </VCol>
 
-                                    <!-- PERMISOS -->
-                                    <td class="px-6 py-6">
-                                        <div class="permissions-wrap">
-                                            <VChip v-for="(permiso, index2) in item.permisos" :key="index2"
-                                                :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
-                                                :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
-                                                class="cursor-pointer"
-                                                :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
-                                                @click="AddEditPermissionDialog(permiso.permiso)">
-                                                {{ permiso.name }}
-                                            </VChip>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
+          <!-- Actions -->
+          <VCol
+            cols="12"
+            class="d-flex justify-end gap-3 mt-4"
+          >
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              class="text-none px-6"
+              @click="onFormReset"
+            >
+              Cancelar
+            </VBtn>
 
-                        </VTable>
-                    </VCol>
+            <VBtn
+              type="submit"
+              color="primary"
+              variant="elevated"
+              class="text-none px-6"
+              :loading="loader.loading"
+              :disabled="loader.loading"
+            >
+              <VIcon
+                start
+                icon="ri-save-3-line"
+              />
+              Guardar rol
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VForm>
+    </VCard>
+  </VDialog>
 
-                    <VCol cols="12" v-if="warning">
-                        <VAlert color="warning" variant="tonal" closable class="mb-2">
-                            <template #prepend>
-                                <VIcon icon="ri-alert-line" />
-                            </template>
-                            {{ warning }}
-                        </VAlert>
-                    </VCol>
-
-                    <!-- Actions -->
-                    <VCol cols="12" class="d-flex justify-end gap-3 mt-4">
-                        <VBtn variant="outlined" color="secondary" class="text-none px-6" @click="onFormReset">
-                            Cancelar
-                        </VBtn>
-
-                        <VBtn type="submit" color="primary" variant="elevated" class="text-none px-6"
-                            :loading="loader.loading" :disabled="loader.loading">
-                            <VIcon start icon="ri-save-3-line" />
-                            Guardar rol
-                        </VBtn>
-                    </VCol>
-                </VRow>
-            </VForm>
-
-        </VCard>
-    </VDialog>
-
-    <!-- Notificación Toast -->
-    <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
+  <!-- Notificación Toast -->
+  <NotificationToast
+    v-model:show="notificationShow"
+    :message="notificationMessage"
+    :type="notificationType"
+  />
 </template>
+
 <style scoped>
 .permissions-table {
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));

@@ -274,8 +274,64 @@ const watchSurname = ref(() => {
     generateFullName();
 });
 
+const regions = ref([])
+const provinces = ref([])
+const districts = ref([])
+
+const loadRegions = async () => {
+    try {
+        const resp = await $api('geographic/regions', { method: 'GET' })
+        regions.value = resp
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+watch(() => clientForm.value.ubigeo_region, async (newVal) => {
+    if (newVal) {
+        try {
+            const resp = await $api(`geographic/provinces/${newVal}`, { method: 'GET' })
+            provinces.value = resp
+            clientForm.value.region = regions.value.find(r => r.id === newVal)?.name || ''
+        } catch (e) {
+            console.error(e)
+        }
+    } else {
+        provinces.value = []
+        districts.value = []
+        clientForm.value.ubigeo_provincia = ''
+        clientForm.value.ubigeo_distrito = ''
+        clientForm.value.region = ''
+    }
+})
+
+watch(() => clientForm.value.ubigeo_provincia, async (newVal) => {
+    if (newVal) {
+        try {
+            const resp = await $api(`geographic/cities/${newVal}`, { method: 'GET' })
+            districts.value = resp
+            clientForm.value.provincia = provinces.value.find(p => p.id === newVal)?.name || ''
+        } catch (e) {
+            console.error(e)
+        }
+    } else {
+        districts.value = []
+        clientForm.value.ubigeo_distrito = ''
+        clientForm.value.provincia = ''
+    }
+})
+
+watch(() => clientForm.value.ubigeo_distrito, (newVal) => {
+    if (newVal) {
+        clientForm.value.distrito = districts.value.find(d => d.id === newVal)?.name || ''
+    } else {
+        clientForm.value.distrito = ''
+    }
+})
+
 // Montar componente
 onMounted(() => {
+    loadRegions()
     clientForm.value.user_id = userStore.id;
 });
 </script>
@@ -366,18 +422,15 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VTextField v-model="clientForm.region" label="Región" placeholder="Región"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id" label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line" clearable />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VTextField v-model="clientForm.provincia" label="Provincia" placeholder="Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name" item-value="id" label="Provincia" placeholder="Seleccione Provincia" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VTextField v-model="clientForm.distrito" label="Distrito" placeholder="Distrito"
-                            prepend-inner-icon="ri-map-2-line" clearable />
+                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id" label="Ciudad / Distrito" placeholder="Seleccione Distrito" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
                     </VCol>
 
                     <VDivider class="my-4" />

@@ -6,14 +6,14 @@ import { $api } from '@/utils/api'
 
 // Props
 const props = defineProps({
-    modelValue: {
-        type: Boolean,
-        default: false
-    },
-    employee: {
-        type: Object,
-        default: () => ({})
-    }
+  modelValue: {
+    type: Boolean,
+    default: false,
+  },
+  employee: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 // Emits
@@ -25,67 +25,82 @@ const { showNotification } = useGlobalToast()
 
 // Métodos
 const confirmDelete = async () => {
-    if (!props.employee?.id) return
+  if (!props.employee?.id) return
 
-    try {
-        loader.start()
+  try {
+    loader.start()
         
-        await $api(`employees/${props.employee.id}`, {
-            method: 'DELETE'
-        })
+    await $api(`employees/${props.employee.id}`, {
+      method: 'DELETE',
+    })
 
-        showNotification('Empleado eliminado exitosamente', 'success')
+    showNotification('Empleado eliminado exitosamente', 'success')
         
-        // Cerrar diálogo
-        emit('update:modelValue', false)
+    // Cerrar diálogo
+    emit('update:modelValue', false)
         
-        // Emitir evento de empleado eliminado
-        emit('employee-deleted', props.employee)
+    // Emitir evento de empleado eliminado
+    emit('employee-deleted', props.employee)
         
-    } catch (error) {
-        console.error('Error al eliminar empleado:', error)
-        showNotification('Error al eliminar empleado', 'error')
-    } finally {
-        loader.stop()
-    }
+  } catch (error) {
+    console.error('Error al eliminar empleado:', error)
+    showNotification('Error al eliminar empleado', 'error')
+  } finally {
+    loader.stop()
+  }
 }
 
 const closeDialog = () => {
-    emit('update:modelValue', false)
+  emit('update:modelValue', false)
 }
 </script>
 
 <template>
-    <VDialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="400">
-        <VCard>
-            <VCardTitle class="text-h5 d-flex align-center">
-                <VIcon icon="ri-delete-bin-line" class="mr-2" />
-                Confirmar Eliminación
-            </VCardTitle>
-            <VDivider />
+  <VDialog
+    :model-value="modelValue"
+    max-width="400"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <VCard>
+      <VCardTitle class="text-h5 d-flex align-center">
+        <VIcon
+          icon="ri-delete-bin-line"
+          class="mr-2"
+        />
+        Confirmar Eliminación
+      </VCardTitle>
+      <VDivider />
             
-            <VCardText>
-                ¿Está seguro que desea eliminar al empleado
-                <strong>{{ employee?.first_name }} {{ employee?.last_name }}</strong>?
-                <br><br>
-                <small class="text-warning">
-                    <VIcon icon="ri-information-line" />
-                    El empleado será marcado como inactivo pero no se eliminará permanentemente.
-                </small>
-            </VCardText>
+      <VCardText>
+        ¿Está seguro que desea eliminar al empleado
+        <strong>{{ employee?.first_name }} {{ employee?.last_name }}</strong>?
+        <br><br>
+        <small class="text-warning">
+          <VIcon icon="ri-information-line" />
+          El empleado será marcado como inactivo pero no se eliminará permanentemente.
+        </small>
+      </VCardText>
 
-            <VDivider />
-            <VCardActions class="pa-4">
-                <VSpacer />
-                <VBtn variant="text" @click="closeDialog">
-                    Cancelar
-                </VBtn>
-                <VBtn color="error" variant="elevated" @click="confirmDelete" prepend-icon="ri-delete-bin-line">
-                    Eliminar
-                </VBtn>
-            </VCardActions>
-        </VCard>
-    </VDialog>
+      <VDivider />
+      <VCardActions class="pa-4">
+        <VSpacer />
+        <VBtn
+          variant="text"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          color="error"
+          variant="elevated"
+          prepend-icon="ri-delete-bin-line"
+          @click="confirmDelete"
+        >
+          Eliminar
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>

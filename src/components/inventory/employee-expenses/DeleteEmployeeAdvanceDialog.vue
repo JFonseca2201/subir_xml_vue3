@@ -1,82 +1,121 @@
 <template>
-    <VDialog v-model="show" max-width="500" persistent>
-        <VCard>
-            <!-- Header -->
-            <VCardTitle class="pa-6 pb-4">
-                <div class="d-flex align-center gap-3">
-                    <VIcon icon="ri-delete-bin-line" color="error" size="28" />
-                    <div>
-                        <h3 class="text-h5 font-weight-bold">Eliminar Adelanto</h3>
-                        <span class="text-medium-emphasis text-body-2">
-                            Esta acción no se puede deshacer
-                        </span>
-                    </div>
-                </div>
-            </VCardTitle>
+  <VDialog
+    v-model="show"
+    max-width="500"
+    persistent
+  >
+    <VCard>
+      <!-- Header -->
+      <VCardTitle class="pa-6 pb-4">
+        <div class="d-flex align-center gap-3">
+          <VIcon
+            icon="ri-delete-bin-line"
+            color="error"
+            size="28"
+          />
+          <div>
+            <h3 class="text-h5 font-weight-bold">
+              Eliminar Adelanto
+            </h3>
+            <span class="text-medium-emphasis text-body-2">
+              Esta acción no se puede deshacer
+            </span>
+          </div>
+        </div>
+      </VCardTitle>
 
-            <VDivider />
+      <VDivider />
 
-            <!-- Content -->
-            <VCardText class="pa-6">
-                <VAlert type="warning" variant="tonal" class="mb-4">
-                    <template #prepend>
-                        <VIcon>ri-alert-line</VIcon>
-                    </template>
-                    <div class="text-body-1">
-                        ¿Estás seguro de que deseas eliminar este adelanto?
-                    </div>
-                </VAlert>
+      <!-- Content -->
+      <VCardText class="pa-6">
+        <VAlert
+          type="warning"
+          variant="tonal"
+          class="mb-4"
+        >
+          <template #prepend>
+            <VIcon>ri-alert-line</VIcon>
+          </template>
+          <div class="text-body-1">
+            ¿Estás seguro de que deseas eliminar este adelanto?
+          </div>
+        </VAlert>
 
-                <!-- Advance Details -->
-                <VCard v-if="advance && advance.id" class="bg-grey-lighten-5 rounded-lg pa-4 mb-4">
-                    <VCardText class="pa-0">
-                        <div class="mb-3">
-                            <span class="text-body-2 text-medium-emphasis">Empleado:</span>
-                            <div class="text-body-1 font-weight-medium">{{ advance.employee_name || 'N/A' }}</div>
-                        </div>
-                        <div class="mb-3">
-                            <span class="text-body-2 text-medium-emphasis">Monto:</span>
-                            <div class="text-h6 font-weight-bold text-error">{{ formatCurrency(advance.amount || 0) }}
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <span class="text-body-2 text-medium-emphasis">Descripción:</span>
-                            <div class="text-body-1">{{ advance.description || 'Sin descripción' }}</div>
-                        </div>
-                        <div>
-                            <span class="text-body-2 text-medium-emphasis">Fecha:</span>
-                            <div class="text-body-1">{{ advance.date || advance.advance_date || 'N/A' }}</div>
-                        </div>
-                    </VCardText>
-                </VCard>
-
-                <VAlert type="info" variant="tonal" density="compact">
-                    <template #prepend>
-                        <VIcon>ri-information-line</VIcon>
-                    </template>
-                    <div class="text-body-2">
-                        Al eliminar este adelanto, se restaurará el monto a la cuenta correspondiente y se eliminará
-                        permanentemente del
-                        sistema.
-                    </div>
-                </VAlert>
-            </VCardText>
-
-            <VDivider />
-
-            <!-- Actions -->
-            <VCardActions class="pa-6">
-                <VSpacer />
-                <VBtn variant="outlined" prepend-icon="ri-close-line" @click="closeDialog" :disabled="loading">
-                    Cancelar
-                </VBtn>
-                <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line" @click="handleDelete"
-                    :loading="loading" :disabled="loading || !advance?.id">
-                    Eliminar Adelanto
-                </VBtn>
-            </VCardActions>
+        <!-- Advance Details -->
+        <VCard
+          v-if="advance && advance.id"
+          class="bg-grey-lighten-5 rounded-lg pa-4 mb-4"
+        >
+          <VCardText class="pa-0">
+            <div class="mb-3">
+              <span class="text-body-2 text-medium-emphasis">Empleado:</span>
+              <div class="text-body-1 font-weight-medium">
+                {{ advance.employee_name || 'N/A' }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <span class="text-body-2 text-medium-emphasis">Monto:</span>
+              <div class="text-h6 font-weight-bold text-error">
+                {{ formatCurrency(advance.amount || 0) }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <span class="text-body-2 text-medium-emphasis">Descripción:</span>
+              <div class="text-body-1">
+                {{ advance.description || 'Sin descripción' }}
+              </div>
+            </div>
+            <div>
+              <span class="text-body-2 text-medium-emphasis">Fecha:</span>
+              <div class="text-body-1">
+                {{ advance.date || advance.advance_date || 'N/A' }}
+              </div>
+            </div>
+          </VCardText>
         </VCard>
-    </VDialog>
+
+        <VAlert
+          type="info"
+          variant="tonal"
+          density="compact"
+        >
+          <template #prepend>
+            <VIcon>ri-information-line</VIcon>
+          </template>
+          <div class="text-body-2">
+            Al eliminar este adelanto, se restaurará el monto a la cuenta correspondiente y se eliminará
+            permanentemente del
+            sistema.
+          </div>
+        </VAlert>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Actions -->
+      <VCardActions class="pa-6">
+        <VSpacer />
+        <VBtn
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          :disabled="loading"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          color="error"
+          variant="elevated"
+          prepend-icon="ri-delete-bin-line"
+          :loading="loading"
+          :disabled="loading || !advance?.id"
+          @click="handleDelete"
+        >
+          Eliminar Adelanto
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <script setup>
@@ -85,14 +124,14 @@ import { $api } from '@/utils/api'
 
 // Props
 const props = defineProps({
-    modelValue: {
-        type: Boolean,
-        default: false
-    },
-    advance: {
-        type: Object,
-        default: null
-    }
+  modelValue: {
+    type: Boolean,
+    default: false,
+  },
+  advance: {
+    type: Object,
+    default: null,
+  },
 })
 
 // Emits
@@ -103,19 +142,20 @@ const loading = ref(false)
 
 // Computed
 const show = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value)
+  get: () => props.modelValue,
+  set: value => emit('update:modelValue', value),
 })
 
 const advanceData = computed(() => props.advance || {})
 
 // Función para mostrar notificaciones toast
 const showToast = (message, type = 'info') => {
-    // Crear elemento toast
-    const toast = document.createElement('div')
-    toast.className = `toast toast-${type}`
-    toast.textContent = message
-    toast.style.cssText = `
+  // Crear elemento toast
+  const toast = document.createElement('div')
+
+  toast.className = `toast toast-${type}`
+  toast.textContent = message
+  toast.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -130,22 +170,23 @@ const showToast = (message, type = 'info') => {
         animation: slideIn 0.3s ease-out;
     `
 
-    // Agregar al DOM
-    document.body.appendChild(toast)
+  // Agregar al DOM
+  document.body.appendChild(toast)
 
-    // Remover automáticamente después de 4 segundos
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast)
-        }
-    }, 4000)
+  // Remover automáticamente después de 4 segundos
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast)
+    }
+  }, 4000)
 }
 
 // Agregar animación CSS si no existe
 if (!document.querySelector('#toast-styles')) {
-    const style = document.createElement('style')
-    style.id = 'toast-styles'
-    style.textContent = `
+  const style = document.createElement('style')
+
+  style.id = 'toast-styles'
+  style.textContent = `
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -157,44 +198,44 @@ if (!document.querySelector('#toast-styles')) {
             }
         }
     `
-    document.head.appendChild(style)
+  document.head.appendChild(style)
 }
 
 const closeDialog = () => {
-    show.value = false
+  show.value = false
 }
 
 const handleDelete = async () => {
-    if (!advanceData.value?.id) return
+  if (!advanceData.value?.id) return
 
-    loading.value = true
+  loading.value = true
 
-    try {
-        await $api(`employee-expenses/${advanceData.value.id}/advance`, {
-            method: 'DELETE'
-        })
+  try {
+    await $api(`employee-expenses/${advanceData.value.id}/advance`, {
+      method: 'DELETE',
+    })
 
-        showToast('Adelanto eliminado exitosamente', 'success')
-        emit('deleted', advanceData.value.id)
-        closeDialog()
-    } catch (error) {
-        console.error('Error al eliminar adelanto:', error)
+    showToast('Adelanto eliminado exitosamente', 'success')
+    emit('deleted', advanceData.value.id)
+    closeDialog()
+  } catch (error) {
+    console.error('Error al eliminar adelanto:', error)
 
-        // Manejar errores específicos
-        if (error.status === 422 && error.data?.message) {
-            showToast(error.data.message, 'error')
-        } else {
-            showToast('Error al eliminar el adelanto. Por favor, intente nuevamente.', 'error')
-        }
-    } finally {
-        loading.value = false
+    // Manejar errores específicos
+    if (error.status === 422 && error.data?.message) {
+      showToast(error.data.message, 'error')
+    } else {
+      showToast('Error al eliminar el adelanto. Por favor, intente nuevamente.', 'error')
     }
+  } finally {
+    loading.value = false
+  }
 }
 
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-EC', {
-        style: 'currency',
-        currency: 'USD'
-    }).format(value)
+const formatCurrency = value => {
+  return new Intl.NumberFormat('es-EC', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value)
 }
 </script>

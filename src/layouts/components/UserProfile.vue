@@ -1,7 +1,7 @@
 <script setup>
-import { PerfectScrollbar } from "vue3-perfect-scrollbar";
-import avatar1 from "@images/avatars/avatar-1.png";
-import { useRouter } from "vue-router";
+import { PerfectScrollbar } from "vue3-perfect-scrollbar"
+import avatar1 from "@images/avatars/avatar-1.png"
+import { useRouter } from "vue-router"
 import { useLoaderStore } from '@/stores/loader'
 
 const userProfileList = [
@@ -42,34 +42,52 @@ const userProfileList = [
     title: "FAQ",
     href: "#",
   },
-];
+]
 
-const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
 const loader = useLoaderStore()
-const router = useRouter();
+const router = useRouter()
 
 const logout = async () => {
-  loader.start();
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
+  loader.start()
+  localStorage.removeItem("user")
+  localStorage.removeItem("token")
   setTimeout(() => {
-    loader.stop();
-  }, 500);
-  await router.push("/login");
+    loader.stop()
+  }, 500)
+  await router.push("/login")
 }
-
 </script>
 
 <template>
-  <VBadge dot bordered location="bottom right" offset-x="2" offset-y="2" color="success" class="user-profile-badge">
-    <VAvatar class="cursor-pointer" size="38">
+  <VBadge
+    dot
+    bordered
+    location="bottom right"
+    offset-x="2"
+    offset-y="2"
+    color="success"
+    class="user-profile-badge"
+  >
+    <VAvatar
+      class="cursor-pointer"
+      size="38"
+    >
       <VImg :src="user && user.avatar ? user.avatar : avatar1" />
 
       <!-- SECTION Menu -->
-      <VMenu activator="parent" width="230" location="bottom end" offset="15px">
+      <VMenu
+        activator="parent"
+        width="230"
+        location="bottom end"
+        offset="15px"
+      >
         <VList>
           <VListItem class="px-4">
-            <div class="d-flex gap-x-2 align-center" v-if="user">
+            <div
+              v-if="user"
+              class="d-flex gap-x-2 align-center"
+            >
               <VAvatar>
                 <VImg :src="user.avatar ? user.avatar : avatar1" />
               </VAvatar>
@@ -86,29 +104,58 @@ const logout = async () => {
           </VListItem>
 
           <PerfectScrollbar :options="{ wheelPropagation: false }">
-            <template v-for="item in userProfileList" :key="item.title">
-              <VListItem v-if="item.type === 'navItem'" :href="item.href" class="px-4">
+            <template
+              v-for="item in userProfileList"
+              :key="item.title"
+            >
+              <VListItem
+                v-if="item.type === 'navItem'"
+                :href="item.href"
+                class="px-4"
+              >
                 <template #prepend>
-                  <VIcon :icon="item.icon" size="22" />
+                  <VIcon
+                    :icon="item.icon"
+                    size="22"
+                  />
                 </template>
 
                 <VListItemTitle>{{ item.title }}</VListItemTitle>
 
-                <template v-if="item.chipsProps" #append>
-                  <VChip v-bind="item.chipsProps" variant="elevated" />
+                <template
+                  v-if="item.chipsProps"
+                  #append
+                >
+                  <VChip
+                    v-bind="item.chipsProps"
+                    variant="elevated"
+                  />
                 </template>
               </VListItem>
 
-              <VDivider v-else class="my-1" />
+              <VDivider
+                v-else
+                class="my-1"
+              />
             </template>
 
             <VListItem class="px-4">
-              <!-- <VBtn block color="error" size="small" append-icon="ri-logout-box-r-line" :to="{ name: 'login' }">
+              <!--
+                <VBtn block color="error" size="small" append-icon="ri-logout-box-r-line" :to="{ name: 'login' }">
                 
                 Logout
-              </VBtn> -->
-              <VBtn color="error" size="small" append-icon="ri-logout-box-r-line" :loading="loader.loading"
-                :disabled="loader.loading" @click="logout">Cerrar sesión</VBtn>
+                </VBtn> 
+              -->
+              <VBtn
+                color="error"
+                size="small"
+                append-icon="ri-logout-box-r-line"
+                :loading="loader.loading"
+                :disabled="loader.loading"
+                @click="logout"
+              >
+                Cerrar sesión
+              </VBtn>
             </VListItem>
           </PerfectScrollbar>
         </VList>

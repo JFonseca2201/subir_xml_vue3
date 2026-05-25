@@ -84,7 +84,7 @@ const paymentMethodsData = [
 
         <div
           v-for="(item, index) in paymentMethodsData"
-          :key="index"
+          :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
         >
           <div class="d-flex justify-space-between align-center py-4 gap-x-4">
             <div class="d-flex align-center">

@@ -3,7 +3,9 @@
     <header class="dashboard-header">
       <h1>Dashboard</h1>
       <div class="header-actions">
-        <button class="btn btn-primary">Export</button>
+        <button class="btn btn-primary">
+          Export
+        </button>
       </div>
     </header>
 
@@ -13,8 +15,12 @@
           <h3>Total Revenue</h3>
         </div>
         <div class="card-content">
-          <p class="metric">$45,231.89</p>
-          <p class="change positive">+12.5% from last month</p>
+          <p class="metric">
+            $45,231.89
+          </p>
+          <p class="change positive">
+            +12.5% from last month
+          </p>
         </div>
       </div>
 
@@ -23,8 +29,12 @@
           <h3>Active Users</h3>
         </div>
         <div class="card-content">
-          <p class="metric">2,543</p>
-          <p class="change positive">+8.2% from last month</p>
+          <p class="metric">
+            2,543
+          </p>
+          <p class="change positive">
+            +8.2% from last month
+          </p>
         </div>
       </div>
 
@@ -33,8 +43,12 @@
           <h3>Total Orders</h3>
         </div>
         <div class="card-content">
-          <p class="metric">1,234</p>
-          <p class="change negative">-3.1% from last month</p>
+          <p class="metric">
+            1,234
+          </p>
+          <p class="change negative">
+            -3.1% from last month
+          </p>
         </div>
       </div>
 
@@ -43,8 +57,12 @@
           <h3>Conversion Rate</h3>
         </div>
         <div class="card-content">
-          <p class="metric">3.24%</p>
-          <p class="change positive">+1.2% from last month</p>
+          <p class="metric">
+            3.24%
+          </p>
+          <p class="change positive">
+            +1.2% from last month
+          </p>
         </div>
       </div>
     </div>
@@ -55,9 +73,9 @@
 export default {
   name: "Dashboard",
   data() {
-    return {};
+    return {}
   },
-};
+}
 </script>
 
 <style scoped>

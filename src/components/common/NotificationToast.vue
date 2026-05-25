@@ -5,57 +5,57 @@ import Swal from 'sweetalert2'
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   message: {
     type: String,
-    required: true
+    required: true,
   },
   type: {
     type: String,
     default: 'success',
-    validator: (value) => ['success', 'error', 'warning', 'info'].includes(value)
+    validator: value => ['success', 'error', 'warning', 'info'].includes(value),
   },
   timeout: {
     type: Number,
-    default: 3000
-  }
+    default: 3000,
+  },
 })
 
 const emit = defineEmits(['update:show'])
 
 const getIcon = () => {
   switch (props.type) {
-    case 'success':
-      return 'success'
-    case 'error':
-      return 'error'
-    case 'warning':
-      return 'warning'
-    case 'info':
-      return 'info'
-    default:
-      return 'info'
+  case 'success':
+    return 'success'
+  case 'error':
+    return 'error'
+  case 'warning':
+    return 'warning'
+  case 'info':
+    return 'info'
+  default:
+    return 'info'
   }
 }
 
 const getColor = () => {
   switch (props.type) {
-    case 'success':
-      return '#10b981'
-    case 'error':
-      return '#ef4444'
-    case 'warning':
-      return '#f59e0b'
-    case 'info':
-      return '#3b82f6'
-    default:
-      return '#3b82f6'
+  case 'success':
+    return '#10b981'
+  case 'error':
+    return '#ef4444'
+  case 'warning':
+    return '#f59e0b'
+  case 'info':
+    return '#3b82f6'
+  default:
+    return '#3b82f6'
   }
 }
 
 // Watch para mostrar la notificación cuando show cambia a true
-watch(() => props.show, (newVal) => {
+watch(() => props.show, newVal => {
   if (newVal) {
     Swal.fire({
       toast: true,
@@ -65,15 +65,15 @@ watch(() => props.show, (newVal) => {
       showConfirmButton: false,
       timer: props.timeout,
       timerProgressBar: true,
-      didOpen: (toast) => {
+      didOpen: toast => {
         toast.addEventListener('mouseenter', Swal.stopTimer)
         toast.addEventListener('mouseleave', Swal.resumeTimer)
       },
       customClass: {
-        popup: 'custom-swal-toast'
+        popup: 'custom-swal-toast',
       },
       background: getColor(),
-      color: '#ffffff'
+      color: '#ffffff',
     }).then(() => {
       emit('update:show', false)
     })

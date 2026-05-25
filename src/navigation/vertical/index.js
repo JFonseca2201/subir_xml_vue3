@@ -18,8 +18,8 @@ export default [
         title: 'Socios',
         to: { name: 'partners-list' },
         icon: { icon: 'ri-group-3-line' },
-      }
-    ]
+      },
+    ],
   },
   {
     title: 'Usuarios',
@@ -46,8 +46,8 @@ export default [
         title: 'Operaciones',
         to: { name: 'operations-index' },
         icon: { icon: 'ri-exchange-funds-line' },
-        //activeMatch: 'operations-index',
-        activeMatch: /operations-index|transfers-index|employee-expenses-index|aportes-index|movements-index/,
+
+        activeMatch: /operations|transfers|employee-expenses|aportes|movements/,
       },
     ],
   },
@@ -97,7 +97,7 @@ export default [
         title: 'Listado',
         to: 'product-list',
         icon: { icon: 'ri-radio-button-line' },
-      }
+      },
     ],
   },
   {

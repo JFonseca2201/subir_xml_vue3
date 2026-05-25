@@ -163,7 +163,7 @@ const membersList = [
                   <VList :selected="[member.permission]">
                     <VListItem
                       v-for="(item, index) in ['Owner', 'Can Edit', 'Can Comment', 'Can View']"
-                      :key="index"
+                      :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
                       :value="item"
                     >
                       <VListItemTitle>{{ item }}</VListItemTitle>

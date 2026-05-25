@@ -326,74 +326,88 @@ onMounted(() => {
 
 </script>
 <template>
-    <div>
-        <!-- Header -->
-        <div class="d-flex justify-space-between align-center mb-6">
-            <div>
-                <h2 class="text-h4 font-weight-bold">Gestión de Ingresos y Egresos</h2>
-                <p class="text-medium-emphasis mb-0">Control financiero de movimientos</p>
-            </div>
-            <div class="d-flex gap-3">
-                <VBtn color="success" prepend-icon="ri-add-circle-line" @click="openIncomeDialog">
-                    Nuevo Ingreso
-                </VBtn>
-                <VBtn color="error" prepend-icon="ri-subtract-line" @click="openExpenseDialog">
-                    Nuevo Egreso
-                </VBtn>
-            </div>
-        </div>
+    <div class="pa-4 pa-sm-6">
+        <!-- Cabecera Estandarizada -->
+        <VRow class="mb-4 mt-2">
+            <VCol>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+                    <div class="d-flex align-center gap-3">
+                        <VAvatar color="primary" variant="tonal" rounded size="48">
+                            <VIcon icon="ri-exchange-dollar-line" size="28" />
+                        </VAvatar>
+                        <div>
+                            <h4 class="text-h5 font-weight-bold mb-1">Gestión de Ingresos y Egresos</h4>
+                            <span class="text-body-2 text-medium-emphasis">Control financiero de movimientos</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-circle-line" @click="openIncomeDialog">
+                            Nuevo Ingreso
+                        </VBtn>
+                        <VBtn color="error" variant="elevated" prepend-icon="ri-subtract-line" @click="openExpenseDialog">
+                            Nuevo Egreso
+                        </VBtn>
+                    </div>
+                </div>
+            </VCol>
+        </VRow>
 
-        <!-- Summary Cards -->
+        <!-- Tarjetas de Resumen Estandarizadas -->
         <VRow class="mb-6">
             <VCol cols="12" md="4">
-                <VCard class="bg-green-lighten-4 rounded-lg pa-4 h-100">
-                    <VCardItem>
-                        <VCardTitle class="d-flex align-center gap-3 mb-3">
-                            <VIcon size="32">ri-arrow-up-circle-line</VIcon>
-                            <div>
-                                <h3 class="text-h5 font-weight-bold mb-1">Total Ingresos</h3>
-                                <p class="text-medium-emphasis text-body-2 mb-0">Suma de todos los ingresos</p>
+                <VCard elevation="2" class="rounded-lg h-100">
+                    <VCardItem class="pa-4 border-b">
+                        <template #title>
+                            <div class="d-flex align-center gap-2">
+                                <VIcon icon="ri-arrow-up-circle-line" color="success" />
+                                <span class="font-weight-bold text-h6">Total Ingresos</span>
                             </div>
-                        </VCardTitle>
-                        <VCardText class="text-h4 font-weight-bold text-success">
-                            {{ formatCurrency(totals.income) }}
-                        </VCardText>
+                        </template>
                     </VCardItem>
+                    <VCardText class="pa-5">
+                        <div class="d-flex justify-space-between align-center">
+                            <span class="text-body-1 text-medium-emphasis">Suma de ingresos</span>
+                            <span class="text-h5 font-weight-black text-success">{{ formatCurrency(totals.income) }}</span>
+                        </div>
+                    </VCardText>
                 </VCard>
             </VCol>
 
             <VCol cols="12" md="4">
-                <VCard class="bg-red-lighten-4 rounded-lg pa-4 h-100">
-                    <VCardItem>
-                        <VCardTitle class="d-flex align-center gap-3 mb-3">
-                            <VIcon size="32">ri-arrow-down-circle-line</VIcon>
-                            <div>
-                                <h3 class="text-h5 font-weight-bold mb-1">Total Egresos</h3>
-                                <p class="text-medium-emphasis text-body-2 mb-0">Suma de todos los egresos</p>
+                <VCard elevation="2" class="rounded-lg h-100">
+                    <VCardItem class="pa-4 border-b">
+                        <template #title>
+                            <div class="d-flex align-center gap-2">
+                                <VIcon icon="ri-arrow-down-circle-line" color="error" />
+                                <span class="font-weight-bold text-h6">Total Egresos</span>
                             </div>
-                        </VCardTitle>
-                        <VCardText class="text-h4 font-weight-bold text-error">
-                            {{ formatCurrency(totals.expenses) }}
-                        </VCardText>
+                        </template>
                     </VCardItem>
+                    <VCardText class="pa-5">
+                        <div class="d-flex justify-space-between align-center">
+                            <span class="text-body-1 text-medium-emphasis">Suma de egresos</span>
+                            <span class="text-h5 font-weight-black text-error">{{ formatCurrency(totals.expenses) }}</span>
+                        </div>
+                    </VCardText>
                 </VCard>
             </VCol>
 
             <VCol cols="12" md="4">
-                <VCard class="bg-blue-lighten-4 rounded-lg pa-4 h-100">
-                    <VCardItem>
-                        <VCardTitle class="d-flex align-center gap-3 mb-3">
-                            <VIcon size="32">ri-funds-line</VIcon>
-                            <div>
-                                <h3 class="text-h5 font-weight-bold mb-1">Balance Neto</h3>
-                                <p class="text-medium-emphasis text-body-2 mb-0">Diferencia entre ingresos y egresos</p>
+                <VCard elevation="2" class="rounded-lg h-100">
+                    <VCardItem class="pa-4 border-b">
+                        <template #title>
+                            <div class="d-flex align-center gap-2">
+                                <VIcon icon="ri-funds-line" color="primary" />
+                                <span class="font-weight-bold text-h6">Balance Neto</span>
                             </div>
-                        </VCardTitle>
-                        <VCardText class="text-h4 font-weight-bold"
-                            :class="totals.balance >= 0 ? 'text-primary' : 'text-warning'">
-                            {{ formatCurrency(totals.balance) }}
-                        </VCardText>
+                        </template>
                     </VCardItem>
+                    <VCardText class="pa-5">
+                        <div class="d-flex justify-space-between align-center">
+                            <span class="text-body-1 text-medium-emphasis">Diferencia neta</span>
+                            <span class="text-h5 font-weight-black" :class="totals.balance >= 0 ? 'text-primary' : 'text-warning'">{{ formatCurrency(totals.balance) }}</span>
+                        </div>
+                    </VCardText>
                 </VCard>
             </VCol>
         </VRow>
@@ -405,70 +419,64 @@ onMounted(() => {
 
         <!-- Movimientos Agrupados por Día -->
         <div v-else-if="groupedMovements.length > 0">
-            <VCard v-for="day in groupedMovements" :key="day.date" class="mb-6">
-                <VCardTitle class="pa-4 bg-grey-lighten-4">
-                    <div class="d-flex justify-space-between align-center">
-                        <div>
-                            <h3 class="text-h6 font-weight-medium">{{ formatDate(day.date) }}</h3>
-                            <p class="text-medium-emphasis text-body-2 mb-0">
-                                {{ day.movements.length }} movimiento{{ day.movements.length !== 1 ? 's' : '' }}
-                            </p>
+            <VCard v-for="day in groupedMovements" :key="day.date" class="mb-6 rounded-lg elevation-2">
+                <VCardTitle class="pa-4">
+                    <div class="d-flex justify-space-between align-center flex-wrap gap-2">
+                        <div class="d-flex align-center gap-2">
+                            <VIcon icon="ri-calendar-event-line" color="primary" />
+                            <h3 class="text-h6 font-weight-bold text-primary">{{ formatDate(day.date) }}</h3>
+                            <VChip size="small" variant="tonal" color="secondary" class="ml-2 font-weight-bold">
+                                {{ day.movements.length }} mov{{ day.movements.length !== 1 ? 's' : '' }}
+                            </VChip>
                         </div>
-                        <div class="text-end">
-                            <div class="text-success text-body-2">
-                                Ingresos: +{{ formatCurrency(day.dailyIncome) }}
-                            </div>
-                            <div class="text-error text-body-2">
-                                Egresos: -{{ formatCurrency(day.dailyExpenses) }}
-                            </div>
-                            <div class="font-weight-bold"
-                                :class="day.dailyBalance >= 0 ? 'text-primary' : 'text-warning'">
+                        <div class="d-flex gap-4">
+                            <span class="text-success text-body-2 font-weight-bold">Ingresos: +{{ formatCurrency(day.dailyIncome) }}</span>
+                            <span class="text-error text-body-2 font-weight-bold">Egresos: -{{ formatCurrency(day.dailyExpenses) }}</span>
+                            <VChip size="small" :color="day.dailyBalance >= 0 ? 'primary' : 'warning'" variant="tonal" class="font-weight-bold">
                                 Balance: {{ formatCurrency(day.dailyBalance) }}
-                            </div>
+                            </VChip>
                         </div>
                     </div>
                 </VCardTitle>
                 <VDivider />
                 <VCardText class="pa-0">
-                    <VTable class="day-table">
+                    <VTable hover class="expense-table bg-transparent">
                         <thead>
                             <tr>
-                                <th>OT/FACT</th>
-                                <th>Tipo</th>
-                                <th>Descripción</th>
-                                <th>Monto</th>
-                                <th>Cuenta</th>
-                                <th>Acciones</th>
+                                <th class="font-weight-bold">OT/FACT</th>
+                                <th class="font-weight-bold">TIPO</th>
+                                <th class="font-weight-bold">DESCRIPCIÓN</th>
+                                <th class="font-weight-bold">CUENTA</th>
+                                <th class="font-weight-bold text-end">MONTO</th>
+                                <th class="font-weight-bold text-center">ACCIONES</th>
                             </tr>
                         </thead>
-                        <tbody style="text-transform: uppercase;">
-                            <tr v-for="movement in day.movements" :key="movement.id">
-                                <td>
-                                    {{ movement.work_order_number || movement.invoice_number }}
+                        <tbody>
+                            <tr v-for="movement in day.movements" :key="movement.id" class="border-b">
+                                <td class="font-weight-medium">
+                                    {{ movement.work_order_number || movement.invoice_number || '-' }}
                                 </td>
                                 <td>
-                                    <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal"
-                                        size="small">
+                                    <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal" size="small" class="font-weight-bold">
+                                        <VIcon start size="14">{{ movement.type === 0 ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line' }}</VIcon>
                                         {{ movement.type === 0 ? 'INGRESO' : 'EGRESO' }}
                                     </VChip>
                                 </td>
-                                <td>{{ movement.description }}</td>
-                                <!-- Mostrar siempre el monto total -->
-                                <td :class="movement.type === 0 ? 'text-success' : 'text-error'"
-                                    class="font-weight-bold">
+                                <td class="text-body-2">{{ movement.description }}</td>
+                                <td>
+                                    <div class="d-flex align-center gap-1 font-weight-medium">
+                                        <VIcon size="16" color="primary">ri-bank-line</VIcon>
+                                        {{ getAccountName(movement) }}
+                                    </div>
+                                </td>
+                                <td class="font-weight-bold text-end" :class="movement.type === 0 ? 'text-success' : 'text-error'">
                                     {{ movement.type === 0 ? '+' : '-' }}{{ formatCurrency(movement.amount) }}
                                 </td>
-                                <!-- Mostrar cuenta principal o resumen de cuentas -->
-                                <td>
-                                    <span>{{ getAccountName(movement) }}</span>
-                                </td>
-                                <td>
-                                    <VBtn size="small" variant="text" color="primary" @click="editMovement(movement)">
-                                        <VIcon size="20">ri-edit-line</VIcon>
-                                    </VBtn>
-                                    <VBtn size="small" variant="text" color="error" @click="deleteMovement(movement)">
-                                        <VIcon size="20">ri-delete-bin-line</VIcon>
-                                    </VBtn>
+                                <td class="text-center">
+                                    <div class="d-flex justify-center gap-1">
+                                        <VBtn title="Editar" size="small" variant="tonal" color="primary" icon="ri-edit-line" @click="editMovement(movement)" />
+                                        <VBtn title="Eliminar" size="small" variant="tonal" color="error" icon="ri-delete-bin-line" @click="deleteMovement(movement)" />
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -478,11 +486,12 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-if="!loader.loading && incomeMovements.length === 0 && expenseMovements.length === 0"
-            class="text-center pa-12">
-            <VIcon size="64" color="medium-emphasis" class="mb-4">ri-inbox-line</VIcon>
-            <h3 class="text-h5 mb-2">No hay movimientos registrados</h3>
-            <p class="text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
+        <div v-if="!loader.loading && groupedMovements.length === 0" class="text-center pa-12">
+            <VAvatar color="grey-lighten-3" size="72" class="mb-4">
+                <VIcon icon="ri-inbox-line" size="36" color="grey" />
+            </VAvatar>
+            <h3 class="text-h6 font-weight-medium">No hay movimientos registrados</h3>
+            <p class="text-body-2 mt-1 text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
         </div>
 
         <!-- Diálogo de Ingreso -->

@@ -129,102 +129,102 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="pa-4">
-
-
-        <!--  <VCard class="mb-4">
-            <VCardTitle>Importar factura XML</VCardTitle>
-            <VCardText>
-                <VFileInput accept=".xml" label="Ingresar archivo XML" @change="onFileSelected" />
-                <VBtn class="mt-3" color="primary" @click="storeXml">
-                    Enviar XML
-                </VBtn>
-            </VCardText>
-        </VCard>
-
-        
-        <VAlert v-if="error_exist" type="error" variant="tonal" closable class="mb-3">
-            {{ error_exist }}
-        </VAlert>
-        <VAlert v-if="success" type="success" variant="tonal" closable class="mb-3">
-            {{ success }}
-        </VAlert>
+  <div class="pa-4">
+    <!--
+      <VCard class="mb-4">
+      <VCardTitle>Importar factura XML</VCardTitle>
+      <VCardText>
+      <VFileInput accept=".xml" label="Ingresar archivo XML" @change="onFileSelected" />
+      <VBtn class="mt-3" color="primary" @click="storeXml">
+      Enviar XML
+      </VBtn>
+      </VCardText>
+      </VCard>
 
         
-        <VCard class="mb-4">
-            <VCardTitle>Filtros</VCardTitle>
-            <VCardText>
-                <VRow>
-                    <VCol cols="12" md="3">
-                        <VTextField v-model="search" @keyup.enter="list" label="Buscar factura" />
-                    </VCol>
-                    <VCol cols="12" md="3">
-                        <VTextField v-model="from_date" type="date" label="Desde" />
-                    </VCol>
-                    <VCol cols="12" md="3">
-                        <VTextField v-model="to_date" type="date" label="Hasta" />
-                    </VCol>
-                    <VCol cols="12" md="3">
-                        <VSelect v-model="supplier_id" :items="providers" item-title="name" item-value="id"
-                            label="Proveedor" clearable />
-                    </VCol>
-                </VRow>
-                <VBtn color="primary" class="mt-3" @click="list">
-                    Buscar
-                </VBtn>
-            </VCardText>
-        </VCard>
+      <VAlert v-if="error_exist" type="error" variant="tonal" closable class="mb-3">
+      {{ error_exist }}
+      </VAlert>
+      <VAlert v-if="success" type="success" variant="tonal" closable class="mb-3">
+      {{ success }}
+      </VAlert>
 
         
-        <VCard>
-            <VCardTitle>Facturas</VCardTitle>
-            <VTable>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Proveedor</th>
-                        <th>N° Factura</th>
-                        <th>Fecha</th>
-                        <th>Subtotal</th>
-                        <th>IVA (15%)</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="invoice in list_invoices" :key="invoice.id">
-                        <td>{{ invoice.id }}</td>
-                        <td>{{ invoice.supplier.name }}</td>
-                        <td>{{ invoice.invoice_number }}</td>
-                        <td>{{ invoice.issue_date }}</td>
-                        <td>${{ Number(invoice.subtotal).toFixed(2) }}</td>
-                        <td>${{ Number(invoice.tax).toFixed(2) }}</td>
-                        <td>${{ Number(invoice.total).toFixed(2) }}</td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <IconBtn size="small" @click="showItem(invoice)">
-                                    <VIcon icon="ri-eye-line" />
-                                </IconBtn>
+      <VCard class="mb-4">
+      <VCardTitle>Filtros</VCardTitle>
+      <VCardText>
+      <VRow>
+      <VCol cols="12" md="3">
+      <VTextField v-model="search" @keyup.enter="list" label="Buscar factura" />
+      </VCol>
+      <VCol cols="12" md="3">
+      <VTextField v-model="from_date" type="date" label="Desde" />
+      </VCol>
+      <VCol cols="12" md="3">
+      <VTextField v-model="to_date" type="date" label="Hasta" />
+      </VCol>
+      <VCol cols="12" md="3">
+      <VSelect v-model="supplier_id" :items="providers" item-title="name" item-value="id"
+      label="Proveedor" clearable />
+      </VCol>
+      </VRow>
+      <VBtn color="primary" class="mt-3" @click="list">
+      Buscar
+      </VBtn>
+      </VCardText>
+      </VCard>
 
-                                <IconBtn size="small" @click="editInvoice(invoice)">
-                                    <VIcon icon="ri-pencil-line" />
-                                </IconBtn>
-                                <IconBtn size="small" @click="deleteInvoice(invoice)">
-                                    <VIcon icon="ri-delete-bin-line" />
-                                </IconBtn>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="!list_invoices.length">
-                        <td colspan="5" class="text-center">No hay registros</td>
-                    </tr>
-                </tbody>
-            </VTable>
+        
+      <VCard>
+      <VCardTitle>Facturas</VCardTitle>
+      <VTable>
+      <thead>
+      <tr>
+      <th>#</th>
+      <th>Proveedor</th>
+      <th>N° Factura</th>
+      <th>Fecha</th>
+      <th>Subtotal</th>
+      <th>IVA (15%)</th>
+      <th>Total</th>
+      <th>Acciones</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="invoice in list_invoices" :key="invoice.id">
+      <td>{{ invoice.id }}</td>
+      <td>{{ invoice.supplier.name }}</td>
+      <td>{{ invoice.invoice_number }}</td>
+      <td>{{ invoice.issue_date }}</td>
+      <td>${{ Number(invoice.subtotal).toFixed(2) }}</td>
+      <td>${{ Number(invoice.tax).toFixed(2) }}</td>
+      <td>${{ Number(invoice.total).toFixed(2) }}</td>
+      <td>
+      <div class="d-flex gap-1">
+      <IconBtn size="small" @click="showItem(invoice)">
+      <VIcon icon="ri-eye-line" />
+      </IconBtn>
+
+      <IconBtn size="small" @click="editInvoice(invoice)">
+      <VIcon icon="ri-pencil-line" />
+      </IconBtn>
+      <IconBtn size="small" @click="deleteInvoice(invoice)">
+      <VIcon icon="ri-delete-bin-line" />
+      </IconBtn>
+      </div>
+      </td>
+      </tr>
+      <tr v-if="!list_invoices.length">
+      <td colspan="5" class="text-center">No hay registros</td>
+      </tr>
+      </tbody>
+      </VTable>
 
             
-            <VCardActions class="justify-center">
-                <VPagination v-model="current_page" :length="pagination.last_page" @update:modelValue="list" />
-            </VCardActions>
-        </VCard> -->
-    </div>
+      <VCardActions class="justify-center">
+      <VPagination v-model="current_page" :length="pagination.last_page" @update:modelValue="list" />
+      </VCardActions>
+      </VCard> 
+    -->
+  </div>
 </template>

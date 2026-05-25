@@ -21,13 +21,13 @@ const importDialog = ref(false)
 
 // Formulario de búsqueda
 const searchForm = ref({
-    search: '',
-    categorie_id: null,
-    warehouse_id: null,
-    unit_id: null,
-    sucursale_id: null,
-    disponibilidad: null,
-    is_gift: null
+  search: '',
+  categorie_id: null,
+  warehouse_id: null,
+  unit_id: null,
+  sucursale_id: null,
+  disponibilidad: null,
+  is_gift: null,
 })
 
 // Paginación
@@ -35,13 +35,14 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const totalItems = ref(0)
 const totalPages = ref(0)
+
 const pagination = ref({
-    total: 0,
-    per_page: 10,
-    current_page: 1,
-    last_page: 1,
-    from: 0,
-    to: 0
+  total: 0,
+  per_page: 10,
+  current_page: 1,
+  last_page: 1,
+  from: 0,
+  to: 0,
 })
 
 // Opciones para selects
@@ -51,401 +52,572 @@ const units = ref([])
 const sucursales = ref([])
 
 const disponibilidadOptions = [
-    { label: 'Con Stock', value: 'con_stock' },
-    { label: 'Sin Stock', value: 'sin_stock' },
-    { label: 'Stock Bajo', value: 'stock_bajo' }
+  { label: 'Con Stock', value: 'con_stock' },
+  { label: 'Sin Stock', value: 'sin_stock' },
+  { label: 'Stock Bajo', value: 'stock_bajo' },
 ]
 
 const giftOptions = [
-    { label: 'Productos Normales', value: 0 },
-    { label: 'Regalos', value: 1 }
+  { label: 'Productos Normales', value: 0 },
+  { label: 'Regalos', value: 1 },
 ]
 
 // Headers de la tabla
 const headers = [
-    { title: 'Imagen', key: 'imagen', sortable: false, width: '80px' },
-    { title: 'Producto', key: 'description', sortable: false },
-    { title: 'Categoría', key: 'categorie.title', sortable: false },
-    { title: 'Almacén', key: 'warehouse.name', sortable: false },
-    { title: 'Precio Venta', key: 'price_sale', sortable: false, align: 'end' },
-    { title: 'Regalo', key: 'is_gift', sortable: false, width: '40px' },
-    { title: 'Stock', key: 'stock', sortable: false, width: '100px' },
-    { title: 'Estado', key: 'state', sortable: false, width: '100px' },
-    { title: 'Acciones', key: 'actions', sortable: false, width: '120px' }
+  { title: 'Imagen', key: 'imagen', sortable: false, width: '80px' },
+  { title: 'Producto', key: 'description', sortable: false },
+  { title: 'Categoría', key: 'categorie.title', sortable: false },
+  { title: 'Almacén', key: 'warehouse.name', sortable: false },
+  { title: 'Precio Venta', key: 'price_sale', sortable: false, align: 'end' },
+  { title: 'Regalo', key: 'is_gift', sortable: false, width: '40px' },
+  { title: 'Stock', key: 'stock', sortable: false, width: '100px' },
+  { title: 'Estado', key: 'state', sortable: false, width: '100px' },
+  { title: 'Acciones', key: 'actions', sortable: false, width: '120px' },
 ]
 
 // Métodos
 const searchProducts = async () => {
-    loading.value = true
-    try {
-        const params = {
-            page: currentPage.value,
-            per_page: itemsPerPage.value,
-            ...searchForm.value
-        }
-
-        // Eliminar parámetros nulos o vacíos
-        Object.keys(params).forEach(key => {
-            if (params[key] === null || params[key] === '') {
-                delete params[key]
-            }
-        })
-
-        const response = await $api('products', { params })
-        console.log(response);
-
-
-        if (response.status === 200) {
-            // Acceder a los datos correctos: response.products.data
-            products.value = response.products.data || []
-            totalItems.value = response.total || 0
-            totalPages.value = response.total_pages || 0
-            pagination.value = {
-                total: response.total || 0,
-                per_page: response.per_page || 10,
-                current_page: response.current_page || 1,
-                last_page: response.total_pages || 1,
-                from: response.from || 0,
-                to: response.to || 0
-            }
-        }
-    } catch (error) {
-        console.error('Error al buscar productos:', error)
-    } finally {
-        loading.value = false
+  loading.value = true
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: itemsPerPage.value,
+      ...searchForm.value,
     }
+
+    // Eliminar parámetros nulos o vacíos
+    Object.keys(params).forEach(key => {
+      if (params[key] === null || params[key] === '') {
+        delete params[key]
+      }
+    })
+
+    const response = await $api('products', { params })
+
+    console.log(response)
+
+
+    if (response.status === 200) {
+      // Acceder a los datos correctos: response.products.data
+      products.value = response.products.data || []
+      totalItems.value = response.total || 0
+      totalPages.value = response.total_pages || 0
+      pagination.value = {
+        total: response.total || 0,
+        per_page: response.per_page || 10,
+        current_page: response.current_page || 1,
+        last_page: response.total_pages || 1,
+        from: response.from || 0,
+        to: response.to || 0,
+      }
+    }
+  } catch (error) {
+    console.error('Error al buscar productos:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const clearSearch = () => {
-    searchForm.value = {
-        search: '',
-        categorie_id: null,
-        warehouse_id: null,
-        unit_id: null,
-        sucursale_id: null,
-        disponibilidad: null,
-        is_gift: null
-    }
-    currentPage.value = 1
-    searchProducts()
+  searchForm.value = {
+    search: '',
+    categorie_id: null,
+    warehouse_id: null,
+    unit_id: null,
+    sucursale_id: null,
+    disponibilidad: null,
+    is_gift: null,
+  }
+  currentPage.value = 1
+  searchProducts()
 }
 
 const getStockColor = (stock, minStock) => {
-    if (stock === 0) return 'error'
-    if (stock <= minStock) return 'warning'
-    return 'success'
+  if (stock === 0) return 'error'
+  if (stock <= minStock) return 'warning'
+  
+  return 'success'
 }
 
-const viewProduct = (product) => {
-    console.log('Ver producto:', product)
-    selectedProduct.value = product
-    productDialog.value = true
+const viewProduct = product => {
+  console.log('Ver producto:', product)
+  selectedProduct.value = product
+  productDialog.value = true
 }
 
-const openProductDialog = (product) => {
-    selectedProduct.value = product
-    productDialog.value = true
+const openProductDialog = product => {
+  selectedProduct.value = product
+  productDialog.value = true
 }
 
-const editProduct = (product) => {
-    console.log('Editar producto:', product)
-    // Navegar a página de edición
-    router.push(`/product/edit/${product.id}`)
+const editProduct = product => {
+  console.log('Editar producto:', product)
+
+  // Navegar a página de edición
+  router.push(`/product/edit/${product.id}`)
 }
 
-const deleteProduct = (product) => {
-    console.log('Eliminar producto:', product)
-    productToDelete.value = product
-    deleteDialog.value = true
+const deleteProduct = product => {
+  console.log('Eliminar producto:', product)
+  productToDelete.value = product
+  deleteDialog.value = true
 }
 
 const handleProductDeleted = () => {
-    console.log('🗑️ handleProductDeleted llamado', productToDelete.value)
+  console.log('🗑️ handleProductDeleted llamado', productToDelete.value)
 
-    // Eliminar el producto de la lista localmente
-    if (productToDelete.value) {
-        const index = products.value.findIndex(p => p.id === productToDelete.value.id)
-        console.log('📍 Índice encontrado:', index)
+  // Eliminar el producto de la lista localmente
+  if (productToDelete.value) {
+    const index = products.value.findIndex(p => p.id === productToDelete.value.id)
 
-        if (index > -1) {
-            products.value.splice(index, 1)
-            console.log('✅ Producto eliminado de la lista')
+    console.log('📍 Índice encontrado:', index)
 
-            // Actualizar el total de paginación
-            if (pagination.value.total > 0) {
-                pagination.value.total -= 1
-                console.log('📊 Total actualizado:', pagination.value.total)
-            }
-        }
+    if (index > -1) {
+      products.value.splice(index, 1)
+      console.log('✅ Producto eliminado de la lista')
+
+      // Actualizar el total de paginación
+      if (pagination.value.total > 0) {
+        pagination.value.total -= 1
+        console.log('📊 Total actualizado:', pagination.value.total)
+      }
     }
+  }
 
-    // Cerrar el diálogo y limpiar el producto seleccionado inmediatamente
-    console.log('🔒 Cerrando diálogo desde list.vue')
-    deleteDialog.value = false
-    productToDelete.value = null
-    console.log('🔒 Diálogo cerrado y producto limpiado')
+  // Cerrar el diálogo y limpiar el producto seleccionado inmediatamente
+  console.log('🔒 Cerrando diálogo desde list.vue')
+  deleteDialog.value = false
+  productToDelete.value = null
+  console.log('🔒 Diálogo cerrado y producto limpiado')
 }
 
 
 const importProducts = () => {
-    importDialog.value = true
+  importDialog.value = true
 }
 
 const handleProductsImported = () => {
-    currentPage.value = 1
-    searchProducts();
-    importDialog.value = false
+  currentPage.value = 1
+  searchProducts()
+  importDialog.value = false
 }
 
 // Cargar datos iniciales
 const loadInitialData = async () => {
-    try {
-        // Cargar categorías
-        const categoriesResponse = await $api('products/config')
-        console.log('📊 Respuesta de categorías:', categoriesResponse)
-        if (categoriesResponse.status === 200) {
-            categories.value = categoriesResponse.data.categories || []
-            warehouses.value = categoriesResponse.data.warehouses || []
-            units.value = categoriesResponse.data.units || []
-            // TODO: Cargar sucursales cuando esté disponible
-        }
-    } catch (error) {
-        console.error('Error al cargar datos iniciales:', error)
+  try {
+    // Cargar categorías
+    const categoriesResponse = await $api('products/config')
+
+    console.log('📊 Respuesta de categorías:', categoriesResponse)
+    if (categoriesResponse.status === 200) {
+      categories.value = categoriesResponse.data.categories || []
+      warehouses.value = categoriesResponse.data.warehouses || []
+      units.value = categoriesResponse.data.units || []
+
+      // TODO: Cargar sucursales cuando esté disponible
     }
+  } catch (error) {
+    console.error('Error al cargar datos iniciales:', error)
+  }
 }
 
 const downloadExcel = () => {
-    console.log('Descargar Excel')
-    let query_params = "";
-    if (searchForm.value.search) {
-        query_params += "&search=" + searchForm.value.search;
-    }
-    if (searchForm.value.categorie_id) {
-        query_params += "&categorie_id=" + searchForm.value.categorie_id;
-    }
-    if (searchForm.value.warehouse_id) {
-        query_params += "&warehouse_id=" + searchForm.value.warehouse_id;
-    }
-    if (searchForm.value.unit_id) {
-        query_params += "&unit_id=" + searchForm.value.unit_id;
-    }
+  console.log('Descargar Excel')
+  let query_params = ""
+  if (searchForm.value.search) {
+    query_params += "&search=" + searchForm.value.search
+  }
+  if (searchForm.value.categorie_id) {
+    query_params += "&categorie_id=" + searchForm.value.categorie_id
+  }
+  if (searchForm.value.warehouse_id) {
+    query_params += "&warehouse_id=" + searchForm.value.warehouse_id
+  }
+  if (searchForm.value.unit_id) {
+    query_params += "&unit_id=" + searchForm.value.unit_id
+  }
 
-    window.open(import.meta.env.VITE_API_BASE_URL + "products-excel?z=1" + query_params, '_blank');
+  window.open(import.meta.env.VITE_API_BASE_URL + "products-excel?z=1" + query_params, '_blank')
 }
 
 
 // Montar componente
 onMounted(() => {
-    loadInitialData()
-    searchProducts()
+  loadInitialData()
+  searchProducts()
 })
 
 // Watcher para monitorear el diálogo
-watch(deleteDialog, (newValue) => {
-    console.log('👀 deleteDialog cambió a:', newValue)
+watch(deleteDialog, newValue => {
+  console.log('👀 deleteDialog cambió a:', newValue)
 })
 
 // Watcher para resetear página cuando los filtros cambian
 let filterTimeout = null
 watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () => searchForm.value.warehouse_id, () => searchForm.value.unit_id], () => {
-    console.log('🔍 Filtros cambiados, reseteando página a 1')
-    currentPage.value = 1
+  console.log('🔍 Filtros cambiados, reseteando página a 1')
+  currentPage.value = 1
 
-    // Búsqueda en tiempo real con debounce de 500ms
-    if (filterTimeout) clearTimeout(filterTimeout)
-    filterTimeout = setTimeout(() => {
-        searchProducts()
-    }, 500)
+  // Búsqueda en tiempo real con debounce de 500ms
+  if (filterTimeout) clearTimeout(filterTimeout)
+  filterTimeout = setTimeout(() => {
+    searchProducts()
+  }, 500)
 }, { deep: true })
-</script><template>
-    <div class="pa-4 pa-sm-6">
+</script>
 
+<template>
+  <div class="pa-4 pa-sm-6">
+    <!-- Formulario de Búsqueda -->
+    <VCard
+      class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto"
+      elevation="2"
+    >
+      <!-- Título y Botón Agregar -->
+      <div class="d-flex justify-space-between align-center mb-6">
+        <h1 class="text-h4 font-weight-bold">
+          Listado de Productos
+        </h1>
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/product/add"
+        >
+          Agregar Producto
+        </VBtn>
+      </div>
+      <VDivider />
 
-        <!-- Formulario de Búsqueda -->
-        <VCard class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto" elevation="2">
-            <!-- Título y Botón Agregar -->
-            <div class="d-flex justify-space-between align-center mb-6">
-                <h1 class="text-h4 font-weight-bold">Listado de Productos</h1>
-                <VBtn color="primary" prepend-icon="ri-add-line" to="/product/add">
-                    Agregar Producto
+      <VCardText class="pa-4">
+        <VForm
+          ref="searchFormRef"
+          @submit.prevent="searchProducts"
+        >
+          <VRow>
+            <!-- Búsqueda General -->
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <VTextField
+                v-model="searchForm.search"
+                label="Búsqueda General"
+                placeholder="Buscar por descripción, SKU, código auxiliar..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+              />
+            </VCol>
+
+            <!-- Categoría -->
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <VSelect
+                v-model="searchForm.categorie_id"
+                :items="categories"
+                item-title="title"
+                item-value="id"
+                label="Categoría"
+                placeholder="Seleccionar"
+                prepend-inner-icon="ri-folder-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+              />
+            </VCol>
+
+            <!-- Almacén -->
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <VSelect
+                v-model="searchForm.warehouse_id"
+                :items="warehouses"
+                item-title="name"
+                item-value="id"
+                label="Almacén"
+                placeholder="Seleccionar"
+                prepend-inner-icon="ri-store-2-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+              />
+            </VCol>
+
+            <!-- Unidad -->
+            <VCol
+              cols="12"
+              md="3"
+            >
+              <VSelect
+                v-model="searchForm.unit_id"
+                :items="units"
+                item-title="name"
+                item-value="id"
+                label="Unidad"
+                placeholder="Seleccionar"
+                prepend-inner-icon="ri-ruler-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="d-flex gap-2"
+            />
+            <VCol
+              cols="12"
+              md="6"
+              class="d-flex gap-2"
+            >
+              <VCol
+                cols="12"
+                md="6"
+                class="d-flex gap-2"
+              >
+                <VBtn
+                  color="error"
+                  variant="tonal"
+                  prepend-icon="ri-download-2-fill"
+                  @click="importProducts"
+                >
+                  Importar
                 </VBtn>
-            </div>
-            <VDivider />
+                <VBtn
+                  color="success"
+                  variant="tonal"
+                  prepend-icon="ri-file-excel-2-line"
+                  @click="downloadExcel"
+                >
+                  Exportar
+                </VBtn>
+              </VCol>
+              <VCol
+                cols="12"
+                md="6"
+                class="d-flex gap-2"
+              >
+                <VBtn
+                  type="submit"
+                  color="primary"
+                  prepend-icon="ri-search-line"
+                  :loading="loading"
+                >
+                  Buscar
+                </VBtn>
+                <VBtn
+                  variant="outlined"
+                  prepend-icon="ri-refresh-line"
+                  @click="clearSearch"
+                >
+                  Limpiar
+                </VBtn>
+              </VCol>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
 
-            <VCardText class="pa-4">
-                <VForm ref="searchFormRef" @submit.prevent="searchProducts">
-                    <VRow>
-                        <!-- Búsqueda General -->
-                        <VCol cols="12" md="3">
-                            <VTextField v-model="searchForm.search" label="Búsqueda General"
-                                placeholder="Buscar por descripción, SKU, código auxiliar..."
-                                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol>
+      <VDivider />
 
-                        <!-- Categoría -->
-                        <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title"
-                                item-value="id" label="Categoría" placeholder="Seleccionar"
-                                prepend-inner-icon="ri-folder-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol>
+      <!-- Tabla de Productos -->
+      <VTable>
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Almacén</th>
+            <th>Precio Venta</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="loading">
+            <td
+              colspan="8"
+              class="text-center pa-4"
+            >
+              <VProgressCircular
+                indeterminate
+                color="primary"
+              />
+            </td>
+          </tr>
+          <tr v-else-if="products.length === 0">
+            <td
+              colspan="8"
+              class="text-center pa-4 text-medium-emphasis"
+            >
+              <VIcon
+                size="32"
+                class="mb-2"
+              >
+                ri-inbox-line
+              </VIcon>
+              <div>No se encontraron productos</div>
+            </td>
+          </tr>
+          <tr
+            v-for="item in products"
+            :key="item.id"
+          >
+            <!-- Imagen -->
+            <td>
+              <div
+                class="cursor-pointer"
+                @click="openProductDialog(item)"
+              >
+                <VAvatar
+                  v-if="item.imagen"
+                  :image="item.imagen"
+                  size="40"
+                  class="elevation-2"
+                />
+                <VAvatar
+                  v-else
+                  color="grey-lighten-2"
+                  size="40"
+                  class="elevation-2"
+                >
+                  <VIcon icon="ri-image-line" />
+                </VAvatar>
+              </div>
+            </td>
 
-                        <!-- Almacén -->
-                        <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name"
-                                item-value="id" label="Almacén" placeholder="Seleccionar"
-                                prepend-inner-icon="ri-store-2-line" variant="outlined" density="comfortable"
-                                hide-details="auto" clearable />
-                        </VCol>
-
-                        <!-- Unidad -->
-                        <VCol cols="12" md="3">
-                            <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id"
-                                label="Unidad" placeholder="Seleccionar" prepend-inner-icon="ri-ruler-line"
-                                variant="outlined" density="comfortable" hide-details="auto" clearable />
-                        </VCol>
-
-                        <VCol cols="12" md="6" class="d-flex gap-2">
-                        </VCol>
-                        <VCol cols="12" md="6" class="d-flex gap-2">
-                            <VCol cols="12" md="6" class="d-flex gap-2">
-                                <VBtn color="error" variant="tonal" prepend-icon="ri-download-2-fill"
-                                    @click="importProducts">
-                                    Importar
-                                </VBtn>
-                                <VBtn color="success" variant="tonal" prepend-icon="ri-file-excel-2-line"
-                                    @click="downloadExcel()">
-                                    Exportar
-                                </VBtn>
-                            </VCol>
-                            <VCol cols="12" md="6" class="d-flex gap-2">
-                                <VBtn type="submit" color="primary" prepend-icon="ri-search-line" :loading="loading">
-                                    Buscar
-                                </VBtn>
-                                <VBtn variant="outlined" prepend-icon="ri-refresh-line" @click="clearSearch">
-                                    Limpiar
-                                </VBtn>
-                            </VCol>
-                        </VCol>
-                    </VRow>
-                </VForm>
-            </VCardText>
-
-            <VDivider />
-
-            <!-- Tabla de Productos -->
-            <VTable>
-                <thead>
-                    <tr>
-                        <th>Imagen</th>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Almacén</th>
-                        <th>Precio Venta</th>
-                        <th>Stock</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="loading">
-                        <td colspan="8" class="text-center pa-4">
-                            <VProgressCircular indeterminate color="primary" />
-                        </td>
-                    </tr>
-                    <tr v-else-if="products.length === 0">
-                        <td colspan="8" class="text-center pa-4 text-medium-emphasis">
-                            <VIcon size="32" class="mb-2">ri-inbox-line</VIcon>
-                            <div>No se encontraron productos</div>
-                        </td>
-                    </tr>
-                    <tr v-for="item in products" :key="item.id">
-                        <!-- Imagen -->
-                        <td>
-                            <div @click="openProductDialog(item)" class="cursor-pointer">
-                                <VAvatar v-if="item.imagen" :image="item.imagen" size="40" class="elevation-2" />
-                                <VAvatar v-else color="grey-lighten-2" size="40" class="elevation-2">
-                                    <VIcon icon="ri-image-line" />
-                                </VAvatar>
-                            </div>
-                        </td>
-
-                        <!-- Información Principal -->
-                        <td>
-                            <div>
-                                <div class="font-weight-medium">{{ item.description }}</div>
-                                <div class="text-caption text-medium-emphasis">SKU: {{ item.sku }}</div>
-                                <div v-if="item.code_aux" class="text-caption text-medium-emphasis">
-                                    Código: {{ item.code_aux }}
-                                </div>
-                            </div>
-                        </td>
-
-                        <!-- Categoría -->
-                        <td>{{ item.categorie?.title || '-' }}</td>
-
-                        <!-- Almacén -->
-                        <td>{{ item.warehouse?.name || '-' }}</td>
-
-                        <!-- Precios -->
-                        <td>
-                            <div class="text-right">
-                                <div class="font-weight-medium text-success">
-                                    ${{ item.price_sale?.toFixed(2) || '0.00' }}
-                                </div>
-                                <div v-if="item.discount_percentage > 0" class="text-caption text-warning">
-                                    {{ item.discount_percentage }}% desc
-                                </div>
-                            </div>
-                        </td>
-
-                        <!-- Stock -->
-                        <td>{{ item.stock || 0 }}</td>
-
-                        <!-- Estado -->
-                        <td>
-                            <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
-                                {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
-                            </VChip>
-                        </td>
-
-                        <!-- Acciones -->
-                        <td>
-                            <div class="d-flex gap-1">
-                                <VBtn icon="ri-eye-line" variant="text" size="small" color="primary"
-                                    @click="viewProduct(item)" />
-                                <VBtn icon="ri-edit-line" variant="text" size="small" color="warning"
-                                    @click="editProduct(item)" />
-                                <VBtn icon="ri-delete-bin-line" variant="text" size="small" color="error"
-                                    @click="deleteProduct(item)" />
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </VTable>
-
-            <!-- Paginación -->
-            <VDivider />
-            <div class="d-flex justify-center pa-4">
-                <div class="d-flex flex-column align-center gap-2">
-                    <div class="text-caption text-medium-emphasis">
-                        Mostrando {{ products.length }} de {{ totalItems }} productos
-                    </div>
-                    <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
-                        @update:model-value="searchProducts" />
+            <!-- Información Principal -->
+            <td>
+              <div>
+                <div class="font-weight-medium">
+                  {{ item.description }}
                 </div>
-            </div>
-        </VCard>
-    </div>
+                <div class="text-caption text-medium-emphasis">
+                  SKU: {{ item.sku }}
+                </div>
+                <div
+                  v-if="item.code_aux"
+                  class="text-caption text-medium-emphasis"
+                >
+                  Código: {{ item.code_aux }}
+                </div>
+              </div>
+            </td>
 
-    <!-- Diálogo de Detalles del Producto -->
-    <ViewProduct v-model:dialog="productDialog" :product="selectedProduct" />
+            <!-- Categoría -->
+            <td>{{ item.categorie?.title || '-' }}</td>
 
-    <!-- Diálogo de Eliminación de Producto -->
-    <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
-        @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
+            <!-- Almacén -->
+            <td>{{ item.warehouse?.name || '-' }}</td>
 
-    <!-- Diálogo de Importación de Excel -->
-    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported()" />
+            <!-- Precios -->
+            <td>
+              <div class="text-right">
+                <div class="font-weight-medium text-success">
+                  ${{ item.price_sale?.toFixed(2) || '0.00' }}
+                </div>
+                <div
+                  v-if="item.discount_percentage > 0"
+                  class="text-caption text-warning"
+                >
+                  {{ item.discount_percentage }}% desc
+                </div>
+              </div>
+            </td>
+
+            <!-- Stock -->
+            <td>{{ item.stock || 0 }}</td>
+
+            <!-- Estado -->
+            <td>
+              <VChip
+                :color="item.state === 1 ? 'success' : 'error'"
+                variant="tonal"
+                size="small"
+              >
+                {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
+              </VChip>
+            </td>
+
+            <!-- Acciones -->
+            <td>
+              <div class="d-flex gap-1">
+                <VBtn
+                  icon="ri-eye-line"
+                  variant="text"
+                  size="small"
+                  color="primary"
+                  @click="viewProduct(item)"
+                />
+                <VBtn
+                  icon="ri-edit-line"
+                  variant="text"
+                  size="small"
+                  color="warning"
+                  @click="editProduct(item)"
+                />
+                <VBtn
+                  icon="ri-delete-bin-line"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  @click="deleteProduct(item)"
+                />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <!-- Paginación -->
+      <VDivider />
+      <div class="d-flex justify-center pa-4">
+        <div class="d-flex flex-column align-center gap-2">
+          <div class="text-caption text-medium-emphasis">
+            Mostrando {{ products.length }} de {{ totalItems }} productos
+          </div>
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            @update:model-value="searchProducts"
+          />
+        </div>
+      </div>
+    </VCard>
+  </div>
+
+  <!-- Diálogo de Detalles del Producto -->
+  <ViewProduct
+    v-model:dialog="productDialog"
+    :product="selectedProduct"
+  />
+
+  <!-- Diálogo de Eliminación de Producto -->
+  <DeleteProduct
+    v-if="productToDelete"
+    :product="productToDelete"
+    :show-dialog="deleteDialog"
+    @update:show-dialog="deleteDialog = $event"
+    @deleted="handleProductDeleted"
+  />
+
+  <!-- Diálogo de Importación de Excel -->
+  <ImportProductsDialog
+    v-model:isDialogVisible="importDialog"
+    @imported="handleProductsImported"
+  />
 </template>

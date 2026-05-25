@@ -22,20 +22,18 @@ const headers = [
         key: 'created_at',
     },
     {
-        title: 'permisos',
+        title: 'Permisos',
         key: 'permissions_pluck',
     },
     {
         title: 'Acción',
         key: 'action',
+        sortable: false,
     },
 ];
 const isRoleAddDialogVisible = ref(false);
 const isRoleEditDialogVisible = ref(false);
 const isRoleDeleteDialogVisible = ref(false);
-
-
-const isLoading = ref(false);
 
 const list_roles = ref([]);
 const seachQuery = ref(null);
@@ -66,71 +64,60 @@ const list = async () => {
 }
 
 const addNewRole = (newRole) => {
-    console.log(newRole);
-
-    // Agregar el nuevo rol al inicio de la lista
     list_roles.value.unshift(newRole);
-
-    // Mostrar notificación de éxito
     showNotification('Rol agregado correctamente a la tabla', 'success');
 }
 
 const addEditRole = (updatedRole) => {
-    console.log('Actualizando rol:', updatedRole);
-
-    // Buscar el índice del rol a actualizar
     const index = list_roles.value.findIndex(role => role.id === updatedRole.id);
-
     if (index !== -1) {
-        // Actualizar el rol en la lista
         list_roles.value[index] = updatedRole;
-
-        // Mostrar notificación de éxito
         showNotification('Rol actualizado correctamente en la tabla', 'success');
     } else {
-        // Si no se encuentra, recargar la lista
-        console.warn('Rol no encontrado en la lista, recargando...');
         list();
     }
 }
 
 const addDeleteRole = (deletedRole) => {
-    console.log('Eliminando rol:', deletedRole);
-
-    // Buscar el índice del rol a eliminar
     const index = list_roles.value.findIndex(role => role.id === deletedRole.id);
-
     if (index !== -1) {
-        // Eliminar el rol de la lista
         list_roles.value.splice(index, 1);
-
-        // Mostrar notificación de éxito
         showNotification('Rol eliminado correctamente de la tabla', 'success');
     } else {
-        // Si no se encuentra, recargar la lista
-        console.warn('Rol no encontrado en la lista, recargando...');
         list();
     }
 }
 
 const permissionColor = (permission) => {
-
     if (permission.startsWith('list_')) return 'success'
     if (permission.startsWith('edit_')) return 'primary'
-    if (permission.startsWith('register_')) return 'secondary'
+    if (permission.startsWith('register_')) return 'info'
     if (permission.startsWith('delete_')) return 'error'
-
     return 'warning'
 }
 
+const getRoleColor = (roleName) => {
+  const name = roleName.toLowerCase()
+  if (name.includes('admin')) return 'warning'
+  if (name.includes('vendedor') || name.includes('seller')) return 'success'
+  if (name.includes('gerente') || name.includes('manager')) return 'primary'
+  return 'secondary'
+}
+
+const getRoleIcon = (roleName) => {
+  const name = roleName.toLowerCase()
+  if (name.includes('admin')) return 'ri-vip-crown-line'
+  if (name.includes('vendedor') || name.includes('seller')) return 'ri-shopping-cart-line'
+  if (name.includes('gerente') || name.includes('manager')) return 'ri-briefcase-4-line'
+  return 'ri-shield-user-line'
+}
+
 const editItem = (item) => {
-    console.log(item);
     isRoleEditDialogVisible.value = true;
     role_selected_edit.value = item;
-
 }
+
 const deleteItem = (item) => {
-    console.log(item);
     isRoleDeleteDialogVisible.value = true;
     role_selected_delete.value = item;
 }
@@ -138,21 +125,18 @@ const deleteItem = (item) => {
 onMounted(() => {
     list();
 });
-
 </script>
 
 <template>
     <div>
-        <!-- Overlay global -->
-        <VOverlay :model-value="isLoading" class="align-center justify-center" absolute>
-            <VProgressCircular indeterminate size="48" width="4" color="primary" />
-        </VOverlay>
         <VCard elevation="8" class="pa-6 rounded-xl border-thin">
             <!-- Título -->
             <VRow class="mb-4">
                 <VCol>
                     <div class="d-flex align-center gap-3">
-                        <VIcon icon="ri-shield-user-line" color="primary" size="28" />
+                        <VAvatar color="primary" variant="tonal" rounded size="48">
+                            <VIcon icon="ri-shield-keyhole-line" size="28" />
+                        </VAvatar>
                         <div>
                             <h4 class="text-h5 font-weight-bold mb-1">
                                 Roles y permisos
@@ -168,7 +152,7 @@ onMounted(() => {
             <!-- Acciones -->
             <VRow align="center" justify="space-between" class="mb-6">
                 <VCol cols="12" md="5">
-                    <VTextField label="Buscar rol" placeholder="Ej: Administrador" prepend-inner-icon="ri-search-line"
+                    <VTextField label="Buscar rol" placeholder="Ej: Administrador, Cajero..." prepend-inner-icon="ri-search-line"
                         clearable density="comfortable" variant="outlined" hide-details @keyup.enter="list"
                         v-model="seachQuery" :loading="loader.loading" />
                 </VCol>
@@ -186,46 +170,59 @@ onMounted(() => {
 
             <!-- Tabla -->
             <VDataTable :headers="headers" :items="list_roles" :items-per-page="10"
-                class="text-no-wrap elevation-1 rounded-lg" :loading="loader.loading">
+                class="text-no-wrap elevation-0" :loading="loader.loading" hover>
+                
                 <template #item.id="{ item }">
-                    <span color="primary" variant="tonal" size="small">
-                        {{ item.id }}
+                    <span class="text-primary font-weight-medium">
+                        #{{ item.id }}
                     </span>
                 </template>
 
+                <template #item.name="{ item }">
+                    <div class="d-flex align-center gap-3">
+                        <VAvatar :color="getRoleColor(item.name)" variant="tonal" size="36">
+                            <VIcon :icon="getRoleIcon(item.name)" size="20" />
+                        </VAvatar>
+                        <span class="text-subtitle-1 font-weight-medium text-capitalize">
+                            {{ item.name }}
+                        </span>
+                    </div>
+                </template>
+
                 <template #item.permissions_pluck="{ item }">
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2 py-2">
                         <VChip v-for="permission in item.permissions_pluck" :key="permission"
-                            :color="permissionColor(permission)" variant="tonal" size="small" class="text-capitalize">
-                            {{ permission }}
+                            :color="permissionColor(permission)" variant="flat" size="small" class="text-capitalize elevation-1 font-weight-medium">
+                            {{ permission.replace('_', ' ') }}
                         </VChip>
                     </div>
                 </template>
 
-
                 <template #no-data>
-                    <div class="text-center text-medium-emphasis py-6">
-                        <VIcon icon="ri-database-2-line" size="36" class="mb-2" />
-                        <div>No hay registros disponibles</div>
+                    <div class="text-center text-medium-emphasis py-8">
+                        <VAvatar color="grey-lighten-3" size="72" class="mb-4">
+                            <VIcon icon="ri-folder-info-line" size="36" color="grey" />
+                        </VAvatar>
+                        <div class="text-h6">No hay registros disponibles</div>
+                        <div class="text-body-2">Intenta buscar con otros términos</div>
                     </div>
                 </template>
 
                 <!-- Actions -->
                 <template #item.action="{ item }">
                     <div v-if="item.id !== 1" class="d-flex align-center gap-2">
-                        <VTooltip text="Editar">
+                        <VTooltip text="Editar Rol">
                             <template #activator="{ props }">
-
-                                <IconBtn v-bind="props" size="small" color="primary" variant="text"
+                                <IconBtn v-bind="props" size="small" color="primary" variant="tonal"
                                     @click="editItem(item)">
                                     <VIcon icon="ri-pencil-line" />
                                 </IconBtn>
                             </template>
                         </VTooltip>
 
-                        <VTooltip text="Eliminar">
+                        <VTooltip text="Eliminar Rol">
                             <template #activator="{ props }">
-                                <IconBtn v-bind="props" size="small" color="error" variant="text"
+                                <IconBtn v-bind="props" size="small" color="error" variant="tonal"
                                     @click="deleteItem(item)">
                                     <VIcon icon="ri-delete-bin-line" />
                                 </IconBtn>
@@ -252,7 +249,7 @@ onMounted(() => {
 
 <style scoped>
 :deep(.v-data-table__tr td) {
-    padding-top: 15px !important;
-    padding-bottom: 15px !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
 }
 </style>

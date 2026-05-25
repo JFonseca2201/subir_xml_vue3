@@ -715,18 +715,19 @@ export const vehicleBrands = {
 }
 
 // Función para obtener el nombre de la marca por ID
-export const getBrandNameById = (id) => {
+export const getBrandNameById = id => {
   return vehicleBrands[id] || 'MARCA DESCONOCIDA'
 }
 
 // Función para obtener el ID de la marca por nombre
-export const getBrandIdByName = (name) => {
+export const getBrandIdByName = name => {
   const upperName = name.toUpperCase()
   for (const [id, brandName] of Object.entries(vehicleBrands)) {
     if (brandName === upperName) {
       return parseInt(id)
     }
   }
+  
   return null
 }
 
@@ -734,35 +735,36 @@ export const getBrandIdByName = (name) => {
 export const getBrandOptions = () => {
   return Object.entries(vehicleBrands).map(([id, name]) => ({
     title: name,
-    value: parseInt(id)
+    value: parseInt(id),
   }))
 }
 
 // Función para buscar marcas por texto (mejorada para autocompletado)
-export const searchBrands = (searchText) => {
+export const searchBrands = searchText => {
   if (!searchText || searchText.trim() === '') {
     return []
   }
 
   const upperSearch = searchText.toUpperCase().trim()
+  
   return Object.entries(vehicleBrands)
     .filter(([id, name]) => name.includes(upperSearch))
     .map(([id, name]) => ({
       id: parseInt(id),
       name: name,
       title: name, // Para compatibilidad con VAutocomplete
-      value: parseInt(id) // Para compatibilidad con VAutocomplete
+      value: parseInt(id), // Para compatibilidad con VAutocomplete
     }))
     .slice(0, 50) // Limitar a 50 resultados para mejor rendimiento
 }
 
 // Función para obtener opciones de búsqueda para VAutocomplete
-export const getBrandSearchOptions = (searchText) => {
+export const getBrandSearchOptions = searchText => {
   if (!searchText || searchText.trim() === '') {
     // Si no hay texto de búsqueda, devolver marcas populares
     return getPopularBrands().map(brand => ({
       title: brand.name,
-      value: brand.id
+      value: brand.id,
     }))
   }
 
@@ -776,13 +778,14 @@ export const filterBrands = (items, searchQuery) => {
   }
 
   const upperQuery = searchQuery.toUpperCase().trim()
+  
   return items.filter(item =>
-    item.title.toUpperCase().includes(upperQuery)
+    item.title.toUpperCase().includes(upperQuery),
   ).slice(0, 50)
 }
 
 // Función para obtener marcas por país
-export const getBrandsByCountry = (country) => {
+export const getBrandsByCountry = country => {
   const countryBrands = {
     'ALEMANIA': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
     'ESTADOS UNIDOS': [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45],
@@ -802,22 +805,24 @@ export const getBrandsByCountry = (country) => {
     'MÉXICO': [247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271],
     'ESPAÑA': [272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288],
     'AUSTRALIA': [289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305],
-    'CANADÁ': [306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329]
+    'CANADÁ': [306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329],
   }
 
   const brandIds = countryBrands[country.toUpperCase()] || []
+  
   return brandIds.map(id => ({
     id: id,
-    name: vehicleBrands[id]
+    name: vehicleBrands[id],
   }))
 }
 
 // Función para obtener marcas populares (top 50)
 export const getPopularBrands = () => {
   const popularIds = [46, 21, 22, 4, 48, 50, 64, 65, 53, 54, 72, 73, 74, 82, 121, 101, 102, 37, 38, 155, 156, 157, 199, 200, 227, 228, 229, 1, 2, 3, 5, 106, 107, 108, 122, 85, 86, 87, 123, 41, 42, 43, 61, 62, 63, 89, 91, 92, 93, 94]
+  
   return popularIds.map(id => ({
     id: id,
-    name: vehicleBrands[id]
+    name: vehicleBrands[id],
   }))
 }
 

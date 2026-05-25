@@ -49,7 +49,11 @@ watch([
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center">
-        <IconBtn id="vertical-nav-toggle-btn" class="ms-n2 d-lg-none" @click="toggleVerticalOverlayNavActive(true)">
+        <IconBtn
+          id="vertical-nav-toggle-btn"
+          class="ms-n2 d-lg-none"
+          @click="toggleVerticalOverlayNavActive(true)"
+        >
           <VIcon icon="ri-menu-line" />
         </IconBtn>
 
@@ -57,8 +61,10 @@ watch([
 
         <VSpacer />
 
-        <NavBarI18n v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
-          :languages="themeConfig.app.i18n.langConfig" />
+        <NavBarI18n
+          v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
+          :languages="themeConfig.app.i18n.langConfig"
+        />
         <UserProfile />
       </div>
     </template>
@@ -72,8 +78,14 @@ watch([
           <Component :is="Component" />
         </template>
         <template #fallback>
-          <div class="d-flex justify-center align-center" style="height: 200px;">
-            <VProgressCircular indeterminate color="primary" />
+          <div
+            class="d-flex justify-center align-center"
+            style="height: 200px;"
+          >
+            <VProgressCircular
+              indeterminate
+              color="primary"
+            />
           </div>
         </template>
       </Suspense>

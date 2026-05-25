@@ -140,7 +140,7 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
         <Component
           :is="resolveNavItemComponent(item)"
           v-for="(item, index) in navItems"
-          :key="index"
+          :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
           :item="item"
         />
       </PerfectScrollbar>
