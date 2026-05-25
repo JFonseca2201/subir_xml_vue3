@@ -603,7 +603,7 @@ onMounted(() => {
                 <tbody>
                   <tr
                     v-for="(item, index) in workOrder.items"
-                    :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                    :key="item.id || item.product_id || index"
                     class="hover-row"
                   >
                     <td>

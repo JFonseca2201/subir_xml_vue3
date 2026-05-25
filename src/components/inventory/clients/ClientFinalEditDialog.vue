@@ -457,7 +457,7 @@ onMounted(() => {
 
           <VCol cols="12" md="4" class="mb-3">
             <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id"
-              label="Ciudad / Distrito" placeholder="Seleccione Distrito" prepend-inner-icon="ri-map-2-line" clearable
+              label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line" clearable
               :disabled="!clientForm.ubigeo_provincia" />
           </VCol>
 
