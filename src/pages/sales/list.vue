@@ -258,11 +258,8 @@ const generateSinglePDF = async sale => {
   try {
     const response = await $api(`sales/${sale.id}/pdf`, {
       method: 'GET',
-
-      //responseType: 'blob'
+      responseType: 'blob'
     })
-
-    console.log('Respuesta cruda:', response)
 
     // 1. Crear el blob con el tipo MIME correcto para PDF
     const blob = new Blob([response], { type: 'application/pdf' })
@@ -284,6 +281,7 @@ const downloadSinglePDF = async sale => {
   try {
     const response = await $api(`sales/${sale.id}/pdf`, {
       method: 'GET',
+      responseType: 'blob'
     })
 
     // Crear el blob con el tipo MIME correcto para PDF

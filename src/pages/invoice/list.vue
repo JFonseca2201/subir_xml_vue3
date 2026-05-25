@@ -161,7 +161,7 @@ const refresh = () => {
 
 const truncate = (text, length = 50) => {
   if (!text) return ''
-  
+
   return text.length > length
     ? text.slice(0, length) + '…'
     : text
@@ -180,15 +180,9 @@ onMounted(() => {
       <!-- 🧠 HEADER -->
       <VCardText>
         <VRow class="align-center justify-space-between">
-          <VCol
-            cols="12"
-            md="8"
-          >
+          <VCol cols="12" md="8">
             <div class="d-flex align-center gap-3">
-              <VIcon
-                size="40"
-                color="primary"
-              >
+              <VIcon size="40" color="primary">
                 ri-file-list-3-line
               </VIcon>
               <div>
@@ -202,17 +196,9 @@ onMounted(() => {
             </div>
           </VCol>
 
-          <VCol
-            cols="12"
-            md="4"
-            class="d-flex justify-end align-center"
-          >
-            <VBtn
-              color="primary"
-              size="large"
-              elevation="5"
-              @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible"
-            >
+          <VCol cols="12" md="4" class="d-flex justify-end align-center">
+            <VBtn color="primary" size="large" elevation="5"
+              @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible">
               <VIcon start>
                 ri-add-circle-line
               </VIcon>
@@ -238,85 +224,36 @@ onMounted(() => {
 
         <!-- Filtros de búsqueda alineados con el botón Filtrar -->
         <VRow dense>
-          <VCol
-            cols="12"
-            md="8"
-          >
+          <VCol cols="12" md="8">
             <VRow>
-              <VCol
-                cols="12"
-                md="4"
-              >
-                <VTextField
-                  v-model="search"
-                  label="Buscar factura"
-                  variant="outlined"
-                  density="comfortable"
-                  clearable
-                  prepend-inner-icon="ri-search-line"
-                  @keyup.enter="list"
-                />
+              <VCol cols="12" md="4">
+                <VTextField v-model="search" label="Buscar factura" variant="outlined" density="comfortable" clearable
+                  prepend-inner-icon="ri-search-line" @keyup.enter="list" />
               </VCol>
 
-              <VCol
-                cols="12"
-                md="4"
-              >
-                <VAutocomplete
-                  v-model="supplier_id"
-                  label="Proveedores"
-                  placeholder="Proveedores"
-                  :items="providers"
-                  item-title="name"
-                  item-value="id"
-                  clearable=""
-                />
+              <VCol cols="12" md="4">
+                <VAutocomplete v-model="supplier_id" label="Proveedores" placeholder="Proveedores" :items="providers"
+                  item-title="name" item-value="id" clearable="" />
               </VCol>
 
 
-              <VCol
-                cols="12"
-                md="4"
-              >
-                <AppDateTimePicker
-                  v-model="range_date"
-                  label="Rango de fecha"
-                  placeholder="Seleccionar un rango de fechas"
-                  :config="{ mode: 'range' }"
-                />
+              <VCol cols="12" md="4">
+                <AppDateTimePicker v-model="range_date" label="Rango de fecha"
+                  placeholder="Seleccionar un rango de fechas" :config="{ mode: 'range' }" />
               </VCol>
             </VRow>
           </VCol>
-          <VCol
-            cols="12"
-            md="4"
-          >
+          <VCol cols="12" md="4">
             <VRow>
               <!-- Botón Filtrar alineado con los filtros -->
-              <VCol
-                cols="12"
-                md="12"
-                class="d-flex align-end justify-end gap-4"
-              >
-                <VBtn
-                  color="primary"
-                  size="large"
-                  rounded=""
-                  variant="tonal"
-                  @click="list"
-                >
+              <VCol cols="12" md="12" class="d-flex align-end justify-end gap-4">
+                <VBtn color="primary" size="large" rounded="" variant="tonal" @click="list">
                   <VIcon start>
                     ri-search-line
                   </VIcon>
                   Buscar
                 </VBtn>
-                <VBtn
-                  color="secondary"
-                  size="large"
-                  rounded=""
-                  variant="tonal"
-                  @click="refresh"
-                >
+                <VBtn color="secondary" size="large" rounded="" variant="tonal" @click="refresh">
                   <VIcon start>
                     ri-refresh-line
                   </VIcon>
@@ -332,10 +269,7 @@ onMounted(() => {
 
       <!-- 📋 TABLA -->
       <VCardText class="pa-0">
-        <VTable
-          hover
-          class="text-no-wrap"
-        >
+        <VTable hover class="text-no-wrap">
           <thead class="bg-primary text-white">
             <tr>
               <th>#</th>
@@ -356,36 +290,19 @@ onMounted(() => {
 
           <tbody>
             <tr v-if="isLoading">
-              <td
-                colspan="9"
-                class="text-center pa-4"
-              >
-                <VProgressCircular
-                  indeterminate
-                  color="primary"
-                />
+              <td colspan="9" class="text-center pa-4">
+                <VProgressCircular indeterminate color="primary" />
               </td>
             </tr>
             <tr v-else-if="!list_invoices.length">
-              <td
-                colspan="9"
-                class="text-center text-medium-emphasis py-6"
-              >
-                <VIcon
-                  size="32"
-                  class="mb-2"
-                >
+              <td colspan="9" class="text-center text-medium-emphasis py-6">
+                <VIcon size="32" class="mb-2">
                   ri-inbox-line
                 </VIcon>
                 <div>No hay facturas registradas</div>
               </td>
             </tr>
-            <tr
-              v-for="invoice in list_invoices"
-              v-else
-              :key="invoice.id"
-              class="hover:bg-grey-lighten-4 transition"
-            >
+            <tr v-for="invoice in list_invoices" v-else :key="invoice.id" class="hover:bg-grey-lighten-4 transition">
               <td class="font-weight-medium">
                 {{ invoice.id }}
               </td>
@@ -403,11 +320,7 @@ onMounted(() => {
               <td class="text-center">
                 <!-- Debug temporal -->
 
-                <VChip
-                  :color="invoice.invoice_process === 1 ? 'success' : 'warning'"
-                  variant="tonal"
-                  size="small"
-                >
+                <VChip :color="invoice.invoice_process === 1 ? 'success' : 'warning'" variant="tonal" size="small">
                   {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
                 </VChip>
               </td>
@@ -418,12 +331,8 @@ onMounted(() => {
                     <VIcon icon="ri-eye-line" />
                   </IconBtn>
 
-                  <IconBtn
-                    v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                    color="primary"
-                    title="Procesar Factura"
-                    @click="processInvoice(invoice)"
-                  >
+                  <IconBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" color="primary"
+                    title="Procesar Factura" @click="processInvoice(invoice)">
                     <VIcon icon="ri-check-line" />
                   </IconBtn>
                   <!--
@@ -432,10 +341,7 @@ onMounted(() => {
                     </IconBtn> 
                   -->
                   <IconBtn @click="deleteInvoice(invoice)">
-                    <VIcon
-                      icon="ri-delete-bin-6-line"
-                      color="error"
-                    />
+                    <VIcon icon="ri-delete-bin-6-line" color="error" />
                   </IconBtn>
                 </div>
               </td>
@@ -452,26 +358,15 @@ onMounted(() => {
           <div class="text-caption text-medium-emphasis">
             Mostrando {{ list_invoices.length }} de {{ totalItems }} facturas
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPage"
-            rounded="circle"
-            :total-visible="7"
-            @update:model-value="list"
-          />
+          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7"
+            @update:model-value="list" />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- DIALOG -->
-    <InvoiceAddDialog
-      v-model:isDialogVisible="isInvoiceAddDialogVisible"
-      @add-invoice="addInvoice"
-    />
-    <InvoiceShowDialog
-      v-if="isInvoiceShowDialogVisible"
-      v-model:isDialogVisible="isInvoiceShowDialogVisible"
-      :invoice-selected="invoiceSelected"
-    />
+    <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @add-invoice="addInvoice" />
+    <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
+      :invoice-selected="invoiceSelected" />
   </div>
 </template>

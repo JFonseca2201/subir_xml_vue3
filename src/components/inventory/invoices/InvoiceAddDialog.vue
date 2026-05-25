@@ -2,7 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
-import { XMLParser } from "fast-xml-parser"  const props = defineProps({
+import { XMLParser } from "fast-xml-parser"
+const props = defineProps({
   isDialogVisible: {
     type: Boolean,
     required: true,
