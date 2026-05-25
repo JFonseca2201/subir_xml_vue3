@@ -5,6 +5,7 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
+import { getBrandNameById } from '@/data/vehicleBrands'
 
 // Router & Composables
 const router = useRouter()
@@ -129,6 +130,12 @@ const formatDate = (dateString) => {
     // Previene el desfase de zona horaria si viene en YYYY-MM-DD
     const [year, month, day] = dateString.split('T')[0].split('-')
     return `${day}/${month}/${year}`
+}
+
+const formatVehicleInfo = (vehicle) => {
+    if (!vehicle) return '-'
+    const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
+    return `${brandName} ${vehicle.model || ''}`.trim()
 }
 
 const getClientName = (client) => {
@@ -463,9 +470,12 @@ onMounted(() => {
 
                         <td>
                             <template v-if="item?.vehicle">
-                                <VChip size="small" variant="outlined" color="primary" class="font-weight-bold">
-                                    {{ item.vehicle.license_plate }}
-                                </VChip>
+                                <div class="d-flex flex-column align-start gap-1">
+                                    <VChip size="small" variant="outlined" color="primary" class="font-weight-bold mb-1">
+                                        {{ item.vehicle.license_plate }}
+                                    </VChip>
+                                    <span class="text-caption text-medium-emphasis" style="font-size: 0.70rem !important;">{{ formatVehicleInfo(item.vehicle) }}</span>
+                                </div>
                             </template>
                             <span v-else class="text-medium-emphasis text-caption">-</span>
                         </td>

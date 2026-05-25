@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getBrandNameById } from '@/data/vehicleBrands'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -198,7 +199,8 @@ const getClientName = (client) => {
 
 const getVehicleInfo = (vehicle) => {
     if (!vehicle) return 'N/A'
-    return `${vehicle.brand || ''} ${vehicle.model || ''} - ${vehicle.license_plate || ''}`.trim() || 'N/A'
+    const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
+    return `${brandName} ${vehicle.model || ''} - ${vehicle.license_plate || ''}`.trim() || 'N/A'
 }
 
 const getTotalAmount = (workOrder) => {
@@ -311,14 +313,11 @@ onMounted(() => {
                 <!-- Work Orders List -->
                 <div v-if="!isLoading && filteredWorkOrders.length > 0" class="work-orders-container">
                     <!-- Encabezados de Columnas -->
-                    <div class="d-none d-md-flex align-center px-4 py-2 text-caption text-grey font-weight-bold text-uppercase" style="letter-spacing: 0.5px;">
-                        <div style="width: 80px"></div>
+                    <div class="d-none d-md-flex align-center px-4 py-2 gap-4 text-caption text-grey font-weight-bold text-uppercase" style="letter-spacing: 0.5px;">
+                        <div style="width: 100px"></div>
                         <div style="width: 120px">Estado</div>
-                        <div style="width: 140px">Orden</div>
-                        <div style="width: 200px">Cliente</div>
-                        <div style="width: 200px">Vehículo</div>
-                        <div class="text-right flex-grow-1">Fecha</div>
-                        <div class="text-right flex-grow-1">Total</div>
+                        <div class="flex-grow-1">Descripción</div>
+                        <div style="width: 120px" class="text-right">Total</div>
                         <div style="width: 100px" class="text-right">Acciones</div>
                     </div>
 
@@ -349,34 +348,33 @@ onMounted(() => {
                                         </VChip>
                                     </div>
                                     
-                                    <!-- Orden -->
-                                    <div style="width: 140px">
-                                        <span class="text-h6 font-weight-bold">{{ workOrder.number }}</span>
-                                    </div>
-
-                                    <!-- Cliente -->
-                                    <div style="width: 200px">
-                                        <div class="d-flex align-center gap-1">
-                                            <VIcon icon="ri-user-line" size="16" color="grey" />
-                                            <span class="text-body-2 text-truncate">{{ getClientName(workOrder.client) }}</span>
+                                    <!-- Descripción -->
+                                    <div class="d-flex flex-column flex-grow-1 justify-center py-2">
+                                        <!-- Linea 1: Numero de Orden y Fecha -->
+                                        <div class="d-flex justify-space-between align-center mb-2">
+                                            <span class="text-h6 font-weight-bold text-blue-grey-darken-2">{{ workOrder.number }}</span>
+                                            <div class="d-flex align-center gap-1 text-caption text-grey">
+                                                <VIcon icon="ri-calendar-event-line" size="14" />
+                                                <span>{{ new Date(workOrder.created_at).toLocaleDateString() }}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Vehículo -->
-                                    <div style="width: 200px">
-                                        <div class="d-flex align-center gap-1">
-                                            <VIcon icon="ri-car-line" size="16" color="grey" />
-                                            <span class="text-body-2 text-truncate">{{ getVehicleInfo(workOrder.vehicle) }}</span>
+                                        <!-- Linea 2: Cliente y Vehiculo -->
+                                        <div class="d-flex align-center gap-3 text-body-2 text-grey-darken-3">
+                                            <div class="d-flex align-center gap-2 text-truncate" style="min-width: 0;">
+                                                <VIcon icon="ri-user-line" size="16" />
+                                                <span class="font-weight-medium text-truncate">{{ getClientName(workOrder.client) }}</span>
+                                            </div>
+                                            <VDivider vertical class="mx-2" />
+                                            <div class="d-flex align-center gap-2 text-truncate" style="min-width: 0;">
+                                                <VIcon icon="ri-car-line" size="16" />
+                                                <span class="text-truncate" style="text-transform: uppercase;">{{ getVehicleInfo(workOrder.vehicle) }}</span>
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Fecha -->
-                                    <div class="text-md-right flex-grow-1">
-                                        <span class="text-body-2 text-grey">{{ new Date(workOrder.created_at).toLocaleDateString() }}</span>
                                     </div>
 
                                     <!-- Total -->
-                                    <div class="text-md-right flex-grow-1">
+                                    <div style="width: 120px" class="text-md-right">
                                         <span class="text-h6 font-weight-bold text-primary">${{ getTotalAmount(workOrder).toFixed(2) }}</span>
                                     </div>
 
@@ -415,27 +413,43 @@ onMounted(() => {
         <VDialog v-model="showDetailsDialog" max-width="800">
             <VCard v-if="selectedWorkOrder">
                 <VCardTitle class="d-flex align-center justify-space-between pa-4">
-                    <span>Detalles de Orden #{{ selectedWorkOrder.number }}</span>
+                    <div class="d-flex align-center gap-2">
+                        <VIcon icon="ri-file-list-3-line" />
+                        <span>Detalles de Orden #{{ selectedWorkOrder.number }}</span>
+                    </div>
                     <VBtn icon="ri-close-line" variant="text" @click="showDetailsDialog = false" />
                 </VCardTitle>
                 <VDivider />
                 <VCardText class="pa-4">
                     <VRow>
                         <VCol cols="12" md="6">
-                            <p class="text-body-2 text-grey mb-1">Cliente</p>
+                            <div class="d-flex align-center gap-1 mb-1 text-grey">
+                                <VIcon icon="ri-user-line" size="18" />
+                                <span class="text-body-2">Cliente</span>
+                            </div>
                             <p class="text-body-1 font-weight-medium">{{ getClientName(selectedWorkOrder.client) }}</p>
                         </VCol>
                         <VCol cols="12" md="6">
-                            <p class="text-body-2 text-grey mb-1">Vehículo</p>
+                            <div class="d-flex align-center gap-1 mb-1 text-grey">
+                                <VIcon icon="ri-car-line" size="18" />
+                                <span class="text-body-2">Vehículo</span>
+                            </div>
                             <p class="text-body-1 font-weight-medium">{{ getVehicleInfo(selectedWorkOrder.vehicle) }}</p>
                         </VCol>
                         <VCol cols="12" md="6">
-                            <p class="text-body-2 text-grey mb-1">Kilometraje</p>
+                            <div class="d-flex align-center gap-1 mb-1 text-grey">
+                                <VIcon icon="ri-dashboard-3-line" size="18" />
+                                <span class="text-body-2">Kilometraje</span>
+                            </div>
                             <p class="text-body-1 font-weight-medium">{{ selectedWorkOrder.mileage || 'N/A' }} km</p>
                         </VCol>
                         <VCol cols="12" md="6">
-                            <p class="text-body-2 text-grey mb-1">Estado</p>
+                            <div class="d-flex align-center gap-1 mb-1 text-grey">
+                                <VIcon icon="ri-information-line" size="18" />
+                                <span class="text-body-2">Estado</span>
+                            </div>
                             <VChip :color="statusColors[selectedWorkOrder.status]" size="small" label>
+                                <VIcon start :icon="statusIcons[selectedWorkOrder.status]" size="14" />
                                 {{ statusLabels[selectedWorkOrder.status] }}
                             </VChip>
                         </VCol>
@@ -443,7 +457,10 @@ onMounted(() => {
 
                     <VDivider class="my-4" />
 
-                    <p class="text-h6 font-weight-bold mb-3">Items</p>
+                    <div class="d-flex align-center gap-2 mb-3">
+                        <VIcon icon="ri-list-check" size="24" />
+                        <span class="text-h6 font-weight-bold">Items</span>
+                    </div>
                     <VTable v-if="selectedWorkOrder.items && selectedWorkOrder.items.length > 0">
                         <thead>
                             <tr>
@@ -475,8 +492,8 @@ onMounted(() => {
                 <VDivider />
                 <VCardActions class="pa-4">
                     <VSpacer />
-                    <VBtn color="grey" variant="text" @click="showDetailsDialog = false">Cerrar</VBtn>
-                    <VBtn v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale" color="primary" @click="goToSale(selectedWorkOrder.id)">
+                    <VBtn color="grey" variant="text" prepend-icon="ri-close-line" @click="showDetailsDialog = false">Cerrar</VBtn>
+                    <VBtn v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale" color="primary" prepend-icon="ri-shopping-cart-line" @click="goToSale(selectedWorkOrder.id)">
                         Generar Venta
                     </VBtn>
                 </VCardActions>
