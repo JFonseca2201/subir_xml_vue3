@@ -203,7 +203,14 @@ definePage({ meta: { permission: "settings" } })
         :items="list_units"
         :items-per-page="10"
         class="text-no-wrap"
+        :loading="isLoading"
       >
+        <!-- Loader -->
+        <template #loading>
+          <div class="text-center pa-10">
+            <VProgressCircular indeterminate color="primary" />
+          </div>
+        </template>
         <!-- Nombre -->
         <template #item.name="{ item }">
           <div class="d-flex align-center">

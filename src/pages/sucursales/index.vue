@@ -250,7 +250,11 @@ onMounted(() => {
       </div>
 
       <!-- Formulario -->
+      <div v-if="isLoading && !isEditing" class="d-flex justify-center align-center py-12">
+        <VProgressCircular indeterminate color="primary" size="64" />
+      </div>
       <VForm
+        v-else
         ref="formRef"
         @submit.prevent="saveSucursal"
       >

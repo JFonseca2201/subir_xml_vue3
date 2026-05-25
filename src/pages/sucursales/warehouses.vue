@@ -256,8 +256,14 @@ onMounted(() => {
           </thead>
 
           <tbody>
+            <tr v-if="isLoading">
+              <td colspan="6" class="text-center pa-10">
+                <VProgressCircular indeterminate color="primary" />
+              </td>
+            </tr>
             <tr
               v-for="warehouse in (list_warehouses || [])"
+              v-else
               :key="warehouse"
               class="hover:bg-grey-lighten-4 transition"
             >

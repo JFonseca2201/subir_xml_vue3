@@ -219,7 +219,14 @@ definePage({ meta: { permission: "settings" } })
         :items="list_providers"
         :items-per-page="10"
         class="text-no-wrap"
+        :loading="isLoading"
       >
+        <!-- Loader -->
+        <template #loading>
+          <div class="text-center pa-10">
+            <VProgressCircular indeterminate color="primary" />
+          </div>
+        </template>
         <!-- Nombre -->
         <template #item.name="{ item }">
           <VTooltip>
