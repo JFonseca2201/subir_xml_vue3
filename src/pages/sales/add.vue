@@ -1285,7 +1285,7 @@ onMounted(async () => {
               <tbody>
                 <tr
                   v-for="(item, index) in sale.items"
-                  :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                  :key="index"
                 >
                   <td class="pa-2">
                     <VTextField
@@ -1531,7 +1531,7 @@ onMounted(async () => {
                       <tbody>
                         <tr
                           v-for="(dist, index) in paymentDistributions"
-                          :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                          :key="index"
                         >
                           <td class="pa-2 text-center font-weight-medium">
                             {{ index + 1 }}
