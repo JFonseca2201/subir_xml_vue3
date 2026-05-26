@@ -160,6 +160,16 @@ export default [
     icon: { icon: 'ri-box-3-line' },
     children: [
       {
+        title: 'Realizar Pedido',
+        to: 'sales-pedidos-distribuidor',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+      {
+        title: 'Listado Pedidos',
+        to: 'sales-pedidos-distribuidor-list',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+      {
         title: 'Registrar',
         to: 'invoice-manual-purchase',
         icon: { icon: 'ri-computer-line' },

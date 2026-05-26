@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const props = defineProps({
   isDialogVisible: {
@@ -18,6 +19,96 @@ const isInvoiceEditDialogVisible = ref(false)
 const invoice = ref([])
 const searchProduct = ref('') // Variable para el filtro de búsqueda de productos
 const categories = ref([]) // Variable para almacenar categorías
+
+const selectedItems = ref([])
+const bulkCategory = ref(null)
+const isBulkUpdating = ref(false)
+const { showNotification } = useGlobalToast()
+
+const isAllSelected = computed(() => {
+  const productItems = filteredItems.value.filter(item => item.item_type === 1)
+  if (productItems.length === 0) return false
+  return productItems.every(item => selectedItems.value.includes(item.id))
+})
+
+const isSomeSelected = computed(() => {
+  return selectedItems.value.length > 0
+})
+
+const toggleSelectAll = () => {
+  const productItems = filteredItems.value.filter(item => item.item_type === 1)
+  if (isAllSelected.value) {
+    const idsToRemove = productItems.map(item => item.id)
+    selectedItems.value = selectedItems.value.filter(id => !idsToRemove.includes(id))
+  } else {
+    const idsToAdd = productItems.map(item => item.id)
+    selectedItems.value = [...new Set([...selectedItems.value, ...idsToAdd])]
+  }
+}
+
+const updateItemCategory = async (item) => {
+  try {
+    isLoading.value = true
+    const data = {
+      item_type: item.item_type,
+      product_categorie_id: item.product_categorie_id
+    }
+    const resp = await $api(`invoice-items/${item.id}`, {
+      method: 'PUT',
+      body: data
+    })
+    
+    if (resp.status === 200 || resp.invoiceItem) {
+      showNotification('Categoría actualizada con éxito', 'success')
+      // Actualizar localmente
+      const index = invoice.value.invoice_items.findIndex(i => i.id === item.id)
+      if (index !== -1) {
+        invoice.value.invoice_items[index] = {
+          ...invoice.value.invoice_items[index],
+          ...resp.invoiceItem
+        }
+      }
+    } else {
+      showNotification('No se pudo actualizar la categoría', 'error')
+    }
+  } catch (error) {
+    console.error('Error al actualizar categoría inline:', error)
+    showNotification('Error al actualizar la categoría del producto', 'error')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const applyBulkCategory = async () => {
+  if (!bulkCategory.value || selectedItems.value.length === 0) return
+  
+  isBulkUpdating.value = true
+  isLoading.value = true
+  try {
+    const promises = selectedItems.value.map(id => {
+      return $api(`invoice-items/${id}`, {
+        method: 'PUT',
+        body: {
+          item_type: 1,
+          product_categorie_id: bulkCategory.value
+        }
+      })
+    })
+    
+    await Promise.all(promises)
+    showNotification('Categorías actualizadas en lote con éxito', 'success')
+    
+    await showItems()
+    selectedItems.value = []
+    bulkCategory.value = null
+  } catch (error) {
+    console.error('Error al aplicar categoría en lote:', error)
+    showNotification('Error al actualizar las categorías en lote', 'error')
+  } finally {
+    isBulkUpdating.value = false
+    isLoading.value = false
+  }
+}
 
 // Método para obtener los datos de la factura
 const showItems = async () => {
@@ -86,6 +177,8 @@ const dialogVisible = computed({
 
 const onFormReset = () => {
   searchProduct.value = '' // Limpiar el filtro al cerrar el formulario
+  selectedItems.value = [] // Limpiar la selección de lote
+  bulkCategory.value = null
   dialogVisible.value = false
 }
 
@@ -288,21 +381,68 @@ onMounted(() => {
 
         <VDivider />
         <VRow
-          class="mb-4 my-2"
-          style="position: sticky; "
+          class="mb-4 my-2 align-center px-4"
+          style="position: sticky; top: 0;"
         >
           <VCol
             cols="12"
             md="4"
-            class="ml-4"
           >
             <VTextField
               v-model="searchProduct"
               label="Buscar producto"
               variant="outlined"
               clearable
+              hide-details
               prepend-inner-icon="ri-search-line"
             />
+          </VCol>
+          
+          <!-- Banner de Acciones en Lote -->
+          <VCol
+            v-if="selectedItems.length > 0"
+            cols="12"
+            md="8"
+            class="d-flex align-center gap-3 bg-blue-lighten-5 border border-blue-lighten-3 rounded-lg py-2 px-4 animate-fade-in"
+          >
+            <div class="text-caption font-weight-black text-info-darken-3 text-no-wrap">
+              <VIcon icon="ri-checkbox-multiple-line" class="mr-1" color="info" />
+              {{ selectedItems.length }} SELECCIONADOS
+            </div>
+            
+            <VSelect
+              v-model="bulkCategory"
+              :items="categories"
+              item-title="title"
+              item-value="id"
+              label="Categoría en lote"
+              placeholder="Asignar a todos..."
+              density="compact"
+              variant="outlined"
+              hide-details
+              class="flex-grow-1"
+              bg-color="white"
+              style="max-width: 250px; font-size: 0.8rem;"
+            />
+            
+            <VBtn
+              color="info"
+              size="small"
+              :disabled="!bulkCategory"
+              :loading="isBulkUpdating"
+              @click="applyBulkCategory"
+            >
+              Aplicar
+            </VBtn>
+            
+            <VBtn
+              variant="text"
+              color="secondary"
+              size="small"
+              @click="selectedItems = []"
+            >
+              Limpiar
+            </VBtn>
           </VCol>
         </VRow>
       </div>
@@ -319,6 +459,15 @@ onMounted(() => {
           <!-- 🧾 CABECERA -->
           <thead class="bg-primary text-white sticky-header">
             <tr>
+              <th style="width: 55px" v-if="invoice?.invoice_process !== 1">
+                <VCheckbox
+                  :model-value="isAllSelected"
+                  :indeterminate="isSomeSelected && !isAllSelected"
+                  density="compact"
+                  hide-details
+                  @click.stop="toggleSelectAll"
+                />
+              </th>
               <th style="width: 50px">
                 #
               </th>
@@ -407,6 +556,16 @@ onMounted(() => {
               v-for="(item, index) in filteredItems"
               :key="item.id"
             >
+              <td v-if="invoice?.invoice_process !== 1">
+                <VCheckbox
+                  v-if="item.item_type === 1"
+                  v-model="selectedItems"
+                  :value="item.id"
+                  density="compact"
+                  hide-details
+                  @click.stop
+                />
+              </td>
               <td><small>{{ index + 1 }}</small></td>
               <td class="font-weight-medium">
                 <VTooltip
@@ -428,8 +587,23 @@ onMounted(() => {
                 <small>{{ (item.description) }}</small>
               </td>
 
-              <td class="text-medium-emphasis">
-                <small>{{ getCategoryName(item.product_categorie_id, item.item_type) }}</small>
+              <td>
+                <VSelect
+                  v-if="invoice?.invoice_process !== 1 && item.item_type === 1"
+                  v-model="item.product_categorie_id"
+                  :items="categories"
+                  item-title="title"
+                  item-value="id"
+                  density="compact"
+                  variant="underlined"
+                  hide-details
+                  placeholder="Seleccionar..."
+                  class="inline-category-select"
+                  @update:model-value="updateItemCategory(item)"
+                />
+                <span v-else class="text-caption text-medium-emphasis">
+                  {{ getCategoryName(item.product_categorie_id, item.item_type) }}
+                </span>
               </td>
 
               <td class="text-right">
@@ -556,4 +730,29 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.inline-category-select :deep(.v-field__input) {
+  font-size: 0.75rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 2px !important;
+  min-height: unset !important;
+}
+.inline-category-select :deep(.v-field) {
+  --v-input-control-height: 24px;
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
 <!-- @editInvoiceItem="addEditInvoiceItem" -->

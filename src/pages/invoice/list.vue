@@ -146,9 +146,6 @@ const addInvoice = newInvoice => {
 
   // Agregar la nueva factura al inicio de la lista
   list_invoices.value.unshift(newInvoice)
-
-  // Mostrar notificación de éxito
-  showNotification('Factura agregada correctamente a la tabla', 'success')
 }
 
 watch([search, supplier_id, from_date, to_date], () => {
