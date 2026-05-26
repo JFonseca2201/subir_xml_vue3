@@ -202,6 +202,19 @@ v-model="props.isDialogVisible"
 persistent transition="dialog-bottom-transition"
 >
     <VCard class="rounded-xl">
+      <VOverlay
+        :model-value="loader.loading"
+        class="align-center justify-center"
+        contained
+        persistent
+      >
+        <VProgressCircular
+          color="primary"
+          indeterminate
+          size="64"
+        />
+      </VOverlay>
+
       <!-- Header -->
       <VCardTitle class="d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-2">

@@ -119,6 +119,19 @@ onMounted(() => {
     max-width="700"
   >
     <VCard class="invoice-dialog elevation-15 rounded-xl">
+      <VOverlay
+        :model-value="loader.loading"
+        class="align-center justify-center"
+        contained
+        persistent
+      >
+        <VProgressCircular
+          color="primary"
+          indeterminate
+          size="64"
+        />
+      </VOverlay>
+
       <VCardTitle class="headline text-center text-primary">
         Editar {{ props.invoiceSelected.description }}
       </VCardTitle>

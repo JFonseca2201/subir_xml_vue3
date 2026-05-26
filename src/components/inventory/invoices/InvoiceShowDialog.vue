@@ -141,9 +141,18 @@ onMounted(() => {
       style="text-transform: uppercase;"
     >
       <!-- 🔄 Overlay global -->
-      <!-- Global loader in use -->
-
-      <!-- 🧾 CABECERA -->
+      <VOverlay
+        :model-value="isLoading"
+        class="align-center justify-center"
+        contained
+        persistent
+      >
+        <VProgressCircular
+          color="primary"
+          indeterminate
+          size="64"
+        />
+      </VOverlay>
       <div
         class="invoice-header"
         style="position: sticky; top: 0; z-index: 10; background: white;"
@@ -380,7 +389,7 @@ onMounted(() => {
                 Total
               </th>
 
-              <th class="text-right">
+              <th v-if="props.invoiceSelected.invoice_process !== 1" class="text-right">
                 <VIcon
                   size="16"
                   class="mr-1"
@@ -444,7 +453,7 @@ onMounted(() => {
                 }}</small>
               </td>
 
-              <td class="text-right font-weight-bold text-primary">
+              <td v-if="props.invoiceSelected.invoice_process !== 1" class="text-right font-weight-bold text-primary">
                 <IconBtn @click="editInvoice(item)">
                   <VIcon icon="ri-pencil-line" />
                 </IconBtn>

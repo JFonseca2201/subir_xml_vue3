@@ -161,7 +161,7 @@ export default [
     children: [
       {
         title: 'Registrar',
-        to: 'second-page',
+        to: 'invoice-manual-purchase',
         icon: { icon: 'ri-computer-line' },
       },
       {

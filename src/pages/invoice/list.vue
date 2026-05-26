@@ -24,6 +24,8 @@ const isLoading = ref(false)
 
 const isInvoiceAddDialogVisible = ref(false)
 const isInvoiceShowDialogVisible = ref(false)
+const isInvoiceDeleteDialogVisible = ref(false)
+import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDialog.vue'
 
 const list = async () => {
   isLoading.value = true
@@ -131,7 +133,12 @@ const processInvoice = async invoice => {
 
 
 const deleteInvoice = DeleteInvoice => {
-  console.log(DeleteInvoice)
+  invoiceSelected.value = DeleteInvoice
+  isInvoiceDeleteDialogVisible.value = true
+}
+
+const onDeleteSuccess = () => {
+  list() // recargar la tabla después de borrar
 }
 
 const addInvoice = newInvoice => {
@@ -196,13 +203,21 @@ onMounted(() => {
             </div>
           </VCol>
 
-          <VCol cols="12" md="4" class="d-flex justify-end align-center">
-            <VBtn color="primary" size="large" elevation="5"
+          <VCol cols="12" md="4" class="d-flex justify-end align-center gap-4">
+            <VBtn color="secondary" size="large" elevation="2"
               @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible">
+              <VIcon start>
+                ri-file-upload-line
+              </VIcon>
+              Subir XML
+            </VBtn>
+            
+            <VBtn color="primary" size="large" elevation="5"
+              to="/invoice/manual-purchase">
               <VIcon start>
                 ri-add-circle-line
               </VIcon>
-              Nueva
+              Compra Manual
             </VBtn>
           </VCol>
         </VRow>
@@ -368,5 +383,7 @@ onMounted(() => {
     <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @add-invoice="addInvoice" />
     <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
       :invoice-selected="invoiceSelected" />
+    <InvoiceDeleteDialog v-if="isInvoiceDeleteDialogVisible" v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
+      :invoice-selected="invoiceSelected" @delete-invoice-success="onDeleteSuccess" />
   </div>
 </template>
