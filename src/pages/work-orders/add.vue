@@ -4,8 +4,10 @@ import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { getBrandNameById } from '@/data/vehicleBrands'
 
 import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
+import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 
 const router = useRouter()
@@ -50,6 +52,7 @@ const fuelLevels = [
 ]
 
 const showClientDialog = ref(false)
+const showCompanyDialog = ref(false)
 const showVehicleDialog = ref(false)
 const productSearch = ref('')
 const filteredProducts = ref([])
@@ -144,14 +147,23 @@ const cancel = () => {
 }
 
 const onClientAdded = newClient => {
-  clients.value.push(newClient)
-  workOrder.value.client_id = newClient.id
+  const clientObj = newClient.client || newClient.data || newClient
+  clients.value.push(clientObj)
+  workOrder.value.client_id = clientObj.id
   showClientDialog.value = false
 }
 
+const onCompanyAdded = newCompany => {
+  const companyObj = newCompany.client || newCompany.data || newCompany
+  clients.value.push(companyObj)
+  workOrder.value.client_id = companyObj.id
+  showCompanyDialog.value = false
+}
+
 const onVehicleAdded = newVehicle => {
-  vehicles.value.push(newVehicle)
-  workOrder.value.vehicle_id = newVehicle.id
+  const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  vehicles.value.push(vehicleObj)
+  workOrder.value.vehicle_id = vehicleObj.id
   showVehicleDialog.value = false
 }
 
@@ -174,6 +186,7 @@ const addItem = (type = 'product') => {
     unit_price: 0,
     discount: 0,
     type: type,
+    sku: 'MANUAL',
   })
 }
 
@@ -247,6 +260,7 @@ const addProductFromSearch = product => {
     unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
     discount: 0,
     type: isService ? 'service' : 'product',
+    sku: product.sku || product.code || '',
   })
   productSearch.value = ''
 }
@@ -293,7 +307,7 @@ onMounted(() => {
                 class="mr-3"
               >
                 <VIcon
-                  icon="ri-user-car-line"
+                  icon="ri-car-line"
                   size="28"
                 />
               </VAvatar>
@@ -325,14 +339,29 @@ onMounted(() => {
                     :loading="isLoading"
                     :rules="[(v) => !!v || 'Cliente es requerido']"
                   >
-                    <template #append-outer>
+                    <template #append>
                       <VBtn
-                        icon="ri-add-line"
+                        icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="primary"
-                        @click="showClientDialog = true"
-                      />
+                      >
+                        <VIcon icon="ri-add-line" />
+                        <VMenu activator="parent">
+                          <VList>
+                            <VListItem
+                              prepend-icon="ri-user-line"
+                              title="Cliente Final"
+                              @click="showClientDialog = true"
+                            />
+                            <VListItem
+                              prepend-icon="ri-building-line"
+                              title="Cliente Empresa"
+                              @click="showCompanyDialog = true"
+                            />
+                          </VList>
+                        </VMenu>
+                      </VBtn>
                     </template>
                   </VAutocomplete>
                 </div>
@@ -342,11 +371,11 @@ onMounted(() => {
                 cols="12"
                 md="6"
               >
-                <div class="mb-4">
+                <div class="mb-4" style="text-transform: uppercase;">
                   <VAutocomplete
                     v-model="workOrder.vehicle_id"
                     :items="vehicles"
-                    :item-title="(item) => `${item.brand} ${item.model} - ${item.license_plate}`"
+                    :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
                     item-value="id"
                     label="Vehículo"
                     prepend-inner-icon="ri-car-line"
@@ -354,14 +383,16 @@ onMounted(() => {
                     clearable
                     :loading="isLoading"
                   >
-                    <template #append-outer>
+                    <template #append>
                       <VBtn
-                        icon="ri-add-line"
+                        icon
                         size="small"
-                        variant="text"
+                        variant="tonal"
                         color="primary"
                         @click="showVehicleDialog = true"
-                      />
+                      >
+                        <VIcon icon="ri-add-line" />
+                      </VBtn>
                     </template>
                   </VAutocomplete>
                 </div>
@@ -574,28 +605,25 @@ onMounted(() => {
               v-if="workOrder.items.length > 0"
               class="elevation-1"
             >
-              <VTable>
+              <VTable class="custom-items-table">
                 <thead>
                   <tr class="bg-grey-lighten-4">
-                    <th class="text-left">
-                      Tipo
+                    <th class="text-left" style="min-width: 250px;">
+                      Ítem / Descripción
                     </th>
-                    <th class="text-left">
-                      Descripción
-                    </th>
-                    <th class="text-center">
+                    <th class="text-center" style="width: 130px;">
                       Cantidad
                     </th>
-                    <th class="text-center">
+                    <th class="text-center" style="width: 140px;">
                       Precio Unit.
                     </th>
-                    <th class="text-center">
+                    <th class="text-center" style="width: 120px;">
                       Descuento
                     </th>
-                    <th class="text-center">
+                    <th class="text-center" style="width: 130px;">
                       Subtotal
                     </th>
-                    <th class="text-center">
+                    <th class="text-center" style="width: 60px;">
                       Acciones
                     </th>
                   </tr>
@@ -607,52 +635,71 @@ onMounted(() => {
                     class="hover-row"
                   >
                     <td>
-                      <VChip
-                        :color="item.type === 'product' ? 'primary' : 'info'"
-                        size="small"
-                        label
-                      >
-                        <VIcon
-                          :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'"
-                          start
-                          size="16"
+                      <div class="d-flex align-center gap-3 py-1">
+                        <VAvatar
+                          size="38"
+                          :color="item.type === 'product' ? 'primary' : 'info'"
+                          variant="tonal"
+                          class="elevation-1"
+                        >
+                          <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
+                        </VAvatar>
+                        <div class="flex-grow-1">
+                          <VTextField
+                            v-model="item.description"
+                            density="compact"
+                            variant="plain"
+                            hide-details
+                            placeholder="Descripción del ítem..."
+                            class="premium-input font-weight-medium"
+                          />
+                          <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
+                            <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                              {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
+                            </span>
+                            <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <div class="d-inline-flex align-center qty-selector">
+                        <VBtn
+                          icon="ri-subtract-line"
+                          variant="text"
+                          color="primary"
+                          :disabled="item.quantity <= 1"
+                          @click="item.quantity--"
+                          class="qty-btn"
+                          size="small"
                         />
-                        {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
-                      </VChip>
-                    </td>
-                    <td>
-                      <VTextField
-                        v-model="item.description"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        placeholder="Descripción"
-                        class="mt-2"
-                      />
-                    </td>
-                    <td>
-                      <VTextField
-                        v-model.number="item.quantity"
-                        type="number"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        min="1"
-                        style="width: 80px"
-                        class="mt-2"
-                      />
+                        <input
+                          v-model.number="item.quantity"
+                          type="number"
+                          min="1"
+                          class="qty-input"
+                        />
+                        <VBtn
+                          icon="ri-add-line"
+                          variant="text"
+                          color="primary"
+                          @click="item.quantity++"
+                          class="qty-btn"
+                          size="small"
+                        />
+                      </div>
                     </td>
                     <td>
                       <VTextField
                         v-model.number="item.unit_price"
                         type="number"
                         density="compact"
-                        variant="outlined"
+                        variant="plain"
                         hide-details
                         min="0"
                         step="0.01"
-                        style="width: 100px"
-                        class="mt-2"
+                        prefix="$"
+                        class="premium-input font-weight-bold"
                       />
                     </td>
                     <td>
@@ -660,17 +707,18 @@ onMounted(() => {
                         v-model.number="item.discount"
                         type="number"
                         density="compact"
-                        variant="outlined"
+                        variant="plain"
                         hide-details
                         min="0"
                         step="0.01"
-                        style="width: 80px"
-                        class="mt-2"
+                        prefix="$"
+                        class="premium-input text-error font-weight-medium"
                       />
                     </td>
                     <td class="text-center">
-                      <span class="text-h6 font-weight-bold text-success">${{
-                        calculateItemSubtotal(item).toFixed(2) }}</span>
+                      <span class="text-h6 font-weight-black text-success">
+                        ${{ calculateItemSubtotal(item).toFixed(2) }}
+                      </span>
                     </td>
                     <td class="text-center">
                       <VBtn
@@ -678,6 +726,7 @@ onMounted(() => {
                         size="small"
                         color="error"
                         variant="text"
+                        class="delete-btn"
                         @click="removeItem(index)"
                       />
                     </td>
@@ -788,6 +837,13 @@ onMounted(() => {
       @add-client-final="onClientAdded"
     />
 
+    <!-- Dialog para agregar cliente empresa -->
+    <ClientCompanyAddDialog
+      :is-dialog-visible="showCompanyDialog"
+      @update:is-dialog-visible="showCompanyDialog = $event"
+      @add-client-company="onCompanyAdded"
+    />
+
     <!-- Dialog para agregar vehículo -->
     <VehicleAddDialog
       :is-dialog-visible="showVehicleDialog"
@@ -798,7 +854,124 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.custom-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-items-table th {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 12px 16px !important;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.custom-items-table td {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  vertical-align: middle;
+}
+
+.hover-row {
+  transition: all 0.2s ease-in-out;
+}
+
 .hover-row:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Custom quantity selector */
+.qty-selector {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  transition: border-color 0.2s;
+}
+
+.qty-selector:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5);
+}
+
+.qty-btn {
+  height: 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.qty-input {
+  width: 44px;
+  height: 32px;
+  border: none;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+}
+
+/* Hide spin buttons for Firefox/Chrome */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Underline inputs */
+.premium-input :deep(.v-field__outline) {
+  --v-field-border-width: 0px !important;
+  --v-field-border-opacity: 0 !important;
+}
+
+.premium-input :deep(.v-field__outline::before),
+.premium-input :deep(.v-field__outline::after) {
+  display: none !important;
+}
+
+.premium-input :deep(.v-field) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0 !important;
+  padding-inline-start: 4px !important;
+  padding-inline-end: 4px !important;
+  transition: all 0.2s ease;
+}
+
+.premium-input :deep(.v-field--focused) {
+  border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
+  background-color: transparent !important;
+}
+
+.premium-input :deep(.v-field:hover:not(.v-field--focused)) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4) !important;
+}
+
+.sku-tag {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.delete-btn {
+  transition: transform 0.2s, color 0.2s;
+}
+.delete-btn:hover {
+  transform: scale(1.15);
+  color: rgb(var(--v-theme-error)) !important;
 }
 </style>

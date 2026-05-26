@@ -41,7 +41,7 @@ const handleFileUpload = event => {
         const xmlString = e.target.result
         const parser = new XMLParser()
         const result = parser.parse(xmlString)
-        
+
         if (result.autorizacion && result.autorizacion.comprobante) {
           const innerXmlString = result.autorizacion.comprobante.replace("<![CDATA[", "").replace("]]>", "")
           const innerParser = new XMLParser()
@@ -171,7 +171,7 @@ const storeXml = async () => {
       body: formData,
       onResponseError({ response }) {
         const data = response._data || {}
-        
+
         // 1. Extraer errores de validación específicos (Laravel errors array)
         if (data.errors && typeof data.errors === 'object') {
           const errorMessages = []
@@ -260,8 +260,10 @@ onMounted(() => {
             <VIcon color="white" size="22">ri-file-upload-line</VIcon>
           </VAvatar>
           <div>
-            <div class="text-h6 font-weight-bold leading-tight" style="color: white !important;">Importar Factura XML</div>
-            <div class="text-caption text-white opacity-80" style="color: white !important;">Carga comprobantes autorizados por el SRI</div>
+            <div class="text-h6 font-weight-bold leading-tight" style="color: white !important;">Importar Factura XML
+            </div>
+            <div class="text-caption text-white opacity-80" style="color: white !important;">Carga comprobantes
+              autorizados por el SRI</div>
           </div>
         </div>
         <VBtn icon="ri-close-line" variant="text" color="white" density="comfortable" @click="onFormReset" />
@@ -269,24 +271,14 @@ onMounted(() => {
 
       <!-- Contenido -->
       <VCardText class="pa-6 d-flex flex-column gap-5 bg-slate-50 flex-grow-1" style="overflow-y: auto;">
-        
+
         <!-- Drag & Drop Zone Premium -->
         <div
           class="drag-drop-zone d-flex flex-column align-center justify-center border-dashed rounded-xl pa-8 cursor-pointer transition-all text-center"
-          :class="{ 'drag-over': isDragging, 'has-file': selectedFile }"
-          @dragover.prevent="isDragging = true"
-          @dragleave.prevent="isDragging = false"
-          @drop.prevent="onFileDropped"
-          @click="triggerFileInput"
-        >
+          :class="{ 'drag-over': isDragging, 'has-file': selectedFile }" @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false" @drop.prevent="onFileDropped" @click="triggerFileInput">
           <!-- Hidden Input -->
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".xml"
-            class="d-none"
-            @change="onFileSelected"
-          />
+          <input ref="fileInputRef" type="file" accept=".xml" class="d-none" @change="onFileSelected" />
 
           <template v-if="!selectedFile">
             <VIcon size="56" color="primary" class="mb-3 pulse-icon">ri-upload-cloud-2-line</VIcon>
@@ -306,13 +298,7 @@ onMounted(() => {
                   {{ formatFileSize(selectedFile.size) }}
                 </div>
               </div>
-              <VBtn
-                icon="ri-close-line"
-                variant="text"
-                color="error"
-                size="small"
-                @click.stop="clearSelectedFile"
-              />
+              <VBtn icon="ri-close-line" variant="text" color="error" size="small" @click.stop="clearSelectedFile" />
             </div>
           </template>
         </div>
@@ -325,12 +311,8 @@ onMounted(() => {
               Categoría de destino en Inventario
             </span>
           </div>
-          <CustomRadiosWithIcon
-            v-model:selected-radio="selectedRadio"
-            :radio-content="radioContent"
-            :grid-column="{ sm: '3', cols: '12' }"
-            class="square-radio"
-          />
+          <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
+            :grid-column="{ sm: '3', cols: '12' }" class="square-radio" />
         </div>
 
         <!-- Vista previa de Factura XML -->
@@ -357,7 +339,8 @@ onMounted(() => {
                 </VAvatar>
                 <div>
                   <div class="text-caption text-medium-emphasis font-weight-bold">Proveedor</div>
-                  <div class="text-body-2 font-weight-black text-truncate" style="max-width: 200px;" :title="xmlData.infoTributaria?.razonSocial">
+                  <div class="text-body-2 font-weight-black text-truncate" style="max-width: 200px;"
+                    :title="xmlData.infoTributaria?.razonSocial">
                     {{ xmlData.infoTributaria?.razonSocial || 'N/A' }}
                   </div>
                   <div class="text-caption text-medium-emphasis" v-if="xmlData.infoTributaria?.ruc">
@@ -403,7 +386,8 @@ onMounted(() => {
           <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2">
             <VIcon size="18" color="primary">ri-shopping-cart-2-line</VIcon>
             <span>Productos / Ítems</span>
-            <VChip size="x-small" color="primary" class="font-weight-bold">{{ getDetallesArray()?.length || 0 }} items</VChip>
+            <VChip size="x-small" color="primary" class="font-weight-bold">{{ getDetallesArray()?.length || 0 }} items
+            </VChip>
           </div>
 
           <VTable density="compact" class="preview-table clean-table mb-4">
@@ -426,7 +410,9 @@ onMounted(() => {
                   </VChip>
                 </td>
                 <td class="text-right text-caption">${{ parseFloat(item.precioUnitario || 0).toFixed(2) }}</td>
-                <td class="text-right font-weight-bold text-info">${{ parseFloat(item.precioTotalSinImpuesto || 0).toFixed(2) }}</td>
+                <td class="text-right font-weight-bold text-info">${{ parseFloat(item.precioTotalSinImpuesto ||
+                  0).toFixed(2) }}
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -436,53 +422,48 @@ onMounted(() => {
             <div class="summary-card pa-4 rounded-xl border bg-white shadow-sm" style="min-width: 280px;">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption text-medium-emphasis">Subtotal:</span>
-                <span class="text-body-2 font-weight-bold">${{ (parseFloat(xmlData.infoFactura?.totalSinImpuestos || 0) + parseFloat(xmlData.infoFactura?.totalDescuento || 0)).toFixed(2) }}</span>
+                <span class="text-body-2 font-weight-bold">${{ (parseFloat(xmlData.infoFactura?.totalSinImpuestos || 0)
+                  +
+                  parseFloat(xmlData.infoFactura?.totalDescuento || 0)).toFixed(2) }}</span>
               </div>
-              <div class="d-flex justify-space-between align-center mb-2" v-if="parseFloat(xmlData.infoFactura?.totalDescuento || 0) > 0">
+              <div class="d-flex justify-space-between align-center mb-2"
+                v-if="parseFloat(xmlData.infoFactura?.totalDescuento || 0) > 0">
                 <span class="text-caption text-error">Descuento:</span>
-                <span class="text-body-2 font-weight-bold text-error">-${{ parseFloat(xmlData.infoFactura?.totalDescuento || 0).toFixed(2) }}</span>
+                <span class="text-body-2 font-weight-bold text-error">-${{
+                  parseFloat(xmlData.infoFactura?.totalDescuento ||
+                    0).toFixed(2) }}</span>
               </div>
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption text-medium-emphasis">IVA (15%):</span>
-                <span class="text-body-2 font-weight-bold">${{ parseFloat(xmlData.infoFactura?.totalConImpuestos?.totalImpuesto?.valor || 0).toFixed(2) }}</span>
+                <span class="text-body-2 font-weight-bold">${{
+                  parseFloat(xmlData.infoFactura?.totalConImpuestos?.totalImpuesto?.valor || 0).toFixed(2) }}</span>
               </div>
               <VDivider class="my-2" />
               <div class="d-flex justify-space-between align-center">
-                <span class="text-subtitle-1 font-weight-bold text-high-emphasis font-weight-black">TOTAL FACTURA:</span>
-                <span class="text-h6 font-weight-black text-success">${{ parseFloat(xmlData.infoFactura?.importeTotal || 0).toFixed(2) }}</span>
+                <span class="text-subtitle-1 font-weight-bold text-high-emphasis font-weight-black">TOTAL
+                  FACTURA:</span>
+                <span class="text-h6 font-weight-black text-success">${{ parseFloat(xmlData.infoFactura?.importeTotal ||
+                  0).toFixed(2) }}</span>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Alertas -->
-        <VAlert v-if="error_exist" type="error" variant="tonal" class="rounded-xl mt-2">
-          {{ error_exist }}
-        </VAlert>
-
       </VCardText>
 
+      <!-- Alertas -->
+      <br>
+      <VAlert v-if="error_exist" type="error" variant="tonal" class="rounded-xl mt-2">
+        {{ error_exist }}
+      </VAlert>
+      <br>
       <!-- Footer -->
       <VCardActions class="justify-end px-6 pb-6 pt-2 bg-grey-lighten-4 border-t gap-2">
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          rounded="lg"
-          prepend-icon="ri-close-line"
-          @click="onFormReset"
-        >
+        <VBtn color="secondary" variant="tonal" rounded="lg" prepend-icon="ri-close-line" @click="onFormReset">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="primary"
-          variant="flat"
-          rounded="lg"
-          prepend-icon="ri-upload-cloud-2-line"
-          :loading="loader.loading"
-          :disabled="!selectedFile"
-          @click="storeXml"
-        >
+        <VBtn color="primary" variant="flat" rounded="lg" prepend-icon="ri-upload-cloud-2-line"
+          :loading="loader.loading" :disabled="!selectedFile" @click="storeXml">
           Importar XML
         </VBtn>
       </VCardActions>
@@ -530,10 +511,12 @@ onMounted(() => {
     transform: scale(1);
     opacity: 0.9;
   }
+
   50% {
     transform: scale(1.08);
     opacity: 1;
   }
+
   100% {
     transform: scale(1);
     opacity: 0.9;
@@ -549,6 +532,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

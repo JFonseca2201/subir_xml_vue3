@@ -200,16 +200,16 @@ onMounted(() => {
             </div>
           </VCol>
 
-          <VCol cols="12" md="4" class="d-flex justify-end align-center gap-4">
-            <VBtn color="secondary" size="large" elevation="2"
+          <VCol cols="12" md="4" class="d-flex justify-end align-center gap-3">
+            <VBtn color="secondary" size="large" variant="tonal" class="rounded-lg"
               @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible">
               <VIcon start>
                 ri-file-upload-line
               </VIcon>
               Subir XML
             </VBtn>
-            
-            <VBtn color="primary" size="large" elevation="5"
+
+            <VBtn color="primary" size="large" variant="elevated" class="rounded-lg" elevation="2"
               to="/invoice/manual-purchase">
               <VIcon start>
                 ri-add-circle-line
@@ -258,14 +258,14 @@ onMounted(() => {
           <VCol cols="12" md="4">
             <VRow>
               <!-- Botón Filtrar alineado con los filtros -->
-              <VCol cols="12" md="12" class="d-flex align-end justify-end gap-4">
-                <VBtn color="primary" size="large" rounded="" variant="tonal" @click="list">
+              <VCol cols="12" md="12" class="d-flex align-end justify-end gap-3">
+                <VBtn color="primary" size="large" class="rounded-lg" variant="tonal" @click="list">
                   <VIcon start>
                     ri-search-line
                   </VIcon>
                   Buscar
                 </VBtn>
-                <VBtn color="secondary" size="large" rounded="" variant="tonal" @click="refresh">
+                <VBtn color="secondary" size="large" class="rounded-lg" variant="tonal" @click="refresh">
                   <VIcon start>
                     ri-refresh-line
                   </VIcon>
@@ -338,23 +338,23 @@ onMounted(() => {
               </td>
 
               <td class="text-center">
-                <div class="d-flex justify-center gap-1">
-                  <IconBtn @click="showItem(invoice)">
-                    <VIcon icon="ri-eye-line" />
-                  </IconBtn>
-
-                  <IconBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" color="primary"
-                    title="Procesar Factura" @click="processInvoice(invoice)">
+                <div class="d-flex justify-center gap-2">
+                  <VBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" icon size="small"
+                    variant="tonal" color="success" title="Procesar Factura" @click="processInvoice(invoice)">
                     <VIcon icon="ri-check-line" />
-                  </IconBtn>
-                  <!--
-                    <IconBtn @click="editInvoice(invoice)">
-                    <VIcon icon="ri-pencil-line" />
-                    </IconBtn> 
-                  -->
-                  <IconBtn @click="deleteInvoice(invoice)">
-                    <VIcon icon="ri-delete-bin-6-line" color="error" />
-                  </IconBtn>
+                  </VBtn>
+                  <VBtn v-else icon size="small" variant="tonal" color="success" title="Factura Procesada" disabled>
+                    <VIcon icon="ri-file-check-line" />
+                  </VBtn>
+
+                  <VBtn icon size="small" variant="tonal" color="info" title="Ver Factura" @click="showItem(invoice)">
+                    <VIcon icon="ri-eye-line" />
+                  </VBtn>
+
+                  <VBtn icon size="small" variant="tonal" color="error" title="Eliminar Factura"
+                    @click="deleteInvoice(invoice)">
+                    <VIcon icon="ri-delete-bin-6-line" />
+                  </VBtn>
                 </div>
               </td>
             </tr>
