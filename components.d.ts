@@ -78,6 +78,7 @@ declare module 'vue' {
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./src/@core/components/Notifications.vue')['default']
     NotificationToast: typeof import('./src/components/common/NotificationToast.vue')['default']
+    OfflineOverlay: typeof import('./src/components/OfflineOverlay.vue')['default']
     PartnerAddDialog: typeof import('./src/components/inventory/partners/PartnerAddDialog.vue')['default']
     PartnerDeleteDialog: typeof import('./src/components/inventory/partners/PartnerDeleteDialog.vue')['default']
     PartnerEditDialog: typeof import('./src/components/inventory/partners/PartnerEditDialog.vue')['default']

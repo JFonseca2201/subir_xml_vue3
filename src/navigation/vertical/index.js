@@ -139,9 +139,20 @@ export default [
   },
 
   {
-    title: 'Devolución',
-    icon: { icon: 'ri-loop-right-line' },
-    to: 'second-page',
+    title: 'Devoluciones',
+    icon: { icon: 'ri-arrow-go-back-line' },
+    children: [
+      {
+        title: 'Registrar',
+        to: 'returns-add',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+      {
+        title: 'Listado',
+        to: 'returns-list',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+    ],
   },
   { heading: 'Almacen' },
   {
@@ -155,11 +166,6 @@ export default [
       },
       {
         title: 'Listado',
-        to: 'second-page',
-        icon: { icon: 'ri-bar-chart-line' },
-      },
-      {
-        title: 'Ingresar compra desde un XML',
         icon: { icon: 'ri-roadster-line' },
         to: 'invoice-list',
       },
