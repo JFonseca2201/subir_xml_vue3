@@ -23,50 +23,50 @@ const error_exist = ref("")  // Para mostrar errores si es necesario
 const handleFileUpload = event => {
   const file = event.target.files[0]
 
-    if (file) {
+  if (file) {
 
     console.log("Archivo seleccionado:", file.name)
-        console.log("Tipo de archivo:", file.type)
+    console.log("Tipo de archivo:", file.type)
 
 
-        if (file.type === "application/xml" || file.type === "text/xml" || file.name.endsWith(".xml")) {
+    if (file.type === "application/xml" || file.type === "text/xml" || file.name.endsWith(".xml")) {
       const reader = new FileReader()
 
 
-            reader.onload = function (e) {
+      reader.onload = function (e) {
         const xmlString = e.target.result
 
 
-                console.log("Contenido del XML:", xmlString)
+        console.log("Contenido del XML:", xmlString)
 
 
-                const parser = new XMLParser()
-                const result = parser.parse(xmlString)
-                console.log("Datos parseados del XML:", result)
-                if (result.autorizacion && result.autorizacion.comprobante) {
+        const parser = new XMLParser()
+        const result = parser.parse(xmlString)
+        console.log("Datos parseados del XML:", result)
+        if (result.autorizacion && result.autorizacion.comprobante) {
           const innerXmlString = result.autorizacion.comprobante.replace("<![CDATA[", "").replace("]]>", "")
-                    const innerParser = new XMLParser()
-                    const innerResult = innerParser.parse(innerXmlString)
+          const innerParser = new XMLParser()
+          const innerResult = innerParser.parse(innerXmlString)
 
-                    if (innerResult.factura) {
+          if (innerResult.factura) {
             xmlData.value = innerResult.factura
-                        error_exist.value = ""
-                    } else {
+            error_exist.value = ""
+          } else {
             error_exist.value = "Error al parsear XML interno. No se encontró la factura."
-                    }
+          }
         } else {
           error_exist.value = "Error al parsear XML. No se encontró el nodo de 'comprobante'."
-                }
+        }
       };
 
       // Leer el archivo como texto
       reader.readAsText(file)
-        } else {
+    } else {
       error_exist.value = "Por favor, selecciona un archivo XML válido."
-        }
+    }
   } else {
     error_exist.value = "No se ha seleccionado ningún archivo."
-    }
+  }
 }
 
 // Radios con iconos (tipo string para compatibilidad)
@@ -127,8 +127,8 @@ const storeXml = async () => {
 
   if (!selectedFile) {
     error_exist.value = "Selecciona un archivo XML primero"
-    
-return
+
+    return
   }
 
   try {
@@ -148,8 +148,8 @@ return
         msg.value = data.message || 'Error al importar XML'
         if (response.status === 409) {
           error_exist.value = data.message || 'La factura ya ha sido importada'
-          
-return
+
+          return
         }
         error_exist.value = data.message || 'Error al importar XML'
       },
@@ -196,41 +196,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
-v-model="props.isDialogVisible"
-           max-width="800"
-persistent transition="dialog-bottom-transition"
->
+  <VDialog v-model="props.isDialogVisible" max-width="800" persistent transition="dialog-bottom-transition">
     <VCard class="rounded-xl">
-      <VOverlay
-        :model-value="loader.loading"
-        class="align-center justify-center"
-        contained
-        persistent
-      >
-        <VProgressCircular
-          color="primary"
-          indeterminate
-          size="64"
-        />
+      <VOverlay :model-value="loader.loading" class="align-center justify-center" contained persistent>
+        <VProgressCircular color="primary" indeterminate size="64" />
       </VOverlay>
 
       <!-- Header -->
       <VCardTitle class="d-flex align-center justify-space-between">
         <div class="d-flex align-center gap-2">
-          <VIcon
-size="22"
-                 color="primary"
->
+          <VIcon size="22" color="primary">
             ri-file-upload-line
           </VIcon>
           <span class="text-h6 font-weight-bold">Importar factura XML</span>
         </div>
-        <VBtn
-icon
-              variant="text"
-@click="emit('update:isDialogVisible', false)"
->
+        <VBtn icon variant="text" @click="emit('update:isDialogVisible', false)">
           <VIcon>ri-close-line</VIcon>
         </VBtn>
       </VCardTitle>
@@ -240,33 +220,18 @@ icon
       <!-- Contenido -->
       <VCardText class="pt-6 d-flex flex-column gap-4">
         <!-- Selector de XML -->
-        <VFileInput
-          accept=".xml"
-          label="Seleccionar archivo XML"
-variant="outlined" clearable
-          prepend-inner-icon="ri-file-xml-line"
-          @change="onFileSelected"
-        />
+        <VFileInput accept=".xml" label="Seleccionar archivo XML" variant="outlined" clearable
+          prepend-inner-icon="ri-file-xml-line" @change="onFileSelected" />
 
         <!-- Radios con iconos compactos -->
-        <CustomRadiosWithIcon
-          v-model:selected-radio="selectedRadio"
-          :radio-content="radioContent"
-          :grid-column="{ sm: '3', cols: '12' }"
-          class="square-radio"
-        />
+        <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
+          :grid-column="{ sm: '3', cols: '12' }" class="square-radio" />
 
 
 
         <!-- Mostrar información del XML cargado solo si xmlData está disponible -->
-        <div
-v-if="xmlData && xmlData.infoTributaria"
-             class="mt-4"
->
-          <VCard
-class="rounded-xl"
-                 variant="elevated"
->
+        <div v-if="xmlData && xmlData.infoTributaria" class="mt-4">
+          <VCard class="rounded-xl" variant="elevated">
             <VCardTitle class="d-flex align-center gap-2 pa-4 rounded-t-xl">
               <VIcon size="24">
                 ri-file-text-line
@@ -278,20 +243,14 @@ class="rounded-xl"
               <!-- 📋 Información principal -->
               <div class="mb-4">
                 <div class="d-flex align-center gap-2 mb-3">
-                  <VIcon
-size="20"
-                         color="primary"
->
+                  <VIcon size="20" color="primary">
                     ri-building-line
                   </VIcon>
                   <span class="text-body-1 font-weight-medium">Proveedor:</span>
                   {{ xmlData.infoTributaria?.razonSocial || 'N/A' }}
                 </div>
                 <div class="d-flex align-center gap-2 mb-3">
-                  <VIcon
-size="20"
-                         color="success"
->
+                  <VIcon size="20" color="success">
                     ri-hashtag
                   </VIcon>
                   <span class="text-body-1 font-weight-medium">Número de Factura:</span>
@@ -299,10 +258,7 @@ size="20"
                   {{ (String(xmlData.infoTributaria?.secuencial || '0')).padStart(9, '0') }}
                 </div>
                 <div class="d-flex align-center gap-2">
-                  <VIcon
-size="20"
-                         color="info"
->
+                  <VIcon size="20" color="info">
                     ri-calendar-line
                   </VIcon>
                   <span class="text-body-1 font-weight-medium">Fecha de Emisión:</span>
@@ -313,18 +269,11 @@ size="20"
               <!-- Tabla de productos con resumen financiero como tfoot -->
               <div>
                 <div class="d-flex align-center gap-2 mb-3">
-                  <VIcon
-size="20"
-                         color="warning"
->
+                  <VIcon size="20" color="warning">
                     ri-shopping-cart-line
                   </VIcon>
                   <span class="text-h6 font-weight-bold">Productos</span>
-                  <VChip
-color="warning"
-                         variant="tonal"
-size="small"
->
+                  <VChip color="warning" variant="tonal" size="small">
                     {{ getDetallesArray()?.length || 0 }} items
                   </VChip>
                 </div>
@@ -333,41 +282,25 @@ size="small"
                   <thead class="bg-grey-lighten-4">
                     <tr>
                       <th class="text-left">
-                        <VIcon
-size="16"
-                               color="primary"
-class="mr-1"
->
+                        <VIcon size="16" color="primary" class="mr-1">
                           ri-price-tag-3-line
                         </VIcon>
                         Descripción
                       </th>
                       <th class="text-center">
-                        <VIcon
-size="16"
-                               color="success"
-class="mr-1"
->
+                        <VIcon size="16" color="success" class="mr-1">
                           ri-stack-line
                         </VIcon>
                         Cantidad
                       </th>
                       <th class="text-right">
-                        <VIcon
-size="16"
-                               color="info"
-class="mr-1"
->
+                        <VIcon size="16" color="info" class="mr-1">
                           ri-money-dollar-circle-line
                         </VIcon>
                         Precio Unitario
                       </th>
                       <th class="text-right">
-                        <VIcon
-size="16"
-                               color="warning"
-class="mr-1"
->
+                        <VIcon size="16" color="warning" class="mr-1">
                           ri-wallet-line
                         </VIcon>
                         Total Sin Impuesto
@@ -375,28 +308,19 @@ class="mr-1"
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(item, index) in getDetallesArray()"
+                    <tr v-for="(item, index) in getDetallesArray()"
                       :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                      class="hover:bg-grey-lighten-3"
-                    >
+                      class="hover:bg-grey-lighten-3">
                       <td class="font-weight-medium">
                         <div class="d-flex align-center gap-2">
-                          <VIcon
-size="16"
-                                 color="primary"
->
+                          <VIcon size="16" color="primary">
                             ri-price-tag-3-line
                           </VIcon>
                           {{ item.descripcion || 'Sin descripción' }}
                         </div>
                       </td>
                       <td class="text-center">
-                        <VChip
-color="success"
-                               variant="tonal"
-size="small"
->
+                        <VChip color="success" variant="tonal" size="small">
                           {{ parseFloat(item.cantidad || 0).toFixed(2) }}
                         </VChip>
                       </td>
@@ -410,19 +334,13 @@ size="small"
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td
-colspan="4"
-                          class="pa-0"
->
+                      <td colspan="4" class="pa-0">
                         <VCard class="elevation-1 mt-4">
                           <VCardText class="pa-4">
                             <div class="d-flex justify-end">
                               <div style="width: 300px;">
                                 <div class="d-flex align-center gap-2 mb-3">
-                                  <VIcon
-size="20"
-                                         color="success"
->
+                                  <VIcon size="20" color="success">
                                     ri-calculator-line
                                   </VIcon>
                                   <span class="text-h6 font-weight-bold">Resumen
@@ -433,10 +351,7 @@ size="20"
                                   <!-- Subtotal (totalSinImpuestos + descuento) -->
                                   <div class="d-flex justify-space-between align-center py-2 border-bottom">
                                     <div class="d-flex align-center gap-2">
-                                      <VIcon
-size="16"
-                                             color="info"
->
+                                      <VIcon size="16" color="info">
                                         ri-subtract-line
                                       </VIcon>
                                       <span class="text-body-2 font-weight-medium">Subtotal:</span>
@@ -453,10 +368,7 @@ size="16"
                                   <!-- Descuento -->
                                   <div class="d-flex justify-space-between align-center py-2 border-bottom">
                                     <div class="d-flex align-center gap-2">
-                                      <VIcon
-size="16"
-                                             color="error"
->
+                                      <VIcon size="16" color="error">
                                         ri-percent-line
                                       </VIcon>
                                       <span class="text-body-2 font-weight-medium">Descuento:</span>
@@ -471,10 +383,7 @@ size="16"
                                   <!-- IVA -->
                                   <div class="d-flex justify-space-between align-center py-2 border-bottom">
                                     <div class="d-flex align-center gap-2">
-                                      <VIcon
-size="16"
-                                             color="warning"
->
+                                      <VIcon size="16" color="warning">
                                         ri-funds-line
                                       </VIcon>
                                       <span class="text-body-2 font-weight-medium">IVA
@@ -490,10 +399,7 @@ size="16"
                                   <!-- Total -->
                                   <div class="d-flex justify-space-between align-center pt-3">
                                     <div class="d-flex align-center gap-2">
-                                      <VIcon
-size="18"
-                                             color="success"
->
+                                      <VIcon size="18" color="success">
                                         ri-money-dollar-circle-line
                                       </VIcon>
                                       <span class="text-h6 font-weight-bold">TOTAL:</span>
@@ -519,11 +425,7 @@ size="18"
         </div>
         <!-- Alertas -->
         <div class="d-flex flex-column gap-2">
-          <VAlert
-v-if="error_exist"
-                  type="error"
-variant="tonal"
->
+          <VAlert v-if="error_exist" type="error" variant="tonal">
             {{ error_exist }}
           </VAlert>
         </div>
@@ -531,21 +433,13 @@ variant="tonal"
 
       <!-- 🎯 Footer -->
       <VCardActions class="justify-end px-6 pb-4 gap-3">
-        <VBtn
-variant="tonal"
-              color="primary"
-:loading="loader.loading" @click="storeXml"
->
+        <VBtn variant="tonal" color="primary" :loading="loader.loading" @click="storeXml">
           <VIcon left>
             ri-upload-cloud-2-line
           </VIcon> &nbsp; Importar XML
         </VBtn>
 
-        <VBtn
-variant="tonal"
-              color="error"
-@click="onFormReset"
->
+        <VBtn variant="tonal" color="error" @click="onFormReset">
           <VIcon left>
             ri-close-circle-line
           </VIcon> &nbsp; Cancelar
@@ -555,35 +449,31 @@ variant="tonal"
   </VDialog>
 
   <!-- Notificación Toast -->
-  <NotificationToast
-v-model:show="notificationShow"
-                     :message="notificationMessage"
-:type="notificationType"
-/>
+  <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
 
 <style scoped>
 /* 🔹 Botones de radios cuadrados y compactos */
 .square-radio button {
-    padding: 0 !important;
-    font-size: 0.6rem !important;
-    width: 36px !important;
-    height: 36px !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: unset !important;
-    line-height: 1 !important;
+  padding: 0 !important;
+  font-size: 0.6rem !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: unset !important;
+  line-height: 1 !important;
 }
 
 .square-radio .icon-class {
-    width: 16px !important;
-    height: 16px !important;
-    margin-bottom: 1px;
+  width: 16px !important;
+  height: 16px !important;
+  margin-bottom: 1px;
 }
 
 .square-radio {
-    gap: 2px;
+  gap: 2px;
 }
 </style>
