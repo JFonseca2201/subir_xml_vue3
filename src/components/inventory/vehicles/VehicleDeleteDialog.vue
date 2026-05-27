@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import { getVehicleTypeNameById } from '@/data/vehicleTypes.js'
 
 const props = defineProps({
   isDialogVisible: {
@@ -20,29 +21,11 @@ const emit = defineEmits(['update:isDialogVisible', 'deleteVehicle'])
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 
-// Opciones para mostrar labels
-const vehicleTypeOptions = ref([
-  { title: 'Sedán', value: 'sedan' },
-  { title: 'Hatchback', value: 'hatchback' },
-  { title: 'Camioneta', value: 'camioneta' },
-  { title: 'SUV', value: 'suv' },
-  { title: 'Furgoneta', value: 'furgoneta' },
-  { title: 'Camión', value: 'camion' },
-  { title: 'Bus', value: 'bus' },
-  { title: 'Van', value: 'van' },
-  { title: 'Motocicleta', value: 'motocicleta' },
-  { title: 'Pickup', value: 'pickup' },
-  { title: 'Minivan', value: 'minivan' },
-  { title: 'Deportivo', value: 'deportivo' },
-  { title: 'Otro', value: 'otro' },
-])
-
 // Computed properties para obtener labels
 const getVehicleTypeLabel = computed(() => {
   if (!props.vehicleSelected?.vehicle_type) return 'No especificado'
-  const option = vehicleTypeOptions.value.find(opt => opt.value === props.vehicleSelected.vehicle_type)
   
-  return option ? option.title : props.vehicleSelected.vehicle_type
+  return getVehicleTypeNameById(props.vehicleSelected.vehicle_type)
 })
 
 // Computed para obtener icono según tipo de vehículo

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { getBrandNameById } from '@/data/vehicleBrands.js'
+import { getVehicleTypeNameById, getVehicleTypeColor as getTypeColor } from '@/data/vehicleTypes.js'
 
 const props = defineProps({
   isDialogVisible: {
@@ -15,29 +16,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:isDialogVisible'])
 
-// Opciones para mostrar labels
-const vehicleTypeOptions = ref([
-  { title: 'Sedán', value: 'sedan' },
-  { title: 'Hatchback', value: 'hatchback' },
-  { title: 'Camioneta', value: 'camioneta' },
-  { title: 'SUV', value: 'suv' },
-  { title: 'Furgoneta', value: 'furgoneta' },
-  { title: 'Camión', value: 'camion' },
-  { title: 'Bus', value: 'bus' },
-  { title: 'Van', value: 'van' },
-  { title: 'Motocicleta', value: 'motocicleta' },
-  { title: 'Pickup', value: 'pickup' },
-  { title: 'Minivan', value: 'minivan' },
-  { title: 'Deportivo', value: 'deportivo' },
-  { title: 'Otro', value: 'otro' },
-])
-
 // Computed properties para obtener labels
 const getVehicleTypeLabel = computed(() => {
   if (!props.vehicleData?.vehicle_type) return 'No especificado'
-  const option = vehicleTypeOptions.value.find(opt => opt.value === props.vehicleData.vehicle_type)
   
-  return option ? option.title : props.vehicleData.vehicle_type
+  return getVehicleTypeNameById(props.vehicleData.vehicle_type)
 })
 
 // Computed para obtener nombre de marca
@@ -118,20 +101,9 @@ const getVehicleIcon = computed(() => {
 
 // Computed para obtener color según tipo
 const getVehicleTypeColor = computed(() => {
-  const type = props.vehicleData?.vehicle_type
-
-  const colors = {
-    'automovil': 'primary',
-    'camioneta': 'success',
-    'motocicleta': 'warning',
-    'camion': 'error',
-    'bus': 'info',
-    'van': 'secondary',
-    'otro': 'grey',
-  }
-
+  if (!props.vehicleData?.vehicle_type) return 'grey'
   
-  return colors[type] || 'grey'
+  return getTypeColor(props.vehicleData.vehicle_type)
 })
 
 // Cerrar diálogo

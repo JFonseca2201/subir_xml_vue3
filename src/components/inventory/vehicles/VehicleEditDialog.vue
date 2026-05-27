@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { getBrandOptions, getBrandNameById, getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
 import { formatEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
+import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
 
 const props = defineProps({
   isDialogVisible: {
@@ -65,20 +66,7 @@ const vehicleForm = ref({
 })
 
 // --- OPCIONES ---
-const vehicleTypeOptions = [
-  { title: 'Sedán', value: 'sedan' },
-  { title: 'Hatchback', value: 'hatchback' },
-  { title: 'Camioneta', value: 'camioneta' },
-  { title: 'SUV', value: 'suv' },
-  { title: 'Furgoneta', value: 'furgoneta' },
-  { title: 'Camión', value: 'camion' },
-  { title: 'Bus', value: 'bus' },
-  { title: 'Van', value: 'van' },
-  { title: 'Motocicleta', value: 'motocicleta' },
-  { title: 'Pickup', value: 'pickup' },
-  { title: 'Deportivo', value: 'deportivo' },
-  { title: 'Otro', value: 'otro' },
-]
+const vehicleTypeOptions = getVehicleTypeOptions()
 
 const colorOptions = [
   { title: 'Rojo', value: 'rojo' },
