@@ -352,7 +352,14 @@ onMounted(() => {
     <VDivider />
 
     <!-- Tabla de vehículos -->
-    <VCardText class="pa-0">
+    <VCardText class="pa-0 position-relative">
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
       <VTable
         hover
         class="vehicle-table"
@@ -373,18 +380,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading">
-            <td
-              colspan="8"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
-            </td>
-          </tr>
-          <tr v-else-if="!vehicles.length">
+          <tr v-if="!loading && !vehicles.length">
             <td
               colspan="8"
               class="text-center text-medium-emphasis py-6"
@@ -400,9 +396,9 @@ onMounted(() => {
           </tr>
           <tr
             v-for="vehicle in vehicles"
-            v-else
             :key="vehicle.id"
             class="hover:bg-grey-lighten-4 transition"
+            :class="{ 'opacity-50': loading }"
           >
             <!-- Debug: log del status -->
             {{ console.log('🚗 Vehículo ID:', vehicle.id, 'Status:', vehicle.status, 'Tipo:', typeof
