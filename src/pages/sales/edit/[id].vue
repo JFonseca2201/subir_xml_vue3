@@ -617,7 +617,7 @@ onMounted(() => {
               </div>
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]" variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto" required color="primary" readonly />
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]" variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto" required color="primary" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" :disabled="sale.status === 'canceled'" label="Fecha de Servicio *" type="date" :rules="[requiredRule]" variant="outlined" density="comfortable" prepend-inner-icon="ri-calendar-line" hide-details="auto" required color="primary" />
