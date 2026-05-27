@@ -944,7 +944,11 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedClient.n_document || "-" }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedClient.phone || "-" }} • {{
                         selectedClient.address || "-"
+<<<<<<< HEAD
                       }}</div>
+=======
+                        }}</div>
+>>>>>>> 10955e1 (NUEVO MEERGE DE RAMA COMPRAS FRONTEND)
                     </div>
                   </div>
                 </VCol>
@@ -969,7 +973,11 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedVehicle.license_plate }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedVehicle.model || "-" }} • {{
                         selectedVehicle.year || "-"
+<<<<<<< HEAD
                       }}</div>
+=======
+                        }}</div>
+>>>>>>> 10955e1 (NUEVO MEERGE DE RAMA COMPRAS FRONTEND)
                     </div>
                   </div>
                   <div class="mt-4" v-if="selectedVehicle">
@@ -982,7 +990,83 @@ onMounted(async () => {
             </VCardText>
           </VCard>
 
+<<<<<<< HEAD
 
+=======
+          <!-- Tipo de Documento -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center mb-5">
+                <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
+                  <VIcon icon="ri-file-list-3-line" size="24" />
+                </VAvatar>
+                <div>
+                  <h3 class="text-h6 font-weight-bold mb-0">Tipo de Documento</h3>
+                  <p class="text-caption text-grey mb-0">Selecciona el tipo de comprobante comercial</p>
+                </div>
+              </div>
+              <VRow>
+                <VCol cols="12" md="4">
+                  <VCard
+                    :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
+                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
+                    @click="sale.document_type = 'quote'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-file-text-line" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold"
+                          :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
+                          Cotización</div>
+                        <div class="text-caption text-medium-emphasis">Documento de presupuesto</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <VCard
+                    :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'"
+                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
+                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-file-list-3-line"
+                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold"
+                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
+                          Nota de Venta</div>
+                        <div class="text-caption text-medium-emphasis">Documento de venta</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <VCard
+                    :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'"
+                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
+                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'invoice' ? 'red' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-bill-line" :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold"
+                          :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'">Factura
+                        </div>
+                        <div class="text-caption text-medium-emphasis">Documento fiscal</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+>>>>>>> 10955e1 (NUEVO MEERGE DE RAMA COMPRAS FRONTEND)
 
           <!-- Productos y Servicios -->
           <VCard class="elevation-2 mb-4">
@@ -1107,9 +1191,15 @@ onMounted(async () => {
                     </div>
                     <VDivider class="my-2 border-opacity-50" />
                     <div class="d-flex justify-space-between align-center">
+<<<<<<< HEAD
                       <span class="text-body-1 font-weight-bold">
                         {{ sale.document_type === 'quote' ? 'Total:' : 'Total a pagar:' }}
                       </span>
+=======
+                      <span class="text-body-1 font-weight-bold">{{ sale.document_type === 'quote' ? 'Total:' : 'Total a
+                        Pagar:'
+                        }}</span>
+>>>>>>> 10955e1 (NUEVO MEERGE DE RAMA COMPRAS FRONTEND)
                       <span class="text-h5 font-weight-black text-primary">${{ total.toFixed(2) }}</span>
                     </div>
                   </VCardText>
@@ -1288,7 +1378,11 @@ onMounted(async () => {
                     <td>{{ order.client?.name }} {{ order.client?.surname }}<br><small class="text-grey">{{
                       order.client?.n_document }}</small></td>
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
+<<<<<<< HEAD
                       order.vehicle?.model }}</small></td>
+=======
+                        order.vehicle?.model }}</small></td>
+>>>>>>> 10955e1 (NUEVO MEERGE DE RAMA COMPRAS FRONTEND)
                     <td>{{ new Date(order.entry_date).toLocaleDateString() }}</td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="importWorkOrder(order)">
