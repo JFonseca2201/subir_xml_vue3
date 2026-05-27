@@ -422,15 +422,21 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id" label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line" clearable />
+                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
+                            label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
+                            clearable />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name" item-value="id" label="Provincia" placeholder="Seleccione Provincia" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
+                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
+                            item-value="id" label="Provincia" placeholder="Seleccione Provincia"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
+                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
+                            item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
                     </VCol>
 
                     <VDivider class="my-6" />

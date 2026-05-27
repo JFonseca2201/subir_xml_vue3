@@ -243,7 +243,7 @@ const handleClientFinalUpdated = clientData => {
   // Validar que clientData exista y tenga id
   if (!clientData || !clientData.id) {
     console.error("Datos del cliente inválidos:", clientData)
-    
+
     return
   }
 
@@ -257,7 +257,7 @@ const handleClientCompanyUpdated = clientData => {
   // Validar que clientData exista y tenga id
   if (!clientData || !clientData.id) {
     console.error("Datos del cliente inválidos:", clientData)
-    
+
     return
   }
 
@@ -268,7 +268,7 @@ const handleClientCompanyUpdated = clientData => {
 // Truncar texto
 const truncate = (text, length = 50) => {
   if (!text) return ''
-  
+
   return text.length > length ? text.slice(0, length) + '…' : text
 }
 
@@ -283,25 +283,14 @@ onMounted(() => {
   <VCard>
     <VCardTitle class="d-flex align-center justify-space-between pa-4">
       <div class="d-flex align-center">
-        <VIcon
-          icon="ri-user-3-line"
-          class="me-2"
-        />
+        <VIcon icon="ri-user-3-line" class="me-2" />
         <span class="text-h5">Gestión de Clientes</span>
       </div>
       <div class="d-flex gap-2">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-user-add-line"
-          @click="addNewClientFinal"
-        >
+        <VBtn color="primary" prepend-icon="ri-user-add-line" @click="addNewClientFinal">
           Cliente Final
         </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-building-line"
-          @click="addClient"
-        >
+        <VBtn color="primary" prepend-icon="ri-building-line" @click="addClient">
           Cliente Empresa
         </VBtn>
       </div>
@@ -313,60 +302,23 @@ onMounted(() => {
     <VCardText class="pa-4">
       <VForm ref="searchFormRef">
         <VRow>
-          <VCol
-            cols="12"
-            md="7"
-          >
+          <VCol cols="12" md="7">
             <VRow>
-              <VCol
-                cols="12"
-                md="12"
-              >
-                <VTextField
-                  v-model="searchForm.search"
-                  label="Buscar cliente"
-                  placeholder="Nombre, email, documento..."
-                  prepend-inner-icon="ri-search-line"
-                  clearable
-                  hide-details
-                />
+              <VCol cols="12" md="12">
+                <VTextField v-model="searchForm.search" label="Buscar cliente" placeholder="Nombre, email, documento..."
+                  prepend-inner-icon="ri-search-line" clearable hide-details />
               </VCol>
             </VRow>
           </VCol>
-          <VCol
-            cols="12"
-            md="5"
-          >
+          <VCol cols="12" md="5">
             <VRow>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VSelect
-                  v-model="searchForm.type_client"
-                  :items="typeClientOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Tipo de cliente"
-                  placeholder="Todos"
-                  clearable
-                  hide-details
-                />
+              <VCol cols="12" md="6">
+                <VSelect v-model="searchForm.type_client" :items="typeClientOptions" item-title="title"
+                  item-value="value" label="Tipo de cliente" placeholder="Todos" clearable hide-details />
               </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VSelect
-                  v-model="searchForm.state"
-                  :items="stateOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Estado"
-                  placeholder="Todos"
-                  clearable
-                  hide-details
-                />
+              <VCol cols="12" md="6">
+                <VSelect v-model="searchForm.state" :items="stateOptions" item-title="title" item-value="value"
+                  label="Estado" placeholder="Todos" clearable hide-details />
               </VCol>
             </VRow>
           </VCol>
@@ -378,10 +330,7 @@ onMounted(() => {
 
     <!-- Tabla de clientes -->
     <VCardText class="pa-0">
-      <VTable
-        hover
-        class="client-table"
-      >
+      <VTable hover class="client-table">
         <thead class="bg-primary text-white">
           <tr>
             <th>#</th>
@@ -398,36 +347,19 @@ onMounted(() => {
         </thead>
         <tbody>
           <tr v-if="loading">
-            <td
-              colspan="8"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
+            <td colspan="8" class="text-center pa-4">
+              <VProgressCircular indeterminate color="primary" />
             </td>
           </tr>
           <tr v-else-if="!clients.length">
-            <td
-              colspan="8"
-              class="text-center text-medium-emphasis py-6"
-            >
-              <VIcon
-                size="32"
-                class="mb-2"
-              >
+            <td colspan="8" class="text-center text-medium-emphasis py-6">
+              <VIcon size="32" class="mb-2">
                 ri-user-line
               </VIcon>
               <div>No hay clientes registrados</div>
             </td>
           </tr>
-          <tr
-            v-for="client in clients"
-            v-else
-            :key="client.id"
-            class="hover:bg-grey-lighten-4 transition"
-          >
+          <tr v-for="client in clients" v-else :key="client.id" class="hover:bg-grey-lighten-4 transition">
             <td class="font-weight-medium">
               {{ client.id }}
             </td>
@@ -440,11 +372,7 @@ onMounted(() => {
               </div>
             </td>
             <td>
-              <VChip
-                :color="client.type_client === '1' ? 'primary' : 'secondary'"
-                variant="tonal"
-                size="small"
-              >
+              <VChip :color="client.type_client === '1' ? 'primary' : 'secondary'" variant="tonal" size="small">
                 {{ client.type_client === '1' ? 'Natural' : 'Jurídico' }}
               </VChip>
             </td>
@@ -462,11 +390,7 @@ onMounted(() => {
               {{ client.email || '-' }}
             </td>
             <td>
-              <VChip
-                :color="client.state === 1 ? 'success' : 'error'"
-                variant="tonal"
-                size="small"
-              >
+              <VChip :color="client.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
                 {{ client.state === 1 ? 'Activo' : 'Inactivo' }}
               </VChip>
             </td>
@@ -479,10 +403,7 @@ onMounted(() => {
                   <VIcon icon="ri-pencil-line" />
                 </IconBtn>
                 <IconBtn @click="deleteClient(client)">
-                  <VIcon
-                    icon="ri-delete-bin-6-line"
-                    color="error"
-                  />
+                  <VIcon icon="ri-delete-bin-6-line" color="error" />
                 </IconBtn>
               </div>
             </td>
@@ -499,53 +420,28 @@ onMounted(() => {
         <div class="text-caption text-medium-emphasis">
           Mostrando {{ clients.length }} de {{ totalItems }} clientes
         </div>
-        <VPagination
-          v-model="currentPage"
-          :length="totalPages"
-          rounded="circle"
-          :total-visible="7"
-          @update:model-value="loadClients"
-        />
+        <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
+          @update:model-value="loadClients" />
       </div>
     </VCardActions>
   </VCard>
 
-  <ClientFinalAddDialog
-    v-if="isClientFinalAddDialogVisible"
-    v-model:isDialogVisible="isClientFinalAddDialogVisible"
-    @add-client-final="handleClientFinalAdded"
-  />
+  <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible" v-model:isDialogVisible="isClientFinalAddDialogVisible"
+    @add-client-final="handleClientFinalAdded" />
 
-  <ClientCompanyAddDialog
-    v-if="isClientCompanyAddDialogVisible"
-    v-model:isDialogVisible="isClientCompanyAddDialogVisible"
-    @add-client-company="handleClientCompanyAdded"
-  />
+  <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
+    v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientCompanyAdded" />
 
-  <ClientFinalEditDialog
-    v-if="isClientFinalEditDialogVisible"
-    v-model:isDialogVisible="isClientFinalEditDialogVisible"
-    :client-data="clientToEdit"
-    @client-updated="handleClientFinalUpdated"
-  />
+  <ClientFinalEditDialog v-if="isClientFinalEditDialogVisible" v-model:isDialogVisible="isClientFinalEditDialogVisible"
+    :client-data="clientToEdit" @client-updated="handleClientFinalUpdated" />
 
-  <ClientCompanyEditDialog
-    v-if="isClientCompanyEditDialogVisible"
-    v-model:isDialogVisible="isClientCompanyEditDialogVisible"
-    :client-data="companyToEdit"
-    @client-updated="handleClientCompanyUpdated"
-  />
+  <ClientCompanyEditDialog v-if="isClientCompanyEditDialogVisible"
+    v-model:isDialogVisible="isClientCompanyEditDialogVisible" :client-data="companyToEdit"
+    @client-updated="handleClientCompanyUpdated" />
 
-  <ClientShowDialog
-    v-if="isClientShowDialogVisible"
-    v-model:isDialogVisible="isClientShowDialogVisible"
-    :client-data="clientToShow"
-  />
+  <ClientShowDialog v-if="isClientShowDialogVisible" v-model:isDialogVisible="isClientShowDialogVisible"
+    :client-data="clientToShow" />
 
-  <ClientDeleteDialog
-    v-if="deleteDialog"
-    v-model:isDialogVisible="deleteDialog"
-    :client-selected="clientToDelete"
-    @delete-client="handleClientDeleted"
-  />
+  <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
+    @delete-client="handleClientDeleted" />
 </template>

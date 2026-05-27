@@ -96,7 +96,7 @@ const validateEcuadorianCedula = cedula => {
   }
 
   const tercerDigito = parseInt(cleanCedula.substring(2, 3))
-  if (tercerDigito < 0 || tercerDigito > 5) {
+  if (tercerDigito < 0 || tercerDigito > 6) {
     return false
   }
 
@@ -134,7 +134,10 @@ const rules = {
   n_document: [
     v => !!v || 'El número de documento es requerido',
     v => (v && v.length >= 5) || 'El documento debe tener al menos 5 caracteres',
-    v => validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida',
+    v => {
+      if (clientForm.value.type_document !== 1) return true
+      return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida'
+    },
   ],
   phone: [
     v => !v || /^[0-9+\-\s()]+$/.test(v) || 'Teléfono inválido',
@@ -457,8 +460,8 @@ onMounted(() => {
 
           <VCol cols="12" md="4" class="mb-3">
             <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id"
-              label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line" clearable
-              :disabled="!clientForm.ubigeo_provincia" />
+              label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line"
+              clearable :disabled="!clientForm.ubigeo_provincia" />
           </VCol>
 
           <VDivider class="my-4" />

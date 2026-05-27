@@ -379,15 +379,23 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id" label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line" clearable class="v-input--density-comfortable" />
+                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
+                            label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line" clearable
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name" item-value="id" label="Provincia" placeholder="Seleccione Provincia" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" class="v-input--density-comfortable" />
+                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
+                            item-value="id" label="Provincia" placeholder="Seleccione Provincia"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region"
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" class="v-input--density-comfortable" />
+                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
+                            item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia"
+                            class="v-input--density-comfortable" />
                     </VCol>
 
                     <VDivider class="my-6" />

@@ -267,6 +267,7 @@ const total = computed(() => {
 })
 
 // Computed para verificar si es cotización
+const originalDocumentType = ref('')
 const isQuote = computed(() => {
   return sale.value.document_type === 'quote'
 })
@@ -314,6 +315,7 @@ const loadSaleData = async () => {
     }
 
     const saleData = saleRes.data || saleRes
+    originalDocumentType.value = saleData.document_type
 
     sale.value = {
       document_type: saleData.document_type,
@@ -541,6 +543,64 @@ onMounted(() => {
     <VForm ref="formRef" @submit.prevent="submitForm">
       <VRow>
         <VCol cols="12">
+          <!-- Tipo de Documento -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center mb-5">
+                <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
+                  <VIcon icon="ri-file-list-3-line" size="24" />
+                </VAvatar>
+                <div>
+                  <h3 class="text-h6 font-weight-bold mb-0">Tipo de Documento</h3>
+                  <p class="text-caption text-grey mb-0">Selecciona el tipo de comprobante comercial</p>
+                </div>
+              </div>
+              <VRow>
+                <VCol v-if="originalDocumentType === 'quote'" cols="12" md="4">
+                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'quote'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-file-text-line" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold" :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">Cotización</div>
+                        <div class="text-caption text-medium-emphasis">Documento de presupuesto</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+                
+                <VCol cols="12" :md="originalDocumentType === 'quote' ? 4 : 6">
+                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-file-list-3-line" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold" :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">Nota de Venta</div>
+                        <div class="text-caption text-medium-emphasis">Documento de venta</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+
+                <VCol cols="12" :md="originalDocumentType === 'quote' ? 4 : 6">
+                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
+                    <div class="pa-3 d-flex align-center gap-3">
+                      <VAvatar :color="sale.document_type === 'invoice' ? 'red' : 'grey-lighten-2'" size="40">
+                        <VIcon icon="ri-bill-line" :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
+                      </VAvatar>
+                      <div>
+                        <div class="font-weight-bold" :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'">Factura</div>
+                        <div class="text-caption text-medium-emphasis">Documento fiscal</div>
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
           <!-- Datos Generales -->
           <VCard class="elevation-2 mb-4">
             <VCardText class="pa-6">
@@ -622,63 +682,7 @@ onMounted(() => {
             </VCardText>
           </VCard>
 
-          <!-- Tipo de Documento -->
-          <VCard class="elevation-2 mb-4">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center mb-5">
-                <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-file-list-3-line" size="24" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h6 font-weight-bold mb-0">Tipo de Documento</h3>
-                  <p class="text-caption text-grey mb-0">Selecciona el tipo de comprobante comercial</p>
-                </div>
-              </div>
-              <VRow>
-                <VCol cols="12" md="4">
-                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'quote'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="40">
-                        <VIcon icon="ri-file-text-line" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
-                      </VAvatar>
-                      <div>
-                        <div class="font-weight-bold" :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">Cotización</div>
-                        <div class="text-caption text-medium-emphasis">Documento de presupuesto</div>
-                      </div>
-                    </div>
-                  </VCard>
-                </VCol>
-                
-                <VCol cols="12" md="4">
-                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="40">
-                        <VIcon icon="ri-file-list-3-line" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'" />
-                      </VAvatar>
-                      <div>
-                        <div class="font-weight-bold" :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">Nota de Venta</div>
-                        <div class="text-caption text-medium-emphasis">Documento de venta</div>
-                      </div>
-                    </div>
-                  </VCard>
-                </VCol>
 
-                <VCol cols="12" md="4">
-                  <VCard :disabled="sale.status === 'canceled'" :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'" class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined" @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'invoice' ? 'red' : 'grey-lighten-2'" size="40">
-                        <VIcon icon="ri-bill-line" :color="sale.document_type === 'invoice' ? 'white' : 'grey'" />
-                      </VAvatar>
-                      <div>
-                        <div class="font-weight-bold" :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'">Factura</div>
-                        <div class="text-caption text-medium-emphasis">Documento fiscal</div>
-                      </div>
-                    </div>
-                  </VCard>
-                </VCol>
-              </VRow>
-            </VCardText>
-          </VCard>
 
           <!-- Productos y Servicios -->
           <VCard class="elevation-2 mb-4">

@@ -93,9 +93,9 @@ const validateEcuadorianCedula = (cedula) => {
         return false;
     }
 
-    // Verificar el tercer dígito (debe ser 0-5 para personas naturales)
+    // Verificar el tercer dígito (debe ser 0-6 para personas naturales)
     const tercerDigito = parseInt(cleanCedula.substring(2, 3));
-    if (tercerDigito < 0 || tercerDigito > 5) {
+    if (tercerDigito < 0 || tercerDigito > 6) {
         return false;
     }
 
@@ -134,7 +134,10 @@ const rules = {
     n_document: [
         v => !!v || 'El número de documento es requerido',
         v => (v && v.length >= 5) || 'El documento debe tener al menos 5 caracteres',
-        v => validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida'
+        v => {
+            if (clientForm.value.type_document !== 1) return true;
+            return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida';
+        }
     ],
     phone: [
         v => !v || /^[0-9+\-\s()]+$/.test(v) || 'Teléfono inválido'
@@ -422,15 +425,21 @@ onMounted(() => {
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id" label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line" clearable />
+                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
+                            label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
+                            clearable />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name" item-value="id" label="Provincia" placeholder="Seleccione Provincia" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
+                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
+                            item-value="id" label="Provincia" placeholder="Seleccione Provincia"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name" item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad" prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
+                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
+                            item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
                     </VCol>
 
                     <VDivider class="my-4" />
