@@ -6,6 +6,7 @@ import {
   formatEcuadorianPlate,
   plateValidationRule,
 } from '@/utils/ecuadorianPlateValidator.js'
+import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
 
 const props = defineProps({
   isDialogVisible: {
@@ -76,21 +77,7 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
 })
 
 // --- OPCIONES ---
-const vehicleTypeOptions = [
-  { title: 'Sedán', value: 'sedan' },
-  { title: 'Hatchback', value: 'hatchback' },
-  { title: 'Camioneta', value: 'camioneta' },
-  { title: 'SUV', value: 'suv' },
-  { title: 'Furgoneta', value: 'furgoneta' },
-  { title: 'Camión', value: 'camion' },
-  { title: 'Bus', value: 'bus' },
-  { title: 'Van', value: 'van' },
-  { title: 'Motocicleta', value: 'motocicleta' },
-  { title: 'Pickup', value: 'pickup' },
-  { title: 'Minivan', value: 'minivan' },
-  { title: 'Deportivo', value: 'deportivo' },
-  { title: 'Otro', value: 'otro' },
-]
+const vehicleTypeOptions = getVehicleTypeOptions()
 
 const colorOptions = [
   { title: 'Rojo', value: 'rojo' },

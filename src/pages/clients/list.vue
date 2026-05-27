@@ -8,6 +8,7 @@ import ClientFinalEditDialog from '@/components/inventory/clients/ClientFinalEdi
 import ClientCompanyEditDialog from '@/components/inventory/clients/ClientCompanyEditDialog.vue'
 import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
 import ClientDeleteDialog from '@/components/inventory/clients/ClientDeleteDialog.vue'
+import ImportData from '@/components/inventory/import/ImportData.vue'
 
 // Router
 const router = useRouter()
@@ -27,6 +28,7 @@ const isClientCompanyEditDialogVisible = ref(false)
 const companyToEdit = ref(null)
 const isClientShowDialogVisible = ref(false)
 const clientToShow = ref(null)
+const isImportDialogVisible = ref(false)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -287,6 +289,9 @@ onMounted(() => {
         <span class="text-h5">Gestión de Clientes</span>
       </div>
       <div class="d-flex gap-2">
+        <VBtn color="secondary" variant="tonal" prepend-icon="ri-upload-cloud-2-line" @click="isImportDialogVisible = true">
+          Importar
+        </VBtn>
         <VBtn color="primary" prepend-icon="ri-user-add-line" @click="addNewClientFinal">
           Cliente Final
         </VBtn>
@@ -444,4 +449,10 @@ onMounted(() => {
 
   <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
     @delete-client="handleClientDeleted" />
+
+  <ImportData 
+    v-model:is-dialog-visible="isImportDialogVisible" 
+    default-tab="clients" 
+    @import-success="loadClients" 
+  />
 </template>
