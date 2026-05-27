@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -55,6 +55,21 @@ const clientForm = ref({
     capital_social: '', // Capital social
 })
 
+const documentMaxLength = computed(() => {
+    const type = Number(clientForm.value.type_document);
+    if (type === 1) return 10;
+    if (type === 2) return 13;
+    return 20; // Pasaporte u otros
+});
+
+watch(() => clientForm.value.type_document, (newType) => {
+    const type = Number(newType);
+    const maxLen = type === 1 ? 10 : (type === 2 ? 13 : 20);
+    if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
+        clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen);
+    }
+});
+
 // Opciones para selects
 const typeDocumentOptions = ref([
     { title: 'Cédula', value: 1 },
@@ -94,7 +109,15 @@ const validateEcuadorianRUC = (ruc) => {
     if (!ruc) return true; // Permitir vacío si no es requerido
 
     // Eliminar espacios y guiones
-    const cleanRUC = ruc.replace(/[\s-]/g, '');
+    let cleanRUC = ruc.replace(/[\s-]/g, '');
+
+    // Si tiene 10 dígitos y el tercer dígito es 6 o 9, normalizar a RUC
+    if (cleanRUC.length === 10) {
+        const tercerDigit = parseInt(cleanRUC.substring(2, 3));
+        if ([6, 9].includes(tercerDigit)) {
+            cleanRUC += '001';
+        }
+    }
 
     // Verificar que tenga 13 dígitos
     if (!/^\d{13}$/.test(cleanRUC)) {
@@ -139,7 +162,7 @@ const rules = {
     ],
     n_document: [
         v => !!v || 'El número de documento es requerido',
-        v => (v && v.length >= 13) || 'El RUC debe tener 13 dígitos',
+        v => (v && (v.replace(/[\s-]/g, '').length === 10 || v.replace(/[\s-]/g, '').length === 13)) || 'El RUC debe tener 10 o 13 dígitos',
         v => validateEcuadorianRUC(v) || 'RUC ecuatoriano inválido'
     ],
     email: [
@@ -167,6 +190,16 @@ const generateFullName = () => {
 
 // Guardar cliente empresa
 const saveClient = async () => {
+    if (clientForm.value.n_document) {
+        const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '');
+        if (cleanDoc.length === 10) {
+            const thirdDigit = parseInt(cleanDoc.substring(2, 3));
+            if ([6, 9].includes(thirdDigit)) {
+                clientForm.value.n_document = cleanDoc + '001';
+            }
+        }
+    }
+
     const { valid } = await formRef.value?.validate();
     if (!valid) return;
 
@@ -284,6 +317,41 @@ const closeDialog = () => {
     resetForm();
 }
 
+watch(() => clientForm.value.n_document, (newVal) => {
+    if (newVal) {
+        const cleanDoc = newVal.replace(/[\s-]/g, '');
+        if (cleanDoc.length === 10) {
+            const thirdDigit = parseInt(cleanDoc.substring(2, 3));
+            if ([6, 9].includes(thirdDigit)) {
+                clientForm.value.n_document = cleanDoc + '001';
+            }
+        }
+    }
+});
+
+const filterDocumentKey = (event) => {
+    if (event.key && event.key.length > 1) return;
+    const type = Number(clientForm.value.type_document);
+    const charStr = event.key || String.fromCharCode(event.keyCode || event.which);
+    if (type === 1 || type === 2) {
+        if (!/^[0-9]$/.test(charStr)) {
+            event.preventDefault();
+        }
+    } else if (type === 3) {
+        if (!/^[a-zA-Z0-9]$/.test(charStr)) {
+            event.preventDefault();
+        }
+    }
+};
+
+const filterPhoneKey = (event) => {
+    if (event.key && event.key.length > 1) return;
+    const charStr = event.key || String.fromCharCode(event.keyCode || event.which);
+    if (!/^[0-9+\-\s()]$/.test(charStr)) {
+        event.preventDefault();
+    }
+};
+
 const regions = ref([])
 const provinces = ref([])
 const districts = ref([])
@@ -379,23 +447,25 @@ onMounted(() => {
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de RUC (13 dígitos)" prepend-inner-icon="ri-numbers-line"
-                            :rules="rules.n_document" required clearable />
+                            :rules="rules.n_document" required clearable @keypress="filterDocumentKey"
+                            :maxlength="documentMaxLength" />
                     </VCol>
 
                     <VCol cols="12" md="12" class="mb-3">
                         <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
                             placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
-                            :rules="rules.full_name" required clearable />
+                            :rules="rules.full_name" required clearable maxlength="255" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
-                            prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable />
+                            prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable @keypress="filterPhoneKey"
+                            maxlength="20" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable />
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">

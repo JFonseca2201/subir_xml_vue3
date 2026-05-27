@@ -32,6 +32,7 @@ const products = ref([])
 const employees = ref([])
 
 const workOrder = ref({
+  number: '',
   client_id: null,
   vehicle_id: null,
   user_id: userId.value,
@@ -63,17 +64,19 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [clientsRes, vehiclesRes, productsRes, employeesRes] = await Promise.all([
-      $api('clients', { params: { per_page: 100 } }),
-      $api('vehicles', { params: { per_page: 100 } }),
+    const [clientsRes, vehiclesRes, productsRes, employeesRes, workOrdersRes] = await Promise.all([
+      $api('clients', { params: { per_page: 1000 } }),
+      $api('vehicles', { params: { per_page: 1000 } }),
       $api('products', { params: { per_page: 1000 } }),
-      $api('employees', { params: { per_page: 100 } }),
+      $api('employees', { params: { per_page: 1000 } }),
+      $api('work-orders'),
     ])
 
     console.log('Clients response:', clientsRes)
     console.log('Vehicles response:', vehiclesRes)
     console.log('Products response:', productsRes)
     console.log('Employees response:', employeesRes)
+    console.log('Work orders response:', workOrdersRes)
 
     clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
       Array.isArray(clientsRes.data) ? clientsRes.data : []
@@ -90,6 +93,20 @@ const loadInitialData = async () => {
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
 
+    const workOrdersList = Array.isArray(workOrdersRes.data) ? workOrdersRes.data :
+      (Array.isArray(workOrdersRes) ? workOrdersRes : [])
+    let maxOtNumber = 0
+    for (const wo of workOrdersList) {
+      if (wo.number?.toUpperCase().startsWith('OT-')) {
+        const match = wo.number.match(/OT-?(\d+)/i)
+        if (match) {
+          const num = parseInt(match[1])
+          if (num > maxOtNumber) maxOtNumber = num
+        }
+      }
+    }
+    workOrder.value.number = 'OT-' + String(maxOtNumber + 1).padStart(4, '0')
+
     console.log('Clients loaded:', clients.value.length)
     console.log('Vehicles loaded:', vehicles.value.length)
     console.log('Products loaded:', products.value.length)
@@ -103,6 +120,12 @@ const loadInitialData = async () => {
 }
 
 const validateForm = () => {
+  if (!workOrder.value.number) {
+    validationErrorMessage.value = 'El número de orden es requerido'
+    showValidationError.value = true
+
+    return false
+  }
   if (!workOrder.value.client_id) {
     validationErrorMessage.value = 'Debe seleccionar un cliente'
     showValidationError.value = true
@@ -146,23 +169,40 @@ const cancel = () => {
   router.push('/work-orders')
 }
 
+const getClientName = c => {
+  if (!c) return 'Cliente'
+
+  return c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente'
+}
+
+const clientFilter = (value, query, item) => {
+  if (query == null || query === '') return true
+  const q = String(query).toLowerCase().trim()
+  const raw = item?.raw
+  if (!raw) return false
+  const n_doc = String(raw.n_document || '').toLowerCase()
+  const name = String(getClientName(raw)).toLowerCase()
+
+  return name.includes(q) || n_doc.includes(q)
+}
+
 const onClientAdded = newClient => {
   const clientObj = newClient.client || newClient.data || newClient
-  clients.value.push(clientObj)
+  clients.value = [clientObj, ...clients.value]
   workOrder.value.client_id = clientObj.id
   showClientDialog.value = false
 }
 
 const onCompanyAdded = newCompany => {
   const companyObj = newCompany.client || newCompany.data || newCompany
-  clients.value.push(companyObj)
+  clients.value = [companyObj, ...clients.value]
   workOrder.value.client_id = companyObj.id
   showCompanyDialog.value = false
 }
 
 const onVehicleAdded = newVehicle => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
-  vehicles.value.push(vehicleObj)
+  vehicles.value = [vehicleObj, ...vehicles.value]
   workOrder.value.vehicle_id = vehicleObj.id
   showVehicleDialog.value = false
 }
@@ -308,11 +348,21 @@ onMounted(() => {
             </div>
 
             <VRow>
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="4">
+                <div class="mb-4">
+                  <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
+                    variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" />
+                </div>
+              </VCol>
+
+              <VCol cols="12" md="4">
                 <div class="mb-4">
                   <VAutocomplete v-model="workOrder.client_id" :items="clients" item-title="full_name" item-value="id"
                     label="Cliente *" prepend-inner-icon="ri-user-line" variant="outlined" clearable
-                    :loading="isLoading" :rules="[(v) => !!v || 'Cliente es requerido']">
+                    :loading="isLoading" :rules="[(v) => !!v || 'Cliente es requerido']" :custom-filter="clientFilter">
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :title="getClientName(item.raw)" :subtitle="item.raw?.n_document" />
+                    </template>
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary">
                         <VIcon icon="ri-add-line" />
@@ -330,7 +380,7 @@ onMounted(() => {
                 </div>
               </VCol>
 
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="4">
                 <div class="mb-4" style="text-transform: uppercase;">
                   <VAutocomplete v-model="workOrder.vehicle_id" :items="vehicles"
                     :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"

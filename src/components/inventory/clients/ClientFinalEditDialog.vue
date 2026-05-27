@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -57,6 +57,21 @@ const clientForm = ref({
   address: '',
 })
 
+const documentMaxLength = computed(() => {
+  const type = Number(clientForm.value.type_document)
+  if (type === 1) return 10
+  if (type === 2) return 13
+  return 20 // Pasaporte u otros
+})
+
+watch(() => clientForm.value.type_document, (newType) => {
+  const type = Number(newType)
+  const maxLen = type === 1 ? 10 : (type === 2 ? 13 : 20)
+  if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
+    clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen)
+  }
+})
+
 // Opciones para selects
 const typeDocumentOptions = ref([
   { title: 'Cédula', value: 1 },
@@ -96,7 +111,7 @@ const validateEcuadorianCedula = cedula => {
   }
 
   const tercerDigito = parseInt(cleanCedula.substring(2, 3))
-  if (tercerDigito < 0 || tercerDigito > 6) {
+  if (tercerDigito < 0 || tercerDigito >= 6) {
     return false
   }
 
@@ -118,15 +133,47 @@ const validateEcuadorianCedula = cedula => {
   return resultado === digitoVerificador
 }
 
+// Validación para RUC ecuatoriano
+const validateEcuadorianRUC = ruc => {
+  if (!ruc) return true
+
+  let cleanRUC = ruc.replace(/[\s-]/g, '')
+
+  if (cleanRUC.length === 10) {
+    const tercerDigit = parseInt(cleanRUC.substring(2, 3))
+    if ([6, 9].includes(tercerDigit)) {
+      cleanRUC += '001'
+    }
+  }
+
+  if (!/^\d{13}$/.test(cleanRUC)) {
+    return false
+  }
+
+  const provincia = parseInt(cleanRUC.substring(0, 2))
+  if (provincia < 1 || provincia > 24) {
+    return false
+  }
+
+  const tercerDigito = parseInt(cleanRUC.substring(2, 3))
+  if (![6, 7, 8, 9].includes(tercerDigito)) {
+    return false
+  }
+
+  return true
+}
+
 // Reglas de validación
 const rules = {
   name: [
     v => !!v || 'El nombre es requerido',
     v => (v && v.length >= 2) || 'El nombre debe tener al menos 2 caracteres',
+    v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios',
   ],
   surname: [
     v => !!v || 'El apellido es requerido',
     v => (v && v.length >= 2) || 'El apellido debe tener al menos 2 caracteres',
+    v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios',
   ],
   email: [
     v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email inválido',
@@ -135,8 +182,14 @@ const rules = {
     v => !!v || 'El número de documento es requerido',
     v => (v && v.length >= 5) || 'El documento debe tener al menos 5 caracteres',
     v => {
-      if (clientForm.value.type_document !== 1) return true
-      return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida'
+      const type = Number(clientForm.value.type_document)
+      if (type === 1) {
+        return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida'
+      }
+      if (type === 2) {
+        return validateEcuadorianRUC(v) || 'RUC ecuatoriano inválido'
+      }
+      return true
     },
   ],
   phone: [
@@ -172,6 +225,17 @@ const generateFullName = () => {
 
 // Actualizar cliente
 const updateClient = async () => {
+  if (clientForm.value.n_document) {
+    const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '')
+    if (cleanDoc.length === 10) {
+      const thirdDigit = parseInt(cleanDoc.substring(2, 3))
+      if ([6, 9].includes(thirdDigit)) {
+        clientForm.value.n_document = cleanDoc + '001'
+        clientForm.value.type_document = 2 // RUC
+      }
+    }
+  }
+
   const { valid } = await formRef.value?.validate()
   if (!valid) return
 
@@ -272,6 +336,50 @@ watch(() => clientForm.value.name, () => {
 watch(() => clientForm.value.surname, () => {
   generateFullName()
 })
+
+watch(() => clientForm.value.n_document, (newVal) => {
+  if (newVal) {
+    const cleanDoc = newVal.replace(/[\s-]/g, '')
+    if (cleanDoc.length === 10) {
+      const thirdDigit = parseInt(cleanDoc.substring(2, 3))
+      if ([6, 9].includes(thirdDigit)) {
+        clientForm.value.n_document = cleanDoc + '001'
+        clientForm.value.type_document = 2 // RUC
+      }
+    }
+  }
+})
+
+const filterTextKey = (event) => {
+  if (event.key && event.key.length > 1) return
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']$/.test(charStr)) {
+    event.preventDefault()
+  }
+}
+
+const filterDocumentKey = (event) => {
+  if (event.key && event.key.length > 1) return
+  const type = Number(clientForm.value.type_document)
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (type === 1 || type === 2) {
+    if (!/^[0-9]$/.test(charStr)) {
+      event.preventDefault()
+    }
+  } else if (type === 3) {
+    if (!/^[a-zA-Z0-9]$/.test(charStr)) {
+      event.preventDefault()
+    }
+  }
+}
+
+const filterPhoneKey = (event) => {
+  if (event.key && event.key.length > 1) return
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (!/^[0-9+\-\s()]$/.test(charStr)) {
+    event.preventDefault()
+  }
+}
 
 const regions = ref([])
 const provinces = ref([])
@@ -380,13 +488,15 @@ onMounted(() => {
           <VCol cols="12" md="6" class="mb-3">
             <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
               prepend-inner-icon="ri-user-3-line" :rules="rules.name" required clearable
-              class="v-input--density-comfortable" @input="generateFullName" />
+              class="v-input--density-comfortable" @input="generateFullName" @keypress="filterTextKey"
+              maxlength="100" />
           </VCol>
 
           <VCol cols="12" md="6" class="mb-3">
             <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
               prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required clearable
-              class="v-input--density-comfortable" @input="generateFullName" />
+              class="v-input--density-comfortable" @input="generateFullName" @keypress="filterTextKey"
+              maxlength="100" />
           </VCol>
 
           <VCol cols="12" class="mb-3">
@@ -403,17 +513,20 @@ onMounted(() => {
           <VCol cols="12" md="6" class="mb-3">
             <VTextField v-model="clientForm.n_document" label="Número de Documento *"
               placeholder="Ingrese número de documento" prepend-inner-icon="ri-numbers-line" :rules="rules.n_document"
-              required clearable class="v-input--density-comfortable" />
+              required clearable class="v-input--density-comfortable" @keypress="filterDocumentKey"
+              :maxlength="documentMaxLength" />
           </VCol>
 
           <VCol cols="12" md="6" class="mb-3">
             <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
-              prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable class="v-input--density-comfortable" />
+              prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable class="v-input--density-comfortable"
+              @keypress="filterPhoneKey" maxlength="20" />
           </VCol>
 
           <VCol cols="12" md="6" class="mb-3">
             <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-              prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable class="v-input--density-comfortable" />
+              prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable class="v-input--density-comfortable"
+              maxlength="100" />
           </VCol>
 
           <VCol cols="12" md="6" class="mb-3">
