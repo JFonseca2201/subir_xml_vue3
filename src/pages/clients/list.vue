@@ -334,7 +334,14 @@ onMounted(() => {
     <VDivider />
 
     <!-- Tabla de clientes -->
-    <VCardText class="pa-0">
+    <VCardText class="pa-0 position-relative">
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
       <VTable hover class="client-table">
         <thead class="bg-primary text-white">
           <tr>
@@ -351,12 +358,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading">
-            <td colspan="8" class="text-center pa-4">
-              <VProgressCircular indeterminate color="primary" />
-            </td>
-          </tr>
-          <tr v-else-if="!clients.length">
+          <tr v-if="!loading && !clients.length">
             <td colspan="8" class="text-center text-medium-emphasis py-6">
               <VIcon size="32" class="mb-2">
                 ri-user-line
@@ -364,7 +366,7 @@ onMounted(() => {
               <div>No hay clientes registrados</div>
             </td>
           </tr>
-          <tr v-for="client in clients" v-else :key="client.id" class="hover:bg-grey-lighten-4 transition">
+          <tr v-for="client in clients" :key="client.id" class="hover:bg-grey-lighten-4 transition" :class="{ 'opacity-50': loading }">
             <td class="font-weight-medium">
               {{ client.id }}
             </td>
