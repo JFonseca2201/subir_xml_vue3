@@ -112,7 +112,7 @@ const initializePaymentDistribution = () => {
   if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
     paymentDistributions.value.push({
       account_id: 1, // Caja Chica por defecto para efectivo
-      amount: 0,
+      amount: total.value,
       payment_method: 'Efectivo',
     })
   }
@@ -125,6 +125,28 @@ const isVehicleAddDialogVisible = ref(false)
 const isWorkOrderImportDialogVisible = ref(false)
 const readyWorkOrders = ref([])
 const isLoadingWorkOrders = ref(false)
+const workOrderSearchQuery = ref('')
+
+const filteredWorkOrders = computed(() => {
+  if (!workOrderSearchQuery.value) return readyWorkOrders.value
+
+  const query = workOrderSearchQuery.value.toLowerCase().trim()
+  return readyWorkOrders.value.filter(order => {
+    const idMatch = String(order.id).includes(query)
+    const clientName = `${order.client?.name || ''} ${order.client?.surname || ''}`.toLowerCase()
+    const clientDoc = String(order.client?.n_document || '').toLowerCase()
+    const licensePlate = String(order.vehicle?.license_plate || '').toLowerCase()
+    const brand = String(order.vehicle?.brand || '').toLowerCase()
+    const model = String(order.vehicle?.model || '').toLowerCase()
+
+    return idMatch ||
+      clientName.includes(query) ||
+      clientDoc.includes(query) ||
+      licensePlate.includes(query) ||
+      brand.includes(query) ||
+      model.includes(query)
+  })
+})
 
 const handleClientAdded = async clientData => {
   if (clientData) {
@@ -206,6 +228,7 @@ const selectWorkOrder = workOrder => {
       type: item.type || (item.product_id ? 'product' : 'service'),
       sku: item.product?.sku || item.product?.code || item.sku || '',
     }))
+    initializePaymentDistribution()
   }
 
   isWorkOrderImportDialogVisible.value = false
@@ -763,6 +786,7 @@ onMounted(async () => {
             type: item.type || (item.product_id ? 'product' : 'service'),
             sku: item.product?.sku || item.product?.code || item.sku || '',
           }))
+          initializePaymentDistribution()
         }
 
         showNotification('Orden de trabajo importada exitosamente', 'success')
@@ -1290,7 +1314,7 @@ onMounted(async () => {
                       order.vehicle?.model }}</small></td>
                     <td>{{ new Date(order.entry_date).toLocaleDateString() }}</td>
                     <td class="text-right">
-                      <VBtn color="primary" size="small" variant="elevated" @click="importWorkOrder(order)">
+                      <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
                         Importar
                       </VBtn>
                     </td>

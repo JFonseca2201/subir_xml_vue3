@@ -321,7 +321,7 @@ const closeDialog = () => {
                         <tbody>
                           <tr
                             v-for="(dist, index) in getPaymentDistributions"
-                            :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                            :key="dist.id || index"
                           >
                             <td class="pa-2 text-center font-weight-medium">
                               {{ index + 1 }}
@@ -504,7 +504,7 @@ const closeDialog = () => {
                   <tbody>
                     <tr
                       v-for="(item, index) in saleData.details"
-                      :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                      :key="item.id || index"
                     >
                       <td class="pa-2">
                         {{ item.description }}
