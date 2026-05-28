@@ -8,24 +8,52 @@ import { useRouter } from 'vue-router'
 
 const dropZoneRef = ref()
 const fileData = ref([])
-const { open, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
+const { open, reset, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
 const router = useRouter()
 
+const createPreview = file => {
+  try {
+    return URL.createObjectURL(file)
+  } catch (e) {
+    console.error('Error creating object URL:', e)
+    return ''
+  }
+}
+
+const removeImage = index => {
+  const item = fileData.value[index]
+  if (item && item.url && item.url.startsWith('blob:')) {
+    try {
+      URL.revokeObjectURL(item.url)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+  fileData.value.splice(index, 1)
+  reset()
+}
+
 function onDrop(DroppedFiles) {
+  if (fileData.value.length >= 1) {
+    alert('Solo permite una imagen')
+    return
+  }
   DroppedFiles?.forEach(file => {
     if (file.type.slice(0, 6) !== 'image/') {
       alert('Solo se permiten archivos tipo imagen.')
       
       return
     }
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
+    if (fileData.value.length < 1) {
+      fileData.value.push({
+        file,
+        url: createPreview(file),
+      })
+    }
   })
 }
 onChange(selectedFiles => {
-  if (fileData.value.length == 1) {
+  if (fileData.value.length >= 1) {
     alert('Solo permite una imagen')
     
     return
@@ -33,10 +61,12 @@ onChange(selectedFiles => {
   if (!selectedFiles)
     return
   for (const file of selectedFiles) {
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
+    if (fileData.value.length < 1) {
+      fileData.value.push({
+        file,
+        url: createPreview(file),
+      })
+    }
   }
 })
 useDropZone(dropZoneRef, onDrop)
@@ -238,7 +268,17 @@ const onFormReset = () => {
     discount_percentage: 0, brand: '', stock: 0, item_type: null, min_stock: 0, max_stock: 0,
     is_taxable: true, is_gift: false, notes: '', state: 1, user_id: null,
   }
+  fileData.value.forEach(item => {
+    if (item.url && item.url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(item.url)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  })
   fileData.value = []
+  reset()
   warning.value = null
   error_exist.value = null
 }
@@ -417,7 +457,7 @@ const loadInitialData = async () => {
                         <div class="text-caption text-medium-emphasis">{{ (item.file.size / 1024).toFixed(2) }} KB</div>
                       </VCardText>
                       <VCardActions class="pa-4 pt-0">
-                        <VBtn variant="tonal" block color="error" @click.stop="fileData.splice(index, 1)">
+                        <VBtn variant="tonal" block color="error" @click.stop="removeImage(index)">
                           <VIcon start icon="ri-delete-bin-line" /> Eliminar Imagen
                         </VBtn>
                       </VCardActions>
