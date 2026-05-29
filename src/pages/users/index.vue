@@ -31,6 +31,16 @@ const seachQuery = ref(null)
 const user_selected_edit = ref(null)
 const user_selected_delete = ref(null)
 const user_selected_view = ref(null)
+const viewLoading = ref(false)
+
+const normalizeAvatarUrl = avatar => {
+  if (!avatar) return null
+  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
+
+  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
+
+  return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+}
 
 const list = async () => {
   loader.start()
@@ -47,14 +57,9 @@ const list = async () => {
     // Ajustar según la estructura de respuesta real
     list_users.value = resp.users || []
 
-    // Convertir URLs de avatar relativas a absolutas
     list_users.value = list_users.value.map(user => ({
       ...user,
-      avatar: user.avatar
-        ? (user.avatar.startsWith('http')
-          ? user.avatar
-          : `http://127.0.0.1:8000${user.avatar}`)
-        : null,
+      avatar: normalizeAvatarUrl(user.avatar),
     }))
 
     // Depurar estructura de usuarios
@@ -131,11 +136,10 @@ const addDeleteUser = deletedUser => {
 }
 
 const viewItem = async item => {
-  console.log('Cargando detalles del usuario:', item)
-  console.log('Valor del campo avatar:', item.avatar)
-  console.log('Tipo de avatar:', typeof item.avatar)
-  console.log('Avatar es null/undefined:', item.avatar == null)
-  console.log('Avatar es string vacío:', item.avatar === '')
+  isUserViewDialogVisible.value = true
+  viewLoading.value = true
+  user_selected_view.value = { ...item }
+
   try {
     const resp = await $api(`users/${item.id}`, {
       method: 'GET',
@@ -145,12 +149,18 @@ const viewItem = async item => {
       },
     })
 
-    user_selected_view.value = resp.user
-    isUserViewDialogVisible.value = true
-    console.log('Usuario cargado:', resp.user)
+    if (resp?.user) {
+      user_selected_view.value = {
+        ...resp.user,
+        avatar: normalizeAvatarUrl(resp.user.avatar),
+      }
+    }
   } catch (error) {
     console.error('Error al cargar usuario:', error)
     showNotification('Error al cargar usuario', 'error')
+    isUserViewDialogVisible.value = false
+  } finally {
+    viewLoading.value = false
   }
 }
 
@@ -420,6 +430,20 @@ onMounted(() => {
             <!-- Acciones -->
             <td>
               <div class="d-flex align-center gap-2">
+                <VTooltip text="Ver detalle">
+                  <template #activator="{ props: tooltipProps }">
+                    <IconBtn
+                      v-bind="tooltipProps"
+                      size="small"
+                      color="info"
+                      variant="text"
+                      @click="viewItem(item)"
+                    >
+                      <VIcon icon="ri-eye-line" />
+                    </IconBtn>
+                  </template>
+                </VTooltip>
+
                 <VTooltip
                   v-if="item.id !== 1"
                   text="Editar"
@@ -468,9 +492,10 @@ onMounted(() => {
       @add-user="addNewUser"
     />
     <UserViewDialog
-      v-if="user_selected_view"
-      v-model:isDialogVisible="isUserViewDialogVisible"
-      :user="user_selected_view"
+      v-if="isUserViewDialogVisible"
+      v-model:is-dialog-visible="isUserViewDialogVisible"
+      :user="user_selected_view || {}"
+      :loading="viewLoading"
     />
     <UserEditDialog
       v-if="user_selected_edit"

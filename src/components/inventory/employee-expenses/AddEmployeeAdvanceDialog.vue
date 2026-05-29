@@ -34,6 +34,13 @@ const show = computed({
   set: value => emit('update:modelValue', value),
 })
 
+const filteredAccounts = computed(() => {
+  if (form.value.payment_method === 'TRANSFERENCIA') {
+    return accounts.value.filter(acc => acc.id !== 1)
+  }
+  return accounts.value
+})
+
 // Formulario reactivo
 const form = ref({
   employee_id: null,
@@ -42,7 +49,7 @@ const form = ref({
   description: '',
   advance_date: new Date().toISOString().split('T')[0],
   payment_date: new Date().toISOString().split('T')[0],
-  payment_method: null,
+  payment_method: 'TRANSFERENCIA',
   employee_name: '',
   account_name: '',
 })
@@ -56,7 +63,7 @@ const resetForm = () => {
     description: '',
     advance_date: new Date().toISOString().split('T')[0],
     payment_date: new Date().toISOString().split('T')[0],
-    payment_method: null,
+    payment_method: 'TRANSFERENCIA',
     employee_name: '',
     account_name: '',
   }
@@ -140,7 +147,7 @@ const handleSubmit = async () => {
     // Preparar el payload para la API
     const payload = {
       employee_id: form.value.employee_id,
-      account_id: form.value.account_id,
+      account_id: form.value.payment_method === 'EFECTIVO' ? 1 : form.value.account_id,
       amount: parseFloat(form.value.amount),
       description: form.value.description,
       advance_date: form.value.advance_date,
@@ -171,6 +178,14 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+watch(() => form.value.payment_method, method => {
+  if (method === 'EFECTIVO') {
+    form.value.account_id = 1
+  } else if (form.value.account_id === 1 || !form.value.account_id) {
+    form.value.account_id = null
+  }
+})
 
 // Watchers
 watch(() => show.value, newVal => {
@@ -242,24 +257,25 @@ onMounted(() => {
 
               <VCol cols="6">
                 <VSelect
-                  v-model="form.account_id"
-                  :items="accounts"
-                  item-title="name"
-                  item-value="id"
-                  label="Cuenta"
-                  placeholder="Seleccionar cuenta"
-                  :rules="[v => !!v]"
-                  required
-                />
-              </VCol>
-              <VCol cols="6">
-                <VSelect
                   v-model="form.payment_method"
                   :items="paymentMethods"
                   item-title="text"
                   item-value="value"
                   label="Método de Pago"
                   placeholder="Seleccionar método de pago"
+                  :rules="[v => !!v]"
+                  required
+                />
+              </VCol>
+
+              <VCol v-if="form.payment_method === 'TRANSFERENCIA'" cols="6">
+                <VSelect
+                  v-model="form.account_id"
+                  :items="filteredAccounts"
+                  item-title="name"
+                  item-value="id"
+                  label="Cuenta"
+                  placeholder="Seleccionar cuenta"
                   :rules="[v => !!v]"
                   required
                 />

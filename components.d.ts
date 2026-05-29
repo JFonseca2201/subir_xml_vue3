@@ -89,6 +89,7 @@ declare module 'vue' {
     ProviderAddDialog: typeof import('./src/components/inventory/config/providers/ProviderAddDialog.vue')['default']
     ProviderDeleteDialog: typeof import('./src/components/inventory/config/providers/ProviderDeleteDialog.vue')['default']
     ProviderEditDialog: typeof import('./src/components/inventory/config/providers/ProviderEditDialog.vue')['default']
+    ProviderViewDialog: typeof import('./src/components/inventory/config/providers/ProviderViewDialog.vue')['default']
     ReferAndEarnDialog: typeof import('./src/components/dialogs/ReferAndEarnDialog.vue')['default']
     RoleAddDialog: typeof import('./src/components/inventory/role/RoleAddDialog.vue')['default']
     RoleDeleteDialog: typeof import('./src/components/inventory/role/RoleDeleteDialog.vue')['default']

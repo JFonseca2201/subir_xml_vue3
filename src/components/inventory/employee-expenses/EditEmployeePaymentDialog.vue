@@ -97,6 +97,13 @@ const isEditing = computed(() => !!props.expense)
 
 const dialogTitle = computed(() => isEditing.value ? 'Editar Pago' : 'Nuevo Pago')
 
+const filteredAccounts = computed(() => {
+  if (form.value.payment_method === 'TRANSFERENCIA') {
+    return accounts.value.filter(acc => acc.id !== 1)
+  }
+  return accounts.value
+})
+
 // Formulario reactivo
 const form = ref({
   employee_id: null,
@@ -140,6 +147,10 @@ const handleSubmit = async () => {
     const payload = {
       ...form.value,
       type: 'payment',
+    }
+    
+    if (payload.payment_method === 'EFECTIVO') {
+      payload.account_id = 1
     }
 
     console.log('🔍 EditPayment - Enviando actualización:', payload)
@@ -317,6 +328,14 @@ watch(() => show.value, newVal => {
   }
 })
 
+watch(() => form.value.payment_method, method => {
+  if (method === 'EFECTIVO') {
+    form.value.account_id = 1
+  } else if (form.value.account_id === 1 || !form.value.account_id) {
+    form.value.account_id = null
+  }
+})
+
 // Watcher para reasignar IDs cuando se carguen empleados y cuentas
 watch([employees, accounts], () => {
   if (props.expense && employees.value.length > 0 && accounts.value.length > 0) {
@@ -380,21 +399,6 @@ onMounted(() => {
 
           <VRow>
             <VCol cols="12">
-              <VSelect
-                v-model="form.account_id"
-                :items="accounts"
-                item-title="display_name"
-                item-value="id"
-                label="Cuenta"
-                placeholder="Seleccionar cuenta"
-                :rules="[v => !!v]"
-                required
-              />
-            </VCol>
-          </VRow>
-
-          <VRow>
-            <VCol cols="12">
               <VTextField
                 v-model="form.amount"
                 label="Monto"
@@ -417,6 +421,21 @@ onMounted(() => {
                 label="Método de Pago"
                 placeholder="Seleccionar método"
                 :rules="[v => !!v || 'El método de pago es requerido']"
+                required
+              />
+            </VCol>
+          </VRow>
+
+          <VRow v-if="form.payment_method === 'TRANSFERENCIA'">
+            <VCol cols="12">
+              <VSelect
+                v-model="form.account_id"
+                :items="filteredAccounts"
+                item-title="display_name"
+                item-value="id"
+                label="Cuenta"
+                placeholder="Seleccionar cuenta"
+                :rules="[v => !!v]"
                 required
               />
             </VCol>

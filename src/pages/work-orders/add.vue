@@ -413,9 +413,8 @@ onMounted(() => {
                 <div class="mb-4">
                   <VAutocomplete v-model="workOrder.technicians" :items="employees"
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined" clearable :loading="isLoading" multiple chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']">
+                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined" clearable :loading="isLoading" multiple chips>
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
