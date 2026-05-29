@@ -46,6 +46,7 @@ export default defineConfig({
     // Docs: https://github.com/johncampionjr/vite-plugin-vue-layouts#vite-plugin-vue-layouts
     Layouts({
       layoutsDirs: './src/layouts/',
+      exclude: ['**/components/**'],
     }),
 
     // Docs: https://github.com/antfu/unplugin-vue-components#unplugin-vue-components

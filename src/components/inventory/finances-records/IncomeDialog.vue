@@ -311,7 +311,7 @@ const formatCurrency = value => {
             <!-- Lista de Métodos de Pago -->
             <div
               v-for="(payment, index) in (form.payments || [])"
-              :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+              :key="index"
               class="mb-3"
             >
               <VCard

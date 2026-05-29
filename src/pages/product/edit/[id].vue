@@ -13,24 +13,39 @@ const { showNotification } = useGlobalToast()
 
 const dropZoneRef = ref()
 const fileData = ref([])
-const { open, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
+const { open, reset, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
+
+const createPreview = file => {
+  try {
+    return URL.createObjectURL(file)
+  } catch (e) {
+    console.error('Error creating object URL:', e)
+    return ''
+  }
+}
 
 function onDrop(DroppedFiles) {
+  if (fileData.value.length >= 1) {
+    alert('Solo permite una imagen')
+    return
+  }
   DroppedFiles?.forEach(file => {
     if (file.type.slice(0, 6) !== 'image/') {
       alert('Solo se permiten archivos tipo imagen.')
       
       return
     }
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
+    if (fileData.value.length < 1) {
+      fileData.value.push({
+        file,
+        url: createPreview(file),
+      })
+    }
   })
 }
 
 onChange(selectedFiles => {
-  if (fileData.value.length == 1) {
+  if (fileData.value.length >= 1) {
     alert('Solo permite una imagen')
     
     return
@@ -38,10 +53,12 @@ onChange(selectedFiles => {
   if (!selectedFiles)
     return
   for (const file of selectedFiles) {
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
+    if (fileData.value.length < 1) {
+      fileData.value.push({
+        file,
+        url: createPreview(file),
+      })
+    }
   }
 })
 useDropZone(dropZoneRef, onDrop)
@@ -215,8 +232,18 @@ const updateProduct = async () => {
 }
 
 const clearImage = () => {
+  fileData.value.forEach(item => {
+    if (item.url && item.url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(item.url)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  })
   fileData.value = []
   product.value.imagen = null
+  reset()
 }
 
 const onFormReset = () => {

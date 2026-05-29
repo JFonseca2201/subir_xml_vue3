@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { getBrandNameById } from '@/data/vehicleBrands'
 
 const props = defineProps({
   isDialogVisible: {
@@ -10,140 +11,138 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
 
-// Opciones para selects (solo para mostrar labels)
-const documentTypeOptions = ref([
+const documentTypeOptions = [
   { title: 'Cotización', value: 'quote' },
   { title: 'Nota de Venta', value: 'sale_note' },
   { title: 'Factura', value: 'invoice' },
-])
+]
 
-const paymentStatusOptions = ref([
+const paymentStatusOptions = [
   { title: 'Pagado', value: 'paid' },
   { title: 'Parcial', value: 'partial' },
   { title: 'Pendiente', value: 'pending' },
-])
+]
 
-const statusOptions = ref([
+const statusOptions = [
   { title: 'Completada', value: 'completed' },
   { title: 'Pendiente', value: 'pending' },
   { title: 'Anulada', value: 'canceled' },
-])
+]
 
-// Computed properties para obtener labels
 const getDocumentTypeLabel = computed(() => {
-  if (!props.saleData?.document_type) return 'No especificado'
-  const option = documentTypeOptions.value.find(opt => opt.value === props.saleData.document_type)
-  
-  return option ? option.title : 'No especificado'
+  const option = documentTypeOptions.find(opt => opt.value === props.saleData?.document_type)
+
+  return option?.title || 'No especificado'
 })
 
 const getPaymentStatusLabel = computed(() => {
-  if (!props.saleData?.payment_status) return 'No especificado'
-  const option = paymentStatusOptions.value.find(opt => opt.value === props.saleData.payment_status)
-  
-  return option ? option.title : 'No especificado'
+  const option = paymentStatusOptions.find(opt => opt.value === props.saleData?.payment_status)
+
+  return option?.title || 'No especificado'
 })
 
 const getStatusLabel = computed(() => {
-  if (!props.saleData?.status) return 'No especificado'
-  const option = statusOptions.value.find(opt => opt.value === props.saleData.status)
-  
-  return option ? option.title : 'No especificado'
+  const option = statusOptions.find(opt => opt.value === props.saleData?.status)
+
+  return option?.title || 'No especificado'
 })
 
-// Computed para obtener colores
-const getDocumentTypeColor = computed(() => {
-  const colors = {
-    quote: 'info',
-    sale_note: 'primary',
-    invoice: 'deep-purple',
-  }
+const getDocumentTypeColor = computed(() => ({
+  quote: 'info',
+  sale_note: 'primary',
+  invoice: 'deep-purple',
+}[props.saleData?.document_type] || 'grey'))
 
-  
-  return colors[props.saleData?.document_type] || 'grey'
-})
+const getPaymentStatusColor = computed(() => ({
+  paid: 'success',
+  partial: 'warning',
+  pending: 'error',
+}[props.saleData?.payment_status] || 'grey'))
 
-const getPaymentStatusColor = computed(() => {
-  const colors = {
-    paid: 'success',
-    partial: 'warning',
-    pending: 'error',
-  }
+const getStatusColor = computed(() => ({
+  completed: 'success',
+  pending: 'warning',
+  canceled: 'error',
+}[props.saleData?.status] || 'grey'))
 
-  
-  return colors[props.saleData?.payment_status] || 'grey'
-})
+const documentTypeIcon = computed(() => ({
+  quote: 'ri-file-list-3-line',
+  sale_note: 'ri-receipt-line',
+  invoice: 'ri-bill-line',
+}[props.saleData?.document_type] || 'ri-file-text-line'))
 
-const getStatusColor = computed(() => {
-  const colors = {
-    completed: 'success',
-    pending: 'warning',
-    canceled: 'error',
-  }
+const statusIcon = computed(() => ({
+  completed: 'ri-checkbox-circle-line',
+  pending: 'ri-time-line',
+  canceled: 'ri-close-circle-line',
+}[props.saleData?.status] || 'ri-question-line'))
 
-  
-  return colors[props.saleData?.status] || 'grey'
-})
-
-// Computed para obtener el nombre del cliente
 const getClientName = computed(() => {
-  if (!props.saleData?.client) return 'No especificado'
-  
-  return props.saleData.client.full_name || props.saleData.client.name || 
-        `${props.saleData.client.first_name || ''} ${props.saleData.client.last_name || ''}`.trim() || 'Cliente Desconocido'
+  const client = props.saleData?.client
+  if (!client) return 'Consumidor final'
+
+  return client.full_name || client.name ||
+    `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Cliente'
 })
 
-// Computed para obtener el documento del cliente
-const getClientDocument = computed(() => {
-  return props.saleData?.client?.n_document || 'No especificado'
-})
+const getClientDocument = computed(() => props.saleData?.client?.n_document || '—')
 
-// Computed para obtener la placa del vehículo
-const getVehicleLicensePlate = computed(() => {
-  return props.saleData?.vehicle?.license_plate || 'No especificado'
-})
+const getClientPhone = computed(() => props.saleData?.client?.phone || '—')
 
-// Computed para obtener información del vehículo
+const getVehicleLicensePlate = computed(() => props.saleData?.vehicle?.license_plate || null)
+
 const getVehicleInfo = computed(() => {
-  if (!props.saleData?.vehicle) return null
-  const vehicle = props.saleData.vehicle
-  
-  return `${vehicle.brand || ''} ${vehicle.model || ''}`.trim() || 'Vehículo'
+  const vehicle = props.saleData?.vehicle
+  if (!vehicle) return null
+
+  const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
+
+  return [brandName, vehicle.model, vehicle.year].filter(Boolean).join(' · ') || '—'
 })
 
-// Computed para obtener los pagos distribuidos
-const getPaymentDistributions = computed(() => {
-  if (!props.saleData?.finance_record?.payment_distributions) return []
-  
-  return props.saleData.finance_record.payment_distributions
+const technicians = computed(() => props.saleData?.technicians || [])
+
+const getPaymentDistributions = computed(() =>
+  props.saleData?.finance_record?.payment_distributions || [],
+)
+
+const hasPaymentDistributions = computed(() => getPaymentDistributions.value.length > 0)
+
+const itemsCount = computed(() => props.saleData?.details?.length || 0)
+
+const isQuote = computed(() => props.saleData?.document_type === 'quote')
+
+/** Método real: prioriza pagos distribuidos sobre el campo de cabecera (a veces queda "Efectivo" por defecto). */
+const displayPaymentMethod = computed(() => {
+  const dists = getPaymentDistributions.value
+  if (dists.length > 0) {
+    const methods = [...new Set(dists.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length) return methods.join(', ')
+  }
+
+  return props.saleData?.payment_method || '—'
 })
 
-// Computed para verificar si tiene pagos distribuidos
-const hasPaymentDistributions = computed(() => {
-  return getPaymentDistributions.value.length > 0
-})
+const formatCurrency = value => new Intl.NumberFormat('es-EC', {
+  style: 'currency',
+  currency: 'USD',
+}).format(value || 0)
 
-// Formatear moneda
-const formatCurrency = value => {
-  return new Intl.NumberFormat('es-EC', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value || 0)
-}
-
-// Formatear fecha
 const formatDate = dateString => {
-  if (!dateString) return '-'
+  if (!dateString) return '—'
   const [year, month, day] = dateString.split('T')[0].split('-')
-  
+
   return `${day}/${month}/${year}`
 }
 
-// Cerrar diálogo
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
@@ -151,127 +150,407 @@ const closeDialog = () => {
 
 <template>
   <VDialog
-    max-width="1000"
     :model-value="props.isDialogVisible"
-    persistent
+    max-width="960"
+    scrollable
     @update:model-value="closeDialog"
   >
     <VCard
-      class="pa-0"
-      elevation="8"
+      class="sale-view-card"
+      rounded="lg"
+      elevation="4"
     >
-      <!-- Header con gradiente -->
-      <VCardTitle
-        class="pa-6 text-center position-relative bg-gradient-to-r from-primary to-primary-darken-1"
-        dark
-      >
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          class="position-absolute"
-          style="top: 16px; right: 16px;"
-          @click="closeDialog"
-        />
+      <!-- Cabecera al estilo del resto del inventario -->
+      <div class="sale-view-header d-flex align-start justify-space-between pa-5 pb-4">
+        <div class="d-flex align-start gap-4 flex-grow-1 min-w-0">
+          <VAvatar
+            size="56"
+            :color="getDocumentTypeColor"
+            variant="tonal"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              :icon="documentTypeIcon"
+              size="28"
+            />
+          </VAvatar>
 
-        <!-- Icono y tipo de documento -->
-        <div class="d-flex flex-column align-center mb-3">
-          <VIcon
-            icon="ri-file-list-3-line"
-            size="48"
-            class="mb-2"
-          />
-          <div class="text-h5 font-weight-bold">
-            {{ getDocumentTypeLabel }}
-          </div>
-          <div class="text-body-1 opacity-90">
-            {{ saleData.document_number }}
+          <div class="min-w-0">
+            <div class="d-flex align-center flex-wrap gap-2 mb-1">
+              <span class="text-h5 font-weight-bold text-truncate">
+                {{ saleData.document_number || '—' }}
+              </span>
+              <VChip
+                :color="getDocumentTypeColor"
+                size="small"
+                variant="tonal"
+                label
+              >
+                {{ getDocumentTypeLabel }}
+              </VChip>
+              <VChip
+                :color="getStatusColor"
+                size="small"
+                variant="elevated"
+                label
+              >
+                <VIcon
+                  start
+                  :icon="statusIcon"
+                  size="14"
+                />
+                {{ getStatusLabel }}
+              </VChip>
+            </div>
+
+            <div class="d-flex align-center flex-wrap gap-3 text-body-2 text-medium-emphasis">
+              <span class="d-inline-flex align-center gap-1">
+                <VIcon
+                  icon="ri-calendar-line"
+                  size="16"
+                />
+                {{ formatDate(saleData.service_date) }}
+              </span>
+              <span
+                v-if="saleData.work_order_id"
+                class="d-inline-flex align-center gap-1 text-primary"
+              >
+                <VIcon
+                  icon="ri-link"
+                  size="16"
+                />
+                Orden de trabajo vinculada
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Chip de estado -->
-        <VChip
-          :color="getStatusColor"
-          variant="elevated"
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
           size="small"
+          class="flex-shrink-0 ms-2"
+          @click="closeDialog"
+        />
+      </div>
+
+      <VDivider />
+
+      <VCardText class="pa-5">
+        <div
+          v-if="loading"
+          class="d-flex flex-column align-center justify-center py-12"
         >
-          <VIcon
-            start
-            :icon="saleData.status === 'completed' ? 'ri-checkbox-circle-line' : saleData.status === 'pending' ? 'ri-time-line' : 'ri-close-circle-line'"
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="48"
           />
-          {{ getStatusLabel }}
-        </VChip>
-      </VCardTitle>
+          <p class="text-body-2 text-medium-emphasis mt-4 mb-0">
+            Cargando detalle de la venta...
+          </p>
+        </div>
 
-      <!-- Contenido principal -->
-      <VCardText class="pa-6">
-        <VRow>
-          <!-- Tarjeta de Información General -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100"
-              elevation="2"
-              rounded="lg"
+        <template v-else>
+          <!-- Resumen rápido -->
+          <VRow class="mb-5">
+            <VCol
+              cols="6"
+              sm="3"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
+              <div class="kpi-tile">
                 <VIcon
-                  icon="ri-file-info-line"
+                  icon="ri-money-dollar-circle-line"
+                  size="22"
                   color="primary"
-                  class="me-2"
+                  class="mb-2"
                 />
-                <span class="text-h6 font-weight-bold">Información General</span>
-              </VCardTitle>
+                <div class="text-caption text-medium-emphasis">
+                  Total
+                </div>
+                <div class="text-h6 font-weight-bold text-primary">
+                  {{ formatCurrency(saleData.total) }}
+                </div>
+              </div>
+            </VCol>
+            <VCol
+              cols="6"
+              sm="3"
+            >
+              <div class="kpi-tile">
+                <VIcon
+                  icon="ri-wallet-3-line"
+                  size="22"
+                  :color="getPaymentStatusColor"
+                  class="mb-2"
+                />
+                <div class="text-caption text-medium-emphasis">
+                  Estado de pago
+                </div>
+                <VChip
+                  :color="getPaymentStatusColor"
+                  size="small"
+                  variant="tonal"
+                  class="mt-1"
+                >
+                  {{ getPaymentStatusLabel }}
+                </VChip>
+              </div>
+            </VCol>
+            <VCol
+              cols="6"
+              sm="3"
+            >
+              <div class="kpi-tile">
+                <VIcon
+                  icon="ri-shopping-bag-3-line"
+                  size="22"
+                  color="info"
+                  class="mb-2"
+                />
+                <div class="text-caption text-medium-emphasis">
+                  Ítems
+                </div>
+                <div class="text-h6 font-weight-bold">
+                  {{ itemsCount }}
+                </div>
+              </div>
+            </VCol>
+            <VCol
+              cols="6"
+              sm="3"
+            >
+              <div class="kpi-tile">
+                <VIcon
+                  icon="ri-bank-card-line"
+                  size="22"
+                  color="secondary"
+                  class="mb-2"
+                />
+                <div class="text-caption text-medium-emphasis">
+                  Método de pago
+                </div>
+                <div class="text-body-2 font-weight-medium text-truncate mt-1">
+                  {{ displayPaymentMethod }}
+                </div>
+              </div>
+            </VCol>
+          </VRow>
 
-              <VRow dense>
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Tipo de Documento
+          <VRow>
+            <!-- Cliente y vehículo -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <div class="section-panel h-100">
+                <div class="section-title">
+                  <VAvatar
+                    size="36"
+                    color="success"
+                    variant="tonal"
+                    class="me-3"
+                  >
+                    <VIcon
+                      icon="ri-user-star-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <div>
+                    <div class="text-subtitle-1 font-weight-bold">
+                      Cliente y vehículo
                     </div>
-                    <VChip
-                      :color="getDocumentTypeColor"
-                      size="small"
-                      variant="tonal"
-                    >
-                      {{ getDocumentTypeLabel }}
-                    </VChip>
+                    <div class="text-caption text-medium-emphasis">
+                      Datos del servicio
+                    </div>
                   </div>
-                </VCol>
+                </div>
 
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Número de Documento
-                    </div>
-                    <div class="text-body-1 font-weight-medium">
-                      {{ saleData.document_number }}
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Fecha de Servicio
-                    </div>
-                    <div class="d-flex align-center">
+                <div class="info-list">
+                  <div class="info-row">
+                    <span class="info-label">
                       <VIcon
-                        icon="ri-calendar-line"
+                        icon="ri-user-line"
                         size="16"
-                        class="me-1 text-primary"
                       />
-                      <span class="text-body-2">{{ formatDate(saleData.service_date) }}</span>
+                      Cliente
+                    </span>
+                    <span class="info-value font-weight-medium">{{ getClientName }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-id-card-line"
+                        size="16"
+                      />
+                      Documento
+                    </span>
+                    <span class="info-value">{{ getClientDocument }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-phone-line"
+                        size="16"
+                      />
+                      Teléfono
+                    </span>
+                    <span class="info-value">{{ getClientPhone }}</span>
+                  </div>
+                  <VDivider class="my-3" />
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-car-line"
+                        size="16"
+                      />
+                      Placa
+                    </span>
+                    <span class="info-value">
+                      <VChip
+                        v-if="getVehicleLicensePlate"
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                        label
+                        class="font-weight-bold"
+                      >
+                        {{ getVehicleLicensePlate }}
+                      </VChip>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >—</span>
+                    </span>
+                  </div>
+                  <div
+                    v-if="saleData.vehicle"
+                    class="info-row"
+                  >
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-roadster-line"
+                        size="16"
+                      />
+                      Vehículo
+                    </span>
+                    <span class="info-value">{{ getVehicleInfo }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-dashboard-3-line"
+                        size="16"
+                      />
+                      Kilometraje
+                    </span>
+                    <span class="info-value">
+                      {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
+                    </span>
+                  </div>
+                  <div class="info-row align-start">
+                    <span class="info-label">
+                      <VIcon
+                        icon="ri-user-settings-line"
+                        size="16"
+                      />
+                      Técnicos
+                    </span>
+                    <span class="info-value">
+                      <div
+                        v-if="technicians.length"
+                        class="d-flex flex-wrap gap-1 justify-end"
+                      >
+                        <VChip
+                          v-for="tech in technicians"
+                          :key="tech.id"
+                          size="small"
+                          color="primary"
+                          variant="tonal"
+                        >
+                          {{ tech.first_name }} {{ tech.last_name }}
+                        </VChip>
+                      </div>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >—</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </VCol>
+
+            <!-- Pagos -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <div class="section-panel h-100">
+                <div class="section-title">
+                  <VAvatar
+                    size="36"
+                    color="warning"
+                    variant="tonal"
+                    class="me-3"
+                  >
+                    <VIcon
+                      icon="ri-wallet-3-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <div>
+                    <div class="text-subtitle-1 font-weight-bold">
+                      Información de pago
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ hasPaymentDistributions ? 'Pagos distribuidos' : 'Resumen financiero' }}
                     </div>
                   </div>
-                </VCol>
+                </div>
 
-                <VCol cols="6">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Estado de Pago
-                    </div>
+                <div
+                  v-if="hasPaymentDistributions"
+                  class="payment-table-wrap"
+                >
+                  <VTable
+                    density="compact"
+                    class="payment-table"
+                  >
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Método</th>
+                        <th>Cuenta</th>
+                        <th class="text-right">
+                          Monto
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(dist, index) in getPaymentDistributions"
+                        :key="dist.id || index"
+                      >
+                        <td class="text-medium-emphasis">
+                          {{ index + 1 }}
+                        </td>
+                        <td>{{ dist.payment_method }}</td>
+                        <td>{{ dist.account?.name || `Cuenta ${dist.account_id}` }}</td>
+                        <td class="text-right font-weight-bold">
+                          {{ formatCurrency(dist.amount) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </VTable>
+                </div>
+
+                <div
+                  v-else-if="!isQuote"
+                  class="info-list"
+                >
+                  <div class="info-row">
+                    <span class="info-label">Estado</span>
                     <VChip
                       :color="getPaymentStatusColor"
                       size="small"
@@ -280,341 +559,192 @@ const closeDialog = () => {
                       {{ getPaymentStatusLabel }}
                     </VChip>
                   </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Método de Pago
-                    </div>
-                    <div class="text-body-2">
-                      {{ saleData.payment_method || 'No especificado' }}
-                    </div>
+                  <div class="info-row">
+                    <span class="info-label">Método</span>
+                    <span class="info-value">{{ displayPaymentMethod }}</span>
                   </div>
-                </VCol>
-
-                <VCol
-                  v-if="hasPaymentDistributions"
-                  cols="12"
-                >
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Detalle de Pagos
-                    </div>
-                    <div class="border rounded-lg overflow-hidden mt-2">
-                      <VTable
-                        class="text-no-wrap"
-                        density="compact"
-                      >
-                        <thead class="bg-grey-lighten-4">
-                          <tr>
-                            <th style="width: 50px;">
-                              #
-                            </th>
-                            <th>Forma de Pago</th>
-                            <th>Cuenta</th>
-                            <th class="text-right">
-                              Monto
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr
-                            v-for="(dist, index) in getPaymentDistributions"
-                            :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                          >
-                            <td class="pa-2 text-center font-weight-medium">
-                              {{ index + 1 }}
-                            </td>
-                            <td class="pa-2">
-                              {{ dist.payment_method }}
-                            </td>
-                            <td class="pa-2">
-                              {{ dist.account?.name || 'Cuenta ' + dist.account_id }}
-                            </td>
-                            <td class="pa-2 text-right font-weight-bold">
-                              {{ formatCurrency(dist.amount) }}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </VTable>
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Kilometraje
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-speed-up-line"
-                        size="16"
-                        class="me-1 text-info"
-                      />
-                      <span class="text-body-2">{{ saleData.mileage || 'No especificado' }} km</span>
-                    </div>
-                  </div>
-                </VCol>
-              </VRow>
-            </VCard>
-          </VCol>
-
-          <!-- Tarjeta de Cliente y Vehículo -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100"
-              elevation="2"
-              rounded="lg"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-user-vehicle-line"
-                  color="success"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Cliente y Vehículo</span>
-              </VCardTitle>
-
-              <VRow dense>
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Cliente
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-user-line"
-                        size="16"
-                        class="me-1 text-success"
-                      />
-                      <span class="text-body-2 font-weight-medium">{{ getClientName }}</span>
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Documento del Cliente
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-id-card-line"
-                        size="16"
-                        class="me-1 text-info"
-                      />
-                      <span class="text-body-2">{{ getClientDocument }}</span>
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Vehículo
-                    </div>
-                    <div
-                      v-if="saleData.vehicle"
-                      class="d-flex align-center"
+                  <div
+                    v-if="saleData.is_credited"
+                    class="info-row"
+                  >
+                    <span class="info-label">Crédito</span>
+                    <VChip
+                      size="small"
+                      color="warning"
+                      variant="tonal"
                     >
-                      <VIcon
-                        icon="ri-car-line"
-                        size="16"
-                        class="me-1 text-warning"
-                      />
-                      <VChip
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                        class="font-weight-bold"
-                      >
-                        {{ getVehicleLicensePlate }}
-                      </VChip>
-                    </div>
-                    <span
-                      v-else
-                      class="text-body-2 text-medium-emphasis"
-                    >No especificado</span>
+                      A crédito
+                    </VChip>
                   </div>
-                </VCol>
+                </div>
 
-                <VCol
-                  v-if="saleData.vehicle"
-                  cols="12"
+                <div
+                  v-else
+                  class="empty-hint pa-4 text-center"
                 >
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Información del Vehículo
-                    </div>
-                    <div class="text-body-2">
-                      {{ getVehicleInfo }}
-                    </div>
-                  </div>
-                </VCol>
-              </VRow>
-            </VCard>
-          </VCol>
+                  <VIcon
+                    icon="ri-file-list-3-line"
+                    size="32"
+                    color="info"
+                    class="mb-2"
+                  />
+                  <p class="text-body-2 text-medium-emphasis mb-0">
+                    Cotización sin movimiento de caja
+                  </p>
+                </div>
+              </div>
+            </VCol>
+          </VRow>
 
-          <!-- Tarjeta de Detalle de Items -->
-          <VCol cols="12">
-            <VCard
-              class="pa-4"
-              elevation="2"
-              rounded="lg"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
+          <!-- Detalle de ítems -->
+          <div class="section-panel mt-4">
+            <div class="section-title mb-3">
+              <VAvatar
+                size="36"
+                color="info"
+                variant="tonal"
+                class="me-3"
+              >
                 <VIcon
                   icon="ri-shopping-cart-2-line"
-                  color="warning"
-                  class="me-2"
+                  size="20"
                 />
-                <span class="text-h6 font-weight-bold">Detalle de Productos/Servicios</span>
-              </VCardTitle>
-
-              <div
-                v-if="saleData.details && saleData.details.length > 0"
-                class="border rounded-lg overflow-hidden"
-              >
-                <VTable class="text-no-wrap">
-                  <thead class="bg-grey-lighten-4">
-                    <tr>
-                      <th>Descripción</th>
-                      <th style="width: 100px;">
-                        Cantidad
-                      </th>
-                      <th style="width: 120px;">
-                        Precio Unit.
-                      </th>
-                      <th style="width: 120px;">
-                        Descuento
-                      </th>
-                      <th
-                        style="width: 120px;"
-                        class="text-right"
-                      >
-                        Total
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(item, index) in saleData.details"
-                      :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                    >
-                      <td class="pa-2">
-                        {{ item.description }}
-                      </td>
-                      <td class="pa-2">
-                        {{ item.quantity }}
-                      </td>
-                      <td class="pa-2">
-                        {{ formatCurrency(item.price) }}
-                      </td>
-                      <td class="pa-2">
-                        {{ formatCurrency(item.discount || 0) }}
-                      </td>
-                      <td class="pa-2 text-right font-weight-bold">
-                        {{ formatCurrency(item.total) }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </VTable>
+              </VAvatar>
+              <div>
+                <div class="text-subtitle-1 font-weight-bold">
+                  Productos y servicios
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  {{ itemsCount }} {{ itemsCount === 1 ? 'ítem' : 'ítems' }} en el documento
+                </div>
               </div>
-              <div
-                v-else
-                class="text-center pa-4 text-medium-emphasis"
-              >
-                No hay productos/servicios agregados
-              </div>
-            </VCard>
-          </VCol>
+            </div>
 
-          <!-- Tarjeta de Totales -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4"
-              elevation="2"
-              rounded="lg"
+            <div
+              v-if="saleData.details?.length"
+              class="items-table-wrap"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-money-dollar-circle-line"
-                  color="success"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Totales</span>
-              </VCardTitle>
+              <VTable
+                density="comfortable"
+                class="items-table"
+              >
+                <thead>
+                  <tr>
+                    <th>Descripción</th>
+                    <th class="text-center">
+                      Cant.
+                    </th>
+                    <th class="text-right">
+                      P. unit.
+                    </th>
+                    <th class="text-right">
+                      Desc.
+                    </th>
+                    <th class="text-right">
+                      Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(item, index) in saleData.details"
+                    :key="item.id || index"
+                  >
+                    <td class="font-weight-medium">
+                      {{ item.description }}
+                    </td>
+                    <td class="text-center">
+                      {{ item.quantity }}
+                    </td>
+                    <td class="text-right">
+                      {{ formatCurrency(item.price) }}
+                    </td>
+                    <td class="text-right text-medium-emphasis">
+                      {{ formatCurrency(item.discount || 0) }}
+                    </td>
+                    <td class="text-right font-weight-bold">
+                      {{ formatCurrency(item.total) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
 
-              <VRow dense>
-                <VCol cols="12">
-                  <div class="d-flex justify-space-between align-center mb-2">
-                    <span class="text-body-2">Subtotal</span>
-                    <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.subtotal) }}</span>
-                  </div>
-                </VCol>
-
-                <VCol cols="12">
-                  <div class="d-flex justify-space-between align-center mb-2">
-                    <span class="text-body-2">IVA (15%)</span>
-                    <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.tax_amount) }}</span>
-                  </div>
-                </VCol>
-
-                <VDivider class="my-2" />
-
-                <VCol cols="12">
-                  <div class="d-flex justify-space-between align-center">
-                    <span class="text-h6 font-weight-bold">Total</span>
-                    <span class="text-h5 font-weight-bold text-primary">{{ formatCurrency(saleData.total) }}</span>
-                  </div>
-                </VCol>
-              </VRow>
-            </VCard>
-          </VCol>
-
-          <!-- Tarjeta de Observaciones -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4"
-              elevation="2"
-              rounded="lg"
+            <div
+              v-else
+              class="empty-hint pa-6 text-center"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-file-text-line"
-                  color="info"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Observaciones</span>
-              </VCardTitle>
+              <VIcon
+                icon="ri-shopping-bag-3-line"
+                size="40"
+                color="grey-lighten-1"
+                class="mb-2"
+              />
+              <p class="text-body-2 text-medium-emphasis mb-0">
+                No hay productos o servicios registrados
+              </p>
+            </div>
+          </div>
 
-              <div class="text-body-2">
-                {{ saleData.observations || 'Sin observaciones' }}
+          <!-- Totales y observaciones -->
+          <VRow class="mt-4">
+            <VCol
+              cols="12"
+              md="7"
+            >
+              <div
+                v-if="saleData.observations"
+                class="section-panel observations-panel"
+              >
+                <div class="d-flex align-center gap-2 mb-2">
+                  <VIcon
+                    icon="ri-file-text-line"
+                    size="20"
+                    color="info"
+                  />
+                  <span class="text-subtitle-2 font-weight-bold">Observaciones</span>
+                </div>
+                <p class="text-body-2 mb-0 observations-text">
+                  {{ saleData.observations }}
+                </p>
               </div>
-            </VCard>
-          </VCol>
-        </VRow>
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="5"
+            >
+              <div class="totals-panel pa-4 rounded-lg">
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <span class="text-body-2 text-medium-emphasis">Subtotal</span>
+                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.subtotal) }}</span>
+                </div>
+                <div
+                  v-if="saleData.tax_amount > 0"
+                  class="d-flex justify-space-between align-center mb-2"
+                >
+                  <span class="text-body-2 text-medium-emphasis">IVA (15%)</span>
+                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.tax_amount) }}</span>
+                </div>
+                <VDivider class="my-3" />
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-subtitle-1 font-weight-bold">Total</span>
+                  <span class="text-h5 font-weight-bold text-primary">{{ formatCurrency(saleData.total) }}</span>
+                </div>
+              </div>
+            </VCol>
+          </VRow>
+        </template>
       </VCardText>
 
-      <!-- Footer con botones -->
       <VDivider />
-      <VCardActions class="pa-4 justify-center">
+
+      <VCardActions class="pa-4">
+        <VSpacer />
         <VBtn
-          color="primary"
-          variant="elevated"
+          color="secondary"
+          variant="tonal"
           prepend-icon="ri-close-line"
-          class="px-6"
           @click="closeDialog"
         >
           Cerrar
@@ -623,3 +753,107 @@ const closeDialog = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.sale-view-card {
+  overflow: hidden;
+}
+
+.sale-view-header {
+  background: rgb(var(--v-theme-surface));
+}
+
+.kpi-tile {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  height: 100%;
+}
+
+.section-panel {
+  padding: 20px;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.info-row.align-start {
+  align-items: flex-start;
+}
+
+.info-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  flex-shrink: 0;
+}
+
+.info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.payment-table-wrap,
+.items-table-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.payment-table :deep(thead th),
+.items-table :deep(thead th) {
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+  color: rgba(var(--v-theme-on-surface), 0.65) !important;
+}
+
+.items-table :deep(tbody tr:hover) {
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+
+.totals-panel {
+  background: rgba(var(--v-theme-primary), 0.06);
+  border: 1px solid rgba(var(--v-theme-primary), 0.15);
+}
+
+.observations-panel {
+  background: rgba(var(--v-theme-info), 0.04);
+  border-color: rgba(var(--v-theme-info), 0.2);
+}
+
+.observations-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.empty-hint {
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+}
+</style>

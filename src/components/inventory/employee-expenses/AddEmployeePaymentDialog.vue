@@ -30,7 +30,7 @@ const loadingAdvances = ref(false)
 const form = ref({
   employee_id: null,
   employee_name: '',
-  account_id: 3,
+  account_id: null,
   account_name: null,
   amount: null,
   description: '',
@@ -49,6 +49,13 @@ const paymentMethods = [
 const show = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value),
+})
+
+const filteredAccounts = computed(() => {
+  if (form.value.payment_method === 'TRANSFERENCIA') {
+    return accounts.value.filter(acc => acc.id !== 1)
+  }
+  return accounts.value
 })
 
 const selectedEmployeeSalary = computed(() => {
@@ -191,7 +198,7 @@ const calculateMaxPaymentAmount = async employeeId => {
 const resetForm = () => {
   form.value = {
     employee_id: null,
-    account_id: 3,
+    account_id: null,
     amount: null,
     description: '',
     payment_date: new Date().toISOString().split('T')[0],
@@ -218,6 +225,10 @@ const handleSubmit = async () => {
     const payload = {
       ...form.value,
       type: 'payment',
+    }
+    
+    if (payload.payment_method === 'EFECTIVO') {
+      payload.account_id = 1
     }
 
     const response = await $api('employee-expenses', {
@@ -341,6 +352,14 @@ watch(() => form.value.account_id, accountId => {
   }
 })
 
+watch(() => form.value.payment_method, method => {
+  if (method === 'EFECTIVO') {
+    form.value.account_id = 1
+  } else if (form.value.account_id === 1 || !form.value.account_id) {
+    form.value.account_id = null
+  }
+})
+
 // Lifecycle
 onMounted(() => {
   loadEmployees()
@@ -452,11 +471,35 @@ onMounted(() => {
               </VTextField>
             </VCol>
 
+            <!-- Método de Pago -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSelect
+                v-model="form.payment_method"
+                :items="paymentMethods"
+                item-title="text"
+                item-value="value"
+                label="Método de Pago *"
+                placeholder="Selecciona método"
+                :rules="[v => !!v || 'El método de pago es requerido']"
+                variant="outlined"
+                density="comfortable"
+              >
+                <template #prepend-inner>
+                  <VIcon color="primary" size="20">
+                    ri-money-dollar-circle-line
+                  </VIcon>
+                </template>
+              </VSelect>
+            </VCol>
+
             <!-- Cuenta -->
-            <VCol cols="6">
+            <VCol v-if="form.payment_method === 'TRANSFERENCIA'" cols="12" md="6">
               <VSelect
                 v-model="form.account_id"
-                :items="accounts"
+                :items="filteredAccounts"
                 item-value="id"
                 item-title="display_name"
                 label="Cuenta *"
@@ -538,35 +581,6 @@ onMounted(() => {
               </VCard>
             </VCol>
 
-
-
-            <!-- Método de Pago -->
-            <VCol
-              v-show="false"
-              cols="12"
-              md="6"
-            >
-              <VSelect
-                v-model="form.payment_method"
-                :items="paymentMethods"
-                item-title="text"
-                item-value="value"
-                label="Método de Pago *"
-                placeholder="Selecciona método"
-                :rules="[v => !!v || 'El método de pago es requerido']"
-                variant="outlined"
-                density="comfortable"
-              >
-                <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-money-dollar-circle-line
-                  </VIcon>
-                </template>
-              </VSelect>
-            </VCol>
 
             <!-- Sueldo Base (Reemplazo temporal) -->
             <VCol

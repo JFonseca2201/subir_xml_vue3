@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
@@ -6,133 +8,423 @@ const props = defineProps({
   },
   partnerSelected: {
     type: Object,
-    required: true,
+    default: () => ({}),
   },
 })
 
-const emit = defineEmits([
-  'update:isDialogVisible',
-])
+const emit = defineEmits(['update:isDialogVisible'])
 
-const onClose = () => {
+const partner = computed(() => props.partnerSelected || {})
+
+const initials = computed(() => {
+  const parts = String(partner.value.name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (!parts.length) return 'S'
+
+  return parts
+    .slice(0, 2)
+    .map(p => p[0])
+    .join('')
+    .toUpperCase()
+})
+
+const identificationType = computed(() => {
+  const id = String(partner.value.identification || '').replace(/\D/g, '')
+  if (id.length === 13) return { label: 'RUC', color: 'deep-purple' }
+  if (id.length === 10) return { label: 'Cédula', color: 'info' }
+
+  return { label: 'Documento', color: 'secondary' }
+})
+
+const totalContributions = computed(() => {
+  if (partner.value.formatted_total_contributions) {
+    return partner.value.formatted_total_contributions
+  }
+  if (partner.value.total_contributions != null) {
+    return formatCurrency(partner.value.total_contributions)
+  }
+  if (Array.isArray(partner.value.contributions) && partner.value.contributions.length) {
+    const sum = partner.value.contributions.reduce((acc, c) => acc + (Number(c.amount) || 0), 0)
+
+    return formatCurrency(sum)
+  }
+
+  return null
+})
+
+const contributionsCount = computed(() => {
+  if (Array.isArray(partner.value.contributions)) {
+    return partner.value.contributions.length
+  }
+
+  return partner.value.contributions_count ?? null
+})
+
+const formatDate = dateString => {
+  if (!dateString) return '—'
+  const [year, month, day] = String(dateString).split('T')[0].split('-')
+
+  return `${day}/${month}/${year}`
+}
+
+const formatCurrency = value => new Intl.NumberFormat('es-EC', {
+  style: 'currency',
+  currency: 'USD',
+}).format(value || 0)
+
+const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
 </script>
 
 <template>
   <VDialog
-    :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
+    max-width="640"
+    scrollable
+    @update:model-value="closeDialog"
   >
-    <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="onClose"
-      />
-      <div class="text-center mb-8">
-        <VIcon
-          icon="ri-user-3-line"
-          size="42"
-          color="primary"
-          class="mb-3"
-        />
-        <h4 class="text-h4 font-weight-bold mb-1">
-          Perfil del Socio
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          Visualiza la información del socio seleccionado
-        </p>
-      </div>
-      <VRow>
-        <VCol
-          cols="12"
-          sm="12"
-        >
-          <VTextField
-            :model-value="props.partnerSelected.name"
-            label="Nombres y Apellidos"
-            readonly
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-user-line"
-            hide-details="auto"
-          />
-        </VCol>
-        <VCol
-          cols="12"
-          sm="12"
-        >
-          <VTextField
-            :model-value="props.partnerSelected.identification"
-            label="Cédula o RUC"
-            readonly
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-id-card-line"
-            hide-details="auto"
-          />
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <VTextField
-            :model-value="props.partnerSelected.email"
-            label="Correo Electrónico"
-            readonly
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-mail-line"
-            hide-details="auto"
-          />
-        </VCol>
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <VTextField
-            :model-value="props.partnerSelected.phone"
-            label="Teléfono"
-            readonly
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-phone-line"
-            hide-details="auto"
-          />
-        </VCol>
-        <VCol cols="12">
-          <VTextField
-            :model-value="props.partnerSelected.address"
-            label="Dirección"
-            readonly
-            variant="outlined"
-            density="comfortable"
-            prepend-inner-icon="ri-map-pin-line"
-            hide-details="auto"
-          />
-        </VCol>
-      </VRow>
-      <VCol
-        cols="12"
-        class="d-flex justify-end gap-3 mt-4"
-      >
+    <VCard
+      class="partner-view-card"
+      rounded="lg"
+      elevation="4"
+    >
+      <!-- Cabecera -->
+      <div class="partner-view-header d-flex align-start justify-space-between pa-5 pb-4">
+        <div class="d-flex align-start gap-4 flex-grow-1 min-w-0">
+          <VAvatar
+            size="64"
+            color="primary"
+            variant="tonal"
+            class="flex-shrink-0 partner-avatar"
+          >
+            <span class="text-h6 font-weight-bold">{{ initials }}</span>
+          </VAvatar>
+
+          <div class="min-w-0">
+            <div class="text-h5 font-weight-bold text-truncate mb-1">
+              {{ partner.name || 'Sin nombre' }}
+            </div>
+            <div class="d-flex align-center flex-wrap gap-2 mb-2">
+              <VChip
+                :color="identificationType.color"
+                size="small"
+                variant="tonal"
+                label
+              >
+                {{ identificationType.label }}
+              </VChip>
+              <VChip
+                color="primary"
+                size="small"
+                variant="outlined"
+                label
+                class="font-weight-medium"
+              >
+                <VIcon
+                  start
+                  icon="ri-id-card-line"
+                  size="14"
+                />
+                {{ partner.identification || '—' }}
+              </VChip>
+            </div>
+            <div
+              v-if="partner.created_at"
+              class="text-body-2 text-medium-emphasis d-inline-flex align-center gap-1"
+            >
+              <VIcon
+                icon="ri-calendar-line"
+                size="16"
+              />
+              Registrado el {{ formatDate(partner.created_at) }}
+            </div>
+          </div>
+        </div>
+
         <VBtn
-          variant="outlined"
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="flex-shrink-0 ms-2"
+          @click="closeDialog"
+        />
+      </div>
+
+      <VDivider />
+
+      <VCardText class="pa-5">
+        <!-- Resumen -->
+        <VRow class="mb-5">
+          <VCol
+            cols="12"
+            :sm="totalContributions ? 6 : 12"
+          >
+            <div class="kpi-tile">
+              <VIcon
+                icon="ri-shield-user-line"
+                size="22"
+                color="primary"
+                class="mb-2"
+              />
+              <div class="text-caption text-medium-emphasis">
+                Tipo de identificación
+              </div>
+              <div class="text-body-1 font-weight-bold mt-1">
+                {{ identificationType.label }}
+              </div>
+            </div>
+          </VCol>
+          <VCol
+            v-if="totalContributions"
+            cols="12"
+            sm="6"
+          >
+            <div class="kpi-tile kpi-tile--accent">
+              <VIcon
+                icon="ri-funds-line"
+                size="22"
+                color="success"
+                class="mb-2"
+              />
+              <div class="text-caption text-medium-emphasis">
+                Aportes registrados
+                <span v-if="contributionsCount != null"> ({{ contributionsCount }})</span>
+              </div>
+              <div class="text-h6 font-weight-bold text-success mt-1">
+                {{ totalContributions }}
+              </div>
+            </div>
+          </VCol>
+        </VRow>
+
+        <!-- Contacto -->
+        <div class="section-panel mb-4">
+          <div class="section-title">
+            <VAvatar
+              size="36"
+              color="info"
+              variant="tonal"
+              class="me-3"
+            >
+              <VIcon
+                icon="ri-contacts-line"
+                size="20"
+              />
+            </VAvatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold">
+                Contacto
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Medios de comunicación del socio
+              </div>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">
+                <VIcon
+                  icon="ri-mail-line"
+                  size="16"
+                />
+                Correo
+              </span>
+              <span class="info-value">
+                <a
+                  v-if="partner.email"
+                  :href="`mailto:${partner.email}`"
+                  class="contact-link"
+                >{{ partner.email }}</a>
+                <span
+                  v-else
+                  class="text-medium-emphasis"
+                >—</span>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">
+                <VIcon
+                  icon="ri-phone-line"
+                  size="16"
+                />
+                Teléfono
+              </span>
+              <span class="info-value">
+                <a
+                  v-if="partner.phone"
+                  :href="`tel:${partner.phone}`"
+                  class="contact-link"
+                >{{ partner.phone }}</a>
+                <span
+                  v-else
+                  class="text-medium-emphasis"
+                >—</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dirección -->
+        <div class="section-panel">
+          <div class="section-title">
+            <VAvatar
+              size="36"
+              color="success"
+              variant="tonal"
+              class="me-3"
+            >
+              <VIcon
+                icon="ri-map-pin-line"
+                size="20"
+              />
+            </VAvatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold">
+                Ubicación
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Dirección registrada
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-if="partner.address"
+            class="address-block"
+          >
+            <VIcon
+              icon="ri-road-map-line"
+              size="20"
+              color="success"
+              class="me-2 flex-shrink-0"
+            />
+            <span class="text-body-2">{{ partner.address }}</span>
+          </div>
+          <div
+            v-else
+            class="empty-hint pa-4 text-center"
+          >
+            <VIcon
+              icon="ri-map-pin-line"
+              size="32"
+              color="grey-lighten-1"
+              class="mb-2"
+            />
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              Sin dirección registrada
+            </p>
+          </div>
+        </div>
+      </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4">
+        <VSpacer />
+        <VBtn
           color="secondary"
-          class="text-none px-6"
-          @click="onClose"
+          variant="tonal"
+          prepend-icon="ri-close-line"
+          @click="closeDialog"
         >
-          <VIcon
-            start
-            icon="ri-close-line"
-          />
           Cerrar
         </VBtn>
-      </VCol>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.partner-view-card {
+  overflow: hidden;
+}
+
+.partner-avatar {
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.kpi-tile {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  height: 100%;
+}
+
+.kpi-tile--accent {
+  background: rgba(var(--v-theme-success), 0.06);
+  border-color: rgba(var(--v-theme-success), 0.2);
+}
+
+.section-panel {
+  padding: 20px;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.info-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  flex-shrink: 0;
+}
+
+.info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.contact-link {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+.address-block {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-success), 0.04);
+  border: 1px solid rgba(var(--v-theme-success), 0.15);
+  line-height: 1.5;
+}
+
+.empty-hint {
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+}
+</style>

@@ -24,6 +24,11 @@ const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
 
+const paymentMethods = [
+  { text: 'Efectivo', value: 'EFECTIVO' },
+  { text: 'Transferencia', value: 'TRANSFERENCIA' },
+]
+
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 
@@ -37,6 +42,13 @@ const isEditing = computed(() => !!props.expense)
 
 const dialogTitle = computed(() => isEditing.value ? 'Editar Adelanto' : 'Nuevo Adelanto')
 
+const filteredAccounts = computed(() => {
+  if (form.value.payment_method === 'TRANSFERENCIA') {
+    return accounts.value.filter(acc => acc.id !== 1)
+  }
+  return accounts.value
+})
+
 // Formulario reactivo
 const form = ref({
   employee_id: null,
@@ -46,6 +58,7 @@ const form = ref({
   amount: null,
   description: '',
   advance_date: new Date().toISOString().split('T')[0],
+  payment_method: 'TRANSFERENCIA',
 })
 
 // Funciones
@@ -58,6 +71,7 @@ const resetForm = () => {
     amount: null,
     description: '',
     advance_date: new Date().toISOString().split('T')[0],
+    payment_method: 'TRANSFERENCIA',
   }
   formRef.value?.reset()
 }
@@ -78,11 +92,11 @@ const handleSubmit = async () => {
   try {
     const payload = {
       employee_id: form.value.employee_id,
-      account_id: form.value.account_id,
+      account_id: form.value.payment_method === 'EFECTIVO' ? 1 : form.value.account_id,
       amount: parseFloat(form.value.amount),
       description: form.value.description,
       advance_date: form.value.advance_date,
-      payment_method: 'TRANSFERENCIA', // Valor por defecto
+      payment_method: form.value.payment_method,
       reason: form.value.description,
     }
 
@@ -192,6 +206,14 @@ watch(() => form.value.account_id, accountId => {
   }
 })
 
+watch(() => form.value.payment_method, method => {
+  if (method === 'EFECTIVO') {
+    form.value.account_id = 1
+  } else if (form.value.account_id === 1 || !form.value.account_id) {
+    form.value.account_id = null
+  }
+})
+
 // Lifecycle
 onMounted(async () => {
   // Cargar empleados primero
@@ -205,6 +227,7 @@ onMounted(async () => {
     form.value.amount = props.expense.amount
     form.value.description = props.expense.description
     form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
+    form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
 
     console.log('Formulario cargado:', form.value)
   }
@@ -231,6 +254,7 @@ watch(() => show.value, async newVal => {
     form.value.amount = props.expense.amount
     form.value.description = props.expense.description
     form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
+    form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
 
     console.log('Formulario cargado:', form.value)
     console.log('Empleado encontrado:', employees.value.find(emp => emp.id === props.expense.employee_id))
@@ -288,8 +312,22 @@ watch(() => show.value, async newVal => {
           <VRow>
             <VCol cols="12">
               <VSelect
+                v-model="form.payment_method"
+                :items="paymentMethods"
+                item-title="text"
+                item-value="value"
+                label="Método de Pago"
+                :rules="[v => !!v]"
+                required
+              />
+            </VCol>
+          </VRow>
+
+          <VRow v-if="form.payment_method === 'TRANSFERENCIA'">
+            <VCol cols="12">
+              <VSelect
                 v-model="form.account_id"
-                :items="accounts"
+                :items="filteredAccounts"
                 item-title="name"
                 item-value="id"
                 label="Cuenta"

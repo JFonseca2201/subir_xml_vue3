@@ -8,6 +8,8 @@ import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.v
 import VehicleEditDialog from '@/components/inventory/vehicles/VehicleEditDialog.vue'
 import VehicleDeleteDialog from '@/components/inventory/vehicles/VehicleDeleteDialog.vue'
 import { getBrandNameById, getBrandOptions } from '@/data/vehicleBrands.js'
+import { getVehicleTypeOptions, getVehicleTypeNameById, getVehicleTypeColor } from '@/data/vehicleTypes.js'
+import ImportData from '@/components/inventory/import/ImportData.vue'
 
 // Router y notificaciones
 const router = useRouter()
@@ -23,6 +25,7 @@ const isVehicleEditDialogVisible = ref(false)
 const vehicleToEdit = ref(null)
 const deleteDialog = ref(false)
 const vehicleToDelete = ref(null)
+const isImportDialogVisible = ref(false)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -39,21 +42,7 @@ const totalItems = ref(0)
 const totalPages = ref(0)
 
 // Opciones para selects
-const vehicleTypeOptions = ref([
-  { title: 'Sedán', value: 'sedan' },
-  { title: 'Hatchback', value: 'hatchback' },
-  { title: 'Camioneta', value: 'camioneta' },
-  { title: 'SUV', value: 'suv' },
-  { title: 'Furgoneta', value: 'furgoneta' },
-  { title: 'Camión', value: 'camion' },
-  { title: 'Bus', value: 'bus' },
-  { title: 'Van', value: 'van' },
-  { title: 'Motocicleta', value: 'motocicleta' },
-  { title: 'Pickup', value: 'pickup' },
-  { title: 'Minivan', value: 'minivan' },
-  { title: 'Deportivo', value: 'deportivo' },
-  { title: 'Otro', value: 'otro' },
-])
+const vehicleTypeOptions = ref(getVehicleTypeOptions())
 
 const brandOptions = ref(getBrandOptions())
 
@@ -253,36 +242,8 @@ const truncate = (text, length = 30) => {
   return text.length > length ? text.slice(0, length) + '...' : text
 }
 
-// Funciones auxiliares para tipos de vehículos
-const getVehicleTypeLabel = vehicleType => {
-  if (!vehicleType) return 'No especificado'
-  const option = vehicleTypeOptions.value.find(opt => opt.value === vehicleType)
-  
-  return option ? option.title : vehicleType
-}
-
-const getVehicleTypeColor = vehicleType => {
-  const colors = {
-    'sedan': 'primary',
-    'hatchback': 'info',
-    'camioneta': 'success',
-    'suv': 'warning',
-    'furgoneta': 'secondary',
-    'camion': 'error',
-    'bus': 'purple',
-    'van': 'indigo',
-    'motocicleta': 'orange',
-    'pickup': 'teal',
-    'minivan': 'cyan',
-    'deportivo': 'red',
-    'otro': 'grey',
-  }
-
-  
-  return colors[vehicleType] || 'grey'
-}
-
-
+// Funciones auxiliares para tipos de vehículos (ahora centralizadas)
+const getVehicleTypeLabel = getVehicleTypeNameById
 
 // Montar componente
 onMounted(() => {
@@ -302,6 +263,14 @@ onMounted(() => {
         <span class="text-h5">Gestión de Vehículos</span>
       </div>
       <div class="d-flex gap-2">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-upload-cloud-2-line"
+          @click="isImportDialogVisible = true"
+        >
+          Importar
+        </VBtn>
         <VBtn
           color="primary"
           prepend-icon="ri-add-line"
@@ -383,7 +352,14 @@ onMounted(() => {
     <VDivider />
 
     <!-- Tabla de vehículos -->
-    <VCardText class="pa-0">
+    <VCardText class="pa-0 position-relative">
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
       <VTable
         hover
         class="vehicle-table"
@@ -404,18 +380,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading">
-            <td
-              colspan="8"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
-            </td>
-          </tr>
-          <tr v-else-if="!vehicles.length">
+          <tr v-if="!loading && !vehicles.length">
             <td
               colspan="8"
               class="text-center text-medium-emphasis py-6"
@@ -431,9 +396,9 @@ onMounted(() => {
           </tr>
           <tr
             v-for="vehicle in vehicles"
-            v-else
             :key="vehicle.id"
             class="hover:bg-grey-lighten-4 transition"
+            :class="{ 'opacity-50': loading }"
           >
             <!-- Debug: log del status -->
             {{ console.log('🚗 Vehículo ID:', vehicle.id, 'Status:', vehicle.status, 'Tipo:', typeof
@@ -556,5 +521,11 @@ onMounted(() => {
     v-model:isDialogVisible="deleteDialog"
     :vehicle-selected="vehicleToDelete"
     @delete-vehicle="handleVehicleDeleted"
+  />
+
+  <ImportData 
+    v-model:is-dialog-visible="isImportDialogVisible" 
+    default-tab="vehicles" 
+    @import-success="loadVehicles" 
   />
 </template>
