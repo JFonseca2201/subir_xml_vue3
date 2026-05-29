@@ -78,12 +78,6 @@ const loadProductsOfSupplier = async (supplierId) => {
 
 // Observar cambio de distribuidor para cargar sus productos
 watch(() => pedido.value.distribuidor_id, async (newVal, oldVal) => {
-  // Si cambia de distribuidor y el carrito tiene productos, preguntar o limpiar
-  if (oldVal !== null && pedido.value.items.length > 0 && newVal !== oldVal) {
-    // Limpiamos el carrito para no mezclar distribuidores
-    pedido.value.items = []
-    showNotification('Se ha cambiado de distribuidor. El carrito de productos se ha limpiado.', 'warning')
-  }
   
   searchProduct.value = null
   await loadProductsOfSupplier(newVal)

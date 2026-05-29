@@ -1,5 +1,6 @@
 <script setup>
 import ProviderAddDialog from '@/components/inventory/config/providers/ProviderAddDialog.vue'
+import ProviderViewDialog from '@/components/inventory/config/providers/ProviderViewDialog.vue'
 import ProviderEditDialog from '@/components/inventory/config/providers/ProviderEditDialog.vue'
 import ProviderDeleteDialog from '@/components/inventory/config/providers/ProviderDeleteDialog.vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -29,11 +30,13 @@ const headers = [
 ]
 
 const isProviderAddDialogVisible = ref(false)
+const isProviderViewDialogVisible = ref(false)
 const isProviderEditDialogVisible = ref(false)
 const isProviderDeleteDialogVisible = ref(false)
 
 const list_providers = ref([])
 const searchQuery = ref(null)
+const provider_selected_view = ref(null)
 const provider_selected_edit = ref(null)
 const provider_selected_delete = ref(null)
 
@@ -134,6 +137,11 @@ const addDeleteProvider = deletedProvider => {
     list_providers.value = backup
     showNotification('Proveedor eliminado correctamente', 'success')
   }, 50)
+}
+
+const viewItem = item => {
+  provider_selected_view.value = item
+  isProviderViewDialogVisible.value = true
 }
 
 const editItem = item => {
@@ -310,6 +318,13 @@ definePage({ meta: { permission: "settings" } })
           <div class="d-flex gap-1">
             <IconBtn
               size="small"
+              color="info"
+              @click="viewItem(item)"
+            >
+              <VIcon icon="ri-eye-line" />
+            </IconBtn>
+            <IconBtn
+              size="small"
               color="primary"
               @click="editItem(item)"
             >
@@ -345,6 +360,12 @@ definePage({ meta: { permission: "settings" } })
     v-model:isDialogVisible="isProviderAddDialogVisible"
     :providers="list_providers"
     @add-provider="addNewProvider"
+  />
+
+  <ProviderViewDialog
+    v-if="provider_selected_view && isProviderViewDialogVisible"
+    v-model:isDialogVisible="isProviderViewDialogVisible"
+    :provider-selected="provider_selected_view"
   />
 
   <ProviderEditDialog

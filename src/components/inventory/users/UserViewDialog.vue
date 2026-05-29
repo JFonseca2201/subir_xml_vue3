@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   isDialogVisible: {
@@ -8,73 +8,94 @@ const props = defineProps({
   },
   user: {
     type: Object,
-    required: true,
+    default: () => ({}),
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 })
 
-const emit = defineEmits([
-  'update:isDialogVisible',
-])
+const emit = defineEmits(['update:isDialogVisible'])
 
-// Formatear fecha
+const userData = computed(() => props.user || {})
+
+const fullName = computed(() => {
+  const parts = [userData.value.name, userData.value.surname].filter(Boolean)
+
+  return parts.join(' ') || 'Sin nombre'
+})
+
+const initials = computed(() => {
+  const parts = fullName.value.split(/\s+/).filter(Boolean)
+  if (!parts.length) return 'U'
+
+  return parts
+    .slice(0, 2)
+    .map(p => p[0])
+    .join('')
+    .toUpperCase()
+})
+
+const avatarUrl = computed(() => {
+  const avatar = userData.value.avatar
+  if (!avatar) return null
+  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
+
+  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
+
+  return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+})
+
+const isActive = computed(() => String(userData.value.status) === '1')
+
+const statusColor = computed(() => (isActive.value ? 'success' : 'error'))
+const statusLabel = computed(() => (isActive.value ? 'Activo' : 'Inactivo'))
+const statusIcon = computed(() => (isActive.value ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'))
+
+const documentTypeLabel = computed(() => {
+  const map = {
+    CI: 'Cédula',
+    RUC: 'RUC',
+    PASSPORT: 'Pasaporte',
+    CE: 'Cédula extranjera',
+  }
+
+  return map[userData.value.type_document] || userData.value.type_document || 'Documento'
+})
+
+const genderLabel = computed(() => {
+  const map = {
+    M: 'Masculino',
+    F: 'Femenino',
+    O: 'Otro',
+  }
+
+  return map[userData.value.gender] || '—'
+})
+
+const roleName = computed(() => userData.value.role?.name || 'Sin rol asignado')
+const sucursalName = computed(() => userData.value.sucursale?.name || '—')
+
 const formatDate = dateString => {
-  if (!dateString) return 'No disponible'
-  const date = new Date(dateString)
-  
+  if (!dateString) return '—'
+  const normalized = String(dateString).replace(' ', 'T')
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) {
+    const [year, month, day] = String(dateString).split('T')[0].split('-')
+
+    return `${day}/${month}/${year}`
+  }
+
   return date.toLocaleDateString('es-EC', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   })
 }
 
-// Obtener initials para el avatar si no hay imagen
-const getUserInitials = name => {
-  if (!name) return 'U'
-  const names = name.split(' ')
-  
-  return names.map(n => n[0]).join('').toUpperCase().slice(0, 2)
-}
-
-// Corregir URL de la imagen
-const getAvatarUrl = avatar => {
-  console.log(avatar)
-
-  if (!avatar) return null
-
-  // Si ya es una URL completa (http/https), retornarla tal cual
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-    return avatar
-  }
-
-  // Si no es URL completa, construir una
-  return `http://127.0.0.1:8000/storage/${avatar}`
-}
-
-// Determinar color de estado
-const getStatusColor = status => {
-  return status === '1' ? 'success' : 'error'
-}
-
-// Determinar texto de estado
-const getStatusText = status => {
-  return status === '1' ? 'Activo' : 'Inactivo'
-}
-
-// Determinar texto de género
-const getGenderText = gender => {
-  const genderMap = {
-    'M': 'Masculino',
-    'F': 'Femenino',
-    'O': 'Otro',
-  }
-
-  return genderMap[gender] || 'No especificado'
-}
-
-// Función para cerrar el diálogo
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
@@ -82,239 +103,153 @@ const closeDialog = () => {
 
 <template>
   <VDialog
-    :width="$vuetify.display.smAndDown ? 'auto' : 600"
     :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
+    max-width="600"
+    scrollable
+    @update:model-value="closeDialog"
   >
-    <VCard class="pa-6 pa-sm-8 rounded-xl elevation-10">
-      <!-- Close -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="closeDialog"
-      />
+    <VCard rounded="lg" elevation="4">
+      <!-- Header Tonal -->
+      <VCardTitle class="d-flex align-center justify-space-between pa-4">
+        <div class="d-flex align-center gap-2">
+          <VAvatar color="primary" variant="tonal" size="40">
+            <VIcon icon="ri-user-line" />
+          </VAvatar>
+          <span class="text-h6 font-weight-bold">Perfil de Usuario</span>
+        </div>
+        <VBtn icon variant="text" @click="closeDialog" color="secondary">
+          <VIcon icon="ri-close-line" />
+        </VBtn>
+      </VCardTitle>
 
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <VIcon
-          icon="ri-user-line"
-          size="42"
-          color="primary"
-          class="mb-3"
-        />
-        <h4 class="text-h4 font-weight-bold mb-1">
-          Detalles del Usuario
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          Información completa del usuario
-        </p>
-      </div>
+      <VDivider />
 
-      <!-- Avatar y Nombre Principal -->
-      <div class="text-center mb-6">
-        <VAvatar
-          v-if="getAvatarUrl(user.avatar)"
-          :image="getAvatarUrl(user.avatar)"
-          size="120"
-          class="elevation-6 mb-3"
-        />
-        <VAvatar
-          v-else
-          size="120"
-          color="primary"
-          class="elevation-6 mb-3"
+      <VCardText class="pa-5">
+        <div
+          v-if="loading"
+          class="d-flex flex-column align-center justify-center py-12"
         >
-          <span class="text-h4 font-weight-bold text-white">
-            {{ getUserInitials(user.name) }}
-          </span>
-        </VAvatar>
-        <h3 class="text-h5 font-weight-bold mb-1">
-          {{ user.name || 'Sin nombre' }}
-        </h3>
-        <p class="text-body-2 text-medium-emphasis mb-2">
-          {{ user.email || 'Sin email' }}
-        </p>
-        <VChip
-          :color="getStatusColor(user.status)"
-          variant="tonal"
-          size="small"
-          class="font-weight-medium"
-        >
-          {{ getStatusText(user.status) }}
-        </VChip>
-      </div>
+          <VProgressCircular indeterminate color="primary" size="48" />
+          <p class="text-body-2 text-medium-emphasis mt-4 mb-0">Cargando perfil...</p>
+        </div>
 
-      <!-- Información Personal -->
-      <VRow class="mb-4">
-        <VCol cols="12">
-          <h5 class="text-h6 font-weight-bold mb-3 d-flex align-center">
-            <VIcon
-              icon="ri-user-line"
-              size="20"
-              class="me-2"
+        <template v-else>
+          <!-- Perfil principal -->
+          <div class="d-flex flex-column align-center text-center mb-6 mt-2">
+            <VAvatar
+              v-if="avatarUrl"
+              :image="avatarUrl"
+              size="100"
+              class="elevation-3 mb-4"
             />
-            Información Personal
-          </h5>
-        </VCol>
+            <VAvatar
+              v-else
+              size="100"
+              color="primary"
+              variant="tonal"
+              class="elevation-1 mb-4"
+            >
+              <span class="text-h3 font-weight-bold">{{ initials }}</span>
+            </VAvatar>
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Nombre Completo
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.name || 'No disponible' }}
-            </p>
+            <h3 class="text-h4 font-weight-bold mb-1">{{ fullName }}</h3>
+            <p class="text-medium-emphasis mb-3">{{ userData.email || 'Sin correo electrónico' }}</p>
+            
+            <div class="d-flex justify-center gap-2">
+              <VChip :color="statusColor" variant="tonal" size="small" class="font-weight-medium">
+                <VIcon start :icon="statusIcon" />
+                {{ statusLabel }}
+              </VChip>
+              <VChip color="primary" variant="tonal" size="small" class="font-weight-medium">
+                <VIcon start icon="ri-shield-user-line" />
+                {{ roleName }}
+              </VChip>
+            </div>
           </div>
-        </VCol>
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Cédula/RUC
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.identification || 'No disponible' }}
-            </p>
-          </div>
-        </VCol>
+          <!-- Tarjetas de Información -->
+          <VRow>
+            <VCol cols="12" sm="6">
+              <VCard variant="outlined" class="h-100 pa-4 rounded-lg">
+                <div class="d-flex align-center gap-3 mb-3">
+                  <VAvatar color="info" variant="tonal" rounded size="40">
+                    <VIcon icon="ri-id-card-line" />
+                  </VAvatar>
+                  <div class="text-subtitle-1 font-weight-bold">Identificación</div>
+                </div>
+                <div class="text-body-2 text-medium-emphasis mb-1">{{ documentTypeLabel }}</div>
+                <div class="text-body-1 font-weight-bold">{{ userData.identification || '—' }}</div>
+              </VCard>
+            </VCol>
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Teléfono
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.phone || 'No disponible' }}
-            </p>
-          </div>
-        </VCol>
+            <VCol cols="12" sm="6">
+              <VCard variant="outlined" class="h-100 pa-4 rounded-lg">
+                <div class="d-flex align-center gap-3 mb-3">
+                  <VAvatar color="warning" variant="tonal" rounded size="40">
+                    <VIcon icon="ri-store-2-line" />
+                  </VAvatar>
+                  <div class="text-subtitle-1 font-weight-bold">Sucursal</div>
+                </div>
+                <div class="text-body-2 text-medium-emphasis mb-1">Asignada</div>
+                <div class="text-body-1 font-weight-bold">{{ sucursalName }}</div>
+              </VCard>
+            </VCol>
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Género
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ getGenderText(user.gender) }}
-            </p>
-          </div>
-        </VCol>
+            <VCol cols="12" sm="6">
+              <VCard variant="outlined" class="h-100 pa-4 rounded-lg">
+                <div class="d-flex align-center gap-3 mb-3">
+                  <VAvatar color="success" variant="tonal" rounded size="40">
+                    <VIcon icon="ri-contacts-line" />
+                  </VAvatar>
+                  <div class="text-subtitle-1 font-weight-bold">Contacto</div>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-phone-line" size="small" class="text-medium-emphasis" />
+                    <span class="text-body-2 font-weight-medium">{{ userData.phone || '—' }}</span>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-user-heart-line" size="small" class="text-medium-emphasis" />
+                    <span class="text-body-2 font-weight-medium">{{ genderLabel }}</span>
+                  </div>
+                </div>
+              </VCard>
+            </VCol>
 
-        <VCol cols="12">
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Dirección
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.address || 'No disponible' }}
-            </p>
-          </div>
-        </VCol>
-      </VRow>
+            <VCol cols="12" sm="6">
+              <VCard variant="outlined" class="h-100 pa-4 rounded-lg">
+                <div class="d-flex align-center gap-3 mb-3">
+                  <VAvatar color="secondary" variant="tonal" rounded size="40">
+                    <VIcon icon="ri-calendar-line" />
+                  </VAvatar>
+                  <div class="text-subtitle-1 font-weight-bold">Registro</div>
+                </div>
+                <div class="text-body-2 text-medium-emphasis mb-1">Fecha de alta</div>
+                <div class="text-body-1 font-weight-bold">{{ formatDate(userData.created_at) }}</div>
+              </VCard>
+            </VCol>
+          </VRow>
 
-      <!-- Información del Sistema -->
-      <VRow class="mb-4">
-        <VCol cols="12">
-          <h5 class="text-h6 font-weight-bold mb-3 d-flex align-center">
-            <VIcon
-              icon="ri-settings-3-line"
-              size="20"
-              class="me-2"
-            />
-            Información del Sistema
-          </h5>
-        </VCol>
+          <!-- Dirección completa -->
+          <VCard variant="outlined" class="mt-4 pa-4 rounded-lg">
+            <div class="d-flex align-center gap-3 mb-2">
+              <VIcon icon="ri-map-pin-line" color="primary" />
+              <div class="text-subtitle-1 font-weight-bold">Dirección</div>
+            </div>
+            <div class="text-body-2 font-weight-medium px-8">
+              {{ userData.address || 'Sin dirección registrada' }}
+            </div>
+          </VCard>
+        </template>
+      </VCardText>
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Rol
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.role?.name || 'Sin rol asignado' }}
-            </p>
-          </div>
-        </VCol>
+      <VDivider />
 
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Sucursal
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ user.sucursale?.name || 'Sucursal Principal' }}
-            </p>
-          </div>
-        </VCol>
-
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Fecha de Creación
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              {{ formatDate(user.created_at) }}
-            </p>
-          </div>
-        </VCol>
-
-        <VCol
-          cols="12"
-          sm="6"
-        >
-          <div class="mb-3">
-            <p class="text-caption text-medium-emphasis mb-1">
-              ID de Usuario
-            </p>
-            <p class="text-body-2 font-weight-medium">
-              #{{ user.id || 'N/A' }}
-            </p>
-          </div>
-        </VCol>
-      </VRow>
-
-      <!-- Acciones -->
-      <VCol
-        cols="12"
-        class="d-flex justify-end gap-3 mt-4"
-      >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          class="text-none px-6"
-          @click="emit('update:isDialogVisible', false)"
-        >
-          <VIcon
-            start
-            icon="ri-close-line"
-          />
+      <VCardActions class="pa-4 justify-end">
+        <VBtn color="secondary" variant="tonal" class="px-6" @click="closeDialog">
           Cerrar
         </VBtn>
-      </VCol>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

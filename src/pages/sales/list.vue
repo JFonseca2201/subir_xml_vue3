@@ -599,8 +599,12 @@ onMounted(() => {
     </VCard>
 
     <!-- Dialogs -->
-    <SaleViewDialog v-if="isViewDialogVisible" v-model:isDialogVisible="isViewDialogVisible"
-      :sale-data="selectedSale" />
+    <SaleViewDialog
+      v-if="isViewDialogVisible"
+      v-model:is-dialog-visible="isViewDialogVisible"
+      :sale-data="selectedSale"
+      :loading="viewLoading"
+    />
 
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />

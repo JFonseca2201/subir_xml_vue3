@@ -490,6 +490,15 @@ const submitForm = async () => {
   loader.start()
 
   try {
+    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+      const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+      if (methods.length === 1) {
+        sale.value.payment_method = methods[0]
+      } else if (methods.length > 1) {
+        sale.value.payment_method = methods.join(', ')
+      }
+    }
+
     const payload = {
       ...sale.value,
       subtotal: subtotal.value,

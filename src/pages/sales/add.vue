@@ -51,6 +51,7 @@ const clients = ref([])
 const vehicles = ref([])
 const products = ref([])
 const accounts = ref([])
+const employees = ref([])
 
 // Estado del formulario
 const sale = ref({
@@ -65,6 +66,7 @@ const sale = ref({
   is_credited: false,
   payment_method: 'Efectivo',
   observations: '',
+  technicians: [],
   items: [],
   user_id: userId.value,
 })
@@ -90,13 +92,17 @@ const generateDocumentNumber = type => {
   } else {
     const newNumber = lastOtNumber.value + 1
 
-    return 'OT-' + String(newNumber).padStart(7, '0')
+    return 'OT-' + String(newNumber).padStart(4, '0')
   }
 }
 
+const isLinkedToWorkOrder = computed(() => !!sale.value.work_order_id)
+
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = () => {
-  sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+  if (!isLinkedToWorkOrder.value) {
+    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+  }
   if (sale.value.document_type === 'quote') {
     sale.value.payment_status = 'pending'
   } else {
@@ -210,11 +216,17 @@ const loadReadyWorkOrders = async () => {
 }
 
 // Función para seleccionar una orden de trabajo
+const applyWorkOrderTechnicians = workOrder => {
+  sale.value.technicians = (workOrder.technicians || []).map(t => t.id)
+}
+
 const selectWorkOrder = workOrder => {
   sale.value.work_order_id = workOrder.id
+  sale.value.document_number = workOrder.number
   sale.value.client_id = workOrder.client_id
   sale.value.vehicle_id = workOrder.vehicle_id
   sale.value.mileage = workOrder.mileage
+  applyWorkOrderTechnicians(workOrder)
 
   // Importar items de la orden de trabajo
   if (workOrder.items && workOrder.items.length > 0) {
@@ -259,12 +271,14 @@ const loadInitialData = async () => {
   isLoading.value = true
   try {
     // Cargar datos en paralelo con menos registros para mejorar rendimiento
-    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes] = await Promise.all([
+    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes] = await Promise.all([
       $api('clients', { params: { per_page: 1000 } }),
       $api('vehicles', { params: { per_page: 1000 } }),
       $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 100 } }),
       $api('sales', { params: { per_page: 1000 } }), // Elevado a 1000 para evitar duplicados en la numeración correlativa
+      $api('work-orders'),
+      $api('employees', { params: { per_page: 1000 } }),
     ])
 
     const extractArray = (res, key) => {
@@ -306,19 +320,26 @@ const loadInitialData = async () => {
       displayTitle: p.description || p.name || '',
     }))
     accounts.value = extractArray(accountsRes, 'accounts')
+    employees.value = extractArray(employeesRes, 'employees')
 
-    // Obtener el último número de documento OT- y COT- (optimizado)
+    // Obtener el último número OT- (ventas + órdenes de trabajo) y COT-
     const sales = extractArray(salesRes, 'data')
+    const workOrders = extractArray(workOrdersRes, 'data')
     let maxOt = 0
     let maxCot = 0
-    if (sales && sales.length > 0) {
+
+    const updateMaxOt = number => {
+      const match = number?.match(/OT-?(\d+)/i)
+      if (match) {
+        const num = parseInt(match[1])
+        if (num > maxOt) maxOt = num
+      }
+    }
+
+    if (sales?.length) {
       for (const s of sales) {
         if (s.document_number?.toUpperCase().startsWith('OT-')) {
-          const match = s.document_number.match(/OT-?(\d+)/i)
-          if (match) {
-            const num = parseInt(match[1])
-            if (num > maxOt) maxOt = num
-          }
+          updateMaxOt(s.document_number)
         } else if (s.document_number?.toUpperCase().startsWith('COT-')) {
           const match = s.document_number.match(/COT-?(\d+)/i)
           if (match) {
@@ -328,6 +349,13 @@ const loadInitialData = async () => {
         }
       }
     }
+
+    if (workOrders?.length) {
+      for (const wo of workOrders) {
+        updateMaxOt(wo.number)
+      }
+    }
+
     lastOtNumber.value = maxOt
     lastCotNumber.value = maxCot
 
@@ -622,6 +650,16 @@ const submitForm = async () => {
       sale.value.payment_status = 'pending'
     }
 
+    // Sincronizar método de pago de cabecera con los pagos distribuidos reales
+    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+      const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+      if (methods.length === 1) {
+        sale.value.payment_method = methods[0]
+      } else if (methods.length > 1) {
+        sale.value.payment_method = methods.join(', ')
+      }
+    }
+
     const payload = {
       ...sale.value,
       subtotal: subtotal.value,
@@ -726,6 +764,7 @@ const dispatchSale = async () => {
       document_number: sale.value.document_number,
       client_id: sale.value.client_id,
       vehicle_id: sale.value.vehicle_id,
+      work_order_id: sale.value.work_order_id,
       user_id: userId.value,
       mileage: sale.value.mileage,
       service_date: sale.value.service_date,
@@ -733,6 +772,7 @@ const dispatchSale = async () => {
       tax_amount: taxAmount.value,
       total: total.value,
       observations: sale.value.observations,
+      technicians: sale.value.technicians,
       items: sale.value.items,
     }
 
@@ -770,9 +810,11 @@ onMounted(async () => {
 
       if (workOrder) {
         sale.value.work_order_id = workOrder.id
+        sale.value.document_number = workOrder.number
         sale.value.client_id = workOrder.client_id
         sale.value.vehicle_id = workOrder.vehicle_id
         sale.value.mileage = workOrder.mileage
+        applyWorkOrderTechnicians(workOrder)
 
         // Importar items de la orden de trabajo
         if (workOrder.items && workOrder.items.length > 0) {
@@ -913,7 +955,8 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
-                    required color="primary" />
+                    required color="primary" :readonly="isLinkedToWorkOrder"
+                    :hint="isLinkedToWorkOrder ? 'Vinculado a la orden de trabajo' : undefined" persistent-hint />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" label="Fecha de Servicio *" type="date"
@@ -1001,6 +1044,28 @@ onMounted(async () => {
                       density="comfortable" prepend-inner-icon="ri-dashboard-3-line" hide-details="auto"
                       color="primary" />
                   </div>
+                </VCol>
+                <VCol cols="12">
+                  <VAutocomplete
+                    v-model="sale.technicians"
+                    :items="employees"
+                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
+                    item-value="id"
+                    label="Técnicos"
+                    prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined"
+                    density="comfortable"
+                    clearable
+                    multiple
+                    chips
+                    :readonly="isLinkedToWorkOrder"
+                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
+                    persistent-hint
+                  >
+                    <template #chip="{ props, item }">
+                      <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
+                    </template>
+                  </VAutocomplete>
                 </VCol>
               </VRow>
             </VCardText>
