@@ -178,22 +178,24 @@ const store = async () => {
     }
   }
 
-  if (!fileData.value || fileData.value.length === 0) {
-    loader.stop()
-    warning.value = 'Es obligatorio adjuntar una imagen para el producto.'
-    showNotification('Falta la imagen del producto', 'warning')
-    
-    return
-  }
+  if (product.value.item_type !== '2') {
+    if (!fileData.value || fileData.value.length === 0) {
+      loader.stop()
+      warning.value = 'Es obligatorio adjuntar una imagen para el producto.'
+      showNotification('Falta la imagen del producto', 'warning')
+      
+      return
+    }
 
-  const minStock = parseFloat(product.value.min_stock) || 0
-  const maxStock = parseFloat(product.value.max_stock) || 0
-  if (maxStock > 0 && minStock > maxStock) {
-    loader.stop()
-    warning.value = 'El stock mínimo no puede ser mayor que el stock máximo.'
-    showNotification('Error en los valores de stock', 'warning')
-    
-    return
+    const minStock = parseFloat(product.value.min_stock) || 0
+    const maxStock = parseFloat(product.value.max_stock) || 0
+    if (maxStock > 0 && minStock > maxStock) {
+      loader.stop()
+      warning.value = 'El stock mínimo no puede ser mayor que el stock máximo.'
+      showNotification('Error en los valores de stock', 'warning')
+      
+      return
+    }
   }
 
   const activeUserId = JSON.parse(localStorage.getItem('user'))?.id
@@ -205,32 +207,33 @@ const store = async () => {
     return
   }
 
+  const isService = product.value.item_type === '2'
   const payload = {
     description: product.value.description.toUpperCase().trim(),
-    sku: product.value.sku.toUpperCase().trim(),
+    sku: product.value.sku ? product.value.sku.toUpperCase().trim() : '',
     code_aux: product.value.code_aux.toUpperCase().trim(),
     uses: product.value.uses,
     product_categorie_id: product.value.product_categorie_id || null,
-    warehouse_id: product.value.warehouse_id || 1,
+    warehouse_id: isService ? null : (product.value.warehouse_id || 1),
     unit_id: product.value.unit_id || 1,
     supplier_id: product.value.supplier_id || 1,
     price: parseFloat(product.value.price_sale) || 0,
     price_sale: parseFloat(product.value.price_sale) || 0,
-    purchase_price: parseFloat(product.value.purchase_price) || 0,
+    purchase_price: isService ? 0 : (parseFloat(product.value.purchase_price) || 0),
     tax_rate: parseFloat(product.value.tax_rate) || 0,
     max_discount: parseFloat(product.value.max_discount) || 0,
     discount_percentage: parseFloat(product.value.discount_percentage) || 0,
     brand: product.value.brand.toUpperCase().trim(),
-    stock: parseFloat(product.value.stock) || 0,
+    stock: isService ? 0 : (parseFloat(product.value.stock) || 0),
     item_type: parseInt(product.value.item_type) || 1,
-    min_stock: parseFloat(product.value.min_stock) || 0,
-    max_stock: parseFloat(product.value.max_stock) || 0,
+    min_stock: isService ? 0 : (parseFloat(product.value.min_stock) || 0),
+    max_stock: isService ? 0 : (parseFloat(product.value.max_stock) || 0),
     is_taxable: product.value.is_taxable ? "1" : "2",
     is_gift: product.value.is_gift ? "1" : "2",
     notes: product.value.notes.trim(),
     state: state.value,
     user_id: activeUserId,
-    imagen: fileData.value[0].file,
+    imagen: fileData.value.length > 0 ? fileData.value[0].file : null,
   }
 
   const formData = new FormData()
@@ -367,8 +370,8 @@ const loadInitialData = async () => {
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.product_categorie_id" :items="categories" item-title="title" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Categoría" placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required />
               </VCol>
-              <VCol cols="12" sm="6">
-                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto" required />
+              <VCol cols="12" sm="6" v-if="product.item_type !== '2'">
+                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id" :rules="product.item_type === '2' ? [] : [requiredRule]" density="comfortable" variant="outlined" label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida" placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
@@ -379,9 +382,7 @@ const loadInitialData = async () => {
             </VRow>
           </div>
 
-          <VDivider class="my-8" />
-
-          <!-- 3. Precios e Inventario -->
+                    <!-- 3. Precios e Inventario -->
           <div class="mb-8">
             <div class="d-flex align-center gap-3 mb-5">
               <VAvatar color="success" variant="tonal" size="36"><VIcon icon="ri-money-dollar-circle-line" /></VAvatar>
@@ -390,14 +391,14 @@ const loadInitialData = async () => {
             
             <VRow>
               <!-- Bloque Precios -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" :md="product.item_type === '2' ? '12' : '6'">
                 <VCard variant="outlined" class="pa-4 h-100 rounded-lg">
                   <div class="text-subtitle-1 font-weight-bold mb-4">Configuración de Precio</div>
                   <VRow>
-                    <VCol cols="12" sm="6">
-                      <VTextField v-model="product.purchase_price" :rules="priceRules" label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01" min="0" />
+                    <VCol cols="12" sm="6" v-if="product.item_type !== '2'">
+                      <VTextField v-model="product.purchase_price" :rules="product.item_type === '2' ? [] : priceRules" label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
-                    <VCol cols="12" sm="6">
+                    <VCol cols="12" :sm="product.item_type === '2' ? '12' : '6'">
                       <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" type="number" step="0.01" min="0" required />
                     </VCol>
                     <VCol cols="12" sm="6">
@@ -411,7 +412,7 @@ const loadInitialData = async () => {
               </VCol>
 
               <!-- Bloque Inventario -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="6" v-if="product.item_type !== '2'">
                 <VCard variant="outlined" class="pa-4 h-100 rounded-lg">
                   <div class="text-subtitle-1 font-weight-bold mb-4">Control de Stock</div>
                   <VRow>

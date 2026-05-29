@@ -9,6 +9,7 @@ import { getBrandNameById } from '@/data/vehicleBrands.js'
 import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
+import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -92,7 +93,7 @@ const generateDocumentNumber = type => {
   } else {
     const newNumber = lastOtNumber.value + 1
 
-    return 'OT-' + String(newNumber).padStart(4, '0')
+    return 'OT-' + String(newNumber).padStart(7, '0')
   }
 }
 
@@ -129,6 +130,7 @@ const isClientFinalAddDialogVisible = ref(false)
 const isClientCompanyAddDialogVisible = ref(false)
 const isVehicleAddDialogVisible = ref(false)
 const isWorkOrderImportDialogVisible = ref(false)
+const isAddServiceDialogVisible = ref(false)
 const readyWorkOrders = ref([])
 const isLoadingWorkOrders = ref(false)
 const workOrderSearchQuery = ref('')
@@ -197,6 +199,22 @@ const handleVehicleAdded = async vehicleData => {
 
     await nextTick()
     sale.value.vehicle_id = exists ? exists.id : newId
+  }
+}
+
+const handleServiceAdded = async (newService) => {
+  if (newService) {
+    const mappedService = {
+      ...newService,
+      searchText: `${newService.sku || ''} ${newService.code || ''} ${newService.name || ''} ${newService.description || ''}`.toLowerCase(),
+      displayTitle: newService.description || newService.name || '',
+    }
+    
+    // Inyectar en el listado de productos de búsqueda
+    products.value = [mappedService, ...products.value]
+    
+    // Agregar directamente al carrito
+    onProductSelected(mappedService)
   }
 }
 
@@ -592,11 +610,12 @@ const submitForm = async () => {
   }
 
   // Validar stock solo si no es cotización
+  // Validar stock solo si no es cotización y es producto físico (item_type == 1)
   if (sale.value.document_type !== 'quote') {
     for (const item of sale.value.items) {
       if (item.product_id) {
         const product = products.value.find(p => p.id === item.product_id)
-        if (product && product.stock < item.quantity) {
+        if (product && product.item_type === 1 && product.stock < item.quantity) {
           showValidationError.value = true
           validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
 
@@ -606,18 +625,43 @@ const submitForm = async () => {
     }
   }
 
-  // Validar descuentos máximos
+  // Validar descuentos y margen (sólo aplica para item_type == 1 / Productos Físicos)
   for (const item of sale.value.items) {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.max_discount !== null && product.max_discount !== undefined) {
-        const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
+      if (product && product.item_type === 1) {
         const itemDiscount = Number(item.discount) || 0
-        if (itemDiscount > maxDiscountAmount) {
+        const finalPrice = (item.quantity * item.price) - itemDiscount
+        const minFinalPrice = item.quantity * (parseFloat(product.purchase_price) || 0)
+
+        // A. Validar margen
+        if (finalPrice < minFinalPrice) {
           showValidationError.value = true
-          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${itemDiscount.toFixed(2)}`
+          validationErrorMessage.value = `El descuento excede el margen permitido para ${product.description}. El precio final no puede ser menor al costo de compra ($${product.purchase_price} c/u).`
 
           return
+        }
+
+        // B. Validar porcentaje de descuento máximo
+        if (product.discount_percentage > 0) {
+          const maxDiscountAmountByPct = (item.quantity * item.price) * (parseFloat(product.discount_percentage) / 100)
+          if (itemDiscount > maxDiscountAmountByPct) {
+            showValidationError.value = true
+            validationErrorMessage.value = `El descuento excede el porcentaje máximo permitido (${product.discount_percentage}%) para ${product.description}. Máximo permitido: $${maxDiscountAmountByPct.toFixed(2)}`
+
+            return
+          }
+        }
+
+        // C. Validar max_discount (monto absoluto o porcentaje según lógica del sistema)
+        if (product.max_discount > 0) {
+          const maxDiscountAmountByVal = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+          if (itemDiscount > maxDiscountAmountByVal) {
+            showValidationError.value = true
+            validationErrorMessage.value = `El descuento excede el máximo permitido para ${product.description}. Máximo permitido: $${maxDiscountAmountByVal.toFixed(2)}`
+
+            return
+          }
         }
       }
     }
@@ -728,11 +772,11 @@ const dispatchSale = async () => {
     return
   }
 
-  // Validar stock
+  // Validar stock solo si es producto físico (item_type == 1)
   for (const item of sale.value.items) {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.stock < item.quantity) {
+      if (product && product.item_type === 1 && product.stock < item.quantity) {
         showValidationError.value = true
         validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
 
@@ -741,17 +785,43 @@ const dispatchSale = async () => {
     }
   }
 
-  // Validar descuentos máximos
+  // Validar descuentos y margen (sólo aplica para item_type == 1 / Productos Físicos)
   for (const item of sale.value.items) {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.max_discount !== null && product.max_discount !== undefined) {
-        const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
-        if (item.discount > maxDiscountAmount) {
+      if (product && product.item_type === 1) {
+        const itemDiscount = Number(item.discount) || 0
+        const finalPrice = (item.quantity * item.price) - itemDiscount
+        const minFinalPrice = item.quantity * (parseFloat(product.purchase_price) || 0)
+
+        // A. Validar margen
+        if (finalPrice < minFinalPrice) {
           showValidationError.value = true
-          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
+          validationErrorMessage.value = `El descuento excede el margen permitido para ${product.description}. El precio final no puede ser menor al costo de compra ($${product.purchase_price} c/u).`
 
           return
+        }
+
+        // B. Validar porcentaje de descuento máximo
+        if (product.discount_percentage > 0) {
+          const maxDiscountAmountByPct = (item.quantity * item.price) * (parseFloat(product.discount_percentage) / 100)
+          if (itemDiscount > maxDiscountAmountByPct) {
+            showValidationError.value = true
+            validationErrorMessage.value = `El descuento excede el porcentaje máximo permitido (${product.discount_percentage}%) para ${product.description}. Máximo permitido: $${maxDiscountAmountByPct.toFixed(2)}`
+
+            return
+          }
+        }
+
+        // C. Validar max_discount (monto absoluto o porcentaje según lógica del sistema)
+        if (product.max_discount > 0) {
+          const maxDiscountAmountByVal = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+          if (itemDiscount > maxDiscountAmountByVal) {
+            showValidationError.value = true
+            validationErrorMessage.value = `El descuento excede el máximo permitido para ${product.description}. Máximo permitido: $${maxDiscountAmountByVal.toFixed(2)}`
+
+            return
+          }
         }
       }
     }
@@ -1084,16 +1154,21 @@ onMounted(async () => {
                   <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
                 </div>
               </div>
-              <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading" :items="products"
-                item-title="displayTitle" return-object label="Buscar y agregar producto"
-                placeholder="Escribe para buscar por nombre, código, SKU..." prepend-inner-icon="ri-search-line"
-                variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
-                class="mb-4">
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                    :subtitle="(item.raw.code || item.raw.sku) ? `Código/SKU: ${item.raw.code || item.raw.sku}` : ''" />
-                </template>
-              </VAutocomplete>
+              <div class="d-flex align-center gap-3 mb-4">
+                <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading" :items="products"
+                  item-title="displayTitle" return-object label="Buscar y agregar producto"
+                  placeholder="Escribe para buscar por nombre, código, SKU..." prepend-inner-icon="ri-search-line"
+                  variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
+                  class="flex-grow-1" hide-details>
+                  <template #item="{ props, item }">
+                    <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
+                      :subtitle="(item.raw.code || item.raw.sku) ? `Código/SKU: ${item.raw.code || item.raw.sku}` : ''" />
+                  </template>
+                </VAutocomplete>
+                <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56" @click="isAddServiceDialogVisible = true">
+                  Servicio Express
+                </VBtn>
+              </div>
 
               <div class="border rounded-lg overflow-x-auto">
                 <VTable class="custom-items-table text-no-wrap">
@@ -1117,7 +1192,7 @@ onMounted(async () => {
                           </VAvatar>
                           <div class="flex-grow-1">
                             <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                              placeholder="Descripción del ítem..." :rules="[requiredRule]"
+                              placeholder="Descripción del ítem..." :rules="[requiredRule]" readonly
                               class="premium-input font-weight-medium" />
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
@@ -1391,6 +1466,13 @@ onMounted(async () => {
         </VCardText>
       </VCard>
     </VDialog>
+
+    <!-- Dialog para agregar servicio express -->
+    <AddServiceDialog
+      :is-dialog-visible="isAddServiceDialogVisible"
+      @update:is-dialog-visible="isAddServiceDialogVisible = $event"
+      @service-added="handleServiceAdded"
+    />
   </div>
 </template>
 

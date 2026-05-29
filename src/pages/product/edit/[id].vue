@@ -194,12 +194,21 @@ const updateProduct = async () => {
     error_exist.value = null
     warning.value = null
 
+    const isService = product.value.item_type == 2
     const formData = new FormData()
     Object.keys(product.value).forEach(key => {
       if (key !== 'imagen' && key !== 'is_taxable' && key !== 'is_gift' && product.value[key] !== null) {
         let value = product.value[key]
-        if (key === 'warehouse_id' || key === 'unit_id' || key === 'supplier_id') {
-          value = value || 1
+        if (isService) {
+          if (key === 'stock' || key === 'min_stock' || key === 'max_stock' || key === 'purchase_price') {
+            value = 0
+          } else if (key === 'warehouse_id') {
+            value = ''
+          }
+        } else {
+          if (key === 'warehouse_id' || key === 'unit_id' || key === 'supplier_id') {
+            value = value || 1
+          }
         }
         formData.append(key, value)
       }
@@ -319,8 +328,8 @@ onMounted(() => {
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.product_categorie_id" :items="categories" item-title="title" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Categoría" placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required />
               </VCol>
-              <VCol cols="12" sm="6">
-                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto" required />
+              <VCol cols="12" sm="6" v-if="product.item_type != 2">
+                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id" :rules="product.item_type == 2 ? [] : [requiredRule]" density="comfortable" variant="outlined" label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida" placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
@@ -342,14 +351,14 @@ onMounted(() => {
             
             <VRow>
               <!-- Bloque Precios -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" :md="product.item_type == 2 ? '12' : '6'">
                 <VCard variant="outlined" class="pa-4 h-100 rounded-lg">
                   <div class="text-subtitle-1 font-weight-bold mb-4">Configuración de Precio</div>
                   <VRow>
-                    <VCol cols="12" sm="6">
-                      <VTextField v-model="product.purchase_price" :rules="priceRules" label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01" min="0" />
+                    <VCol cols="12" sm="6" v-if="product.item_type != 2">
+                      <VTextField v-model="product.purchase_price" :rules="product.item_type == 2 ? [] : priceRules" label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
-                    <VCol cols="12" sm="6">
+                    <VCol cols="12" :sm="product.item_type == 2 ? '12' : '6'">
                       <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" type="number" step="0.01" min="0" required />
                     </VCol>
                     <VCol cols="12" sm="6">
@@ -363,7 +372,7 @@ onMounted(() => {
               </VCol>
 
               <!-- Bloque Inventario -->
-              <VCol cols="12" md="6">
+              <VCol cols="12" md="6" v-if="product.item_type != 2">
                 <VCard variant="outlined" class="pa-4 h-100 rounded-lg">
                   <div class="text-subtitle-1 font-weight-bold mb-4">Control de Stock</div>
                   <VRow>

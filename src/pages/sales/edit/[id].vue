@@ -342,12 +342,12 @@ const loadSaleData = async () => {
           id: d.id,
           product_id: d.product_id,
           description: d.description,
-          quantity: d.quantity,
-          price: d.price,
-          discount: d.discount,
+          quantity: parseInt(d.quantity) || 1,
+          price: parseFloat(d.price) || 0,
+          discount: parseFloat(d.discount) || 0,
           type: isService ? 'service' : 'product',
           sku: prod ? (prod.sku || prod.code || '') : '',
-          original_quantity: d.quantity,
+          original_quantity: parseInt(d.quantity) || 1,
           original_product_id: d.product_id
         }
       }),
@@ -457,11 +457,12 @@ const submitForm = async () => {
   for (const item of sale.value.items) {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.max_discount !== null && product.max_discount !== undefined) {
-        const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
-        if (item.discount > maxDiscountAmount) {
+      if (product && product.item_type === 1 && product.max_discount !== null && product.max_discount !== undefined) {
+        const maxDiscountAmount = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+        const itemDiscount = parseFloat(item.discount) || 0
+        if (itemDiscount > maxDiscountAmount) {
           showValidationError.value = true
-          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
+          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${itemDiscount.toFixed(2)}`
 
           return
         }
@@ -779,7 +780,7 @@ onMounted(() => {
                           <div class="flex-grow-1">
                             <VTextField v-model="item.description" :disabled="sale.status === 'canceled'"
                               density="compact" variant="plain" hide-details placeholder="Descripción del ítem..."
-                              :rules="[requiredRule]" class="premium-input font-weight-medium" />
+                              :rules="[requiredRule]" readonly class="premium-input font-weight-medium" />
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}

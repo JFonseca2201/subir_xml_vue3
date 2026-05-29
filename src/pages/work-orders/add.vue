@@ -9,6 +9,7 @@ import { getBrandNameById } from '@/data/vehicleBrands'
 import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
+import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -55,6 +56,7 @@ const fuelLevels = [
 const showClientDialog = ref(false)
 const showCompanyDialog = ref(false)
 const showVehicleDialog = ref(false)
+const showAddServiceDialog = ref(false)
 const productSearch = ref('')
 const filteredProducts = ref([])
 
@@ -105,7 +107,7 @@ const loadInitialData = async () => {
         }
       }
     }
-    workOrder.value.number = 'OT-' + String(maxOtNumber + 1).padStart(4, '0')
+    workOrder.value.number = 'OT-' + String(maxOtNumber + 1).padStart(7, '0')
 
     console.log('Clients loaded:', clients.value.length)
     console.log('Vehicles loaded:', vehicles.value.length)
@@ -207,28 +209,14 @@ const onVehicleAdded = newVehicle => {
   showVehicleDialog.value = false
 }
 
-// Funciones para items
-const addItem = (type = 'product') => {
-  // Validar que el último item esté completo antes de agregar uno nuevo
-  if (workOrder.value.items.length > 0) {
-    const lastItem = workOrder.value.items[workOrder.value.items.length - 1]
-    if (!lastItem.description || !lastItem.quantity || !lastItem.unit_price) {
-      showNotification('Completa el item actual antes de agregar uno nuevo', 'warning')
-
-      return
-    }
+const handleServiceAdded = (newService) => {
+  if (newService) {
+    products.value = [newService, ...products.value]
+    addProductFromSearch(newService)
   }
-
-  workOrder.value.items.push({
-    product_id: null,
-    description: '',
-    quantity: 1,
-    unit_price: 0,
-    discount: 0,
-    type: type,
-    sku: 'MANUAL',
-  })
 }
+
+// Funciones para items
 
 const removeItem = index => {
   workOrder.value.items.splice(index, 1)
@@ -473,10 +461,12 @@ onMounted(() => {
                   </p>
                 </div>
               </div>
-              <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
-                @click="addItem('service')">
-                Agregar Servicio Manual
-              </VBtn>
+              <div class="d-flex gap-2">
+                <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
+                  @click="showAddServiceDialog = true">
+                  Servicio Express
+                </VBtn>
+              </div>
             </div>
 
             <!-- Cuadro de búsqueda de productos -->
@@ -541,7 +531,7 @@ onMounted(() => {
                         </VAvatar>
                         <div class="flex-grow-1">
                           <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                            placeholder="Descripción del ítem..." class="premium-input font-weight-medium" />
+                            placeholder="Descripción del ítem..." readonly class="premium-input font-weight-medium" />
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
@@ -646,6 +636,10 @@ onMounted(() => {
     <!-- Dialog para agregar vehículo -->
     <VehicleAddDialog :is-dialog-visible="showVehicleDialog" @update:is-dialog-visible="showVehicleDialog = $event"
       @add-vehicle="onVehicleAdded" />
+
+    <!-- Dialog para agregar servicio express -->
+    <AddServiceDialog :is-dialog-visible="showAddServiceDialog" @update:is-dialog-visible="showAddServiceDialog = $event"
+      @service-added="handleServiceAdded" />
   </VContainer>
 </template>
 
