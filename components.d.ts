@@ -15,6 +15,7 @@ declare module 'vue' {
     AddEmployeeAdvanceDialog: typeof import('./src/components/inventory/employee-expenses/AddEmployeeAdvanceDialog.vue')['default']
     AddEmployeePaymentDialog: typeof import('./src/components/inventory/employee-expenses/AddEmployeePaymentDialog.vue')['default']
     AddPaymentMethodDialog: typeof import('./src/components/dialogs/AddPaymentMethodDialog.vue')['default']
+    AddServiceDialog: typeof import('./src/components/inventory/product/AddServiceDialog.vue')['default']
     AporteCreateDialog: typeof import('./src/components/inventory/aportes/AporteCreateDialog.vue')['default']
     AporteEditDialog: typeof import('./src/components/inventory/aportes/AporteEditDialog.vue')['default']
     AppBarSearch: typeof import('./src/@core/components/AppBarSearch.vue')['default']

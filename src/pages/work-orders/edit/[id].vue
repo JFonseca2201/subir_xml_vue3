@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
@@ -12,6 +12,7 @@ import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.v
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 const userId = ref(null)
@@ -113,11 +114,53 @@ const loadInitialData = async () => {
     console.log('Vehicles loaded:', vehicles.value.length)
     console.log('Products loaded:', products.value.length)
     console.log('Employees loaded:', employees.value.length)
+
+    // Si es edición, cargar la orden de trabajo
+    const orderId = route.params.id
+    if (orderId) {
+      await loadWorkOrder(orderId)
+    }
+
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
+  }
+}
+
+const originalStatus = ref('')
+
+const loadWorkOrder = async (id) => {
+  try {
+    const response = await $api(`work-orders/${id}`)
+    const data = response.data || response
+
+    originalStatus.value = data.status
+
+    workOrder.value = {
+      number: data.number,
+      client_id: data.client_id,
+      vehicle_id: data.vehicle_id,
+      user_id: data.user_id,
+      mileage: data.mileage,
+      fuel_level: data.fuel_level,
+      observations: data.observations || '',
+      diagnostic: data.diagnostic || '',
+      technicians: data.technicians ? data.technicians.map(t => t.id) : [],
+      items: (data.items || []).map(item => ({
+        product_id: item.product_id,
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: parseFloat(item.unit_price) || 0,
+        discount: parseFloat(item.discount) || 0,
+        type: item.type,
+        sku: item.product ? item.product.sku : '',
+      })),
+    }
+  } catch (error) {
+    console.error('Error al cargar la orden:', error)
+    showNotification('Error al cargar la orden de trabajo', 'error')
   }
 }
 
@@ -143,13 +186,19 @@ const saveWorkOrder = async () => {
 
   isLoading.value = true
   try {
-    const response = await $api('work-orders', {
-      method: 'POST',
-      body: workOrder.value,
+    const payload = {
+      ...workOrder.value,
+      technicians: workOrder.value.technicians.map(t => typeof t === 'object' ? t.id : t),
+      is_draft: false
+    }
+
+    const response = await $api(`work-orders/${route.params.id}`, {
+      method: 'PUT',
+      body: payload,
     })
 
-    showNotification('Orden de trabajo creada exitosamente', 'success')
-    router.push('/work-orders')
+    showNotification('Orden de trabajo finalizada exitosamente', 'success')
+    router.push({ name: 'work-orders-list' })
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
     if (error.response && error.response.data) {
@@ -172,14 +221,18 @@ const saveDraft = async () => {
 
   isLoading.value = true
   try {
-    const payload = { ...workOrder.value, is_draft: true }
-    const response = await $api('work-orders', {
-      method: 'POST',
+    const payload = {
+      ...workOrder.value,
+      technicians: workOrder.value.technicians.map(t => typeof t === 'object' ? t.id : t),
+      is_draft: true
+    }
+    const response = await $api(`work-orders/${route.params.id}`, {
+      method: 'PUT',
       body: payload,
     })
 
-    showNotification('Borrador de orden guardado exitosamente', 'success')
-    router.push('/work-orders')
+    showNotification('Borrador de orden actualizado exitosamente', 'success')
+    router.push({ name: 'work-orders-list' })
   } catch (error) {
     console.error('Error al guardar borrador:', error)
     showNotification('Error al guardar borrador', 'error')
@@ -189,7 +242,7 @@ const saveDraft = async () => {
 }
 
 const cancel = () => {
-  router.push('/work-orders')
+  router.push({ name: 'work-orders-list' })
 }
 
 const getClientName = c => {
@@ -329,10 +382,10 @@ onMounted(() => {
           <VBtn icon="ri-arrow-left-line" variant="text" class="mr-3" size="large" @click="cancel" />
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
-              Nueva Orden de Trabajo
+              Editar Orden de Trabajo
             </h1>
             <p class="text-body-2 text-grey">
-              Completa la información para crear una orden de trabajo
+              Modifica la información de la orden de trabajo
             </p>
           </div>
         </div>
@@ -504,8 +557,7 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
@@ -524,7 +576,7 @@ onMounted(() => {
 
             <!-- Tabla de items -->
             <VCard v-if="workOrder.items.length > 0" class="elevation-1">
-              <VTable class="custom-items-table text-no-wrap">
+              <VTable class="custom-items-table">
                 <thead>
                   <tr class="bg-grey-lighten-4">
                     <th class="text-left" style="min-width: 250px;">
@@ -557,10 +609,8 @@ onMounted(() => {
                           <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
                         </VAvatar>
                         <div class="flex-grow-1">
-                          <div class="font-weight-medium text-body-1"
-                            style="white-space: normal !important; max-width: 500px;" :title="item.description">
-                            {{ item.description }}
-                          </div>
+                          <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                            placeholder="Descripción del ítem..." readonly class="premium-input font-weight-medium" />
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
@@ -621,7 +671,7 @@ onMounted(() => {
                 </div>
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                    }}</span>
+                  }}</span>
                   <VChip size="small" color="primary" label>
                     {{ workOrder.items.length }} items
                   </VChip>
@@ -644,13 +694,13 @@ onMounted(() => {
               <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="cancel">
                 Cancelar
               </VBtn>
-              <VBtn color="secondary" variant="elevated" prepend-icon="ri-draft-line" :loading="isLoading" size="large"
-                @click.prevent="saveDraft">
-                Guardar Borrador
+              <VBtn v-if="originalStatus === 'draft'" color="secondary" variant="elevated" prepend-icon="ri-draft-line"
+                :loading="isLoading" size="large" @click.prevent="saveDraft">
+                Actualizar Borrador
               </VBtn>
               <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isLoading"
                 size="large" @click="saveWorkOrder">
-                Guardar Orden de Trabajo
+                {{ originalStatus === 'draft' ? 'Finalizar Orden de Trabajo' : 'Guardar Cambios' }}
               </VBtn>
             </div>
           </VCardText>

@@ -459,7 +459,7 @@ onMounted(() => {
           <!-- 🧾 CABECERA -->
           <thead class="bg-primary text-white sticky-header">
             <tr>
-              <th style="width: 55px" v-if="invoice?.invoice_process !== 1">
+              <th style="width: 55px" v-if="props.invoiceSelected.invoice_process != 1">
                 <VCheckbox
                   :model-value="isAllSelected"
                   :indeterminate="isSomeSelected && !isAllSelected"
@@ -538,7 +538,7 @@ onMounted(() => {
                 Total
               </th>
 
-              <th v-if="props.invoiceSelected.invoice_process !== 1" class="text-right">
+              <th v-if="props.invoiceSelected.invoice_process != 1" class="text-right">
                 <VIcon
                   size="16"
                   class="mr-1"
@@ -556,7 +556,7 @@ onMounted(() => {
               v-for="(item, index) in filteredItems"
               :key="item.id"
             >
-              <td v-if="invoice?.invoice_process !== 1">
+              <td v-if="props.invoiceSelected.invoice_process != 1">
                 <VCheckbox
                   v-if="item.item_type === 1"
                   v-model="selectedItems"
@@ -589,7 +589,7 @@ onMounted(() => {
 
               <td>
                 <VSelect
-                  v-if="invoice?.invoice_process !== 1 && item.item_type === 1"
+                  v-if="props.invoiceSelected.invoice_process != 1 && item.item_type === 1"
                   v-model="item.product_categorie_id"
                   :items="categories"
                   item-title="title"
@@ -627,7 +627,7 @@ onMounted(() => {
                 }}</small>
               </td>
 
-              <td v-if="props.invoiceSelected.invoice_process !== 1" class="text-right font-weight-bold text-primary">
+              <td v-if="props.invoiceSelected.invoice_process != 1" class="text-right font-weight-bold text-primary">
                 <IconBtn @click="editInvoice(item)">
                   <VIcon icon="ri-pencil-line" />
                 </IconBtn>

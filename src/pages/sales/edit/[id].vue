@@ -342,9 +342,9 @@ const loadSaleData = async () => {
           id: d.id,
           product_id: d.product_id,
           description: d.description,
-          quantity: d.quantity,
-          price: d.price,
-          discount: d.discount,
+          quantity: parseInt(d.quantity) || 1,
+          price: parseFloat(d.price) || 0,
+          discount: parseFloat(d.discount) || 0,
           type: isService ? 'service' : 'product',
           sku: prod ? (prod.sku || prod.code || '') : '',
           original_quantity: d.quantity,
@@ -409,6 +409,59 @@ const loadSaleData = async () => {
   }
 }
 
+// Guardar como Borrador
+const saveDraft = async () => {
+  showValidationError.value = false
+  validationErrorMessage.value = ''
+
+  if (!sale.value.client_id) {
+    showValidationError.value = true
+    validationErrorMessage.value = 'Debe seleccionar un cliente para guardar el borrador'
+    return
+  }
+
+  if (sale.value.items.length === 0) {
+    showValidationError.value = true
+    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio para guardar el borrador'
+    return
+  }
+
+  loader.start()
+
+  try {
+    const payload = {
+      ...sale.value,
+      subtotal: subtotal.value,
+      tax_amount: taxAmount.value,
+      total: total.value,
+      items: sale.value.items,
+      is_draft: true
+    }
+
+    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+      payload.payment_distributions = paymentDistributions.value
+    }
+
+    const response = await $api(`sales/${route.params.id}`, {
+      method: 'PUT',
+      body: payload,
+    })
+
+    if (response?.success || response?.status === 200) {
+      showNotification('Borrador actualizado correctamente', 'success')
+      router.push('/sales/list')
+    } else {
+      showNotification(response.message || 'Error al actualizar borrador', 'error')
+    }
+  } catch (error) {
+    console.error('Error guardando borrador', error)
+    const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+    showNotification(errMsg, 'error')
+  } finally {
+    loader.stop()
+  }
+}
+
 // Envío del formulario
 const submitForm = async () => {
   showValidationError.value = false
@@ -457,9 +510,10 @@ const submitForm = async () => {
   for (const item of sale.value.items) {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.max_discount !== null && product.max_discount !== undefined) {
-        const maxDiscountAmount = (item.quantity * item.price) * (product.max_discount / 100)
-        if (item.discount > maxDiscountAmount) {
+      if (product && product.item_type === 1 && product.max_discount !== null && product.max_discount !== undefined) {
+        const maxDiscountAmount = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+        const itemDiscount = parseFloat(item.discount) || 0
+        if (itemDiscount > maxDiscountAmount) {
           showValidationError.value = true
           validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
 
@@ -751,8 +805,16 @@ onMounted(() => {
                 prepend-inner-icon="ri-search-line" variant="outlined" clearable :custom-filter="productFilter"
                 @update:model-value="onProductSelected" class="mb-4">
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                    :subtitle="(item.raw.code || item.raw.sku) ? `Código/SKU: ${item.raw.code || item.raw.sku}` : ''" />
+                  <VListItem v-bind="props" :title="undefined">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                      class="font-weight-medium">
+                      {{ item.raw.name || item.raw.description }}
+                    </VListItemTitle>
+                    <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
+                      Código/SKU: {{ item.raw.code || item.raw.sku }}
+                    </VListItemSubtitle>
+                  </VListItem>
+
                 </template>
               </VAutocomplete>
 
@@ -777,9 +839,15 @@ onMounted(() => {
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="20" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <VTextField v-model="item.description" :disabled="sale.status === 'canceled'"
+                            <<<<<<< HEAD <VTextField v-model="item.description" :disabled="sale.status === 'canceled'"
                               density="compact" variant="plain" hide-details placeholder="Descripción del ítem..."
                               :rules="[requiredRule]" class="premium-input font-weight-medium" />
+                            =======
+                            <div class="font-weight-medium text-body-1"
+                              style="white-space: normal !important; max-width: 500px;" :title="item.description">
+                              {{ item.description }}
+                            </div>
+                            >>>>>>> fix/frontend-productos
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
@@ -991,9 +1059,13 @@ onMounted(() => {
                 <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push('/sales/list')">
                   Cancelar
                 </VBtn>
+                <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary"
+                  variant="elevated" prepend-icon="ri-draft-line" :loading="loader.loading" @click.prevent="saveDraft">
+                  Actualizar Borrador
+                </VBtn>
                 <VBtn type="submit" :disabled="sale.status === 'canceled'" color="primary" variant="elevated"
                   prepend-icon="ri-save-3-line" :loading="loader.loading" size="large">
-                  Guardar Cambios
+                  {{ sale.status === 'draft' ? 'Finalizar Venta' : 'Guardar Cambios' }}
                 </VBtn>
               </div>
             </VCardText>

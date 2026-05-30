@@ -18,6 +18,7 @@ const loadingOrders = ref(null)
 
 const statusOptions = [
   { title: 'Todos', value: 'all' },
+  { title: 'Borrador', value: 'draft' },
   { title: 'Recibido', value: 'received' },
   { title: 'En Progreso', value: 'in_progress' },
   { title: 'Listo', value: 'ready' },
@@ -25,6 +26,7 @@ const statusOptions = [
 ]
 
 const statusColors = {
+  draft: 'secondary',
   received: 'info',
   in_progress: 'warning',
   ready: 'success',
@@ -32,13 +34,15 @@ const statusColors = {
 }
 
 const statusIcons = {
-  received: 'ri-draft-line',
+  draft: 'ri-draft-line',
+  received: 'ri-file-list-3-line',
   in_progress: 'ri-tools-line',
   ready: 'ri-checkbox-circle-line',
   delivered: 'ri-truck-line',
 }
 
 const statusAnimations = {
+  draft: '',
   received: '',
   in_progress: 'animate-pulse',
   ready: 'halo-active',
@@ -46,6 +50,7 @@ const statusAnimations = {
 }
 
 const statusBgClasses = {
+  draft: 'bg-grey-lighten-3',
   received: 'bg-info-lighten-5',
   in_progress: 'bg-warning-lighten-5',
   ready: 'bg-success-lighten-5',
@@ -53,6 +58,7 @@ const statusBgClasses = {
 }
 
 const statusLabels = {
+  draft: 'Borrador',
   received: 'Recibido',
   in_progress: 'En Progreso',
   ready: 'Listo',
@@ -164,6 +170,10 @@ const viewDetails = workOrder => {
 
 const goToSale = workOrderId => {
   router.push({ path: '/sales/add', query: { work_order_id: workOrderId } })
+}
+
+const goToEdit = workOrderId => {
+  router.push(`/work-orders/edit/${workOrderId}`)
 }
 
 const downloadPDF = async workOrderId => {
@@ -550,6 +560,14 @@ onMounted(() => {
                     style="width: 100px"
                     class="d-flex align-center justify-md-end gap-1"
                   >
+                    <VBtn
+                      v-if="workOrder.status === 'draft'"
+                      icon="ri-edit-2-line"
+                      size="small"
+                      variant="text"
+                      color="secondary"
+                      @click="goToEdit(workOrder.id)"
+                    />
                     <VBtn
                       v-if="workOrder.sale"
                       icon="ri-file-pdf-line"

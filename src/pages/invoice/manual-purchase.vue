@@ -243,9 +243,17 @@ onMounted(() => {
               clearable
               @update:model-value="addProductToItems"
               class="mb-4"
+              :menu-props="{ maxWidth: 0 }"
             >
               <template #item="{ props, item }">
-                <VListItem v-bind="props" :subtitle="`SKU: ${item.raw.sku} | Costo actual: $${item.raw.purchase_price}`" />
+                <VListItem v-bind="props" :title="undefined">
+                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                    {{ item.raw.description || item.raw.name }}
+                  </VListItemTitle>
+                  <VListItemSubtitle class="mt-1 text-grey">
+                    SKU: {{ item.raw.sku }} | Costo actual: ${{ parseFloat(item.raw.purchase_price).toFixed(2) }}
+                  </VListItemSubtitle>
+                </VListItem>
               </template>
             </VAutocomplete>
 
