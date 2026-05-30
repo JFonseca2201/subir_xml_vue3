@@ -1221,10 +1221,16 @@ onMounted(async () => {
                   item-title="displayTitle" return-object label="Buscar y agregar producto"
                   placeholder="Escribe para buscar por nombre, código, SKU..." prepend-inner-icon="ri-search-line"
                   variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
-                  class="flex-grow-1" hide-details>
+                  class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="item.raw.name || item.raw.description"
-                      :subtitle="(item.raw.code || item.raw.sku) ? `Código/SKU: ${item.raw.code || item.raw.sku}` : ''" />
+                    <VListItem v-bind="props" :title="undefined">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.name || item.raw.description }}
+                      </VListItemTitle>
+                      <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.code || item.raw.sku }}
+                      </VListItemSubtitle>
+                    </VListItem>
                   </template>
                 </VAutocomplete>
                 <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56" @click="isAddServiceDialogVisible = true">
@@ -1253,9 +1259,9 @@ onMounted(async () => {
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="20" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                              placeholder="Descripción del ítem..." :rules="[requiredRule]" readonly
-                              class="premium-input font-weight-medium" />
+                            <div class="font-weight-medium text-body-1" style="white-space: normal !important; max-width: 500px;" :title="item.description">
+                              {{ item.description }}
+                            </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}

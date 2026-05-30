@@ -411,13 +411,13 @@ onMounted(() => {
 
           <div class="text-h6 font-weight-bold mb-3">Ítems Solicitados</div>
 
-          <VTable class="text-no-wrap border rounded-lg mb-4">
+          <VTable class="border rounded-lg mb-4 w-100">
             <thead class="bg-grey-lighten-4">
               <tr>
-                <th class="font-weight-bold">Producto</th>
-                <th class="font-weight-bold text-center">Cantidad</th>
-                <th class="font-weight-bold text-right">Precio Compra Est.</th>
-                <th class="font-weight-bold text-right">Subtotal</th>
+                <th class="font-weight-bold text-left">Producto</th>
+                <th class="font-weight-bold text-center" style="width: 100px;">Cantidad</th>
+                <th class="font-weight-bold text-right" style="width: 160px;">Precio Compra Est.</th>
+                <th class="font-weight-bold text-right" style="width: 130px;">Subtotal</th>
               </tr>
             </thead>
             <tbody>

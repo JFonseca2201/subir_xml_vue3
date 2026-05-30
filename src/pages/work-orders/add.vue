@@ -495,19 +495,24 @@ onMounted(() => {
               <VCardText class="pa-4">
                 <VAutocomplete v-model="productSearch" :items="filteredProducts" item-title="description"
                   item-value="id" label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined"
-                  clearable hide-details return-object @update:model-value="(val) => val && addProductFromSearch(val)">
+                  clearable hide-details return-object @update:model-value="(val) => val && addProductFromSearch(val)"
+                  :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props">
+                    <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
                         <VAvatar size="32" color="primary" variant="tonal">
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemSubtitle>{{ item.raw.sku || '' }}</VListItemSubtitle>
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.description || item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.sku || item.raw.code }}
+                      </VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success">
-                          ${{
-                            parseFloat(item.raw.price).toFixed(2) }}
+                          ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
                         </VChip>
                       </template>
                     </VListItem>
@@ -518,7 +523,7 @@ onMounted(() => {
 
             <!-- Tabla de items -->
             <VCard v-if="workOrder.items.length > 0" class="elevation-1">
-              <VTable class="custom-items-table">
+              <VTable class="custom-items-table text-no-wrap">
                 <thead>
                   <tr class="bg-grey-lighten-4">
                     <th class="text-left" style="min-width: 250px;">
@@ -551,8 +556,9 @@ onMounted(() => {
                           <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
                         </VAvatar>
                         <div class="flex-grow-1">
-                          <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                            placeholder="Descripción del ítem..." readonly class="premium-input font-weight-medium" />
+                          <div class="font-weight-medium text-body-1" style="white-space: normal !important; max-width: 500px;" :title="item.description">
+                            {{ item.description }}
+                          </div>
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}

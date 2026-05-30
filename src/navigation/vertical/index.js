@@ -117,30 +117,9 @@ export default [
     ],
   },
   {
-    title: 'Transporte',
-    icon: { icon: 'ri-truck-line' },
-    children: [
-      {
-        title: 'Registrar',
-        to: 'second-page',
-        icon: { icon: 'ri-computer-line' },
-      },
-      {
-        title: 'Listado',
-        to: 'second-page',
-        icon: { icon: 'ri-bar-chart-line' },
-      },
-    ],
-  },
-  {
     title: 'Conversión',
     icon: { icon: 'ri-file-ppt-2-line' },
     to: 'second-page',
-  },
-  {
-    title: 'Kardex',
-    to: { name: 'second-page' },
-    icon: { icon: 'ri-draft-line' },
   },
 
   { heading: 'Finanzas' },
@@ -226,4 +205,12 @@ export default [
       },
     ],
   },
+
+  { heading: 'Información' },
+  {
+    title: 'Kardex',
+    to: { name: 'second-page' },
+    icon: { icon: 'ri-draft-line' },
+  },
+
 ]

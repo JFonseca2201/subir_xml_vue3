@@ -387,13 +387,17 @@ onMounted(async () => {
                   color="info"
                   class="flex-grow-1"
                   hide-details
+                  :menu-props="{ maxWidth: 0 }"
                 >
                   <template #item="{ props, item }">
-                    <VListItem
-                      v-bind="props"
-                      :title="item.raw.description"
-                      :subtitle="item.raw.sku ? `SKU: ${item.raw.sku} | Stock actual: ${item.raw.stock}` : `Stock actual: ${item.raw.stock}`"
-                    />
+                    <VListItem v-bind="props" :title="undefined">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.description }}
+                      </VListItemTitle>
+                      <VListItemSubtitle class="mt-1 text-grey">
+                        {{ item.raw.sku ? `SKU: ${item.raw.sku} | Stock actual: ${item.raw.stock}` : `Stock actual: ${item.raw.stock}` }}
+                      </VListItemSubtitle>
+                    </VListItem>
                   </template>
                   <template #no-data>
                     <div class="pa-4 text-center text-medium-emphasis">
@@ -414,15 +418,15 @@ onMounted(async () => {
                 </VBtn>
               </div>
 
-              <div class="border rounded-lg overflow-x-auto">
-                <VTable class="text-no-wrap">
+              <div class="border rounded-lg">
+                <VTable class="w-100">
                   <thead class="bg-grey-lighten-4">
                     <tr>
-                      <th style="min-width: 250px;">Producto</th>
-                      <th style="width: 120px;">Cantidad</th>
-                      <th style="width: 180px;">Precio Compra Est.</th>
-                      <th style="width: 150px;" class="text-right">Subtotal</th>
-                      <th style="width: 50px;"></th>
+                      <th class="text-left">Producto</th>
+                      <th style="width: 100px;" class="text-center">Cantidad</th>
+                      <th style="width: 150px;" class="text-center">Precio Compra Est.</th>
+                      <th style="width: 120px;" class="text-right">Subtotal</th>
+                      <th style="width: 50px;" class="text-center"></th>
                     </tr>
                   </thead>
                   <tbody>

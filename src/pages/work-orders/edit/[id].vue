@@ -548,19 +548,24 @@ onMounted(() => {
               <VCardText class="pa-4">
                 <VAutocomplete v-model="productSearch" :items="filteredProducts" item-title="description"
                   item-value="id" label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined"
-                  clearable hide-details return-object @update:model-value="(val) => val && addProductFromSearch(val)">
+                  clearable hide-details return-object @update:model-value="(val) => val && addProductFromSearch(val)"
+                  :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props">
+                    <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
                         <VAvatar size="32" color="primary" variant="tonal">
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemSubtitle>{{ item.raw.sku || '' }}</VListItemSubtitle>
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.description || item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.sku || item.raw.code }}
+                      </VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success">
-                          ${{
-                            parseFloat(item.raw.price).toFixed(2) }}
+                          ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
                         </VChip>
                       </template>
                     </VListItem>
