@@ -349,17 +349,17 @@ onMounted(() => {
           style="top: 0; left: 0; right: 0; z-index: 10;"
         />
         
-        <VTable hover class="client-table text-no-wrap overflow-x-auto">
+        <VTable hover class="client-table overflow-x-auto">
           <thead>
             <tr>
               <th class="text-left font-weight-bold text-uppercase" style="width: 80px;">ID</th>
-              <th class="text-left font-weight-bold text-uppercase">Nombre Completo</th>
-              <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">Tipo</th>
-              <th class="text-left font-weight-bold text-uppercase" style="width: 180px;">Documento</th>
-              <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">Teléfono</th>
-              <th class="text-left font-weight-bold text-uppercase">Email</th>
+              <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">Nombre Completo</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">Tipo</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 160px;">Documento</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">Teléfono</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 180px;">Email</th>
               <th class="text-left font-weight-bold text-uppercase" style="width: 130px;">Estado</th>
-              <th class="text-center font-weight-bold text-uppercase" style="width: 160px;">Acciones</th>
+              <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -383,10 +383,10 @@ onMounted(() => {
                 #{{ client.id }}
               </td>
               <td>
-                <div class="font-weight-bold text-grey-darken-3 text-uppercase">
+                <div class="font-weight-bold text-grey-darken-3 text-uppercase text-wrap" style="max-width: 250px;">
                   {{ client.full_name || `${client.name} ${client.surname}` }}
                 </div>
-                <div v-if="client.address" class="text-caption text-grey text-uppercase text-truncate" style="max-width: 250px;">
+                <div v-if="client.address" class="text-caption text-grey text-uppercase text-wrap" style="max-width: 250px; line-height: 1.2;">
                   {{ client.address }}
                 </div>
               </td>
@@ -411,7 +411,7 @@ onMounted(() => {
               <td class="text-grey-darken-1 font-weight-medium">
                 {{ client.phone || '-' }}
               </td>
-              <td class="text-lowercase text-grey-darken-2">
+              <td class="text-lowercase text-grey-darken-2 text-truncate" style="max-width: 180px;" :title="client.email">
                 {{ client.email || '-' }}
               </td>
               <td>
