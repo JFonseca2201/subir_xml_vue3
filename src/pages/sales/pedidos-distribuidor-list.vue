@@ -228,139 +228,185 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6">
-    <VCard class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto">
-      <!-- Encabezado -->
-      <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
-        <div>
-          <h1 class="text-h4 font-weight-bold mb-1">Pedidos a Distribuidor</h1>
-          <p class="text-medium-emphasis mb-0">Historial y estado de los pedidos solicitados a distribuidores</p>
+  <div class="pa-4 pa-sm-6 pedidos-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-truck-line" color="primary" class="me-2" size="28" />
+          Pedidos a Distribuidor
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Historial y estado de los pedidos solicitados a distribuidores
+        </p>
+      </div>
+      <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor">
+        Nuevo Pedido
+      </VBtn>
+    </div>
+
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VRow>
+          <VCol cols="12" sm="6" md="4">
+            <VTextField
+              v-model="search"
+              label="Buscar por distribuidor"
+              placeholder="Escribe el nombre del proveedor..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              @click:clear="clearSearch"
+              color="primary"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+
+      <!-- Tabla de Pedidos -->
+      <div class="position-relative">
+        <VProgressLinear
+          v-if="loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
+        
+        <div class="overflow-x-auto">
+          <VTable hover class="pedidos-table">
+            <thead>
+              <tr>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 100px;">
+                  ID PEDIDO
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 160px;">
+                  FECHA / HORA
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
+                  DISTRIBUIDOR
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  USUARIO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">
+                  ESTADO
+                </th>
+                <th class="text-right font-weight-bold text-uppercase" style="width: 110px;">
+                  TOTAL EST.
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+
+            <tbody v-if="loading">
+              <tr>
+                <td colspan="7" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="pedidos.length === 0">
+              <tr>
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3 color-grey-lighten-1">ri-file-list-3-line</VIcon>
+                  <div class="text-h6">No se encontraron pedidos</div>
+                  <div class="text-body-2">Prueba cambiando el filtro de búsqueda o crea uno nuevo</div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else style="text-transform: uppercase;">
+              <tr v-for="item in pedidos" :key="item.id" class="pedidos-row align-middle">
+                <td class="font-weight-bold text-primary text-no-wrap">#{{ String(item.id).padStart(5, '0') }}</td>
+                <td class="text-no-wrap">{{ formatDate(item.created_at) }}</td>
+                <td>
+                  <div class="font-weight-semibold text-grey-darken-4">{{ item.distribuidor?.name || 'DESCONOCIDO' }}</div>
+                  <div class="text-caption text-medium-emphasis mt-0.5" v-if="item.distribuidor?.ruc">RUC: {{ item.distribuidor.ruc }}</div>
+                </td>
+                <td>{{ item.usuario?.name || 'S/N' }}</td>
+                <td class="text-center">
+                  <VMenu close-on-content-click>
+                    <template #activator="{ props }">
+                      <div 
+                        v-bind="props" 
+                        class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
+                        :class="`text-${getStatusInfo(item.estado).color} border-${getStatusInfo(item.estado).color}`"
+                      >
+                        <div class="status-dot" :class="`bg-${getStatusInfo(item.estado).color}`"></div>
+                        <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
+                          {{ getStatusInfo(item.estado).text }}
+                        </span>
+                        <VIcon icon="ri-arrow-down-s-line" size="14" />
+                      </div>
+                    </template>
+                    <VList density="compact">
+                      <VListItem v-for="status in statusOptions" :key="status.value"
+                        @click="updateStatus(item, status.value)">
+                        <template #prepend>
+                          <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
+                        </template>
+                        <VListItemTitle>{{ status.label }}</VListItemTitle>
+                      </VListItem>
+                    </VList>
+                  </VMenu>
+                </td>
+                <td class="text-no-wrap text-right font-weight-bold text-subtitle-1 text-grey-darken-4">
+                  {{ formatCurrency(item.total) }}
+                </td>
+                <td class="text-no-wrap text-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <VBtn class="action-btn" icon="ri-file-pdf-line" variant="text" size="small" color="success" title="Ver PDF (Sin Precios)"
+                      @click="generateSinglePDF(item)" />
+                    <VBtn class="action-btn" icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
+                      :loading="viewLoading && selectedPedido?.id === item.id" @click="viewPedidoDetails(item)" />
+                    <VBtn class="action-btn" icon="ri-edit-line" variant="text" size="small" color="warning" title="Editar Pedido"
+                      @click="editPedido(item)" />
+                    <VBtn class="action-btn" icon="ri-delete-bin-line" variant="text" size="small" color="error" title="Eliminar Pedido"
+                      @click="deletePedido(item)" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
         </div>
-        <VBtn color="info" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor" size="large">
-          Nuevo Pedido
-        </VBtn>
       </div>
 
-      <VDivider class="mb-6" />
-
-      <!-- Filtros y Búsqueda -->
-      <VRow class="mb-4">
-        <VCol cols="12" sm="6" md="4">
-          <VTextField v-model="search" label="Buscar por distribuidor" placeholder="Escribe el nombre del proveedor..."
-            prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-            @click:clear="clearSearch" color="info" />
-        </VCol>
-      </VRow>
-
-      <VTable class="text-no-wrap border rounded-lg overflow-hidden">
-        <thead class="bg-grey-lighten-4">
-          <tr>
-            <th class="font-weight-bold">ID Pedido</th>
-            <th class="font-weight-bold">Fecha / Hora</th>
-            <th class="font-weight-bold">Distribuidor</th>
-            <th class="font-weight-bold">Usuario</th>
-            <th class="font-weight-bold text-center">Estado</th>
-            <th class="font-weight-bold text-right">Total Est.</th>
-            <th class="font-weight-bold text-center">Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody v-if="loading">
-          <tr>
-            <td colspan="7" class="text-center pa-6">
-              <VProgressCircular indeterminate color="info" size="40" />
-              <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
-            </td>
-          </tr>
-        </tbody>
-
-        <tbody v-else-if="pedidos.length === 0">
-          <tr>
-            <td colspan="7" class="text-center pa-8 text-medium-emphasis">
-              <VIcon size="48" class="mb-3 opacity-50">ri-file-list-3-line</VIcon>
-              <div class="text-h6">No se encontraron pedidos</div>
-              <div class="text-body-2">Prueba cambiando el filtro de búsqueda o crea uno nuevo</div>
-            </td>
-          </tr>
-        </tbody>
-
-        <tbody v-else style="text-transform: uppercase;">
-          <tr v-for="item in pedidos" :key="item.id" class="align-middle">
-            <td class="font-weight-bold text-primary">#{{ String(item.id).padStart(5, '0') }}</td>
-            <td>{{ formatDate(item.created_at) }}</td>
-            <td>
-              <div class="font-weight-medium">{{ item.distribuidor?.name || 'DESCONOCIDO' }}</div>
-              <div class="text-caption text-medium-emphasis" v-if="item.distribuidor?.ruc">RUC: {{ item.distribuidor.ruc
-              }}</div>
-            </td>
-            <td>{{ item.usuario?.name || 'S/N' }}</td>
-            <td class="text-center">
-              <VMenu close-on-content-click>
-                <template #activator="{ props }">
-                  <div 
-                    v-bind="props" 
-                    class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
-                    :class="`text-${getStatusInfo(item.estado).color} border-${getStatusInfo(item.estado).color}`"
-                  >
-                    <div class="status-dot" :class="`bg-${getStatusInfo(item.estado).color}`"></div>
-                    <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
-                      {{ getStatusInfo(item.estado).text }}
-                    </span>
-                    <VIcon icon="ri-arrow-down-s-line" size="14" />
-                  </div>
-                </template>
-                <VList density="compact">
-                  <VListItem v-for="status in statusOptions" :key="status.value"
-                    @click="updateStatus(item, status.value)">
-                    <template #prepend>
-                      <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
-                    </template>
-                    <VListItemTitle>{{ status.label }}</VListItemTitle>
-                  </VListItem>
-                </VList>
-              </VMenu>
-            </td>
-            <td class="text-right font-weight-black text-info text-body-1">
-              {{ formatCurrency(item.total) }}
-            </td>
-            <td class="text-center">
-              <div class="d-flex justify-center gap-1">
-                <VBtn icon="ri-file-pdf-line" variant="text" size="small" color="success" title="Ver PDF (Sin Precios)"
-                  @click="generateSinglePDF(item)" />
-                <VBtn icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
-                  :loading="viewLoading && selectedPedido?.id === item.id" @click="viewPedidoDetails(item)" />
-                <VBtn icon="ri-edit-line" variant="text" size="small" color="warning" title="Editar Pedido"
-                  @click="editPedido(item)" />
-                <VBtn icon="ri-delete-bin-line" variant="text" size="small" color="error" title="Eliminar Pedido"
-                  @click="deletePedido(item)" />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-
-      <VDivider class="mt-4" />
+      <VDivider />
 
       <!-- Paginación -->
-      <div class="d-flex justify-center pa-4">
-        <div class="d-flex flex-column align-center gap-2">
-          <div class="text-caption text-medium-emphasis">
-            Mostrando página {{ currentPage }} de {{ totalPages }} ({{ totalItems }} registros en total)
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ pedidos.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> registros
           </div>
-          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
-            :disabled="loading" color="info" />
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+          />
         </div>
-      </div>
+      </VCardActions>
     </VCard>
 
     <!-- Dialogo de Detalle de Pedido -->
     <VDialog v-model="isViewDialogVisible" max-width="800">
       <VCard class="rounded-lg" v-if="selectedPedido">
-        <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center justify-space-between border-b">
+        <VCardTitle class="pa-6 d-flex align-center justify-space-between border-bottom-light">
           <div class="d-flex align-center">
-            <VIcon icon="ri-truck-line" color="info" class="mr-2" />
-            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0')
-            }}</span>
+            <VIcon icon="ri-truck-line" color="primary" class="mr-2" />
+            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0') }}</span>
           </div>
           <VMenu close-on-content-click>
             <template #activator="{ props }">
@@ -393,11 +439,8 @@ onMounted(() => {
             <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">Distribuidor / Proveedor:</div>
               <div class="text-body-1 font-weight-bold">{{ selectedPedido.distribuidor?.name || 'DESCONOCIDO' }}</div>
-              <div class="text-body-2" v-if="selectedPedido.distribuidor?.ruc">RUC: {{ selectedPedido.distribuidor.ruc
-              }}
-              </div>
-              <div class="text-body-2" v-if="selectedPedido.distribuidor?.address">Dirección: {{
-                selectedPedido.distribuidor.address }}</div>
+              <div class="text-body-2 mt-1" v-if="selectedPedido.distribuidor?.ruc">RUC: {{ selectedPedido.distribuidor.ruc }}</div>
+              <div class="text-body-2" v-if="selectedPedido.distribuidor?.address">Dirección: {{ selectedPedido.distribuidor.address }}</div>
             </VCol>
             <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">Generado por:</div>
@@ -411,48 +454,51 @@ onMounted(() => {
 
           <div class="text-h6 font-weight-bold mb-3">Ítems Solicitados</div>
 
-          <VTable class="border rounded-lg mb-4 w-100">
-            <thead class="bg-grey-lighten-4">
-              <tr>
-                <th class="font-weight-bold text-left">Producto</th>
-                <th class="font-weight-bold text-center" style="width: 100px;">Cantidad</th>
-                <th class="font-weight-bold text-right" style="width: 160px;">Precio Compra Est.</th>
-                <th class="font-weight-bold text-right" style="width: 130px;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in selectedPedido.detalles" :key="item.id">
-                <td>
-                  <div class="font-weight-medium">{{ item.description }}</div>
-                  <div class="text-caption text-medium-emphasis" v-if="item.producto?.sku">SKU: {{ item.producto.sku }}
-                  </div>
-                  <VChip v-if="!item.producto_id" size="x-small" color="orange" variant="tonal" class="mt-1">Ingreso
-                    Manual
-                  </VChip>
-                </td>
-                <td class="text-center">{{ item.cantidad }}</td>
-                <td class="text-right">{{ formatCurrency(item.precio_compra_estimado) }}</td>
-                <td class="text-right font-weight-bold text-info">
-                  {{ formatCurrency(item.cantidad * item.precio_compra_estimado) }}
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+          <div class="border rounded-lg overflow-hidden">
+            <VTable class="w-100">
+              <thead class="bg-grey-lighten-5">
+                <tr>
+                  <th class="font-weight-bold text-left text-grey-darken-3" style="font-size: 0.72rem; letter-spacing: 0.6px;">PRODUCTO</th>
+                  <th class="font-weight-bold text-center text-grey-darken-3" style="width: 100px; font-size: 0.72rem; letter-spacing: 0.6px;">CANTIDAD</th>
+                  <th class="font-weight-bold text-right text-grey-darken-3" style="width: 160px; font-size: 0.72rem; letter-spacing: 0.6px;">PRECIO COMPRA EST.</th>
+                  <th class="font-weight-bold text-right text-grey-darken-3" style="width: 130px; font-size: 0.72rem; letter-spacing: 0.6px;">SUBTOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in selectedPedido.detalles" :key="item.id">
+                  <td>
+                    <div class="font-weight-medium text-grey-darken-4 text-wrap">{{ item.description }}</div>
+                    <div class="text-caption text-medium-emphasis mt-0.5" v-if="item.producto?.sku">SKU: {{ item.producto.sku }}</div>
+                    <VChip v-if="!item.producto_id" size="x-small" color="orange" variant="tonal" class="mt-1">
+                      Ingreso Manual
+                    </VChip>
+                  </td>
+                  <td class="text-center">{{ item.cantidad }}</td>
+                  <td class="text-right">{{ formatCurrency(item.precio_compra_estimado) }}</td>
+                  <td class="text-right font-weight-bold text-primary">
+                    {{ formatCurrency(item.cantidad * item.precio_compra_estimado) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
 
-          <div class="d-flex justify-end border-t pt-4">
+          <div class="d-flex justify-end pt-5">
             <div class="text-right">
               <span class="text-subtitle-1 text-medium-emphasis mr-4">Total Estimado del Pedido:</span>
-              <span class="text-h5 font-weight-black text-info">{{ formatCurrency(selectedPedido.total) }}</span>
+              <span class="text-h5 font-weight-black text-primary">{{ formatCurrency(selectedPedido.total) }}</span>
             </div>
           </div>
         </VCardText>
 
-        <VCardActions class="pa-4 bg-grey-lighten-4 border-t justify-end gap-2">
-          <VBtn color="success" variant="flat" prepend-icon="ri-file-pdf-line"
+        <VCardActions class="pa-6 border-top-light justify-end gap-2">
+          <VBtn color="success" prepend-icon="ri-file-pdf-line"
             @click="generateSinglePDF(selectedPedido)">
             Generar PDF
           </VBtn>
-          <VBtn color="secondary" variant="flat" @click="isViewDialogVisible = false">Cerrar</VBtn>
+          <VBtn color="secondary" variant="tonal" @click="isViewDialogVisible = false">
+            Cerrar
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -460,19 +506,52 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.v-table th {
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.border-top-light {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de pedidos */
+.pedidos-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.pedidos-table :deep(thead th) {
+  color: #475569 !important;
   font-weight: 700 !important;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.pedidos-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.pedidos-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
 .status-indicator {
   border: 1px solid currentColor;
-  background-color: currentColor;
-  /* El truco es usar currentColor para el border y el fondo, 
-     y luego hacer el fondo muy transparente usando opacity en un pseudo-elemento, 
-     pero como Vuetify no lo permite fcil, usaremos opacidad en el CSS */
   background-color: transparent;
   transition: all 0.2s ease-in-out;
 }
