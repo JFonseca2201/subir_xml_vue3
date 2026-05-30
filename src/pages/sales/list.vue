@@ -436,23 +436,23 @@ onMounted(() => {
       <VDivider class="mb-4" />
 
       <div class="border rounded-lg overflow-x-auto">
-        <VTable style="table-layout: fixed; width: 100%;">
+        <VTable hover>
           <thead>
             <tr>
               <th class="text-subtitle-1 font-weight-bold text-left text-grey-darken-3"
-                style="width: 170px; height: 56px;">
+                style="width: 135px; height: 56px;">
                 Doc./Fecha
               </th>
-              <th class="text-subtitle-1 font-weight-bold text-left text-grey-darken-3" style="width: 400px;">
+              <th class="text-subtitle-1 font-weight-bold text-left text-grey-darken-3" style="min-width: 180px;">
                 Cliente
               </th>
-              <th class="text-subtitle-1 font-weight-bold text-left text-grey-darken-3" style="width: 300px;">
+              <th class="text-subtitle-1 font-weight-bold text-left text-grey-darken-3" style="min-width: 150px;">
                 Vehículo
               </th>
-              <th class="text-subtitle-1 font-weight-bold text-right text-grey-darken-3" style="width: 110px;">
+              <th class="text-subtitle-1 font-weight-bold text-right text-grey-darken-3" style="width: 100px;">
                 Total
               </th>
-              <th class="text-subtitle-1 font-weight-bold text-center text-grey-darken-3" style="width: 130px;">
+              <th class="text-subtitle-1 font-weight-bold text-center text-grey-darken-3" style="width: 120px;">
                 Estado
               </th>
               <th class="text-subtitle-1 font-weight-bold text-center text-grey-darken-3" style="width: 90px;">
