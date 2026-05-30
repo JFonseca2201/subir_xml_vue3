@@ -257,8 +257,8 @@ onMounted(() => {
     <!-- Encabezado de la página -->
     <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center gap-2">
-          <VIcon icon="ri-car-fill" color="primary" size="36" class="animate-bounce-subtle" />
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-car-line" color="primary" class="me-2" size="28" />
           Gestión de Vehículos
         </h1>
         <p class="text-medium-emphasis mb-0">Registra, administra e importa la información de los vehículos del taller</p>
@@ -269,7 +269,6 @@ onMounted(() => {
           variant="tonal"
           prepend-icon="ri-upload-cloud-2-line"
           @click="isImportDialogVisible = true"
-          class="premium-btn"
         >
           Importar
         </VBtn>
@@ -277,80 +276,14 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-add-line"
           @click="addVehicle"
-          class="premium-btn shadow-primary"
         >
           Agregar Vehículo
         </VBtn>
       </div>
     </div>
 
-    <!-- Fila de Estadísticas -->
-    <VRow class="mb-6">
-      <VCol cols="12" sm="6" md="3">
-        <VCard class="stats-card elevation-1" border>
-          <VCardText class="d-flex align-center justify-space-between pa-5">
-            <div>
-              <span class="text-caption text-grey-darken-1 font-weight-medium text-uppercase tracking-wider">Total Vehículos</span>
-              <h3 class="text-h3 font-weight-bold mt-1 text-primary">{{ totalItems }}</h3>
-            </div>
-            <VAvatar size="54" color="primary" variant="tonal" class="rounded-lg">
-              <VIcon icon="ri-car-line" size="28" />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol cols="12" sm="6" md="3">
-        <VCard class="stats-card elevation-1" border>
-          <VCardText class="d-flex align-center justify-space-between pa-5">
-            <div>
-              <span class="text-caption text-grey-darken-1 font-weight-medium text-uppercase tracking-wider">Vehículos Activos</span>
-              <h3 class="text-h3 font-weight-bold mt-1 text-success">
-                {{ vehicles.filter(v => parseInt(v.status) === 1).length }}
-              </h3>
-            </div>
-            <VAvatar size="54" color="success" variant="tonal" class="rounded-lg">
-              <VIcon icon="ri-checkbox-circle-line" size="28" />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol cols="12" sm="6" md="3">
-        <VCard class="stats-card elevation-1" border>
-          <VCardText class="d-flex align-center justify-space-between pa-5">
-            <div>
-              <span class="text-caption text-grey-darken-1 font-weight-medium text-uppercase tracking-wider">Vehículos Inactivos</span>
-              <h3 class="text-h3 font-weight-bold mt-1 text-error">
-                {{ vehicles.filter(v => parseInt(v.status) !== 1).length }}
-              </h3>
-            </div>
-            <VAvatar size="54" color="error" variant="tonal" class="rounded-lg">
-              <VIcon icon="ri-close-circle-line" size="28" />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <VCol cols="12" sm="6" md="3">
-        <VCard class="stats-card elevation-1" border>
-          <VCardText class="d-flex align-center justify-space-between pa-5">
-            <div>
-              <span class="text-caption text-grey-darken-1 font-weight-medium text-uppercase tracking-wider">Tipos Activos</span>
-              <h3 class="text-h3 font-weight-bold mt-1 text-info">
-                {{ new Set(vehicles.map(v => v.vehicle_type).filter(Boolean)).size }}
-              </h3>
-            </div>
-            <VAvatar size="54" color="info" variant="tonal" class="rounded-lg">
-              <VIcon icon="ri-roadster-line" size="28" />
-            </VAvatar>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
-
     <!-- Contenedor Principal (Filtros y Tabla) -->
-    <VCard class="rounded-lg elevation-3 border-light overflow-hidden">
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VForm ref="searchFormRef">
@@ -359,14 +292,13 @@ onMounted(() => {
               <VTextField
                 v-model="searchForm.search"
                 label="Buscar vehículo"
-                placeholder="Placa, marca, modelo o dueño..."
+                placeholder="Placa, marca, modelo..."
                 prepend-inner-icon="ri-search-line"
                 clearable
                 hide-details
                 variant="outlined"
                 density="comfortable"
                 color="primary"
-                class="premium-input-field"
               />
             </VCol>
             <VCol cols="12" sm="4" md="3">
@@ -446,8 +378,8 @@ onMounted(() => {
           <tbody>
             <tr v-if="!loading && !vehicles.length">
               <td colspan="9" class="text-center text-medium-emphasis py-12">
-                <VAvatar size="80" color="grey-lighten-4" class="mb-3">
-                  <VIcon size="40" color="grey" icon="ri-car-line" />
+                <VAvatar size="64" color="grey-lighten-4" class="mb-3">
+                  <VIcon size="32" color="grey" icon="ri-car-line" />
                 </VAvatar>
                 <div class="text-h6 font-weight-semibold text-grey-darken-1">No se encontraron vehículos</div>
                 <div class="text-body-2 text-grey">Intenta ajustar tus criterios de búsqueda o agrega uno nuevo.</div>
@@ -460,13 +392,12 @@ onMounted(() => {
               class="vehicle-row transition"
               :class="{ 'opacity-50 pointer-events-none': loading }"
             >
-              <td class="font-weight-bold text-grey-darken-1">
+              <td class="font-weight-medium text-grey-darken-1">
                 #{{ vehicle.id }}
               </td>
               <td>
                 <div v-if="vehicle.license_plate" class="license-plate-badge">
-                  <span class="ecu-logo">EC</span>
-                  <span class="plate-text">{{ vehicle.license_plate.toUpperCase() }}</span>
+                  {{ vehicle.license_plate.toUpperCase() }}
                 </div>
                 <VChip
                   v-else
@@ -494,7 +425,7 @@ onMounted(() => {
                   Vacío
                 </VChip>
               </td>
-              <td class="font-weight-semibold text-grey-darken-1">
+              <td class="text-grey-darken-1">
                 {{ vehicle.year || 'N/A' }}
               </td>
               <td>
@@ -505,7 +436,6 @@ onMounted(() => {
                   color="secondary"
                   class="text-uppercase font-weight-semibold"
                 >
-                  <VIcon icon="ri-palette-line" size="12" class="me-1" />
                   {{ vehicle.color }}
                 </VChip>
                 <span v-else class="text-caption text-grey-lighten-1">No especificado</span>
@@ -514,8 +444,8 @@ onMounted(() => {
                 <VChip
                   :color="getVehicleTypeColor(vehicle.vehicle_type)"
                   size="small"
-                  variant="flat"
-                  class="text-uppercase font-weight-bold type-chip text-white"
+                  variant="tonal"
+                  class="text-uppercase font-weight-bold type-chip"
                 >
                   {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
                 </VChip>
@@ -526,9 +456,8 @@ onMounted(() => {
                   color="success"
                   size="small"
                   variant="tonal"
-                  class="font-weight-bold status-chip"
+                  class="font-weight-semibold"
                 >
-                  <span class="pulse-dot pulse-active"></span>
                   ACTIVO
                 </VChip>
                 <VChip
@@ -536,35 +465,22 @@ onMounted(() => {
                   color="error"
                   size="small"
                   variant="tonal"
-                  class="font-weight-bold status-chip"
+                  class="font-weight-semibold"
                 >
-                  <span class="pulse-dot pulse-inactive"></span>
                   INACTIVO
                 </VChip>
               </td>
               <td class="text-center">
                 <div class="d-flex justify-center gap-1">
-                  <VTooltip text="Ver Ficha">
-                    <template #activator="{ props }">
-                      <IconBtn v-bind="props" class="action-btn text-info" @click="showVehicle(vehicle)">
-                        <VIcon icon="ri-eye-line" />
-                      </IconBtn>
-                    </template>
-                  </VTooltip>
-                  <VTooltip text="Editar Vehículo">
-                    <template #activator="{ props }">
-                      <IconBtn v-bind="props" class="action-btn text-warning" @click="editVehicle(vehicle)">
-                        <VIcon icon="ri-pencil-line" />
-                      </IconBtn>
-                    </template>
-                  </VTooltip>
-                  <VTooltip text="Eliminar Vehículo">
-                    <template #activator="{ props }">
-                      <IconBtn v-bind="props" class="action-btn text-error" @click="deleteVehicle(vehicle)">
-                        <VIcon icon="ri-delete-bin-6-line" />
-                      </IconBtn>
-                    </template>
-                  </VTooltip>
+                  <IconBtn class="action-btn text-info" @click="showVehicle(vehicle)" title="Ver Ficha">
+                    <VIcon icon="ri-eye-line" />
+                  </IconBtn>
+                  <IconBtn class="action-btn text-warning" @click="editVehicle(vehicle)" title="Editar Vehículo">
+                    <VIcon icon="ri-pencil-line" />
+                  </IconBtn>
+                  <IconBtn class="action-btn text-error" @click="deleteVehicle(vehicle)" title="Eliminar Vehículo">
+                    <VIcon icon="ri-delete-bin-6-line" />
+                  </IconBtn>
                 </div>
               </td>
             </tr>
@@ -577,8 +493,8 @@ onMounted(() => {
       <!-- Paginación -->
       <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
         <div class="d-flex flex-column align-center gap-3 w-100">
-          <div class="text-caption text-grey-darken-1 font-weight-medium">
-            Mostrando <span class="text-primary font-weight-bold">{{ vehicles.length }}</span> de <span class="text-primary font-weight-bold">{{ totalItems }}</span> vehículos en total
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ vehicles.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> vehículos
           </div>
           <VPagination
             v-model="currentPage"
@@ -628,50 +544,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s infinite;
-}
-
-@keyframes bounce-subtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.premium-btn {
-  text-transform: none;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  border-radius: 8px;
-  padding: 0 20px;
-  height: 42px !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.premium-btn:hover {
-  transform: translateY(-2px);
-}
-
-.shadow-primary {
-  box-shadow: 0 4px 14px rgba(var(--v-theme-primary), 0.35) !important;
-}
-
-.stats-card {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border-radius: 12px !important;
-  border: 1px solid rgba(var(--v-theme-primary), 0.08) !important;
-  background: white;
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06) !important;
-  border-color: rgba(var(--v-theme-primary), 0.2) !important;
-}
-
 .border-light {
   border: 1px solid #e2e8f0 !important;
 }
@@ -680,84 +552,21 @@ onMounted(() => {
   border-bottom: 1px solid #e2e8f0 !important;
 }
 
-/* Placa de Vehículo - Estilo Realista */
+/* Placa de Vehículo - Estilo Sobrio */
 .license-plate-badge {
   display: inline-flex;
   align-items: center;
-  background: #fdfdfd;
-  border: 2px solid #2d3748;
-  border-radius: 6px;
-  padding: 0;
-  font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 800;
-  color: #1a202c;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-  height: 28px;
-  overflow: hidden;
-  vertical-align: middle;
-}
-
-.ecu-logo {
-  background: #1a365d;
-  color: #f7fafc;
-  font-size: 9px;
-  font-weight: bold;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  letter-spacing: 0.5px;
-  border-right: 1.5px solid #2d3748;
-}
-
-.plate-text {
-  padding: 0 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-weight: 700;
   font-size: 0.85rem;
-  letter-spacing: 1px;
-}
-
-/* Pulsación para estado Activo/Inactivo */
-.pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-.pulse-active {
-  background-color: #48bb78;
-  animation: pulse-green 1.8s infinite;
-}
-
-.pulse-inactive {
-  background-color: #e53e3e;
-  animation: pulse-red 1.8s infinite;
-}
-
-@keyframes pulse-green {
-  0% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(72, 187, 120, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(72, 187, 120, 0);
-  }
-}
-
-@keyframes pulse-red {
-  0% {
-    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(229, 62, 62, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
-  }
+  color: #334155;
+  letter-spacing: 0.5px;
+  height: 26px;
+  vertical-align: middle;
 }
 
 /* Estilo de la tabla de vehículos */
@@ -770,12 +579,12 @@ onMounted(() => {
   font-weight: 700 !important;
   font-size: 0.72rem !important;
   letter-spacing: 0.6px;
-  border-bottom: 2px solid #e2e8f0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   height: 48px !important;
 }
 
 .vehicle-row {
-  height: 58px;
+  height: 52px;
 }
 
 .vehicle-row:hover {
@@ -787,11 +596,6 @@ onMounted(() => {
   height: 22px !important;
 }
 
-.status-chip {
-  font-size: 11px !important;
-  height: 22px !important;
-}
-
 .action-btn {
   transition: all 0.2s ease;
   border-radius: 6px !important;
@@ -799,6 +603,5 @@ onMounted(() => {
 
 .action-btn:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
-  transform: scale(1.1);
 }
 </style>
