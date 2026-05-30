@@ -422,8 +422,9 @@ onMounted(() => {
                 <div class="mb-4">
                   <VAutocomplete v-model="workOrder.technicians" :items="employees"
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
-                    clearable :loading="isLoading" multiple chips>
+                    item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined" clearable :loading="isLoading" multiple chips
+                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -504,13 +505,7 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium">
-                        {{ item.raw.description || item.raw.name }}
-                      </VListItemTitle>
-                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
-                        Código/SKU: {{ item.raw.sku || item.raw.code }}
-                      </VListItemSubtitle>
+                      <VListItemSubtitle>{{ item.raw.sku || '' }}</VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success">
                           ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
@@ -557,10 +552,8 @@ onMounted(() => {
                           <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
                         </VAvatar>
                         <div class="flex-grow-1">
-                          <div class="font-weight-medium text-body-1"
-                            style="white-space: normal !important; max-width: 500px;" :title="item.description">
-                            {{ item.description }}
-                          </div>
+                          <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                            placeholder="Descripción del ítem..." class="premium-input font-weight-medium" />
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
@@ -644,10 +637,6 @@ onMounted(() => {
               <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="cancel">
                 Cancelar
               </VBtn>
-              <VBtn color="secondary" variant="elevated" prepend-icon="ri-draft-line" :loading="isLoading" size="large"
-                @click.prevent="saveDraft">
-                Guardar Borrador
-              </VBtn>
               <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isLoading"
                 size="large" @click="saveWorkOrder">
                 Guardar Orden de Trabajo
@@ -669,10 +658,6 @@ onMounted(() => {
     <!-- Dialog para agregar vehículo -->
     <VehicleAddDialog :is-dialog-visible="showVehicleDialog" @update:is-dialog-visible="showVehicleDialog = $event"
       @add-vehicle="onVehicleAdded" />
-
-    <!-- Dialog para agregar servicio express -->
-    <AddServiceDialog :is-dialog-visible="showAddServiceDialog"
-      @update:is-dialog-visible="showAddServiceDialog = $event" @service-added="handleServiceAdded" />
   </VContainer>
 </template>
 

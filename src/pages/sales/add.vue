@@ -94,7 +94,7 @@ const generateDocumentNumber = type => {
   } else {
     const newNumber = lastSaleNumber.value + 1
 
-    return 'OT-' + String(newNumber).padStart(7, '0')
+    return 'V-' + String(newNumber).padStart(7, '0')
   }
 }
 
@@ -210,10 +210,8 @@ const handleServiceAdded = async (newService) => {
       searchText: `${newService.sku || ''} ${newService.code || ''} ${newService.name || ''} ${newService.description || ''}`.toLowerCase(),
       displayTitle: newService.description || newService.name || '',
     }
-
     // Inyectar en el listado de productos de búsqueda
     products.value = [mappedService, ...products.value]
-
     // Agregar directamente al carrito
     onProductSelected(mappedService)
   }

@@ -347,7 +347,7 @@ const loadSaleData = async () => {
           discount: parseFloat(d.discount) || 0,
           type: isService ? 'service' : 'product',
           sku: prod ? (prod.sku || prod.code || '') : '',
-          original_quantity: d.quantity,
+          original_quantity: parseInt(d.quantity) || 1,
           original_product_id: d.product_id
         }
       }),
@@ -515,7 +515,7 @@ const submitForm = async () => {
         const itemDiscount = parseFloat(item.discount) || 0
         if (itemDiscount > maxDiscountAmount) {
           showValidationError.value = true
-          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${item.discount.toFixed(2)}`
+          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${itemDiscount.toFixed(2)}`
 
           return
         }
@@ -803,18 +803,16 @@ onMounted(() => {
                 :disabled="sale.status === 'canceled'" :items="products" item-title="displayTitle" return-object
                 label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código, SKU..."
                 prepend-inner-icon="ri-search-line" variant="outlined" clearable :custom-filter="productFilter"
-                @update:model-value="onProductSelected" class="mb-4">
+                @update:model-value="onProductSelected" class="mb-4" :menu-props="{ maxWidth: 0 }">
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="undefined">
-                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                      class="font-weight-medium">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
                       {{ item.raw.name || item.raw.description }}
                     </VListItemTitle>
                     <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
                       Código/SKU: {{ item.raw.code || item.raw.sku }}
                     </VListItemSubtitle>
                   </VListItem>
-
                 </template>
               </VAutocomplete>
 
@@ -839,15 +837,10 @@ onMounted(() => {
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="20" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <<<<<<< HEAD <VTextField v-model="item.description" :disabled="sale.status === 'canceled'"
-                              density="compact" variant="plain" hide-details placeholder="Descripción del ítem..."
-                              :rules="[requiredRule]" class="premium-input font-weight-medium" />
-                            =======
                             <div class="font-weight-medium text-body-1"
                               style="white-space: normal !important; max-width: 500px;" :title="item.description">
                               {{ item.description }}
                             </div>
-                            >>>>>>> fix/frontend-productos
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
