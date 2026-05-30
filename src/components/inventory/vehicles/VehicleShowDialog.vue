@@ -39,18 +39,7 @@ const getVehicleStatus = computed(() => {
     : { label: 'INACTIVO', color: 'error' }
 })
 
-// Computed para obtener el color con estilo
-const getColorStyle = computed(() => {
-  if (!props.vehicleData?.color) return {}
-  const color = props.vehicleData.color.toLowerCase()
-  
-  return {
-    backgroundColor: getColorHex(color),
-    color: getContrastColor(color),
-  }
-})
-
-// Función para obtener color hexadecimal (simulado)
+// computed para obtener color en hexadecimal
 const getColorHex = colorName => {
   if (!colorName) return '#9e9e9e'
   const colors = {
@@ -74,19 +63,10 @@ const getColorHex = colorName => {
   return colors[colorName.toLowerCase()] || '#9e9e9e'
 }
 
-// Función para obtener color de contraste
-const getContrastColor = colorName => {
-  if (!colorName) return '#000000'
-  const darkColors = ['negro', 'morado', 'azul', 'café']
-  
-  return darkColors.includes(colorName.toLowerCase()) ? '#ffffff' : '#000000'
-}
-
 // Computed para obtener icono según tipo de vehículo
 const getVehicleIcon = computed(() => {
   if (!props.vehicleData?.vehicle_type) return 'ri-car-line'
   
-  // Soporte para IDs numéricos del catálogo centralizado
   const numericId = parseInt(props.vehicleData.vehicle_type)
   const iconsMap = {
     1: 'ri-car-line',       // Sedan
@@ -105,7 +85,6 @@ const getVehicleIcon = computed(() => {
   
   if (iconsMap[numericId]) return iconsMap[numericId]
 
-  // Compatibilidad con texto
   const typeStr = String(props.vehicleData.vehicle_type).toLowerCase()
   const textIcons = {
     'automovil': 'ri-car-line',
@@ -129,13 +108,6 @@ const getVehicleIcon = computed(() => {
   return textIcons[typeStr] || 'ri-car-line'
 })
 
-// computed para color
-const getVehicleTypeColor = computed(() => {
-  if (!props.vehicleData?.vehicle_type) return 'grey'
-  
-  return getTypeColor(props.vehicleData.vehicle_type)
-})
-
 // Cerrar diálogo
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
@@ -149,46 +121,28 @@ const closeDialog = () => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="vehicle-dialog-card pa-0 elevation-12">
-      <!-- Header con gradiente elegante -->
-      <div class="modal-header-hero">
+    <VCard class="vehicle-dialog-card pa-0 elevation-8">
+      <!-- Header sobrio y limpio alineado con el sistema -->
+      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-bottom-light bg-grey-lighten-5">
+        <div class="d-flex align-center">
+          <VIcon :icon="getVehicleIcon" color="primary" class="me-3" size="28" />
+          <div>
+            <div class="text-h5 font-weight-bold text-grey-darken-3">Ficha de Vehículo</div>
+            <div class="text-caption text-grey">{{ getBrandName }} {{ vehicleData.model || '' }}</div>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
-          class="position-absolute close-modal-btn"
-          style="top: 16px; right: 16px;"
+          density="comfortable"
           @click="closeDialog"
         />
-
-        <!-- Avatar con icono del tipo de vehiculo -->
-        <div class="vehicle-avatar-wrapper">
-          <VIcon :icon="getVehicleIcon" size="36" color="white" />
-        </div>
-
-        <!-- Placa Realista -->
-        <div class="d-block mb-2">
-          <div class="license-plate-hero">
-            <div class="plate-header-flag"></div>
-            <div class="plate-content">
-              <span class="plate-text-large">{{ vehicleData.license_plate?.toUpperCase() || 'SIN PLACA' }}</span>
-              <span class="plate-country">ECUADOR</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Marca y Modelo subtitulo -->
-        <h2 class="text-h5 font-weight-bold text-white mb-1 text-uppercase">
-          {{ getBrandName }} {{ vehicleData.model || '' }}
-        </h2>
-        <p class="text-caption text-grey-lighten-2 mb-0 opacity-75 tracking-wider text-uppercase">
-          Ficha del Vehículo
-        </p>
-      </div>
+      </VCardTitle>
 
       <!-- Contenido principal -->
       <VCardText class="pa-6">
         <!-- Grid de Especificaciones (Brochure Style) -->
-        <div class="specs-container">
+        <div class="specs-container mb-6">
           <div class="spec-badge-card">
             <span class="spec-label">Marca</span>
             <span class="spec-value">{{ getBrandName }}</span>
@@ -219,8 +173,13 @@ const closeDialog = () => {
               <VRow no-gutters>
                 <VCol cols="12" class="mb-3">
                   <div class="text-caption text-medium-emphasis">Placa Oficial</div>
-                  <div class="text-body-1 font-weight-bold text-grey-darken-3">
-                    {{ vehicleData.license_plate || 'Sin placa' }}
+                  <div class="mt-1">
+                    <div v-if="vehicleData.license_plate" class="license-plate-badge">
+                      {{ vehicleData.license_plate.toUpperCase() }}
+                    </div>
+                    <VChip v-else color="warning" size="x-small" variant="tonal" class="font-weight-bold">
+                      SIN PLACA
+                    </VChip>
                   </div>
                 </VCol>
 
@@ -318,89 +277,29 @@ const closeDialog = () => {
 
 <style scoped>
 .vehicle-dialog-card {
-  border-radius: 16px !important;
+  border-radius: 12px !important;
   overflow: hidden;
 }
 
-.modal-header-hero {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: white;
-  padding: 32px 24px !important;
-  position: relative;
-  text-align: center;
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
-.close-modal-btn {
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.2s ease;
-}
-
-.close-modal-btn:hover {
-  color: white !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Placa Física Realista */
-.license-plate-hero {
+/* Placa de Vehículo - Estilo Sobrio */
+.license-plate-badge {
   display: inline-flex;
-  flex-direction: column;
-  background: #fcfcfc;
-  border: 2px solid #1e293b;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  margin-bottom: 8px;
-  width: auto;
-  min-width: 170px;
-}
-
-.plate-header-flag {
-  height: 4px;
-  background: linear-gradient(to right, #ffeb3b 0%, #ffeb3b 50%, #0d47a1 50%, #0d47a1 75%, #d32f2f 75%, #d32f2f 100%);
-}
-
-.plate-content {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-}
-
-.plate-text-large {
-  font-family: 'Outfit', 'Segoe UI', Arial, sans-serif;
-  font-weight: 800;
-  font-size: 1.4rem;
-  letter-spacing: 1.5px;
-  color: #0f172a;
-  line-height: 1.2;
-}
-
-.plate-country {
-  font-size: 0.6rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: monospace;
   font-weight: 700;
-  color: #475569;
-  letter-spacing: 1px;
-}
-
-/* Avatar de Tipo de Vehículo */
-.vehicle-avatar-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
-}
-
-.vehicle-avatar-wrapper:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  color: #334155;
+  letter-spacing: 0.5px;
+  height: 26px;
+  vertical-align: middle;
 }
 
 /* Grid de Especificaciones (Brochure Style) */
@@ -408,7 +307,6 @@ const closeDialog = () => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-bottom: 20px;
 }
 
 @media (max-width: 500px) {
@@ -423,12 +321,6 @@ const closeDialog = () => {
   border-radius: 8px;
   padding: 10px;
   text-align: center;
-  transition: all 0.2s ease;
-}
-
-.spec-badge-card:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
 }
 
 .spec-label {

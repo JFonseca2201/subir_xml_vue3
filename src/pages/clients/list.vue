@@ -130,23 +130,6 @@ const loadClients = async () => {
   }
 }
 
-// Cargar configuración (sucursales)
-const loadConfig = async () => {
-  try {
-    const resp = await $api("clients/config", {
-      method: "GET",
-      onResponseError({ response }) {
-        console.log(response._data.error)
-      },
-    })
-
-    console.log(resp)
-    sucursales.value = resp.sucursales || []
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 // Watch para resetear página cuando cambia el filtro
 watch(searchForm, () => {
   currentPage.value = 1
@@ -211,16 +194,6 @@ const addClient = () => {
 
 const handleClientCompanyAdded = clientData => {
   console.log("Cliente empresa agregado:", clientData)
-  console.log("Campos específicos:", {
-    full_name: clientData?.full_name,
-    n_document: clientData?.n_document,
-    phone: clientData?.phone,
-    email: clientData?.email,
-    id: clientData?.id,
-  })
-
-  // Recargar la lista para obtener los datos actualizados desde el servidor
-  // Esto es más confiable que intentar agregar datos localmente
   loadClients()
 }
 
@@ -242,28 +215,22 @@ const editClient = client => {
 const handleClientFinalUpdated = clientData => {
   console.log("Cliente final actualizado:", clientData)
 
-  // Validar que clientData exista y tenga id
   if (!clientData || !clientData.id) {
     console.error("Datos del cliente inválidos:", clientData)
-
     return
   }
 
-  // Recargar la lista para obtener los datos actualizados desde la API
   loadClients()
 }
 
 const handleClientCompanyUpdated = clientData => {
   console.log("Cliente empresa actualizado:", clientData)
 
-  // Validar que clientData exista y tenga id
   if (!clientData || !clientData.id) {
     console.error("Datos del cliente inválidos:", clientData)
-
     return
   }
 
-  // Recargar la lista para obtener los datos actualizados desde la API
   loadClients()
 }
 
@@ -276,185 +243,290 @@ const truncate = (text, length = 50) => {
 
 // Montar componente
 onMounted(() => {
-  /* loadConfig(); */
   loadClients()
 })
 </script>
 
 <template>
-  <VCard>
-    <VCardTitle class="d-flex align-center justify-space-between pa-4">
-      <div class="d-flex align-center">
-        <VIcon icon="ri-user-3-line" class="me-2" />
-        <span class="text-h5">Gestión de Clientes</span>
+  <div class="pa-4 pa-sm-6 client-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-user-3-line" color="primary" class="me-2" size="28" />
+          Gestión de Clientes
+        </h1>
+        <p class="text-medium-emphasis mb-0">Registra, administra e importa la información de los clientes del taller</p>
       </div>
-      <div class="d-flex gap-2">
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-upload-cloud-2-line" @click="isImportDialogVisible = true">
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-upload-cloud-2-line"
+          @click="isImportDialogVisible = true"
+        >
           Importar
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-user-add-line" @click="addNewClientFinal">
+        <VBtn
+          color="primary"
+          variant="outlined"
+          prepend-icon="ri-user-add-line"
+          @click="addNewClientFinal"
+        >
           Cliente Final
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-building-line" @click="addClient">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-building-line"
+          @click="addClient"
+        >
           Cliente Empresa
         </VBtn>
       </div>
-    </VCardTitle>
+    </div>
 
-    <VDivider />
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VForm ref="searchFormRef">
+          <VRow class="gap-y-3">
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="searchForm.search"
+                label="Buscar cliente"
+                placeholder="Nombre, email, RUC o cédula..."
+                prepend-inner-icon="ri-search-line"
+                clearable
+                hide-details
+                variant="outlined"
+                density="comfortable"
+                color="primary"
+              />
+            </VCol>
+            <VCol cols="12" sm="6" md="3">
+              <VSelect
+                v-model="searchForm.type_client"
+                :items="typeClientOptions"
+                item-title="title"
+                item-value="value"
+                label="Tipo de Cliente"
+                placeholder="Todos"
+                clearable
+                hide-details
+                variant="outlined"
+                density="comfortable"
+                color="primary"
+              />
+            </VCol>
+            <VCol cols="12" sm="6" md="3">
+              <VSelect
+                v-model="searchForm.state"
+                :items="stateOptions"
+                item-title="title"
+                item-value="value"
+                label="Estado"
+                placeholder="Todos"
+                clearable
+                hide-details
+                variant="outlined"
+                density="comfortable"
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
 
-    <!-- Formulario de búsqueda -->
-    <VCardText class="pa-4">
-      <VForm ref="searchFormRef">
-        <VRow>
-          <VCol cols="12" md="7">
-            <VRow>
-              <VCol cols="12" md="12">
-                <VTextField v-model="searchForm.search" label="Buscar cliente" placeholder="Nombre, email, documento..."
-                  prepend-inner-icon="ri-search-line" clearable hide-details />
-              </VCol>
-            </VRow>
-          </VCol>
-          <VCol cols="12" md="5">
-            <VRow>
-              <VCol cols="12" md="6">
-                <VSelect v-model="searchForm.type_client" :items="typeClientOptions" item-title="title"
-                  item-value="value" label="Tipo de cliente" placeholder="Todos" clearable hide-details />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSelect v-model="searchForm.state" :items="stateOptions" item-title="title" item-value="value"
-                  label="Estado" placeholder="Todos" clearable hide-details />
-              </VCol>
-            </VRow>
-          </VCol>
-        </VRow>
-      </VForm>
-    </VCardText>
-
-    <VDivider />
-
-    <!-- Tabla de clientes -->
-    <VCardText class="pa-0 position-relative">
-      <VProgressLinear
-        v-if="loading"
-        indeterminate
-        color="primary"
-        class="position-absolute"
-        style="top: 0; left: 0; right: 0; z-index: 10;"
-      />
-      <VTable hover class="client-table">
-        <thead class="bg-primary text-white">
-          <tr>
-            <th>#</th>
-            <th>Nombre Completo</th>
-            <th>Tipo</th>
-            <th>Documento</th>
-            <th>Teléfono</th>
-            <th>Email</th>
-            <th>Estado</th>
-            <th class="text-center">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="!loading && !clients.length">
-            <td colspan="8" class="text-center text-medium-emphasis py-6">
-              <VIcon size="32" class="mb-2">
-                ri-user-line
-              </VIcon>
-              <div>No hay clientes registrados</div>
-            </td>
-          </tr>
-          <tr v-for="client in clients" :key="client.id" class="hover:bg-grey-lighten-4 transition" :class="{ 'opacity-50': loading }">
-            <td class="font-weight-medium">
-              {{ client.id }}
-            </td>
-            <td style="text-transform: uppercase;">
-              <div class="font-weight-medium">
-                {{ client.full_name || `${client.name} ${client.surname}` }}
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ client.address }}
-              </div>
-            </td>
-            <td>
-              <VChip :color="client.type_client === '1' ? 'primary' : 'secondary'" variant="tonal" size="small">
-                {{ client.type_client === '1' ? 'Natural' : 'Jurídico' }}
-              </VChip>
-            </td>
-            <td>
-              <div class="text-caption">
-                {{ client.type_document === '1' ? 'Cédula' : client.type_document
-                  === '2' ? 'RUC' : 'Pasaporte' }}
-              </div>
-              <div class="font-weight-medium">
-                {{ client.n_document }}
-              </div>
-            </td>
-            <td>{{ client.phone || '-' }}</td>
-            <td style="text-transform: lowercase;">
-              {{ client.email || '-' }}
-            </td>
-            <td>
-              <VChip :color="client.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
-                {{ client.state === 1 ? 'Activo' : 'Inactivo' }}
-              </VChip>
-            </td>
-            <td class="text-center">
-              <div class="d-flex justify-center gap-1">
-                <IconBtn @click="showClient(client)">
-                  <VIcon icon="ri-eye-line" />
-                </IconBtn>
-                <IconBtn @click="editClient(client)">
-                  <VIcon icon="ri-pencil-line" />
-                </IconBtn>
-                <IconBtn @click="deleteClient(client)">
-                  <VIcon icon="ri-delete-bin-6-line" color="error" />
-                </IconBtn>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCardText>
-
-    <VDivider />
-
-    <!-- Paginación -->
-    <VCardActions class="justify-center pa-4">
-      <div class="d-flex flex-column align-center gap-2">
-        <div class="text-caption text-medium-emphasis">
-          Mostrando {{ clients.length }} de {{ totalItems }} clientes
-        </div>
-        <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
-          @update:model-value="loadClients" />
+      <!-- Tabla de clientes -->
+      <div class="position-relative">
+        <VProgressLinear
+          v-if="loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
+        
+        <VTable hover class="client-table text-no-wrap overflow-x-auto">
+          <thead>
+            <tr>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 80px;">ID</th>
+              <th class="text-left font-weight-bold text-uppercase">Nombre Completo</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">Tipo</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 180px;">Documento</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">Teléfono</th>
+              <th class="text-left font-weight-bold text-uppercase">Email</th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 130px;">Estado</th>
+              <th class="text-center font-weight-bold text-uppercase" style="width: 160px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!loading && !clients.length">
+              <td colspan="8" class="text-center text-medium-emphasis py-12">
+                <VAvatar size="64" color="grey-lighten-4" class="mb-3">
+                  <VIcon size="32" color="grey" icon="ri-user-line" />
+                </VAvatar>
+                <div class="text-h6 font-weight-semibold text-grey-darken-1">No se encontraron clientes</div>
+                <div class="text-body-2 text-grey">Intenta ajustar tus criterios de búsqueda o agrega uno nuevo.</div>
+              </td>
+            </tr>
+            
+            <tr
+              v-for="client in clients"
+              :key="client.id"
+              class="client-row transition"
+              :class="{ 'opacity-50 pointer-events-none': loading }"
+            >
+              <td class="font-weight-medium text-grey-darken-1">
+                #{{ client.id }}
+              </td>
+              <td>
+                <div class="font-weight-bold text-grey-darken-3 text-uppercase">
+                  {{ client.full_name || `${client.name} ${client.surname}` }}
+                </div>
+                <div v-if="client.address" class="text-caption text-grey text-uppercase text-truncate" style="max-width: 250px;">
+                  {{ client.address }}
+                </div>
+              </td>
+              <td>
+                <VChip
+                  :color="client.type_client === '1' || client.type_client === 1 ? 'primary' : 'secondary'"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-semibold text-uppercase"
+                >
+                  {{ client.type_client === '1' || client.type_client === 1 ? 'Natural' : 'Jurídico' }}
+                </VChip>
+              </td>
+              <td>
+                <div class="text-caption text-grey text-uppercase font-weight-semibold">
+                  {{ client.type_document === '1' || client.type_document === 1 ? 'Cédula' : client.type_document === '2' || client.type_document === 2 ? 'RUC' : 'Pasaporte' }}
+                </div>
+                <div class="font-weight-semibold text-grey-darken-2">
+                  {{ client.n_document }}
+                </div>
+              </td>
+              <td class="text-grey-darken-1 font-weight-medium">
+                {{ client.phone || '-' }}
+              </td>
+              <td class="text-lowercase text-grey-darken-2">
+                {{ client.email || '-' }}
+              </td>
+              <td>
+                <VChip
+                  :color="parseInt(client.state) === 1 ? 'success' : 'error'"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-semibold"
+                >
+                  {{ parseInt(client.state) === 1 ? 'ACTIVO' : 'INACTIVO' }}
+                </VChip>
+              </td>
+              <td class="text-center">
+                <div class="d-flex justify-center gap-1">
+                  <IconBtn class="action-btn text-info" @click="showClient(client)" title="Ver Ficha">
+                    <VIcon icon="ri-eye-line" />
+                  </IconBtn>
+                  <IconBtn class="action-btn text-warning" @click="editClient(client)" title="Editar Cliente">
+                    <VIcon icon="ri-pencil-line" />
+                  </IconBtn>
+                  <IconBtn class="action-btn text-error" @click="deleteClient(client)" title="Eliminar Cliente">
+                    <VIcon icon="ri-delete-bin-6-line" />
+                  </IconBtn>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
       </div>
-    </VCardActions>
-  </VCard>
 
-  <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible" v-model:isDialogVisible="isClientFinalAddDialogVisible"
-    @add-client-final="handleClientFinalAdded" />
+      <VDivider />
 
-  <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
-    v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientCompanyAdded" />
+      <!-- Paginación -->
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ clients.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> clientes
+          </div>
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+            @update:model-value="loadClients"
+          />
+        </div>
+      </VCardActions>
+    </VCard>
 
-  <ClientFinalEditDialog v-if="isClientFinalEditDialogVisible" v-model:isDialogVisible="isClientFinalEditDialogVisible"
-    :client-data="clientToEdit" @client-updated="handleClientFinalUpdated" />
+    <!-- Diálogos -->
+    <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible" v-model:isDialogVisible="isClientFinalAddDialogVisible"
+      @add-client-final="handleClientFinalAdded" />
 
-  <ClientCompanyEditDialog v-if="isClientCompanyEditDialogVisible"
-    v-model:isDialogVisible="isClientCompanyEditDialogVisible" :client-data="companyToEdit"
-    @client-updated="handleClientCompanyUpdated" />
+    <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
+      v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientCompanyAdded" />
 
-  <ClientShowDialog v-if="isClientShowDialogVisible" v-model:isDialogVisible="isClientShowDialogVisible"
-    :client-data="clientToShow" />
+    <ClientFinalEditDialog v-if="isClientFinalEditDialogVisible" v-model:isDialogVisible="isClientFinalEditDialogVisible"
+      :client-data="clientToEdit" @client-updated="handleClientFinalUpdated" />
 
-  <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
-    @delete-client="handleClientDeleted" />
+    <ClientCompanyEditDialog v-if="isClientCompanyEditDialogVisible"
+      v-model:isDialogVisible="isClientCompanyEditDialogVisible" :client-data="companyToEdit"
+      @client-updated="handleClientCompanyUpdated" />
 
-  <ImportData 
-    v-model:is-dialog-visible="isImportDialogVisible" 
-    default-tab="clients" 
-    @import-success="loadClients" 
-  />
+    <ClientShowDialog v-if="isClientShowDialogVisible" v-model:isDialogVisible="isClientShowDialogVisible"
+      :client-data="clientToShow" />
+
+    <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
+      @delete-client="handleClientDeleted" />
+
+    <ImportData 
+      v-model:is-dialog-visible="isImportDialogVisible" 
+      default-tab="clients" 
+      @import-success="loadClients" 
+    />
+  </div>
 </template>
+
+<style scoped>
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de clientes */
+.client-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.client-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.client-row {
+  height: 52px;
+}
+
+.client-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+</style>

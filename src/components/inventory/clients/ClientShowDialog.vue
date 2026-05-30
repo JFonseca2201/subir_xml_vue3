@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
   isDialogVisible: {
@@ -13,9 +13,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
-
-// Estado del componente
-const loading = ref(false)
 
 // Opciones para selects (solo para mostrar labels)
 const typeClientOptions = ref([
@@ -41,7 +38,6 @@ const genderOptions = ref([
 
 // Computed properties para obtener labels
 const getClientTypeLabel = computed(() => {
-  console.log(props)
   if (!props.clientData?.type_client) return 'No especificado'
   const option = typeClientOptions.value.find(opt => opt.value.toString() === props.clientData.type_client.toString())
   
@@ -81,7 +77,6 @@ const fullName = computed(() => {
   if (isCompanyClient.value) {
     return props.clientData.full_name || props.clientData.name || ''
   } else {
-    // Cliente final - combinar name y surname
     const name = props.clientData.name || ''
     const surname = props.clientData.surname || ''
     
@@ -91,7 +86,7 @@ const fullName = computed(() => {
 
 // Computed para obtener el estado con color
 const getStateColor = computed(() => {
-  return props.clientData?.state === '1' ? 'success' : 'error'
+  return props.clientData?.state?.toString() === '1' ? 'success' : 'error'
 })
 
 // Computed para obtener el tipo de cliente con texto
@@ -107,151 +102,95 @@ const closeDialog = () => {
 
 <template>
   <VDialog
-    max-width="900"
+    max-width="700"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard
-      class="pa-0"
-      elevation="8"
-    >
-      <!-- Header con gradiente -->
-      <VCardTitle
-        class="pa-8 text-center position-relative"
-        :color="isCompanyClient ? 'primary' : 'secondary'"
-        dark
-      >
+    <VCard class="client-dialog-card pa-0 elevation-8">
+      <!-- Header sobrio y limpio alineado con el sistema -->
+      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-bottom-light bg-grey-lighten-5">
+        <div class="d-flex align-center">
+          <VIcon :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'" color="primary" class="me-3" size="28" />
+          <div>
+            <div class="text-h5 font-weight-bold text-grey-darken-3">Ficha de Cliente</div>
+            <div class="text-caption text-grey text-uppercase">{{ getClientTypeIcon }}</div>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
-          class="position-absolute"
-          style="top: 16px; right: 16px;"
+          density="comfortable"
           @click="closeDialog"
         />
-
-        <!-- Icono y tipo de cliente -->
-        <div class="d-flex flex-column align-center mb-4">
-          <div class="mb-4">
-            <VIcon
-              :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'"
-              size="64"
-              class="mb-3"
-            />
-            <div class="text-h5 font-weight-bold text-black">
-              {{ getClientTypeIcon }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Chip de estado -->
-        <VChip
-          :color="getStateColor"
-          variant="elevated"
-          size="small"
-          class="text-black"
-        >
-          <VIcon
-            start
-            :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
-          />
-          {{ getStateLabel }}
-        </VChip>
       </VCardTitle>
 
       <!-- Contenido principal -->
       <VCardText class="pa-6">
+        <!-- Grid de Especificaciones (Brochure Style) -->
+        <div class="specs-container mb-6">
+          <div class="spec-badge-card">
+            <span class="spec-label">Documento</span>
+            <span class="spec-value">{{ getDocumentTypeLabel }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Número</span>
+            <span class="spec-value">{{ clientData.n_document || 'N/A' }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Teléfono</span>
+            <span class="spec-value">{{ clientData.phone || 'N/A' }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Tipo</span>
+            <span class="spec-value">{{ getClientTypeLabel }}</span>
+          </div>
+        </div>
+
         <VRow>
           <!-- Tarjeta de Información Principal -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100"
-              elevation="2"
-              rounded="lg"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-user-3-line"
-                  color="primary"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Información Principal</span>
+          <VCol cols="12" md="6">
+            <VCard class="pa-4 h-100 info-card-flat" variant="outlined">
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
+                <VIcon icon="ri-user-3-line" color="primary" class="me-2" size="20" />
+                Registro
               </VCardTitle>
 
-              <VRow dense>
+              <VRow no-gutters class="gap-y-3">
                 <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Nombre Completo
-                    </div>
-                    <div class="text-body-1 font-weight-medium">
-                      {{ fullName || 'No especificado' }}
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Tipo de Cliente
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        :icon="getClientTypeIcon"
-                        size="16"
-                        class="me-1"
-                      />
-                      <span class="text-body-2">{{ getClientTypeLabel }}</span>
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Tipo de Documento
-                    </div>
-                    <div class="text-body-2">
-                      {{ getDocumentTypeLabel }}
-                    </div>
+                  <div class="text-caption text-medium-emphasis">Nombre / Razón Social</div>
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase">
+                    {{ fullName || 'No especificado' }}
                   </div>
                 </VCol>
 
                 <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Número de Documento
-                    </div>
-                    <div class="text-body-2 font-weight-medium">
-                      {{ clientData.n_document }}
-                    </div>
+                  <div class="text-caption text-medium-emphasis">Estado</div>
+                  <div class="mt-1">
+                    <VChip
+                      :color="getStateColor"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      {{ getStateLabel }}
+                    </VChip>
                   </div>
                 </VCol>
 
                 <!-- Campos específicos para cliente final -->
                 <template v-if="!isCompanyClient">
                   <VCol cols="6">
-                    <div class="mb-3">
-                      <div class="text-caption text-medium-emphasis mb-1">
-                        Género
-                      </div>
-                      <div class="text-body-2">
-                        {{ getGenderLabel }}
-                      </div>
+                    <div class="text-caption text-medium-emphasis">Género</div>
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                      {{ getGenderLabel }}
                     </div>
                   </VCol>
 
                   <VCol cols="6">
-                    <div class="mb-3">
-                      <div class="text-caption text-medium-emphasis mb-1">
-                        Fecha de Nacimiento
-                      </div>
-                      <div class="text-body-2">
-                        {{ clientData.birth_date || 'No especificado' }}
-                      </div>
+                    <div class="text-caption text-medium-emphasis">F. Nacimiento</div>
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                      {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
                 </template>
@@ -259,13 +198,9 @@ const closeDialog = () => {
                 <!-- Campos específicos para cliente empresa -->
                 <template v-if="isCompanyClient">
                   <VCol cols="12">
-                    <div class="mb-3">
-                      <div class="text-caption text-medium-emphasis mb-1">
-                        Fecha de Constitución
-                      </div>
-                      <div class="text-body-2">
-                        {{ clientData.birth_date || 'No especificado' }}
-                      </div>
+                    <div class="text-caption text-medium-emphasis">Fecha Constitución</div>
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                      {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
                 </template>
@@ -273,128 +208,68 @@ const closeDialog = () => {
             </VCard>
           </VCol>
 
-          <!-- Tarjeta de Contacto -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100"
-              elevation="2"
-              rounded="lg"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-contacts-line"
-                  color="success"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Información de Contacto</span>
+          <!-- Tarjeta de Ubicación -->
+          <VCol cols="12" md="6">
+            <VCard class="pa-4 h-100 info-card-flat" variant="outlined">
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
+                <VIcon icon="ri-map-pin-line" color="warning" class="me-2" size="20" />
+                Ubicación
               </VCardTitle>
 
-              <VRow dense>
+              <VRow no-gutters class="gap-y-3">
                 <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Teléfono
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-phone-line"
-                        size="16"
-                        class="me-1 text-success"
-                      />
-                      <span class="text-body-2">{{ clientData.phone || 'No especificado' }}</span>
-                    </div>
+                  <div class="text-caption text-medium-emphasis">Dirección Principal</div>
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                    {{ clientData.address || 'No especificada' }}
                   </div>
                 </VCol>
 
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Email
-                    </div>
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-mail-line"
-                        size="16"
-                        class="me-1 text-info"
-                      />
-                      <span class="text-body-2">{{ clientData.email || 'No especificado' }}</span>
-                    </div>
+                <VCol cols="4">
+                  <div class="text-caption text-medium-emphasis">Región</div>
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                    {{ clientData.region || '-' }}
+                  </div>
+                </VCol>
+
+                <VCol cols="4">
+                  <div class="text-caption text-medium-emphasis">Provincia</div>
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                    {{ clientData.provincia || '-' }}
+                  </div>
+                </VCol>
+
+                <VCol cols="4">
+                  <div class="text-caption text-medium-emphasis">Distrito</div>
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                    {{ clientData.distrito || '-' }}
                   </div>
                 </VCol>
               </VRow>
             </VCard>
           </VCol>
 
-          <!-- Tarjeta de Ubicación -->
-          <VCol cols="12">
-            <VCard
-              class="pa-4"
-              elevation="2"
-              rounded="lg"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4">
-                <VIcon
-                  icon="ri-map-pin-line"
-                  color="warning"
-                  class="me-2"
-                />
-                <span class="text-h6 font-weight-bold">Ubicación</span>
+          <!-- Tarjeta de Contacto -->
+          <VCol cols="12" class="pt-4">
+            <VCard class="pa-4 bg-grey-lighten-5 info-card-flat" variant="outlined">
+              <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-grey-darken-2">
+                <VIcon icon="ri-contacts-line" color="grey-darken-2" class="me-2" size="18" />
+                Contacto
               </VCardTitle>
 
-              <VRow dense>
-                <VCol cols="12">
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Dirección
-                    </div>
-                    <div class="text-body-2">
-                      {{ clientData.address || 'No especificado' }}
-                    </div>
+              <VRow no-gutters class="gap-y-2">
+                <VCol cols="12" sm="6">
+                  <div class="text-caption text-medium-emphasis">Teléfono Móvil</div>
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3">
+                    <VIcon icon="ri-phone-line" size="14" class="me-1 text-success" />
+                    {{ clientData.phone || 'No especificado' }}
                   </div>
                 </VCol>
 
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Región
-                    </div>
-                    <div class="text-body-2">
-                      {{ clientData.region || 'No especificado' }}
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Provincia
-                    </div>
-                    <div class="text-body-2">
-                      {{ clientData.provincia || 'No especificado' }}
-                    </div>
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-3">
-                    <div class="text-caption text-medium-emphasis mb-1">
-                      Distrito
-                    </div>
-                    <div class="text-body-2">
-                      {{ clientData.distrito || 'No especificado' }}
-                    </div>
+                <VCol cols="12" sm="6">
+                  <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-lowercase">
+                    <VIcon icon="ri-mail-line" size="14" class="me-1 text-info" />
+                    {{ clientData.email || 'No especificado' }}
                   </div>
                 </VCol>
               </VRow>
@@ -405,12 +280,12 @@ const closeDialog = () => {
 
       <!-- Footer con botones -->
       <VDivider />
-      <VCardActions class="pa-4 justify-center">
+      <VCardActions class="pa-4 justify-end">
         <VBtn
-          color="primary"
-          variant="elevated"
+          color="secondary"
+          variant="tonal"
           prepend-icon="ri-close-line"
-          class="px-6"
+          class="px-5"
           @click="closeDialog"
         >
           Cerrar
@@ -419,3 +294,69 @@ const closeDialog = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.client-dialog-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Grid de Especificaciones (Brochure Style) */
+.specs-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .specs-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.spec-badge-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.spec-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+}
+
+.spec-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 2px;
+  display: block;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-title {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+}
+
+.info-card-flat {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+</style>
