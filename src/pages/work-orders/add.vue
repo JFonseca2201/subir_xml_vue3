@@ -505,7 +505,12 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemSubtitle>{{ item.raw.sku || '' }}</VListItemSubtitle>
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.description || item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.sku || item.raw.code }}
+                      </VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success">
                           ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
