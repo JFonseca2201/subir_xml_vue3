@@ -237,6 +237,57 @@ const submitForm = async () => {
   }
 }
 
+const saveDraft = async () => {
+  getUserId()
+  
+  if (!userId.value) {
+    showNotification('Sesión inválida o expirada. Por favor vuelva a iniciar sesión.', 'error')
+    return
+  }
+
+  if (pedido.value.items.length === 0) {
+    showNotification('Debe agregar al menos un producto al pedido para guardar el borrador.', 'error')
+    return
+  }
+
+  loader.start()
+
+  try {
+    const payload = {
+      distribuidor_id: pedido.value.distribuidor_id,
+      usuario_id: userId.value,
+      is_draft: true,
+      items: pedido.value.items.map(item => ({
+        producto_id: item.producto_id,
+        description: item.description,
+        cantidad: item.cantidad,
+        precio_compra_estimado: item.precio_compra_estimado,
+      }))
+    }
+
+    const url = pedidoId.value ? `pedidos-distribuidor/${pedidoId.value}` : 'pedidos-distribuidor'
+    const method = pedidoId.value ? 'PUT' : 'POST'
+
+    const response = await $api(url, {
+      method: method,
+      body: payload
+    })
+
+    if (response.success || response.status === 200 || response.status === 201) {
+      showNotification('Borrador guardado exitosamente.', 'success')
+      router.push('/sales/pedidos-distribuidor-list')
+    } else {
+      showNotification(response.message || 'Error al procesar el borrador.', 'error')
+    }
+  } catch (error) {
+    console.error('Error al enviar el pedido:', error)
+    const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+    showNotification(errMsg, 'error')
+  } finally {
+    loader.stop()
+  }
+}
+
 onMounted(async () => {
   getUserId()
   await loadSuppliers()
@@ -498,7 +549,17 @@ onMounted(async () => {
                 </div>
               </VCardText>
               
-              <VCardActions class="pa-6 pt-0">
+              <VCardActions class="pa-6 pt-0 d-flex flex-column gap-3">
+                <VBtn
+                  color="secondary"
+                  variant="outlined"
+                  block
+                  size="large"
+                  prepend-icon="ri-draft-line"
+                  @click.prevent="saveDraft"
+                >
+                  {{ pedidoId ? 'Actualizar Borrador' : 'Guardar Borrador' }}
+                </VBtn>
                 <VBtn
                   color="info"
                   variant="flat"

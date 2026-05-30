@@ -13,6 +13,7 @@ const pedidos = ref([])
 const search = ref('')
 
 const statusOptions = [
+  { value: 'draft', label: 'Borrador', color: 'secondary', icon: 'ri-file-edit-line' },
   { value: 'pendiente', label: 'Pendiente', color: 'warning', icon: 'ri-time-line' },
   { value: 'por_confirmar', label: 'Por Confirmar', color: 'info', icon: 'ri-checkbox-circle-line' },
   { value: 'completado', label: 'Completado', color: 'success', icon: 'ri-check-line' },
@@ -43,7 +44,7 @@ const loadPedidos = async () => {
     }
 
     const response = await $api('pedidos-distribuidor', { params })
-    
+
     if (response.success || response.status === 200) {
       const paginator = response.data || {}
       pedidos.value = paginator.data || []
@@ -87,6 +88,7 @@ const formatDate = dateString => {
 
 const getStatusInfo = status => {
   const map = {
+    draft: { color: 'secondary', text: 'Borrador', icon: 'ri-file-edit-line' },
     pendiente: { color: 'warning', text: 'Pendiente', icon: 'ri-time-line' },
     por_confirmar: { color: 'info', text: 'Por Confirmar', icon: 'ri-checkbox-circle-line' },
     completado: { color: 'success', text: 'Completado', icon: 'ri-check-line' },
@@ -234,12 +236,7 @@ onMounted(() => {
           <h1 class="text-h4 font-weight-bold mb-1">Pedidos a Distribuidor</h1>
           <p class="text-medium-emphasis mb-0">Historial y estado de los pedidos solicitados a distribuidores</p>
         </div>
-        <VBtn
-          color="info"
-          prepend-icon="ri-add-line"
-          to="/sales/pedidos-distribuidor"
-          size="large"
-        >
+        <VBtn color="info" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor" size="large">
           Nuevo Pedido
         </VBtn>
       </div>
@@ -249,18 +246,9 @@ onMounted(() => {
       <!-- Filtros y Búsqueda -->
       <VRow class="mb-4">
         <VCol cols="12" sm="6" md="4">
-          <VTextField
-            v-model="search"
-            label="Buscar por distribuidor"
-            placeholder="Escribe el nombre del proveedor..."
-            prepend-inner-icon="ri-search-line"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            clearable
-            @click:clear="clearSearch"
-            color="info"
-          />
+          <VTextField v-model="search" label="Buscar por distribuidor" placeholder="Escribe el nombre del proveedor..."
+            prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+            @click:clear="clearSearch" color="info" />
         </VCol>
       </VRow>
 
@@ -276,7 +264,7 @@ onMounted(() => {
             <th class="font-weight-bold text-center">Acciones</th>
           </tr>
         </thead>
-        
+
         <tbody v-if="loading">
           <tr>
             <td colspan="7" class="text-center pa-6">
@@ -285,7 +273,7 @@ onMounted(() => {
             </td>
           </tr>
         </tbody>
-        
+
         <tbody v-else-if="pedidos.length === 0">
           <tr>
             <td colspan="7" class="text-center pa-8 text-medium-emphasis">
@@ -295,38 +283,35 @@ onMounted(() => {
             </td>
           </tr>
         </tbody>
-        
+
         <tbody v-else style="text-transform: uppercase;">
           <tr v-for="item in pedidos" :key="item.id" class="align-middle">
             <td class="font-weight-bold text-primary">#{{ String(item.id).padStart(5, '0') }}</td>
             <td>{{ formatDate(item.created_at) }}</td>
             <td>
               <div class="font-weight-medium">{{ item.distribuidor?.name || 'DESCONOCIDO' }}</div>
-              <div class="text-caption text-medium-emphasis" v-if="item.distribuidor?.ruc">RUC: {{ item.distribuidor.ruc }}</div>
+              <div class="text-caption text-medium-emphasis" v-if="item.distribuidor?.ruc">RUC: {{ item.distribuidor.ruc
+              }}</div>
             </td>
             <td>{{ item.usuario?.name || 'S/N' }}</td>
             <td class="text-center">
               <VMenu close-on-content-click>
                 <template #activator="{ props }">
-                  <VChip
-                    v-bind="props"
-                    :color="getStatusInfo(item.estado).color"
-                    size="small"
-                    variant="flat"
-                    class="font-weight-bold cursor-pointer"
-                    style="cursor: pointer;"
+                  <div 
+                    v-bind="props" 
+                    class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
+                    :class="`text-${getStatusInfo(item.estado).color} border-${getStatusInfo(item.estado).color}`"
                   >
-                    <VIcon start :icon="getStatusInfo(item.estado).icon" />
-                    {{ getStatusInfo(item.estado).text }}
-                    <VIcon end icon="ri-arrow-down-s-line" class="ml-1" />
-                  </VChip>
+                    <div class="status-dot" :class="`bg-${getStatusInfo(item.estado).color}`"></div>
+                    <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
+                      {{ getStatusInfo(item.estado).text }}
+                    </span>
+                    <VIcon icon="ri-arrow-down-s-line" size="14" />
+                  </div>
                 </template>
                 <VList density="compact">
-                  <VListItem
-                    v-for="status in statusOptions"
-                    :key="status.value"
-                    @click="updateStatus(item, status.value)"
-                  >
+                  <VListItem v-for="status in statusOptions" :key="status.value"
+                    @click="updateStatus(item, status.value)">
                     <template #prepend>
                       <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
                     </template>
@@ -340,39 +325,14 @@ onMounted(() => {
             </td>
             <td class="text-center">
               <div class="d-flex justify-center gap-1">
-                <VBtn
-                  icon="ri-file-pdf-line"
-                  variant="text"
-                  size="small"
-                  color="success"
-                  title="Ver PDF (Sin Precios)"
-                  @click="generateSinglePDF(item)"
-                />
-                <VBtn
-                  icon="ri-eye-line"
-                  variant="text"
-                  size="small"
-                  color="info"
-                  title="Ver Detalle"
-                  :loading="viewLoading && selectedPedido?.id === item.id"
-                  @click="viewPedidoDetails(item)"
-                />
-                <VBtn
-                  icon="ri-edit-line"
-                  variant="text"
-                  size="small"
-                  color="warning"
-                  title="Editar Pedido"
-                  @click="editPedido(item)"
-                />
-                <VBtn
-                  icon="ri-delete-bin-line"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  title="Eliminar Pedido"
-                  @click="deletePedido(item)"
-                />
+                <VBtn icon="ri-file-pdf-line" variant="text" size="small" color="success" title="Ver PDF (Sin Precios)"
+                  @click="generateSinglePDF(item)" />
+                <VBtn icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
+                  :loading="viewLoading && selectedPedido?.id === item.id" @click="viewPedidoDetails(item)" />
+                <VBtn icon="ri-edit-line" variant="text" size="small" color="warning" title="Editar Pedido"
+                  @click="editPedido(item)" />
+                <VBtn icon="ri-delete-bin-line" variant="text" size="small" color="error" title="Eliminar Pedido"
+                  @click="deletePedido(item)" />
               </div>
             </td>
           </tr>
@@ -380,21 +340,15 @@ onMounted(() => {
       </VTable>
 
       <VDivider class="mt-4" />
-      
+
       <!-- Paginación -->
       <div class="d-flex justify-center pa-4">
         <div class="d-flex flex-column align-center gap-2">
           <div class="text-caption text-medium-emphasis">
             Mostrando página {{ currentPage }} de {{ totalPages }} ({{ totalItems }} registros en total)
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            :disabled="loading"
-            color="info"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7"
+            :disabled="loading" color="info" />
         </div>
       </div>
     </VCard>
@@ -405,29 +359,26 @@ onMounted(() => {
         <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center justify-space-between border-b">
           <div class="d-flex align-center">
             <VIcon icon="ri-truck-line" color="info" class="mr-2" />
-            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0') }}</span>
+            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0')
+            }}</span>
           </div>
           <VMenu close-on-content-click>
             <template #activator="{ props }">
-              <VChip
-                v-bind="props"
-                :color="getStatusInfo(selectedPedido.estado).color"
-                size="small"
-                variant="flat"
-                class="font-weight-bold cursor-pointer"
-                style="cursor: pointer;"
+              <div 
+                v-bind="props" 
+                class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
+                :class="`text-${getStatusInfo(selectedPedido.estado).color} border-${getStatusInfo(selectedPedido.estado).color}`"
               >
-                <VIcon start :icon="getStatusInfo(selectedPedido.estado).icon" />
-                {{ getStatusInfo(selectedPedido.estado).text }}
-                <VIcon end icon="ri-arrow-down-s-line" class="ml-1" />
-              </VChip>
+                <div class="status-dot" :class="`bg-${getStatusInfo(selectedPedido.estado).color}`"></div>
+                <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
+                  {{ getStatusInfo(selectedPedido.estado).text }}
+                </span>
+                <VIcon icon="ri-arrow-down-s-line" size="14" />
+              </div>
             </template>
             <VList density="compact">
-              <VListItem
-                v-for="status in statusOptions"
-                :key="status.value"
-                @click="updateStatus(selectedPedido, status.value)"
-              >
+              <VListItem v-for="status in statusOptions" :key="status.value"
+                @click="updateStatus(selectedPedido, status.value)">
                 <template #prepend>
                   <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
                 </template>
@@ -442,8 +393,11 @@ onMounted(() => {
             <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">Distribuidor / Proveedor:</div>
               <div class="text-body-1 font-weight-bold">{{ selectedPedido.distribuidor?.name || 'DESCONOCIDO' }}</div>
-              <div class="text-body-2" v-if="selectedPedido.distribuidor?.ruc">RUC: {{ selectedPedido.distribuidor.ruc }}</div>
-              <div class="text-body-2" v-if="selectedPedido.distribuidor?.address">Dirección: {{ selectedPedido.distribuidor.address }}</div>
+              <div class="text-body-2" v-if="selectedPedido.distribuidor?.ruc">RUC: {{ selectedPedido.distribuidor.ruc
+              }}
+              </div>
+              <div class="text-body-2" v-if="selectedPedido.distribuidor?.address">Dirección: {{
+                selectedPedido.distribuidor.address }}</div>
             </VCol>
             <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">Generado por:</div>
@@ -456,7 +410,7 @@ onMounted(() => {
           <VDivider class="mb-4" />
 
           <div class="text-h6 font-weight-bold mb-3">Ítems Solicitados</div>
-          
+
           <VTable class="text-no-wrap border rounded-lg mb-4">
             <thead class="bg-grey-lighten-4">
               <tr>
@@ -470,8 +424,11 @@ onMounted(() => {
               <tr v-for="item in selectedPedido.detalles" :key="item.id">
                 <td>
                   <div class="font-weight-medium">{{ item.description }}</div>
-                  <div class="text-caption text-medium-emphasis" v-if="item.producto?.sku">SKU: {{ item.producto.sku }}</div>
-                  <VChip v-if="!item.producto_id" size="x-small" color="orange" variant="tonal" class="mt-1">Ingreso Manual</VChip>
+                  <div class="text-caption text-medium-emphasis" v-if="item.producto?.sku">SKU: {{ item.producto.sku }}
+                  </div>
+                  <VChip v-if="!item.producto_id" size="x-small" color="orange" variant="tonal" class="mt-1">Ingreso
+                    Manual
+                  </VChip>
                 </td>
                 <td class="text-center">{{ item.cantidad }}</td>
                 <td class="text-right">{{ formatCurrency(item.precio_compra_estimado) }}</td>
@@ -491,12 +448,8 @@ onMounted(() => {
         </VCardText>
 
         <VCardActions class="pa-4 bg-grey-lighten-4 border-t justify-end gap-2">
-          <VBtn
-            color="success"
-            variant="flat"
-            prepend-icon="ri-file-pdf-line"
-            @click="generateSinglePDF(selectedPedido)"
-          >
+          <VBtn color="success" variant="flat" prepend-icon="ri-file-pdf-line"
+            @click="generateSinglePDF(selectedPedido)">
             Generar PDF
           </VBtn>
           <VBtn color="secondary" variant="flat" @click="isViewDialogVisible = false">Cerrar</VBtn>
@@ -513,4 +466,33 @@ onMounted(() => {
   font-size: 0.75rem;
   letter-spacing: 0.5px;
 }
+
+.status-indicator {
+  border: 1px solid currentColor;
+  background-color: currentColor;
+  /* El truco es usar currentColor para el border y el fondo, 
+     y luego hacer el fondo muy transparente usando opacity en un pseudo-elemento, 
+     pero como Vuetify no lo permite fcil, usaremos opacidad en el CSS */
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.status-indicator:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Modificadores de fondo por color usando las variables CSS de Vuetify */
+.text-warning.status-indicator { background-color: rgba(var(--v-theme-warning), 0.1); }
+.text-info.status-indicator { background-color: rgba(var(--v-theme-info), 0.1); }
+.text-success.status-indicator { background-color: rgba(var(--v-theme-success), 0.1); }
+.text-error.status-indicator { background-color: rgba(var(--v-theme-error), 0.1); }
+.text-secondary.status-indicator { background-color: rgba(var(--v-theme-secondary), 0.1); }
 </style>

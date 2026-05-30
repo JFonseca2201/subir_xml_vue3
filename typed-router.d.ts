@@ -54,6 +54,7 @@ declare module 'vue-router/auto-routes' {
     'users': RouteRecordInfo<'users', '/users', Record<never, never>, Record<never, never>>,
     'vehicles-list': RouteRecordInfo<'vehicles-list', '/vehicles/list', Record<never, never>, Record<never, never>>,
     'work-orders-add': RouteRecordInfo<'work-orders-add', '/work-orders/add', Record<never, never>, Record<never, never>>,
+    'work-orders-edit-id': RouteRecordInfo<'work-orders-edit-id', '/work-orders/edit/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     'work-orders-list': RouteRecordInfo<'work-orders-list', '/work-orders/list', Record<never, never>, Record<never, never>>,
   }
 }

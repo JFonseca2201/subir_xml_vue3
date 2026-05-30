@@ -32,7 +32,7 @@ function onDrop(DroppedFiles) {
   DroppedFiles?.forEach(file => {
     if (file.type.slice(0, 6) !== 'image/') {
       alert('Solo se permiten archivos tipo imagen.')
-      
+
       return
     }
     if (fileData.value.length < 1) {
@@ -47,7 +47,7 @@ function onDrop(DroppedFiles) {
 onChange(selectedFiles => {
   if (fileData.value.length >= 1) {
     alert('Solo permite una imagen')
-    
+
     return
   }
   if (!selectedFiles)
@@ -126,6 +126,25 @@ watch(() => product.value.price_sale, calculateMaxDiscount)
 watch(() => product.value.tax_rate, calculateMaxDiscount)
 watch(() => product.value.discount_percentage, calculateMaxDiscount)
 
+watch(() => product.value.item_type, (newVal) => {
+  if (newVal == 2) {
+    const categoryServicio = categories.value.find(c =>
+      c.title && (c.title.toUpperCase() === 'SERVICIO DE TALLER' || c.title.toUpperCase() === 'SERVICIOS DE TALLER')
+    )
+    if (categoryServicio) {
+      product.value.product_categorie_id = categoryServicio.id
+    } else if (categories.value.length > 0) {
+      product.value.product_categorie_id = categories.value[0].id
+    }
+
+    product.value.warehouse_id = 1
+
+    if (!product.value.unit_id && units.value.length > 0) {
+      product.value.unit_id = units.value[0].id
+    }
+  }
+})
+
 const isTaxableSwitch = computed({
   get: () => product.value.is_taxable === 1,
   set: value => { product.value.is_taxable = value ? 1 : 2 },
@@ -146,7 +165,7 @@ const loadProduct = async () => {
       product.value = response.product
       if (response.product.max_discount) product.value.max_discount = parseFloat(response.product.max_discount)
       if (response.product.discount_percentage) product.value.discount_percentage = parseFloat(response.product.discount_percentage)
-      
+
       if (response.product.imagen) {
         fileData.value = [{ url: response.product.imagen, file: null }]
       }
@@ -183,7 +202,7 @@ const updateProduct = async () => {
   const { valid } = await formRef.value.validate()
   if (!valid) {
     showNotification('warning', 'Por favor complete los campos obligatorios')
-    
+
     return
   }
 
@@ -202,13 +221,14 @@ const updateProduct = async () => {
         if (isService) {
           if (key === 'stock' || key === 'min_stock' || key === 'max_stock' || key === 'purchase_price') {
             value = 0
-          } else if (key === 'warehouse_id') {
-            value = ''
           }
         } else {
-          if (key === 'warehouse_id' || key === 'unit_id' || key === 'supplier_id') {
+          if (key === 'unit_id' || key === 'supplier_id') {
             value = value || 1
           }
+        }
+        if (key === 'warehouse_id') {
+          value = value || 1
         }
         formData.append(key, value)
       }
@@ -280,7 +300,8 @@ onMounted(() => {
             <span class="text-body-2 text-medium-emphasis">Actualiza la información del producto existente</span>
           </div>
         </div>
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/product/list">Volver al Listado</VBtn>
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/product/list">Volver al Listado
+        </VBtn>
       </div>
 
       <VForm ref="formRef" @submit.prevent="updateProduct">
@@ -289,53 +310,77 @@ onMounted(() => {
           <!-- 1. Información Básica -->
           <div class="mb-8">
             <div class="d-flex align-center gap-3 mb-5">
-              <VAvatar color="info" variant="tonal" size="36"><VIcon icon="ri-information-line" /></VAvatar>
+              <VAvatar color="info" variant="tonal" size="36">
+                <VIcon icon="ri-information-line" />
+              </VAvatar>
               <h2 class="text-h5 font-weight-medium m-0">Información Básica</h2>
             </div>
-            
+
             <VRow>
               <VCol cols="12" md="6">
-                <VTextField v-model="product.description" :rules="descriptionRules" label="Descripción del Producto" placeholder="Ej. Laptop Dell XPS 15" variant="outlined" density="comfortable" prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" required />
+                <VTextField v-model="product.sku" :rules="skuRules" label="SKU" placeholder="Ej. LAP-001"
+                  variant="outlined" density="comfortable" prepend-inner-icon="ri-barcode-line" hide-details="auto"
+                  required />
               </VCol>
               <VCol cols="12" md="6">
-                <VTextField v-model="product.sku" :rules="skuRules" label="SKU" placeholder="Ej. LAP-001" variant="outlined" density="comfortable" prepend-inner-icon="ri-barcode-line" hide-details="auto" required />
+                <VTextField v-model="product.description" :rules="descriptionRules" label="Descripción del Producto"
+                  placeholder="Ej. Laptop Dell XPS 15" variant="outlined" density="comfortable"
+                  prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12" md="4">
-                <VTextField v-model="product.code_aux" :rules="codeAuxRules" label="Código Auxiliar" placeholder="Ej. PROD-001" variant="outlined" density="comfortable" prepend-inner-icon="ri-code-line" hide-details="auto" />
+                <VTextField v-model="product.code_aux" :rules="codeAuxRules" label="Código Auxiliar"
+                  placeholder="Ej. PROD-001" variant="outlined" density="comfortable" prepend-inner-icon="ri-code-line"
+                  hide-details="auto" />
+              </VCol>
+              <VCol cols="12" md="4" v-if="product.item_type != 2">
+                <VTextField v-model="product.brand" :rules="brandRules" label="Marca" placeholder="Ej. Dell"
+                  variant="outlined" density="comfortable" prepend-inner-icon="ri-building-line" hide-details="auto" />
               </VCol>
               <VCol cols="12" md="4">
-                <VTextField v-model="product.brand" :rules="brandRules" label="Marca" placeholder="Ej. Dell" variant="outlined" density="comfortable" prepend-inner-icon="ri-building-line" hide-details="auto" />
-              </VCol>
-              <VCol cols="12" md="4">
-                <VSelect v-model="product.item_type" :items="itemTypes" item-title="label" item-value="value" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Tipo de Ítem" placeholder="Selecciona" prepend-inner-icon="ri-shapes-line" hide-details="auto" required />
+                <VSelect v-model="product.item_type" :items="itemTypes" item-title="label" item-value="value"
+                  :rules="[requiredRule]" density="comfortable" variant="outlined" label="Tipo de Ítem"
+                  placeholder="Selecciona" prepend-inner-icon="ri-shapes-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12">
-                <VTextarea v-model="product.uses" label="Usos del Producto" placeholder="Ej. Oficina, Gaming, etc." variant="outlined" density="comfortable" prepend-inner-icon="ri-tools-line" hide-details="auto" rows="2" auto-grow />
+                <VTextarea v-model="product.uses" label="Usos del Producto" placeholder="Ej. Oficina, Gaming, etc."
+                  variant="outlined" density="comfortable" prepend-inner-icon="ri-tools-line" hide-details="auto"
+                  rows="2" auto-grow />
               </VCol>
             </VRow>
           </div>
 
-          <VDivider class="my-8" />
+          <VDivider class="my-8" v-if="product.item_type != 2" />
 
           <!-- 2. Clasificación -->
-          <div class="mb-8">
+          <div class="mb-8" v-if="product.item_type != 2">
             <div class="d-flex align-center gap-3 mb-5">
-              <VAvatar color="warning" variant="tonal" size="36"><VIcon icon="ri-folder-3-line" /></VAvatar>
+              <VAvatar color="warning" variant="tonal" size="36">
+                <VIcon icon="ri-folder-3-line" />
+              </VAvatar>
               <h2 class="text-h5 font-weight-medium m-0">Clasificación</h2>
             </div>
-            
+
             <VRow>
               <VCol cols="12" sm="6">
-                <VSelect v-model="product.product_categorie_id" :items="categories" item-title="title" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Categoría" placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required />
+                <VSelect v-model="product.product_categorie_id" :items="categories" item-title="title" item-value="id"
+                  :rules="[requiredRule]" density="comfortable" variant="outlined" label="Categoría"
+                  placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12" sm="6" v-if="product.item_type != 2">
-                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id" :rules="product.item_type == 2 ? [] : [requiredRule]" density="comfortable" variant="outlined" label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto" required />
+                <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id"
+                  :rules="product.item_type == 2 ? [] : [requiredRule]" density="comfortable" variant="outlined"
+                  label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto"
+                  required />
               </VCol>
               <VCol cols="12" sm="6">
-                <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id" :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida" placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
+                <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id"
+                  :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida"
+                  placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
               </VCol>
               <VCol cols="12" sm="6">
-                <VSelect v-model="product.supplier_id" :items="suppliers" item-title="name" item-value="id" density="comfortable" variant="outlined" label="Proveedor" placeholder="Selecciona" prepend-inner-icon="ri-truck-line" hide-details="auto" />
+                <VSelect v-model="product.supplier_id" :items="suppliers" item-title="name" item-value="id"
+                  density="comfortable" variant="outlined" label="Proveedor" placeholder="Selecciona"
+                  prepend-inner-icon="ri-truck-line" hide-details="auto" />
               </VCol>
             </VRow>
           </div>
@@ -345,10 +390,12 @@ onMounted(() => {
           <!-- 3. Precios e Inventario -->
           <div class="mb-8">
             <div class="d-flex align-center gap-3 mb-5">
-              <VAvatar color="success" variant="tonal" size="36"><VIcon icon="ri-money-dollar-circle-line" /></VAvatar>
+              <VAvatar color="success" variant="tonal" size="36">
+                <VIcon icon="ri-money-dollar-circle-line" />
+              </VAvatar>
               <h2 class="text-h5 font-weight-medium m-0">Precios e Inventario</h2>
             </div>
-            
+
             <VRow>
               <!-- Bloque Precios -->
               <VCol cols="12" :md="product.item_type == 2 ? '12' : '6'">
@@ -356,16 +403,27 @@ onMounted(() => {
                   <div class="text-subtitle-1 font-weight-bold mb-4">Configuración de Precio</div>
                   <VRow>
                     <VCol cols="12" sm="6" v-if="product.item_type != 2">
-                      <VTextField v-model="product.purchase_price" :rules="product.item_type == 2 ? [] : priceRules" label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01" min="0" />
+                      <VTextField v-model="product.purchase_price" :rules="product.item_type == 2 ? [] : priceRules"
+                        label="Precio de Compra" placeholder="0.00" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-shopping-cart-line" hide-details="auto" type="number" step="0.01"
+                        min="0" />
                     </VCol>
                     <VCol cols="12" :sm="product.item_type == 2 ? '12' : '6'">
-                      <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta" placeholder="0.00" variant="outlined" density="comfortable" prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" type="number" step="0.01" min="0" required />
+                      <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta"
+                        placeholder="0.00" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" type="number" step="0.01" min="0"
+                        required />
                     </VCol>
                     <VCol cols="12" sm="6">
-                      <VTextField v-model="product.discount_percentage" :rules="percentageRules" label="Descuento Max. (%)" placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-percent-line" hide-details="auto" type="number" step="0.1" min="0" max="100" />
+                      <VTextField v-model="product.discount_percentage" :rules="percentageRules"
+                        label="Descuento Max. (%)" placeholder="0" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-percent-line" hide-details="auto" type="number" step="0.1" min="0"
+                        max="100" />
                     </VCol>
                     <VCol cols="12" sm="6">
-                      <VTextField v-model="product.tax_rate" :rules="percentageRules" label="Impuesto (%)" placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-receipt-line" hide-details="auto" type="number" step="0.1" min="0" max="100" readonly />
+                      <VTextField v-model="product.tax_rate" :rules="percentageRules" label="Impuesto (%)"
+                        placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-receipt-line"
+                        hide-details="auto" type="number" step="0.1" min="0" max="100" readonly />
                     </VCol>
                   </VRow>
                 </VCard>
@@ -377,13 +435,19 @@ onMounted(() => {
                   <div class="text-subtitle-1 font-weight-bold mb-4">Control de Stock</div>
                   <VRow>
                     <VCol cols="12">
-                      <VTextField v-model="product.stock" :rules="stockRules" label="Stock Actual" placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-stack-line" hide-details="auto" type="number" step="0.01" min="0" required />
+                      <VTextField v-model="product.stock" :rules="stockRules" label="Stock Actual" placeholder="0"
+                        variant="outlined" density="comfortable" prepend-inner-icon="ri-stack-line" hide-details="auto"
+                        type="number" step="0.01" min="0" required />
                     </VCol>
                     <VCol cols="12" sm="6">
-                      <VTextField v-model="product.min_stock" :rules="stockRules" label="Stock Mínimo" placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-arrow-down-line" hide-details="auto" type="number" step="0.01" min="0" />
+                      <VTextField v-model="product.min_stock" :rules="stockRules" label="Stock Mínimo" placeholder="0"
+                        variant="outlined" density="comfortable" prepend-inner-icon="ri-arrow-down-line"
+                        hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
                     <VCol cols="12" sm="6">
-                      <VTextField v-model="product.max_stock" :rules="stockRules" label="Stock Máximo" placeholder="0" variant="outlined" density="comfortable" prepend-inner-icon="ri-arrow-up-line" hide-details="auto" type="number" step="0.01" min="0" />
+                      <VTextField v-model="product.max_stock" :rules="stockRules" label="Stock Máximo" placeholder="0"
+                        variant="outlined" density="comfortable" prepend-inner-icon="ri-arrow-up-line"
+                        hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
                   </VRow>
                 </VCard>
@@ -396,14 +460,18 @@ onMounted(() => {
           <!-- 4. Imagen y Extras -->
           <div class="mb-4">
             <div class="d-flex align-center gap-3 mb-5">
-              <VAvatar color="primary" variant="tonal" size="36"><VIcon icon="ri-image-line" /></VAvatar>
+              <VAvatar color="primary" variant="tonal" size="36">
+                <VIcon icon="ri-image-line" />
+              </VAvatar>
               <h2 class="text-h5 font-weight-medium m-0">Imagen y Extras</h2>
             </div>
 
             <VRow>
               <VCol cols="12" md="7">
                 <div ref="dropZoneRef" class="cursor-pointer h-100" @click="() => open()">
-                  <div v-if="fileData.length === 0" class="d-flex flex-column justify-center align-center gap-y-3 pa-8 border-2 border-dashed rounded-lg bg-grey-50 h-100 transition-swing" style="min-height: 250px" hover>
+                  <div v-if="fileData.length === 0"
+                    class="d-flex flex-column justify-center align-center gap-y-3 pa-8 border-2 border-dashed rounded-lg bg-grey-50 h-100 transition-swing"
+                    style="min-height: 250px" hover>
                     <VAvatar color="primary" variant="tonal" size="64">
                       <VIcon icon="ri-upload-cloud-2-line" size="32" />
                     </VAvatar>
@@ -414,8 +482,12 @@ onMounted(() => {
                     <VCard v-for="(item, index) in fileData" :key="index" class="elevation-2" :ripple="false">
                       <VCardText class="pa-4 text-center" @click.stop>
                         <VImg :src="item.url" height="200px" class="rounded-lg mb-3 mx-auto bg-black" contain />
-                        <div class="text-body-2 font-weight-medium mb-1 text-truncate">{{ item.file?.name || 'Imagen actual' }}</div>
-                        <div class="text-caption text-medium-emphasis">{{ item.file ? (item.file.size / 1024).toFixed(2) + ' KB' : 'Imagen existente' }}</div>
+                        <div class="text-body-2 font-weight-medium mb-1 text-truncate">
+                          {{ item.file?.name || 'Imagen actual' }}
+                        </div>
+                        <div class="text-caption text-medium-emphasis">
+                          {{ item.file ? (item.file.size / 1024).toFixed(2) + ' KB' : 'Imagen existente' }}
+                        </div>
                       </VCardText>
                       <VCardActions class="pa-4 pt-0">
                         <VBtn variant="tonal" block color="error" @click.stop="clearImage">
@@ -426,12 +498,14 @@ onMounted(() => {
                   </div>
                 </div>
               </VCol>
-              
+
               <VCol cols="12" md="5">
                 <VCard variant="outlined" class="pa-4 rounded-lg bg-grey-50 h-100 d-flex flex-column">
                   <div class="d-flex align-center justify-space-between mb-4">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar color="primary" variant="tonal" size="40"><VIcon icon="ri-receipt-line" /></VAvatar>
+                      <VAvatar color="primary" variant="tonal" size="40">
+                        <VIcon icon="ri-receipt-line" />
+                      </VAvatar>
                       <span class="font-weight-medium">Gravable con Impuestos</span>
                     </div>
                     <VSwitch v-model="isTaxableSwitch" hide-details color="primary" />
@@ -439,12 +513,16 @@ onMounted(() => {
                   <VDivider class="mb-4" />
                   <div class="d-flex align-center justify-space-between mb-4">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar color="info" variant="tonal" size="40"><VIcon icon="ri-gift-line" /></VAvatar>
+                      <VAvatar color="info" variant="tonal" size="40">
+                        <VIcon icon="ri-gift-line" />
+                      </VAvatar>
                       <span class="font-weight-medium">¿Es un regalo?</span>
                     </div>
                     <VSwitch v-model="isGiftSwitch" hide-details color="info" />
                   </div>
-                  <VTextarea class="mt-auto" v-model="product.notes" label="Notas Adicionales" placeholder="Observaciones..." variant="outlined" density="comfortable" prepend-inner-icon="ri-file-text-line" hide-details="auto" rows="3" auto-grow />
+                  <VTextarea class="mt-auto" v-model="product.notes" label="Notas Adicionales"
+                    placeholder="Observaciones..." variant="outlined" density="comfortable"
+                    prepend-inner-icon="ri-file-text-line" hide-details="auto" rows="3" auto-grow />
                 </VCard>
               </VCol>
             </VRow>
@@ -453,17 +531,23 @@ onMounted(() => {
         </div>
 
         <!-- Sticky Footer -->
-        <div class="pa-4 bg-surface sticky-bottom d-flex flex-column flex-sm-row justify-space-between align-center gap-4">
+        <div
+          class="pa-4 bg-surface sticky-bottom d-flex flex-column flex-sm-row justify-space-between align-center gap-4">
           <div class="d-flex flex-column gap-2 w-100 w-sm-auto flex-grow-1">
-            <VAlert v-if="success" color="success" variant="tonal" closable density="compact" class="ma-0 text-caption">{{ success }}</VAlert>
-            <VAlert v-if="warning" color="warning" variant="tonal" closable density="compact" class="ma-0 text-caption">{{ warning }}</VAlert>
-            <VAlert v-if="error_exist" color="error" variant="tonal" closable density="compact" class="ma-0 text-caption">{{ error_exist }}</VAlert>
+            <VAlert v-if="success" color="success" variant="tonal" closable density="compact" class="ma-0 text-caption">
+              {{ success }}</VAlert>
+            <VAlert v-if="warning" color="warning" variant="tonal" closable density="compact" class="ma-0 text-caption">
+              {{ warning }}</VAlert>
+            <VAlert v-if="error_exist" color="error" variant="tonal" closable density="compact"
+              class="ma-0 text-caption">{{ error_exist }}</VAlert>
           </div>
           <div class="d-flex gap-3 w-100 w-sm-auto justify-end">
-            <VBtn variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="router.push('/product/list')">
+            <VBtn variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading"
+              @click="router.push('/product/list')">
               Cancelar
             </VBtn>
-            <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading" :disabled="loader.loading || isLoading" prepend-icon="ri-save-3-line">
+            <VBtn type="submit" color="primary" variant="elevated" :loading="loader.loading"
+              :disabled="loader.loading || isLoading" prepend-icon="ri-save-3-line">
               Actualizar Producto
             </VBtn>
           </div>
@@ -479,12 +563,14 @@ onMounted(() => {
   top: 0;
   z-index: 10;
 }
+
 .sticky-bottom {
   position: sticky;
   bottom: 0;
   z-index: 10;
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
+
 .border-b {
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }

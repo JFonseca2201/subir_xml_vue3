@@ -75,7 +75,9 @@ watch([
     <RouterView v-slot="{ Component }">
       <Suspense>
         <template #default>
-          <Component :is="Component" />
+          <div>
+            <Component :is="Component" />
+          </div>
         </template>
         <template #fallback>
           <div
@@ -136,3 +138,5 @@ watch([
   }
 }
 </style>
+ 
+ 

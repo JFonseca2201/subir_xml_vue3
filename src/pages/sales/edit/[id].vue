@@ -409,6 +409,59 @@ const loadSaleData = async () => {
   }
 }
 
+// Guardar como Borrador
+const saveDraft = async () => {
+  showValidationError.value = false
+  validationErrorMessage.value = ''
+
+  if (!sale.value.client_id) {
+    showValidationError.value = true
+    validationErrorMessage.value = 'Debe seleccionar un cliente para guardar el borrador'
+    return
+  }
+
+  if (sale.value.items.length === 0) {
+    showValidationError.value = true
+    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio para guardar el borrador'
+    return
+  }
+
+  loader.start()
+
+  try {
+    const payload = {
+      ...sale.value,
+      subtotal: subtotal.value,
+      tax_amount: taxAmount.value,
+      total: total.value,
+      items: sale.value.items,
+      is_draft: true
+    }
+
+    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+      payload.payment_distributions = paymentDistributions.value
+    }
+
+    const response = await $api(`sales/${route.params.id}`, {
+      method: 'PUT',
+      body: payload,
+    })
+
+    if (response?.success || response?.status === 200) {
+      showNotification('Borrador actualizado correctamente', 'success')
+      router.push('/sales/list')
+    } else {
+      showNotification(response.message || 'Error al actualizar borrador', 'error')
+    }
+  } catch (error) {
+    console.error('Error guardando borrador', error)
+    const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+    showNotification(errMsg, 'error')
+  } finally {
+    loader.stop()
+  }
+}
+
 // Envío del formulario
 const submitForm = async () => {
   showValidationError.value = false
@@ -992,9 +1045,13 @@ onMounted(() => {
                 <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push('/sales/list')">
                   Cancelar
                 </VBtn>
+                <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary" variant="elevated" prepend-icon="ri-draft-line"
+                  :loading="loader.loading" @click.prevent="saveDraft">
+                  Actualizar Borrador
+                </VBtn>
                 <VBtn type="submit" :disabled="sale.status === 'canceled'" color="primary" variant="elevated"
                   prepend-icon="ri-save-3-line" :loading="loader.loading" size="large">
-                  Guardar Cambios
+                  {{ sale.status === 'draft' ? 'Finalizar Venta' : 'Guardar Cambios' }}
                 </VBtn>
               </div>
             </VCardText>

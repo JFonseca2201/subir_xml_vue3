@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
@@ -12,6 +12,7 @@ import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.v
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 const userId = ref(null)
@@ -113,11 +114,53 @@ const loadInitialData = async () => {
     console.log('Vehicles loaded:', vehicles.value.length)
     console.log('Products loaded:', products.value.length)
     console.log('Employees loaded:', employees.value.length)
+
+    // Si es edición, cargar la orden de trabajo
+    const orderId = route.params.id
+    if (orderId) {
+      await loadWorkOrder(orderId)
+    }
+
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
+  }
+}
+
+const originalStatus = ref('')
+
+const loadWorkOrder = async (id) => {
+  try {
+    const response = await $api(`work-orders/${id}`)
+    const data = response.data || response
+
+    originalStatus.value = data.status
+
+    workOrder.value = {
+      number: data.number,
+      client_id: data.client_id,
+      vehicle_id: data.vehicle_id,
+      user_id: data.user_id,
+      mileage: data.mileage,
+      fuel_level: data.fuel_level,
+      observations: data.observations || '',
+      diagnostic: data.diagnostic || '',
+      technicians: data.technicians ? data.technicians.map(t => t.id) : [],
+      items: (data.items || []).map(item => ({
+        product_id: item.product_id,
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: parseFloat(item.unit_price) || 0,
+        discount: parseFloat(item.discount) || 0,
+        type: item.type,
+        sku: item.product ? item.product.sku : '',
+      })),
+    }
+  } catch (error) {
+    console.error('Error al cargar la orden:', error)
+    showNotification('Error al cargar la orden de trabajo', 'error')
   }
 }
 
@@ -143,13 +186,19 @@ const saveWorkOrder = async () => {
 
   isLoading.value = true
   try {
-    const response = await $api('work-orders', {
-      method: 'POST',
-      body: workOrder.value,
+    const payload = {
+      ...workOrder.value,
+      technicians: workOrder.value.technicians.map(t => typeof t === 'object' ? t.id : t),
+      is_draft: false
+    }
+
+    const response = await $api(`work-orders/${route.params.id}`, {
+      method: 'PUT',
+      body: payload,
     })
 
-    showNotification('Orden de trabajo creada exitosamente', 'success')
-    router.push('/work-orders')
+    showNotification('Orden de trabajo finalizada exitosamente', 'success')
+    router.push({ name: 'work-orders-list' })
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
     if (error.response && error.response.data) {
@@ -172,14 +221,18 @@ const saveDraft = async () => {
 
   isLoading.value = true
   try {
-    const payload = { ...workOrder.value, is_draft: true }
-    const response = await $api('work-orders', {
-      method: 'POST',
+    const payload = {
+      ...workOrder.value,
+      technicians: workOrder.value.technicians.map(t => typeof t === 'object' ? t.id : t),
+      is_draft: true
+    }
+    const response = await $api(`work-orders/${route.params.id}`, {
+      method: 'PUT',
       body: payload,
     })
 
-    showNotification('Borrador de orden guardado exitosamente', 'success')
-    router.push('/work-orders')
+    showNotification('Borrador de orden actualizado exitosamente', 'success')
+    router.push({ name: 'work-orders-list' })
   } catch (error) {
     console.error('Error al guardar borrador:', error)
     showNotification('Error al guardar borrador', 'error')
@@ -189,7 +242,7 @@ const saveDraft = async () => {
 }
 
 const cancel = () => {
-  router.push('/work-orders')
+  router.push({ name: 'work-orders-list' })
 }
 
 const getClientName = c => {
@@ -329,10 +382,10 @@ onMounted(() => {
           <VBtn icon="ri-arrow-left-line" variant="text" class="mr-3" size="large" @click="cancel" />
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
-              Nueva Orden de Trabajo
+              Editar Orden de Trabajo
             </h1>
             <p class="text-body-2 text-grey">
-              Completa la información para crear una orden de trabajo
+              Modifica la información de la orden de trabajo
             </p>
           </div>
         </div>
@@ -422,8 +475,8 @@ onMounted(() => {
                 <div class="mb-4">
                   <VAutocomplete v-model="workOrder.technicians" :items="employees"
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined" clearable :loading="isLoading" multiple chips>
+                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
+                    clearable :loading="isLoading" multiple chips>
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -636,13 +689,13 @@ onMounted(() => {
               <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="cancel">
                 Cancelar
               </VBtn>
-              <VBtn color="secondary" variant="elevated" prepend-icon="ri-draft-line" :loading="isLoading"
-                size="large" @click.prevent="saveDraft">
-                Guardar Borrador
+              <VBtn v-if="originalStatus === 'draft'" color="secondary" variant="elevated" prepend-icon="ri-draft-line"
+                :loading="isLoading" size="large" @click.prevent="saveDraft">
+                Actualizar Borrador
               </VBtn>
               <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isLoading"
                 size="large" @click="saveWorkOrder">
-                Guardar Orden de Trabajo
+                {{ originalStatus === 'draft' ? 'Finalizar Orden de Trabajo' : 'Guardar Cambios' }}
               </VBtn>
             </div>
           </VCardText>
@@ -663,8 +716,8 @@ onMounted(() => {
       @add-vehicle="onVehicleAdded" />
 
     <!-- Dialog para agregar servicio express -->
-    <AddServiceDialog :is-dialog-visible="showAddServiceDialog" @update:is-dialog-visible="showAddServiceDialog = $event"
-      @service-added="handleServiceAdded" />
+    <AddServiceDialog :is-dialog-visible="showAddServiceDialog"
+      @update:is-dialog-visible="showAddServiceDialog = $event" @service-added="handleServiceAdded" />
   </VContainer>
 </template>
 
