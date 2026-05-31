@@ -74,6 +74,11 @@ const router = createRouter({
           name: "configuration-unit-convertion",
           component: () => import("@/pages/configuration/unitconversions.vue"),
         },
+        {
+          path: "/kardex",
+          name: "kardex-index",
+          component: () => import("@/pages/kardex/index.vue"),
+        },
       ],
     ].map(route => {
       // Forzar navActiveLink para subpáginas de operaciones

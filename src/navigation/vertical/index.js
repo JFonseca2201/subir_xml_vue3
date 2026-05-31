@@ -209,7 +209,7 @@ export default [
   { heading: 'Información' },
   {
     title: 'Kardex',
-    to: { name: 'second-page' },
+    to: { name: 'kardex-index' },
     icon: { icon: 'ri-draft-line' },
   },
 
