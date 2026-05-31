@@ -505,7 +505,8 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
@@ -619,7 +620,7 @@ onMounted(() => {
                 </div>
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                    }}</span>
+                  }}</span>
                   <VChip size="small" color="primary" label>
                     {{ workOrder.items.length }} items
                   </VChip>
@@ -641,6 +642,10 @@ onMounted(() => {
             <div class="d-flex justify-end gap-3">
               <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="cancel">
                 Cancelar
+              </VBtn>
+              <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-draft-line" :loading="isLoading"
+                @click="saveDraft">
+                Guardar Borrador
               </VBtn>
               <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isLoading"
                 size="large" @click="saveWorkOrder">

@@ -213,265 +213,248 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6">
-    <!-- Formulario de Búsqueda -->
-    <VCard
-      class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto"
-      elevation="2"
-    >
-      <!-- Título y Botón Agregar -->
-      <div class="d-flex justify-space-between align-center mb-6">
-        <h1 class="text-h4 font-weight-bold">
-          Gestión de Empleados
+  <div class="pa-4 pa-sm-6 employees-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-user-settings-line" color="primary" class="me-2" size="28" />
+          Empleados
         </h1>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="addEmployee"
-        >
+        <p class="text-medium-emphasis mb-0">
+          Gestión de empleados y personal del taller
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="primary" prepend-icon="ri-add-line" @click="addEmployee">
           Agregar Empleado
         </VBtn>
       </div>
-      <VDivider />
+    </div>
 
-      <VCardText class="pa-4">
-        <VForm
-          ref="searchFormRef"
-          @submit.prevent="searchEmployees"
-        >
-          <VRow>
-            <!-- Búsqueda General -->
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Búsqueda General"
-                placeholder="Buscar por identificación, nombre, email, cargo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-              />
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VForm ref="searchFormRef" @submit.prevent="searchEmployees">
+          <VRow class="align-center">
+            <VCol cols="12" md="6">
+              <VTextField v-model="searchForm.search" label="Búsqueda General"
+                placeholder="Identificación, nombre, email, cargo..." prepend-inner-icon="ri-search-line"
+                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
-            <!-- Estado -->
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.status"
-                :items="statusOptions"
-                item-title="label"
-                item-value="value"
-                label="Estado"
-                placeholder="Seleccionar"
-                prepend-inner-icon="ri-filter-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-              />
+            <VCol cols="12" sm="6" md="2">
+              <VSelect v-model="searchForm.status" :items="statusOptions" item-title="label" item-value="value"
+                label="Estado" placeholder="Todos" prepend-inner-icon="ri-filter-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
-            <!-- Botones de Acción -->
-            <VCol
-              cols="12"
-              md="3"
-              class="d-flex gap-2"
-            >
-              <VBtn
-                type="submit"
-                color="primary"
-                variant="tonal"
-                prepend-icon="ri-search-line"
-                :loading="loader.loading"
-              >
-                Buscar
-              </VBtn>
-              <VBtn
-                variant="outlined"
-                prepend-icon="ri-refresh-line"
-                @click="clearSearch"
-              >
-                Limpiar
-              </VBtn>
+            <VCol cols="12" sm="4" md="2">
+              <div class="d-flex gap-2">
+                <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="clearSearch" block>
+                  Limpiar
+                </VBtn>
+                <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loader.loading"
+                  @click="searchEmployees" block>
+                  Buscar
+                </VBtn>
+              </div>
             </VCol>
           </VRow>
         </VForm>
       </VCardText>
 
-      <VDivider />
-
       <!-- Tabla de Empleados -->
-      <VTable>
-        <thead>
-          <tr>
-            <th>Identificación</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-            <th>Cargo</th>
-            <!-- <th>Salario</th> -->
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loader.loading">
-            <td
-              colspan="8"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
-            </td>
-          </tr>
-          <tr v-else-if="employees.length === 0">
-            <td
-              colspan="8"
-              class="text-center pa-4 text-medium-emphasis"
-            >
-              <VIcon
-                size="32"
-                class="mb-2"
-              >
-                ri-user-unfollow-line
-              </VIcon>
-              <div>No se encontraron empleados</div>
-            </td>
-          </tr>
-          <tr
-            v-for="item in employees"
-            :key="item.id"
-          >
-            <!-- Identificación -->
-            <td>{{ item.identification }}</td>
+      <div class="position-relative">
+        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-            <!-- Nombre -->
-            <td>
-              <div class="font-weight-medium">
-                {{ item.first_name }}
-              </div>
-            </td>
+        <div class="overflow-x-auto">
+          <VTable hover class="employees-table">
+            <thead>
+              <tr>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">
+                  IDENTIFICACIÓN
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                  NOMBRE
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                  APELLIDO
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
+                  EMAIL
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  CARGO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
+                  ESTADO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+            <tbody v-if="loader.loading">
+              <tr>
+                <td colspan="7" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">
+                    Cargando registros...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!employees || employees.length === 0">
+              <tr>
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                    ri-user-unfollow-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No se encontraron empleados
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr v-for="item in employees" :key="item.id" class="employees-row align-middle">
+                <!-- Identificación -->
+                <td class="text-no-wrap text-left py-3">
+                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.identification }}</span>
+                </td>
 
-            <!-- Apellido -->
-            <td>{{ item.last_name }}</td>
+                <!-- Nombre -->
+                <td class="text-left py-3">
+                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">{{ item.first_name }}</span>
+                </td>
 
-            <!-- Email -->
-            <td>{{ item.email }}</td>
+                <!-- Apellido -->
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">{{ item.last_name }}</span>
+                </td>
 
-            <!-- Cargo -->
-            <td>{{ item.position }}</td>
+                <!-- Email -->
+                <td class="text-left py-3" style="max-width: 250px;">
+                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="item.email">{{ item.email }}</span>
+                </td>
 
-            <!-- Salario -->
-            <!--
-              <td>
-              <div class="text-right">
-              <div class="font-weight-medium">
-              {{ formatSalary(item.salary) }}
-              </div>
-              </div>
-              </td> 
-            -->
+                <!-- Cargo -->
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">{{ item.position || '-' }}</span>
+                </td>
 
-            <!-- Estado -->
-            <td>
-              <VChip
-                :color="getStatusColor(item.deleted_at ? 'inactive' : 'active')"
-                variant="tonal"
-                size="small"
-              >
-                {{ getStatusText(item.deleted_at ? 'inactive' : 'active') }}
-              </VChip>
-            </td>
+                <!-- Estado -->
+                <td class="text-no-wrap text-center py-3">
+                  <VChip :color="getStatusColor(item.deleted_at ? 'inactive' : 'active')" variant="tonal" size="small">
+                    {{ getStatusText(item.deleted_at ? 'inactive' : 'active') }}
+                  </VChip>
+                </td>
 
-            <!-- Acciones -->
-            <td>
-              <div class="d-flex gap-1">
-                <VBtn
-                  icon="ri-eye-line"
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  @click="viewEmployee(item)"
-                />
-                <VBtn
-                  icon="ri-edit-line"
-                  variant="text"
-                  size="small"
-                  color="warning"
-                  @click="editEmployee(item)"
-                />
+                <!-- Acciones -->
+                <td class="text-no-wrap text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <!-- Ver Detalle -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
+                      @click="viewEmployee(item)">
+                      <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
 
-                <!-- Botón de eliminar o restaurar según el estado -->
-                <VBtn
-                  v-if="searchForm.status === 'active'"
-                  icon="ri-delete-bin-line"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click="deleteEmployee(item)"
-                />
-                <VBtn
-                  v-else
-                  icon="ri-refresh-line"
-                  variant="text"
-                  size="small"
-                  color="success"
-                  title="Restaurar empleado"
-                  @click="restoreEmployee(item)"
-                />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+                    <!-- Editar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
+                      @click="editEmployee(item)">
+                      <VIcon icon="ri-edit-line" size="20" />
+                    </VBtn>
+
+                    <!-- Eliminar o Restaurar -->
+                    <VBtn v-if="searchForm.status === 'active'" class="action-btn" variant="text" icon size="small"
+                      color="error" title="Eliminar" @click="deleteEmployee(item)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    </VBtn>
+                    <VBtn v-else class="action-btn" variant="text" icon size="small" color="success"
+                      title="Restaurar empleado" @click="restoreEmployee(item)">
+                      <VIcon icon="ri-refresh-line" size="20" />
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </div>
+
+      <VDivider />
 
       <!-- Paginación -->
-      <VDivider />
-      <div class="d-flex justify-center pa-4">
-        <VPagination
-          v-model="currentPage"
-          :length="totalPages"
-          :total-visible="7"
-          @update:model-value="searchEmployees"
-        />
-      </div>
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ employees.length }}</span> de <span class="font-weight-bold">{{
+              totalItems }}</span> registros
+          </div>
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="searchEmployees" />
+        </div>
+      </VCardActions>
     </VCard>
 
     <!-- Diálogo de Eliminación de Empleado -->
-    <EmployeeDeleteDialog
-      v-model="deleteDialog"
-      :employee="employeeToDelete"
-      @employee-deleted="onEmployeeDeleted"
-    />
+    <EmployeeDeleteDialog v-model="deleteDialog" :employee="employeeToDelete" @employee-deleted="onEmployeeDeleted" />
 
     <!-- Diálogo de Vista de Empleado -->
-    <EmployeeViewDialog
-      v-model="viewDialog"
-      :employee="employeeToView"
-    />
+    <EmployeeViewDialog v-model="viewDialog" :employee="employeeToView" />
 
     <!-- Diálogo de Creación de Empleado -->
-    <EmployeeCreateDialog
-      v-model="createDialog"
-      @employee-created="onEmployeeCreated"
-    />
+    <EmployeeCreateDialog v-model="createDialog" @employee-created="onEmployeeCreated" />
 
     <!-- Diálogo de Edición de Empleado -->
-    <EmployeeEditDialog
-      v-model="editDialog"
-      :employee="employeeToEdit"
-      @employee-updated="onEmployeeUpdated"
-    />
+    <EmployeeEditDialog v-model="editDialog" :employee="employeeToEdit" @employee-updated="onEmployeeUpdated" />
   </div>
 </template>
 
 <style scoped>
-/* Estilos específicos si son necesarios */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de empleados */
+.employees-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.employees-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.employees-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.employees-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
 </style>

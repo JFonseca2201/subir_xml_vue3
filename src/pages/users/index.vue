@@ -174,7 +174,7 @@ const deleteItem = item => {
   // Proteger al usuario con ID = 1 (Super-Admin)
   if (item.id === 1) {
     showNotification('No se puede eliminar al usuario con ID 1 (Super-Admin)', 'error')
-    
+
     return
   }
 
@@ -210,312 +210,212 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <!-- Overlay global -->
-    <!-- Global loader in use -->
-    <VCard
-      elevation="8"
-      class="pa-6 rounded-xl border-thin"
-    >
-      <!-- Título -->
-      <VRow class="mb-4">
-        <VCol>
-          <div class="d-flex align-center gap-3">
-            <VIcon
-              icon="ri-group-line"
-              color="primary"
-              size="28"
-            />
-            <div>
-              <h4 class="text-h5 font-weight-bold mb-1">
-                Usuarios
-              </h4>
-              <span class="text-body-2 text-medium-emphasis">
-                Gestión de usuarios del sistema
-              </span>
-            </div>
-          </div>
-        </VCol>
-      </VRow>
+  <div class="pa-4 pa-sm-6 users-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-group-line" color="primary" class="me-2" size="28" />
+          Usuarios
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Gestión de usuarios del sistema
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="primary" prepend-icon="ri-add-line" @click="isUserAddDialogVisible = !isUserAddDialogVisible">
+          Nuevo Usuario
+        </VBtn>
+      </div>
+    </div>
 
-      <!-- Acciones -->
-      <VRow
-        align="center"
-        justify="space-between"
-        class="mb-6"
-      >
-        <VCol
-          cols="12"
-          md="5"
-        >
-          <VTextField
-            v-model="seachQuery"
-            label="Buscar usuario"
-            placeholder="Ej: Juan Perez"
-            prepend-inner-icon="ri-search-line"
-            clearable
-            density="comfortable"
-            variant="outlined"
-            hide-details
-            :loading="loader.loading"
-            @keyup.enter="list"
-          />
-        </VCol>
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VRow class="align-center">
+          <VCol cols="12" md="8">
+            <VTextField v-model="seachQuery" label="Buscar usuario" placeholder="Nombre, email, identificación..."
+              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+              color="primary" @keyup.enter="list" />
+          </VCol>
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="list" block>
+              Limpiar
+            </VBtn>
+          </VCol>
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loader.loading" @click="list"
+              block>
+              Buscar
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VCardText>
 
-        <VCol
-          cols="12"
-          md="4"
-          class="d-flex justify-end gap-3"
-        >
-          <VBtn
-            color="primary"
-            variant="elevated"
-            size="large"
-            class="text-none px-6"
-            @click="isUserAddDialogVisible = !isUserAddDialogVisible"
-          >
-            <VIcon
-              start
-              icon="ri-add-line"
-            />
-            Nuevo usuario
-          </VBtn>
-        </VCol>
-      </VRow>
-
-      <VDivider class="mb-4" />
-
-      <!-- Tabla -->
-      <VTable class="text-no-wrap elevation-1 rounded-lg">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Fecha Reg.</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loader.loading">
-            <td
-              colspan="7"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
-            </td>
-          </tr>
-          <tr v-else-if="!list_users.length">
-            <td
-              colspan="7"
-              class="text-center text-medium-emphasis py-6"
-            >
-              <VIcon
-                size="32"
-                class="mb-2"
-              >
-                ri-database-2-line
-              </VIcon>
-              <div>No hay usuarios disponibles</div>
-            </td>
-          </tr>
-          <tr
-            v-for="item in list_users"
-            v-else
-            :key="item.id"
-          >
-            <!-- ID -->
-            <td>
-              <span
-                color="primary"
-                variant="tonal"
-                size="small"
-              >
-                {{ item.id }}
-              </span>
-            </td>
-
-            <!-- Avatar -->
-            <td>
-              <div class="d-flex justify-center">
-                <div
-                  class="cursor-pointer position-relative"
-                  @click="viewItem(item)"
-                >
-                  <!-- Imagen del avatar -->
-                  <img
-                    v-if="item.avatar"
-                    :src="item.avatar"
-                    class="rounded-circle elevation-2"
-                    style="width: 40px; height: 40px; object-fit: cover;"
-                    @error="console.log('Error cargando imagen:', item.avatar)"
-                    @load="console.log('Imagen cargada exitosamente:', item.avatar)"
-                  >
-                  <VAvatar
-                    v-else
-                    size="40"
-                    class="elevation-2"
-                  >
-                    <VIcon
-                      icon="ri-user-line"
-                      size="20"
-                    />
-                  </VAvatar>
-
-                  <!-- Indicador de estado -->
-                  <div
-                    class="position-absolute"
-                    style="bottom: 0; right: 0;"
-                  >
-                    <!-- Punto verde para activo -->
-                    <VIcon
-                      v-if="item.status == '1'"
-                      icon="ri-checkbox-blank-circle-fill"
-                      size="12"
-                      color="success"
-                      class="elevation-1"
-                    />
-                    <!-- X roja para inactivo -->
-                    <VIcon
-                      v-else
-                      icon="ri-close-circle-fill"
-                      size="12"
-                      color="error"
-                      class="elevation-1"
-                    />
+      <!-- Tabla de Usuarios -->
+      <div class="position-relative">
+        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+        <div class="overflow-x-auto">
+          <VTable hover class="users-table">
+            <thead>
+              <tr>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 60px;">#</th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">IMAGEN</th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">NOMBRE</th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">EMAIL</th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">ROL</th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody v-if="loader.loading">
+              <tr>
+                <td colspan="7" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!list_users || list_users.length === 0">
+              <tr>
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-database-2-line</VIcon>
+                  <div class="text-h6">No hay usuarios registrados</div>
+                  <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr v-for="item in list_users" :key="item.id" class="users-row align-middle">
+                <td class="text-center py-3">
+                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.id }}</span>
+                </td>
+                <td class="text-left py-3">
+                  <div class="d-flex justify-center">
+                    <div class="cursor-pointer position-relative" @click="viewItem(item)">
+                      <img v-if="item.avatar" :src="item.avatar" class="rounded-circle elevation-2"
+                        style="width: 40px; height: 40px; object-fit: cover;">
+                      <VAvatar v-else size="40" class="elevation-2">
+                        <VIcon icon="ri-user-line" size="20" />
+                      </VAvatar>
+                      <div class="position-absolute" style="bottom: 0; right: 0;">
+                        <VIcon v-if="item.status == '1'" icon="ri-checkbox-blank-circle-fill" size="12" color="success"
+                          class="elevation-1" />
+                        <VIcon v-else icon="ri-close-circle-fill" size="12" color="error" class="elevation-1" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </td>
+                </td>
+                <td class="text-left py-3">
+                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">
+                    {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
+                  </span>
+                </td>
+                <td class="text-left py-3" style="max-width: 250px;">
+                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="item.email">{{ item.email }}</span>
+                </td>
+                <td class="text-left py-3">
+                  <VChip color="primary" variant="tonal" size="small">
+                    {{ item.role?.name || 'Sin rol' }}
+                  </VChip>
+                </td>
+                <td class="text-no-wrap text-left py-3">
+                  <div class="d-flex align-center">
+                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <span class="text-body-2 text-medium-emphasis">
+                      {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      }) }}
+                    </span>
+                  </div>
+                </td>
+                <td class="text-no-wrap text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver detalle"
+                      @click="viewItem(item)">
+                      <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
+                    <VBtn v-if="item.id !== 1" class="action-btn" variant="text" icon size="small" color="primary"
+                      title="Editar" @click="editItem(item)">
+                      <VIcon icon="ri-pencil-line" size="20" />
+                    </VBtn>
+                    <VBtn v-if="item.id !== 1" class="action-btn" variant="text" icon size="small" color="error"
+                      title="Eliminar" @click="deleteItem(item)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </div>
 
-            <!-- Nombre -->
-            <td>
-              <span>
-                {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
-              </span>
-            </td>
+      <VDivider />
 
-            <!-- Email -->
-            <td>{{ item.email }}</td>
-
-            <!-- Rol -->
-            <td>
-              <VChip
-                color="primary"
-                variant="tonal"
-                size="small"
-              >
-                {{ item.role?.name || 'Sin rol' }}
-              </VChip>
-            </td>
-
-            <!-- Fecha -->
-            <td>
-              <span>
-                {{ new Date(item.created_at).toLocaleDateString('es-EC', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                }) }}
-              </span>
-            </td>
-
-            <!-- Acciones -->
-            <td>
-              <div class="d-flex align-center gap-2">
-                <VTooltip text="Ver detalle">
-                  <template #activator="{ props: tooltipProps }">
-                    <IconBtn
-                      v-bind="tooltipProps"
-                      size="small"
-                      color="info"
-                      variant="text"
-                      @click="viewItem(item)"
-                    >
-                      <VIcon icon="ri-eye-line" />
-                    </IconBtn>
-                  </template>
-                </VTooltip>
-
-                <VTooltip
-                  v-if="item.id !== 1"
-                  text="Editar"
-                >
-                  <template #activator="{ props }">
-                    <IconBtn
-                      v-bind="props"
-                      size="small"
-                      color="primary"
-                      variant="text"
-                      @click="editItem(item)"
-                    >
-                      <VIcon icon="ri-pencil-line" />
-                    </IconBtn>
-                  </template>
-                </VTooltip>
-
-                <VTooltip
-                  v-if="item.id !== 1"
-                  text="Eliminar"
-                >
-                  <template #activator="{ props }">
-                    <IconBtn
-                      v-bind="props"
-                      size="small"
-                      color="error"
-                      variant="text"
-                      @click="deleteItem(item)"
-                    >
-                      <VIcon icon="ri-delete-bin-line" />
-                    </IconBtn>
-                  </template>
-                </VTooltip>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ list_users.length }}</span> registros
+          </div>
+        </div>
+      </VCardActions>
     </VCard>
 
     <!-- Dialogs -->
-    <UserAddDialog
-      v-if="roles && roles.length > 0"
-      v-model:isDialogVisible="isUserAddDialogVisible"
-      :roles="roles"
-      @add-user="addNewUser"
-    />
-    <UserViewDialog
-      v-if="isUserViewDialogVisible"
-      v-model:is-dialog-visible="isUserViewDialogVisible"
-      :user="user_selected_view || {}"
-      :loading="viewLoading"
-    />
-    <UserEditDialog
-      v-if="user_selected_edit"
-      v-model:isDialogVisible="isUserEditDialogVisible"
-      :user-selected="user_selected_edit"
-      :roles="roles"
-      @edit-user="addEditUser"
-    />
-    <UserDeleteDialog
-      v-if="user_selected_delete"
-      v-model:isDialogVisible="isUserDeleteDialogVisible"
-      :user-selected="user_selected_delete"
-      @delete-user="addDeleteUser"
-    />
+    <UserAddDialog v-if="roles && roles.length > 0" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
+      @add-user="addNewUser" />
+    <UserViewDialog v-if="isUserViewDialogVisible" v-model:is-dialog-visible="isUserViewDialogVisible"
+      :user="user_selected_view || {}" :loading="viewLoading" />
+    <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible"
+      :user-selected="user_selected_edit" :roles="roles" @edit-user="addEditUser" />
+    <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible"
+      :user-selected="user_selected_delete" @delete-user="addDeleteUser" />
   </div>
 </template>
 
 <style scoped>
-:deep(.v-data-table__tr td) {
-    padding-top: 15px !important;
-    padding-bottom: 15px !important;
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de usuarios */
+.users-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.users-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.users-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.users-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 </style>

@@ -135,7 +135,7 @@ const clearSearch = () => {
 const getStockColor = (stock, minStock) => {
   if (stock === 0) return 'error'
   if (stock <= minStock) return 'warning'
-  
+
   return 'success'
 }
 
@@ -267,357 +267,277 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6">
-    <!-- Formulario de Búsqueda -->
-    <VCard
-      class="pa-6 pa-sm-8 rounded-lg elevation-4 max-w-1200 mx-auto"
-      elevation="2"
-    >
-      <!-- Título y Botón Agregar -->
-      <div class="d-flex justify-space-between align-center mb-6">
-        <h1 class="text-h4 font-weight-bold">
-          Listado de Productos
+  <div class="pa-4 pa-sm-6 products-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-box-3-line" color="primary" class="me-2" size="28" />
+          Productos
         </h1>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/product/add"
-        >
+        <p class="text-medium-emphasis mb-0">
+          Gestión de inventario de productos y servicios
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="error" variant="tonal" prepend-icon="ri-download-2-fill" @click="importProducts">
+          Importar
+        </VBtn>
+        <VBtn color="success" variant="tonal" prepend-icon="ri-file-excel-2-line" @click="downloadExcel">
+          Exportar
+        </VBtn>
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/product/add">
           Agregar Producto
         </VBtn>
       </div>
-      <VDivider />
+    </div>
 
-      <VCardText class="pa-4">
-        <VForm
-          ref="searchFormRef"
-          @submit.prevent="searchProducts"
-        >
-          <VRow>
-            <!-- Búsqueda General -->
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Búsqueda General"
-                placeholder="Buscar por descripción, SKU, código auxiliar..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-              />
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VForm ref="searchFormRef" @submit.prevent="searchProducts">
+          <VRow class="align-center">
+            <VCol cols="12" md="6">
+              <VTextField v-model="searchForm.search" label="Búsqueda General" placeholder="Descripción, SKU, código..."
+                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" />
             </VCol>
 
-            <!-- Categoría -->
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.categorie_id"
-                :items="categories"
-                item-title="title"
-                item-value="id"
-                label="Categoría"
-                placeholder="Seleccionar"
-                prepend-inner-icon="ri-folder-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-              />
+            <VCol cols="12" sm="6" md="2">
+              <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
+                label="Categoría" placeholder="Todos" prepend-inner-icon="ri-folder-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
-            <!-- Almacén -->
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.warehouse_id"
-                :items="warehouses"
-                item-title="name"
-                item-value="id"
-                label="Almacén"
-                placeholder="Seleccionar"
-                prepend-inner-icon="ri-store-2-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-              />
+            <VCol cols="12" sm="6" md="2">
+              <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
+                label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
-            <!-- Unidad -->
-            <VCol
-              cols="12"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.unit_id"
-                :items="units"
-                item-title="name"
-                item-value="id"
-                label="Unidad"
-                placeholder="Seleccionar"
-                prepend-inner-icon="ri-ruler-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-              class="d-flex gap-2"
-            />
-            <VCol
-              cols="12"
-              md="6"
-              class="d-flex gap-2"
-            >
-              <VCol
-                cols="12"
-                md="6"
-                class="d-flex gap-2"
-              >
-                <VBtn
-                  color="error"
-                  variant="tonal"
-                  prepend-icon="ri-download-2-fill"
-                  @click="importProducts"
-                >
-                  Importar
-                </VBtn>
-                <VBtn
-                  color="success"
-                  variant="tonal"
-                  prepend-icon="ri-file-excel-2-line"
-                  @click="downloadExcel"
-                >
-                  Exportar
-                </VBtn>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-                class="d-flex gap-2"
-              >
-                <VBtn
-                  type="submit"
-                  color="primary"
-                  prepend-icon="ri-search-line"
-                  :loading="loading"
-                >
-                  Buscar
-                </VBtn>
-                <VBtn
-                  variant="outlined"
-                  prepend-icon="ri-refresh-line"
-                  @click="clearSearch"
-                >
-                  Limpiar
-                </VBtn>
-              </VCol>
+            <VCol cols="12" sm="6" md="2">
+              <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
+                placeholder="Todos" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
+                hide-details="auto" clearable color="primary" />
             </VCol>
           </VRow>
         </VForm>
       </VCardText>
 
-      <VDivider />
-
       <!-- Tabla de Productos -->
-      <VTable>
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Almacén</th>
-            <th>Precio Venta</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td
-              colspan="8"
-              class="text-center pa-4"
-            >
-              <VProgressCircular
-                indeterminate
-                color="primary"
-              />
-            </td>
-          </tr>
-          <tr v-else-if="products.length === 0">
-            <td
-              colspan="8"
-              class="text-center pa-4 text-medium-emphasis"
-            >
-              <VIcon
-                size="32"
-                class="mb-2"
-              >
-                ri-inbox-line
-              </VIcon>
-              <div>No se encontraron productos</div>
-            </td>
-          </tr>
-          <tr
-            v-for="item in products"
-            :key="item.id"
-          >
-            <!-- Imagen -->
-            <td>
-              <div
-                class="cursor-pointer"
-                @click="openProductDialog(item)"
-              >
-                <VAvatar
-                  v-if="item.imagen"
-                  :image="item.imagen"
-                  size="40"
-                  class="elevation-2"
-                />
-                <VAvatar
-                  v-else
-                  color="grey-lighten-2"
-                  size="40"
-                  class="elevation-2"
-                >
-                  <VIcon icon="ri-image-line" />
-                </VAvatar>
-              </div>
-            </td>
+      <div class="position-relative">
+        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-            <!-- Información Principal -->
-            <td>
-              <div>
-                <div class="font-weight-medium">
-                  {{ item.description }}
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  SKU: {{ item.sku }}
-                </div>
-                <div
-                  v-if="item.code_aux"
-                  class="text-caption text-medium-emphasis"
-                >
-                  Código: {{ item.code_aux }}
-                </div>
-              </div>
-            </td>
+        <div class="overflow-x-auto">
+          <VTable hover class="products-table">
+            <thead>
+              <tr>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 80px;">
+                  IMAGEN
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
+                  PRODUCTO
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  CATEGORÍA
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  ALMACÉN
+                </th>
+                <th class="text-right font-weight-bold text-uppercase" style="width: 120px;">
+                  PRECIO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 100px;">
+                  STOCK
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 100px;">
+                  ESTADO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+            <tbody v-if="loading">
+              <tr>
+                <td colspan="8" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">
+                    Cargando registros...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!products || products.length === 0">
+              <tr>
+                <td colspan="8" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                    ri-inbox-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No se encontraron productos
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr v-for="item in products" :key="item.id" class="products-row align-middle">
+                <!-- Imagen -->
+                <td class="text-center py-3">
+                  <div class="cursor-pointer" @click="openProductDialog(item)">
+                    <VAvatar v-if="item.imagen" :image="item.imagen" size="40" class="elevation-2" />
+                    <VAvatar v-else color="grey-lighten-2" size="40" class="elevation-2">
+                      <VIcon icon="ri-image-line" />
+                    </VAvatar>
+                  </div>
+                </td>
 
-            <!-- Categoría -->
-            <td>{{ item.categorie?.title || '-' }}</td>
+                <!-- Producto -->
+                <td class="text-left py-3" style="max-width: 300px;">
+                  <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
+                    :title="item.description">
+                    {{ item.description }}
+                  </div>
+                  <div class="text-body-2 text-medium-emphasis mt-1">
+                    SKU: {{ item.sku }}
+                  </div>
+                  <div v-if="item.code_aux" class="text-body-2 text-medium-emphasis">
+                    Código: {{ item.code_aux }}
+                  </div>
+                </td>
 
-            <!-- Almacén -->
-            <td>{{ item.warehouse?.name || '-' }}</td>
+                <!-- Categoría -->
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">{{ item.categorie?.title || '-' }}</span>
+                </td>
 
-            <!-- Precios -->
-            <td>
-              <div class="text-right">
-                <div class="font-weight-medium text-success">
-                  ${{ item.price_sale?.toFixed(2) || '0.00' }}
-                </div>
-                <div
-                  v-if="item.discount_percentage > 0"
-                  class="text-caption text-warning"
-                >
-                  {{ item.discount_percentage }}% desc
-                </div>
-              </div>
-            </td>
+                <!-- Almacén -->
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">{{ item.warehouse?.name || '-' }}</span>
+                </td>
 
-            <!-- Stock -->
-            <td>{{ item.stock || 0 }}</td>
+                <!-- Precio -->
+                <td class="text-no-wrap text-right py-3">
+                  <div class="font-weight-bold text-subtitle-1 text-success">
+                    ${{ item.price_sale?.toFixed(2) || '0.00' }}
+                  </div>
+                  <div v-if="item.discount_percentage > 0" class="text-caption text-warning">
+                    {{ item.discount_percentage }}% desc
+                  </div>
+                </td>
 
-            <!-- Estado -->
-            <td>
-              <VChip
-                :color="item.state === 1 ? 'success' : 'error'"
-                variant="tonal"
-                size="small"
-              >
-                {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
-              </VChip>
-            </td>
+                <!-- Stock -->
+                <td class="text-no-wrap text-center py-3">
+                  <div class="font-weight-bold text-subtitle-1 text-grey-darken-4">
+                    {{ item.stock || 0 }}
+                  </div>
+                </td>
 
-            <!-- Acciones -->
-            <td>
-              <div class="d-flex gap-1">
-                <VBtn
-                  icon="ri-eye-line"
-                  variant="text"
-                  size="small"
-                  color="primary"
-                  @click="viewProduct(item)"
-                />
-                <VBtn
-                  icon="ri-edit-line"
-                  variant="text"
-                  size="small"
-                  color="warning"
-                  @click="editProduct(item)"
-                />
-                <VBtn
-                  icon="ri-delete-bin-line"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click="deleteProduct(item)"
-                />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+                <!-- Estado -->
+                <td class="text-no-wrap text-center py-3">
+                  <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small">
+                    {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
+                  </VChip>
+                </td>
 
-      <!-- Paginación -->
-      <VDivider />
-      <div class="d-flex justify-center pa-4">
-        <div class="d-flex flex-column align-center gap-2">
-          <div class="text-caption text-medium-emphasis">
-            Mostrando {{ products.length }} de {{ totalItems }} productos
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            @update:model-value="searchProducts"
-          />
+                <!-- Acciones -->
+                <td class="text-no-wrap text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <!-- Ver Detalle (Acción rápida) -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
+                      @click="viewProduct(item)">
+                      <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
+
+                    <!-- Editar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
+                      @click="editProduct(item)">
+                      <VIcon icon="ri-edit-line" size="20" />
+                    </VBtn>
+
+                    <!-- Eliminar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
+                      @click="deleteProduct(item)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
         </div>
       </div>
+
+      <VDivider />
+
+      <!-- Paginación -->
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ products.length }}</span> de <span class="font-weight-bold">{{
+              totalItems }}</span> registros
+          </div>
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="searchProducts" />
+        </div>
+      </VCardActions>
     </VCard>
+
+    <!-- Diálogo de Detalles del Producto -->
+    <ViewProduct v-model:dialog="productDialog" :product="selectedProduct" />
+
+    <!-- Diálogo de Eliminación de Producto -->
+    <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
+      @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
+
+    <!-- Diálogo de Importación de Excel -->
+    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
   </div>
-
-  <!-- Diálogo de Detalles del Producto -->
-  <ViewProduct
-    v-model:dialog="productDialog"
-    :product="selectedProduct"
-  />
-
-  <!-- Diálogo de Eliminación de Producto -->
-  <DeleteProduct
-    v-if="productToDelete"
-    :product="productToDelete"
-    :show-dialog="deleteDialog"
-    @update:show-dialog="deleteDialog = $event"
-    @deleted="handleProductDeleted"
-  />
-
-  <!-- Diálogo de Importación de Excel -->
-  <ImportProductsDialog
-    v-model:isDialogVisible="importDialog"
-    @imported="handleProductsImported"
-  />
 </template>
+
+<style scoped>
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de productos */
+.products-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.products-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.products-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.products-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+</style>

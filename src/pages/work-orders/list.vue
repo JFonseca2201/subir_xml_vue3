@@ -15,6 +15,8 @@ const statusFilter = ref('all')
 const selectedWorkOrder = ref(null)
 const showDetailsDialog = ref(false)
 const loadingOrders = ref(null)
+const showDeleteDialog = ref(false)
+const workOrderToDelete = ref(null)
 
 const statusOptions = [
   { title: 'Todos', value: 'all' },
@@ -77,8 +79,8 @@ const filteredWorkOrders = computed(() => {
 
     filtered = filtered.filter(wo =>
       wo.number?.toLowerCase().includes(query) ||
-            wo.client?.full_name?.toLowerCase().includes(query) ||
-            wo.vehicle?.license_plate?.toLowerCase().includes(query),
+      wo.client?.full_name?.toLowerCase().includes(query) ||
+      wo.vehicle?.license_plate?.toLowerCase().includes(query),
     )
   }
 
@@ -127,6 +129,29 @@ const updateStatus = async (workOrderId, newStatus) => {
   }
 }
 
+const deleteWorkOrder = workOrder => {
+  workOrderToDelete.value = workOrder
+  showDeleteDialog.value = true
+}
+
+const confirmDeleteWorkOrder = async () => {
+  if (!workOrderToDelete.value) return
+
+  try {
+    await $api(`work-orders/${workOrderToDelete.value.id}`, {
+      method: 'DELETE',
+    })
+
+    showNotification('Orden de trabajo eliminada exitosamente', 'success')
+    showDeleteDialog.value = false
+    workOrderToDelete.value = null
+    loadWorkOrders()
+  } catch (error) {
+    console.error('Error al eliminar orden de trabajo:', error)
+    showNotification('Error al eliminar la orden de trabajo', 'error')
+  }
+}
+
 // Verifica si es un estado que permite avanzar haciendo clic en el icono
 const canAdvance = workOrder => {
   return ['received', 'in_progress'].includes(workOrder.status) || (workOrder.status === 'ready' && !workOrder.sale)
@@ -147,7 +172,7 @@ const handleStatusClick = workOrder => {
 const getDynamicIcon = workOrder => {
   if (workOrder.status === 'ready' && !workOrder.sale) return 'ri-shopping-cart-line'
   if (workOrder.status === 'ready' && workOrder.sale) return 'ri-check-double-line'
-  
+
   return statusIcons[workOrder.status]
 }
 
@@ -155,7 +180,7 @@ const getDynamicIcon = workOrder => {
 const getDynamicLegend = workOrder => {
   if (workOrder.status === 'ready' && !workOrder.sale) return 'Facturar'
   if (workOrder.status === 'ready' && workOrder.sale) return 'Facturado'
-  
+
   return statusLabels[workOrder.status]
 }
 
@@ -210,20 +235,20 @@ const downloadPDF = async workOrderId => {
 
 const getClientName = client => {
   if (!client) return 'N/A'
-  
+
   return client.full_name || `${client.name || ''} ${client.surname || ''}`.trim() || 'N/A'
 }
 
 const getVehicleInfo = vehicle => {
   if (!vehicle) return 'N/A'
   const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
-  
+
   return `${brandName} ${vehicle.model || ''} - ${vehicle.license_plate || ''}`.trim() || 'N/A'
 }
 
 const getTotalAmount = workOrder => {
   if (!workOrder.items || !Array.isArray(workOrder.items)) return 0
-  
+
   return workOrder.items.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0)
 }
 
@@ -233,499 +258,260 @@ onMounted(() => {
 </script>
 
 <template>
-  <VContainer class="pa-6">
-    <VRow>
-      <VCol cols="12">
-        <div class="d-flex align-center justify-space-between mb-6">
-          <div>
-            <div class="d-flex align-center">
-              <VIcon
-                size="32"
-                class="mr-2"
-              >
-                ri-draft-line
-              </VIcon>
-              <h1 class="text-h4 font-weight-bold mb-1">
-                Órdenes de Trabajo
-              </h1>
-            </div>
-            <p class="text-body-2 text-grey">
-              Gestiona y da seguimiento a las órdenes de trabajo
-            </p>
-          </div>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-add-line"
-            size="large"
-            @click="goToCreate"
-          >
-            Nueva Orden
-          </VBtn>
-        </div>
+  <div class="pa-4 pa-sm-6 work-orders-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-draft-line" color="primary" class="me-2" size="28" />
+          Órdenes de Trabajo
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Gestiona y da seguimiento a las órdenes de trabajo del taller
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/work-orders/add">
+          Nueva Orden
+        </VBtn>
+      </div>
+    </div>
 
-        <!-- Stats Cards -->
-        <VRow class="mb-4">
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VCard class="elevation-2 h-100">
-              <VCardText class="pa-4">
-                <div class="d-flex align-center justify-space-between">
-                  <div>
-                    <p class="text-body-2 text-grey mb-1">
-                      Total
-                    </p>
-                    <p class="text-h4 font-weight-bold">
-                      {{ stats.total }}
-                    </p>
-                  </div>
-                  <VAvatar
-                    size="48"
-                    color="primary"
-                    variant="tonal"
-                  >
-                    <VIcon
-                      icon="ri-file-list-3-line"
-                      size="28"
-                    />
-                  </VAvatar>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VCard class="elevation-2 h-100">
-              <VCardText class="pa-4">
-                <div class="d-flex align-center justify-space-between">
-                  <div>
-                    <p class="text-body-2 text-grey mb-1">
-                      Recibidos
-                    </p>
-                    <p class="text-h4 font-weight-bold">
-                      {{ stats.received }}
-                    </p>
-                  </div>
-                  <VAvatar
-                    size="48"
-                    color="info"
-                    variant="tonal"
-                  >
-                    <VIcon
-                      icon="ri-inbox-line"
-                      size="28"
-                    />
-                  </VAvatar>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VCard class="elevation-2 h-100">
-              <VCardText class="pa-4">
-                <div class="d-flex align-center justify-space-between">
-                  <div>
-                    <p class="text-body-2 text-grey mb-1">
-                      En Progreso
-                    </p>
-                    <p class="text-h4 font-weight-bold">
-                      {{ stats.inProgress }}
-                    </p>
-                  </div>
-                  <VAvatar
-                    size="48"
-                    color="warning"
-                    variant="tonal"
-                  >
-                    <VIcon
-                      icon="ri-loader-4-line"
-                      size="28"
-                    />
-                  </VAvatar>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VCard class="elevation-2 h-100">
-              <VCardText class="pa-4">
-                <div class="d-flex align-center justify-space-between">
-                  <div>
-                    <p class="text-body-2 text-grey mb-1">
-                      Listos
-                    </p>
-                    <p class="text-h4 font-weight-bold">
-                      {{ stats.ready }}
-                    </p>
-                  </div>
-                  <VAvatar
-                    size="48"
-                    color="success"
-                    variant="tonal"
-                  >
-                    <VIcon
-                      icon="ri-check-double-line"
-                      size="28"
-                    />
-                  </VAvatar>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-        </VRow>
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VForm @submit.prevent="loadWorkOrders">
+          <VRow class="align-center">
+            <VCol cols="12" md="6">
+              <VTextField v-model="searchQuery" label="Buscar orden"
+                placeholder="Número, cliente o placa del vehículo..." prepend-inner-icon="ri-search-line"
+                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
+            </VCol>
 
-        <!-- Filters -->
-        <VCard class="elevation-2 mb-4">
-          <VCardText class="pa-4">
-            <VRow>
-              <VCol
-                cols="12"
-                md="4"
-              >
-                <VTextField
-                  v-model="searchQuery"
-                  label="Buscar orden..."
-                  prepend-inner-icon="ri-search-line"
-                  variant="outlined"
-                  clearable
-                  hide-details
-                  placeholder="Número, cliente o vehículo"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="4"
-              >
-                <VSelect
-                  v-model="statusFilter"
-                  :items="statusOptions"
-                  label="Filtrar por estado"
-                  variant="outlined"
-                  hide-details
-                  prepend-inner-icon="ri-filter-3-line"
-                />
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="statusFilter" :items="statusOptions" item-title="title" item-value="value"
+                label="Estado" placeholder="Todos" prepend-inner-icon="ri-filter-3-line" variant="outlined"
+                density="comfortable" hide-details="auto" clearable color="primary" />
+            </VCol>
 
-        <!-- Work Orders List -->
-        <div
-          v-if="!isLoading && filteredWorkOrders.length > 0"
-          class="work-orders-container"
-        >
-          <!-- Encabezados de Columnas -->
-          <div
-            class="d-none d-md-flex align-center px-4 py-2 gap-4 text-caption text-grey font-weight-bold text-uppercase"
-            style="letter-spacing: 0.5px;"
-          >
-            <div style="width: 100px" />
-            <div style="width: 120px">
-              Estado
-            </div>
-            <div class="flex-grow-1">
-              Descripción
-            </div>
-            <div
-              style="width: 120px"
-              class="text-right"
-            >
-              Total
-            </div>
-            <div
-              style="width: 100px"
-              class="text-right"
-            >
-              Acciones
-            </div>
-          </div>
+            <VCol cols="12" sm="6" md="3">
+              <VBtn color="primary" variant="tonal" prepend-icon="ri-refresh-line" @click="loadWorkOrders" block>
+                Actualizar
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
 
-          <div class="d-flex flex-column gap-3">
-            <VCard
-              v-for="workOrder in filteredWorkOrders"
-              :key="workOrder.id"
-              class="work-order-card position-relative overflow-hidden rounded-lg"
-              elevation="1"
-            >
-              <div class="d-flex flex-column flex-md-row h-100">
-                <!-- Contenedor del Ícono (Izquierda, alto completo) -->
-                <div
-                  class="d-flex flex-column align-center justify-center pa-4 transition-colors duration-300"
-                  :class="[statusBgClasses[workOrder.status], canAdvance(workOrder) ? 'cursor-pointer hover-effect' : '']"
-                  style="min-width: 100px; border-right: 1px solid rgba(0,0,0,0.05);"
-                  @click="handleStatusClick(workOrder)"
-                >
-                  <VIcon
-                    size="32" 
-                    :color="statusColors[workOrder.status]" 
-                    :class="statusAnimations[workOrder.status]"
-                  >
-                    {{ getDynamicIcon(workOrder) }}
+      <!-- Tabla de Órdenes de Trabajo -->
+      <div class="position-relative">
+        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+
+        <div class="overflow-x-auto">
+          <VTable hover class="work-orders-table">
+            <thead>
+              <tr>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
+                  ESTADO
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 135px;">
+                  N°/FECHA
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                  CLIENTE
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  VEHÍCULO
+                </th>
+                <th class="text-right font-weight-bold text-uppercase" style="width: 100px;">
+                  TOTAL
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+            <tbody v-if="isLoading">
+              <tr>
+                <td colspan="6" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">
+                    Cargando registros...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!filteredWorkOrders || filteredWorkOrders.length === 0">
+              <tr>
+                <td colspan="6" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                    ri-file-text-line
                   </VIcon>
-                  <span
-                    class="font-weight-bold mt-2 text-center" 
-                    :class="`text-${statusColors[workOrder.status]}`" 
-                    style="font-size: 0.70rem !important; line-height: 1.1;"
-                  >
-                    {{ getDynamicLegend(workOrder) }}
-                  </span>
-                </div>
-
-                <!-- Contenido de la fila -->
-                <div class="d-flex flex-grow-1 align-center pa-4 gap-4 flex-wrap flex-md-nowrap">
-                  <!-- Estado -->
-                  <div
-                    style="width: 120px"
-                    class="d-flex flex-column align-center align-md-start"
-                  >
-                    <VChip
-                      size="small"
-                      :color="statusColors[workOrder.status]"
-                      label
-                      class="status-chip mt-1"
-                    >
-                      {{ statusLabels[workOrder.status] }}
-                    </VChip>
+                  <div class="text-h6">
+                    No se encontraron órdenes de trabajo
                   </div>
-                                    
-                  <!-- Descripción -->
-                  <div class="d-flex flex-column flex-grow-1 justify-center py-2">
-                    <!-- Linea 1: Numero de Orden y Fecha -->
-                    <div class="d-flex justify-space-between align-center mb-2">
-                      <span class="text-h6 font-weight-bold text-blue-grey-darken-2">{{ workOrder.number }}</span>
-                      <div class="d-flex align-center gap-1 text-caption text-grey">
-                        <VIcon
-                          icon="ri-calendar-event-line"
-                          size="14"
-                        />
-                        <span>{{ new Date(workOrder.created_at).toLocaleDateString() }}</span>
-                      </div>
-                    </div>
-
-                    <!-- Linea 2: Cliente y Vehiculo -->
-                    <div class="d-flex align-center gap-3 text-body-2 text-grey-darken-3">
-                      <div
-                        class="d-flex align-center gap-2 text-truncate"
-                        style="min-width: 0;"
-                      >
-                        <VIcon
-                          icon="ri-user-line"
-                          size="16"
-                        />
-                        <span class="font-weight-medium text-truncate">{{ getClientName(workOrder.client) }}</span>
-                      </div>
-                      <VDivider
-                        vertical
-                        class="mx-2"
-                      />
-                      <div
-                        class="d-flex align-center gap-2 text-truncate"
-                        style="min-width: 0;"
-                      >
-                        <VIcon
-                          icon="ri-car-line"
-                          size="16"
-                        />
-                        <span
-                          class="text-truncate"
-                          style="text-transform: uppercase;"
-                        >{{ getVehicleInfo(workOrder.vehicle) }}</span>
-                      </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else style="text-transform: uppercase;">
+              <tr v-for="(workOrder, index) in filteredWorkOrders"
+                :key="workOrder?.id ? `wo-${workOrder.id}` : `wo-idx-${index}`" class="work-orders-row align-middle">
+                <td class="text-no-wrap text-center py-3">
+                  <div v-if="workOrder" class="d-flex flex-column align-center gap-1 cursor-pointer"
+                    @click="handleStatusClick(workOrder)">
+                    <!-- Estado General con Icono -->
+                    <div class="d-flex align-center gap-1">
+                      <VIcon :icon="statusIcons[workOrder.status]" size="16" :color="statusColors[workOrder.status]" />
+                      <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ statusLabels[workOrder.status]
+                        }}</span>
                     </div>
                   </div>
+                </td>
 
-                  <!-- Total -->
-                  <div
-                    style="width: 120px"
-                    class="text-md-right"
-                  >
-                    <span class="text-h6 font-weight-bold text-primary">${{ getTotalAmount(workOrder).toFixed(2) }}</span>
+                <td class="text-no-wrap text-left py-3">
+                  <div v-if="workOrder" class="d-flex flex-column align-start">
+                    <span class="font-weight-bold text-subtitle-1 text-primary">{{ workOrder.number }}</span>
+                    <span class="text-body-2 text-medium-emphasis d-flex align-center mt-1">
+                      <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                      {{ new Date(workOrder.created_at).toLocaleDateString() }}
+                    </span>
                   </div>
+                </td>
 
-                  <!-- Acciones -->
-                  <div
-                    style="width: 100px"
-                    class="d-flex align-center justify-md-end gap-1"
-                  >
-                    <VBtn
-                      v-if="workOrder.status === 'draft'"
-                      icon="ri-edit-2-line"
-                      size="small"
-                      variant="text"
-                      color="secondary"
-                      @click="goToEdit(workOrder.id)"
-                    />
-                    <VBtn
-                      v-if="workOrder.sale"
-                      icon="ri-file-pdf-line"
-                      size="small"
-                      variant="text"
-                      color="grey"
-                      @click="downloadPDF(workOrder.id)"
-                    />
-                    <VBtn
-                      icon="ri-eye-line"
-                      size="small"
-                      variant="text"
-                      color="grey"
-                      @click="viewDetails(workOrder)"
-                    />
+                <td class="text-left py-3" style="max-width: 400px;">
+                  <div v-if="workOrder">
+                    <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
+                      :title="getClientName(workOrder.client)">
+                      {{ getClientName(workOrder.client) }}
+                    </div>
+                    <div v-if="workOrder.client?.n_document" class="text-body-2 text-medium-emphasis mt-1">
+                      Doc: {{ workOrder.client.n_document }}
+                    </div>
                   </div>
-                </div>
-              </div>
-              <!-- Progress Bar -->
-              <VProgressLinear
-                v-if="loadingOrders === workOrder.id"
-                indeterminate
-                color="primary"
-                absolute
-                location="bottom"
-                class="position-absolute bottom-0 w-100"
-                height="4"
-              />
-            </VCard>
+                </td>
+
+                <td class="text-left py-3" style="max-width: 300px;">
+                  <div v-if="workOrder?.vehicle" class="d-flex flex-column">
+                    <div class="font-weight-bold text-body-1 text-truncate text-primary"
+                      :title="workOrder.vehicle.license_plate">
+                      {{ workOrder.vehicle.license_plate }}
+                    </div>
+                    <div class="text-body-2 text-medium-emphasis text-truncate mt-1"
+                      :title="getVehicleInfo(workOrder.vehicle)">
+                      {{ getVehicleInfo(workOrder.vehicle) }}
+                    </div>
+                  </div>
+                  <span v-else class="text-medium-emphasis text-body-2">-</span>
+                </td>
+
+                <td class="text-no-wrap text-right py-3">
+                  <div v-if="workOrder" class="font-weight-bold text-subtitle-1 text-grey-darken-4">
+                    ${{ getTotalAmount(workOrder).toFixed(2) }}
+                  </div>
+                </td>
+
+                <td class="text-no-wrap text-center py-3">
+                  <div v-if="workOrder" class="d-flex justify-center align-center">
+                    <!-- Ver Detalle (Acción rápida) -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
+                      @click="viewDetails(workOrder)">
+                      <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
+
+                    <!-- Editar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar Orden"
+                      @click="goToEdit(workOrder.id)">
+                      <VIcon icon="ri-edit-line" size="20" />
+                    </VBtn>
+
+                    <!-- Más Acciones (Dropdown) -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="secondary" title="Acciones">
+                      <VIcon icon="ri-more-2-line" size="20" />
+                      <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                        <VList density="compact" class="py-1">
+                          <VListItem v-if="workOrder.status === 'ready' && !workOrder.sale"
+                            prepend-icon="ri-shopping-cart-line" title="Generar Venta" class="text-success text-body-2"
+                            @click="goToSale(workOrder.id)" />
+                          <VListItem v-if="workOrder.sale" prepend-icon="ri-file-pdf-line" title="Descargar PDF"
+                            class="text-primary text-body-2" @click="downloadPDF(workOrder.id)" />
+                          <VDivider class="my-1" />
+                          <VListItem prepend-icon="ri-delete-bin-line" title="Eliminar Orden"
+                            class="text-error text-body-2" @click="deleteWorkOrder(workOrder)" />
+                        </VList>
+                      </VMenu>
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </div>
+
+      <VDivider />
+
+      <!-- Paginación -->
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ filteredWorkOrders.length }}</span> registros
           </div>
         </div>
-
-        <div
-          v-else-if="isLoading"
-          class="text-center pa-12"
-        >
-          <VProgressCircular
-            indeterminate
-            color="primary"
-            size="64"
-          />
-          <p class="mt-4 text-body-2 text-grey">
-            Cargando órdenes de trabajo...
-          </p>
-        </div>
-
-        <div
-          v-else
-          class="text-center pa-12"
-        >
-          <VIcon
-            icon="ri-file-list-3-line"
-            size="96"
-            color="grey-lighten-1"
-          />
-          <p class="mt-4 text-h6 text-grey">
-            No hay órdenes de trabajo registradas
-          </p>
-          <p class="text-body-2 text-grey mb-4">
-            Comienza creando una nueva orden de trabajo
-          </p>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-add-line"
-            @click="goToCreate"
-          >
-            Crear Primera Orden
-          </VBtn>
-        </div>
-      </VCol>
-    </VRow>
+      </VCardActions>
+    </VCard>
 
     <!-- Details Dialog -->
-    <VDialog
-      v-model="showDetailsDialog"
-      max-width="800"
-    >
+    <VDialog v-model="showDetailsDialog" max-width="800">
       <VCard v-if="selectedWorkOrder">
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
           <div class="d-flex align-center gap-2">
             <VIcon icon="ri-file-list-3-line" />
             <span>Detalles de Orden #{{ selectedWorkOrder.number }}</span>
           </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            @click="showDetailsDialog = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" @click="showDetailsDialog = false" />
         </VCardTitle>
         <VDivider />
         <VCardText class="pa-4">
           <VRow>
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <VCol cols="12" md="6">
               <div class="d-flex align-center gap-1 mb-1 text-grey">
-                <VIcon
-                  icon="ri-user-line"
-                  size="18"
-                />
+                <VIcon icon="ri-user-line" size="18" />
                 <span class="text-body-2">Cliente</span>
               </div>
               <p class="text-body-1 font-weight-medium">
                 {{ getClientName(selectedWorkOrder.client) }}
               </p>
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <VCol cols="12" md="6">
               <div class="d-flex align-center gap-1 mb-1 text-grey">
-                <VIcon
-                  icon="ri-car-line"
-                  size="18"
-                />
+                <VIcon icon="ri-car-line" size="18" />
                 <span class="text-body-2">Vehículo</span>
               </div>
               <p class="text-body-1 font-weight-medium">
                 {{ getVehicleInfo(selectedWorkOrder.vehicle) }}
               </p>
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <VCol cols="12" md="6">
               <div class="d-flex align-center gap-1 mb-1 text-grey">
-                <VIcon
-                  icon="ri-dashboard-3-line"
-                  size="18"
-                />
+                <VIcon icon="ri-dashboard-3-line" size="18" />
                 <span class="text-body-2">Kilometraje</span>
               </div>
               <p class="text-body-1 font-weight-medium">
                 {{ selectedWorkOrder.mileage || 'N/A' }} km
               </p>
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <VCol cols="12" md="6">
               <div class="d-flex align-center gap-1 mb-1 text-grey">
-                <VIcon
-                  icon="ri-information-line"
-                  size="18"
-                />
+                <VIcon icon="ri-information-line" size="18" />
                 <span class="text-body-2">Estado</span>
               </div>
-              <VChip
-                :color="statusColors[selectedWorkOrder.status]"
-                size="small"
-                label
-              >
-                <VIcon
-                  start
-                  :icon="statusIcons[selectedWorkOrder.status]"
-                  size="14"
-                />
+              <VChip :color="statusColors[selectedWorkOrder.status]" size="small" label>
+                <VIcon start :icon="statusIcons[selectedWorkOrder.status]" size="14" />
                 {{ statusLabels[selectedWorkOrder.status] }}
               </VChip>
             </VCol>
@@ -734,10 +520,7 @@ onMounted(() => {
           <VDivider class="my-4" />
 
           <div class="d-flex align-center gap-2 mb-3">
-            <VIcon
-              icon="ri-list-check"
-              size="24"
-            />
+            <VIcon icon="ri-list-check" size="24" />
             <span class="text-h6 font-weight-bold">Items</span>
           </div>
           <VTable v-if="selectedWorkOrder.items && selectedWorkOrder.items.length > 0">
@@ -751,10 +534,7 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="item in selectedWorkOrder.items"
-                :key="item.id"
-              >
+              <tr v-for="item in selectedWorkOrder.items" :key="item.id">
                 <td>{{ item.description }}</td>
                 <td>{{ item.quantity }}</td>
                 <td>${{ parseFloat(item.unit_price).toFixed(2) }}</td>
@@ -764,10 +544,7 @@ onMounted(() => {
             </tbody>
             <tfoot>
               <tr>
-                <td
-                  colspan="4"
-                  class="text-right font-weight-bold"
-                >
+                <td colspan="4" class="text-right font-weight-bold">
                   Total:
                 </td>
                 <td class="font-weight-bold">
@@ -776,80 +553,90 @@ onMounted(() => {
               </tr>
             </tfoot>
           </VTable>
-          <p
-            v-else
-            class="text-body-2 text-grey"
-          >
+          <p v-else class="text-body-2 text-grey">
             No hay items en esta orden
           </p>
         </VCardText>
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn
-            color="grey"
-            variant="text"
-            prepend-icon="ri-close-line"
-            @click="showDetailsDialog = false"
-          >
+          <VBtn color="grey" variant="text" prepend-icon="ri-close-line" @click="showDetailsDialog = false">
             Cerrar
           </VBtn>
-          <VBtn
-            v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
-            color="primary"
-            prepend-icon="ri-shopping-cart-line"
-            @click="goToSale(selectedWorkOrder.id)"
-          >
+          <VBtn v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale" color="primary"
+            prepend-icon="ri-shopping-cart-line" @click="goToSale(selectedWorkOrder.id)">
             Generar Venta
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
-  </VContainer>
+
+    <!-- Delete Confirmation Dialog -->
+    <VDialog v-model="showDeleteDialog" max-width="500">
+      <VCard>
+        <VCardTitle class="text-h5">
+          Confirmar Eliminación
+        </VCardTitle>
+        <VCardText>
+          <p class="text-body-1">
+            ¿Estás seguro de eliminar la orden de trabajo <strong>#{{ workOrderToDelete?.number }}</strong>?
+          </p>
+          <p class="text-body-2 text-grey-darken-1 mt-2">
+            Esta acción no se puede deshacer.
+          </p>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn color="grey" variant="text" @click="showDeleteDialog = false">
+            Cancelar
+          </VBtn>
+          <VBtn color="error" @click="confirmDeleteWorkOrder">
+            Eliminar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+  </div>
 </template>
 
 <style scoped>
-.work-order-card {
-    transition: all 0.2s ease;
+.border-light {
+  border: 1px solid #e2e8f0 !important;
 }
 
-.work-order-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
-.cursor-pointer {
-    cursor: pointer;
+/* Estilo de la tabla de órdenes de trabajo */
+.work-orders-table :deep(thead) {
+  background-color: #f8fafc !important;
 }
 
-.hover-effect:hover {
-    filter: brightness(0.92);
-    transition: filter 0.2s ease;
+.work-orders-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
 }
 
-.status-btn {
-    border-radius: 8px;
-    transition: all 0.2s ease;
+.work-orders-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
 }
 
-.status-btn:hover {
-    transform: scale(1.15);
+.work-orders-row:hover {
+  background-color: #f8fafc !important;
 }
 
-.status-chip {
-    font-size: 10px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
 }
 
-.halo-active {
-    border-radius: 50%;
-    animation: green-halo 2s infinite;
-}
-
-@keyframes green-halo {
-    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
 }
 </style>

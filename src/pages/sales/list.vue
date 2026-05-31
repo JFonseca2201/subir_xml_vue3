@@ -380,20 +380,11 @@ onMounted(() => {
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-file-pdf-line"
-          :loading="pdfLoading"
-          @click="generatePDF"
-        >
+        <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-pdf-line" :loading="pdfLoading"
+          @click="generatePDF">
           Generar PDF
         </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/sales/add"
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add">
           Nueva Venta
         </VBtn>
       </div>
@@ -406,104 +397,46 @@ onMounted(() => {
         <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
           <VRow class="align-center">
             <VCol cols="12" md="4">
-              <VTextField
-                v-model="searchForm.search"
-                label="Buscar venta"
-                placeholder="Nombre, cédula o placa del vehículo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+              <VTextField v-model="searchForm.search" label="Buscar venta"
+                placeholder="Nombre, cédula o placa del vehículo..." prepend-inner-icon="ri-search-line"
+                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
-              <VSelect
-                v-model="searchForm.document_type"
-                :items="documentTypeOptions"
-                item-title="title"
-                item-value="value"
-                label="Tipo de Doc."
-                placeholder="Todos"
-                prepend-inner-icon="ri-file-list-3-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+              <VSelect v-model="searchForm.document_type" :items="documentTypeOptions" item-title="title"
+                item-value="value" label="Tipo de Doc." placeholder="Todos" prepend-inner-icon="ri-file-list-3-line"
+                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
-              <VSelect
-                v-model="searchForm.payment_status"
-                :items="paymentStatusOptions"
-                item-title="title"
-                item-value="value"
-                label="Estado Pago"
-                placeholder="Todos"
-                prepend-inner-icon="ri-money-dollar-circle-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+              <VSelect v-model="searchForm.payment_status" :items="paymentStatusOptions" item-title="title"
+                item-value="value" label="Estado Pago" placeholder="Todos"
+                prepend-inner-icon="ri-money-dollar-circle-line" variant="outlined" density="comfortable"
+                hide-details="auto" clearable color="primary" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
-              <VTextField
-                v-model="searchForm.start_date"
-                type="date"
-                label="Desde"
-                prepend-inner-icon="ri-calendar-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+              <VTextField v-model="searchForm.start_date" type="date" label="Desde"
+                prepend-inner-icon="ri-calendar-line" variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
-              <VTextField
-                v-model="searchForm.end_date"
-                type="date"
-                label="Hasta"
-                prepend-inner-icon="ri-calendar-event-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+              <VTextField v-model="searchForm.end_date" type="date" label="Hasta"
+                prepend-inner-icon="ri-calendar-event-line" variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" />
             </VCol>
           </VRow>
-          
-          <div class="d-flex justify-end gap-3 mt-4">
-            <VBtn variant="tonal" color="secondary" prepend-icon="ri-refresh-line" @click="clearSearch" density="comfortable">
-              Limpiar
-            </VBtn>
-            <VBtn type="submit" color="primary" prepend-icon="ri-search-line" :loading="loading" density="comfortable">
-              Buscar
-            </VBtn>
-          </div>
+
+
         </VForm>
       </VCardText>
 
       <!-- Tabla de Ventas -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
-        
+        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+
         <div class="overflow-x-auto">
           <VTable hover class="sales-table">
             <thead>
@@ -608,12 +541,13 @@ onMounted(() => {
                       <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
                         style="width: 10px; height: 10px;"></span>
                       <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ getStatusInfo(item.status)?.text
-                        }}</span>
+                      }}</span>
                     </div>
                     <!-- Estado Pago (Text badge) -->
                     <div v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
                       class="text-caption font-weight-bold"
-                      :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`" style="letter-spacing: 0.05em;">
+                      :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`"
+                      style="letter-spacing: 0.05em;">
                       {{ getPaymentStatusInfo(item.payment_status)?.text }}
                     </div>
                   </div>
@@ -622,7 +556,8 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div v-if="item" class="d-flex justify-center align-center">
                     <!-- Ver Detalle (Acción rápida) -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle" @click="viewSale(item)">
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
+                      @click="viewSale(item)">
                       <VIcon icon="ri-eye-line" size="20" />
                     </VBtn>
 
@@ -656,31 +591,22 @@ onMounted(() => {
       </div>
 
       <VDivider />
-      
+
       <!-- Paginación -->
       <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
         <div class="d-flex flex-column align-center gap-3 w-100">
           <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ sales.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> registros
+            Mostrando <span class="font-weight-bold">{{ sales.length }}</span> de <span class="font-weight-bold">{{
+              totalItems }}</span> registros
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary" />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Dialogs -->
-    <SaleViewDialog
-      v-if="isViewDialogVisible"
-      v-model:is-dialog-visible="isViewDialogVisible"
-      :sale-data="selectedSale"
-      :loading="viewLoading"
-    />
+    <SaleViewDialog v-if="isViewDialogVisible" v-model:is-dialog-visible="isViewDialogVisible" :sale-data="selectedSale"
+      :loading="viewLoading" />
 
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />

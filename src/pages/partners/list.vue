@@ -130,7 +130,7 @@ const refresh = () => {
 const formatDate = date => {
   if (!date) return '-'
   const d = new Date(date)
-  
+
   return isNaN(d) ? '-' : d.toISOString().slice(0, 10)
 }
 
@@ -140,242 +140,230 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-6">
-    <!-- Overlay global -->
-    <!-- Global loader in use -->
+  <div class="pa-4 pa-sm-6 partners-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-group-3-line" color="primary" class="me-2" size="28" />
+          Socios
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Gestión de socios del taller
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="primary" prepend-icon="ri-add-circle-line"
+          @click="isPartnerAddDialogVisible = !isPartnerAddDialogVisible">
+          Nuevo Socio
+        </VBtn>
+      </div>
+    </div>
 
-    <!-- CARD MAESTRA -->
-    <VCard class="partner-list elevation-4 rounded-xl">
-      <!-- HEADER -->
-      <VCardText>
-        <VRow class="align-center justify-space-between">
-          <VCol
-            cols="12"
-            md="8"
-          >
-            <div class="d-flex align-center gap-3">
-              <VIcon
-                size="40"
-                color="primary"
-              >
-                ri-group-3-line
-              </VIcon>
-              <div>
-                <h2 class="text-h4 font-weight-bold mb-1">
-                  Gestión de Socios
-                </h2>
-                <span class="text-medium-emphasis">
-                  Administración y control de socios
-                </span>
-              </div>
-            </div>
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VRow class="align-center">
+          <VCol cols="12" md="8">
+            <VTextField v-model="search" label="Buscar socio" placeholder="Nombre, cédula, email..."
+              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+              color="primary" @keyup.enter="list" />
           </VCol>
 
-          <VCol
-            cols="12"
-            md="4"
-            class="d-flex justify-end align-center"
-          >
-            <VBtn
-              color="primary"
-              size="large"
-              elevation="5"
-              @click="isPartnerAddDialogVisible = !isPartnerAddDialogVisible"
-            >
-              <VIcon start>
-                ri-add-circle-line
-              </VIcon>
-              Nuevo Socio
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="refresh" block>
+              Limpiar
             </VBtn>
           </VCol>
-        </VRow>
-      </VCardText>
 
-      <VDivider />
-
-      <!-- FILTROS Y BOTÓN FILTRAR -->
-      <VCardText>
-        <div class="d-flex align-center gap-2 mb-4">
-          <VIcon color="primary">
-            ri-filter-3-line
-          </VIcon>
-          <span class="text-h6 font-weight-bold">
-            Filtros de búsqueda
-          </span>
-        </div>
-
-
-        <!-- Filtros de búsqueda alineados con el botón Filtrar -->
-        <VRow dense>
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar socio"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              prepend-inner-icon="ri-search-line"
-              @keyup.enter="list"
-            />
-          </VCol>
-
-          <!-- Botón Filtrar alineado con los filtros -->
-          <VCol
-            cols="12"
-            md="6"
-            class="d-flex align-end justify-end gap-4"
-          >
-            <VBtn
-              color="primary"
-              size="large"
-              rounded=""
-              variant="tonal"
-              :loading="loader.loading"
-              @click="list"
-            >
-              <VIcon start>
-                ri-search-line
-              </VIcon>
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loader.loading" @click="list"
+              block>
               Buscar
             </VBtn>
-            <VBtn
-              color="secondary"
-              size="large"
-              rounded=""
-              variant="tonal"
-              @click="refresh"
-            >
-              <VIcon start>
-                ri-refresh-line
-              </VIcon>
-              Refrescar
-            </VBtn>
           </VCol>
         </VRow>
       </VCardText>
 
+      <!-- Tabla de Socios -->
+      <div class="position-relative">
+        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+
+        <div class="overflow-x-auto">
+          <VTable hover class="partners-table">
+            <thead>
+              <tr>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 60px;">
+                  #
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  CÉDULA/RUC
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
+                  SOCIO
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">
+                  FECHA REG.
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
+                  EMAIL
+                </th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">
+                  TELÉFONO
+                </th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                  ACCIONES
+                </th>
+              </tr>
+            </thead>
+            <tbody v-if="loader.loading">
+              <tr>
+                <td colspan="7" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">
+                    Cargando registros...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!list_partners || list_partners.length === 0">
+              <tr>
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                    ri-inbox-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No hay socios registrados
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr v-for="partner in list_partners" :key="partner.id" class="partners-row align-middle">
+                <td class="text-center py-3">
+                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ partner.id }}</span>
+                </td>
+
+                <td class="text-left py-3">
+                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">{{ partner.identification }}</span>
+                </td>
+
+                <td class="text-left py-3">
+                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">{{ partner.name }}</span>
+                </td>
+
+                <td class="text-no-wrap text-left py-3">
+                  <div class="d-flex align-center">
+                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <span class="text-body-2 text-medium-emphasis">{{ formatDate(partner.created_at) }}</span>
+                  </div>
+                </td>
+
+                <td class="text-left py-3" style="max-width: 250px;">
+                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="partner.email">{{ partner.email
+                  }}</span>
+                </td>
+
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">{{ partner.phone }}</span>
+                </td>
+
+                <td class="text-no-wrap text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <!-- Ver Detalle -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
+                      @click="showItem(partner)">
+                      <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
+
+                    <!-- Editar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
+                      @click="editPartner(partner)">
+                      <VIcon icon="ri-pencil-line" size="20" />
+                    </VBtn>
+
+                    <!-- Eliminar -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
+                      @click="deletePartner(partner)">
+                      <VIcon icon="ri-delete-bin-6-line" size="20" />
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </div>
+
       <VDivider />
 
-      <!-- TABLA -->
-      <VCardText class="pa-0">
-        <VTable
-          hover
-          class="partner-list__table text-no-wrap"
-        >
-          <thead class="bg-primary text-white">
-            <tr>
-              <th>#</th>
-              <th>Cedula / Ruc</th>
-              <th>Socio</th>
-              <th>Fecha registro</th>
-              <th>Email</th>
-              <th>Teléfono</th>
-
-              <th class="text-center">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-if="loader.loading">
-              <td
-                colspan="8"
-                class="text-center pa-4"
-              >
-                <VProgressCircular
-                  indeterminate
-                  color="primary"
-                />
-              </td>
-            </tr>
-            <tr v-else-if="!list_partners.length">
-              <td
-                colspan="8"
-                class="text-center text-medium-emphasis py-6"
-              >
-                <VIcon
-                  size="32"
-                  class="mb-2"
-                >
-                  ri-inbox-line
-                </VIcon>
-                <div>No hay soci@s registrad@s</div>
-              </td>
-            </tr>
-            <tr
-              v-for="partner in list_partners"
-              v-else
-              :key="partner"
-              class="hover:bg-grey-lighten-4 transition"
-            >
-              <td class="font-weight-medium">
-                {{ partner.id }}
-              </td>
-              <td>{{ partner.identification }}</td>
-              <td>{{ partner.name }}</td>
-              <td>{{ formatDate(partner.created_at) }}</td>
-              <td>{{ partner.email }}</td>
-              <td>{{ partner.phone }}</td>
-
-              <td class="text-center">
-                <div class="d-flex justify-center gap-1">
-                  <IconBtn @click="showItem(partner)">
-                    <VIcon icon="ri-eye-line" />
-                  </IconBtn>
-                  <IconBtn @click="editPartner(partner)">
-                    <VIcon icon="ri-pencil-line" />
-                  </IconBtn>
-                  <IconBtn @click="deletePartner(partner)">
-                    <VIcon
-                      icon="ri-delete-bin-6-line"
-                      color="error"
-                    />
-                  </IconBtn>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCardText>
-
-      <VDivider />
-
-      <!-- PAGINACIÓN -->
-      <VCardActions class="justify-center pa-4">
-        <VPagination
-          v-model="currentPage"
-          :length="totalPage"
-          rounded="circle"
-          @update:model-value="list"
-        />
+      <!-- Paginación -->
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ list_partners.length }}</span> registros
+          </div>
+          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="list" />
+        </div>
       </VCardActions>
     </VCard>
 
     <!-- DIALOG -->
-    <PartnerAddDialog
-      v-model:isDialogVisible="isPartnerAddDialogVisible"
-      @add-partner="addPartner"
-    />
-    <PartnerShowDialog
-      v-if="isPartnerShowDialogVisible"
-      v-model:isDialogVisible="isPartnerShowDialogVisible"
-      :partner-selected="partnerSelected"
-    />
-    <PartnerEditDialog
-      v-if="isPartnerEditDialogVisible"
-      v-model:isDialogVisible="isPartnerEditDialogVisible"
-      :partner-selected="partnerSelected"
-      @update-partner="updatePartner"
-    />
-    <PartnerDeleteDialog
-      v-if="isPartnerDeleteDialogVisible && partnerSelected"
-      v-model:isDialogVisible="isPartnerDeleteDialogVisible"
-      :partner-selected="partnerSelected"
-      @delete-partner="confirmDeletePartner"
-    />
+    <PartnerAddDialog v-model:isDialogVisible="isPartnerAddDialogVisible" @add-partner="addPartner" />
+    <PartnerShowDialog v-if="isPartnerShowDialogVisible" v-model:isDialogVisible="isPartnerShowDialogVisible"
+      :partner-selected="partnerSelected" />
+    <PartnerEditDialog v-if="isPartnerEditDialogVisible" v-model:isDialogVisible="isPartnerEditDialogVisible"
+      :partner-selected="partnerSelected" @update-partner="updatePartner" />
+    <PartnerDeleteDialog v-if="isPartnerDeleteDialogVisible && partnerSelected"
+      v-model:isDialogVisible="isPartnerDeleteDialogVisible" :partner-selected="partnerSelected"
+      @delete-partner="confirmDeletePartner" />
   </div>
 </template>
+
+<style scoped>
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de socios */
+.partners-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.partners-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.partners-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.partners-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+</style>

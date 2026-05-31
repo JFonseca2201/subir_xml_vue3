@@ -34,22 +34,42 @@ const categorie_selected_delete = ref(null)
 const categorie_selected_image = ref(null)
 
 const isLoading = ref(false) // ⬅ loader global para la tabla
+const currentPage = ref(1)
+const totalPage = ref(1)
+const itemsPerPage = 10
 
 const list = async () => {
   isLoading.value = true // ⬅ activar loader
   try {
-    const resp = await $api(
-      "categories?search=" + (searchQuery.value ? searchQuery.value : ""),
-      {
-        method: "GET",
-        onResponseError({ response }) {
-          console.log(response._data.error)
-        },
+    const params = {
+      page: currentPage.value,
+      per_page: itemsPerPage,
+      search: searchQuery.value || '',
+    }
+
+    const resp = await $api("categories", {
+      method: "GET",
+      params,
+      onResponseError({ response }) {
+        console.log(response._data.error)
       },
-    )
+    })
 
     console.log(resp)
-    list_categories.value = resp.categories
+    list_categories.value = resp.categories || []
+
+    // Manejar diferentes estructuras de respuesta de paginación
+    if (resp.total_pages) {
+      totalPage.value = resp.total_pages
+    } else if (resp.total) {
+      totalPage.value = Math.ceil(resp.total / itemsPerPage)
+    } else {
+      totalPage.value = 1
+    }
+
+    if (resp.current_page) {
+      currentPage.value = resp.current_page
+    }
   } catch (error) {
     console.log(error)
   } finally {
@@ -108,6 +128,11 @@ const viewImage = item => {
   categorie_selected_image.value = item
   isCategorieImageDialogVisible.value = true
 }
+const refresh = () => {
+  console.log('clearImmediate')
+  searchQuery.value = null;
+  list();
+}
 
 onMounted(() => {
   list()
@@ -117,186 +142,168 @@ definePage({ meta: { permission: "settings" } })
 </script>
 
 <template>
-  <div class="pa-4">
-    <VCard
-      elevation="4"
-      rounded="lg"
-    >
-      <!-- HEADER -->
-      <VCardTitle class="d-flex align-center gap-2">
-        <VIcon icon="ri-price-tag-3-line" />
-        <span class="text-h6 font-weight-bold">Categorías</span>
-      </VCardTitle>
+  <div class="pa-4 pa-sm-6 categories-management-page">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VIcon icon="ri-price-tag-3-line" color="primary" class="me-2" size="28" />
+          Categorías
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Administración de categorías de productos
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <VBtn color="primary" prepend-icon="ri-add-line"
+          @click="isCategorieAddDialogVisible = !isCategorieAddDialogVisible">
+          Nueva Categoría
+        </VBtn>
+      </div>
+    </div>
 
-      <!-- OVERLAY -->
-      <!-- Global loader in use -->
-
-      <VDivider />
-
-      <!-- TOOLBAR -->
-      <VCardText>
-        <VRow align="center">
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VTextField
-              v-model="searchQuery"
-              placeholder="Buscar categorías..."
-              density="compact"
-              variant="outlined"
-              prepend-inner-icon="ri-search-line"
-              clearable
-              @keyup.enter="list"
-            />
+    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+      <!-- Filtros y Búsqueda -->
+      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+        <VRow class="align-center">
+          <VCol cols="12" md="8">
+            <VTextField v-model="searchQuery" label="Buscar categoría" placeholder="Nombre de categoría..."
+              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+              color="primary" @keyup.enter="list" />
           </VCol>
-
-          <VCol
-            cols="12"
-            md="8"
-          >
-            <div class="d-flex justify-end">
-              <VBtn
-                color="primary"
-                variant="flat"
-                @click="
-                  isCategorieAddDialogVisible = !isCategorieAddDialogVisible
-                "
-              >
-                <VIcon
-                  start
-                  icon="ri-add-line"
-                />
-                Nueva categoría
-              </VBtn>
-            </div>
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="refresh" block>
+              Limpiar
+            </VBtn>
+          </VCol>
+          <VCol cols="12" sm="6" md="2">
+            <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="isLoading" @click="list"
+              block>
+              Buscar
+            </VBtn>
           </VCol>
         </VRow>
       </VCardText>
 
-      <!-- TABLE -->
-      <VDataTable
-        :headers="headers"
-        :items="list_categories"
-        :items-per-page="10"
-        class="text-no-wrap"
-        :loading="isLoading"
-      >
-        <!-- Loader -->
-        <template #loading>
-          <div class="text-center pa-10">
-            <VProgressCircular indeterminate color="primary" />
-          </div>
-        </template>
-        <!-- Nombre -->
-        <template #item.name="{ item }">
-          <div class="d-flex align-center">
-            <VAvatar
-              size="32"
-              :color="item.imagen ? undefined : 'primary'"
-              :variant="!item.imagen ? 'tonal' : undefined"
-              class="cursor-pointer"
-              @click="viewImage(item)"
-            >
-              <VImg
-                v-if="item.imagen"
-                :src="item.imagen"
-              />
-              <VIcon
-                v-else
-                icon="ri-folder-line"
-              />
-            </VAvatar>
+      <!-- Tabla de Categorías -->
+      <div class="position-relative">
+        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+        <div class="overflow-x-auto">
+          <VTable hover class="categories-table">
+            <thead>
+              <tr>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">CATEGORÍA</th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">ESTADO</th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody v-if="isLoading">
+              <tr>
+                <td colspan="4" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
+                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!list_categories || list_categories.length === 0">
+              <tr>
+                <td colspan="4" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-folder-line</VIcon>
+                  <div class="text-h6">No hay categorías registradas</div>
+                  <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
+                </td>
+              </tr>
+            </tbody>
+            <tbody v-else>
+              <tr v-for="item in list_categories" :key="item.id" class="categories-row align-middle">
+                <td class="text-left py-3">
+                  <div class="d-flex align-center">
+                    <VAvatar size="32" :color="item.imagen ? undefined : 'primary'"
+                      :variant="!item.imagen ? 'tonal' : undefined" class="cursor-pointer" @click="viewImage(item)">
+                      <VImg v-if="item.imagen" :src="item.imagen" />
+                      <VIcon v-else icon="ri-folder-line" />
+                    </VAvatar>
+                    <div class="d-flex flex-column ms-3">
+                      <span class="font-weight-semibold text-body-1 text-grey-darken-4">
+                        {{ item.title }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-left py-3">
+                  <VChip v-if="item.state == 1" size="small" color="success" variant="tonal">
+                    Activo
+                  </VChip>
+                  <VChip v-if="item.state == 2" size="small" color="error" variant="tonal">
+                    Inactivo
+                  </VChip>
+                </td>
+                <td class="text-no-wrap text-left py-3">
+                  <div class="d-flex align-center">
+                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <span class="text-body-2 text-medium-emphasis">
+                      {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      }) }}
+                    </span>
+                  </div>
+                </td>
+                <td class="text-no-wrap text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <VBtn class="action-btn" variant="text" icon size="small" color="primary" title="Editar"
+                      @click="editItem(item)">
+                      <VIcon icon="ri-pencil-line" size="20" />
+                    </VBtn>
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
+                      @click="deleteItem(item)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
+      </div>
 
-            <div class="d-flex flex-column ms-3">
-              <span class="font-weight-medium text-high-emphasis">
-                {{ item.title }}
-              </span>
-            </div>
-          </div>
-        </template>
+      <VDivider />
 
-        <!-- Estado -->
-        <template #item.state="{ item }">
-          <VChip
-            v-if="item.state == 1"
-            size="small"
-            color="success"
-            variant="flat"
-          >
-            Activo
-          </VChip>
-          <VChip
-            v-if="item.state == 2"
-            size="small"
-            color="error"
-            variant="flat"
-          >
-            Inactivo
-          </VChip>
-        </template>
-
-        <!-- Acciones -->
-        <template #item.action="{ item }">
-          <div class="d-flex gap-1">
-            <IconBtn
-              size="small"
-              color="primary"
-              @click="editItem(item)"
-            >
-              <VIcon icon="ri-pencil-line" />
-            </IconBtn>
-            <IconBtn
-              size="small"
-              color="error"
-              @click="deleteItem(item)"
-            >
-              <VIcon icon="ri-delete-bin-line" />
-            </IconBtn>
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ list_categories.length }}</span> registros
           </div>
-        </template>
-      </VDataTable>
+          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="list" />
+        </div>
+      </VCardActions>
     </VCard>
 
-    <!-- DIALOGS (SIN CAMBIOS) -->
-    <CategorieAddDialog
-      v-model:isDialogVisible="isCategorieAddDialogVisible"
-      @add-categorie="addNewCategorie"
-    />
+    <!-- DIALOGS -->
+    <CategorieAddDialog v-model:isDialogVisible="isCategorieAddDialogVisible" @add-categorie="addNewCategorie" />
 
-    <CategorieEditDialog
-      v-if="categorie_selected_edit && isCategorieEditDialogVisible"
-      v-model:isDialogVisible="isCategorieEditDialogVisible"
-      :categorie-selected="categorie_selected_edit"
-      @edit-categorie="addEditCategorie"
-    />
+    <CategorieEditDialog v-if="categorie_selected_edit && isCategorieEditDialogVisible"
+      v-model:isDialogVisible="isCategorieEditDialogVisible" :categorie-selected="categorie_selected_edit"
+      @edit-categorie="addEditCategorie" />
 
-    <CategorieDeleteDialog
-      v-if="categorie_selected_delete && isCategorieDeleteDialogVisible"
-      v-model:isDialogVisible="isCategorieDeleteDialogVisible"
-      :categorie-selected="categorie_selected_delete"
-      @delete-categorie="addDeleteCategorie"
-    />
+    <CategorieDeleteDialog v-if="categorie_selected_delete && isCategorieDeleteDialogVisible"
+      v-model:isDialogVisible="isCategorieDeleteDialogVisible" :categorie-selected="categorie_selected_delete"
+      @delete-categorie="addDeleteCategorie" />
 
     <!-- Diálogo para ver imagen de categoría -->
-    <VDialog
-      v-model="isCategorieImageDialogVisible"
-      max-width="600px"
-    >
+    <VDialog v-model="isCategorieImageDialogVisible" max-width="600px">
       <VCard>
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
           <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-image-line"
-              color="primary"
-            />
+            <VIcon icon="ri-image-line" color="primary" />
             <span>Imagen de Categoría</span>
           </div>
-          <VBtn
-            icon
-            variant="text"
-            @click="isCategorieImageDialogVisible = false"
-          >
+          <VBtn icon variant="text" @click="isCategorieImageDialogVisible = false">
             <VIcon icon="ri-close-line" />
           </VBtn>
         </VCardTitle>
@@ -311,28 +318,13 @@ definePage({ meta: { permission: "settings" } })
               </h4>
             </div>
 
-            <div
-              v-if="categorie_selected_image?.imagen"
-              class="d-flex justify-center"
-            >
-              <VImg
-                :src="categorie_selected_image.imagen"
-                max-width="400"
-                max-height="300"
-                contain
-                class="rounded-lg elevation-4"
-              />
+            <div v-if="categorie_selected_image?.imagen" class="d-flex justify-center">
+              <VImg :src="categorie_selected_image.imagen" max-width="400" max-height="300" contain
+                class="rounded-lg elevation-4" />
             </div>
 
-            <div
-              v-else
-              class="d-flex flex-column align-center justify-center pa-8 bg-grey-lighten-4 rounded-lg"
-            >
-              <VIcon
-                icon="ri-image-line"
-                size="64"
-                color="grey-lighten-1"
-              />
+            <div v-else class="d-flex flex-column align-center justify-center pa-8 bg-grey-lighten-4 rounded-lg">
+              <VIcon icon="ri-image-line" size="64" color="grey-lighten-1" />
               <span class="text-body-2 text-medium-emphasis mt-2">
                 No hay imagen disponible
               </span>
@@ -344,11 +336,7 @@ definePage({ meta: { permission: "settings" } })
 
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn
-            color="primary"
-            variant="elevated"
-            @click="isCategorieImageDialogVisible = false"
-          >
+          <VBtn color="primary" variant="elevated" @click="isCategorieImageDialogVisible = false">
             Cerrar
           </VBtn>
         </VCardActions>
@@ -356,3 +344,45 @@ definePage({ meta: { permission: "settings" } })
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de categorías */
+.categories-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.categories-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.categories-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.categories-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+</style>
