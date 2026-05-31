@@ -116,11 +116,6 @@ export default [
       },
     ],
   },
-  {
-    title: 'Conversión',
-    icon: { icon: 'ri-file-ppt-2-line' },
-    to: 'configuration-unitconversions',
-  },
 
   { heading: 'Finanzas' },
   {
