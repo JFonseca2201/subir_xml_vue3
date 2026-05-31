@@ -139,6 +139,18 @@ const calculateMaxDiscount = () => {
   product.value.max_discount = ((salePrice - purchasePrice) * discountPercentage / 100).toFixed(2)
 }
 
+// Calcular precio dinámico basado en el factor de la unidad seleccionada
+const calculatePriceByUnit = () => {
+  const selectedUnit = units.value.find(u => u.id === product.value.unit_id)
+  if (selectedUnit && selectedUnit.factor && !selectedUnit.is_base) {
+    // Si el precio base está en unidad base, multiplicar por el factor
+    const basePrice = parseFloat(product.value.price_sale) || 0
+    if (basePrice > 0) {
+      product.value.price_sale = (basePrice * selectedUnit.factor).toFixed(2)
+    }
+  }
+}
+
 watch(() => product.value.discount_percentage, () => {
   if (product.value.discount_percentage > 0) {
     calculateMaxDiscount()
@@ -147,9 +159,14 @@ watch(() => product.value.discount_percentage, () => {
   }
 })
 
+// Watcher para recalcular precio cuando cambia la unidad
+watch(() => product.value.unit_id, () => {
+  calculatePriceByUnit()
+})
+
 watch(() => product.value.item_type, (newVal) => {
   if (newVal === '2') {
-    const categoryServicio = categories.value.find(c => 
+    const categoryServicio = categories.value.find(c =>
       c.title && (c.title.toUpperCase() === 'SERVICIO DE TALLER' || c.title.toUpperCase() === 'SERVICIOS DE TALLER')
     )
     if (categoryServicio) {
@@ -158,9 +175,9 @@ watch(() => product.value.item_type, (newVal) => {
       // Fallback
       product.value.product_categorie_id = categories.value[0].id
     }
-    
+
     product.value.warehouse_id = 1
-    
+
     // Asignar primera unidad si no hay ninguna
     if (!product.value.unit_id && units.value.length > 0) {
       product.value.unit_id = units.value[0].id
@@ -421,7 +438,19 @@ const loadInitialData = async () => {
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id"
                   :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida"
-                  placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
+                  placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required>
+                  <template #item="{ item, props }">
+                    <VListItem v-bind="props">
+                      <template #prepend>
+                        <VAvatar size="24" color="primary" variant="tonal">
+                          <span class="text-caption font-weight-bold">{{ item.raw.code }}</span>
+                        </VAvatar>
+                      </template>
+                      <VListItemSubtitle>
+                      </VListItemSubtitle>
+                    </VListItem>
+                  </template>
+                </VSelect>
               </VCol>
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.supplier_id" :items="suppliers" item-title="name" item-value="id"
@@ -579,7 +608,8 @@ const loadInitialData = async () => {
             <VAlert v-if="warning" color="warning" variant="tonal" closable density="compact" class="ma-0 text-caption">
               {{ warning }}</VAlert>
             <VAlert v-if="error_exist" color="error" variant="tonal" closable density="compact"
-              class="ma-0 text-caption">{{ error_exist }}</VAlert>
+              class="ma-0 text-caption">{{
+                error_exist }}</VAlert>
           </div>
           <div class="d-flex gap-3 w-100 w-sm-auto justify-end">
             <VBtn variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="router.push(backRoute)">

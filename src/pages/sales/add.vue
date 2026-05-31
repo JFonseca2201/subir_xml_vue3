@@ -470,6 +470,14 @@ const onProductSelected = product => {
     const isService = product.item_type === 2 ||
       (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))
 
+    // Calcular precio dinámico basado en el factor de la unidad
+    let calculatedPrice = product.price_sale || product.price || 0
+
+    // Si el producto tiene unidad y factor, calcular el precio dinámico
+    if (product.unit && product.unit.factor && !product.unit.is_base) {
+      calculatedPrice = (product.price_sale || product.price || 0) * product.unit.factor
+    }
+
     const existingItem = sale.value.items.find(i => i.product_id === product.id)
     if (existingItem) {
       existingItem.quantity++
@@ -478,10 +486,12 @@ const onProductSelected = product => {
         product_id: product.id,
         description: product.description || product.name || '',
         quantity: 1,
-        price: product.price_sale || product.price || 0,
+        price: calculatedPrice,
         discount: 0,
         type: isService ? 'service' : 'product',
         sku: product.sku || product.code || '',
+        unit_id: product.unit_id || null,
+        unit: product.unit || null,
       })
     }
 
@@ -1141,7 +1151,7 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedClient.n_document || "-" }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedClient.phone || "-" }} • {{
                         selectedClient.address || "-"
-                      }}</div>
+                        }}</div>
                     </div>
                   </div>
                 </VCol>
@@ -1166,7 +1176,7 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedVehicle.license_plate }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedVehicle.model || "-" }} • {{
                         selectedVehicle.year || "-"
-                      }}</div>
+                        }}</div>
                     </div>
                   </div>
                   <div class="mt-4" v-if="selectedVehicle">

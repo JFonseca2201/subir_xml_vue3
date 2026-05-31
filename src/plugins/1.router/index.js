@@ -69,12 +69,17 @@ const router = createRouter({
           name: "work-orders-list",
           component: () => import("@/pages/work-orders/list.vue"),
         },
+        {
+          path: "/configuration/unit-convertion",
+          name: "configuration-unit-convertion",
+          component: () => import("@/pages/configuration/unitconversions.vue"),
+        },
       ],
     ].map(route => {
       // Forzar navActiveLink para subpáginas de operaciones
       const opsPaths = ['/finanzas/employee-expenses', '/finanzas/aportes', '/finanzas/movimientos', '/transfers']
       const opsNames = ['finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index', 'movements-index']
-      
+
       if (opsNames.includes(route.name) || opsPaths.includes(route.path)) {
         route.meta = { ...route.meta, navActiveLink: 'operations-index' }
       }

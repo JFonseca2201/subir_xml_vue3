@@ -119,7 +119,7 @@ export default [
   {
     title: 'Conversión',
     icon: { icon: 'ri-file-ppt-2-line' },
-    to: 'second-page',
+    to: 'configuration-unitconversions',
   },
 
   { heading: 'Finanzas' },
@@ -197,6 +197,11 @@ export default [
         title: 'Unidades',
         to: 'configuration-units',
         icon: { icon: 'ri-ruler-line' },
+      },
+      {
+        title: 'Conversiones',
+        to: 'configuration-unit-convertion',
+        icon: { icon: 'ri-file-ppt-2-line' },
       },
       {
         title: 'Proveedores',
