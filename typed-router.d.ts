@@ -33,6 +33,7 @@ declare module 'vue-router/auto-routes' {
     'invoice-list': RouteRecordInfo<'invoice-list', '/invoice/list', Record<never, never>, Record<never, never>>,
     'invoice-manual-purchase': RouteRecordInfo<'invoice-manual-purchase', '/invoice/manual-purchase', Record<never, never>, Record<never, never>>,
     'kardex': RouteRecordInfo<'kardex', '/kardex', Record<never, never>, Record<never, never>>,
+    'kardex-producto': RouteRecordInfo<'kardex-producto', '/kardex/producto', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'movements': RouteRecordInfo<'movements', '/movements', Record<never, never>, Record<never, never>>,
     'movements-daily-report': RouteRecordInfo<'movements-daily-report', '/movements/DailyReport', Record<never, never>, Record<never, never>>,

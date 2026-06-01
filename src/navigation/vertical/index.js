@@ -209,8 +209,19 @@ export default [
   { heading: 'Información' },
   {
     title: 'Kardex',
-    to: { name: 'kardex-index' },
     icon: { icon: 'ri-draft-line' },
+    children: [
+      {
+        title: 'Por Producto',
+        to: { name: 'kardex-producto' },
+        icon: { icon: 'ri-radio-button-line' },
+      },
+      {
+        title: 'General',
+        to: { name: 'kardex-index' },
+        icon: { icon: 'ri-radio-button-line' },
+      },
+    ],
   },
 
 ]

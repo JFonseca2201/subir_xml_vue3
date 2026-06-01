@@ -9,6 +9,7 @@ const { showNotification } = useGlobalToast()
 const isLoading = ref(false)
 const search = ref('')
 const movimientoTipo = ref(null)
+const selectedRange = ref('mes_actual')
 const startDate = ref('')
 const endDate = ref('')
 const perPage = ref(50)
@@ -29,6 +30,99 @@ const movimientoTipoOptions = [
   { title: 'Egresos', value: 'expense' },
   { title: 'Transferencias', value: 'transfer' },
 ]
+
+// Rango rápido de fechas
+const rangeOptions = [
+  { title: 'Mes Actual', value: 'mes_actual' },
+  { title: 'Última Semana', value: 'ultima_semana' },
+  { title: 'Hace 15 Días', value: 'ultimos_15_dias' },
+  { title: 'Mes Anterior', value: 'mes_anterior' },
+  ...getCurrentYearMonths(),
+]
+
+// Generar meses del año actual
+function getCurrentYearMonths() {
+  const currentYear = new Date().getFullYear()
+
+  const monthNames = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ]
+
+
+  return monthNames.map((name, index) => ({
+    title: `${name} ${currentYear}`,
+    value: `mes_${index}`,
+  }))
+}
+
+// Formatear Date a YYYY-MM-DD local
+function formatDateYMD(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+// Cambiar rango rápido
+const onRangeChange = val => {
+  if (!val) return
+
+  const today = new Date()
+  const currentYear = today.getFullYear()
+  let start = null
+  let end = null
+
+  if (val === 'ultima_semana') {
+    const priorDate = new Date()
+
+    priorDate.setDate(today.getDate() - 7)
+    start = formatDateYMD(priorDate)
+    end = formatDateYMD(today)
+  } else if (val === 'ultimos_15_dias') {
+    const priorDate = new Date()
+
+    priorDate.setDate(today.getDate() - 15)
+    start = formatDateYMD(priorDate)
+    end = formatDateYMD(today)
+  } else if (val === 'mes_actual') {
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+    start = formatDateYMD(firstDay)
+    end = formatDateYMD(lastDay)
+  } else if (val === 'mes_anterior') {
+    const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const lastDay = new Date(today.getFullYear(), today.getMonth(), 0)
+
+    start = formatDateYMD(firstDay)
+    end = formatDateYMD(lastDay)
+  } else if (val.startsWith('mes_')) {
+    const monthIndex = parseInt(val.replace('mes_', ''))
+    const firstDay = new Date(currentYear, monthIndex, 1)
+    const lastDay = new Date(currentYear, monthIndex + 1, 0)
+
+    start = formatDateYMD(firstDay)
+    end = formatDateYMD(lastDay)
+  }
+
+  if (start && end) {
+    startDate.value = start
+    endDate.value = end
+    loadKardex()
+  }
+}
 
 // Cargar datos del kardex
 const loadKardex = async () => {
@@ -71,22 +165,30 @@ const applyFilters = () => {
 const clearFilters = () => {
   search.value = ''
   movimientoTipo.value = null
-  startDate.value = ''
-  endDate.value = ''
+  selectedRange.value = 'mes_actual'
+
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+  startDate.value = formatDateYMD(firstDay)
+  endDate.value = formatDateYMD(lastDay)
   loadKardex()
 }
 
 // Formatear fecha para mostrar
-const formatDate = (dateString) => {
+const formatDate = dateString => {
   if (!dateString) return ''
   const date = new Date(dateString)
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+
   return date.toLocaleDateString('es-ES', options)
 }
 
 // Formatear moneda
-const formatCurrency = (value) => {
+const formatCurrency = value => {
   if (value === null || value === undefined) return '$0.00'
+
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -94,12 +196,12 @@ const formatCurrency = (value) => {
 }
 
 // Obtener color según tipo de movimiento
-const getMovimientoColor = (tipo) => {
+const getMovimientoColor = tipo => {
   return tipo === 'entrada' ? 'success' : 'error'
 }
 
 // Obtener icono según concepto tipo
-const getConceptoIcon = (concepto) => {
+const getConceptoIcon = concepto => {
   const icons = {
     venta_producto: 'ri-shopping-cart-line',
     venta_servicio: 'ri-service-line',
@@ -108,11 +210,13 @@ const getConceptoIcon = (concepto) => {
     adelanto: 'ri-hand-coin-line',
     gasto_general: 'ri-file-list-3-line',
   }
+
+
   return icons[concepto] || 'ri-file-line'
 }
 
 // Obtener etiqueta del concepto tipo
-const getConceptoLabel = (concepto) => {
+const getConceptoLabel = concepto => {
   const labels = {
     venta_producto: 'Venta Producto',
     venta_servicio: 'Venta Servicio',
@@ -121,6 +225,8 @@ const getConceptoLabel = (concepto) => {
     adelanto: 'Adelanto',
     gasto_general: 'Gasto General',
   }
+
+
   return labels[concepto] || concepto
 }
 
@@ -130,7 +236,7 @@ const orderedDays = computed(() => {
 })
 
 // Obtener movimientos de un día específico y calcular el saldo acumulado diario
-const getMovimientosConSaldo = (day) => {
+const getMovimientosConSaldo = day => {
   const movimientos = kardexData.value.movimientos_agrupados?.[day] || []
 
   // Como están ordenados de más reciente a más antiguo (desc), los revertimos
@@ -145,9 +251,10 @@ const getMovimientosConSaldo = (day) => {
     } else {
       saldoAcumulado -= monto
     }
+
     return {
       ...movimiento,
-      saldo_acumulado: saldoAcumulado
+      saldo_acumulado: saldoAcumulado,
     }
   })
 
@@ -156,11 +263,17 @@ const getMovimientosConSaldo = (day) => {
 }
 
 // Computed para obtener resumen de un día específico
-const getResumenByDay = (day) => {
+const getResumenByDay = day => {
   return kardexData.value.resumen_por_dia?.[day] || {}
 }
 
 onMounted(() => {
+  const today = new Date()
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
+  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+
+  startDate.value = formatDateYMD(firstDay)
+  endDate.value = formatDateYMD(lastDay)
   loadKardex()
 })
 
@@ -181,7 +294,7 @@ definePage({ meta: { permission: 'kardex' } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <VBtn color="primary" prepend-icon="ri-refresh-line" @click="loadKardex" :loading="isLoading">
+        <VBtn color="primary" prepend-icon="ri-refresh-line" :loading="isLoading" @click="loadKardex">
           Actualizar
         </VBtn>
       </div>
@@ -193,35 +306,45 @@ definePage({ meta: { permission: 'kardex' } })
         <VRow dense>
           <!-- Buscador -->
           <VCol cols="12" sm="6" md="4">
-            <VTextField v-model="search" label="Buscar en descripción" placeholder="Texto en descripción"
-              prepend-inner-icon="ri-search-line" density="comfortable" variant="outlined" hide-details clearable
-              @keyup.enter="applyFilters" />
+            <VTextField v-model="search" label="Buscar por descripción o artículo"
+              placeholder="Texto, nombre o SKU de artículo" prepend-inner-icon="ri-search-line" density="comfortable"
+              variant="outlined" hide-details clearable @keyup.enter="applyFilters" />
           </VCol>
 
           <!-- Tipo de Movimiento -->
-          <VCol cols="12" sm="6" md="3">
+          <VCol cols="12" sm="6" md="4">
             <VSelect v-model="movimientoTipo" :items="movimientoTipoOptions" item-title="title" item-value="value"
               label="Tipo Flujo" placeholder="Todos" density="comfortable" variant="outlined" hide-details clearable />
           </VCol>
 
+          <!-- Rango rápido -->
+          <VCol cols="12" sm="6" md="4">
+            <VSelect v-model="selectedRange" :items="rangeOptions" item-title="title" item-value="value"
+              label="Rango rápido" placeholder="Seleccionar rango" density="comfortable" variant="outlined" hide-details
+              @update:model-value="onRangeChange" />
+          </VCol>
+        </VRow>
+
+        <VRow dense class="mt-2">
           <!-- Rango de Fechas -->
-          <VCol cols="12" sm="6" md="2">
+          <VCol cols="12" sm="6" md="4">
             <VTextField v-model="startDate" type="date" label="Desde" density="comfortable" variant="outlined"
               hide-details clearable />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol cols="12" sm="6" md="4">
             <VTextField v-model="endDate" type="date" label="Hasta" density="comfortable" variant="outlined"
               hide-details clearable />
           </VCol>
 
           <!-- Botones de Acción -->
-          <VCol cols="12" sm="6" md="1">
-            <div class="d-flex gap-2">
-              <VBtn color="primary" variant="elevated" @click="applyFilters" :loading="isLoading" block>
-                Filtrar
-              </VBtn>
-            </div>
+          <VCol cols="12" sm="12" md="4" class="d-flex align-center gap-2">
+            <VBtn color="primary" variant="elevated" :loading="isLoading" class="flex-grow-1" @click="applyFilters">
+              Filtrar
+            </VBtn>
+            <VBtn color="secondary" variant="outlined" :loading="isLoading" @click="clearFilters">
+              Limpiar
+            </VBtn>
           </VCol>
         </VRow>
       </VCardText>
@@ -230,12 +353,18 @@ definePage({ meta: { permission: 'kardex' } })
     <!-- Tabla de Kardex Agrupada por Día -->
     <div v-if="isLoading" class="text-center pa-8">
       <VProgressCircular indeterminate color="primary" size="48" />
-      <div class="mt-3 text-body-2 text-medium-emphasis">Cargando movimientos...</div>
+      <div class="mt-3 text-body-2 text-medium-emphasis">
+        Cargando movimientos...
+      </div>
     </div>
 
     <div v-else-if="orderedDays.length === 0" class="text-center pa-8">
-      <VIcon size="64" class="mb-3" color="grey-lighten-1">ri-file-list-3-line</VIcon>
-      <div class="text-h6 mb-2">No hay movimientos registrados</div>
+      <VIcon size="64" class="mb-3" color="grey-lighten-1">
+        ri-file-list-3-line
+      </VIcon>
+      <div class="text-h6 mb-2">
+        No hay movimientos registrados
+      </div>
       <div class="text-body-2 text-medium-emphasis">
         Aplica filtros o selecciona un rango de fechas diferente
       </div>
@@ -255,19 +384,25 @@ definePage({ meta: { permission: 'kardex' } })
               </div>
               <div class="d-flex gap-4 flex-wrap">
                 <div class="text-center">
-                  <div class="text-caption text-medium-emphasis">Ingresos</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Ingresos
+                  </div>
                   <div class="text-h6 font-weight-bold text-success">
                     {{ formatCurrency(getResumenByDay(day).total_ingresos_financieros || 0) }}
                   </div>
                 </div>
                 <div class="text-center">
-                  <div class="text-caption text-medium-emphasis">Egresos</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Egresos
+                  </div>
                   <div class="text-h6 font-weight-bold text-error">
                     {{ formatCurrency(getResumenByDay(day).total_egresos_financieros || 0) }}
                   </div>
                 </div>
                 <div class="text-center">
-                  <div class="text-caption text-medium-emphasis">Saldo</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Saldo
+                  </div>
                   <div class="text-h6 font-weight-bold"
                     :class="getResumenByDay(day).saldo_financiero >= 0 ? 'text-success' : 'text-error'">
                     {{ formatCurrency(getResumenByDay(day).saldo_financiero || 0) }}
@@ -285,23 +420,36 @@ definePage({ meta: { permission: 'kardex' } })
               <thead>
                 <!-- Fila 1: Cabeceras Agrupadas -->
                 <tr>
-                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">CONCEPTO
+                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                    CONCEPTO
                   </th>
                   <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
-                    DESCRIPCIÓN</th>
-                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">CUENTA /
-                    REFERENCIA</th>
-                  <th colspan="2" class="text-center font-weight-bold text-uppercase flow-header-group">VALORES DE FLUJO
+                    DESCRIPCIÓN
                   </th>
-                  <th rowspan="2" class="text-right font-weight-bold text-uppercase" style="width: 140px;">SALDO ACUM.
+                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                    CUENTA /
+                    REFERENCIA
+                  </th>
+                  <th rowspan="2" class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                    CANT.
+                  </th>
+                  <th colspan="2" class="text-center font-weight-bold text-uppercase flow-header-group">
+                    VALORES DE FLUJO
+                  </th>
+                  <th rowspan="2" class="text-right font-weight-bold text-uppercase" style="width: 140px;">
+                    SALDO ACUM.
                   </th>
                 </tr>
                 <!-- Fila 2: Sub-cabeceras -->
                 <tr>
-                  <th class="text-right font-weight-bold text-uppercase flow-in-header" style="width: 130px;">ENTRADA
-                    (+)</th>
-                  <th class="text-right font-weight-bold text-uppercase flow-out-header" style="width: 130px;">SALIDA
-                    (-)</th>
+                  <th class="text-right font-weight-bold text-uppercase flow-in-header" style="width: 130px;">
+                    ENTRADA
+                    (+)
+                  </th>
+                  <th class="text-right font-weight-bold text-uppercase flow-out-header" style="width: 130px;">
+                    SALIDA
+                    (-)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -310,9 +458,14 @@ definePage({ meta: { permission: 'kardex' } })
                   <td class="text-left py-3">
                     <div class="d-flex align-center gap-2">
                       <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="20" color="primary" />
-                      <span class="text-body-2 font-weight-bold text-slate-800">
-                        {{ getConceptoLabel(movimiento.concepto_tipo) }}
-                      </span>
+                      <div class="d-flex flex-column">
+                        <span class="text-body-2 font-weight-bold text-slate-800">
+                          {{ movimiento.concepto || getConceptoLabel(movimiento.concepto_tipo) }}
+                        </span>
+                        <span v-if="movimiento.codigo_aux" class="text-caption text-medium-emphasis mt-0.5">
+                          cod. aux: {{ movimiento.codigo_aux }}
+                        </span>
+                      </div>
                     </div>
                   </td>
 
@@ -334,6 +487,15 @@ definePage({ meta: { permission: 'kardex' } })
                       </span>
                       <span v-else class="text-xs text-slate-400">Sin ref.</span>
                     </div>
+                  </td>
+
+                  <!-- Cant. -->
+                  <td class="text-center py-3 bg-balance font-weight-bold text-slate-800">
+                    <span v-if="movimiento.cantidad_movida !== null && movimiento.cantidad_movida !== undefined"
+                      class="text-body-2">
+                      {{ movimiento.cantidad_movida }}
+                    </span>
+                    <span v-else class="text-slate-400">-</span>
                   </td>
 
                   <!-- Entrada (+) -->
