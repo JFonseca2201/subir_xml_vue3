@@ -44,10 +44,10 @@ const loadConfig = async () => {
     suppliers.value = configResp.suppliers || []
     categories.value = configResp.categories || []
     accounts.value = accountsResp.data || accountsResp || []
-    
+
     // Partners returns object with data in many laravel resources
     partners.value = partnersResp.data?.data || partnersResp.data || []
-    
+
     // Products returns array under 'products.data' if it's a paginated ResourceCollection
     products.value = productsResp.products?.data || productsResp.products || productsResp.data?.data || productsResp.data || []
   } catch (error) {
@@ -103,9 +103,9 @@ const addProductToItems = (product) => {
 const updateItemTotals = (item) => {
   const qty = Number(item.quantity) || 0
   const price = Number(item.unit_price) || 0
-  
+
   item.subtotal = qty * price
-  
+
   // Asumimos 15% de IVA si es taxable
   item.tax = item.is_taxable == 1 ? item.subtotal * 0.15 : 0
   item.total = item.subtotal + item.tax
@@ -189,34 +189,16 @@ onMounted(() => {
           <VCardText class="px-6 pb-6">
             <VRow>
               <VCol cols="12" md="6">
-                <VAutocomplete
-                  v-model="formData.supplier_id"
-                  :items="suppliers"
-                  item-title="name"
-                  item-value="id"
-                  label="Proveedor"
-                  placeholder="Selecciona el proveedor"
-                  variant="outlined"
-                  density="comfortable"
-                />
+                <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
+                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField
-                  v-model="formData.invoice_number"
-                  label="N° Factura"
-                  placeholder="001-001-0000123"
-                  variant="outlined"
-                  density="comfortable"
-                />
+                <VTextField v-model="formData.invoice_number" label="N° Factura" placeholder="001-001-0000123"
+                  variant="outlined" density="comfortable" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField
-                  v-model="formData.issue_date"
-                  type="date"
-                  label="Fecha de Emisión"
-                  variant="outlined"
-                  density="comfortable"
-                />
+                <VTextField v-model="formData.issue_date" type="date" label="Fecha de Emisión" variant="outlined"
+                  density="comfortable" />
               </VCol>
             </VRow>
           </VCardText>
@@ -230,21 +212,10 @@ onMounted(() => {
             </div>
           </VCardTitle>
           <VCardText class="px-6">
-            <VAutocomplete
-              v-model="searchProduct"
-              :items="products"
-              item-title="description"
-              item-value="id"
-              label="Buscar Producto para añadir..."
-              placeholder="Escribe el nombre o SKU"
-              variant="outlined"
-              prepend-inner-icon="ri-search-line"
-              return-object
-              clearable
-              @update:model-value="addProductToItems"
-              class="mb-4"
-              :menu-props="{ maxWidth: 0 }"
-            >
+            <VAutocomplete v-model="searchProduct" :items="products" item-title="description" item-value="id"
+              label="Buscar Producto para añadir..." placeholder="Escribe el nombre o SKU" variant="outlined"
+              prepend-inner-icon="ri-search-line" return-object clearable @update:model-value="addProductToItems"
+              class="mb-4" :menu-props="{ maxWidth: 0 }">
               <template #item="{ props, item }">
                 <VListItem v-bind="props" :title="undefined">
                   <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
@@ -279,33 +250,19 @@ onMounted(() => {
                     <div class="text-caption text-medium-emphasis">SKU: {{ item.code }}</div>
                   </td>
                   <td>
-                    <VTextField
-                      v-model.number="item.quantity"
-                      type="number"
-                      min="0.01"
-                      step="1"
-                      density="compact"
-                      hide-details
-                      @input="updateItemTotals(item)"
-                    />
+                    <VTextField v-model.number="item.quantity" type="number" min="0.01" step="1" density="compact"
+                      hide-details @input="updateItemTotals(item)" />
                   </td>
                   <td>
-                    <VTextField
-                      v-model.number="item.unit_price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      density="compact"
-                      prefix="$"
-                      hide-details
-                      @input="updateItemTotals(item)"
-                    />
+                    <VTextField v-model.number="item.unit_price" type="number" min="0" step="0.01" density="compact"
+                      prefix="$" hide-details @input="updateItemTotals(item)" />
                   </td>
                   <td class="font-weight-bold">
                     ${{ Number(item.subtotal).toFixed(2) }}
                   </td>
                   <td class="text-center">
-                    <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small" @click="removeItem(index)" />
+                    <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small"
+                      @click="removeItem(index)" />
                   </td>
                 </tr>
               </tbody>
@@ -330,42 +287,24 @@ onMounted(() => {
             <!-- Conditional Selectors -->
             <VExpandTransition>
               <div v-if="formData.payment_type === 'efectivo'">
-                <VSelect
-                  v-model="formData.account_id"
-                  :items="accounts"
-                  item-title="name"
-                  item-value="id"
-                  label="Seleccionar Cuenta de Egreso"
-                  variant="outlined"
-                  density="comfortable"
-                  prepend-inner-icon="ri-bank-card-line"
-                />
+                <VSelect v-model="formData.account_id" :items="accounts" item-title="name" item-value="id"
+                  label="Seleccionar Cuenta de Egreso" variant="outlined" density="comfortable"
+                  prepend-inner-icon="ri-bank-card-line" />
               </div>
             </VExpandTransition>
 
             <VExpandTransition>
               <div v-if="formData.payment_type === 'aporte'">
-                <VSelect
-                  v-model="formData.partner_id"
-                  :items="partners"
-                  item-title="nombre"
-                  item-value="id"
-                  label="Seleccionar Socio Capitalista"
-                  variant="outlined"
-                  density="comfortable"
-                  prepend-inner-icon="ri-user-star-line"
-                />
+                <VSelect v-model="formData.partner_id" :items="partners" item-title="nombre" item-value="id"
+                  label="Seleccionar Socio Capitalista" variant="outlined" density="comfortable"
+                  prepend-inner-icon="ri-user-star-line" />
               </div>
             </VExpandTransition>
 
-            <VAlert
-              v-if="formData.payment_type === 'credito'"
-              color="primary"
-              variant="tonal"
-              icon="ri-information-line"
-              class="mt-2 text-caption"
-            >
-              Se registrará la compra en el inventario y se creará una Cuenta por Pagar asociada al proveedor. No se descontará dinero de las cuentas aún.
+            <VAlert v-if="formData.payment_type === 'credito'" color="primary" variant="tonal"
+              icon="ri-information-line" class="mt-2 text-caption">
+              Se registrará la compra en el inventario y se creará una Cuenta por Pagar asociada al proveedor. No se
+              descontará dinero de las cuentas aún.
             </VAlert>
           </VCardText>
         </VCard>
@@ -388,15 +327,8 @@ onMounted(() => {
               <span class="text-h4 font-weight-black text-primary">${{ grandTotal.toFixed(2) }}</span>
             </div>
 
-            <VBtn
-              block
-              color="primary"
-              size="x-large"
-              elevation="4"
-              :loading="isSubmitting"
-              prepend-icon="ri-save-3-line"
-              @click="submitPurchase"
-            >
+            <VBtn block color="primary" size="x-large" elevation="4" :loading="isSubmitting"
+              prepend-icon="ri-save-3-line" @click="submitPurchase">
               Registrar Compra
             </VBtn>
           </VCardText>
