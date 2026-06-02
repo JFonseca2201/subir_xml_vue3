@@ -145,6 +145,18 @@ const formatCurrency = value => {
   }).format(value)
 }
 
+// Formatear cantidades para redondear valores como 4.01 a 4
+const formatQuantity = value => {
+  if (value === null || value === undefined) return 0
+  const num = Number(value)
+  
+  if (Math.abs(num - Math.round(num)) <= 0.02) {
+    return Math.round(num)
+  }
+  
+  return Number(num.toFixed(2))
+}
+
 // Computed para obtener los meses ordenados cronológicamente inverso
 const orderedMonths = computed(() => {
   const keys = Object.keys(kardexData.value.itemsGrouped || {})
@@ -465,7 +477,7 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- Cant. Vendida -->
                   <td class="text-center py-3 bg-success-light text-success font-weight-bold text-body-2">
-                    {{ item.cantidad_vendida }}
+                    {{ formatQuantity(item.cantidad_vendida) }}
                   </td>
 
                   <!-- Total Ventas -->
@@ -475,7 +487,7 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- Cant. Comprada -->
                   <td class="text-center py-3 bg-error-light text-error font-weight-bold text-body-2">
-                    {{ item.tipo === 'servicio' ? '-' : item.cantidad_comprada }}
+                    {{ item.tipo === 'servicio' ? '-' : formatQuantity(item.cantidad_comprada) }}
                   </td>
 
                   <!-- Total Compras -->

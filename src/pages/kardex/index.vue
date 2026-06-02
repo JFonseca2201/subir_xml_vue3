@@ -209,6 +209,7 @@ const getConceptoIcon = concepto => {
     pago_sueldo: 'ri-money-dollar-circle-line',
     adelanto: 'ri-hand-coin-line',
     gasto_general: 'ri-file-list-3-line',
+    transferencia: 'ri-arrow-left-right-line',
   }
 
 
@@ -224,10 +225,24 @@ const getConceptoLabel = concepto => {
     pago_sueldo: 'Pago Sueldo',
     adelanto: 'Adelanto',
     gasto_general: 'Gasto General',
+    transferencia: 'Transferencia',
   }
 
 
   return labels[concepto] || concepto
+}
+
+// Formatear cantidades para redondear valores como 4.01 a 4
+const formatQuantity = value => {
+  if (value === null || value === undefined) return 0
+  const num = Number(value)
+  
+  // Si está extremadamente cerca de un entero (como 4.01 o 3.99), probablemente fue un error de cálculo o XML
+  if (Math.abs(num - Math.round(num)) <= 0.02) {
+    return Math.round(num)
+  }
+  
+  return Number(num.toFixed(2))
 }
 
 // Computed para agrupar por producto
@@ -270,7 +285,7 @@ const groupedByProduct = computed(() => {
     groups[key].items.push(mov)
 
     const monto = parseFloat(mov.monto_financiero) || 0
-    const cant = parseFloat(mov.cantidad_movida) || 0
+    const cant = formatQuantity(mov.cantidad_movida)
 
     if (mov.movimiento_tipo === 'entrada') {
       groups[key].totalEntradasFinancieras += monto
@@ -436,7 +451,7 @@ definePage({ meta: { permission: 'kardex' } })
                     Und. Compradas
                   </div>
                   <div class="text-h6 font-weight-bold text-success">
-                    {{ group.totalEntradasFisicas }}
+                    {{ formatQuantity(group.totalEntradasFisicas) }}
                   </div>
                 </div>
                 <div class="text-center" v-if="group.isProduct">
@@ -444,7 +459,7 @@ definePage({ meta: { permission: 'kardex' } })
                     Und. Vendidas
                   </div>
                   <div class="text-h6 font-weight-bold text-error">
-                    {{ group.totalSalidasFisicas }}
+                    {{ formatQuantity(group.totalSalidasFisicas) }}
                   </div>
                 </div>
                 <div class="text-center">
@@ -508,7 +523,7 @@ definePage({ meta: { permission: 'kardex' } })
                     <VChip v-if="movimiento.cantidad_movida" size="small"
                       :color="movimiento.concepto_tipo === 'compra_inventario' ? 'success' : (movimiento.concepto_tipo === 'venta_producto' ? 'error' : 'default')"
                       variant="tonal">
-                      {{ movimiento.concepto_tipo === 'compra_inventario' ? '+' : '-' }}{{ movimiento.cantidad_movida }}
+                      {{ movimiento.concepto_tipo === 'compra_inventario' ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }}
                     </VChip>
                     <span v-else class="text-grey">-</span>
                   </td>
