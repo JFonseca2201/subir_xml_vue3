@@ -6,6 +6,8 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
+import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
+import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog.vue'
 
 // Router & Composables
 const router = useRouter()
@@ -22,6 +24,11 @@ const isDeleteDialogVisible = ref(false)
 const isPaymentDialogVisible = ref(false)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
+
+const isClientDialogVisible = ref(false)
+const selectedClient = ref({})
+const isVehicleDialogVisible = ref(false)
+const selectedVehicle = ref({})
 
 // Estado del formulario de pago
 const paymentForm = ref({
@@ -201,6 +208,32 @@ const viewSale = async sale => {
     showNotification('Error al cargar los detalles de la venta', 'error')
   } finally {
     viewLoading.value = false
+  }
+}
+
+const showClientDetails = async (client) => {
+  if (!client || !client.id) return
+  try {
+    const response = await $api(`clients/${client.id}`)
+    selectedClient.value = response.client || response.data || client
+    isClientDialogVisible.value = true
+  } catch (error) {
+    console.error('Error fetching client details:', error)
+    selectedClient.value = client
+    isClientDialogVisible.value = true
+  }
+}
+
+const showVehicleDetails = async (vehicle) => {
+  if (!vehicle || !vehicle.id) return
+  try {
+    const response = await $api(`vehicles/${vehicle.id}`)
+    selectedVehicle.value = response.vehicle || response.data || vehicle
+    isVehicleDialogVisible.value = true
+  } catch (error) {
+    console.error('Error fetching vehicle details:', error)
+    selectedVehicle.value = vehicle
+    isVehicleDialogVisible.value = true
   }
 }
 
@@ -503,8 +536,9 @@ onMounted(() => {
 
                 <td class="text-left py-3" style="max-width: 400px;">
                   <div v-if="item">
-                    <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
-                      :title="getClientName(item.client)">
+                    <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4 clickable-link"
+                      :title="getClientName(item.client)"
+                      @click="showClientDetails(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
                     <div v-if="item.client?.n_document" class="text-body-2 text-medium-emphasis mt-1">
@@ -515,8 +549,9 @@ onMounted(() => {
 
                 <td class="text-left py-3" style="max-width: 300px;">
                   <div v-if="item?.vehicle" class="d-flex flex-column">
-                    <div class="font-weight-bold text-body-1 text-truncate text-primary"
-                      :title="item.vehicle.license_plate">
+                    <div class="font-weight-bold text-body-1 text-truncate text-primary clickable-link"
+                      :title="item.vehicle.license_plate"
+                      @click="showVehicleDetails(item.vehicle)">
                       {{ item.vehicle.license_plate }}
                     </div>
                     <div class="text-body-2 text-medium-emphasis text-truncate mt-1"
@@ -611,6 +646,20 @@ onMounted(() => {
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />
 
+    <!-- Client Details Dialog -->
+    <ClientShowDialog
+      v-if="isClientDialogVisible"
+      v-model:isDialogVisible="isClientDialogVisible"
+      :client-data="selectedClient"
+    />
+
+    <!-- Vehicle Details Dialog -->
+    <VehicleShowDialog
+      v-if="isVehicleDialogVisible"
+      v-model:isDialogVisible="isVehicleDialogVisible"
+      :vehicle-data="selectedVehicle"
+    />
+
     <!-- Payment Dialog -->
     <VDialog v-model="isPaymentDialogVisible" max-width="500">
       <VCard>
@@ -685,5 +734,16 @@ onMounted(() => {
 
 .action-btn:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 </style>

@@ -383,7 +383,7 @@ onMounted(() => {
                 #{{ client.id }}
               </td>
               <td>
-                <div class="font-weight-bold text-grey-darken-3 text-uppercase text-wrap" style="max-width: 250px;">
+                <div class="font-weight-bold text-grey-darken-3 text-uppercase text-wrap clickable-link" style="max-width: 250px;" @click="showClient(client)">
                   {{ client.full_name || `${client.name} ${client.surname}` }}
                 </div>
                 <div v-if="client.address" class="text-caption text-grey text-uppercase text-wrap" style="max-width: 250px; line-height: 1.2;">
@@ -528,5 +528,16 @@ onMounted(() => {
 
 .action-btn:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 </style>

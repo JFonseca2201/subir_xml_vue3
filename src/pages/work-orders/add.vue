@@ -664,13 +664,15 @@ onMounted(() => {
     <!-- Dialog para agregar cliente empresa -->
     <ClientCompanyAddDialog :is-dialog-visible="showCompanyDialog"
       @update:is-dialog-visible="showCompanyDialog = $event" @add-client-company="onCompanyAdded" />
-
     <!-- Dialog para agregar vehículo -->
     <VehicleAddDialog :is-dialog-visible="showVehicleDialog" @update:is-dialog-visible="showVehicleDialog = $event"
       @add-vehicle="onVehicleAdded" />
+
+    <!-- Dialog para agregar servicio express -->
+    <AddServiceDialog :is-dialog-visible="showAddServiceDialog"
+      @update:is-dialog-visible="showAddServiceDialog = $event" @service-added="handleServiceAdded" />
   </VContainer>
 </template>
-
 <style scoped>
 .custom-items-table {
   width: 100%;
