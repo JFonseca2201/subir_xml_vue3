@@ -102,6 +102,7 @@ const product = ref({
   tax_rate: IVA_RATE,
   max_discount: 0,
   discount_percentage: 0,
+  discount: 0.00,
   brand: '',
   stock: 0,
   item_type: null,
@@ -262,6 +263,7 @@ const store = async () => {
     tax_rate: parseFloat(product.value.tax_rate) || 0,
     max_discount: parseFloat(product.value.max_discount) || 0,
     discount_percentage: parseFloat(product.value.discount_percentage) || 0,
+    discount: parseFloat(product.value.discount) || 0,
     brand: product.value.brand.toUpperCase().trim(),
     stock: isService ? 0 : (parseFloat(product.value.stock) || 0),
     item_type: parseInt(product.value.item_type) || 1,
@@ -307,7 +309,7 @@ const onFormReset = () => {
     product_categorie_id: null, warehouse_id: null, unit_id: null, supplier_id: null,
     categorie: null, warehouse: null, unit: null, supplier: null,
     price: 0, price_sale: 0, purchase_price: 0, tax_rate: IVA_RATE, max_discount: 0,
-    discount_percentage: 0, brand: '', stock: 0, item_type: null, min_stock: 0, max_stock: 0,
+    discount_percentage: 0, discount: 0, brand: '', stock: 0, item_type: null, min_stock: 0, max_stock: 0,
     is_taxable: true, is_gift: false, notes: '', state: 1, user_id: null,
   }
   fileData.value.forEach(item => {
@@ -492,6 +494,11 @@ const loadInitialData = async () => {
                         label="Descuento Max. (%)" placeholder="0" variant="outlined" density="comfortable"
                         prepend-inner-icon="ri-percent-line" hide-details="auto" type="number" step="0.1" min="0"
                         max="100" />
+                    </VCol>
+                    <VCol cols="12" sm="6">
+                      <VTextField v-model="product.discount" :rules="discountRules" label="Descuento Inicial ($)"
+                        placeholder="0.00" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-money-dollar-circle-line" hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
                     <VCol cols="12" sm="6">
                       <VTextField v-model="product.tax_rate" :rules="percentageRules" label="Impuesto (%)"

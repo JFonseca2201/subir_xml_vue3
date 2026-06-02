@@ -76,7 +76,7 @@ const product = ref({
   product_categorie_id: null, warehouse_id: null, unit_id: null, supplier_id: null,
   categorie: null, warehouse: null, unit: null, supplier: null,
   price: 0, price_sale: 0, purchase_price: 0, tax_rate: IVA_RATE,
-  max_discount: 0, discount_percentage: 0, brand: '', stock: 0,
+  max_discount: 0, discount_percentage: 0, discount: 0.00, brand: '', stock: 0,
   item_type: null, min_stock: 0, max_stock: 0, is_taxable: true, is_gift: false,
   notes: '', state: 1,
 })
@@ -165,6 +165,7 @@ const loadProduct = async () => {
       product.value = response.product
       if (response.product.max_discount) product.value.max_discount = parseFloat(response.product.max_discount)
       if (response.product.discount_percentage) product.value.discount_percentage = parseFloat(response.product.discount_percentage)
+      if (response.product.discount) product.value.discount = parseFloat(response.product.discount)
 
       if (response.product.imagen) {
         fileData.value = [{ url: response.product.imagen, file: null }]
@@ -419,6 +420,11 @@ onMounted(() => {
                         label="Descuento Max. (%)" placeholder="0" variant="outlined" density="comfortable"
                         prepend-inner-icon="ri-percent-line" hide-details="auto" type="number" step="0.1" min="0"
                         max="100" />
+                    </VCol>
+                    <VCol cols="12" sm="6">
+                      <VTextField v-model="product.discount" :rules="discountRules" label="Descuento Inicial ($)"
+                        placeholder="0.00" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-money-dollar-circle-line" hide-details="auto" type="number" step="0.01" min="0" />
                     </VCol>
                     <VCol cols="12" sm="6">
                       <VTextField v-model="product.tax_rate" :rules="percentageRules" label="Impuesto (%)"

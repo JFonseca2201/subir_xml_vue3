@@ -9,6 +9,7 @@ const { showNotification } = useGlobalToast()
 
 const isSubmitting = ref(false)
 const isLoadingConfig = ref(false)
+const isLoadingProducts = ref(false)
 
 // Config data
 const suppliers = ref([])
@@ -34,11 +35,10 @@ const searchProduct = ref(null)
 const loadConfig = async () => {
   isLoadingConfig.value = true
   try {
-    const [configResp, accountsResp, partnersResp, productsResp] = await Promise.all([
+    const [configResp, accountsResp, partnersResp] = await Promise.all([
       $api('invoices/config', { method: 'GET' }),
       $api('accounts', { method: 'GET' }),
       $api('partners', { method: 'GET' }),
-      $api('products', { method: 'GET' }) // Podría paginarse, pero asumimos trae todos o buscar dinámicamente
     ])
 
     suppliers.value = configResp.suppliers || []
@@ -48,8 +48,6 @@ const loadConfig = async () => {
     // Partners returns object with data in many laravel resources
     partners.value = partnersResp.data?.data || partnersResp.data || []
 
-    // Products returns array under 'products.data' if it's a paginated ResourceCollection
-    products.value = productsResp.products?.data || productsResp.products || productsResp.data?.data || productsResp.data || []
   } catch (error) {
     console.error(error)
     showNotification('Error cargando configuraciones iniciales', 'error')
@@ -57,6 +55,28 @@ const loadConfig = async () => {
     isLoadingConfig.value = false
   }
 }
+
+// Watcher para buscar productos cuando cambia el proveedor
+import { watch } from 'vue'
+
+watch(() => formData.value.supplier_id, async (newSupplierId) => {
+  if (!newSupplierId) {
+    products.value = []
+    return
+  }
+  
+  isLoadingProducts.value = true
+  try {
+    const productsResp = await $api(`products?supplier_id=${newSupplierId}&per_page=1000`, { method: 'GET' })
+    products.value = productsResp.products?.data || productsResp.products || productsResp.data?.data || productsResp.data || []
+  } catch (error) {
+    console.error(error)
+    showNotification('Error cargando productos del proveedor', 'error')
+    products.value = []
+  } finally {
+    isLoadingProducts.value = false
+  }
+})
 
 // Computeds for totals
 const subtotal = computed(() => {
@@ -90,6 +110,7 @@ const addProductToItems = (product) => {
     quantity: 1,
     unit_price: product.purchase_price || 0,
     subtotal: product.purchase_price || 0,
+    discount: Number(product.discount) || 0,
     tax: 0, // Simplified tax calculation
     total: product.purchase_price || 0,
     item_type: 1, // Physical Product
@@ -103,12 +124,13 @@ const addProductToItems = (product) => {
 const updateItemTotals = (item) => {
   const qty = Number(item.quantity) || 0
   const price = Number(item.unit_price) || 0
+  const disc = Number(item.discount) || 0
 
   item.subtotal = qty * price
 
   // Asumimos 15% de IVA si es taxable
-  item.tax = item.is_taxable == 1 ? item.subtotal * 0.15 : 0
-  item.total = item.subtotal + item.tax
+  item.tax = item.is_taxable == 1 ? (item.subtotal - disc) * 0.15 : 0
+  item.total = (item.subtotal - disc) + item.tax
 }
 
 const removeItem = (index) => {
@@ -190,7 +212,8 @@ onMounted(() => {
             <VRow>
               <VCol cols="12" md="6">
                 <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
-                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable" />
+                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable" 
+                  :loading="isLoadingConfig" />
               </VCol>
               <VCol cols="12" md="3">
                 <VTextField v-model="formData.invoice_number" label="N° Factura" placeholder="001-001-0000123"
@@ -215,7 +238,13 @@ onMounted(() => {
             <VAutocomplete v-model="searchProduct" :items="products" item-title="description" item-value="id"
               label="Buscar Producto para añadir..." placeholder="Escribe el nombre o SKU" variant="outlined"
               prepend-inner-icon="ri-search-line" return-object clearable @update:model-value="addProductToItems"
-              class="mb-4" :menu-props="{ maxWidth: 0 }">
+              class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts"
+              :disabled="!formData.supplier_id">
+              <template #no-data>
+                <div class="pa-4 text-center text-medium-emphasis">
+                  {{ formData.supplier_id ? 'No hay productos disponibles para este proveedor' : 'Seleccione un proveedor primero' }}
+                </div>
+              </template>
               <template #item="{ props, item }">
                 <VListItem v-bind="props" :title="undefined">
                   <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
@@ -231,11 +260,12 @@ onMounted(() => {
             <VTable class="border rounded">
               <thead class="bg-grey-lighten-4">
                 <tr>
-                  <th style="width: 40%">Producto</th>
-                  <th style="width: 15%">Cantidad</th>
+                  <th style="width: 35%">Producto</th>
+                  <th style="width: 10%">Cantidad</th>
                   <th style="width: 15%">Costo Unit.</th>
+                  <th style="width: 15%">Desc.</th>
                   <th style="width: 15%">Subtotal</th>
-                  <th style="width: 15%" class="text-center">Acción</th>
+                  <th style="width: 10%" class="text-center">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,8 +287,12 @@ onMounted(() => {
                     <VTextField v-model.number="item.unit_price" type="number" min="0" step="0.01" density="compact"
                       prefix="$" hide-details @input="updateItemTotals(item)" />
                   </td>
+                  <td>
+                    <VTextField v-model.number="item.discount" type="number" min="0" step="0.01" density="compact"
+                      prefix="$" hide-details @input="updateItemTotals(item)" />
+                  </td>
                   <td class="font-weight-bold">
-                    ${{ Number(item.subtotal).toFixed(2) }}
+                    ${{ Number(item.subtotal - (item.discount || 0)).toFixed(2) }}
                   </td>
                   <td class="text-center">
                     <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small"
@@ -289,7 +323,7 @@ onMounted(() => {
               <div v-if="formData.payment_type === 'efectivo'">
                 <VSelect v-model="formData.account_id" :items="accounts" item-title="name" item-value="id"
                   label="Seleccionar Cuenta de Egreso" variant="outlined" density="comfortable"
-                  prepend-inner-icon="ri-bank-card-line" />
+                  prepend-inner-icon="ri-bank-card-line" :loading="isLoadingConfig" />
               </div>
             </VExpandTransition>
 
@@ -297,7 +331,7 @@ onMounted(() => {
               <div v-if="formData.payment_type === 'aporte'">
                 <VSelect v-model="formData.partner_id" :items="partners" item-title="nombre" item-value="id"
                   label="Seleccionar Socio Capitalista" variant="outlined" density="comfortable"
-                  prepend-inner-icon="ri-user-star-line" />
+                  prepend-inner-icon="ri-user-star-line" :loading="isLoadingConfig" />
               </div>
             </VExpandTransition>
 

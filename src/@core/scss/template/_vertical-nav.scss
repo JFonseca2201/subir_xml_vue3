@@ -41,6 +41,37 @@
       padding-inline: 1.375rem 1rem;
     }
   }
+
+  // ✨ Elegant Glassmorphism & Hover effects
+  .layout-vertical-nav {
+    background: rgba(var(--v-theme-surface), 0.96) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    border-right: 1px solid rgba(var(--v-theme-on-surface), 0.04) !important;
+    box-shadow: 4px 0 24px rgba(var(--v-theme-on-surface), 0.03) !important;
+
+    .nav-link,
+    .nav-group > .nav-group-label {
+      transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+      
+      &:hover {
+        background: rgba(var(--v-theme-primary), 0.06);
+        transform: translateX(4px);
+        box-shadow: -2px 0 0 0 rgb(var(--v-theme-primary)) inset;
+      }
+    }
+
+    .router-link-active,
+    .router-link-exact-active {
+      background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.95) 0%, rgba(var(--v-theme-primary), 0.8) 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 14px rgba(var(--v-theme-primary), 0.35) !important;
+      transform: translateX(4px);
+
+      .nav-item-icon {
+        color: white !important;
+      }
+    }
+  }
 }
 
 //  👉 Overlay
