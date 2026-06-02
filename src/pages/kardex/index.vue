@@ -230,42 +230,86 @@ const getConceptoLabel = concepto => {
   return labels[concepto] || concepto
 }
 
-// Computed para obtener días ordenados
-const orderedDays = computed(() => {
-  return Object.keys(kardexData.value.movimientos_agrupados || {}).sort((a, b) => new Date(b) - new Date(a))
-})
+// Computed para agrupar por producto
+const groupedByProduct = computed(() => {
+  const groups = {}
 
-// Obtener movimientos de un día específico y calcular el saldo acumulado diario
-const getMovimientosConSaldo = day => {
-  const movimientos = kardexData.value.movimientos_agrupados?.[day] || []
+  const movimientos = kardexData.value.movimientos || []
 
-  // Como están ordenados de más reciente a más antiguo (desc), los revertimos
-  // para calcular el saldo acumulado cronológicamente (asc)
-  const cronologico = [...movimientos].reverse()
-  let saldoAcumulado = 0
+  movimientos.forEach(mov => {
+    let productName = 'Otros (Sin Producto Específico)'
+    let productSku = 'N/A'
+    let isProduct = false
 
-  const conSaldo = cronologico.map(movimiento => {
-    const monto = parseFloat(movimiento.monto_financiero) || 0
-    if (movimiento.movimiento_tipo === 'entrada') {
-      saldoAcumulado += monto
-    } else {
-      saldoAcumulado -= monto
+    if (mov.producto && mov.producto.id) {
+      productName = mov.producto.description || mov.descripcion
+      productSku = mov.producto.sku || mov.codigo_aux || 'N/A'
+      isProduct = true
+    } else if (mov.codigo_aux || mov.concepto_tipo === 'venta_producto' || mov.concepto_tipo === 'compra_inventario') {
+      productName = mov.descripcion || mov.concepto
+      productSku = mov.codigo_aux || mov.concepto || 'N/A'
+      isProduct = true
     }
 
-    return {
-      ...movimiento,
-      saldo_acumulado: saldoAcumulado,
+    const key = isProduct ? `${productSku} - ${productName}` : 'Movimientos Generales (Pagos, Adelantos, etc)'
+
+    if (!groups[key]) {
+      groups[key] = {
+        name: productName,
+        sku: productSku,
+        isProduct: isProduct,
+        items: [],
+        totalEntradasFinancieras: 0,
+        totalSalidasFinancieras: 0,
+        totalEntradasFisicas: 0,
+        totalSalidasFisicas: 0,
+        saldoFinanciero: 0
+      }
+    }
+
+    groups[key].items.push(mov)
+
+    const monto = parseFloat(mov.monto_financiero) || 0
+    const cant = parseFloat(mov.cantidad_movida) || 0
+
+    if (mov.movimiento_tipo === 'entrada') {
+      groups[key].totalEntradasFinancieras += monto
+      if (mov.concepto_tipo === 'venta_producto') {
+        // Si vendemos, sale inventario, entra dinero
+        groups[key].totalSalidasFisicas += cant
+      } else {
+        groups[key].totalEntradasFisicas += cant
+      }
+      groups[key].saldoFinanciero += monto
+    } else {
+      groups[key].totalSalidasFinancieras += monto
+      if (mov.concepto_tipo === 'compra_inventario') {
+        // Si compramos, entra inventario, sale dinero
+        groups[key].totalEntradasFisicas += cant
+      } else {
+        groups[key].totalSalidasFisicas += cant
+      }
+      groups[key].saldoFinanciero -= monto
     }
   })
 
-  // Revertimos de nuevo para mostrar los más recientes arriba en la tabla
-  return conSaldo.reverse()
-}
+  // Calcular saldos acumulados
+  Object.values(groups).forEach(group => {
+    const cronologico = [...group.items].reverse()
+    let saldoAcum = 0
 
-// Computed para obtener resumen de un día específico
-const getResumenByDay = day => {
-  return kardexData.value.resumen_por_dia?.[day] || {}
-}
+    const conSaldo = cronologico.map(m => {
+      const monto = parseFloat(m.monto_financiero) || 0
+      if (m.movimiento_tipo === 'entrada') saldoAcum += monto
+      else saldoAcum -= monto
+      return { ...m, saldo_acumulado: saldoAcum }
+    })
+
+    group.items = conSaldo.reverse()
+  })
+
+  return groups
+})
 
 onMounted(() => {
   const today = new Date()
@@ -350,7 +394,7 @@ definePage({ meta: { permission: 'kardex' } })
       </VCardText>
     </VCard>
 
-    <!-- Tabla de Kardex Agrupada por Día -->
+    <!-- Tabla de Kardex Agrupada por Producto -->
     <div v-if="isLoading" class="text-center pa-8">
       <VProgressCircular indeterminate color="primary" size="48" />
       <div class="mt-3 text-body-2 text-medium-emphasis">
@@ -358,7 +402,7 @@ definePage({ meta: { permission: 'kardex' } })
       </div>
     </div>
 
-    <div v-else-if="orderedDays.length === 0" class="text-center pa-8">
+    <div v-else-if="Object.keys(groupedByProduct).length === 0" class="text-center pa-8">
       <VIcon size="64" class="mb-3" color="grey-lighten-1">
         ri-file-list-3-line
       </VIcon>
@@ -371,41 +415,52 @@ definePage({ meta: { permission: 'kardex' } })
     </div>
 
     <div v-else class="kardex-container">
-      <div v-for="day in orderedDays" :key="day" class="mb-6">
-        <!-- Encabezado del Día con Resumen -->
+      <div v-for="(group, key) in groupedByProduct" :key="key" class="mb-6">
+        <!-- Encabezado del Producto con Resumen -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
           <VCardText class="pa-4">
             <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-4">
               <div>
-                <h2 class="text-h5 font-weight-bold mb-1">
-                  <VIcon icon="ri-calendar-line" color="primary" class="me-2" size="24" />
-                  {{ formatDate(day) }}
+                <h2 class="text-h5 font-weight-bold mb-1 d-flex align-center">
+                  <VIcon :icon="group.isProduct ? 'ri-box-3-line' : 'ri-wallet-3-line'" color="primary" class="me-2"
+                    size="24" />
+                  {{ key }}
                 </h2>
+                <div class="text-body-2 text-medium-emphasis">
+                  {{ group.items.length }} Movimientos en este rango
+                </div>
               </div>
               <div class="d-flex gap-4 flex-wrap">
-                <div class="text-center">
+                <div class="text-center" v-if="group.isProduct">
                   <div class="text-caption text-medium-emphasis">
-                    Ingresos
+                    Und. Compradas
                   </div>
                   <div class="text-h6 font-weight-bold text-success">
-                    {{ formatCurrency(getResumenByDay(day).total_ingresos_financieros || 0) }}
+                    {{ group.totalEntradasFisicas }}
                   </div>
                 </div>
-                <div class="text-center">
+                <div class="text-center" v-if="group.isProduct">
                   <div class="text-caption text-medium-emphasis">
-                    Egresos
+                    Und. Vendidas
                   </div>
                   <div class="text-h6 font-weight-bold text-error">
-                    {{ formatCurrency(getResumenByDay(day).total_egresos_financieros || 0) }}
+                    {{ group.totalSalidasFisicas }}
                   </div>
                 </div>
                 <div class="text-center">
                   <div class="text-caption text-medium-emphasis">
-                    Saldo
+                    Ingresos ($)
                   </div>
-                  <div class="text-h6 font-weight-bold"
-                    :class="getResumenByDay(day).saldo_financiero >= 0 ? 'text-success' : 'text-error'">
-                    {{ formatCurrency(getResumenByDay(day).saldo_financiero || 0) }}
+                  <div class="text-h6 font-weight-bold text-success">
+                    {{ formatCurrency(group.totalEntradasFinancieras) }}
+                  </div>
+                </div>
+                <div class="text-center">
+                  <div class="text-caption text-medium-emphasis">
+                    Egresos ($)
+                  </div>
+                  <div class="text-h6 font-weight-bold text-error">
+                    {{ formatCurrency(group.totalSalidasFinancieras) }}
                   </div>
                 </div>
               </div>
@@ -413,112 +468,65 @@ definePage({ meta: { permission: 'kardex' } })
           </VCardText>
         </VCard>
 
-        <!-- Tabla de Movimientos del Día -->
+        <!-- Tabla de Movimientos del Producto -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
           <div class="overflow-x-auto">
             <VTable hover class="kardex-table">
               <thead>
-                <!-- Fila 1: Cabeceras Agrupadas -->
                 <tr>
-                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
-                    CONCEPTO
-                  </th>
-                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
-                    DESCRIPCIÓN
-                  </th>
-                  <th rowspan="2" class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
-                    CUENTA /
-                    REFERENCIA
-                  </th>
-                  <th rowspan="2" class="text-center font-weight-bold text-uppercase" style="width: 90px;">
-                    CANT.
-                  </th>
-                  <th colspan="2" class="text-center font-weight-bold text-uppercase flow-header-group">
-                    VALORES DE FLUJO
-                  </th>
-                  <th rowspan="2" class="text-right font-weight-bold text-uppercase" style="width: 140px;">
-                    SALDO ACUM.
-                  </th>
-                </tr>
-                <!-- Fila 2: Sub-cabeceras -->
-                <tr>
-                  <th class="text-right font-weight-bold text-uppercase flow-in-header" style="width: 130px;">
-                    ENTRADA
-                    (+)
-                  </th>
-                  <th class="text-right font-weight-bold text-uppercase flow-out-header" style="width: 130px;">
-                    SALIDA
-                    (-)
-                  </th>
+                  <th class="text-left font-weight-bold">FECHA</th>
+                  <th class="text-left font-weight-bold">CONCEPTO</th>
+                  <th class="text-left font-weight-bold">DETALLES</th>
+                  <th v-if="group.isProduct" class="text-center font-weight-bold">CANTIDAD</th>
+                  <th class="text-right font-weight-bold">ENTRADA (+)</th>
+                  <th class="text-right font-weight-bold">SALIDA (-)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="movimiento in getMovimientosConSaldo(day)" :key="movimiento.id" class="kardex-row">
-                  <!-- Concepto -->
-                  <td class="text-left py-3">
-                    <div class="d-flex align-center gap-2">
-                      <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="20" color="primary" />
-                      <div class="d-flex flex-column">
-                        <span class="text-body-2 font-weight-bold text-slate-800">
-                          {{ movimiento.concepto || getConceptoLabel(movimiento.concepto_tipo) }}
-                        </span>
-                        <span v-if="movimiento.codigo_aux" class="text-caption text-medium-emphasis mt-0.5">
-                          cod. aux: {{ movimiento.codigo_aux }}
-                        </span>
-                      </div>
+                <tr v-for="movimiento in group.items" :key="movimiento.id">
+                  <td>{{ movimiento.fecha_formateada }}</td>
+                  <td>
+                    <div class="d-flex align-center">
+                      <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="small" class="me-2" />
+                      {{ getConceptoLabel(movimiento.concepto_tipo) }}
                     </div>
                   </td>
 
-                  <!-- Descripción -->
-                  <td class="text-left py-3">
-                    <div class="text-body-2 text-slate-600 font-medium">
+                  <!-- REFERENCIA Y DETALLES -->
+                  <td>
+                    <div class="text-body-2 text-medium-emphasis text-wrap">
                       {{ movimiento.descripcion || 'Sin descripción' }}
                     </div>
-                  </td>
-
-                  <!-- Cuenta / Referencia -->
-                  <td class="text-left py-3">
-                    <div class="text-body-2 font-weight-bold text-slate-800">
-                      {{ movimiento.account ? movimiento.account.name : 'Sin cuenta' }}
-                    </div>
-                    <div class="text-caption text-medium-emphasis">
-                      <span v-if="movimiento.referencia_tipo" class="text-xs text-slate-500">
-                        {{ movimiento.referencia_tipo }} #{{ movimiento.referencia_id }}
-                      </span>
-                      <span v-else class="text-xs text-slate-400">Sin ref.</span>
+                    <div v-if="movimiento.account" class="text-caption d-flex align-center mt-1">
+                      <VIcon icon="ri-bank-card-line" size="x-small" class="me-1" />
+                      {{ movimiento.account.name }}
                     </div>
                   </td>
 
-                  <!-- Cant. -->
-                  <td class="text-center py-3 bg-balance font-weight-bold text-slate-800">
-                    <span v-if="movimiento.cantidad_movida !== null && movimiento.cantidad_movida !== undefined"
-                      class="text-body-2">
-                      {{ movimiento.cantidad_movida }}
-                    </span>
-                    <span v-else class="text-slate-400">-</span>
+                  <!-- CANTIDAD FÍSICA -->
+                  <td class="text-center" v-if="group.isProduct">
+                    <VChip v-if="movimiento.cantidad_movida" size="small"
+                      :color="movimiento.concepto_tipo === 'compra_inventario' ? 'success' : (movimiento.concepto_tipo === 'venta_producto' ? 'error' : 'default')"
+                      variant="tonal">
+                      {{ movimiento.concepto_tipo === 'compra_inventario' ? '+' : '-' }}{{ movimiento.cantidad_movida }}
+                    </VChip>
+                    <span v-else class="text-grey">-</span>
                   </td>
 
-                  <!-- Entrada (+) -->
-                  <td class="text-right py-3 bg-success-light font-weight-bold">
-                    <span v-if="movimiento.movimiento_tipo === 'entrada'" class="text-success text-body-2">
-                      +{{ formatCurrency(movimiento.monto_financiero || 0) }}
+                  <!-- FLUJO FINANCIERO: ENTRADA -->
+                  <td class="text-right flow-in-cell">
+                    <span v-if="movimiento.movimiento_tipo === 'entrada'" class="font-weight-bold text-success">
+                      +{{ formatCurrency(movimiento.monto_financiero) }}
                     </span>
-                    <span v-else class="text-grey-lighten-1">-</span>
+                    <span v-else class="text-grey-lighten-2">-</span>
                   </td>
 
-                  <!-- Salida (-) -->
-                  <td class="text-right py-3 bg-error-light font-weight-bold">
-                    <span v-if="movimiento.movimiento_tipo === 'salida'" class="text-error text-body-2">
-                      -{{ formatCurrency(movimiento.monto_financiero || 0) }}
+                  <!-- FLUJO FINANCIERO: SALIDA -->
+                  <td class="text-right flow-out-cell">
+                    <span v-if="movimiento.movimiento_tipo === 'salida'" class="font-weight-bold text-error">
+                      -{{ formatCurrency(movimiento.monto_financiero) }}
                     </span>
-                    <span v-else class="text-grey-lighten-1">-</span>
-                  </td>
-
-                  <!-- Saldo Acumulado -->
-                  <td class="text-right py-3 font-weight-bold bg-balance">
-                    <span :class="movimiento.saldo_acumulado >= 0 ? 'text-success' : 'text-error'" class="text-body-2">
-                      {{ formatCurrency(movimiento.saldo_acumulado) }}
-                    </span>
+                    <span v-else class="text-grey-lighten-2">-</span>
                   </td>
                 </tr>
               </tbody>
