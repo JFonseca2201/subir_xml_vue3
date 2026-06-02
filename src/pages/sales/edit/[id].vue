@@ -5,6 +5,7 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { getBrandNameById } from '@/data/vehicleBrands.js'
+import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -67,6 +68,7 @@ const paymentDistributions = ref([])
 
 // Buscador de productos
 const searchProduct = ref(null)
+const isAddServiceDialogVisible = ref(false)
 
 // Reglas de validación
 const requiredRule = v => !!v || 'Campo obligatorio'
@@ -208,6 +210,20 @@ const onProductSelected = product => {
     }
     initializePaymentDistribution()
     searchProduct.value = null
+  }
+}
+
+const handleServiceAdded = async (newService) => {
+  if (newService) {
+    const mappedService = {
+      ...newService,
+      searchText: `${newService.sku || ''} ${newService.code || ''} ${newService.name || ''} ${newService.description || ''}`.toLowerCase(),
+      displayTitle: newService.description || newService.name || '',
+    }
+    // Inyectar en el listado de productos de búsqueda
+    products.value = [mappedService, ...products.value]
+    // Agregar directamente al carrito
+    onProductSelected(mappedService)
   }
 }
 
@@ -799,22 +815,29 @@ onMounted(() => {
                   <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
                 </div>
               </div>
-              <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
-                :disabled="sale.status === 'canceled'" :items="products" item-title="displayTitle" return-object
-                label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código, SKU..."
-                prepend-inner-icon="ri-search-line" variant="outlined" clearable :custom-filter="productFilter"
-                @update:model-value="onProductSelected" class="mb-4" :menu-props="{ maxWidth: 0 }">
-                <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="undefined">
-                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
-                      {{ item.raw.name || item.raw.description }}
-                    </VListItemTitle>
-                    <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
-                      Código/SKU: {{ item.raw.code || item.raw.sku }}
-                    </VListItemSubtitle>
-                  </VListItem>
-                </template>
-              </VAutocomplete>
+              <div class="d-flex align-center gap-3 mb-4">
+                <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
+                  :disabled="sale.status === 'canceled'" :items="products" item-title="displayTitle" return-object
+                  label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código, SKU..."
+                  prepend-inner-icon="ri-search-line" variant="outlined" clearable :custom-filter="productFilter"
+                  @update:model-value="onProductSelected" class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
+                  <template #item="{ props, item }">
+                    <VListItem v-bind="props" :title="undefined">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                        {{ item.raw.name || item.raw.description }}
+                      </VListItemTitle>
+                      <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.code || item.raw.sku }}
+                      </VListItemSubtitle>
+                    </VListItem>
+                  </template>
+                </VAutocomplete>
+                <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56"
+                  :disabled="sale.status === 'canceled'"
+                  @click="isAddServiceDialogVisible = true">
+                  Servicio Express
+                </VBtn>
+              </div>
 
               <div class="border rounded-lg overflow-x-auto">
                 <VTable class="custom-items-table text-no-wrap">
@@ -1066,6 +1089,8 @@ onMounted(() => {
         </VCol>
       </VRow>
     </VForm>
+    <AddServiceDialog :is-dialog-visible="isAddServiceDialogVisible"
+      @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
   </div>
 </template>
 

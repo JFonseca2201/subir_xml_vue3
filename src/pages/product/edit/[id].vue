@@ -81,6 +81,7 @@ const product = ref({
   notes: '', state: 1,
 })
 
+const isLoadingConfig = ref(false)
 const categories = ref([])
 const warehouses = ref([])
 const units = ref([])
@@ -183,6 +184,7 @@ const loadProduct = async () => {
 }
 
 const loadInitialData = async () => {
+  isLoadingConfig.value = true
   try {
     const resp = await $api(`products/config`, {
       method: "GET",
@@ -196,6 +198,8 @@ const loadInitialData = async () => {
     suppliers.value = resp.data.suppliers || []
   } catch (error) {
     showNotification('Error al cargar configuración de productos', 'error')
+  } finally {
+    isLoadingConfig.value = false
   }
 }
 
@@ -365,23 +369,25 @@ onMounted(() => {
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.product_categorie_id" :items="categories" item-title="title" item-value="id"
                   :rules="[requiredRule]" density="comfortable" variant="outlined" label="Categoría"
-                  placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required />
+                  placeholder="Selecciona" prepend-inner-icon="ri-folder-3-line" hide-details="auto" required
+                  :loading="isLoadingConfig" />
               </VCol>
               <VCol cols="12" sm="6" v-if="product.item_type != 2">
                 <VSelect v-model="product.warehouse_id" :items="warehouses" item-title="name" item-value="id"
                   :rules="product.item_type == 2 ? [] : [requiredRule]" density="comfortable" variant="outlined"
                   label="Almacén" placeholder="Selecciona" prepend-inner-icon="ri-home-4-line" hide-details="auto"
-                  required />
+                  required :loading="isLoadingConfig" />
               </VCol>
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.unit_id" :items="units" item-title="name" item-value="id"
                   :rules="[requiredRule]" density="comfortable" variant="outlined" label="Unidad de Medida"
-                  placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required />
+                  placeholder="Selecciona" prepend-inner-icon="ri-ruler-line" hide-details="auto" required
+                  :loading="isLoadingConfig" />
               </VCol>
               <VCol cols="12" sm="6">
                 <VSelect v-model="product.supplier_id" :items="suppliers" item-title="name" item-value="id"
                   density="comfortable" variant="outlined" label="Proveedor" placeholder="Selecciona"
-                  prepend-inner-icon="ri-truck-line" hide-details="auto" />
+                  prepend-inner-icon="ri-truck-line" hide-details="auto" :loading="isLoadingConfig" />
               </VCol>
             </VRow>
           </div>
