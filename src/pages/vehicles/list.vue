@@ -396,7 +396,7 @@ onMounted(() => {
                 #{{ vehicle.id }}
               </td>
               <td>
-                <div v-if="vehicle.license_plate" class="license-plate-badge clickable-plate" @click="showVehicle(vehicle)">
+                <div v-if="vehicle.license_plate" class="license-plate-badge">
                   {{ vehicle.license_plate.toUpperCase() }}
                 </div>
                 <VChip
@@ -404,16 +404,15 @@ onMounted(() => {
                   color="warning"
                   size="x-small"
                   variant="tonal"
-                  class="font-weight-bold text-uppercase clickable-link"
-                  @click="showVehicle(vehicle)"
+                  class="font-weight-bold text-uppercase"
                 >
                   Sin placa
                 </VChip>
               </td>
-              <td class="font-weight-bold text-grey-darken-3 text-uppercase clickable-link" @click="showVehicle(vehicle)">
+              <td class="font-weight-bold text-grey-darken-3 text-uppercase">
                 {{ getBrandNameById(vehicle.brand) || 'Sin marca' }}
               </td>
-              <td class="text-uppercase text-grey-darken-2 font-weight-medium clickable-link" @click="showVehicle(vehicle)">
+              <td class="text-uppercase text-grey-darken-2 font-weight-medium">
                 {{ vehicle.model || 'Sin modelo' }}
                 <VChip
                   v-slot:append

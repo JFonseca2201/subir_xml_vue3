@@ -383,7 +383,7 @@ onMounted(() => {
                 #{{ client.id }}
               </td>
               <td>
-                <div class="font-weight-bold text-grey-darken-3 text-uppercase text-wrap clickable-link" style="max-width: 250px;" @click="showClient(client)">
+                <div class="font-weight-bold text-grey-darken-3 text-uppercase text-wrap" style="max-width: 250px;">
                   {{ client.full_name || `${client.name} ${client.surname}` }}
                 </div>
                 <div v-if="client.address" class="text-caption text-grey text-uppercase text-wrap" style="max-width: 250px; line-height: 1.2;">

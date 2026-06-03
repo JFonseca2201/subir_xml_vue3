@@ -65,6 +65,12 @@ watch(searchQuery, (newVal) => {
   }, 350)
 })
 
+const handleSearchBlur = () => {
+  setTimeout(() => {
+    isSearchFocused.value = false
+  }, 200)
+}
+
 const handleResultClick = (item) => {
   searchQuery.value = ''
   isSearchFocused.value = false
@@ -361,7 +367,7 @@ const radialChartSeries = computed(() => {
         <div style="width: 250px; position: relative;" class="d-none d-sm-block">
           <VTextField v-model="searchQuery" density="compact" placeholder="Buscar cliente, auto, SKU..."
             prepend-inner-icon="ri-search-line" variant="outlined" hide-details class="rounded-xl search-field"
-            @focus="isSearchFocused = true" @blur="setTimeout(() => isSearchFocused = false, 200)" />
+            @focus="isSearchFocused = true" @blur="handleSearchBlur" />
 
           <!-- Floating search results drop panel -->
           <VCard v-if="searchQuery && isSearchFocused" elevation="8"

@@ -4,8 +4,7 @@ import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
-import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
-import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog.vue'
+
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -20,10 +19,6 @@ const loadingOrders = ref(null)
 const showDeleteDialog = ref(false)
 const workOrderToDelete = ref(null)
 
-const isClientDialogVisible = ref(false)
-const selectedClient = ref({})
-const isVehicleDialogVisible = ref(false)
-const selectedVehicle = ref({})
 
 const statusOptions = [
   { title: 'Todos', value: 'all' },
@@ -121,13 +116,25 @@ const loadWorkOrders = async () => {
 const updateStatus = async (workOrderId, newStatus) => {
   loadingOrders.value = workOrderId
   try {
-    await $api(`work-orders/${workOrderId}/status`, {
+    const response = await $api(`work-orders/${workOrderId}/status`, {
       method: 'PUT',
       body: { status: newStatus },
     })
 
     showNotification('Estado actualizado exitosamente', 'success')
-    loadWorkOrders()
+    
+    // Actualizar el estado localmente para evitar recargar la lista y disparar el spinner global
+    const index = workOrders.value.findIndex(wo => wo.id === workOrderId)
+    if (index !== -1) {
+      if (response && response.data) {
+        workOrders.value[index] = {
+          ...workOrders.value[index],
+          ...response.data
+        }
+      } else {
+        workOrders.value[index].status = newStatus
+      }
+    }
   } catch (error) {
     console.error('Error al actualizar estado:', error)
     showNotification('Error al actualizar el estado', 'error')
@@ -240,31 +247,6 @@ const downloadPDF = async workOrderId => {
   }
 }
 
-const showClientDetails = async (client) => {
-  if (!client || !client.id) return
-  try {
-    const response = await $api(`clients/${client.id}`)
-    selectedClient.value = response.client || response.data || client
-    isClientDialogVisible.value = true
-  } catch (error) {
-    console.error('Error fetching client details:', error)
-    selectedClient.value = client
-    isClientDialogVisible.value = true
-  }
-}
-
-const showVehicleDetails = async (vehicle) => {
-  if (!vehicle || !vehicle.id) return
-  try {
-    const response = await $api(`vehicles/${vehicle.id}`)
-    selectedVehicle.value = response.vehicle || response.data || vehicle
-    isVehicleDialogVisible.value = true
-  } catch (error) {
-    console.error('Error fetching vehicle details:', error)
-    selectedVehicle.value = vehicle
-    isVehicleDialogVisible.value = true
-  }
-}
 
 const getClientName = client => {
   if (!client) return 'N/A'
@@ -397,9 +379,10 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div v-if="workOrder" class="d-flex flex-column align-center gap-1 cursor-pointer"
                     @click="handleStatusClick(workOrder)">
-                    <!-- Estado General con Icono -->
+                    <!-- Estado General con Icono o Loader -->
                     <div class="d-flex align-center gap-1">
-                      <VIcon :icon="statusIcons[workOrder.status]" size="16" :color="statusColors[workOrder.status]" />
+                      <VProgressCircular v-if="loadingOrders === workOrder.id" indeterminate size="16" width="2" color="primary" class="me-1" />
+                      <VIcon v-else :icon="statusIcons[workOrder.status]" size="16" :color="statusColors[workOrder.status]" />
                       <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ statusLabels[workOrder.status]
                         }}</span>
                     </div>
@@ -418,9 +401,8 @@ onMounted(() => {
 
                 <td class="text-left py-3" style="max-width: 400px;">
                   <div v-if="workOrder">
-                    <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4 clickable-link"
-                      :title="getClientName(workOrder.client)"
-                      @click="showClientDetails(workOrder.client)">
+                    <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
+                      :title="getClientName(workOrder.client)">
                       {{ getClientName(workOrder.client) }}
                     </div>
                     <div v-if="workOrder.client?.n_document" class="text-body-2 text-medium-emphasis mt-1">
@@ -431,9 +413,8 @@ onMounted(() => {
 
                 <td class="text-left py-3" style="max-width: 300px;">
                   <div v-if="workOrder?.vehicle" class="d-flex flex-column">
-                    <div class="font-weight-bold text-body-1 text-truncate text-primary clickable-link"
-                      :title="workOrder.vehicle.license_plate"
-                      @click="showVehicleDetails(workOrder.vehicle)">
+                    <div class="font-weight-bold text-body-1 text-truncate text-primary"
+                      :title="workOrder.vehicle.license_plate">
                       {{ workOrder.vehicle.license_plate }}
                     </div>
                     <div class="text-body-2 text-medium-emphasis text-truncate mt-1"
@@ -518,7 +499,7 @@ onMounted(() => {
                 <VIcon icon="ri-user-line" size="18" />
                 <span class="text-body-2">Cliente</span>
               </div>
-              <p class="text-body-1 font-weight-medium clickable-link" @click="showClientDetails(selectedWorkOrder.client)">
+              <p class="text-body-1 font-weight-medium">
                 {{ getClientName(selectedWorkOrder.client) }}
               </p>
             </VCol>
@@ -527,7 +508,7 @@ onMounted(() => {
                 <VIcon icon="ri-car-line" size="18" />
                 <span class="text-body-2">Vehículo</span>
               </div>
-              <p class="text-body-1 font-weight-medium clickable-link" @click="showVehicleDetails(selectedWorkOrder.vehicle)">
+              <p class="text-body-1 font-weight-medium">
                 {{ getVehicleInfo(selectedWorkOrder.vehicle) }}
               </p>
             </VCol>
@@ -632,19 +613,6 @@ onMounted(() => {
       </VCard>
     </VDialog>
 
-    <!-- Client Details Dialog -->
-    <ClientShowDialog
-      v-if="isClientDialogVisible"
-      v-model:isDialogVisible="isClientDialogVisible"
-      :client-data="selectedClient"
-    />
-
-    <!-- Vehicle Details Dialog -->
-    <VehicleShowDialog
-      v-if="isVehicleDialogVisible"
-      v-model:isDialogVisible="isVehicleDialogVisible"
-      :vehicle-data="selectedVehicle"
-    />
   </div>
 </template>
 
