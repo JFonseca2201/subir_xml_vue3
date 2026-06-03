@@ -359,6 +359,11 @@ const registerPayment = async () => {
 }
 
 // Watchers
+watch(searchForm, () => {
+  currentPage.value = 1
+  loadSales()
+}, { deep: true })
+
 watch(currentPage, () => {
   loadSales()
 })

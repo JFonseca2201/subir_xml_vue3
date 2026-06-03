@@ -58,8 +58,7 @@ const showClientDialog = ref(false)
 const showCompanyDialog = ref(false)
 const showVehicleDialog = ref(false)
 const showAddServiceDialog = ref(false)
-const productSearch = ref('')
-const filteredProducts = ref([])
+const productSearch = ref(null)
 
 const loadInitialData = async () => {
   isLoading.value = true
@@ -91,7 +90,6 @@ const loadInitialData = async () => {
         Array.isArray(productsRes.products) ? productsRes.products : []
 
     products.value = productsArray
-    filteredProducts.value = productsArray
 
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
@@ -326,28 +324,22 @@ const onProductChanged = item => {
   }
 }
 
-// Filtrar productos basado en búsqueda
-const filterProducts = () => {
-  if (!productSearch.value) {
-    filteredProducts.value = Array.isArray(products.value) ? products.value : []
+const productFilter = (value, query, item) => {
+  if (query == null || query === '') return true
 
-    return
-  }
-  const query = productSearch.value.toLowerCase()
-  const productsArray = Array.isArray(products.value) ? products.value : []
+  const q = String(query).toLowerCase().trim()
+  if (!q) return true
 
-  filteredProducts.value = productsArray.filter(p =>
-    (p.name && p.name.toLowerCase().includes(query)) ||
-    (p.description && p.description.toLowerCase().includes(query)) ||
-    (p.sku && p.sku.toLowerCase().includes(query)) ||
-    (p.code && p.code.toLowerCase().includes(query)),
-  )
+  const raw = item?.raw
+  if (!raw) return false
+
+  const sku = String(raw.sku || '').toLowerCase()
+  const code = String(raw.code || '').toLowerCase()
+  const name = String(raw.name || '').toLowerCase()
+  const desc = String(raw.description || '').toLowerCase()
+
+  return sku.includes(q) || code.includes(q) || name.includes(q) || desc.includes(q)
 }
-
-// Watch para filtrar productos cuando cambia la búsqueda
-watch(productSearch, () => {
-  filterProducts()
-})
 
 // Agregar producto desde búsqueda
 const addProductFromSearch = product => {
@@ -364,12 +356,11 @@ const addProductFromSearch = product => {
     type: isService ? 'service' : 'product',
     sku: product.sku || product.code || '',
   })
-  productSearch.value = ''
+  productSearch.value = null
 }
 
 onMounted(() => {
   loadInitialData()
-  filteredProducts.value = products.value
 })
 </script>
 
@@ -546,9 +537,9 @@ onMounted(() => {
             <!-- Cuadro de búsqueda de productos -->
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
-                <VAutocomplete v-model="productSearch" :items="filteredProducts" item-title="description"
+                <VAutocomplete v-model="productSearch" :items="products" item-title="description"
                   item-value="id" label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined"
-                  clearable hide-details return-object @update:model-value="(val) => val && addProductFromSearch(val)"
+                  clearable hide-details return-object :custom-filter="productFilter" @update:model-value="(val) => val && addProductFromSearch(val)"
                   :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">

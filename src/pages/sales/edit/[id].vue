@@ -13,6 +13,7 @@ const loader = useLoaderStore()
 
 const formRef = ref(null)
 const isLoading = ref(false)
+const isDocumentNumberLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 
@@ -102,13 +103,37 @@ const onCreditChange = () => {
 }
 
 // Watch para regenerar número cuando cambia el tipo de documento
-const onDocumentTypeChange = () => {
-  // Solo permitir cambiar de cotización a venta, no viceversa
-  if (sale.value.document_type !== 'quote' && sale.value.document_type !== '') {
-    // Si ya es una venta (nota de venta o factura), no permitir cambiar a cotización
+const onDocumentTypeChange = async () => {
+  // Si el documento original no era una cotización (es decir, era venta o factura),
+  // no se permite cambiar a ningún otro tipo.
+  if (originalDocumentType.value !== 'quote' && sale.value.document_type !== originalDocumentType.value) {
     showNotification('Solo las cotizaciones pueden convertirse a ventas', 'warning')
-
+    sale.value.document_type = originalDocumentType.value
     return
+  }
+
+  // Si el original es cotización y el usuario selecciona venta o factura:
+  if (originalDocumentType.value === 'quote' && sale.value.document_type !== 'quote') {
+    // Si el número actual todavía empieza con COT- o coincide con el original, obtenemos el nuevo número
+    if (sale.value.document_number.toUpperCase().startsWith('COT-') || sale.value.document_number === originalDocumentNumber.value) {
+      isDocumentNumberLoading.value = true
+      try {
+        const response = await $api('work-orders/next-number')
+        if (response && response.data) {
+          sale.value.document_number = response.data
+        }
+      } catch (error) {
+        console.error('Error al obtener el siguiente número OT:', error)
+      } finally {
+        isDocumentNumberLoading.value = false
+      }
+    }
+    // Establecer la fecha actual por defecto al cambiar a venta
+    sale.value.service_date = new Date().toISOString().split('T')[0]
+  } else if (originalDocumentType.value === 'quote' && sale.value.document_type === 'quote') {
+    // Si vuelve a seleccionar cotización, restauramos el número original y la fecha original
+    sale.value.document_number = originalDocumentNumber.value
+    sale.value.service_date = originalServiceDate.value
   }
 }
 
@@ -124,8 +149,35 @@ const initializePaymentDistribution = () => {
 }
 
 // Gestión del detalle (items)
-const removeItem = index => {
-  sale.value.items.splice(index, 1)
+const removeItem = async index => {
+  const item = sale.value.items[index]
+  if (item.id) {
+    loader.start()
+    try {
+      const response = await $api(`sales/details/${item.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response && response.success) {
+        sale.value.items.splice(index, 1)
+        if (response.sale) {
+          sale.value.subtotal = response.sale.subtotal
+          sale.value.tax_amount = response.sale.tax_amount
+          sale.value.total = response.sale.total
+        }
+        showNotification('Ítem eliminado correctamente', 'success')
+      } else {
+        showNotification(response.message || 'Error al eliminar el ítem', 'error')
+      }
+    } catch (error) {
+      console.error('Error al eliminar el ítem:', error)
+      showNotification(error.response?._data?.message || 'Error al eliminar el ítem', 'error')
+    } finally {
+      loader.stop()
+    }
+  } else {
+    sale.value.items.splice(index, 1)
+  }
 }
 
 // Gestión de pagos distribuidos
@@ -268,6 +320,8 @@ const total = computed(() => {
 
 // Computed para verificar si es cotización
 const originalDocumentType = ref('')
+const originalDocumentNumber = ref('')
+const originalServiceDate = ref('')
 const isQuote = computed(() => {
   return sale.value.document_type === 'quote'
 })
@@ -316,6 +370,8 @@ const loadSaleData = async () => {
 
     const saleData = saleRes.data || saleRes
     originalDocumentType.value = saleData.document_type
+    originalDocumentNumber.value = saleData.document_number
+    originalServiceDate.value = saleData.service_date ? saleData.service_date.split('T')[0] : ''
 
     sale.value = {
       document_type: saleData.document_type,
@@ -336,7 +392,8 @@ const loadSaleData = async () => {
       vehicle: saleData.vehicle,
       items: (saleData.details || []).map(d => {
         const prod = products.value.find(p => p.id === d.product_id)
-        const isService = prod ? (prod.item_type === 2 || (prod.categorie && prod.categorie.title && prod.categorie.title.includes('SERVICIO'))) : false
+        const productObj = d.product || prod
+        const isService = productObj ? (productObj.item_type === 2 || (productObj.categorie && productObj.categorie.title && productObj.categorie.title.includes('SERVICIO'))) : false
 
         return {
           id: d.id,
@@ -346,7 +403,7 @@ const loadSaleData = async () => {
           price: parseFloat(d.price) || 0,
           discount: parseFloat(d.discount) || 0,
           type: isService ? 'service' : 'product',
-          sku: prod ? (prod.sku || prod.code || '') : '',
+          sku: productObj ? (productObj.sku || productObj.code || '') : '',
           original_quantity: parseInt(d.quantity) || 1,
           original_product_id: d.product_id
         }
@@ -485,12 +542,12 @@ const submitForm = async () => {
     return
   }
 
-  // Validar stock solo si no es cotización
+  // Validar stock solo si no es cotización y es producto físico (item_type == 1)
   if (sale.value.document_type !== 'quote') {
     for (const item of sale.value.items) {
       if (item.product_id) {
         const product = products.value.find(p => p.id === item.product_id)
-        if (product) {
+        if (product && product.item_type === 1) {
           let quantityNeeded = item.quantity;
           if (originalDocumentType.value !== 'quote' && item.id && item.original_product_id === item.product_id) {
             quantityNeeded -= (item.original_quantity || 0);
@@ -524,13 +581,28 @@ const submitForm = async () => {
   }
 
   // Validar pagos distribuidos solo si no es cotización
-  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+  if (sale.value.document_type !== 'quote') {
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
-    if (Math.abs(totalDist - total.value) > 0.01) {
+
+    if (paymentDistributions.value.length === 0 || totalDist <= 0) {
       showValidationError.value = true
-      validationErrorMessage.value = 'La suma de los pagos debe ser igual al total'
+      validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
       return
+    }
+
+    if (totalDist > total.value + 0.01) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
+
+      return
+    }
+
+    // Si el pago no está completado, el estado debe quedar en pendiente. Solo cuando se haya completado el total, cambia a pagado.
+    if (Math.abs(totalDist - total.value) <= 0.01) {
+      sale.value.payment_status = 'paid'
+    } else {
+      sale.value.payment_status = 'pending'
     }
   }
 
@@ -704,7 +776,7 @@ onMounted(() => {
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
-                    required color="primary" />
+                    required color="primary" :loading="isDocumentNumberLoading" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" :disabled="sale.status === 'canceled'"
@@ -806,7 +878,8 @@ onMounted(() => {
                 @update:model-value="onProductSelected" class="mb-4" :menu-props="{ maxWidth: 0 }">
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="undefined">
-                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                      class="font-weight-medium">
                       {{ item.raw.name || item.raw.description }}
                     </VListItemTitle>
                     <VListItemSubtitle v-if="item.raw.code || item.raw.sku" class="mt-1 text-grey">
@@ -841,11 +914,14 @@ onMounted(() => {
                               style="white-space: normal !important; max-width: 500px;" :title="item.description">
                               {{ item.description }}
                             </div>
+                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
+                              style="font-size: 0.75rem;">
+                              SKU: {{ item.sku }}
+                            </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
                             </div>
                           </div>
                         </div>

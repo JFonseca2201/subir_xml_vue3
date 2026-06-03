@@ -682,22 +682,29 @@ const submitForm = async () => {
     }
   }
 
-  // Validar que haya al menos un método de pago solo si es venta (invoice o sale_note)
-  if ((sale.value.document_type === 'invoice' || sale.value.document_type === 'sale_note') && paymentDistributions.value.length === 0) {
-    showValidationError.value = true
-    validationErrorMessage.value = 'Debe agregar al menos un método de pago para la venta'
-
-    return
-  }
-
   // Validar pagos distribuidos solo si no es cotización
-  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+  if (sale.value.document_type !== 'quote') {
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
-    if (Math.abs(totalDist - total.value) > 0.01) {
+    
+    if (paymentDistributions.value.length === 0 || totalDist <= 0) {
       showValidationError.value = true
-      validationErrorMessage.value = 'La suma de los pagos debe ser igual al total'
+      validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
       return
+    }
+
+    if (totalDist > total.value + 0.01) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
+
+      return
+    }
+
+    // Si el pago no está completado, el estado debe quedar en pendiente. Solo cuando se haya completado el total, cambia a pagado.
+    if (Math.abs(totalDist - total.value) <= 0.01) {
+      sale.value.payment_status = 'paid'
+    } else {
+      sale.value.payment_status = 'pending'
     }
   }
 
@@ -1263,11 +1270,13 @@ onMounted(async () => {
                               style="white-space: normal !important; max-width: 500px;" :title="item.description">
                               {{ item.description }}
                             </div>
+                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold" style="font-size: 0.75rem;">
+                              SKU: {{ item.sku }}
+                            </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
                             </div>
                           </div>
                         </div>
