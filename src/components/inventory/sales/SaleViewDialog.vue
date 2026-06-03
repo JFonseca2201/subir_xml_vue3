@@ -97,6 +97,8 @@ const getClientDocument = computed(() => props.saleData?.client?.n_document || '
 
 const getClientPhone = computed(() => props.saleData?.client?.phone || '—')
 
+const getClientEmail = computed(() => props.saleData?.client?.email || '—')
+
 const getVehicleLicensePlate = computed(() => props.saleData?.vehicle?.license_plate || null)
 
 const getVehicleInfo = computed(() => {
@@ -288,6 +290,13 @@ const closeDialog = () => {
                       Teléfono
                     </span>
                     <span class="info-value">{{ getClientPhone }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon icon="ri-mail-line" size="16" />
+                      Email
+                    </span>
+                    <span class="info-value text-lowercase">{{ getClientEmail }}</span>
                   </div>
                   <div v-if="!hasVehicle && technicians.length" class="info-row align-start mt-2">
                     <span class="info-label">
