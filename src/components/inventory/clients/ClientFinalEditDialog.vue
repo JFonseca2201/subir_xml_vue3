@@ -204,9 +204,31 @@ const rules = {
 // Cargar datos del cliente al montar
 const loadClientData = () => {
   if (props.clientData) {
+    let name = props.clientData.name || ''
+    let surname = props.clientData.surname || ''
+
+    if (!name.trim() && !surname.trim() && props.clientData.full_name) {
+      const words = props.clientData.full_name.trim().split(/\s+/)
+      if (words.length === 1) {
+        name = words[0]
+        surname = ''
+      } else if (words.length === 2) {
+        name = words[0]
+        surname = words[1]
+      } else if (words.length === 3) {
+        name = `${words[0]} ${words[1]}`
+        surname = words[2]
+      } else {
+        name = `${words[0]} ${words[1]}`
+        surname = words.slice(2).join(' ')
+      }
+    }
+
     clientForm.value = {
       ...props.clientData,
-      user_id: userStore.id || 1,
+      name,
+      surname,
+      user_id: userStore?.id || 1,
 
       // Convertir string a número para que el VSelect funcione correctamente
       type_client: parseInt(props.clientData.type_client) || 1,
@@ -306,20 +328,6 @@ const closeDialog = () => {
   emit('update:isDialogVisible', false)
   resetForm()
 }
-
-// Watch para cambios en clientData
-watch(() => props.clientData, newData => {
-  if (newData) {
-    loadClientData()
-  }
-}, { immediate: true })
-
-// Watch para generar full_name
-watch(() => clientForm.value.name, () => {
-  generateFullName()
-})
-
-
 
 // Watch para cambios en clientData
 watch(() => props.clientData, newData => {

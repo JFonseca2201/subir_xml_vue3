@@ -5,6 +5,7 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
+
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 
@@ -17,6 +18,7 @@ const showDetailsDialog = ref(false)
 const loadingOrders = ref(null)
 const showDeleteDialog = ref(false)
 const workOrderToDelete = ref(null)
+
 
 const statusOptions = [
   { title: 'Todos', value: 'all' },
@@ -114,13 +116,25 @@ const loadWorkOrders = async () => {
 const updateStatus = async (workOrderId, newStatus) => {
   loadingOrders.value = workOrderId
   try {
-    await $api(`work-orders/${workOrderId}/status`, {
+    const response = await $api(`work-orders/${workOrderId}/status`, {
       method: 'PUT',
       body: { status: newStatus },
     })
 
     showNotification('Estado actualizado exitosamente', 'success')
-    loadWorkOrders()
+    
+    // Actualizar el estado localmente para evitar recargar la lista y disparar el spinner global
+    const index = workOrders.value.findIndex(wo => wo.id === workOrderId)
+    if (index !== -1) {
+      if (response && response.data) {
+        workOrders.value[index] = {
+          ...workOrders.value[index],
+          ...response.data
+        }
+      } else {
+        workOrders.value[index].status = newStatus
+      }
+    }
   } catch (error) {
     console.error('Error al actualizar estado:', error)
     showNotification('Error al actualizar el estado', 'error')
@@ -232,6 +246,7 @@ const downloadPDF = async workOrderId => {
     showNotification('Error al descargar el PDF', 'error')
   }
 }
+
 
 const getClientName = client => {
   if (!client) return 'N/A'
@@ -364,9 +379,10 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div v-if="workOrder" class="d-flex flex-column align-center gap-1 cursor-pointer"
                     @click="handleStatusClick(workOrder)">
-                    <!-- Estado General con Icono -->
+                    <!-- Estado General con Icono o Loader -->
                     <div class="d-flex align-center gap-1">
-                      <VIcon :icon="statusIcons[workOrder.status]" size="16" :color="statusColors[workOrder.status]" />
+                      <VProgressCircular v-if="loadingOrders === workOrder.id" indeterminate size="16" width="2" color="primary" class="me-1" />
+                      <VIcon v-else :icon="statusIcons[workOrder.status]" size="16" :color="statusColors[workOrder.status]" />
                       <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ statusLabels[workOrder.status]
                         }}</span>
                     </div>
@@ -596,6 +612,7 @@ onMounted(() => {
         </VCardActions>
       </VCard>
     </VDialog>
+
   </div>
 </template>
 
@@ -638,5 +655,16 @@ onMounted(() => {
 
 .action-btn:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 </style>

@@ -7,6 +7,7 @@ import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
+
 // Router & Composables
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -22,6 +23,7 @@ const isDeleteDialogVisible = ref(false)
 const isPaymentDialogVisible = ref(false)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
+
 
 // Estado del formulario de pago
 const paymentForm = ref({
@@ -204,6 +206,7 @@ const viewSale = async sale => {
   }
 }
 
+
 const editSale = sale => {
   if (sale.status === 'canceled') {
     showNotification('No se puede editar una venta anulada', 'warning')
@@ -356,6 +359,11 @@ const registerPayment = async () => {
 }
 
 // Watchers
+watch(searchForm, () => {
+  currentPage.value = 1
+  loadSales()
+}, { deep: true })
+
 watch(currentPage, () => {
   loadSales()
 })
@@ -611,6 +619,7 @@ onMounted(() => {
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />
 
+
     <!-- Payment Dialog -->
     <VDialog v-model="isPaymentDialogVisible" max-width="500">
       <VCard>
@@ -685,5 +694,16 @@ onMounted(() => {
 
 .action-btn:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 </style>

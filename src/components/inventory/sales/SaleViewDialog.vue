@@ -120,6 +120,8 @@ const itemsCount = computed(() => props.saleData?.details?.length || 0)
 
 const isQuote = computed(() => props.saleData?.document_type === 'quote')
 
+const hasVehicle = computed(() => !!props.saleData?.vehicle || !!getVehicleLicensePlate.value)
+
 /** Método real: prioriza pagos distribuidos sobre el campo de cabecera (a veces queda "Efectivo" por defecto). */
 const displayPaymentMethod = computed(() => {
   const dists = getPaymentDistributions.value
@@ -149,30 +151,13 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="props.isDialogVisible"
-    max-width="960"
-    scrollable
-    @update:model-value="closeDialog"
-  >
-    <VCard
-      class="sale-view-card"
-      rounded="lg"
-      elevation="4"
-    >
+  <VDialog :model-value="props.isDialogVisible" max-width="960" scrollable @update:model-value="closeDialog">
+    <VCard class="sale-view-card" rounded="lg" elevation="4">
       <!-- Cabecera al estilo del resto del inventario -->
       <div class="sale-view-header d-flex align-start justify-space-between pa-5 pb-4">
         <div class="d-flex align-start gap-4 flex-grow-1 min-w-0">
-          <VAvatar
-            size="56"
-            :color="getDocumentTypeColor"
-            variant="tonal"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              :icon="documentTypeIcon"
-              size="28"
-            />
+          <VAvatar size="56" :color="getDocumentTypeColor" variant="tonal" class="flex-shrink-0">
+            <VIcon :icon="documentTypeIcon" size="28" />
           </VAvatar>
 
           <div class="min-w-0">
@@ -180,72 +165,36 @@ const closeDialog = () => {
               <span class="text-h5 font-weight-bold text-truncate">
                 {{ saleData.document_number || '—' }}
               </span>
-              <VChip
-                :color="getDocumentTypeColor"
-                size="small"
-                variant="tonal"
-                label
-              >
+              <VChip :color="getDocumentTypeColor" size="small" variant="tonal" label>
                 {{ getDocumentTypeLabel }}
               </VChip>
-              <VChip
-                :color="getStatusColor"
-                size="small"
-                variant="elevated"
-                label
-              >
-                <VIcon
-                  start
-                  :icon="statusIcon"
-                  size="14"
-                />
+              <VChip :color="getStatusColor" size="small" variant="elevated" label>
+                <VIcon start :icon="statusIcon" size="14" />
                 {{ getStatusLabel }}
               </VChip>
             </div>
 
             <div class="d-flex align-center flex-wrap gap-3 text-body-2 text-medium-emphasis">
               <span class="d-inline-flex align-center gap-1">
-                <VIcon
-                  icon="ri-calendar-line"
-                  size="16"
-                />
+                <VIcon icon="ri-calendar-line" size="16" />
                 {{ formatDate(saleData.service_date) }}
               </span>
-              <span
-                v-if="saleData.work_order_id"
-                class="d-inline-flex align-center gap-1 text-primary"
-              >
-                <VIcon
-                  icon="ri-link"
-                  size="16"
-                />
+              <span v-if="saleData.work_order_id" class="d-inline-flex align-center gap-1 text-primary">
+                <VIcon icon="ri-link" size="16" />
                 Orden de trabajo vinculada
               </span>
             </div>
           </div>
         </div>
 
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="flex-shrink-0 ms-2"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="flex-shrink-0 ms-2" @click="closeDialog" />
       </div>
 
       <VDivider />
 
       <VCardText class="pa-5">
-        <div
-          v-if="loading"
-          class="d-flex flex-column align-center justify-center py-12"
-        >
-          <VProgressCircular
-            indeterminate
-            color="primary"
-            size="48"
-          />
+        <div v-if="loading" class="d-flex flex-column align-center justify-center py-12">
+          <VProgressCircular indeterminate color="primary" size="48" />
           <p class="text-body-2 text-medium-emphasis mt-4 mb-0">
             Cargando detalle de la venta...
           </p>
@@ -254,17 +203,9 @@ const closeDialog = () => {
         <template v-else>
           <!-- Resumen rápido -->
           <VRow class="mb-5">
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-money-dollar-circle-line"
-                  size="22"
-                  color="primary"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-money-dollar-circle-line" size="22" color="primary" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Total
                 </div>
@@ -273,41 +214,20 @@ const closeDialog = () => {
                 </div>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-wallet-3-line"
-                  size="22"
-                  :color="getPaymentStatusColor"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-wallet-3-line" size="22" :color="getPaymentStatusColor" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Estado de pago
                 </div>
-                <VChip
-                  :color="getPaymentStatusColor"
-                  size="small"
-                  variant="tonal"
-                  class="mt-1"
-                >
+                <VChip :color="getPaymentStatusColor" size="small" variant="tonal" class="mt-1">
                   {{ getPaymentStatusLabel }}
                 </VChip>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-shopping-bag-3-line"
-                  size="22"
-                  color="info"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-shopping-bag-3-line" size="22" color="info" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Ítems
                 </div>
@@ -316,17 +236,9 @@ const closeDialog = () => {
                 </div>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-bank-card-line"
-                  size="22"
-                  color="secondary"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-bank-card-line" size="22" color="secondary" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Método de pago
                 </div>
@@ -338,30 +250,19 @@ const closeDialog = () => {
           </VRow>
 
           <VRow>
-            <!-- Cliente y vehículo -->
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <!-- Cliente -->
+            <VCol cols="12" :md="hasVehicle ? 6 : 12">
               <div class="section-panel h-100">
                 <div class="section-title">
-                  <VAvatar
-                    size="36"
-                    color="success"
-                    variant="tonal"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-user-star-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="success" variant="tonal" class="me-3">
+                    <VIcon icon="ri-user-star-line" size="20" />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-1 font-weight-bold">
-                      Cliente y vehículo
+                      Cliente
                     </div>
                     <div class="text-caption text-medium-emphasis">
-                      Datos del servicio
+                      Datos del cliente
                     </div>
                   </div>
                 </div>
@@ -369,175 +270,149 @@ const closeDialog = () => {
                 <div class="info-list">
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-user-line"
-                        size="16"
-                      />
-                      Cliente
+                      <VIcon icon="ri-user-line" size="16" />
+                      Nombre
                     </span>
-                    <span class="info-value font-weight-medium">{{ getClientName }}</span>
+                    <span class="info-value font-weight-semibold text-primary">{{ getClientName }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-id-card-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-id-card-line" size="16" />
                       Documento
                     </span>
                     <span class="info-value">{{ getClientDocument }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-phone-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-phone-line" size="16" />
                       Teléfono
                     </span>
                     <span class="info-value">{{ getClientPhone }}</span>
                   </div>
-                  <VDivider class="my-3" />
-                  <div class="info-row">
+                  <div v-if="!hasVehicle && technicians.length" class="info-row align-start mt-2">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-car-line"
-                        size="16"
-                      />
-                      Placa
-                    </span>
-                    <span class="info-value">
-                      <VChip
-                        v-if="getVehicleLicensePlate"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                        label
-                        class="font-weight-bold"
-                      >
-                        {{ getVehicleLicensePlate }}
-                      </VChip>
-                      <span
-                        v-else
-                        class="text-medium-emphasis"
-                      >—</span>
-                    </span>
-                  </div>
-                  <div
-                    v-if="saleData.vehicle"
-                    class="info-row"
-                  >
-                    <span class="info-label">
-                      <VIcon
-                        icon="ri-roadster-line"
-                        size="16"
-                      />
-                      Vehículo
-                    </span>
-                    <span class="info-value">{{ getVehicleInfo }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">
-                      <VIcon
-                        icon="ri-dashboard-3-line"
-                        size="16"
-                      />
-                      Kilometraje
-                    </span>
-                    <span class="info-value">
-                      {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
-                    </span>
-                  </div>
-                  <div class="info-row align-start">
-                    <span class="info-label">
-                      <VIcon
-                        icon="ri-user-settings-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-user-settings-line" size="16" />
                       Técnicos
                     </span>
                     <span class="info-value">
-                      <div
-                        v-if="technicians.length"
-                        class="d-flex flex-wrap gap-1 justify-end"
-                      >
-                        <VChip
-                          v-for="tech in technicians"
-                          :key="tech.id"
-                          size="small"
-                          color="primary"
-                          variant="tonal"
-                        >
+                      <div class="d-flex flex-wrap gap-1 justify-end">
+                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal">
                           {{ tech.first_name }} {{ tech.last_name }}
                         </VChip>
                       </div>
-                      <span
-                        v-else
-                        class="text-medium-emphasis"
-                      >—</span>
                     </span>
                   </div>
                 </div>
               </div>
             </VCol>
 
-            <!-- Pagos -->
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <!-- Vehículo -->
+            <VCol v-if="hasVehicle" cols="12" md="6">
               <div class="section-panel h-100">
                 <div class="section-title">
-                  <VAvatar
-                    size="36"
-                    color="warning"
-                    variant="tonal"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-wallet-3-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="primary" variant="tonal" class="me-3">
+                    <VIcon icon="ri-car-line" size="20" />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-1 font-weight-bold">
-                      Información de pago
+                      Vehículo
                     </div>
                     <div class="text-caption text-medium-emphasis">
-                      {{ hasPaymentDistributions ? 'Pagos distribuidos' : 'Resumen financiero' }}
+                      Datos del vehículo y servicio
                     </div>
                   </div>
                 </div>
 
-                <div
-                  v-if="hasPaymentDistributions"
-                  class="payment-table-wrap"
-                >
-                  <VTable
-                    density="compact"
-                    class="payment-table"
-                  >
+                <div class="info-list">
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon icon="ri-qr-code-line" size="16" />
+                      Placa
+                    </span>
+                    <span class="info-value">
+                      <VChip v-if="getVehicleLicensePlate" size="small" color="primary" variant="elevated" label
+                        class="font-weight-bold">
+                        {{ getVehicleLicensePlate }}
+                      </VChip>
+                      <span v-else class="text-medium-emphasis">—</span>
+                    </span>
+                  </div>
+                  <div v-if="saleData.vehicle" class="info-row">
+                    <span class="info-label">
+                      <VIcon icon="ri-roadster-line" size="16" />
+                      Detalle
+                    </span>
+                    <span class="info-value font-weight-medium">{{ getVehicleInfo }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">
+                      <VIcon icon="ri-dashboard-3-line" size="16" />
+                      Kilometraje
+                    </span>
+                    <span class="info-value font-weight-semibold">
+                      {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
+                    </span>
+                  </div>
+                  <div v-if="technicians.length" class="info-row align-start mt-2">
+                    <span class="info-label">
+                      <VIcon icon="ri-user-settings-line" size="16" />
+                      Técnicos
+                    </span>
+                    <span class="info-value">
+                      <div class="d-flex flex-wrap gap-1 justify-end">
+                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal">
+                          {{ tech.first_name }} {{ tech.last_name }}
+                        </VChip>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </VCol>
+          </VRow>
+
+          <!-- Transacción / Pagos (Fila completa abajo) -->
+          <VRow class="mt-4">
+            <VCol cols="12">
+              <div class="section-panel">
+                <div class="section-title">
+                  <VAvatar size="36" color="warning" variant="tonal" class="me-3">
+                    <VIcon icon="ri-wallet-3-line" size="20" />
+                  </VAvatar>
+                  <div>
+                    <div class="text-subtitle-1 font-weight-bold">
+                      Transacción / Pagos
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      Historial de pagos
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="hasPaymentDistributions" class="payment-table-wrap">
+                  <VTable density="compact" class="payment-table">
                     <thead>
                       <tr>
-                        <th>#</th>
-                        <th>Método</th>
-                        <th>Cuenta</th>
-                        <th class="text-right">
+                        <th style="width: 50px;">#</th>
+                        <th>Método de pago</th>
+                        <th>Cuenta destino</th>
+                        <th class="text-right" style="width: 150px;">
                           Monto
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        v-for="(dist, index) in getPaymentDistributions"
-                        :key="dist.id || index"
-                      >
+                      <tr v-for="(dist, index) in getPaymentDistributions" :key="dist.id || index">
                         <td class="text-medium-emphasis">
                           {{ index + 1 }}
                         </td>
-                        <td>{{ dist.payment_method }}</td>
-                        <td>{{ dist.account?.name || `Cuenta ${dist.account_id}` }}</td>
-                        <td class="text-right font-weight-bold">
+                        <td class="font-weight-semibold">
+                          {{ dist.payment_method }}
+                        </td>
+                        <td>
+                          {{ dist.account?.name || `Cuenta ${dist.account_id}` }}
+                        </td>
+                        <td class="text-right font-weight-bold text-success">
                           {{ formatCurrency(dist.amount) }}
                         </td>
                       </tr>
@@ -545,51 +420,20 @@ const closeDialog = () => {
                   </VTable>
                 </div>
 
-                <div
-                  v-else-if="!isQuote"
-                  class="info-list"
-                >
-                  <div class="info-row">
-                    <span class="info-label">Estado</span>
-                    <VChip
-                      :color="getPaymentStatusColor"
-                      size="small"
-                      variant="tonal"
-                    >
-                      {{ getPaymentStatusLabel }}
-                    </VChip>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">Método</span>
-                    <span class="info-value">{{ displayPaymentMethod }}</span>
-                  </div>
-                  <div
-                    v-if="saleData.is_credited"
-                    class="info-row"
-                  >
-                    <span class="info-label">Crédito</span>
-                    <VChip
-                      size="small"
-                      color="warning"
-                      variant="tonal"
-                    >
-                      A crédito
-                    </VChip>
-                  </div>
-                </div>
-
-                <div
-                  v-else
-                  class="empty-hint pa-4 text-center"
-                >
+                <div v-else class="d-flex flex-column align-center justify-center py-6 text-center empty-hint"
+                  style="min-height: 120px;">
                   <VIcon
-                    icon="ri-file-list-3-line"
-                    size="32"
-                    color="info"
-                    class="mb-2"
-                  />
-                  <p class="text-body-2 text-medium-emphasis mb-0">
-                    Cotización sin movimiento de caja
+                    :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
+                    size="36" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
+                  <div class="text-body-2 font-weight-semibold">
+                    {{ isQuote ? 'Documento de Cotización' :
+                      (saleData.is_credited ? 'Venta a Crédito' : 'Venta de Contado')
+                    }}
+                  </div>
+                  <p class="text-caption text-medium-emphasis mb-0 mt-1 px-3">
+                    {{ isQuote ? 'No genera movimientos ni salidas de caja hasta ser convertida.' :
+                      (saleData.is_credited ? 'El pago total queda pendiente y se registra como cuenta por cobrar.' :
+                        'Pago registrado en su totalidad.') }}
                   </p>
                 </div>
               </div>
@@ -599,16 +443,8 @@ const closeDialog = () => {
           <!-- Detalle de ítems -->
           <div class="section-panel mt-4">
             <div class="section-title mb-3">
-              <VAvatar
-                size="36"
-                color="info"
-                variant="tonal"
-                class="me-3"
-              >
-                <VIcon
-                  icon="ri-shopping-cart-2-line"
-                  size="20"
-                />
+              <VAvatar size="36" color="info" variant="tonal" class="me-3">
+                <VIcon icon="ri-shopping-cart-2-line" size="20" />
               </VAvatar>
               <div>
                 <div class="text-subtitle-1 font-weight-bold">
@@ -620,38 +456,24 @@ const closeDialog = () => {
               </div>
             </div>
 
-            <div
-              v-if="saleData.details?.length"
-              class="items-table-wrap"
-            >
-              <VTable
-                density="comfortable"
-                class="items-table"
-              >
+            <div v-if="saleData.details?.length" class="items-table-wrap">
+              <VTable density="comfortable" class="items-table">
                 <thead>
                   <tr>
-                    <th>Descripción</th>
-                    <th class="text-center">
-                      Cant.
-                    </th>
-                    <th class="text-right">
-                      P. unit.
-                    </th>
-                    <th class="text-right">
-                      Desc.
-                    </th>
-                    <th class="text-right">
-                      Total
-                    </th>
+                    <th style="width: 50%;">Descripción</th>
+                    <th class="text-center" style="width: 10%;">Cant.</th>
+                    <th class="text-right" style="width: 13%;">P. unit.</th>
+                    <th class="text-right" style="width: 12%;">Desc.</th>
+                    <th class="text-right" style="width: 15%;">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="(item, index) in saleData.details"
-                    :key="item.id || index"
-                  >
+                  <tr v-for="(item, index) in saleData.details" :key="item.id || index">
                     <td class="font-weight-medium">
-                      {{ item.description }}
+                      <div class="text-body-2 font-weight-medium">{{ item.description }}</div>
+                      <div v-if="item.product?.sku" class="mt-1">
+                        <span class="sku-tag">COD.: {{ item.product.sku }}</span>
+                      </div>
                     </td>
                     <td class="text-center">
                       {{ item.quantity }}
@@ -670,16 +492,8 @@ const closeDialog = () => {
               </VTable>
             </div>
 
-            <div
-              v-else
-              class="empty-hint pa-6 text-center"
-            >
-              <VIcon
-                icon="ri-shopping-bag-3-line"
-                size="40"
-                color="grey-lighten-1"
-                class="mb-2"
-              />
+            <div v-else class="empty-hint pa-6 text-center">
+              <VIcon icon="ri-shopping-bag-3-line" size="40" color="grey-lighten-1" class="mb-2" />
               <p class="text-body-2 text-medium-emphasis mb-0">
                 No hay productos o servicios registrados
               </p>
@@ -688,20 +502,10 @@ const closeDialog = () => {
 
           <!-- Totales y observaciones -->
           <VRow class="mt-4">
-            <VCol
-              cols="12"
-              md="7"
-            >
-              <div
-                v-if="saleData.observations"
-                class="section-panel observations-panel"
-              >
+            <VCol cols="12" md="7">
+              <div v-if="saleData.observations" class="section-panel observations-panel">
                 <div class="d-flex align-center gap-2 mb-2">
-                  <VIcon
-                    icon="ri-file-text-line"
-                    size="20"
-                    color="info"
-                  />
+                  <VIcon icon="ri-file-text-line" size="20" color="info" />
                   <span class="text-subtitle-2 font-weight-bold">Observaciones</span>
                 </div>
                 <p class="text-body-2 mb-0 observations-text">
@@ -710,19 +514,13 @@ const closeDialog = () => {
               </div>
             </VCol>
 
-            <VCol
-              cols="12"
-              md="5"
-            >
+            <VCol cols="12" md="5">
               <div class="totals-panel pa-4 rounded-lg">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">Subtotal</span>
                   <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.subtotal) }}</span>
                 </div>
-                <div
-                  v-if="saleData.tax_amount > 0"
-                  class="d-flex justify-space-between align-center mb-2"
-                >
+                <div v-if="saleData.tax_amount > 0" class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">IVA (15%)</span>
                   <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.tax_amount) }}</span>
                 </div>
@@ -741,12 +539,7 @@ const closeDialog = () => {
 
       <VCardActions class="pa-4">
         <VSpacer />
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-close-line"
-          @click="closeDialog"
-        >
+        <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line" @click="closeDialog">
           Cerrar
         </VBtn>
       </VCardActions>
@@ -822,6 +615,18 @@ const closeDialog = () => {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
+.payment-table :deep(table),
+.items-table :deep(table) {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.payment-table :deep(td),
+.items-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
 .payment-table :deep(thead th),
 .items-table :deep(thead th) {
   font-size: 0.7rem !important;
@@ -830,6 +635,15 @@ const closeDialog = () => {
   letter-spacing: 0.04em;
   background: rgba(var(--v-theme-on-surface), 0.04) !important;
   color: rgba(var(--v-theme-on-surface), 0.65) !important;
+}
+
+.sku-tag {
+  padding: 2px 2px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-block;
 }
 
 .items-table :deep(tbody tr:hover) {

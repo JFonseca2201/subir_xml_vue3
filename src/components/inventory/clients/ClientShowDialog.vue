@@ -80,7 +80,7 @@ const fullName = computed(() => {
     const name = props.clientData.name || ''
     const surname = props.clientData.surname || ''
     
-    return name && surname ? `${name} ${surname}` : name || surname || ''
+    return name && surname ? `${name} ${surname}` : name || surname || props.clientData.full_name || ''
   }
 })
 

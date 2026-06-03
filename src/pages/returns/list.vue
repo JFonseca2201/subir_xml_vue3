@@ -10,6 +10,14 @@ const { showNotification } = useGlobalToast()
 const loading = ref(false)
 const returns = ref([])
 
+const selectedReturn = ref(null)
+const isViewDialogVisible = ref(false)
+const viewLoading = ref(false)
+
+const showDeleteDialog = ref(false)
+const returnToDelete = ref(null)
+const deleteLoading = ref(false)
+
 const searchForm = ref({
   search: null,
 })
@@ -55,6 +63,56 @@ const loadReturns = async () => {
     showNotification('Error al cargar el historial de devoluciones', 'error')
   } finally {
     loading.value = false
+  }
+}
+
+const viewReturn = async returnItem => {
+  viewLoading.value = true
+  selectedReturn.value = null
+  isViewDialogVisible.value = true
+  try {
+    const response = await $api(`returns/${returnItem.id}`)
+    if (response?.success || response?.data) {
+      selectedReturn.value = response.data || response
+    } else {
+      showNotification('Error al cargar los detalles de la devolución', 'error')
+      isViewDialogVisible.value = false
+    }
+  } catch (error) {
+    console.error('Error al cargar devolución:', error)
+    showNotification('Error al cargar los detalles de la devolución', 'error')
+    isViewDialogVisible.value = false
+  } finally {
+    viewLoading.value = false
+  }
+}
+
+const deleteReturn = returnItem => {
+  returnToDelete.value = returnItem
+  showDeleteDialog.value = true
+}
+
+const confirmDeleteReturn = async () => {
+  if (!returnToDelete.value) return
+  deleteLoading.value = true
+  try {
+    const response = await $api(`returns/${returnToDelete.value.id}`, {
+      method: 'DELETE',
+    })
+
+    if (response?.success || response?.message) {
+      showNotification('Devolución eliminada exitosamente', 'success')
+      showDeleteDialog.value = false
+      returnToDelete.value = null
+      loadReturns()
+    } else {
+      showNotification('Error al eliminar la devolución', 'error')
+    }
+  } catch (error) {
+    console.error('Error al eliminar devolución:', error)
+    showNotification('Error al eliminar la devolución', 'error')
+  } finally {
+    deleteLoading.value = false
   }
 }
 
@@ -232,22 +290,13 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div v-if="item" class="d-flex justify-center align-center">
                     <!-- Ver Detalle (Acción rápida) -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle">
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle" @click="viewReturn(item)">
                       <VIcon icon="ri-eye-line" size="20" />
                     </VBtn>
 
-                    <!-- Más Acciones (Dropdown) -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="secondary" title="Acciones">
-                      <VIcon icon="ri-more-2-line" size="20" />
-                      <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                        <VList density="compact" class="py-1">
-                          <VListItem prepend-icon="ri-file-pdf-line" title="Descargar PDF"
-                            class="text-primary text-body-2" />
-                          <VDivider class="my-1" />
-                          <VListItem prepend-icon="ri-delete-bin-line" title="Eliminar Devolución"
-                            class="text-error text-body-2" />
-                        </VList>
-                      </VMenu>
+                    <!-- Eliminar Devolución (Acción rápida) -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar Devolución" @click="deleteReturn(item)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
                     </VBtn>
                   </div>
                 </td>
@@ -270,6 +319,131 @@ onMounted(() => {
         </div>
       </VCardActions>
     </VCard>
+
+    <!-- Dialog de Detalles de Devolución -->
+    <VDialog v-model="isViewDialogVisible" max-width="700">
+      <VCard>
+        <VCardTitle class="d-flex align-center justify-space-between pa-4">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-loop-right-line" color="primary" />
+            <span>Detalle de Devolución #{{ selectedReturn?.return_number }}</span>
+          </div>
+          <VBtn icon="ri-close-line" variant="text" @click="isViewDialogVisible = false" />
+        </VCardTitle>
+        <VDivider />
+        
+        <VCardText class="pa-4">
+          <div v-if="viewLoading" class="text-center py-6">
+            <VProgressCircular indeterminate color="primary" size="40" />
+            <div class="mt-2 text-medium-emphasis">Cargando detalles...</div>
+          </div>
+          <div v-else-if="selectedReturn">
+            <VRow class="mb-4">
+              <VCol cols="12" sm="6">
+                <div class="text-caption text-grey mb-1">Fecha de Registro</div>
+                <div class="text-body-1 font-weight-medium d-flex align-center">
+                  <VIcon icon="ri-calendar-line" size="16" class="me-1 text-grey" />
+                  {{ formatDate(selectedReturn.created_at) }}
+                </div>
+              </VCol>
+              <VCol cols="12" sm="6">
+                <div class="text-caption text-grey mb-1">Venta Asociada</div>
+                <div class="text-body-1 font-weight-semibold text-primary">
+                  {{ selectedReturn.sale?.document_number || 'N/A' }}
+                </div>
+              </VCol>
+              <VCol cols="12" sm="6">
+                <div class="text-caption text-grey mb-1">Tipo de Devolución</div>
+                <div>
+                  <VChip :color="selectedReturn.type === 'total' ? 'primary' : 'warning'" size="small" label class="font-weight-bold">
+                    {{ selectedReturn.type === 'total' ? 'Total' : 'Parcial' }}
+                  </VChip>
+                </div>
+              </VCol>
+              <VCol cols="12" sm="6">
+                <div class="text-caption text-grey mb-1">Registrado por</div>
+                <div class="text-body-1 font-weight-medium d-flex align-center">
+                  <VIcon icon="ri-user-line" size="16" class="me-1 text-grey" />
+                  {{ selectedReturn.user?.name || 'N/A' }}
+                </div>
+              </VCol>
+              <VCol cols="12">
+                <div class="text-caption text-grey mb-1">Motivo de la Devolución</div>
+                <div class="text-body-1 font-weight-medium bg-grey-lighten-4 pa-3 rounded-lg text-uppercase" style="border: 1px dashed #cbd5e1;">
+                  {{ selectedReturn.reason }}
+                </div>
+              </VCol>
+            </VRow>
+
+            <VDivider class="my-4" />
+
+            <div class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2">
+              <VIcon icon="ri-list-check" color="primary" />
+              <span>Productos Devueltos</span>
+            </div>
+            
+            <VTable v-if="selectedReturn.details && selectedReturn.details.length > 0" class="border rounded-lg overflow-hidden">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-caption font-weight-bold">Descripción</th>
+                  <th class="text-center text-uppercase text-caption font-weight-bold" style="width: 100px;">Cant.</th>
+                  <th class="text-right text-uppercase text-caption font-weight-bold" style="width: 120px;">Precio Unit.</th>
+                  <th class="text-right text-uppercase text-caption font-weight-bold" style="width: 120px;">Total</th>
+                </tr>
+              </thead>
+              <tbody style="text-transform: uppercase;">
+                <tr v-for="item in selectedReturn.details" :key="item.id">
+                  <td>{{ item.description }}</td>
+                  <td class="text-center font-weight-semibold">{{ item.quantity }}</td>
+                  <td class="text-right">{{ formatCurrency(item.price) }}</td>
+                  <td class="text-right font-weight-bold">{{ formatCurrency(item.total) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-right font-weight-bold text-subtitle-1">Monto de Reembolso:</td>
+                  <td class="text-right font-weight-bold text-subtitle-1 text-error">{{ formatCurrency(selectedReturn.refund_amount) }}</td>
+                </tr>
+              </tfoot>
+            </VTable>
+            <p v-else class="text-body-2 text-grey text-center py-4">No hay ítems registrados en esta devolución.</p>
+          </div>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4">
+          <VSpacer />
+          <VBtn color="secondary" variant="text" @click="isViewDialogVisible = false">Cerrar</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialog de Confirmación de Eliminación -->
+    <VDialog v-model="showDeleteDialog" max-width="500">
+      <VCard>
+        <VCardTitle class="text-h5 pa-4">
+          Confirmar Eliminación
+        </VCardTitle>
+        <VDivider />
+        <VCardText class="pa-4">
+          <p class="text-body-1">
+            ¿Estás seguro de eliminar la devolución <strong>#{{ returnToDelete?.return_number }}</strong>?
+          </p>
+          <p class="text-body-2 text-error font-weight-medium mt-2">
+            Esta acción no se puede deshacer y revertirá los cambios de stock en el inventario.
+          </p>
+        </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4">
+          <VSpacer />
+          <VBtn color="secondary" variant="text" @click="showDeleteDialog = false" :disabled="deleteLoading">
+            Cancelar
+          </VBtn>
+          <VBtn color="error" :loading="deleteLoading" @click="confirmDeleteReturn">
+            Eliminar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
