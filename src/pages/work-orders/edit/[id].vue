@@ -360,6 +360,17 @@ const addProductFromSearch = product => {
   productSearch.value = null
 }
 
+watch(() => workOrder.value.vehicle_id, (newVal) => {
+  if (isLoading.value) return // Ignorar durante la carga inicial
+  
+  if (newVal) {
+    const selectedVeh = vehicles.value.find(v => v.id === newVal)
+    if (selectedVeh && selectedVeh.client_id) {
+      workOrder.value.client_id = selectedVeh.client_id
+    }
+  }
+})
+
 onMounted(() => {
   loadInitialData()
 })

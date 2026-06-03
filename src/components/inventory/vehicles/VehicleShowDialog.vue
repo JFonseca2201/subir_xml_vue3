@@ -172,6 +172,13 @@ const closeDialog = () => {
 
               <VRow no-gutters>
                 <VCol cols="12" class="mb-3">
+                  <div class="text-caption text-medium-emphasis">Propietario / Cliente</div>
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-1">
+                    {{ vehicleData.client?.full_name || 'No especificado' }}
+                  </div>
+                </VCol>
+
+                <VCol cols="12" class="mb-3">
                   <div class="text-caption text-medium-emphasis">Placa Oficial</div>
                   <div class="mt-1">
                     <div v-if="vehicleData.license_plate" class="license-plate-badge">

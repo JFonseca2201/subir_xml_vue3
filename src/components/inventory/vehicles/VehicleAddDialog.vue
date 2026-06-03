@@ -51,6 +51,45 @@ const getCurrentUserId = () => {
   }
 }
 
+const clients = ref([])
+const loadingClients = ref(false)
+
+const loadClients = async () => {
+  loadingClients.value = true
+  try {
+    const resp = await $api('clients', { params: { per_page: 1000 } })
+    clients.value = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+  } catch (err) {
+    console.error('Error al cargar clientes:', err)
+  } finally {
+    loadingClients.value = false
+  }
+}
+
+const clientFilter = (value, query, item) => {
+  if (query == null || query === '') return true
+
+  const q = String(query).toLowerCase().trim()
+  if (!q) return true
+
+  const raw = item?.raw
+  if (!raw) return false
+
+  const fullName = String(raw.full_name || '').toLowerCase()
+  const nDocument = String(raw.n_document || '').toLowerCase()
+  const name = String(raw.name || '').toLowerCase()
+  const surname = String(raw.surname || '').toLowerCase()
+  const email = String(raw.email || '').toLowerCase()
+  const phone = String(raw.phone || '').toLowerCase()
+
+  return fullName.includes(q) || 
+         nDocument.includes(q) || 
+         name.includes(q) || 
+         surname.includes(q) || 
+         email.includes(q) || 
+         phone.includes(q)
+}
+
 const vehicleForm = ref({
   license_plate: '',
   brand: null,
@@ -60,6 +99,7 @@ const vehicleForm = ref({
   vehicle_type: '',
   description: '',
   user_id: null, // ID del usuario que crea el vehículo
+  client_id: null,
   status: 1, // Estado activo por defecto (1 = activo, 2 = inactivo)
 })
 
@@ -106,6 +146,7 @@ const searchBrands = searchText => {
 
 // --- REGLAS ---
 const rules = {
+  client_id: [v => !!v || 'El propietario es requerido'],
   license_plate: [
     v => !!v || 'La placa es requerida',
     v => plateValidationRule(v),
@@ -128,6 +169,7 @@ const resetForm = () => {
     vehicle_type: '',
     description: '',
     user_id: getCurrentUserId(), // Asignar el ID del usuario actual
+    client_id: null,
     status: 1, // Estado activo por defecto (1 = activo, 2 = inactivo)
   }
   formRef.value?.resetValidation()
@@ -169,6 +211,7 @@ const saveVehicle = async () => {
 onMounted(() => {
   generateYearOptions()
   searchBrands('')
+  loadClients()
 
   // Asignar el user_id al montar el componente
   vehicleForm.value.user_id = getCurrentUserId()
@@ -212,6 +255,37 @@ onMounted(() => {
             <h5 class="text-h5 font-weight-bold mb-3 text-primary">
               Datos Principales
             </h5>
+          </VCol>
+
+          <VCol
+            cols="12"
+            class="mb-3"
+          >
+            <VAutocomplete
+              v-model="vehicleForm.client_id"
+              :items="clients"
+              item-title="full_name"
+              item-value="id"
+              label="Propietario / Cliente *"
+              placeholder="Buscar cliente por nombre o documento..."
+              prepend-inner-icon="ri-user-line"
+              :rules="rules.client_id"
+              variant="outlined"
+              no-data-text="No se encontraron clientes"
+              :custom-filter="clientFilter"
+              :loading="loadingClients"
+            >
+              <template #item="{ props: itemProps, item }">
+                <VListItem v-bind="itemProps" :title="undefined">
+                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                    {{ item.raw.full_name }}
+                  </VListItemTitle>
+                  <VListItemSubtitle class="mt-1 text-grey">
+                    DNI/RUC: {{ item.raw.n_document || 'N/A' }} | Tel: {{ item.raw.phone || 'N/A' }}
+                  </VListItemSubtitle>
+                </VListItem>
+              </template>
+            </VAutocomplete>
           </VCol>
 
           <VCol

@@ -52,6 +52,45 @@ const getCurrentUserId = () => {
   }
 }
 
+const clients = ref([])
+const loadingClients = ref(false)
+
+const loadClients = async () => {
+  loadingClients.value = true
+  try {
+    const resp = await $api('clients', { params: { per_page: 1000 } })
+    clients.value = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+  } catch (err) {
+    console.error('Error al cargar clientes:', err)
+  } finally {
+    loadingClients.value = false
+  }
+}
+
+const clientFilter = (value, query, item) => {
+  if (query == null || query === '') return true
+
+  const q = String(query).toLowerCase().trim()
+  if (!q) return true
+
+  const raw = item?.raw
+  if (!raw) return false
+
+  const fullName = String(raw.full_name || '').toLowerCase()
+  const nDocument = String(raw.n_document || '').toLowerCase()
+  const name = String(raw.name || '').toLowerCase()
+  const surname = String(raw.surname || '').toLowerCase()
+  const email = String(raw.email || '').toLowerCase()
+  const phone = String(raw.phone || '').toLowerCase()
+
+  return fullName.includes(q) || 
+         nDocument.includes(q) || 
+         name.includes(q) || 
+         surname.includes(q) || 
+         email.includes(q) || 
+         phone.includes(q)
+}
+
 const vehicleForm = ref({
   id: '',
   license_plate: '',
@@ -63,6 +102,7 @@ const vehicleForm = ref({
   description: '',
   status: 1, // 1 = Activo, 2 = Inactivo
   user_id: null, // ID del usuario que crea/edita el vehículo
+  client_id: null,
 })
 
 // --- OPCIONES ---
@@ -116,6 +156,7 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
 
 // --- REGLAS ---
 const rules = {
+  client_id: [v => !!v || 'El propietario es requerido'],
   license_plate: [
     v => !!v || 'La placa es requerida',
     v => plateValidationRule(v),
@@ -194,6 +235,7 @@ const loadVehicleData = () => {
       brand: brandValue,
       status: statusValue, // Asegurar que el status sea correcto
       user_id: getCurrentUserId(), // Asignar el ID del usuario actual
+      client_id: props.vehicleData.client_id || null,
     }
   }
 }
@@ -231,15 +273,16 @@ const closeDialog = () => {
   formRef.value?.resetValidation()
 }
 
-// Sincronizar cuando el prop cambie (al abrir el diálogo)
-watch(() => props.vehicleData, () => {
-  loadVehicleData()
-  searchBrands('')
-}, { deep: true })
-
 onMounted(() => {
   generateYearOptions()
   loadVehicleData()
+  loadClients()
+
+  // Sincronizar cuando el prop cambie (al abrir el diálogo)
+  watch(() => props.vehicleData, () => {
+    loadVehicleData()
+    searchBrands('')
+  }, { deep: true })
 
   // Inicializar con marcas populares
   searchBrands('')
@@ -282,6 +325,36 @@ onMounted(() => {
         @submit.prevent="updateVehicle"
       >
         <VRow>
+          <VCol
+            cols="12"
+            class="mb-3"
+          >
+            <VAutocomplete
+              v-model="vehicleForm.client_id"
+              :items="clients"
+              item-title="full_name"
+              item-value="id"
+              label="Propietario / Cliente *"
+              placeholder="Buscar cliente por nombre o documento..."
+              prepend-inner-icon="ri-user-line"
+              :rules="rules.client_id"
+              variant="outlined"
+              no-data-text="No se encontraron clientes"
+              :custom-filter="clientFilter"
+              :loading="loadingClients"
+            >
+              <template #item="{ props: itemProps, item }">
+                <VListItem v-bind="itemProps" :title="undefined">
+                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                    {{ item.raw.full_name }}
+                  </VListItemTitle>
+                  <VListItemSubtitle class="mt-1 text-grey">
+                    DNI/RUC: {{ item.raw.n_document || 'N/A' }} | Tel: {{ item.raw.phone || 'N/A' }}
+                  </VListItemSubtitle>
+                </VListItem>
+              </template>
+            </VAutocomplete>
+          </VCol>
           <VCol
             cols="12"
             md="6"

@@ -362,6 +362,17 @@ const selectedVehicle = computed(() => {
   return sale.value.vehicle
 })
 
+watch(() => sale.value.vehicle_id, (newVal) => {
+  if (isLoading.value) return // Ignorar durante la carga inicial
+  
+  if (newVal) {
+    const selectedVeh = vehicles.value.find(v => v.id === newVal)
+    if (selectedVeh && selectedVeh.client_id) {
+      sale.value.client_id = selectedVeh.client_id
+    }
+  }
+})
+
 // Cargar datos iniciales
 const loadSaleData = async () => {
   isLoading.value = true
