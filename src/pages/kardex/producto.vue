@@ -33,18 +33,18 @@ function formatDateYMD(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  
+
   return `${year}-${month}-${day}`
 }
 
 // Cambiar rango rápido
 const onRangeChange = val => {
   if (!val) return
-  
+
   const today = new Date()
   let start = null
   let end = null
-  
+
   if (val === 'anio_actual') {
     const firstDay = new Date(today.getFullYear(), 0, 1)
     const lastDay = new Date(today.getFullYear(), 12, 0)
@@ -74,7 +74,7 @@ const onRangeChange = val => {
     start = formatDateYMD(firstDay)
     end = formatDateYMD(today)
   }
-  
+
   if (start && end) {
     startDate.value = start
     endDate.value = end
@@ -138,7 +138,7 @@ const clearFilters = () => {
 // Formatear moneda
 const formatCurrency = value => {
   if (value === null || value === undefined) return '$0.00'
-  
+
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -149,22 +149,22 @@ const formatCurrency = value => {
 const formatQuantity = value => {
   if (value === null || value === undefined) return 0
   const num = Number(value)
-  
+
   if (Math.abs(num - Math.round(num)) <= 0.02) {
     return Math.round(num)
   }
-  
+
   return Number(num.toFixed(2))
 }
 
 // Computed para obtener los meses ordenados cronológicamente inverso
 const orderedMonths = computed(() => {
   const keys = Object.keys(kardexData.value.itemsGrouped || {})
-  
+
   return keys.sort((a, b) => {
     const aKey = kardexData.value.itemsGrouped[a]?.[0]?.month_key || ''
     const bKey = kardexData.value.itemsGrouped[b]?.[0]?.month_key || ''
-    
+
     return bKey.localeCompare(aKey)
   })
 })
@@ -188,12 +188,7 @@ definePage({ meta: { permission: 'kardex' } })
     <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-draft-line"
-            color="primary"
-            class="me-2"
-            size="28"
-          />
+          <VIcon icon="ri-draft-line" color="primary" class="me-2" size="28" />
           Kardex por Producto y Servicio
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -201,12 +196,7 @@ definePage({ meta: { permission: 'kardex' } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-refresh-line"
-          :loading="isLoading"
-          @click="loadKardex"
-        >
+        <VBtn color="primary" prepend-icon="ri-refresh-line" :loading="isLoading" @click="loadKardex">
           Actualizar
         </VBtn>
       </div>
@@ -217,134 +207,54 @@ definePage({ meta: { permission: 'kardex' } })
       <VCardText class="pa-4">
         <VRow dense>
           <!-- Buscador -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar por SKU, Nombre o Código Auxiliar"
-              placeholder="Ej. alineación, amortiguador, 12345"
-              prepend-inner-icon="ri-search-line"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              clearable
-              @keyup.enter="applyFilters"
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VTextField v-model="search" label="Buscar por SKU, Nombre o Código Auxiliar"
+              placeholder="Ej. alineación, amortiguador, 12345" prepend-inner-icon="ri-search-line"
+              density="comfortable" variant="outlined" hide-details clearable @keyup.enter="applyFilters" />
           </VCol>
 
           <!-- Rango rápido -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VSelect
-              v-model="selectedRange"
-              :items="rangeOptions"
-              item-title="title"
-              item-value="value"
-              label="Rango rápido"
-              placeholder="Seleccionar rango"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              @update:model-value="onRangeChange"
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VSelect v-model="selectedRange" :items="rangeOptions" item-title="title" item-value="value"
+              label="Rango rápido" placeholder="Seleccionar rango" density="comfortable" variant="outlined" hide-details
+              @update:model-value="onRangeChange" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="12"
-            md="4"
-            class="d-flex align-center gap-2"
-          >
-            <VBtn
-              color="primary"
-              variant="elevated"
-              :loading="isLoading"
-              class="flex-grow-1"
-              @click="applyFilters"
-            >
+          <VCol cols="12" sm="12" md="4" class="d-flex align-center gap-2">
+            <VBtn color="primary" variant="elevated" :loading="isLoading" class="flex-grow-1" @click="applyFilters">
               Filtrar
             </VBtn>
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              :loading="isLoading"
-              @click="clearFilters"
-            >
+            <VBtn color="secondary" variant="outlined" :loading="isLoading" @click="clearFilters">
               Limpiar
             </VBtn>
           </VCol>
         </VRow>
 
-        <VRow
-          dense
-          class="mt-2"
-        >
+        <VRow dense class="mt-2">
           <!-- Rango de Fechas -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VTextField
-              v-model="startDate"
-              type="date"
-              label="Desde"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              clearable
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VTextField v-model="startDate" type="date" label="Desde" density="comfortable" variant="outlined"
+              hide-details clearable />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VTextField
-              v-model="endDate"
-              type="date"
-              label="Hasta"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              clearable
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VTextField v-model="endDate" type="date" label="Hasta" density="comfortable" variant="outlined"
+              hide-details clearable />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- Tabla agrupada por mes -->
-    <div
-      v-if="isLoading"
-      class="text-center pa-8"
-    >
-      <VProgressCircular
-        indeterminate
-        color="primary"
-        size="48"
-      />
+    <div v-if="isLoading" class="text-center pa-8">
+      <VProgressCircular indeterminate color="primary" size="48" />
       <div class="mt-3 text-body-2 text-medium-emphasis">
         Procesando información de productos...
       </div>
     </div>
 
-    <div
-      v-else-if="orderedMonths.length === 0"
-      class="text-center pa-8"
-    >
-      <VIcon
-        size="64"
-        class="mb-3"
-        color="grey-lighten-1"
-      >
+    <div v-else-if="orderedMonths.length === 0" class="text-center pa-8">
+      <VIcon size="64" class="mb-3" color="grey-lighten-1">
         ri-draft-line
       </VIcon>
       <div class="text-h6 mb-2">
@@ -355,25 +265,13 @@ definePage({ meta: { permission: 'kardex' } })
       </div>
     </div>
 
-    <div
-      v-else
-      class="kardex-container"
-    >
-      <div
-        v-for="monthName in orderedMonths"
-        :key="monthName"
-        class="mb-6"
-      >
+    <div v-else class="kardex-container">
+      <div v-for="monthName in orderedMonths" :key="monthName" class="mb-6">
         <!-- Encabezado del Mes -->
         <VCard class="rounded-lg border-light border overflow-hidden day-header elevation-0 mb-2">
           <VCardText class="pa-4 d-flex align-center justify-space-between">
             <h2 class="text-h5 font-weight-bold mb-0 d-flex align-center">
-              <VIcon
-                icon="ri-calendar-event-line"
-                color="primary"
-                class="me-2"
-                size="24"
-              />
+              <VIcon icon="ri-calendar-event-line" color="primary" class="me-2" size="24" />
               {{ monthName }}
             </h2>
             <div class="text-body-2 text-medium-emphasis font-weight-medium">
@@ -385,72 +283,42 @@ definePage({ meta: { permission: 'kardex' } })
         <!-- Tabla de Movimientos del Mes -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
           <div class="overflow-x-auto">
-            <VTable
-              hover
-              class="kardex-table"
-            >
+            <VTable hover class="kardex-table">
               <thead>
                 <tr>
-                  <th
-                    class="text-left font-weight-bold text-uppercase"
-                    style="min-width: 150px;"
-                  >
+                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
                     CÓDIGO (SKU)
                   </th>
-                  <th
-                    class="text-left font-weight-bold text-uppercase"
-                    style="min-width: 250px;"
-                  >
+                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
                     DESCRIPCIÓN
                   </th>
-                  <th
-                    class="text-center font-weight-bold text-uppercase"
-                    style="width: 120px;"
-                  >
+                  <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
                     TIPO
                   </th>
-                  <th
-                    class="text-center font-weight-bold text-uppercase bg-success-header"
-                    style="width: 120px;"
-                  >
+                  <th class="text-center font-weight-bold text-uppercase bg-success-header" style="width: 120px;">
                     CANT. VENDIDA
                   </th>
-                  <th
-                    class="text-right font-weight-bold text-uppercase bg-success-header"
-                    style="width: 150px;"
-                  >
+                  <th class="text-right font-weight-bold text-uppercase bg-success-header" style="width: 150px;">
                     TOTAL VENTAS
                   </th>
-                  <th
-                    class="text-center font-weight-bold text-uppercase bg-error-header"
-                    style="width: 120px;"
-                  >
+                  <th class="text-center font-weight-bold text-uppercase bg-error-header" style="width: 120px;">
                     CANT. COMPRADA
                   </th>
-                  <th
-                    class="text-right font-weight-bold text-uppercase bg-error-header"
-                    style="width: 150px;"
-                  >
+                  <th class="text-right font-weight-bold text-uppercase bg-error-header" style="width: 150px;">
                     TOTAL COMPRAS
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="item in kardexData.itemsGrouped[monthName]"
-                  :key="item.month_key + '_' + item.sku + '_' + item.description"
-                  class="kardex-row"
-                >
+                <tr v-for="item in kardexData.itemsGrouped[monthName]"
+                  :key="item.month_key + '_' + item.sku + '_' + item.description" class="kardex-row">
                   <!-- Código SKU / Aux -->
                   <td class="text-left py-3">
                     <div class="d-flex flex-column">
                       <span class="text-body-2 font-weight-bold text-slate-800">
                         {{ item.sku || 'SIN SKU' }}
                       </span>
-                      <span
-                        v-if="item.code_aux"
-                        class="text-caption text-medium-emphasis mt-0.5"
-                      >
+                      <span v-if="item.code_aux" class="text-caption text-medium-emphasis mt-0.5">
                         cod. aux: {{ item.code_aux }}
                       </span>
                     </div>
@@ -465,12 +333,8 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- Tipo: Producto o Servicio -->
                   <td class="text-center py-3">
-                    <VChip
-                      :color="item.tipo === 'servicio' ? 'info' : 'warning'"
-                      size="small"
-                      label
-                      class="text-uppercase font-weight-bold"
-                    >
+                    <VChip :color="item.tipo === 'servicio' ? 'info' : 'warning'" size="small" label
+                      class="text-uppercase font-weight-bold">
                       {{ item.tipo }}
                     </VChip>
                   </td>
