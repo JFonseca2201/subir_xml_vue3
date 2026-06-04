@@ -257,7 +257,7 @@ const updateVehicle = async () => {
 
     setTimeout(() => {
       emit('update:isDialogVisible', false)
-      emit('vehicleUpdated', resp.data || vehicleForm.value)
+      emit('vehicleUpdated', resp.vehicle || resp.data || vehicleForm.value)
     }, 1200)
 
   } catch (err) {

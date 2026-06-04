@@ -196,8 +196,8 @@ const saveVehicle = async () => {
     showNotification('Vehículo guardado correctamente', 'success')
     resetForm()
     setTimeout(() => {
-      emit('update:isDialogVisible', false)
       emit('addVehicle', resp.data || resp)
+      emit('update:isDialogVisible', false)
     }, 25)
 
   } catch (err) {
