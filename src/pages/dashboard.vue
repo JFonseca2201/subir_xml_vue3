@@ -16,6 +16,7 @@ const { showNotification } = useGlobalToast()
 
 // State
 const loading = ref(true)
+const hasError = ref(false)
 const isStockDialogVisible = ref(false)
 const isClientDialogVisible = ref(false)
 const selectedClient = ref({})
@@ -196,15 +197,19 @@ const salesTargetPercentage = computed(() => {
 const fetchDashboardData = async () => {
   try {
     loading.value = true
-    const response = await $api('/dashboard')
-    if (response.status === 200) {
+    hasError.value = false
+    const response = await $api('/dashboard', { timeout: 10000 })
+    if (response && response.status === 200) {
       kpis.value = response.data.kpis
       topProducts.value = response.data.top_products || []
       cashFlow.value = response.data.cash_flow || []
+      hasError.value = false
     } else {
+      hasError.value = true
       showNotification('Error al cargar datos del dashboard', 'error')
     }
   } catch (err) {
+    hasError.value = true
     console.error(err)
     showNotification('Ocurrió un error de red al consultar el dashboard', 'error')
   } finally {
@@ -433,6 +438,18 @@ const radialChartSeries = computed(() => {
     <!-- Spinner Loader -->
     <div v-if="loading" class="d-flex justify-center align-center py-12 my-12">
       <VProgressCircular indeterminate color="primary" size="64" width="6" />
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="hasError" class="d-flex flex-column align-center justify-center py-12 my-12 text-center" style="max-width: 500px; margin: 0 auto;">
+      <VIcon icon="ri-error-warning-line" size="64" color="error" class="mb-4" />
+      <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Error al cargar el Dashboard</h3>
+      <p class="text-body-2 text-medium-emphasis mb-6">
+        No se pudieron obtener los datos actualizados del servidor. Por favor, verifica tu conexión o vuelve a intentarlo.
+      </p>
+      <VBtn color="primary" prepend-icon="ri-refresh-line" @click="fetchDashboardData" class="rounded-xl px-6">
+        Reintentar cargar
+      </VBtn>
     </div>
 
     <div v-else class="position-relative" style="z-index: 1;">

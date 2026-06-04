@@ -73,23 +73,12 @@ watch([
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component }">
-      <Suspense>
-        <template #default>
-          <div>
-            <Component :is="Component" />
-          </div>
-        </template>
-        <template #fallback>
-          <div
-            class="d-flex justify-center align-center"
-            style="height: 200px;"
-          >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-            />
-          </div>
-        </template>
+      <Suspense
+        :timeout="0"
+        @fallback="isFallbackStateActive = true"
+        @resolve="isFallbackStateActive = false"
+      >
+        <Component :is="Component" />
       </Suspense>
     </RouterView>
 
