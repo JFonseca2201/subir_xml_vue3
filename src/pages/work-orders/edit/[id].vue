@@ -284,7 +284,6 @@ const onVehicleAdded = newVehicle => {
 const handleServiceAdded = (newService) => {
   if (newService) {
     products.value = [newService, ...products.value]
-    filteredProducts.value = [newService, ...filteredProducts.value]
     addProductFromSearch(newService)
   }
 }
