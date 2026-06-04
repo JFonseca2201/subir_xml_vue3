@@ -257,26 +257,36 @@ const generatePDF = async () => {
   }
 }
 
-const generateSinglePDF = async sale => {
-  try {
-    const response = await $api(`sales/${sale.id}/pdf`, {
-      method: 'GET',
-      responseType: 'blob'
-    })
-
-    // 1. Crear el blob con el tipo MIME correcto para PDF
-    const blob = new Blob([response], { type: 'application/pdf' })
-
-    // 2. Crear una URL temporal para el navegador
-    const url = window.URL.createObjectURL(blob)
-
-    // 3. Abrir la URL en una nueva pestaña en lugar de simular el clic de descarga
-    window.open(url, '_blank')
-
+const generateSinglePDF = sale => {
+  const token = localStorage.getItem('token')
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
+  
+  const printWindow = window.open(pdfUrl, '_blank')
+  if (printWindow) {
+    printWindow.focus()
     showNotification('PDF cargado exitosamente', 'success')
+  } else {
+    showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+  }
+}
+
+const printSale = async saleId => {
+  try {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const pdfUrl = `${apiBaseUrl}/sales/${saleId}/pdf?token=${token}&print=true`
+    
+    const printWindow = window.open(pdfUrl, '_blank')
+    if (printWindow) {
+      printWindow.focus()
+      showNotification('Previsualización de impresión cargada', 'info')
+    } else {
+      showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+    }
   } catch (error) {
-    console.error('Error al generar PDF:', error)
-    showNotification('Error al generar el PDF', 'error')
+    console.error('Error al imprimir:', error)
+    showNotification('Error al abrir la previsualización de la venta', 'error')
   }
 }
 
@@ -574,6 +584,8 @@ onMounted(() => {
                       <VIcon icon="ri-more-2-line" size="20" />
                       <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                         <VList density="compact" class="py-1">
+                          <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
+                            @click="printSale(item.id)" />
                           <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
                             @click="generateSinglePDF(item)" />
                           <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"

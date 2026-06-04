@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
+import { $api } from '@/utils/api'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const props = defineProps({
   isDialogVisible: {
@@ -149,6 +151,41 @@ const formatDate = dateString => {
 
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
+}
+
+const { showNotification } = useGlobalToast()
+
+const printSale = async saleId => {
+  try {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const pdfUrl = `${apiBaseUrl}/sales/${saleId}/pdf?token=${token}&print=true`
+    
+    const printWindow = window.open(pdfUrl, '_blank')
+    if (printWindow) {
+      printWindow.focus()
+      showNotification('Previsualización de impresión cargada', 'info')
+    } else {
+      showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+    }
+  } catch (error) {
+    console.error('Error al imprimir:', error)
+    showNotification('Error al abrir la previsualización de la venta', 'error')
+  }
+}
+
+const generateSinglePDF = sale => {
+  const token = localStorage.getItem('token')
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
+  
+  const printWindow = window.open(pdfUrl, '_blank')
+  if (printWindow) {
+    printWindow.focus()
+    showNotification('PDF cargado exitosamente', 'success')
+  } else {
+    showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+  }
 }
 </script>
 
@@ -550,6 +587,12 @@ const closeDialog = () => {
         <VSpacer />
         <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line" @click="closeDialog">
           Cerrar
+        </VBtn>
+        <VBtn color="info" variant="tonal" prepend-icon="ri-printer-line" @click="printSale(props.saleData.id)">
+          Imprimir
+        </VBtn>
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-file-pdf-line" @click="generateSinglePDF(props.saleData)">
+          Ver PDF
         </VBtn>
       </VCardActions>
     </VCard>

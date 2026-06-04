@@ -218,8 +218,9 @@ const goToEdit = workOrderId => {
 const downloadPDF = async workOrderId => {
   try {
     const token = localStorage.getItem('token')
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
-    const response = await fetch(`http://127.0.0.1:8000/api/work-orders/${workOrderId}/pdf`, {
+    const response = await fetch(`${apiBaseUrl}/work-orders/${workOrderId}/pdf`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/pdf',
@@ -244,6 +245,25 @@ const downloadPDF = async workOrderId => {
   } catch (error) {
     console.error('Error al descargar PDF:', error)
     showNotification('Error al descargar el PDF', 'error')
+  }
+}
+
+const printPDF = async workOrderId => {
+  try {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const pdfUrl = `${apiBaseUrl}/work-orders/${workOrderId}/pdf?token=${token}&print=true`
+    
+    const printWindow = window.open(pdfUrl, '_blank')
+    if (printWindow) {
+      printWindow.focus()
+      showNotification('Previsualización de impresión cargada', 'info')
+    } else {
+      showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+    }
+  } catch (error) {
+    console.error('Error al imprimir:', error)
+    showNotification('Error al abrir la previsualización de la orden', 'error')
   }
 }
 
@@ -453,7 +473,9 @@ onMounted(() => {
                           <VListItem v-if="workOrder.status === 'ready' && !workOrder.sale"
                             prepend-icon="ri-shopping-cart-line" title="Generar Venta" class="text-success text-body-2"
                             @click="goToSale(workOrder.id)" />
-                          <VListItem v-if="workOrder.sale" prepend-icon="ri-file-pdf-line" title="Descargar PDF"
+                          <VListItem v-if="workOrder.status !== 'draft'" prepend-icon="ri-printer-line" title="Imprimir Orden"
+                            class="text-info text-body-2" @click="printPDF(workOrder.id)" />
+                          <VListItem v-if="workOrder.status !== 'draft'" prepend-icon="ri-file-pdf-line" title="Descargar PDF"
                             class="text-primary text-body-2" @click="downloadPDF(workOrder.id)" />
                           <VDivider class="my-1" />
                           <VListItem prepend-icon="ri-delete-bin-line" title="Eliminar Orden"
@@ -579,7 +601,15 @@ onMounted(() => {
           <VBtn color="grey" variant="text" prepend-icon="ri-close-line" @click="showDetailsDialog = false">
             Cerrar
           </VBtn>
-          <VBtn v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale" color="primary"
+          <VBtn v-if="selectedWorkOrder.status !== 'draft'" color="info" variant="tonal"
+            prepend-icon="ri-printer-line" @click="printPDF(selectedWorkOrder.id)">
+            Imprimir
+          </VBtn>
+          <VBtn v-if="selectedWorkOrder.status !== 'draft'" color="primary" variant="tonal"
+            prepend-icon="ri-file-pdf-line" @click="downloadPDF(selectedWorkOrder.id)">
+            Descargar PDF
+          </VBtn>
+          <VBtn v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale" color="success"
             prepend-icon="ri-shopping-cart-line" @click="goToSale(selectedWorkOrder.id)">
             Generar Venta
           </VBtn>

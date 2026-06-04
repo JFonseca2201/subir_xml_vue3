@@ -115,19 +115,36 @@ const viewPedidoDetails = async pedido => {
   }
 }
 
-const generateSinglePDF = async pedido => {
-  try {
-    const response = await $api(`pedidos-distribuidor/${pedido.id}/pdf`, {
-      method: 'GET',
-      responseType: 'blob'
-    })
-    const blob = new Blob([response], { type: 'application/pdf' })
-    const url = window.URL.createObjectURL(blob)
-    window.open(url, '_blank')
+const generateSinglePDF = pedido => {
+  const token = localStorage.getItem('token')
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedido.id}/pdf?token=${token}`
+  
+  const printWindow = window.open(pdfUrl, '_blank')
+  if (printWindow) {
+    printWindow.focus()
     showNotification('PDF cargado exitosamente', 'success')
+  } else {
+    showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+  }
+}
+
+const printPedido = async pedidoId => {
+  try {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedidoId}/pdf?token=${token}&print=true`
+    
+    const printWindow = window.open(pdfUrl, '_blank')
+    if (printWindow) {
+      printWindow.focus()
+      showNotification('Previsualización de impresión cargada', 'info')
+    } else {
+      showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
+    }
   } catch (error) {
-    console.error('Error al generar PDF:', error)
-    showNotification('Error al generar el PDF', 'error')
+    console.error('Error al imprimir:', error)
+    showNotification('Error al abrir la previsualización del pedido', 'error')
   }
 }
 
@@ -365,6 +382,8 @@ onMounted(() => {
                 </td>
                 <td class="text-no-wrap text-center">
                   <div class="d-flex justify-center align-center gap-1">
+                    <VBtn class="action-btn" icon="ri-printer-line" variant="text" size="small" color="info" title="Imprimir"
+                      @click="printPedido(item.id)" />
                     <VBtn class="action-btn" icon="ri-file-pdf-line" variant="text" size="small" color="success" title="Ver PDF (Sin Precios)"
                       @click="generateSinglePDF(item)" />
                     <VBtn class="action-btn" icon="ri-eye-line" variant="text" size="small" color="info" title="Ver Detalle"
@@ -492,6 +511,10 @@ onMounted(() => {
         </VCardText>
 
         <VCardActions class="pa-6 border-top-light justify-end gap-2">
+          <VBtn color="info" prepend-icon="ri-printer-line"
+            @click="printPedido(selectedPedido.id)">
+            Imprimir
+          </VBtn>
           <VBtn color="success" prepend-icon="ri-file-pdf-line"
             @click="generateSinglePDF(selectedPedido)">
             Generar PDF

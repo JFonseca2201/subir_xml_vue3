@@ -42,6 +42,7 @@ const clients = ref([])
 const vehicles = ref([])
 const products = ref([])
 const accounts = ref([])
+const employees = ref([])
 
 // Estado del formulario
 const sale = ref({
@@ -55,6 +56,7 @@ const sale = ref({
   is_credited: false,
   payment_method: 'Efectivo',
   observations: '',
+  technicians: [],
   subtotal: 0,
   tax_amount: 0,
   total: 0,
@@ -347,6 +349,8 @@ const canConvertToSale = computed(() => {
   return isQuote.value && sale.value.status !== 'canceled' && sale.value.items.length > 0
 })
 
+const isLinkedToWorkOrder = computed(() => !!sale.value.work_order_id)
+
 // Computed para obtener el cliente seleccionado
 const selectedClient = computed(() => {
   if (!sale.value.client_id) return null
@@ -377,12 +381,13 @@ watch(() => sale.value.vehicle_id, (newVal) => {
 const loadSaleData = async () => {
   isLoading.value = true
   try {
-    const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes] = await Promise.all([
+    const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes, employeesRes] = await Promise.all([
       $api(`sales/${route.params.id}`),
       $api('clients', { params: { per_page: 1000 } }),
       $api('vehicles', { params: { per_page: 1000 } }),
       $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 1000 } }),
+      $api('employees', { params: { per_page: 1000 } }),
     ])
 
     const extractArray = (res, key) => {
@@ -411,6 +416,7 @@ const loadSaleData = async () => {
       is_credited: saleData.is_credited,
       payment_method: saleData.payment_method,
       observations: saleData.observations || '',
+      technicians: (saleData.technicians || []).map(t => t.id),
       subtotal: saleData.subtotal,
       tax_amount: saleData.tax_amount,
       total: saleData.total,
@@ -464,6 +470,7 @@ const loadSaleData = async () => {
       displayTitle: p.description || p.name || '',
     }))
     accounts.value = extractArray(accountsRes, 'accounts')
+    employees.value = extractArray(employeesRes, 'employees')
 
     // Si no es cotización, cargar los pagos distribuidos existentes
     if (sale.value.document_type !== 'quote' && saleData.finance_record) {
@@ -879,6 +886,18 @@ onMounted(() => {
                       type="number" variant="outlined" density="comfortable" prepend-inner-icon="ri-dashboard-3-line"
                       hide-details="auto" color="primary" />
                   </div>
+                </VCol>
+                <VCol cols="12" class="mt-3">
+                  <VAutocomplete v-model="sale.technicians" :items="employees" :disabled="sale.status === 'canceled'"
+                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
+                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
+                    density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
+                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
+                    persistent-hint>
+                    <template #chip="{ props, item }">
+                      <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
+                    </template>
+                  </VAutocomplete>
                 </VCol>
               </VRow>
             </VCardText>
