@@ -76,6 +76,7 @@ declare module 'vue' {
     InvoiceDeleteDialog: typeof import('./src/components/inventory/invoices/InvoiceDeleteDialog.vue')['default']
     InvoiceEditDialog: typeof import('./src/components/inventory/invoices/InvoiceEditDialog.vue')['default']
     InvoiceItems: typeof import('./src/components/InvoiceItems.vue')['default']
+    InvoiceProcessDialog: typeof import('./src/components/inventory/invoices/InvoiceProcessDialog.vue')['default']
     InvoiceShowDialog: typeof import('./src/components/inventory/invoices/InvoiceShowDialog.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./src/@core/components/Notifications.vue')['default']

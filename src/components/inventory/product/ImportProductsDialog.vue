@@ -67,18 +67,25 @@ const importExcel = async () => {
 
 
 const loadFile = $event => {
-  if ($event.target.files[0].type.indexOf('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') < 0) {
+  const file = $event.target.files[0]
+  if (!file) return
+
+  const fileName = file.name || ''
+  const ext = fileName.split('.').pop().toLowerCase()
+  const allowedExtensions = ['xlsx', 'xls', 'csv']
+
+  if (!allowedExtensions.includes(ext)) {
     error_exist.value = "Archivo no válido. Por favor selecciona un archivo Excel (.xlsx, .xls o .csv)"
     selectedFile = null
     
     return
   }
   error_exist.value = null
-  selectedFile = $event.target.files[0]
+  selectedFile = file
 }
 
 const closeDialog = () => {
-  selectedFile.value = null
+  selectedFile = null
   error_exist.value = null
   emit('update:isDialogVisible', false)
 }

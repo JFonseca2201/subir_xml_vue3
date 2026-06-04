@@ -25,7 +25,10 @@ const isLoading = ref(false)
 const isInvoiceAddDialogVisible = ref(false)
 const isInvoiceShowDialogVisible = ref(false)
 const isInvoiceDeleteDialogVisible = ref(false)
+const isInvoiceProcessDialogVisible = ref(false)
+const invoiceToProcess = ref(null)
 import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDialog.vue'
+import InvoiceProcessDialog from '@/components/inventory/invoices/InvoiceProcessDialog.vue'
 
 const list = async () => {
   isLoading.value = true
@@ -97,37 +100,15 @@ const showItem = ShowInvoice => {
   invoiceSelected.value = ShowInvoice
 }
 
-const processInvoice = async invoice => {
-  try {
-    isLoading.value = true
+const processInvoice = invoice => {
+  invoiceToProcess.value = invoice
+  isInvoiceProcessDialogVisible.value = true
+}
 
-    const response = await $api('products/process', {
-      method: 'POST',
-      body: {
-        invoice: invoice.id,
-      },
-      onResponseError({ response }) {
-        console.log('❌ Error 422 - Response:', response._data)
-        console.log('❌ Error 422 - Datos enviados:', { invoice: invoice.id })
-        showNotification('Error al procesar la factura', 'error')
-      },
-    })
-
-    if (response.status === 200) {
-      showNotification('Factura procesada correctamente', 'success')
-
-
-      // Actualizar la factura en la lista
-      const index = list_invoices.value.findIndex(item => item.id === invoice.id)
-      if (index !== -1) {
-        list_invoices.value[index].invoice_process = 1
-      }
-    }
-  } catch (error) {
-    console.error('Error al procesar factura:', error)
-    showNotification('Error al procesar la factura', 'error')
-  } finally {
-    isLoading.value = false
+const onProcessSuccess = invoiceId => {
+  const index = list_invoices.value.findIndex(item => item.id === invoiceId)
+  if (index !== -1) {
+    list_invoices.value[index].invoice_process = 1
   }
 }
 
@@ -405,6 +386,8 @@ onMounted(() => {
       :invoice-selected="invoiceSelected" />
     <InvoiceDeleteDialog v-if="isInvoiceDeleteDialogVisible" v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
       :invoice-selected="invoiceSelected" @delete-invoice-success="onDeleteSuccess" />
+    <InvoiceProcessDialog v-if="isInvoiceProcessDialogVisible" v-model:isDialogVisible="isInvoiceProcessDialogVisible"
+      :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
 

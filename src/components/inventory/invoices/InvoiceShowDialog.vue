@@ -656,7 +656,111 @@ onMounted(() => {
 
       <!-- 🔢 TOTALES -->
       <VCardText class="pt-6">
-        <VRow justify="end">
+        <VRow>
+          <!-- 💳 INFORMACIÓN DE PAGO -->
+          <VCol
+            cols="12"
+            md="8"
+            v-if="invoice?.invoice_process === 1"
+          >
+            <div class="pe-md-6 border-right-md h-100">
+              <h4 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
+                <VIcon size="20">ri-bank-card-line</VIcon>
+                Información de Pago
+              </h4>
+              
+              <!-- Caso Crédito / Cuenta por Pagar -->
+              <div v-if="invoice.account_payable" class="pa-3 rounded-lg border bg-grey-lighten-4 mb-3">
+                <div class="d-flex align-center justify-space-between mb-2">
+                  <span class="text-body-2 font-weight-bold text-medium-emphasis">Tipo de Pago:</span>
+                  <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
+                    Crédito (Cuenta por Pagar)
+                  </VChip>
+                </div>
+                <div class="d-flex align-center justify-space-between mb-2">
+                  <span class="text-body-2 text-medium-emphasis">Monto Total:</span>
+                  <span class="text-body-2 font-weight-bold">${{ Number(invoice.account_payable.total_amount).toFixed(2) }}</span>
+                </div>
+                <div class="d-flex align-center justify-space-between mb-2">
+                  <span class="text-body-2 text-medium-emphasis">Fecha de Vencimiento:</span>
+                  <span class="text-body-2 font-weight-bold">
+                    {{ invoice.account_payable.due_date ? new Date(invoice.account_payable.due_date).toISOString().slice(0, 10) : '-' }}
+                  </span>
+                </div>
+                <div class="d-flex align-center justify-space-between">
+                  <span class="text-body-2 text-medium-emphasis">Estado:</span>
+                  <VChip :color="invoice.account_payable.status === 'paid' ? 'success' : 'warning'" size="small" class="font-weight-bold">
+                    {{ invoice.account_payable.status === 'paid' ? 'Pagado' : 'Pendiente' }}
+                  </VChip>
+                </div>
+              </div>
+
+              <!-- Caso Contado / Aporte / Distribución de Pagos -->
+              <div v-else-if="invoice.finance_records && invoice.finance_records.length > 0">
+                <div v-for="record in invoice.finance_records" :key="record.id" class="mb-3 pa-3 rounded-lg border bg-white">
+                  <div class="text-caption text-medium-emphasis font-weight-bold mb-2">
+                    Registro de Egreso #{{ record.id }} ({{ record.entry_date ? new Date(record.entry_date).toISOString().slice(0, 10) : '-' }})
+                  </div>
+                  
+                  <div v-if="record.payment_distributions && record.payment_distributions.length > 0">
+                    <div v-for="dist in record.payment_distributions" :key="dist.id" class="d-flex align-center justify-space-between border-bottom py-2 text-none">
+                      <div class="d-flex align-center gap-2">
+                        <VIcon size="16" :color="dist.payment_method === 'cash' ? 'success' : 'info'">
+                          {{ dist.payment_method === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
+                        </VIcon>
+                        <div>
+                          <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                            {{ dist.account?.name || 'Cuenta del sistema' }}
+                          </div>
+                          <div class="text-caption text-grey text-none" style="text-transform: none;">
+                            {{ dist.payment_method === 'cash' ? 'Efectivo' : 'Transferencia' }}
+                          </div>
+                        </div>
+                      </div>
+                      <span class="text-body-1 font-weight-bold text-success">
+                        ${{ Number(dist.amount).toFixed(2) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div v-else class="d-flex align-center justify-space-between py-2 text-none">
+                    <div class="d-flex align-center gap-2">
+                      <VIcon size="16" color="success">ri-money-dollar-circle-line</VIcon>
+                      <div>
+                        <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                          {{ record.account_label || 'Caja Chica' }}
+                        </div>
+                        <div class="text-caption text-grey text-none" style="text-transform: none;">
+                          {{ record.payment_method_label || 'Efectivo' }}
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-body-1 font-weight-bold text-success">
+                      ${{ Number(record.amount).toFixed(2) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div v-else class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-grey-lighten-4">
+                No hay registros de pago asociados a esta factura.
+              </div>
+            </div>
+          </VCol>
+          <VCol
+            cols="12"
+            md="8"
+            v-else
+          >
+            <div class="pe-md-6 border-right-md h-100 d-flex align-center justify-center bg-grey-lighten-4 rounded-lg border pa-6">
+              <div class="text-center">
+                <VIcon size="32" color="warning" class="mb-2">ri-error-warning-line</VIcon>
+                <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">Factura Pendiente</div>
+                <div class="text-caption text-grey">Esta factura aún no ha sido procesada en inventario ni caja chica.</div>
+              </div>
+            </div>
+          </VCol>
+
+          <!-- 🔢 TOTALES -->
           <VCol
             cols="12"
             md="4"
@@ -752,6 +856,11 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@media (min-width: 960px) {
+  .border-right-md {
+    border-right: 1px solid #e2e8f0 !important;
   }
 }
 </style>
