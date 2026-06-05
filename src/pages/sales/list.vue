@@ -659,24 +659,25 @@ onMounted(() => {
                   v-for="item in groupedSales[date]" 
                   :key="item.id"
                   cols="6"
-                  sm="6"
-                  md="4"
+                  sm="4"
+                  md="3"
                   class="d-flex pa-1 pa-sm-2"
                 >
                   <VCard class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
                     <!-- Cabecera de la Tarjeta -->
-                    <VCardText class="pa-2 pa-sm-3 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
+                    <VCardText class="pa-1 pa-sm-2 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
                       <div class="d-flex align-center gap-1">
                         <VChip
                           :color="getDocumentTypeInfo(item.document_type)?.color"
                           size="x-small"
                           variant="tonal"
-                          class="font-weight-bold text-uppercase"
+                          class="font-weight-bold text-uppercase px-1"
+                          style="font-size: 0.55rem; height: 16px;"
                           label
                         >
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </VChip>
-                        <span class="text-caption text-sm-subtitle-2 font-weight-bold text-primary cursor-pointer hover-underline text-truncate" style="max-width: 70px;" @click="viewSale(item)" :title="item.document_number">
+                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline text-truncate" style="max-width: 60px;" @click="viewSale(item)" :title="item.document_number">
                           {{ item.document_number }}
                         </span>
                       </div>
@@ -685,68 +686,47 @@ onMounted(() => {
                       <div class="d-flex align-center gap-1">
                         <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
                           style="width: 6px; height: 6px;"></span>
-                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline">{{ getStatusInfo(item.status)?.text }}</span>
+                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline" style="font-size: 0.65rem;">{{ getStatusInfo(item.status)?.text }}</span>
                       </div>
                     </VCardText>
 
                     <!-- Cuerpo de la Tarjeta -->
-                    <VCardText class="pa-2 pa-sm-3 flex-grow-1">
-                      <div class="d-flex flex-column gap-2">
+                    <VCardText class="pa-2 flex-grow-1">
+                      <div class="d-flex flex-column gap-1">
                         <!-- Cliente -->
-                        <div class="d-flex align-start gap-1 gap-sm-2">
-                          <VAvatar color="info" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
-                            <VIcon icon="ri-user-line" size="12" />
-                          </VAvatar>
-                          <div class="overflow-hidden w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Cliente</div>
-                            <div class="text-caption text-sm-body-2 font-weight-semibold text-grey-darken-4 text-truncate" :title="getClientName(item.client)">
-                              {{ getClientName(item.client) }}
-                            </div>
-                            <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis d-none d-sm-block" style="font-size: 0.7rem;">
-                              Doc: {{ item.client.n_document }}
-                            </div>
-                          </div>
+                        <div class="d-flex align-center gap-1 overflow-hidden" style="min-height: 20px;">
+                          <VIcon icon="ri-user-line" size="14" color="info" class="flex-shrink-0" />
+                          <span class="text-caption text-grey-darken-4 text-truncate" :title="getClientName(item.client)" style="font-size: 0.75rem;">
+                            {{ getClientName(item.client) }}
+                          </span>
                         </div>
 
                         <!-- Vehículo -->
-                        <div v-if="item.vehicle" class="d-flex align-start gap-1 gap-sm-2">
-                          <VAvatar color="primary" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
-                            <VIcon icon="ri-car-line" size="12" />
-                          </VAvatar>
-                          <div class="overflow-hidden w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Vehículo</div>
-                            <div class="text-caption text-sm-body-2 font-weight-bold text-primary text-truncate">
-                              {{ item.vehicle.license_plate }}
-                            </div>
-                            <div class="text-caption text-medium-emphasis text-truncate d-none d-sm-block" :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.7rem;">
-                              {{ formatVehicleInfo(item.vehicle) }}
-                            </div>
-                          </div>
+                        <div v-if="item.vehicle" class="d-flex align-center gap-1 overflow-hidden" style="min-height: 20px;">
+                          <VIcon icon="ri-car-line" size="14" color="primary" class="flex-shrink-0" />
+                          <span class="text-caption text-primary text-truncate font-weight-medium" :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.75rem;">
+                            {{ item.vehicle.license_plate }} {{ formatVehicleInfo(item.vehicle) }}
+                          </span>
                         </div>
 
                         <!-- Total y Pago -->
-                        <div class="d-flex align-start gap-1 gap-sm-2">
-                          <VAvatar color="success" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
-                            <VIcon icon="ri-money-dollar-circle-line" size="12" />
-                          </VAvatar>
-                          <div class="w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Total</div>
-                            <div class="d-flex align-center gap-1 flex-wrap">
-                              <span class="text-body-2 text-sm-subtitle-1 font-weight-bold text-success" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
-                                {{ formatCurrency(item.total) }}
-                              </span>
-                              <!-- Estado Pago (Text badge) -->
-                              <VChip v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
-                                size="x-small"
-                                :color="getPaymentStatusInfo(item.payment_status)?.color"
-                                variant="tonal"
-                                class="font-weight-bold px-1"
-                                style="font-size: 0.6rem; height: 16px;"
-                              >
-                                {{ getPaymentStatusInfo(item.payment_status)?.text }}
-                              </VChip>
-                            </div>
+                        <div class="d-flex align-center gap-1 justify-space-between flex-wrap mt-1">
+                          <div class="d-flex align-center gap-1">
+                            <VIcon icon="ri-money-dollar-circle-line" size="14" color="success" class="flex-shrink-0" />
+                            <span class="text-caption font-weight-bold text-success" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''" style="font-size: 0.75rem;">
+                              {{ formatCurrency(item.total) }}
+                            </span>
                           </div>
+                          <!-- Estado Pago (Text badge) -->
+                          <VChip v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
+                            size="x-small"
+                            :color="getPaymentStatusInfo(item.payment_status)?.color"
+                            variant="tonal"
+                            class="font-weight-bold px-1"
+                            style="font-size: 0.55rem; height: 16px;"
+                          >
+                            {{ getPaymentStatusInfo(item.payment_status)?.text }}
+                          </VChip>
                         </div>
                       </div>
                     </VCardText>
