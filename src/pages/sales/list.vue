@@ -654,29 +654,29 @@ onMounted(() => {
               </div>
 
               <!-- Tarjetas del Día -->
-              <VRow>
+              <VRow class="ma-n1 ma-sm-n2">
                 <VCol 
                   v-for="item in groupedSales[date]" 
                   :key="item.id"
-                  cols="12"
+                  cols="6"
                   sm="6"
                   md="4"
-                  class="d-flex"
+                  class="d-flex pa-1 pa-sm-2"
                 >
                   <VCard class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
                     <!-- Cabecera de la Tarjeta -->
-                    <VCardText class="pa-3 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-2">
-                      <div class="d-flex align-center gap-2">
+                    <VCardText class="pa-2 pa-sm-3 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
+                      <div class="d-flex align-center gap-1">
                         <VChip
                           :color="getDocumentTypeInfo(item.document_type)?.color"
-                          size="small"
+                          size="x-small"
                           variant="tonal"
                           class="font-weight-bold text-uppercase"
                           label
                         >
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </VChip>
-                        <span class="text-subtitle-2 font-weight-bold text-primary cursor-pointer hover-underline" @click="viewSale(item)">
+                        <span class="text-caption text-sm-subtitle-2 font-weight-bold text-primary cursor-pointer hover-underline text-truncate" style="max-width: 70px;" @click="viewSale(item)" :title="item.document_number">
                           {{ item.document_number }}
                         </span>
                       </div>
@@ -684,55 +684,55 @@ onMounted(() => {
                       <!-- Estado General -->
                       <div class="d-flex align-center gap-1">
                         <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
-                          style="width: 8px; height: 8px;"></span>
-                        <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ getStatusInfo(item.status)?.text }}</span>
+                          style="width: 6px; height: 6px;"></span>
+                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline">{{ getStatusInfo(item.status)?.text }}</span>
                       </div>
                     </VCardText>
 
                     <!-- Cuerpo de la Tarjeta -->
-                    <VCardText class="pa-3 flex-grow-1">
+                    <VCardText class="pa-2 pa-sm-3 flex-grow-1">
                       <div class="d-flex flex-column gap-2">
                         <!-- Cliente -->
-                        <div class="d-flex align-start gap-2">
-                          <VAvatar color="info" variant="tonal" size="28" class="mt-0">
-                            <VIcon icon="ri-user-line" size="15" />
+                        <div class="d-flex align-start gap-1 gap-sm-2">
+                          <VAvatar color="info" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
+                            <VIcon icon="ri-user-line" size="12" />
                           </VAvatar>
                           <div class="overflow-hidden w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Cliente</div>
-                            <div class="text-body-2 font-weight-semibold text-grey-darken-4 text-truncate" :title="getClientName(item.client)">
+                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Cliente</div>
+                            <div class="text-caption text-sm-body-2 font-weight-semibold text-grey-darken-4 text-truncate" :title="getClientName(item.client)">
                               {{ getClientName(item.client) }}
                             </div>
-                            <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis">
+                            <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis d-none d-sm-block" style="font-size: 0.7rem;">
                               Doc: {{ item.client.n_document }}
                             </div>
                           </div>
                         </div>
 
                         <!-- Vehículo -->
-                        <div v-if="item.vehicle" class="d-flex align-start gap-2">
-                          <VAvatar color="primary" variant="tonal" size="28" class="mt-0">
-                            <VIcon icon="ri-car-line" size="15" />
+                        <div v-if="item.vehicle" class="d-flex align-start gap-1 gap-sm-2">
+                          <VAvatar color="primary" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
+                            <VIcon icon="ri-car-line" size="12" />
                           </VAvatar>
                           <div class="overflow-hidden w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Vehículo</div>
-                            <div class="text-body-2 font-weight-bold text-primary text-truncate">
+                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Vehículo</div>
+                            <div class="text-caption text-sm-body-2 font-weight-bold text-primary text-truncate">
                               {{ item.vehicle.license_plate }}
                             </div>
-                            <div class="text-caption text-medium-emphasis text-truncate" :title="formatVehicleInfo(item.vehicle)">
+                            <div class="text-caption text-medium-emphasis text-truncate d-none d-sm-block" :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.7rem;">
                               {{ formatVehicleInfo(item.vehicle) }}
                             </div>
                           </div>
                         </div>
 
                         <!-- Total y Pago -->
-                        <div class="d-flex align-start gap-2">
-                          <VAvatar color="success" variant="tonal" size="28" class="mt-0">
-                            <VIcon icon="ri-money-dollar-circle-line" size="15" />
+                        <div class="d-flex align-start gap-1 gap-sm-2">
+                          <VAvatar color="success" variant="tonal" size="20" class="mt-0 d-none d-sm-inline-flex">
+                            <VIcon icon="ri-money-dollar-circle-line" size="12" />
                           </VAvatar>
                           <div class="w-100">
-                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">Total</div>
-                            <div class="d-flex align-center gap-2 flex-wrap">
-                              <span class="text-subtitle-1 font-weight-bold text-success" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
+                            <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold" style="font-size: 0.55rem; letter-spacing: 0.3px; line-height: 1.1;">Total</div>
+                            <div class="d-flex align-center gap-1 flex-wrap">
+                              <span class="text-body-2 text-sm-subtitle-1 font-weight-bold text-success" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
                                 {{ formatCurrency(item.total) }}
                               </span>
                               <!-- Estado Pago (Text badge) -->
@@ -740,7 +740,8 @@ onMounted(() => {
                                 size="x-small"
                                 :color="getPaymentStatusInfo(item.payment_status)?.color"
                                 variant="tonal"
-                                class="font-weight-bold"
+                                class="font-weight-bold px-1"
+                                style="font-size: 0.6rem; height: 16px;"
                               >
                                 {{ getPaymentStatusInfo(item.payment_status)?.text }}
                               </VChip>
@@ -753,17 +754,17 @@ onMounted(() => {
                     <VDivider />
 
                     <!-- Acciones -->
-                    <VCardActions class="pa-2 justify-end bg-grey-lighten-5 mt-auto">
+                    <VCardActions class="pa-1 pa-sm-2 justify-end bg-grey-lighten-5 mt-auto">
                       <!-- Ver Detalle (Acción rápida) -->
                       <VBtn
                         variant="text"
                         color="info"
                         prepend-icon="ri-eye-line"
                         size="small"
-                        class="text-none font-weight-bold action-btn"
+                        class="text-none font-weight-bold action-btn px-2"
                         @click="viewSale(item)"
                       >
-                        Ver Detalle
+                        <span class="d-none d-sm-inline">Ver Detalle</span>
                       </VBtn>
 
                       <!-- Más Acciones (Dropdown) -->
@@ -772,9 +773,9 @@ onMounted(() => {
                         color="secondary"
                         prepend-icon="ri-more-2-line"
                         size="small"
-                        class="text-none font-weight-bold action-btn"
+                        class="text-none font-weight-bold action-btn px-2"
                       >
-                        Más
+                        <span class="d-none d-sm-inline">Más</span>
                         <VMenu
                           activator="parent"
                           transition="slide-y-transition"
