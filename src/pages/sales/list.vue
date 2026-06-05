@@ -271,7 +271,7 @@ const generateSinglePDF = sale => {
   }
 }
 
-const printSale = async saleId => {
+const printSale = saleId => {
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -287,6 +287,21 @@ const printSale = async saleId => {
   } catch (error) {
     console.error('Error al imprimir:', error)
     showNotification('Error al abrir la previsualización de la venta', 'error')
+  }
+}
+
+const printDirectlyFromServer = async (id, type) => {
+  try {
+    const endpoint = type === 'sale' ? `sales/${id}/print` : `work-orders/${id}/print`
+    const response = await $api(endpoint, { method: 'POST' })
+    if (response.success) {
+      showNotification(response.message || 'Impresión directa enviada', 'success')
+    } else {
+      showNotification(response.message || 'Error en impresión directa', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    showNotification('Error al conectar con la impresora del servidor', 'error')
   }
 }
 
@@ -541,7 +556,7 @@ onMounted(() => {
                         <span class="text-body-2 text-grey-darken-1 font-weight-medium">{{
                           getDocumentTypeInfo(item.document_type)?.text }}</span>
                         <VChip
-                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number) !== item.document_number"
+                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
                           color="info"
                           size="x-small"
                           variant="tonal"
@@ -626,6 +641,8 @@ onMounted(() => {
                           <VList density="compact" class="py-1">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
                               @click="printSale(item.id)" />
+                            <VListItem prepend-icon="ri-printer-cloud-line" title="Imprimir Directo (Servidor)" class="text-primary text-body-2"
+                              @click="printDirectlyFromServer(item.id, 'sale')" />
                             <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
                               @click="generateSinglePDF(item)" />
                             <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
@@ -695,7 +712,7 @@ onMounted(() => {
                         </span>
                         <!-- Orden de Trabajo Vinculada (Badge) -->
                         <VChip
-                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number) !== item.document_number"
+                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
                           color="info"
                           size="x-small"
                           variant="flat"
@@ -790,6 +807,8 @@ onMounted(() => {
                           <VList density="compact" class="py-1">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
                               @click="printSale(item.id)" />
+                            <VListItem prepend-icon="ri-printer-cloud-line" title="Imprimir Directo (Servidor)" class="text-primary text-body-2"
+                              @click="printDirectlyFromServer(item.id, 'sale')" />
                             <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
                               @click="generateSinglePDF(item)" />
                             <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"

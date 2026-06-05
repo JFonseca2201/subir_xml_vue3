@@ -155,7 +155,7 @@ const closeDialog = () => {
 
 const { showNotification } = useGlobalToast()
 
-const printSale = async saleId => {
+const printSale = saleId => {
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -171,6 +171,21 @@ const printSale = async saleId => {
   } catch (error) {
     console.error('Error al imprimir:', error)
     showNotification('Error al abrir la previsualización de la venta', 'error')
+  }
+}
+
+const printDirectlyFromServer = async (id, type) => {
+  try {
+    const endpoint = type === 'sale' ? `sales/${id}/print` : `work-orders/${id}/print`
+    const response = await $api(endpoint, { method: 'POST' })
+    if (response.success) {
+      showNotification(response.message || 'Impresión directa enviada', 'success')
+    } else {
+      showNotification(response.message || 'Error en impresión directa', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    showNotification('Error al conectar con la impresora del servidor', 'error')
   }
 }
 
@@ -590,6 +605,9 @@ const generateSinglePDF = sale => {
         </VBtn>
         <VBtn color="info" variant="tonal" prepend-icon="ri-printer-line" @click="printSale(props.saleData.id)">
           Imprimir
+        </VBtn>
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-printer-cloud-line" @click="printDirectlyFromServer(props.saleData.id, 'sale')">
+          Imprimir Directo (Servidor)
         </VBtn>
         <VBtn color="primary" variant="tonal" prepend-icon="ri-file-pdf-line" @click="generateSinglePDF(props.saleData)">
           Ver PDF

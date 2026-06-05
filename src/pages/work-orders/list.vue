@@ -295,7 +295,7 @@ const downloadPDF = async workOrderId => {
   }
 }
 
-const printPDF = async workOrderId => {
+const printPDF = workOrderId => {
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -311,6 +311,21 @@ const printPDF = async workOrderId => {
   } catch (error) {
     console.error('Error al imprimir:', error)
     showNotification('Error al abrir la previsualización de la orden', 'error')
+  }
+}
+
+const printDirectlyFromServer = async (id, type) => {
+  try {
+    const endpoint = type === 'sale' ? `sales/${id}/print` : `work-orders/${id}/print`
+    const response = await $api(endpoint, { method: 'POST' })
+    if (response.success) {
+      showNotification(response.message || 'Impresión directa enviada', 'success')
+    } else {
+      showNotification(response.message || 'Error en impresión directa', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    showNotification('Error al conectar con la impresora del servidor', 'error')
   }
 }
 
@@ -646,6 +661,13 @@ onMounted(() => {
                           />
                           <VListItem
                             v-if="workOrder.status !== 'draft'"
+                            prepend-icon="ri-printer-cloud-line"
+                            title="Imprimir Directo (Servidor)"
+                            class="text-primary text-body-2"
+                            @click="printDirectlyFromServer(workOrder.id, 'work-order')"
+                          />
+                          <VListItem
+                            v-if="workOrder.status !== 'draft'"
                             prepend-icon="ri-file-pdf-line"
                             title="Descargar PDF"
                             class="text-primary text-body-2"
@@ -855,6 +877,15 @@ onMounted(() => {
             @click="printPDF(selectedWorkOrder.id)"
           >
             Imprimir
+          </VBtn>
+          <VBtn
+            v-if="selectedWorkOrder.status !== 'draft'"
+            color="primary"
+            variant="tonal"
+            prepend-icon="ri-printer-cloud-line"
+            @click="printDirectlyFromServer(selectedWorkOrder.id, 'work-order')"
+          >
+            Imprimir Directo (Servidor)
           </VBtn>
           <VBtn
             v-if="selectedWorkOrder.status !== 'draft'"

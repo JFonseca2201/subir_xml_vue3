@@ -38,7 +38,7 @@ export const $api = ofetch.create({
   async onRequest(response) {
     //console.log(response);
     const accessToken = localStorage.getItem("token")//useCookie('accessToken').value
-    if (isTokenExpired(accessToken) && response.request != "auth/login") {
+    if (accessToken && isTokenExpired(accessToken) && response.request != "auth/login") {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
 
@@ -49,7 +49,7 @@ export const $api = ofetch.create({
       }, 100)
     }
     let options = response.options
-    if (accessToken) {
+    if (accessToken && response.request !== 'auth/login' && response.request !== 'auth/register') {
       options.headers = {
         ...options.headers,
         Authorization: `Bearer ${accessToken}`,

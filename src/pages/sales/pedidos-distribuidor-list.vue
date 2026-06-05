@@ -134,7 +134,7 @@ const generateSinglePDF = pedido => {
   }
 }
 
-const printPedido = async pedidoId => {
+const printPedido = pedidoId => {
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
@@ -150,6 +150,21 @@ const printPedido = async pedidoId => {
   } catch (error) {
     console.error('Error al imprimir:', error)
     showNotification('Error al abrir la previsualización del pedido', 'error')
+  }
+}
+
+const printDirectlyFromServer = async (id, type) => {
+  try {
+    const endpoint = type === 'pedido' ? `pedidos-distribuidor/${id}/print` : `work-orders/${id}/print`
+    const response = await $api(endpoint, { method: 'POST' })
+    if (response.success) {
+      showNotification(response.message || 'Impresión directa enviada', 'success')
+    } else {
+      showNotification(response.message || 'Error en impresión directa', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    showNotification('Error al conectar con la impresora del servidor', 'error')
   }
 }
 
@@ -494,6 +509,15 @@ onMounted(() => {
                     />
                     <VBtn
                       class="action-btn"
+                      icon="ri-printer-cloud-line"
+                      variant="text"
+                      size="small"
+                      color="primary"
+                      title="Imprimir Directo (Servidor)"
+                      @click="printDirectlyFromServer(item.id, 'pedido')"
+                    />
+                    <VBtn
+                      class="action-btn"
                       icon="ri-file-pdf-line"
                       variant="text"
                       size="small"
@@ -751,6 +775,13 @@ onMounted(() => {
             @click="printPedido(selectedPedido.id)"
           >
             Imprimir
+          </VBtn>
+          <VBtn
+            color="primary"
+            prepend-icon="ri-printer-cloud-line"
+            @click="printDirectlyFromServer(selectedPedido.id, 'pedido')"
+          >
+            Imprimir Directo (Servidor)
           </VBtn>
           <VBtn
             color="success"
