@@ -14,7 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'update:isDialogVisible',
-  'addInvoice'
+  'addInvoice',
 ])
 
 // Global Toast
@@ -114,11 +114,14 @@ const onFileSelected = event => {
 // Drag & Drop
 const onFileDropped = event => {
   isDragging.value = false
+
   const file = event.dataTransfer.files[0]
   if (file) {
     if (file.name.endsWith('.xml')) {
       selectedFile.value = file
+
       const mockEvent = { target: { files: [file] } }
+
       handleFileUpload(mockEvent)
     } else {
       error_exist.value = "Por favor, selecciona un archivo XML válido."
@@ -132,11 +135,12 @@ const triggerFileInput = () => {
   }
 }
 
-const formatFileSize = (bytes) => {
+const formatFileSize = bytes => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
@@ -156,6 +160,7 @@ const storeXml = async () => {
 
   if (!selectedFile.value) {
     error_exist.value = "Selecciona un archivo XML primero"
+    
     return
   }
 
@@ -163,6 +168,7 @@ const storeXml = async () => {
     loader.start()
 
     const formData = new FormData()
+
     formData.append('xml', selectedFile.value)
     formData.append('item_type', selectedRadio.value)
 
@@ -184,6 +190,7 @@ const storeXml = async () => {
           }
           if (errorMessages.length > 0) {
             error_exist.value = errorMessages.join(' | ')
+            
             return
           }
         }
@@ -191,6 +198,7 @@ const storeXml = async () => {
         // 2. Extraer detalle de excepción del backend (data.error)
         if (data.error && typeof data.error === 'string') {
           error_exist.value = `${data.message || 'Error'}: ${data.error}`
+          
           return
         }
 
@@ -201,6 +209,7 @@ const storeXml = async () => {
 
     // Mensaje de éxito
     const successMessage = resp?._data?.message || resp?.message || 'Factura importada correctamente'
+
     showNotification(successMessage, 'success')
 
     // Refrescar formulario y emitir nueva factura
@@ -209,6 +218,7 @@ const storeXml = async () => {
 
   } catch (error) {
     console.error('Error capturado en importación:', error)
+
     // Conservar el error específico extraído, o parsear el del error lanzado
     if (!error_exist.value) {
       const serverError = error.response?._data || {}
@@ -247,58 +257,140 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog v-model="props.isDialogVisible" max-width="850" scrollable persistent transition="dialog-bottom-transition">
-    <VCard class="rounded-xl overflow-hidden elevation-24 d-flex flex-column" style="max-height: 90vh;">
-      <VOverlay :model-value="loader.loading" class="align-center justify-center" contained persistent>
-        <VProgressCircular color="primary" indeterminate size="64" />
+  <VDialog
+    v-model="props.isDialogVisible"
+    max-width="850"
+    scrollable
+    persistent
+    transition="dialog-bottom-transition"
+  >
+    <VCard
+      class="rounded-xl overflow-hidden elevation-24 d-flex flex-column"
+      style="max-height: 90vh;"
+    >
+      <VOverlay
+        :model-value="loader.loading"
+        class="align-center justify-center"
+        contained
+        persistent
+      >
+        <VProgressCircular
+          color="primary"
+          indeterminate
+          size="64"
+        />
       </VOverlay>
 
       <!-- Header con Gradiente Premium -->
       <div class="gradient-header px-6 py-4 d-flex align-center justify-space-between text-white flex-shrink-0">
         <div class="d-flex align-center gap-3">
-          <VAvatar color="rgba(255,255,255,0.15)" size="38">
-            <VIcon color="white" size="22">ri-file-upload-line</VIcon>
+          <VAvatar
+            color="rgba(255,255,255,0.15)"
+            size="38"
+          >
+            <VIcon
+              color="white"
+              size="22"
+            >
+              ri-file-upload-line
+            </VIcon>
           </VAvatar>
           <div>
-            <div class="text-h6 font-weight-bold leading-tight" style="color: white !important;">Importar Factura XML
+            <div
+              class="text-h6 font-weight-bold leading-tight"
+              style="color: white !important;"
+            >
+              Importar Factura XML
             </div>
-            <div class="text-caption text-white opacity-80" style="color: white !important;">Carga comprobantes
-              autorizados por el SRI</div>
+            <div
+              class="text-caption text-white opacity-80"
+              style="color: white !important;"
+            >
+              Carga comprobantes
+              autorizados por el SRI
+            </div>
           </div>
         </div>
-        <VBtn icon="ri-close-line" variant="text" color="white" density="comfortable" @click="onFormReset" />
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          color="white"
+          density="comfortable"
+          @click="onFormReset"
+        />
       </div>
 
       <!-- Contenido -->
-      <VCardText class="pa-6 d-flex flex-column gap-5 bg-slate-50 flex-grow-1" style="overflow-y: auto;">
-
+      <VCardText
+        class="pa-6 d-flex flex-column gap-5 bg-slate-50 flex-grow-1"
+        style="overflow-y: auto;"
+      >
         <!-- Drag & Drop Zone Premium -->
         <div
           class="drag-drop-zone d-flex flex-column align-center justify-center border-dashed rounded-xl pa-8 cursor-pointer transition-all text-center"
-          :class="{ 'drag-over': isDragging, 'has-file': selectedFile }" @dragover.prevent="isDragging = true"
-          @dragleave.prevent="isDragging = false" @drop.prevent="onFileDropped" @click="triggerFileInput">
+          :class="{ 'drag-over': isDragging, 'has-file': selectedFile }"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="onFileDropped"
+          @click="triggerFileInput"
+        >
           <!-- Hidden Input -->
-          <input ref="fileInputRef" type="file" accept=".xml" class="d-none" @change="onFileSelected" />
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept=".xml"
+            class="d-none"
+            @change="onFileSelected"
+          >
 
           <template v-if="!selectedFile">
-            <VIcon size="56" color="primary" class="mb-3 pulse-icon">ri-upload-cloud-2-line</VIcon>
-            <div class="text-body-1 font-weight-bold text-high-emphasis">Arrastra tu archivo XML aquí</div>
-            <div class="text-caption text-medium-emphasis mt-1">o haz clic para explorar en tu ordenador (.xml)</div>
+            <VIcon
+              size="56"
+              color="primary"
+              class="mb-3 pulse-icon"
+            >
+              ri-upload-cloud-2-line
+            </VIcon>
+            <div class="text-body-1 font-weight-bold text-high-emphasis">
+              Arrastra tu archivo XML aquí
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              o haz clic para explorar en tu ordenador (.xml)
+            </div>
           </template>
           <template v-else>
             <div class="d-flex align-center gap-3 w-100 pa-2 bg-white rounded-lg border shadow-sm">
-              <VAvatar color="primary-lighten-5" size="44" rounded class="mr-1">
-                <VIcon color="primary" size="24">ri-file-code-fill</VIcon>
+              <VAvatar
+                color="primary-lighten-5"
+                size="44"
+                rounded
+                class="mr-1"
+              >
+                <VIcon
+                  color="primary"
+                  size="24"
+                >
+                  ri-file-code-fill
+                </VIcon>
               </VAvatar>
               <div class="flex-grow-1 text-left">
-                <div class="text-body-1 font-weight-bold text-high-emphasis text-truncate" style="max-width: 450px;">
+                <div
+                  class="text-body-1 font-weight-bold text-high-emphasis text-truncate"
+                  style="max-width: 450px;"
+                >
                   {{ selectedFile.name }}
                 </div>
                 <div class="text-caption text-medium-emphasis">
                   {{ formatFileSize(selectedFile.size) }}
                 </div>
               </div>
-              <VBtn icon="ri-close-line" variant="text" color="error" size="small" @click.stop="clearSelectedFile" />
+              <VBtn
+                icon="ri-close-line"
+                variant="text"
+                color="error"
+                size="small"
+                @click.stop="clearSelectedFile"
+              />
             </div>
           </template>
         </div>
@@ -306,74 +398,147 @@ onMounted(() => {
         <!-- Selector de Categoría de Destino -->
         <div class="category-section pa-4 rounded-xl border bg-white shadow-sm">
           <div class="d-flex align-center gap-2 mb-3">
-            <VIcon color="info" size="20">ri-folder-shared-line</VIcon>
+            <VIcon
+              color="info"
+              size="20"
+            >
+              ri-folder-shared-line
+            </VIcon>
             <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
               Categoría de destino en Inventario
             </span>
           </div>
-          <CustomRadiosWithIcon v-model:selected-radio="selectedRadio" :radio-content="radioContent"
-            :grid-column="{ sm: '3', cols: '12' }" class="square-radio" />
+          <CustomRadiosWithIcon
+            v-model:selected-radio="selectedRadio"
+            :radio-content="radioContent"
+            :grid-column="{ sm: '3', cols: '12' }"
+            class="square-radio"
+          />
         </div>
 
         <!-- Vista previa de Factura XML -->
-        <div v-if="xmlData && xmlData.infoTributaria" class="animate-fade-in mt-2">
+        <div
+          v-if="xmlData && xmlData.infoTributaria"
+          class="animate-fade-in mt-2"
+        >
           <!-- Título principal de sección -->
           <div class="d-flex align-center justify-space-between mb-4 border-b pb-2">
             <div class="d-flex align-center gap-2">
-              <VIcon color="primary" size="22">ri-file-list-3-line</VIcon>
+              <VIcon
+                color="primary"
+                size="22"
+              >
+                ri-file-list-3-line
+              </VIcon>
               <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
                 Detalles de la Factura Encontrada
               </span>
             </div>
-            <VChip color="success" size="small" variant="tonal" class="font-weight-bold">
+            <VChip
+              color="success"
+              size="small"
+              variant="tonal"
+              class="font-weight-bold"
+            >
               SRI Válido
             </VChip>
           </div>
 
           <!-- Datos de Cabecera planos -->
           <VRow class="mb-4 bg-white rounded-lg pa-4 border shadow-sm">
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <div class="d-flex align-start gap-2">
-                <VAvatar color="primary-lighten-5" size="32">
-                  <VIcon color="primary" size="18">ri-building-line</VIcon>
+                <VAvatar
+                  color="primary-lighten-5"
+                  size="32"
+                >
+                  <VIcon
+                    color="primary"
+                    size="18"
+                  >
+                    ri-building-line
+                  </VIcon>
                 </VAvatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis font-weight-bold">Proveedor</div>
-                  <div class="text-body-2 font-weight-black text-truncate" style="max-width: 200px;"
-                    :title="xmlData.infoTributaria?.razonSocial">
+                  <div class="text-caption text-medium-emphasis font-weight-bold">
+                    Proveedor
+                  </div>
+                  <div
+                    class="text-body-2 font-weight-black text-truncate"
+                    style="max-width: 200px;"
+                    :title="xmlData.infoTributaria?.razonSocial"
+                  >
                     {{ xmlData.infoTributaria?.razonSocial || 'N/A' }}
                   </div>
-                  <div class="text-caption text-medium-emphasis" v-if="xmlData.infoTributaria?.ruc">
+                  <div
+                    v-if="xmlData.infoTributaria?.ruc"
+                    class="text-caption text-medium-emphasis"
+                  >
                     RUC: {{ xmlData.infoTributaria.ruc }}
                   </div>
                 </div>
               </div>
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <div class="d-flex align-start gap-2">
-                <VAvatar color="success-lighten-5" size="32">
-                  <VIcon color="success" size="18">ri-hashtag</VIcon>
+                <VAvatar
+                  color="success-lighten-5"
+                  size="32"
+                >
+                  <VIcon
+                    color="success"
+                    size="18"
+                  >
+                    ri-hashtag
+                  </VIcon>
                 </VAvatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis font-weight-bold">Número de Factura</div>
+                  <div class="text-caption text-medium-emphasis font-weight-bold">
+                    Número de Factura
+                  </div>
                   <div class="text-body-2 font-weight-black text-success">
                     {{ (String(xmlData.infoTributaria?.secuencial || '0')).padStart(9, '0') }}
                   </div>
-                  <div class="text-caption text-medium-emphasis" v-if="xmlData.infoTributaria?.estab">
+                  <div
+                    v-if="xmlData.infoTributaria?.estab"
+                    class="text-caption text-medium-emphasis"
+                  >
                     {{ xmlData.infoTributaria.estab }}-{{ xmlData.infoTributaria.ptoEmi }}
                   </div>
                 </div>
               </div>
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <div class="d-flex align-start gap-2">
-                <VAvatar color="info-lighten-5" size="32">
-                  <VIcon color="info" size="18">ri-calendar-line</VIcon>
+                <VAvatar
+                  color="info-lighten-5"
+                  size="32"
+                >
+                  <VIcon
+                    color="info"
+                    size="18"
+                  >
+                    ri-calendar-line
+                  </VIcon>
                 </VAvatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis font-weight-bold">Fecha Emisión</div>
+                  <div class="text-caption text-medium-emphasis font-weight-bold">
+                    Fecha Emisión
+                  </div>
                   <div class="text-body-2 font-weight-black">
                     {{ xmlData.infoFactura?.fechaEmision || 'N/A' }}
                   </div>
@@ -384,50 +549,101 @@ onMounted(() => {
 
           <!-- Tabla de Items Plana, sin bordes laterales ni contenedores adicionales -->
           <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2">
-            <VIcon size="18" color="primary">ri-shopping-cart-2-line</VIcon>
+            <VIcon
+              size="18"
+              color="primary"
+            >
+              ri-shopping-cart-2-line
+            </VIcon>
             <span>Productos / Ítems</span>
-            <VChip size="x-small" color="primary" class="font-weight-bold">{{ getDetallesArray()?.length || 0 }} items
+            <VChip
+              size="x-small"
+              color="primary"
+              class="font-weight-bold"
+            >
+              {{ getDetallesArray()?.length || 0 }} items
             </VChip>
           </div>
 
-          <VTable density="compact" class="preview-table clean-table mb-4">
-            <thead>
-              <tr>
-                <th class="text-left font-weight-bold py-2 border-b">Descripción</th>
-                <th class="text-center font-weight-bold py-2 border-b" style="width: 70px;">Cant.</th>
-                <th class="text-right font-weight-bold py-2 border-b" style="width: 100px;">Unit.</th>
-                <th class="text-right font-weight-bold py-2 border-b" style="width: 110px;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in getDetallesArray()" :key="index">
-                <td class="text-truncate font-weight-medium" style="max-width: 320px;">
-                  {{ item.descripcion || 'Sin descripción' }}
-                </td>
-                <td class="text-center">
-                  <VChip color="grey-darken-2" variant="tonal" size="x-small" class="font-weight-bold">
-                    {{ parseFloat(item.cantidad || 0).toFixed(0) }}
-                  </VChip>
-                </td>
-                <td class="text-right text-caption">${{ parseFloat(item.precioUnitario || 0).toFixed(2) }}</td>
-                <td class="text-right font-weight-bold text-info">${{ parseFloat(item.precioTotalSinImpuesto ||
-                  0).toFixed(2) }}
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+          <div class="preview-table-wrap">
+            <VTable
+              density="compact"
+              class="preview-table clean-table mb-4"
+            >
+              <thead>
+                <tr>
+                  <th class="text-left font-weight-bold py-2 border-b">
+                    Descripción
+                  </th>
+                  <th
+                    class="text-center font-weight-bold py-2 border-b"
+                    style="width: 70px;"
+                  >
+                    Cant.
+                  </th>
+                  <th
+                    class="text-right font-weight-bold py-2 border-b"
+                    style="width: 100px;"
+                  >
+                    Unit.
+                  </th>
+                  <th
+                    class="text-right font-weight-bold py-2 border-b"
+                    style="width: 110px;"
+                  >
+                    Total
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(item, index) in getDetallesArray()"
+                  :key="index"
+                >
+                  <td
+                    class="text-truncate font-weight-medium"
+                    style="max-width: 320px;"
+                  >
+                    {{ item.descripcion || 'Sin descripción' }}
+                  </td>
+                  <td class="text-center">
+                    <VChip
+                      color="grey-darken-2"
+                      variant="tonal"
+                      size="x-small"
+                      class="font-weight-bold"
+                    >
+                      {{ parseFloat(item.cantidad || 0).toFixed(0) }}
+                    </VChip>
+                  </td>
+                  <td class="text-right text-caption">
+                    ${{ parseFloat(item.precioUnitario || 0).toFixed(2) }}
+                  </td>
+                  <td class="text-right font-weight-bold text-info">
+                    ${{ parseFloat(item.precioTotalSinImpuesto ||
+                      0).toFixed(2) }}
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
 
           <!-- Resumen Total -->
           <div class="d-flex justify-end pt-2">
-            <div class="summary-card pa-4 rounded-xl border bg-white shadow-sm" style="min-width: 280px;">
+            <div
+              class="summary-card pa-4 rounded-xl border bg-white shadow-sm"
+              style="min-width: 280px;"
+            >
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption text-medium-emphasis">Subtotal:</span>
                 <span class="text-body-2 font-weight-bold">${{ (parseFloat(xmlData.infoFactura?.totalSinImpuestos || 0)
                   +
                   parseFloat(xmlData.infoFactura?.totalDescuento || 0)).toFixed(2) }}</span>
               </div>
-              <div class="d-flex justify-space-between align-center mb-2"
-                v-if="parseFloat(xmlData.infoFactura?.totalDescuento || 0) > 0">
+              <div
+                v-if="parseFloat(xmlData.infoFactura?.totalDescuento || 0) > 0"
+                class="d-flex justify-space-between align-center mb-2"
+              >
                 <span class="text-caption text-error">Descuento:</span>
                 <span class="text-body-2 font-weight-bold text-error">-${{
                   parseFloat(xmlData.infoFactura?.totalDescuento ||
@@ -452,18 +668,36 @@ onMounted(() => {
 
       <!-- Alertas -->
       <br>
-      <VAlert v-if="error_exist" type="error" variant="tonal" class="rounded-xl mt-2">
+      <VAlert
+        v-if="error_exist"
+        type="error"
+        variant="tonal"
+        class="rounded-xl mt-2"
+      >
         {{ error_exist }}
       </VAlert>
       <br>
       <!-- Footer -->
       <VCardActions class="justify-end px-6 pb-6 pt-2 bg-grey-lighten-4 border-t gap-2">
-        <VBtn color="secondary" variant="tonal" rounded="lg" prepend-icon="ri-close-line" @click="onFormReset">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          rounded="lg"
+          prepend-icon="ri-close-line"
+          @click="onFormReset"
+        >
           Cancelar
         </VBtn>
 
-        <VBtn color="primary" variant="flat" rounded="lg" prepend-icon="ri-upload-cloud-2-line"
-          :loading="loader.loading" :disabled="!selectedFile" @click="storeXml">
+        <VBtn
+          color="primary"
+          variant="flat"
+          rounded="lg"
+          prepend-icon="ri-upload-cloud-2-line"
+          :loading="loader.loading"
+          :disabled="!selectedFile"
+          @click="storeXml"
+        >
           Importar XML
         </VBtn>
       </VCardActions>
@@ -563,6 +797,23 @@ onMounted(() => {
 
 .clean-table td {
   border-bottom: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.5)) !important;
+}
+
+.preview-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.5));
+}
+.preview-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 500px;
+}
+.preview-table :deep(td.text-center),
+.preview-table :deep(td.text-right),
+.preview-table :deep(thead th.text-center),
+.preview-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
 }
 
 .backdrop-blur {

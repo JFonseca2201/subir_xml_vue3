@@ -303,7 +303,7 @@ onMounted(async () => {
 <template>
   <div class="pa-4 pa-sm-6">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4 border-b pb-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
         <div class="d-flex align-center">
           <VAvatar color="info-lighten-5" size="48" class="mr-3">
@@ -317,7 +317,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <VBtn color="secondary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/pedidos-distribuidor-list">
+      <VBtn color="secondary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/pedidos-distribuidor-list" class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
     </div>

@@ -305,7 +305,7 @@ onMounted(() => {
             <span class="text-body-2 text-medium-emphasis">Actualiza la información del producto existente</span>
           </div>
         </div>
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/product/list">Volver al Listado
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/product/list" class="align-self-md-center align-self-end">Volver al Listado
         </VBtn>
       </div>
 
@@ -544,7 +544,7 @@ onMounted(() => {
 
         <!-- Sticky Footer -->
         <div
-          class="pa-4 bg-surface sticky-bottom d-flex flex-column flex-sm-row justify-space-between align-center gap-4">
+          class="pa-4 bg-surface sticky-bottom d-flex flex-column flex-md-row justify-space-between align-center gap-4">
           <div class="d-flex flex-column gap-2 w-100 w-sm-auto flex-grow-1">
             <VAlert v-if="success" color="success" variant="tonal" closable density="compact" class="ma-0 text-caption">
               {{ success }}</VAlert>

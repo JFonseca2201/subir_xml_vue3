@@ -221,7 +221,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 users-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-group-line" color="primary" class="me-2" size="28" />
@@ -231,7 +231,7 @@ onMounted(() => {
           Gestión de usuarios del sistema
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="primary" prepend-icon="ri-add-line" @click="isUserAddDialogVisible = !isUserAddDialogVisible">
           Nuevo Usuario
         </VBtn>
@@ -323,11 +323,11 @@ onMounted(() => {
                   <div class="d-flex align-center">
                     <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
                     <span class="text-body-2 text-medium-emphasis">
-                      {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                      {{ item.created_at ? new Date(item.created_at.replace(' ', 'T')).toLocaleDateString('es-EC', {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit'
-                      }) }}
+                      }) : 'N/A' }}
                     </span>
                   </div>
                 </td>

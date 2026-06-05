@@ -342,7 +342,7 @@ definePage({ meta: { permission: 'kardex' } })
 <template>
   <div class="pa-4 pa-sm-6 kardex-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-file-list-3-line" color="primary" class="me-2" size="28" />
@@ -352,7 +352,7 @@ definePage({ meta: { permission: 'kardex' } })
           Movimientos financieros consolidados
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="primary" prepend-icon="ri-refresh-line" :loading="isLoading" @click="loadKardex">
           Actualizar
         </VBtn>
@@ -434,7 +434,7 @@ definePage({ meta: { permission: 'kardex' } })
         <!-- Encabezado del Producto con Resumen -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
           <VCardText class="pa-4">
-            <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-4">
+            <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-4">
               <div>
                 <h2 class="text-h5 font-weight-bold mb-1 d-flex align-center">
                   <VIcon :icon="group.isProduct ? 'ri-box-3-line' : 'ri-wallet-3-line'" color="primary" class="me-2"

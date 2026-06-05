@@ -1002,7 +1002,7 @@ onMounted(async () => {
 <template>
   <div class="pa-4 pa-sm-6">
     <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4 border-b pb-4">
+      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
         <div class="d-flex align-center">
           <VAvatar color="primary-lighten-5" size="48" class="mr-3">
@@ -1012,7 +1012,7 @@ onMounted(async () => {
         </div>
         <p class="text-medium-emphasis mb-0">Crea un nuevo documento comercial</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list">
+      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list" class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
     </div>
@@ -1545,7 +1545,7 @@ onMounted(async () => {
                       order.client?.n_document }}</small></td>
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
                       order.vehicle?.model }}</small></td>
-                    <td>{{ new Date(order.entry_date).toLocaleDateString() }}</td>
+                    <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A' }}</td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
                         Importar

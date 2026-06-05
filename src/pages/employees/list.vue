@@ -219,7 +219,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 employees-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-user-settings-line" color="primary" class="me-2" size="28" />
@@ -229,7 +229,7 @@ onMounted(() => {
           Gestión de empleados y personal del taller
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="primary" prepend-icon="ri-add-line" @click="addEmployee">
           Agregar Empleado
         </VBtn>

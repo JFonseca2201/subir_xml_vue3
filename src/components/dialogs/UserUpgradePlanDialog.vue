@@ -61,7 +61,7 @@ const isConfirmDialogVisible = ref(false)
           </div>
         </div>
 
-        <div class="d-flex justify-space-between flex-column flex-sm-row gap-4 px-0 mt-4">
+        <div class="d-flex justify-space-between flex-column flex-md-row gap-4 px-0 mt-4">
           <VSelect
             v-model="selectedPlan"
             :items="plansList"

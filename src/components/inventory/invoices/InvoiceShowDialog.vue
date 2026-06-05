@@ -28,6 +28,7 @@ const { showNotification } = useGlobalToast()
 const isAllSelected = computed(() => {
   const productItems = filteredItems.value.filter(item => item.item_type === 1)
   if (productItems.length === 0) return false
+  
   return productItems.every(item => selectedItems.value.includes(item.id))
 })
 
@@ -39,33 +40,39 @@ const toggleSelectAll = () => {
   const productItems = filteredItems.value.filter(item => item.item_type === 1)
   if (isAllSelected.value) {
     const idsToRemove = productItems.map(item => item.id)
+
     selectedItems.value = selectedItems.value.filter(id => !idsToRemove.includes(id))
   } else {
     const idsToAdd = productItems.map(item => item.id)
+
     selectedItems.value = [...new Set([...selectedItems.value, ...idsToAdd])]
   }
 }
 
-const updateItemCategory = async (item) => {
+const updateItemCategory = async item => {
   try {
     isLoading.value = true
+
     const data = {
       item_type: item.item_type,
-      product_categorie_id: item.product_categorie_id
+      product_categorie_id: item.product_categorie_id,
     }
+
     const resp = await $api(`invoice-items/${item.id}`, {
       method: 'PUT',
-      body: data
+      body: data,
     })
     
     if (resp.status === 200 || resp.invoiceItem) {
       showNotification('Categoría actualizada con éxito', 'success')
+
+
       // Actualizar localmente
       const index = invoice.value.invoice_items.findIndex(i => i.id === item.id)
       if (index !== -1) {
         invoice.value.invoice_items[index] = {
           ...invoice.value.invoice_items[index],
-          ...resp.invoiceItem
+          ...resp.invoiceItem,
         }
       }
     } else {
@@ -90,8 +97,8 @@ const applyBulkCategory = async () => {
         method: 'PUT',
         body: {
           item_type: 1,
-          product_categorie_id: bulkCategory.value
-        }
+          product_categorie_id: bulkCategory.value,
+        },
       })
     })
     
@@ -406,7 +413,11 @@ onMounted(() => {
             class="d-flex align-center gap-3 bg-blue-lighten-5 border border-blue-lighten-3 rounded-lg py-2 px-4 animate-fade-in"
           >
             <div class="text-caption font-weight-black text-info-darken-3 text-no-wrap">
-              <VIcon icon="ri-checkbox-multiple-line" class="mr-1" color="info" />
+              <VIcon
+                icon="ri-checkbox-multiple-line"
+                class="mr-1"
+                color="info"
+              />
               {{ selectedItems.length }} SELECCIONADOS
             </div>
             
@@ -452,204 +463,218 @@ onMounted(() => {
         <!-- Filtro de búsqueda -->
 
 
-        <VTable
-          hover
-          class="invoice-table"
-        >
-          <!-- 🧾 CABECERA -->
-          <thead class="bg-primary text-white sticky-header">
-            <tr>
-              <th style="width: 55px" v-if="props.invoiceSelected.invoice_process != 1">
-                <VCheckbox
-                  :model-value="isAllSelected"
-                  :indeterminate="isSomeSelected && !isAllSelected"
-                  density="compact"
-                  hide-details
-                  @click.stop="toggleSelectAll"
-                />
-              </th>
-              <th style="width: 50px">
-                #
-              </th>
-              <th style="width: 150px">
-                Código
-              </th>
-              <th style="width: 450px">
-                <VIcon
-                  size="16"
-                  class="mr-1"
+        <div class="invoice-table-wrap">
+          <VTable
+            hover
+            class="invoice-table"
+          >
+            <!-- 🧾 CABECERA -->
+            <thead class="bg-primary text-white sticky-header">
+              <tr>
+                <th
+                  v-if="props.invoiceSelected.invoice_process != 1"
+                  style="width: 55px"
                 >
-                  ri-box-3-line
-                </VIcon>
-                Producto
-              </th>
-              <th style="width: 200px">
-                <VIcon
-                  size="16"
-                  class="mr-1"
+                  <VCheckbox
+                    :model-value="isAllSelected"
+                    :indeterminate="isSomeSelected && !isAllSelected"
+                    density="compact"
+                    hide-details
+                    @click.stop="toggleSelectAll"
+                  />
+                </th>
+                <th style="width: 50px">
+                  #
+                </th>
+                <th style="width: 150px">
+                  Código
+                </th>
+                <th style="width: 450px">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-box-3-line
+                  </VIcon>
+                  Producto
+                </th>
+                <th style="width: 200px">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-folder-line
+                  </VIcon>
+                  Categoría
+                </th>
+                <th class="text-right">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-stack-line
+                  </VIcon>
+                  Cant.
+                </th>
+                <th class="text-right">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-money-dollar-circle-line
+                  </VIcon>
+                  Precio
+                </th>
+                <th class="text-right">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-calculator-line
+                  </VIcon>
+                  Subtotal
+                </th>
+                <th class="text-right">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-percent-line
+                  </VIcon>
+                  Dcto.
+                </th>
+                <th class="text-right">
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-money-dollar-circle-line
+                  </VIcon>
+                  Total
+                </th>
+
+                <th
+                  v-if="props.invoiceSelected.invoice_process != 1"
+                  class="text-right"
                 >
-                  ri-folder-line
-                </VIcon>
-                Categoría
-              </th>
-              <th class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-stack-line
-                </VIcon>
-                Cant.
-              </th>
-              <th class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-money-dollar-circle-line
-                </VIcon>
-                Precio
-              </th>
-              <th class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-calculator-line
-                </VIcon>
-                Subtotal
-              </th>
-              <th class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-percent-line
-                </VIcon>
-                Dcto.
-              </th>
-              <th class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-money-dollar-circle-line
-                </VIcon>
-                Total
-              </th>
+                  <VIcon
+                    size="16"
+                    class="mr-1"
+                  >
+                    ri-settings-2-line
+                  </VIcon>
+                  Editar
+                </th>
+              </tr>
+            </thead>
 
-              <th v-if="props.invoiceSelected.invoice_process != 1" class="text-right">
-                <VIcon
-                  size="16"
-                  class="mr-1"
-                >
-                  ri-settings-2-line
-                </VIcon>
-                Editar
-              </th>
-            </tr>
-          </thead>
-
-          <!-- 📦 CUERPO -->
-          <tbody>
-            <tr
-              v-for="(item, index) in filteredItems"
-              :key="item.id"
-            >
-              <td v-if="props.invoiceSelected.invoice_process != 1">
-                <VCheckbox
-                  v-if="item.item_type === 1"
-                  v-model="selectedItems"
-                  :value="item.id"
-                  density="compact"
-                  hide-details
-                  @click.stop
-                />
-              </td>
-              <td><small>{{ index + 1 }}</small></td>
-              <td class="font-weight-medium">
-                <VTooltip
-                  location="top"
-                  open-on-hover
-                >
-                  <template #activator="{ props: tooltipProps }">
-                    <small
-                      class="text-medium-emphasis"
-                      v-bind="tooltipProps"
-                    >
-                      {{ truncate(item.code, 20) }}
-                    </small>
-                  </template>
-                  <span>{{ item.code }}</span> <!-- hora: HH:MM:SS -->
-                </VTooltip>
-              </td>
-              <td class=" text-medium-emphasis">
-                <small>{{ (item.description) }}</small>
-              </td>
-
-              <td>
-                <VSelect
-                  v-if="props.invoiceSelected.invoice_process != 1 && item.item_type === 1"
-                  v-model="item.product_categorie_id"
-                  :items="categories"
-                  item-title="title"
-                  item-value="id"
-                  density="compact"
-                  variant="underlined"
-                  hide-details
-                  placeholder="Seleccionar..."
-                  class="inline-category-select"
-                  @update:model-value="updateItemCategory(item)"
-                />
-                <span v-else class="text-caption text-medium-emphasis">
-                  {{ getCategoryName(item.product_categorie_id, item.item_type) }}
-                </span>
-              </td>
-
-              <td class="text-right">
-                <small>{{ item.quantity }}</small>
-              </td>
-
-              <td class="text-right">
-                <small>${{ Number(item.unit_price).toFixed(2) }}</small>
-              </td>
-
-              <td class="text-right font-weight-bold">
-                <small>${{ Number(item.quantity * item.unit_price).toFixed(2) }}</small>
-              </td>
-
-              <td class="text-right text-error">
-                <small>${{ Number(item.discount).toFixed(2) }}</small>
-              </td>
-
-              <td class="text-right font-weight-bold text-primary">
-                <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
-                }}</small>
-              </td>
-
-              <td v-if="props.invoiceSelected.invoice_process != 1" class="text-right font-weight-bold text-primary">
-                <IconBtn @click="editInvoice(item)">
-                  <VIcon icon="ri-pencil-line" />
-                </IconBtn>
-              </td>
-            </tr>
-
-            <tr v-if="!invoice?.invoice_items?.length">
-              <td
-                colspan="7"
-                class="text-center text-medium-emphasis py-8"
+            <!-- 📦 CUERPO -->
+            <tbody>
+              <tr
+                v-for="(item, index) in filteredItems"
+                :key="item.id"
               >
-                <VIcon
-                  size="28"
-                  class="mb-2"
+                <td v-if="props.invoiceSelected.invoice_process != 1">
+                  <VCheckbox
+                    v-if="item.item_type === 1"
+                    v-model="selectedItems"
+                    :value="item.id"
+                    density="compact"
+                    hide-details
+                    @click.stop
+                  />
+                </td>
+                <td><small>{{ index + 1 }}</small></td>
+                <td class="font-weight-medium">
+                  <VTooltip
+                    location="top"
+                    open-on-hover
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <small
+                        class="text-medium-emphasis"
+                        v-bind="tooltipProps"
+                      >
+                        {{ truncate(item.code, 20) }}
+                      </small>
+                    </template>
+                    <span>{{ item.code }}</span> <!-- hora: HH:MM:SS -->
+                  </VTooltip>
+                </td>
+                <td class=" text-medium-emphasis">
+                  <small>{{ (item.description) }}</small>
+                </td>
+
+                <td>
+                  <VSelect
+                    v-if="props.invoiceSelected.invoice_process != 1 && item.item_type === 1"
+                    v-model="item.product_categorie_id"
+                    :items="categories"
+                    item-title="title"
+                    item-value="id"
+                    density="compact"
+                    variant="underlined"
+                    hide-details
+                    placeholder="Seleccionar..."
+                    class="inline-category-select"
+                    @update:model-value="updateItemCategory(item)"
+                  />
+                  <span
+                    v-else
+                    class="text-caption text-medium-emphasis"
+                  >
+                    {{ getCategoryName(item.product_categorie_id, item.item_type) }}
+                  </span>
+                </td>
+
+                <td class="text-right">
+                  <small>{{ item.quantity }}</small>
+                </td>
+
+                <td class="text-right">
+                  <small>${{ Number(item.unit_price).toFixed(2) }}</small>
+                </td>
+
+                <td class="text-right font-weight-bold">
+                  <small>${{ Number(item.quantity * item.unit_price).toFixed(2) }}</small>
+                </td>
+
+                <td class="text-right text-error">
+                  <small>${{ Number(item.discount).toFixed(2) }}</small>
+                </td>
+
+                <td class="text-right font-weight-bold text-primary">
+                  <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
+                  }}</small>
+                </td>
+
+                <td
+                  v-if="props.invoiceSelected.invoice_process != 1"
+                  class="text-right font-weight-bold text-primary"
                 >
-                  ri-inbox-line
-                </VIcon>
-                <div>Esta factura no tiene productos registrados</div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
+                  <IconBtn @click="editInvoice(item)">
+                    <VIcon icon="ri-pencil-line" />
+                  </IconBtn>
+                </td>
+              </tr>
+
+              <tr v-if="!invoice?.invoice_items?.length">
+                <td
+                  colspan="7"
+                  class="text-center text-medium-emphasis py-8"
+                >
+                  <VIcon
+                    size="28"
+                    class="mb-2"
+                  >
+                    ri-inbox-line
+                  </VIcon>
+                  <div>Esta factura no tiene productos registrados</div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </VCardText>
 
       <VDivider />
@@ -659,21 +684,31 @@ onMounted(() => {
         <VRow>
           <!-- 💳 INFORMACIÓN DE PAGO -->
           <VCol
+            v-if="invoice?.invoice_process === 1"
             cols="12"
             md="8"
-            v-if="invoice?.invoice_process === 1"
           >
             <div class="pe-md-6 border-right-md h-100">
               <h4 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-                <VIcon size="20">ri-bank-card-line</VIcon>
+                <VIcon size="20">
+                  ri-bank-card-line
+                </VIcon>
                 Información de Pago
               </h4>
               
               <!-- Caso Crédito / Cuenta por Pagar -->
-              <div v-if="invoice.account_payable" class="pa-3 rounded-lg border bg-grey-lighten-4 mb-3">
+              <div
+                v-if="invoice.account_payable"
+                class="pa-3 rounded-lg border bg-grey-lighten-4 mb-3"
+              >
                 <div class="d-flex align-center justify-space-between mb-2">
                   <span class="text-body-2 font-weight-bold text-medium-emphasis">Tipo de Pago:</span>
-                  <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
                     Crédito (Cuenta por Pagar)
                   </VChip>
                 </div>
@@ -689,7 +724,11 @@ onMounted(() => {
                 </div>
                 <div class="d-flex align-center justify-space-between">
                   <span class="text-body-2 text-medium-emphasis">Estado:</span>
-                  <VChip :color="invoice.account_payable.status === 'paid' ? 'success' : 'warning'" size="small" class="font-weight-bold">
+                  <VChip
+                    :color="invoice.account_payable.status === 'paid' ? 'success' : 'warning'"
+                    size="small"
+                    class="font-weight-bold"
+                  >
                     {{ invoice.account_payable.status === 'paid' ? 'Pagado' : 'Pendiente' }}
                   </VChip>
                 </div>
@@ -697,22 +736,39 @@ onMounted(() => {
 
               <!-- Caso Contado / Aporte / Distribución de Pagos -->
               <div v-else-if="invoice.finance_records && invoice.finance_records.length > 0">
-                <div v-for="record in invoice.finance_records" :key="record.id" class="mb-3 pa-3 rounded-lg border bg-white">
+                <div
+                  v-for="record in invoice.finance_records"
+                  :key="record.id"
+                  class="mb-3 pa-3 rounded-lg border bg-white"
+                >
                   <div class="text-caption text-medium-emphasis font-weight-bold mb-2">
                     Registro de Egreso #{{ record.id }} ({{ record.entry_date ? new Date(record.entry_date).toISOString().slice(0, 10) : '-' }})
                   </div>
                   
                   <div v-if="record.payment_distributions && record.payment_distributions.length > 0">
-                    <div v-for="dist in record.payment_distributions" :key="dist.id" class="d-flex align-center justify-space-between border-bottom py-2 text-none">
+                    <div
+                      v-for="dist in record.payment_distributions"
+                      :key="dist.id"
+                      class="d-flex align-center justify-space-between border-bottom py-2 text-none"
+                    >
                       <div class="d-flex align-center gap-2">
-                        <VIcon size="16" :color="dist.payment_method === 'cash' ? 'success' : 'info'">
+                        <VIcon
+                          size="16"
+                          :color="dist.payment_method === 'cash' ? 'success' : 'info'"
+                        >
                           {{ dist.payment_method === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
                         </VIcon>
                         <div>
-                          <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                          <div
+                            class="text-body-2 font-weight-bold text-none"
+                            style="text-transform: none;"
+                          >
                             {{ dist.account?.name || 'Cuenta del sistema' }}
                           </div>
-                          <div class="text-caption text-grey text-none" style="text-transform: none;">
+                          <div
+                            class="text-caption text-grey text-none"
+                            style="text-transform: none;"
+                          >
                             {{ dist.payment_method === 'cash' ? 'Efectivo' : 'Transferencia' }}
                           </div>
                         </div>
@@ -722,14 +778,28 @@ onMounted(() => {
                       </span>
                     </div>
                   </div>
-                  <div v-else class="d-flex align-center justify-space-between py-2 text-none">
+                  <div
+                    v-else
+                    class="d-flex align-center justify-space-between py-2 text-none"
+                  >
                     <div class="d-flex align-center gap-2">
-                      <VIcon size="16" color="success">ri-money-dollar-circle-line</VIcon>
+                      <VIcon
+                        size="16"
+                        color="success"
+                      >
+                        ri-money-dollar-circle-line
+                      </VIcon>
                       <div>
-                        <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                        <div
+                          class="text-body-2 font-weight-bold text-none"
+                          style="text-transform: none;"
+                        >
                           {{ record.account_label || 'Caja Chica' }}
                         </div>
-                        <div class="text-caption text-grey text-none" style="text-transform: none;">
+                        <div
+                          class="text-caption text-grey text-none"
+                          style="text-transform: none;"
+                        >
                           {{ record.payment_method_label || 'Efectivo' }}
                         </div>
                       </div>
@@ -741,21 +811,34 @@ onMounted(() => {
                 </div>
               </div>
               
-              <div v-else class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-grey-lighten-4">
+              <div
+                v-else
+                class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-grey-lighten-4"
+              >
                 No hay registros de pago asociados a esta factura.
               </div>
             </div>
           </VCol>
           <VCol
+            v-else
             cols="12"
             md="8"
-            v-else
           >
             <div class="pe-md-6 border-right-md h-100 d-flex align-center justify-center bg-grey-lighten-4 rounded-lg border pa-6">
               <div class="text-center">
-                <VIcon size="32" color="warning" class="mb-2">ri-error-warning-line</VIcon>
-                <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">Factura Pendiente</div>
-                <div class="text-caption text-grey">Esta factura aún no ha sido procesada en inventario ni caja chica.</div>
+                <VIcon
+                  size="32"
+                  color="warning"
+                  class="mb-2"
+                >
+                  ri-error-warning-line
+                </VIcon>
+                <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
+                  Factura Pendiente
+                </div>
+                <div class="text-caption text-grey">
+                  Esta factura aún no ha sido procesada en inventario ni caja chica.
+                </div>
               </div>
             </div>
           </VCol>
@@ -862,6 +945,27 @@ onMounted(() => {
   .border-right-md {
     border-right: 1px solid #e2e8f0 !important;
   }
+}
+
+.invoice-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.invoice-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 950px;
+}
+.invoice-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+.invoice-table :deep(td.text-center),
+.invoice-table :deep(td.text-right),
+.invoice-table :deep(thead th.text-center),
+.invoice-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
 }
 </style>
 <!-- @editInvoiceItem="addEditInvoiceItem" -->

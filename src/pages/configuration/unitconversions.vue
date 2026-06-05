@@ -143,7 +143,7 @@ definePage({ meta: { permission: "settings" } })
 <template>
   <div class="pa-4 pa-sm-6 unit-conversions-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-file-ppt-2-line" color="primary" class="me-2" size="28" />
@@ -153,7 +153,7 @@ definePage({ meta: { permission: "settings" } })
           Administración de conversiones entre unidades de medida
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="primary" prepend-icon="ri-add-line"
           @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible">
           Nueva Conversión

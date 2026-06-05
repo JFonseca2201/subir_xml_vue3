@@ -269,7 +269,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 <template>
   <div class="pa-4 pa-sm-6 products-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-box-3-line" color="primary" class="me-2" size="28" />
@@ -279,7 +279,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           Gestión de inventario de productos y servicios
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="error" variant="tonal" prepend-icon="ri-download-2-fill" @click="importProducts">
           Importar
         </VBtn>

@@ -235,7 +235,7 @@ onMounted(() => {
 
   <div v-else class="pa-4 pa-sm-6 account-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-bank-line" color="primary" class="me-2" size="28" />

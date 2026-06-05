@@ -131,7 +131,7 @@ const paymentProvidersData = [
           v-for="(item, index) in paymentProvidersData"
           :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
         >
-          <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center align-start gap-4 flex-wrap py-4">
+          <div class="d-flex flex-column flex-md-row justify-space-between align-md-center align-start gap-4 flex-wrap py-4">
             <div class="text-high-emphasis font-weight-medium">
               {{ item.title }}
             </div>

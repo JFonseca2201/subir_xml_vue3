@@ -139,7 +139,7 @@ onMounted(() => {
 <template>
     <div class="pa-4 pa-sm-6 roles-management-page">
         <!-- Encabezado de la página -->
-        <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+        <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
             <div>
                 <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
                     <VIcon icon="ri-shield-keyhole-line" color="primary" class="me-2" size="28" />
@@ -149,7 +149,7 @@ onMounted(() => {
                     Administración de accesos del sistema
                 </p>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
+            <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
                 <VBtn color="primary" prepend-icon="ri-add-line"
                     @click="isRoleAddDialogVisible = !isRoleAddDialogVisible">
                     Nuevo Rol
@@ -225,22 +225,47 @@ onMounted(() => {
                                     <div class="d-flex align-center">
                                         <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
                                         <span class="text-body-2 text-medium-emphasis">
-                                            {{ new Date(item.created_at).toLocaleDateString('es-EC', {
+                                            {{ item.created_at ? new Date(item.created_at.replace(' ', 'T')).toLocaleDateString('es-EC', {
                                                 year: 'numeric',
                                                 month: '2-digit',
                                                 day: '2-digit'
-                                            }) }}
+                                            }) : 'N/A' }}
                                         </span>
                                     </div>
                                 </td>
                                 <td class="text-left py-3">
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <VChip v-for="(permission, index) in item.permissions_pluck" :key="index"
+                                    <div v-if="!item.permissions_pluck || item.permissions_pluck.length === 0" class="text-caption text-grey-darken-1 italic">
+                                        Sin permisos asignados
+                                    </div>
+                                    <div v-else class="d-flex flex-wrap gap-2 align-center">
+                                        <VChip v-for="(permission, index) in item.permissions_pluck.slice(0, 4)" :key="index"
                                             :color="permissionColor(typeof permission === 'object' ? permission.name : permission)"
                                             variant="flat" size="small"
                                             class="text-capitalize elevation-1 font-weight-medium">
                                             {{ (typeof permission === 'object' ? permission.name :
                                                 permission).replace('_', ' ') }}
+                                        </VChip>
+                                        
+                                        <VChip v-if="item.permissions_pluck.length > 4"
+                                            variant="tonal" size="small" color="secondary"
+                                            class="font-weight-bold cursor-pointer elevation-1">
+                                            +{{ item.permissions_pluck.length - 4 }} más
+                                            <VTooltip activator="parent" location="top" max-width="350">
+                                                <div class="pa-2">
+                                                    <div class="text-subtitle-2 font-weight-bold mb-2 pb-1" style="border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                                                        Otros Permisos ({{ item.permissions_pluck.length - 4 }})
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        <VChip v-for="(permission, index) in item.permissions_pluck.slice(4)" :key="index"
+                                                            :color="permissionColor(typeof permission === 'object' ? permission.name : permission)"
+                                                            variant="flat" size="x-small"
+                                                            class="text-capitalize font-weight-medium">
+                                                            {{ (typeof permission === 'object' ? permission.name :
+                                                                permission).replace('_', ' ') }}
+                                                        </VChip>
+                                                    </div>
+                                                </div>
+                                            </VTooltip>
                                         </VChip>
                                     </div>
                                 </td>

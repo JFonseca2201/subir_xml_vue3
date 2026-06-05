@@ -663,20 +663,28 @@ const generateSinglePDF = sale => {
 .payment-table-wrap,
 .items-table-wrap {
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .payment-table :deep(table),
 .items-table :deep(table) {
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
+  min-width: 620px;
 }
 
 .payment-table :deep(td),
 .items-table :deep(td) {
   white-space: normal !important;
   word-break: break-word;
+}
+
+.items-table :deep(td.text-center),
+.items-table :deep(td.text-right),
+.items-table :deep(thead th.text-center),
+.items-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
 }
 
 .payment-table :deep(thead th),

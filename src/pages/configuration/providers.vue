@@ -207,13 +207,48 @@ const formatName = (item) => {
   return item.name.length > 25 ? item.name.substring(0, 25) + '...' : item.name;
 };
 
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  
+  // 1. Intentar parseo nativo directo (para formatos estándar ISO)
+  let d = new Date(dateStr)
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  }
+  
+  // 2. Intentar parseo con normalización MySQL/Safari ('2026-05-04 11:44:11' -> '2026/05/04 11:44:11')
+  const normalized = dateStr.replace(/-/g, '/')
+  d = new Date(normalized)
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  }
+  
+  // 3. Parseo manual robusto por expresiones regulares
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}):(\d{2}))?/)
+  if (match) {
+    const year = parseInt(match[1], 10)
+    const month = parseInt(match[2], 10) - 1
+    const day = parseInt(match[3], 10)
+    const hour = match[4] ? parseInt(match[4], 10) : 0
+    const minute = match[5] ? parseInt(match[5], 10) : 0
+    const second = match[6] ? parseInt(match[6], 10) : 0
+    
+    d = new Date(year, month, day, hour, minute, second)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    }
+  }
+  
+  return 'Invalid Date'
+}
+
 definePage({ meta: { permission: "settings" } })
 </script>
 
 <template>
   <div class="pa-4 pa-sm-6 providers-management-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon icon="ri-truck-line" color="primary" class="me-2" size="28" />
@@ -223,7 +258,7 @@ definePage({ meta: { permission: "settings" } })
           Administración de proveedores del sistema
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn color="primary" prepend-icon="ri-add-line"
           @click="isProviderAddDialogVisible = !isProviderAddDialogVisible">
           Nuevo Proveedor
@@ -311,11 +346,7 @@ definePage({ meta: { permission: "settings" } })
                   <div class="d-flex align-center">
                     <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
                     <span class="text-body-2 text-medium-emphasis">
-                      {{ new Date(item.created_at).toLocaleDateString('es-EC', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                      }) }}
+                      {{ formatDate(item.created_at) }}
                     </span>
                   </div>
                 </td>

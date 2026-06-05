@@ -702,7 +702,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6">
     <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 gap-4 border-b pb-4">
+      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
         <div class="d-flex align-center">
           <VAvatar color="primary-lighten-5" size="48" class="mr-3">
@@ -713,7 +713,7 @@ onMounted(() => {
         </div>
         <p class="text-medium-emphasis mb-0">Actualiza el documento</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list">
+      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list" class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
     </div>
