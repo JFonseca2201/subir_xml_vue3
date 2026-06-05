@@ -537,8 +537,21 @@ onMounted(() => {
                   <td class="text-no-wrap text-left py-3">
                     <div v-if="item" class="d-flex flex-column align-start">
                       <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.document_number }}</span>
-                      <span class="text-body-2 text-grey-darken-1 font-weight-medium">{{
-                        getDocumentTypeInfo(item.document_type)?.text }}</span>
+                      <div class="d-flex align-center gap-1 flex-wrap">
+                        <span class="text-body-2 text-grey-darken-1 font-weight-medium">{{
+                          getDocumentTypeInfo(item.document_type)?.text }}</span>
+                        <VChip
+                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number) !== item.document_number"
+                          color="info"
+                          size="x-small"
+                          variant="tonal"
+                          class="font-weight-bold px-1"
+                          style="font-size: 0.65rem; height: 18px;"
+                          label
+                        >
+                          OT: {{ item.work_order?.number || item.workOrder?.number }}
+                        </VChip>
+                      </div>
                       <span class="text-body-2 text-medium-emphasis d-flex align-center mt-1">
                         <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
                         {{ formatDate(item.service_date) }}
@@ -666,7 +679,7 @@ onMounted(() => {
                   <VCard class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
                     <!-- Cabecera de la Tarjeta -->
                     <VCardText class="pa-1 pa-sm-2 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
-                      <div class="d-flex align-center gap-1">
+                      <div class="d-flex align-center gap-1 flex-wrap">
                         <VChip
                           :color="getDocumentTypeInfo(item.document_type)?.color"
                           size="x-small"
@@ -677,16 +690,28 @@ onMounted(() => {
                         >
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </VChip>
-                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline text-truncate" style="max-width: 60px;" @click="viewSale(item)" :title="item.document_number">
+                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline" @click="viewSale(item)" :title="item.document_number">
                           {{ item.document_number }}
                         </span>
+                        <!-- Orden de Trabajo Vinculada (Badge) -->
+                        <VChip
+                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number) !== item.document_number"
+                          color="info"
+                          size="x-small"
+                          variant="flat"
+                          class="font-weight-bold px-1"
+                          style="font-size: 0.55rem; height: 16px;"
+                          label
+                        >
+                          OT: {{ item.work_order?.number || item.workOrder?.number }}
+                        </VChip>
                       </div>
 
                       <!-- Estado General -->
                       <div class="d-flex align-center gap-1">
                         <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
-                          style="width: 6px; height: 6px;"></span>
-                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline" style="font-size: 0.65rem;">{{ getStatusInfo(item.status)?.text }}</span>
+                          style="width: 5px; height: 5px;"></span>
+                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline" style="font-size: 0.6rem;">{{ getStatusInfo(item.status)?.text }}</span>
                       </div>
                     </VCardText>
 
