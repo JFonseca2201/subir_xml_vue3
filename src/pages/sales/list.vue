@@ -658,9 +658,9 @@ onMounted(() => {
                 <VCol 
                   v-for="item in groupedSales[date]" 
                   :key="item.id"
-                  cols="6"
-                  sm="4"
-                  md="3"
+                  cols="12"
+                  sm="6"
+                  md="4"
                   class="d-flex pa-1 pa-sm-2"
                 >
                   <VCard class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
