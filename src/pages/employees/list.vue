@@ -200,10 +200,14 @@ const getStatusText = status => {
   return status === 'active' ? 'Activo' : 'Inactivo'
 }
 
-// Watcher para resetear página cuando los filtros cambian
+// Watcher para resetear página cuando los filtros cambian (con debounce)
+let searchTimeout = null
 watch([() => searchForm.value.search, () => searchForm.value.status], () => {
   currentPage.value = 1
-  searchEmployees()
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    searchEmployees()
+  }, 500)
 }, { deep: true })
 
 // Montar componente
@@ -236,33 +240,19 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VForm ref="searchFormRef" @submit.prevent="searchEmployees">
-          <VRow class="align-center">
-            <VCol cols="12" md="6">
-              <VTextField v-model="searchForm.search" label="Búsqueda General"
-                placeholder="Identificación, nombre, email, cargo..." prepend-inner-icon="ri-search-line"
-                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
-            </VCol>
+        <VRow class="align-center">
+          <VCol cols="12" md="8">
+            <VTextField v-model="searchForm.search" label="Búsqueda General"
+              placeholder="Identificación, nombre, email, cargo..." prepend-inner-icon="ri-search-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
+          </VCol>
 
-            <VCol cols="12" sm="6" md="2">
-              <VSelect v-model="searchForm.status" :items="statusOptions" item-title="label" item-value="value"
-                label="Estado" placeholder="Todos" prepend-inner-icon="ri-filter-line" variant="outlined"
-                density="comfortable" hide-details="auto" clearable color="primary" />
-            </VCol>
-
-            <VCol cols="12" sm="4" md="2">
-              <div class="d-flex gap-2">
-                <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="clearSearch" block>
-                  Limpiar
-                </VBtn>
-                <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loader.loading"
-                  @click="searchEmployees" block>
-                  Buscar
-                </VBtn>
-              </div>
-            </VCol>
-          </VRow>
-        </VForm>
+          <VCol cols="12" md="4">
+            <VSelect v-model="searchForm.status" :items="statusOptions" item-title="label" item-value="value"
+              label="Estado" placeholder="Todos" prepend-inner-icon="ri-filter-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
+          </VCol>
+        </VRow>
       </VCardText>
 
       <!-- Tabla de Empleados -->

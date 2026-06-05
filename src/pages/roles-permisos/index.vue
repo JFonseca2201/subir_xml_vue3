@@ -122,6 +122,15 @@ const deleteItem = (item) => {
     role_selected_delete.value = item;
 }
 
+// Búsqueda en tiempo real (debounce)
+let searchTimeout = null
+watch(seachQuery, () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+        list()
+    }, 500)
+})
+
 onMounted(() => {
     list();
 });
@@ -153,21 +162,10 @@ onMounted(() => {
             <!-- Filtros y Búsqueda -->
             <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
                 <VRow class="align-center">
-                    <VCol cols="12" md="8">
+                    <VCol cols="12">
                         <VTextField v-model="seachQuery" label="Buscar rol" placeholder="Ej: Administrador, Cajero..."
                             prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable"
-                            hide-details="auto" clearable color="primary" @keyup.enter="list" />
-                    </VCol>
-                    <VCol cols="12" sm="6" md="2">
-                        <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="list" block>
-                            Limpiar
-                        </VBtn>
-                    </VCol>
-                    <VCol cols="12" sm="6" md="2">
-                        <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loader.loading"
-                            @click="list" block>
-                            Buscar
-                        </VBtn>
+                            hide-details="auto" clearable color="primary" />
                     </VCol>
                 </VRow>
             </VCardText>

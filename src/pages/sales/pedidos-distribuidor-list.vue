@@ -270,8 +270,8 @@ onMounted(() => {
           <VCol cols="12" sm="6" md="4">
             <VTextField
               v-model="search"
-              label="Buscar por distribuidor"
-              placeholder="Escribe el nombre del proveedor..."
+              label="Buscar pedidos"
+              placeholder="Buscar por distribuidor, RUC o ID..."
               prepend-inner-icon="ri-search-line"
               variant="outlined"
               density="comfortable"

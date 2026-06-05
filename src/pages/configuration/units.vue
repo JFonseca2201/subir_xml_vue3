@@ -157,6 +157,16 @@ watch(currentPage, () => {
   list()
 })
 
+// Búsqueda en tiempo real (debounce)
+let searchTimeout = null
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    list()
+  }, 500)
+})
+
 // Función helper para truncar texto
 const truncateText = (text, maxLength = 25) => {
   if (!text) return ''
@@ -196,21 +206,10 @@ definePage({ meta: { permission: "settings" } })
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
-          <VCol cols="12" md="8">
+          <VCol cols="12">
             <VTextField v-model="searchQuery" label="Buscar unidad" placeholder="Nombre, descripción..."
               prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" @keyup.enter="list" />
-          </VCol>
-          <VCol cols="12" sm="6" md="2">
-            <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="refresh" block>
-              Limpiar
-            </VBtn>
-          </VCol>
-          <VCol cols="12" sm="6" md="2">
-            <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="isLoading" @click="list"
-              block>
-              Buscar
-            </VBtn>
+              color="primary" />
           </VCol>
         </VRow>
       </VCardText>

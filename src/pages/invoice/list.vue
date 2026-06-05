@@ -129,8 +129,14 @@ const addInvoice = newInvoice => {
   list_invoices.value.unshift(newInvoice)
 }
 
-watch([search, supplier_id, from_date, to_date], () => {
+// Búsqueda en tiempo real (debounce)
+let searchTimeout = null
+watch([search, supplier_id, range_date], () => {
   currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    list()
+  }, 500)
 })
 
 // Método de refresco para reiniciar todos los filtros
@@ -188,33 +194,21 @@ onMounted(() => {
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
           <VCol cols="12" md="4">
-            <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor..."
+            <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor, RUC..."
               prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" @keyup.enter="list" />
+              color="primary" />
           </VCol>
 
-          <VCol cols="12" sm="6" md="3">
+          <VCol cols="12" sm="6" md="4">
             <VAutocomplete v-model="supplier_id" label="Proveedores" placeholder="Todos" :items="providers"
               item-title="name" item-value="id" clearable variant="outlined" density="comfortable" hide-details="auto"
               color="primary" />
           </VCol>
 
-          <VCol cols="12" sm="6" md="3">
+          <VCol cols="12" sm="6" md="4">
             <AppDateTimePicker v-model="range_date" label="Rango de fecha" placeholder="Seleccionar rango de fechas"
               :config="{ mode: 'range' }" variant="outlined" density="comfortable" hide-details="auto"
               color="primary" />
-          </VCol>
-
-          <VCol cols="12" sm="6" md="2">
-            <div class="d-flex gap-2">
-              <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="refresh" block>
-                Limpiar
-              </VBtn>
-              <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="isLoading" @click="list"
-                block>
-                Buscar
-              </VBtn>
-            </div>
           </VCol>
         </VRow>
       </VCardText>

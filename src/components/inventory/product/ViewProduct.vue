@@ -1,17 +1,9 @@
 <template>
-  <VDialog
-    :model-value="dialog"
-    max-width="900px"
-    persistent
-    @update:model-value="$emit('update:dialog', $event)"
-  >
+  <VDialog :model-value="dialog" max-width="900px" persistent @update:model-value="$emit('update:dialog', $event)">
     <VCard class="product-view-card">
       <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-primary-lighten-1">
         <div class="d-flex align-center gap-2">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-          >
+          <VAvatar color="primary" variant="tonal">
             <VIcon icon="ri-eye-line" />
           </VAvatar>
           <div>
@@ -23,53 +15,23 @@
             </div>
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          @click="$emit('update:dialog', false)"
-        />
+        <VBtn icon="ri-close-line" variant="text" @click="$emit('update:dialog', false)" />
       </VCardTitle>
       <VDivider />
 
-      <VCardText
-        v-if="product"
-        class="pa-6"
-      >
+      <VCardText v-if="product" class="pa-6">
         <!-- Imagen Principal -->
         <VRow class="mb-6">
-          <VCol
-            cols="12"
-            md="4"
-          >
+          <VCol cols="12" md="4">
             <div class="text-center">
-              <div
-                class="cursor-pointer image-container"
-                @click="openImageDialog"
-              >
-                <VAvatar
-                  v-if="product.imagen"
-                  :image="product.imagen"
-                  size="140"
-                  class="elevation-6 mb-3 product-avatar"
-                />
-                <VAvatar
-                  v-else
-                  color="grey-lighten-3"
-                  size="140"
-                  class="elevation-6 mb-3 product-avatar"
-                >
-                  <VIcon
-                    icon="ri-image-line"
-                    size="70"
-                    color="grey-lighten-1"
-                  />
+              <div class="cursor-pointer image-container" @click="openImageDialog">
+                <VAvatar v-if="product.imagen" :image="product.imagen" size="140"
+                  class="elevation-6 mb-3 product-avatar" />
+                <VAvatar v-else color="grey-lighten-3" size="140" class="elevation-6 mb-3 product-avatar">
+                  <VIcon icon="ri-image-line" size="70" color="grey-lighten-1" />
                 </VAvatar>
                 <div class="image-overlay">
-                  <VIcon
-                    icon="ri-zoom-in-line"
-                    size="24"
-                    color="white"
-                  />
+                  <VIcon icon="ri-zoom-in-line" size="24" color="white" />
                   <div class="text-caption text-white mt-1">
                     Click para ampliar
                   </div>
@@ -81,19 +43,10 @@
                   {{ product.description }}
                 </h3>
                 <div class="info-chips">
-                  <VChip
-                    size="x-small"
-                    color="primary"
-                    variant="tonal"
-                  >
+                  <VChip size="x-small" color="primary" variant="tonal">
                     SKU: {{ product.sku }}
                   </VChip>
-                  <VChip
-                    v-if="product.code_aux"
-                    size="x-small"
-                    color="grey"
-                    variant="tonal"
-                  >
+                  <VChip v-if="product.code_aux" size="x-small" color="grey" variant="tonal">
                     Código: {{ product.code_aux }}
                   </VChip>
                 </div>
@@ -102,18 +55,12 @@
           </VCol>
 
           <!-- Información Principal -->
-          <VCol
-            cols="12"
-            md="8"
-          >
+          <VCol cols="12" md="8">
             <div class="info-grid">
               <!-- Categoría -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-folder-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-folder-line" size="16" />
                   Categoría
                 </div>
                 <div class="info-value">
@@ -124,10 +71,7 @@
               <!-- Almacén -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-store-2-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-store-2-line" size="16" />
                   Almacén
                 </div>
                 <div class="info-value">
@@ -138,10 +82,7 @@
               <!-- Unidad -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-ruler-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-ruler-line" size="16" />
                   Unidad
                 </div>
                 <div class="info-value">
@@ -152,10 +93,7 @@
               <!-- Proveedor -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-truck-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-truck-line" size="16" />
                   Proveedor
                 </div>
                 <div class="info-value">
@@ -166,10 +104,7 @@
               <!-- Marca -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-price-tag-3-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-price-tag-3-line" size="16" />
                   Marca
                 </div>
                 <div class="info-value">
@@ -180,17 +115,10 @@
               <!-- Tipo de Ítem -->
               <div class="info-item">
                 <div class="info-label">
-                  <VIcon
-                    icon="ri-shapes-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-shapes-line" size="16" />
                   Tipo
                 </div>
-                <VChip
-                  :color="product.item_type == 1 ? 'primary' : 'secondary'"
-                  size="small"
-                  variant="tonal"
-                >
+                <VChip :color="product.item_type == 1 ? 'primary' : 'secondary'" size="small" variant="tonal">
                   {{ product.item_type == 1 ? 'Producto' : 'Servicio' }}
                 </VChip>
               </div>
@@ -199,17 +127,10 @@
         </VRow>
 
         <!-- Precios -->
-        <VCard
-          class="mb-6"
-          elevation="1"
-        >
+        <VCard class="mb-6" elevation="1">
           <VCardText class="pa-4">
             <div class="section-title">
-              <VIcon
-                icon="ri-money-dollar-circle-line"
-                size="20"
-                color="success"
-              />
+              <VIcon icon="ri-money-dollar-circle-line" size="20" color="success" />
               Información de Precios
             </div>
             <VDivider class="mb-4" />
@@ -246,10 +167,7 @@
                 <div class="price-value">
                   ${{ product.max_discount?.toFixed(2) || '0.00' }}
                 </div>
-                <div
-                  v-if="product.discount_percentage > 0"
-                  class="price-discount"
-                >
+                <div v-if="product.discount_percentage > 0" class="price-discount">
                   {{ product.discount_percentage }}%
                 </div>
               </div>
@@ -258,26 +176,16 @@
         </VCard>
 
         <!-- Inventario -->
-        <VCard
-          class="mb-6"
-          elevation="1"
-        >
+        <VCard class="mb-6" elevation="1">
           <VCardText class="pa-4">
             <div class="section-title">
-              <VIcon
-                icon="ri-archive-line"
-                size="20"
-                color="primary"
-              />
+              <VIcon icon="ri-archive-line" size="20" color="primary" />
               Información de Inventario
             </div>
             <VDivider class="mb-4" />
 
             <div class="inventory-grid">
-              <div
-                class="inventory-item"
-                :class="getStockClass(product.stock, product.min_stock)"
-              >
+              <div class="inventory-item" :class="getStockClass(product.stock, product.min_stock)">
                 <div class="inventory-label">
                   Stock Actual
                 </div>
@@ -301,17 +209,10 @@
         </VCard>
 
         <!-- Configuración -->
-        <VCard
-          class="mb-6"
-          elevation="1"
-        >
+        <VCard class="mb-6" elevation="1">
           <VCardText class="pa-4">
             <div class="section-title">
-              <VIcon
-                icon="ri-settings-3-line"
-                size="20"
-                color="primary"
-              />
+              <VIcon icon="ri-settings-3-line" size="20" color="primary" />
               Configuración
             </div>
             <VDivider class="mb-4" />
@@ -319,49 +220,28 @@
             <div class="config-grid">
               <div class="config-item">
                 <div class="config-label">
-                  <VIcon
-                    icon="ri-receipt-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-receipt-line" size="16" />
                   Gravable
                 </div>
-                <VChip
-                  :color="product.is_taxable ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                >
+                <VChip :color="product.is_taxable ? 'success' : 'error'" size="small" variant="tonal">
                   {{ product.is_taxable ? 'Sí' : 'No' }}
                 </VChip>
               </div>
               <div class="config-item">
                 <div class="config-label">
-                  <VIcon
-                    icon="ri-gift-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-gift-line" size="16" />
                   Es Regalo
                 </div>
-                <VChip
-                  :color="product.is_gift === 1 ? 'warning' : 'grey'"
-                  size="small"
-                  variant="tonal"
-                >
+                <VChip :color="product.is_gift === 1 ? 'warning' : 'grey'" size="small" variant="tonal">
                   {{ product.is_gift === 1 ? 'Sí' : 'No' }}
                 </VChip>
               </div>
               <div class="config-item">
                 <div class="config-label">
-                  <VIcon
-                    icon="ri-checkbox-circle-line"
-                    size="16"
-                  />
+                  <VIcon icon="ri-checkbox-circle-line" size="16" />
                   Estado
                 </div>
-                <VChip
-                  :color="product.state === 1 ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                >
+                <VChip :color="product.state === 1 ? 'success' : 'error'" size="small" variant="tonal">
                   {{ product.state === 1 ? 'Activo' : 'Inactivo' }}
                 </VChip>
               </div>
@@ -370,18 +250,10 @@
         </VCard>
 
         <!-- Notas -->
-        <VCard
-          v-if="product.notes"
-          class="mb-6"
-          elevation="1"
-        >
+        <VCard v-if="product.notes" class="mb-6" elevation="1">
           <VCardText class="pa-4">
             <div class="section-title">
-              <VIcon
-                icon="ri-file-text-line"
-                size="20"
-                color="primary"
-              />
+              <VIcon icon="ri-file-text-line" size="20" color="primary" />
               Notas Adicionales
             </div>
             <VDivider class="mb-3" />
@@ -395,11 +267,7 @@
         <VCard elevation="1">
           <VCardText class="pa-4">
             <div class="section-title">
-              <VIcon
-                icon="ri-calendar-line"
-                size="20"
-                color="primary"
-              />
+              <VIcon icon="ri-calendar-line" size="20" color="primary" />
               Información de Registro
             </div>
             <VDivider class="mb-4" />
@@ -430,11 +298,7 @@
 
       <VCardActions class="pa-4 bg-grey-lighten-5">
         <VSpacer />
-        <VBtn
-          variant="elevated"
-          prepend-icon="ri-close-line"
-          @click="$emit('update:dialog', false)"
-        >
+        <VBtn variant="elevated" prepend-icon="ri-close-line" @click="$emit('update:dialog', false)">
           Cerrar
         </VBtn>
       </VCardActions>
@@ -442,11 +306,7 @@
   </VDialog>
 
   <!-- Diálogo de Imagen con Zoom -->
-  <VDialog
-    v-model="imageDialog"
-    max-width="700"
-    content-class="image-dialog"
-  >
+  <VDialog v-model="imageDialog" max-width="700" content-class="image-dialog">
     <VCard class="image-view-card">
       <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-primary-lighten-1">
         <div>
@@ -457,39 +317,16 @@
             {{ product?.item_type == 1 ? 'Producto' : 'Servicio' }} • Click y arrastra para hacer zoom
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          @click="imageDialog = false"
-        />
+        <VBtn icon="ri-close-line" variant="text" @click="imageDialog = false" />
       </VCardTitle>
       <VDivider />
 
       <VCardText class="pa-4 image-container-zoom">
-        <div
-          ref="zoomWrapper"
-          class="zoom-wrapper"
-        >
-          <VImg
-            v-if="product?.imagen"
-            :src="product.imagen"
-            class="zoom-image"
-            :style="zoomStyle"
-            @wheel="handleZoom"
-            @mousedown="startDrag"
-            @mousemove="drag"
-            @mouseup="endDrag"
-            @mouseleave="endDrag"
-          />
-          <div
-            v-else
-            class="no-image-placeholder"
-          >
-            <VIcon
-              icon="ri-image-line"
-              size="100"
-              color="grey-lighten-1"
-            />
+        <div ref="zoomWrapper" class="zoom-wrapper">
+          <VImg v-if="product?.imagen" :src="product.imagen" class="zoom-image" :style="zoomStyle" @wheel="handleZoom"
+            @mousedown="startDrag" @mousemove="drag" @mouseup="endDrag" @mouseleave="endDrag" />
+          <div v-else class="no-image-placeholder">
+            <VIcon icon="ri-image-line" size="100" color="grey-lighten-1" />
             <div class="text-h6 mt-4 text-medium-emphasis">
               Sin imagen disponible
             </div>
@@ -500,34 +337,13 @@
         </div>
 
         <!-- Controles de Zoom -->
-        <div
-          v-if="product?.imagen"
-          class="zoom-controls"
-        >
-          <VBtn
-            icon="ri-zoom-out-line"
-            variant="elevated"
-            size="small"
-            class="mr-2"
-            @click="zoomOut"
-          />
+        <div v-if="product?.imagen" class="zoom-controls">
+          <VBtn icon="ri-zoom-out-line" variant="elevated" size="small" class="mr-2" @click="zoomOut" />
           <div class="zoom-level">
             {{ Math.round(zoomLevel * 100) }}%
           </div>
-          <VBtn
-            icon="ri-zoom-in-line"
-            variant="elevated"
-            size="small"
-            class="ml-2"
-            @click="zoomIn"
-          />
-          <VBtn
-            icon="ri-refresh-line"
-            variant="outlined"
-            size="small"
-            class="ml-2"
-            @click="resetZoom"
-          />
+          <VBtn icon="ri-zoom-in-line" variant="elevated" size="small" class="ml-2" @click="zoomIn" />
+          <VBtn icon="ri-refresh-line" variant="outlined" size="small" class="ml-2" @click="resetZoom" />
         </div>
       </VCardText>
 
@@ -535,11 +351,7 @@
 
       <VCardActions class="pa-4 bg-grey-lighten-5">
         <VSpacer />
-        <VBtn
-          variant="elevated"
-          prepend-icon="ri-close-line"
-          @click="imageDialog = false"
-        >
+        <VBtn variant="elevated" prepend-icon="ri-close-line" @click="imageDialog = false">
           Cerrar
         </VBtn>
       </VCardActions>
@@ -584,7 +396,7 @@ const openImageDialog = () => {
 const getStockClass = (stock, minStock) => {
   if (stock === 0) return 'stock-zero'
   if (stock <= minStock) return 'stock-low'
-  
+
   return 'stock-good'
 }
 
@@ -592,7 +404,7 @@ const formatDate = dateString => {
   if (!dateString) return 'No disponible'
   try {
     const date = new Date(dateString)
-    
+
     return date.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'short',

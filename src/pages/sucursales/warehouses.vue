@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import WarehouseAddDialog from '@/components/inventory/config/warehouses/WarehouseAddDialog.vue'
@@ -18,6 +18,15 @@ const isWarehouseAddDialogVisible = ref(false)
 const isWarehouseShowDialogVisible = ref(false)
 const isWarehouseEditDialogVisible = ref(false)
 const isWarehouseDeleteDialogVisible = ref(false)
+
+// Búsqueda en tiempo real (debounce)
+let searchTimeout = null
+watch(search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    list()
+  }, 500)
+})
 
 const list = async () => {
   isLoading.value = true
@@ -144,21 +153,10 @@ onMounted(() => {
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
-          <VCol cols="12" md="8">
+          <VCol cols="12">
             <VTextField v-model="search" label="Buscar almacén" placeholder="Nombre, dirección..."
               prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" @keyup.enter="list" />
-          </VCol>
-          <VCol cols="12" sm="6" md="2">
-            <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="refresh" block>
-              Limpiar
-            </VBtn>
-          </VCol>
-          <VCol cols="12" sm="6" md="2">
-            <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="isLoading" @click="list"
-              block>
-              Buscar
-            </VBtn>
+              color="primary" />
           </VCol>
         </VRow>
       </VCardText>

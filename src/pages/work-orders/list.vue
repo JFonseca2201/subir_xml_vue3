@@ -78,12 +78,19 @@ const filteredWorkOrders = computed(() => {
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
+    const cleanQuery = query.replace(/[^a-z0-9]/g, '')
 
-    filtered = filtered.filter(wo =>
-      wo.number?.toLowerCase().includes(query) ||
-      wo.client?.full_name?.toLowerCase().includes(query) ||
-      wo.vehicle?.license_plate?.toLowerCase().includes(query),
-    )
+    filtered = filtered.filter(wo => {
+      const cleanNumber = wo.number?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+      const cleanClientName = wo.client?.full_name?.toLowerCase() || ''
+      const cleanClientDoc = wo.client?.n_document?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+      const cleanLicensePlate = wo.vehicle?.license_plate?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+
+      return cleanNumber.includes(cleanQuery) ||
+        cleanClientName.includes(query) ||
+        cleanClientDoc.includes(cleanQuery) ||
+        cleanLicensePlate.includes(cleanQuery)
+    })
   }
 
   return filtered

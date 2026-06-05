@@ -142,6 +142,16 @@ watch(currentPage, () => {
   loadReturns()
 })
 
+// Búsqueda en tiempo real (debounce)
+let searchTimeout = null
+watch(() => searchForm.value.search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadReturns()
+  }, 500)
+})
+
 onMounted(() => {
   loadReturns()
 })
@@ -171,28 +181,13 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VForm @submit.prevent="() => { currentPage = 1; loadReturns() }">
-          <VRow class="align-center">
-            <VCol cols="12" md="6">
-              <VTextField v-model="searchForm.search" label="Buscar devolución"
-                placeholder="Número de devolución o venta..." prepend-inner-icon="ri-search-line" variant="outlined"
-                density="comfortable" hide-details="auto" clearable color="primary" />
-            </VCol>
-
-            <VCol cols="12" sm="6" md="3">
-              <VBtn color="secondary" variant="tonal" prepend-icon="ri-refresh-line" @click="clearSearch" block>
-                Limpiar
-              </VBtn>
-            </VCol>
-
-            <VCol cols="12" sm="6" md="3">
-              <VBtn color="primary" variant="tonal" prepend-icon="ri-search-line" :loading="loading"
-                @click="loadReturns" block>
-                Buscar
-              </VBtn>
-            </VCol>
-          </VRow>
-        </VForm>
+        <VRow class="align-center">
+          <VCol cols="12">
+            <VTextField v-model="searchForm.search" label="Buscar devolución"
+              placeholder="Número de devolución o venta..." prepend-inner-icon="ri-search-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
+          </VCol>
+        </VRow>
       </VCardText>
 
       <!-- Tabla de Devoluciones -->
