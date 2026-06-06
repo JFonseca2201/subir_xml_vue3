@@ -184,6 +184,12 @@ const removeItem = async index => {
   }
 }
 
+const getProductStock = productId => {
+  const product = products.value.find(p => p.id === productId)
+
+  return product ? product.stock : 0
+}
+
 // Gestión de pagos distribuidos
 const addPaymentDistribution = () => {
   const newPayment = {
@@ -975,6 +981,10 @@ onMounted(() => {
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
+                              <span v-if="item.type === 'product' && sale.document_type !== 'quote'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
+                                <VIcon icon="ri-stack-line" size="12" class="mr-1" />
+                                {{ getProductStock(item.product_id) }} en stock
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1315,6 +1325,24 @@ onMounted(() => {
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+
+.stock-tag {
+  background-color: rgba(var(--v-theme-success), 0.1);
+  color: rgb(var(--v-theme-success));
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stock-tag.stock-low {
+  background-color: rgba(var(--v-theme-error), 0.1);
+  color: rgb(var(--v-theme-error));
 }
 
 .delete-btn {

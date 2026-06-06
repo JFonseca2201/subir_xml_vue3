@@ -507,15 +507,7 @@ onMounted(() => {
                       title="Imprimir"
                       @click="printPedido(item.id)"
                     />
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-printer-cloud-line"
-                      variant="text"
-                      size="small"
-                      color="primary"
-                      title="Imprimir Directo (Servidor)"
-                      @click="printDirectlyFromServer(item.id, 'pedido')"
-                    />
+
                     <VBtn
                       class="action-btn"
                       icon="ri-file-pdf-line"
@@ -776,13 +768,7 @@ onMounted(() => {
           >
             Imprimir
           </VBtn>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-printer-cloud-line"
-            @click="printDirectlyFromServer(selectedPedido.id, 'pedido')"
-          >
-            Imprimir Directo (Servidor)
-          </VBtn>
+
           <VBtn
             color="success"
             prepend-icon="ri-file-pdf-line"

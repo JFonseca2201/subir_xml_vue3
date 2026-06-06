@@ -641,8 +641,7 @@ onMounted(() => {
                           <VList density="compact" class="py-1">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
                               @click="printSale(item.id)" />
-                            <VListItem prepend-icon="ri-printer-cloud-line" title="Imprimir Directo (Servidor)" class="text-primary text-body-2"
-                              @click="printDirectlyFromServer(item.id, 'sale')" />
+
                             <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
                               @click="generateSinglePDF(item)" />
                             <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
@@ -807,8 +806,7 @@ onMounted(() => {
                           <VList density="compact" class="py-1">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
                               @click="printSale(item.id)" />
-                            <VListItem prepend-icon="ri-printer-cloud-line" title="Imprimir Directo (Servidor)" class="text-primary text-body-2"
-                              @click="printDirectlyFromServer(item.id, 'sale')" />
+
                             <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
                               @click="generateSinglePDF(item)" />
                             <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"

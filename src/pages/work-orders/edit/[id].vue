@@ -182,6 +182,17 @@ const validateForm = () => {
 const saveWorkOrder = async () => {
   if (!validateForm()) return
 
+  for (const item of workOrder.value.items) {
+    if (item.type === 'product' && item.product_id) {
+      const product = products.value.find(p => p.id === item.product_id)
+      if (product && product.stock < item.quantity) {
+        showValidationError.value = true
+        validationErrorMessage.value = `Stock insuficiente para ${product.description || product.name || 'el producto'}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
+        return
+      }
+    }
+  }
+
   isLoading.value = true
   try {
     const payload = {
@@ -312,6 +323,12 @@ const getProductPrice = productId => {
   const product = products.value.find(p => p.id === productId)
 
   return product ? parseFloat(product.price) : 0
+}
+
+const getProductStock = productId => {
+  const product = products.value.find(p => p.id === productId)
+
+  return product ? product.stock : 0
 }
 
 const onProductChanged = item => {
@@ -618,6 +635,10 @@ onMounted(() => {
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
                             </span>
                             <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
+                            <span v-if="item.type === 'product'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
+                              <VIcon icon="ri-stack-line" size="12" class="mr-1" />
+                              {{ getProductStock(item.product_id) }} en stock
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -843,6 +864,24 @@ onMounted(() => {
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.5px;
+}
+
+.stock-tag {
+  background-color: rgba(var(--v-theme-success), 0.1);
+  color: rgb(var(--v-theme-success));
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stock-tag.stock-low {
+  background-color: rgba(var(--v-theme-error), 0.1);
+  color: rgb(var(--v-theme-error));
 }
 
 .delete-btn {

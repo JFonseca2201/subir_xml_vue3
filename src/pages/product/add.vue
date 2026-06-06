@@ -219,14 +219,6 @@ const store = async () => {
   }
 
   if (product.value.item_type !== '2') {
-    if (!fileData.value || fileData.value.length === 0) {
-      loader.stop()
-      warning.value = 'Es obligatorio adjuntar una imagen para el producto.'
-      showNotification('Falta la imagen del producto', 'warning')
-
-      return
-    }
-
     const minStock = parseFloat(product.value.min_stock) || 0
     const maxStock = parseFloat(product.value.max_stock) || 0
     if (maxStock > 0 && minStock > maxStock) {

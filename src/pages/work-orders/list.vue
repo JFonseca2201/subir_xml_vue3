@@ -659,13 +659,7 @@ onMounted(() => {
                             class="text-info text-body-2"
                             @click="printPDF(workOrder.id)"
                           />
-                          <VListItem
-                            v-if="workOrder.status !== 'draft'"
-                            prepend-icon="ri-printer-cloud-line"
-                            title="Imprimir Directo (Servidor)"
-                            class="text-primary text-body-2"
-                            @click="printDirectlyFromServer(workOrder.id, 'work-order')"
-                          />
+
                           <VListItem
                             v-if="workOrder.status !== 'draft'"
                             prepend-icon="ri-file-pdf-line"
@@ -878,15 +872,7 @@ onMounted(() => {
           >
             Imprimir
           </VBtn>
-          <VBtn
-            v-if="selectedWorkOrder.status !== 'draft'"
-            color="primary"
-            variant="tonal"
-            prepend-icon="ri-printer-cloud-line"
-            @click="printDirectlyFromServer(selectedWorkOrder.id, 'work-order')"
-          >
-            Imprimir Directo (Servidor)
-          </VBtn>
+
           <VBtn
             v-if="selectedWorkOrder.status !== 'draft'"
             color="primary"

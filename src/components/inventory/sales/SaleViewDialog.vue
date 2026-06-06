@@ -606,9 +606,7 @@ const generateSinglePDF = sale => {
         <VBtn color="info" variant="tonal" prepend-icon="ri-printer-line" @click="printSale(props.saleData.id)">
           Imprimir
         </VBtn>
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-printer-cloud-line" @click="printDirectlyFromServer(props.saleData.id, 'sale')">
-          Imprimir Directo (Servidor)
-        </VBtn>
+
         <VBtn color="primary" variant="tonal" prepend-icon="ri-file-pdf-line" @click="generateSinglePDF(props.saleData)">
           Ver PDF
         </VBtn>
