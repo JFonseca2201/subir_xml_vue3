@@ -35,9 +35,6 @@ const show = computed({
 })
 
 const filteredAccounts = computed(() => {
-  if (form.value.payment_method === 'TRANSFERENCIA') {
-    return accounts.value.filter(acc => acc.id !== 1)
-  }
   return accounts.value
 })
 
@@ -147,7 +144,7 @@ const handleSubmit = async () => {
     // Preparar el payload para la API
     const payload = {
       employee_id: form.value.employee_id,
-      account_id: form.value.payment_method === 'EFECTIVO' ? 1 : form.value.account_id,
+      account_id: form.value.account_id,
       amount: parseFloat(form.value.amount),
       description: form.value.description,
       advance_date: form.value.advance_date,
@@ -180,11 +177,7 @@ const handleSubmit = async () => {
 }
 
 watch(() => form.value.payment_method, method => {
-  if (method === 'EFECTIVO') {
-    form.value.account_id = 1
-  } else if (form.value.account_id === 1 || !form.value.account_id) {
-    form.value.account_id = null
-  }
+  form.value.account_id = null
 })
 
 // Watchers
@@ -268,7 +261,7 @@ onMounted(() => {
                 />
               </VCol>
 
-              <VCol v-if="form.payment_method === 'TRANSFERENCIA'" cols="6">
+              <VCol cols="6">
                 <VSelect
                   v-model="form.account_id"
                   :items="filteredAccounts"

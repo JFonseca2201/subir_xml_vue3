@@ -52,9 +52,6 @@ const show = computed({
 })
 
 const filteredAccounts = computed(() => {
-  if (form.value.payment_method === 'TRANSFERENCIA') {
-    return accounts.value.filter(acc => acc.id !== 1)
-  }
   return accounts.value
 })
 
@@ -227,9 +224,7 @@ const handleSubmit = async () => {
       type: 'payment',
     }
     
-    if (payload.payment_method === 'EFECTIVO') {
-      payload.account_id = 1
-    }
+
 
     const response = await $api('employee-expenses', {
       method: 'POST',
@@ -353,11 +348,7 @@ watch(() => form.value.account_id, accountId => {
 })
 
 watch(() => form.value.payment_method, method => {
-  if (method === 'EFECTIVO') {
-    form.value.account_id = 1
-  } else if (form.value.account_id === 1 || !form.value.account_id) {
-    form.value.account_id = null
-  }
+  form.value.account_id = null
 })
 
 // Lifecycle
@@ -496,7 +487,7 @@ onMounted(() => {
             </VCol>
 
             <!-- Cuenta -->
-            <VCol v-if="form.payment_method === 'TRANSFERENCIA'" cols="12" md="6">
+            <VCol cols="12" md="6">
               <VSelect
                 v-model="form.account_id"
                 :items="filteredAccounts"

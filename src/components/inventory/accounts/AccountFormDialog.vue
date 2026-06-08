@@ -246,14 +246,9 @@ const dialogTitle = computed(() => {
                     color="warning"
                     size="16"
                   >
-                    <VTooltip text="Cuenta del sistema - no editable">
-                      <template #activator="{ props }">
-                        <VIcon
-                          v-bind="props"
-                          icon="ri-lock-2-line"
-                        />
-                      </template>
-                    </VTooltip>
+                    <VIcon icon="ri-lock-2-line">
+                      <VTooltip activator="parent" text="Cuenta del sistema - no editable" />
+                    </VIcon>
                   </VIcon>
                 </template>
               </VTextField>

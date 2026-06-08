@@ -98,9 +98,6 @@ const isEditing = computed(() => !!props.expense)
 const dialogTitle = computed(() => isEditing.value ? 'Editar Pago' : 'Nuevo Pago')
 
 const filteredAccounts = computed(() => {
-  if (form.value.payment_method === 'TRANSFERENCIA') {
-    return accounts.value.filter(acc => acc.id !== 1)
-  }
   return accounts.value
 })
 
@@ -149,9 +146,7 @@ const handleSubmit = async () => {
       type: 'payment',
     }
     
-    if (payload.payment_method === 'EFECTIVO') {
-      payload.account_id = 1
-    }
+
 
     console.log('🔍 EditPayment - Enviando actualización:', payload)
 
@@ -329,11 +324,7 @@ watch(() => show.value, newVal => {
 })
 
 watch(() => form.value.payment_method, method => {
-  if (method === 'EFECTIVO') {
-    form.value.account_id = 1
-  } else if (form.value.account_id === 1 || !form.value.account_id) {
-    form.value.account_id = null
-  }
+  form.value.account_id = null
 })
 
 // Watcher para reasignar IDs cuando se carguen empleados y cuentas
@@ -426,7 +417,7 @@ onMounted(() => {
             </VCol>
           </VRow>
 
-          <VRow v-if="form.payment_method === 'TRANSFERENCIA'">
+          <VRow>
             <VCol cols="12">
               <VSelect
                 v-model="form.account_id"

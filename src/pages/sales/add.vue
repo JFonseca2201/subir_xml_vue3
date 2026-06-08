@@ -118,8 +118,9 @@ const paymentDistributions = ref([])
 // Inicializar con un pago distribuido cuando hay items
 const initializePaymentDistribution = () => {
   if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
     paymentDistributions.value.push({
-      account_id: 1, // Caja Chica por defecto para efectivo
+      account_id: cajaChica ? cajaChica.id : null,
       amount: total.value,
       payment_method: 'Efectivo',
     })
@@ -413,10 +414,9 @@ const addPaymentDistribution = () => {
 
   paymentDistributions.value.push(newPayment)
 
-  // Asignar cuenta automáticamente si es efectivo
   if (newPayment.payment_method === 'Efectivo') {
-    // Siempre asignar account_id 1 (Caja Chica) para efectivo
-    newPayment.account_id = 1
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+    newPayment.account_id = cajaChica ? cajaChica.id : null
   }
 }
 
@@ -433,7 +433,7 @@ const onPaymentMethodChange = (dist, newMethod) => {
     // Caja Chica (account_id 1)
     const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
 
-    dist.account_id = cajaChica ? cajaChica.id : 1
+    dist.account_id = cajaChica ? cajaChica.id : null
   } else if (newMethod === 'Transferencia') {
     // No asignar automáticamente, dejar que el usuario elija
     dist.account_id = null
@@ -446,7 +446,7 @@ const initializePaymentAccount = dist => {
     // Siempre asignar Caja Chica (account_id 1) para efectivo
     const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
 
-    dist.account_id = cajaChica ? cajaChica.id : 1
+    dist.account_id = cajaChica ? cajaChica.id : null
   }
 }
 

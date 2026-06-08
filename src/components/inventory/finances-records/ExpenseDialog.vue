@@ -28,7 +28,7 @@ const form = ref({
   description: '',
   entry_date: new Date().toISOString().split('T')[0],
   payments: [
-    { account_id: 1, amount: 0 },
+    { account_id: null, amount: 0 },
   ],
 })
 
@@ -70,7 +70,7 @@ watch(() => props.editingMovement, newVal => {
         amount: payment.amount.toString(),
       }))
     } else {
-      payments = [{ account_id: newVal.account_id || 1, amount: (newVal.amount || 0).toString() }]
+      payments = [{ account_id: newVal.account_id || null, amount: (newVal.amount || 0).toString() }]
     }
 
     form.value = {
@@ -94,7 +94,7 @@ const resetForm = () => {
     description: '',
     entry_date: new Date().toISOString().split('T')[0],
     payments: [
-      { account_id: 1, amount: 0 },
+      { account_id: null, amount: 0 },
     ],
   }
 }
@@ -140,6 +140,13 @@ const saveExpense = async () => {
       return
     }
 
+    // Validar que todos los pagos tengan cuenta seleccionada
+    const hasInvalidPayments = payload.payments.some(p => !p.account_id)
+    if (hasInvalidPayments) {
+      showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
+      return
+    }
+
     console.log('Payload to send:', payload)
     emit('saved', payload)
     closeDialog()
@@ -156,7 +163,7 @@ const addPayment = () => {
   if (!form.value.payments) {
     form.value.payments = []
   }
-  form.value.payments.push({ account_id: 1, amount: 0 })
+  form.value.payments.push({ account_id: null, amount: 0 })
 }
 
 const removePayment = async index => {

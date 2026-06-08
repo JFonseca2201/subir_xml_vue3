@@ -144,8 +144,9 @@ const onDocumentTypeChange = async () => {
 // Inicializar con un pago distribuido cuando hay items
 const initializePaymentDistribution = () => {
   if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
     paymentDistributions.value.push({
-      account_id: 1,
+      account_id: cajaChica ? cajaChica.id : null,
       amount: 0,
       payment_method: 'Efectivo',
     })
@@ -200,7 +201,8 @@ const addPaymentDistribution = () => {
 
   paymentDistributions.value.push(newPayment)
   if (newPayment.payment_method === 'Efectivo') {
-    newPayment.account_id = 1
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+    newPayment.account_id = cajaChica ? cajaChica.id : null
   }
 }
 
@@ -215,7 +217,7 @@ const onPaymentMethodChange = (dist, newMethod) => {
   if (newMethod === 'Efectivo') {
     const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
 
-    dist.account_id = cajaChica ? cajaChica.id : 1
+    dist.account_id = cajaChica ? cajaChica.id : null
   } else if (newMethod === 'Transferencia') {
     dist.account_id = null
   }
@@ -225,7 +227,7 @@ const initializePaymentAccount = dist => {
   if (dist.payment_method === 'Efectivo') {
     const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
 
-    dist.account_id = cajaChica ? cajaChica.id : 1
+    dist.account_id = cajaChica ? cajaChica.id : null
   }
 }
 

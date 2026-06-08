@@ -75,7 +75,7 @@ const hasMissingCategories = computed(() => {
 const addPaymentDistribution = () => {
   const remaining = props.invoice.total - totalPaymentsAmount.value
   paymentDistributions.value.push({
-    account_id: 1, // Default to Caja chica (ID 1)
+    account_id: null,
     payment_method: 'cash',
     amount: remaining > 0 ? Number(remaining.toFixed(2)) : 0
   })
@@ -106,11 +106,10 @@ watch(paymentType, (newType) => {
 watch(paymentDistributions, (newDists) => {
   newDists.forEach(dist => {
     if (dist.payment_method === 'cash') {
-      dist.account_id = 1
-    } else if (dist.payment_method === 'transfer' && dist.account_id === 1) {
-      // If it is transfer and still pointing to cash account (1), point to first bank account
-      const bankAccts = accounts.value.filter(a => a.id !== 1)
-      dist.account_id = bankAccts[0]?.id || null
+      // Allow user to select account instead of hardcoding 1
+      // dist.account_id = null 
+    } else if (dist.payment_method === 'transfer') {
+      // Let user choose
     }
   })
 }, { deep: true })
@@ -309,14 +308,14 @@ onMounted(() => {
               <div v-for="(dist, index) in paymentDistributions" :key="index" class="d-flex align-center gap-2 mb-3">
                 <VSelect
                   v-model="dist.account_id"
-                  :items="dist.payment_method === 'cash' ? accounts : accounts.filter(a => a.id !== 1)"
+                  :items="accounts"
                   item-title="name"
                   item-value="id"
                   label="Cuenta"
                   variant="outlined"
                   density="comfortable"
                   hide-details
-                  :disabled="dist.payment_method === 'cash'"
+                  :disabled="false"
                   style="flex: 2;"
                 />
                 

@@ -23,13 +23,13 @@ const { showNotification } = useGlobalToast()
 // Form data
 const form = ref({
   type: 0, // TYPE_INCOME
-  account_id: 1, // ACCOUNT_CASH
+  account_id: null,
   work_order_number: '',
   invoice_number: '',
   description: '',
   entry_date: new Date().toISOString().split('T')[0],
   payments: [
-    { account_id: 1, amount: 0 },
+    { account_id: null, amount: 0 },
   ],
 })
 
@@ -87,7 +87,7 @@ watch(() => props.editingMovement, newVal => {
         amount: payment.amount.toString(),
       }))
     } else {
-      payments = [{ account_id: newVal.account_id || 1, amount: (newVal.amount || 0).toString() }]
+      payments = [{ account_id: newVal.account_id || null, amount: (newVal.amount || 0).toString() }]
     }
 
     console.log('IncomeDialog - final payments:', JSON.stringify(payments, null, 2))
@@ -111,13 +111,13 @@ watch(() => props.editingMovement, newVal => {
 const resetForm = () => {
   form.value = {
     type: 0, // TYPE_INCOME
-    account_id: 1, // ACCOUNT_CASH
+    account_id: null,
     work_order_number: '',
     invoice_number: '',
     description: '',
     entry_date: new Date().toISOString().split('T')[0],
     payments: [
-      { account_id: 1, amount: 0 },
+      { account_id: null, amount: 0 },
     ],
   }
 }
@@ -149,6 +149,13 @@ const saveIncome = async () => {
       return
     }
 
+    // Validar que todos los pagos tengan cuenta seleccionada
+    const hasInvalidPayments = form.value.payments.some(p => !p.account_id)
+    if (hasInvalidPayments) {
+      showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
+      return
+    }
+
     const payload = { ...form.value }
 
     // No enviar work_order_number si está vacío
@@ -171,7 +178,7 @@ const addPayment = () => {
   if (!form.value.payments) {
     form.value.payments = []
   }
-  form.value.payments.push({ account_id: 1, amount: 0 })
+  form.value.payments.push({ account_id: null, amount: 0 })
 }
 
 const removePayment = async index => {

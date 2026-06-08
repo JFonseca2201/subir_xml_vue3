@@ -196,7 +196,13 @@ const confirmDeleteAccount = async () => {
     showNotification('Cuenta eliminada exitosamente', 'success')
     closeDeleteDialog()
   } catch (error) {
-    showNotification('Error al eliminar la cuenta', 'error')
+    const backendMessage = error.response?.data?.message || error.response?._data?.message
+    
+    if (backendMessage) {
+      showNotification(backendMessage, 'error')
+    } else {
+      showNotification('Error al eliminar la cuenta', 'error')
+    }
     console.error('Error al eliminar cuenta:', error)
   } finally {
     loader.stop()
@@ -384,21 +390,15 @@ onMounted(() => {
               <!-- Acciones -->
               <td class="text-center">
                 <div class="d-flex justify-center gap-1">
-                  <VTooltip v-if="!account.is_system" text="Editar Cuenta">
-                    <template #activator="{ props }">
-                      <IconBtn v-bind="props" class="action-btn text-warning" @click="openEditDialog(account)">
-                        <VIcon icon="ri-pencil-line" />
-                      </IconBtn>
-                    </template>
-                  </VTooltip>
+                  <VBtn v-if="!account.is_system" icon variant="text" size="small" class="action-btn text-warning" @click="openEditDialog(account)">
+                    <VIcon icon="ri-pencil-line" />
+                    <VTooltip activator="parent" text="Editar Cuenta" />
+                  </VBtn>
 
-                  <VTooltip v-if="!account.is_system" text="Eliminar Cuenta">
-                    <template #activator="{ props }">
-                      <IconBtn v-bind="props" class="action-btn text-error" @click="deleteAccount(account)">
-                        <VIcon icon="ri-delete-bin-line" />
-                      </IconBtn>
-                    </template>
-                  </VTooltip>
+                  <VBtn v-if="!account.is_system" icon variant="text" size="small" class="action-btn text-error" @click="deleteAccount(account)">
+                    <VIcon icon="ri-delete-bin-line" />
+                    <VTooltip activator="parent" text="Eliminar Cuenta" />
+                  </VBtn>
                   <span v-else class="text-caption text-grey-lighten-1">Sistema</span>
                 </div>
               </td>
