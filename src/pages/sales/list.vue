@@ -130,6 +130,27 @@ const formatCurrency = value => {
   }).format(value || 0)
 }
 
+
+//enviar correo electronico
+const mailLoading = ref({})
+
+const mandarCotizacionMail = async id => {
+  mailLoading.value[id] = true
+  try {
+    const response = await $api(`sales/${id}/enviar-cotizacion`, { method: 'POST' })
+    if (response.success) {
+      showNotification(response.message || '¡Cotización enviada al correo con éxito, mi compa!', 'success')
+    } else {
+      showNotification(response.message || 'Error al despachar el correo de la cotización.', 'error')
+    }
+  } catch (error) {
+    console.error(error)
+    showNotification('Error al despachar el correo de la cotización.', 'error')
+  } finally {
+    mailLoading.value[id] = false
+  }
+}
+
 const formatDate = dateString => {
   if (!dateString) return '-'
 
@@ -261,7 +282,7 @@ const generateSinglePDF = sale => {
   const token = localStorage.getItem('token')
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
-  
+
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
     printWindow.focus()
@@ -276,7 +297,7 @@ const printSale = saleId => {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/sales/${saleId}/pdf?token=${token}&print=true`
-    
+
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {
       printWindow.focus()
@@ -494,22 +515,14 @@ onMounted(() => {
           style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div v-if="loading" class="text-center pa-12">
-          <VProgressCircular
-            indeterminate
-            color="primary"
-            size="40"
-          />
+          <VProgressCircular indeterminate color="primary" size="40" />
           <div class="mt-2 text-medium-emphasis">
             Cargando registros...
           </div>
         </div>
 
         <div v-else-if="!sales || sales.length === 0" class="text-center pa-12 text-medium-emphasis">
-          <VIcon
-            size="48"
-            class="mb-3"
-            color="grey-lighten-1"
-          >
+          <VIcon size="48" class="mb-3" color="grey-lighten-1">
             ri-file-text-line
           </VIcon>
           <div class="text-h6">
@@ -557,13 +570,8 @@ onMounted(() => {
                           getDocumentTypeInfo(item.document_type)?.text }}</span>
                         <VChip
                           v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                          color="info"
-                          size="x-small"
-                          variant="tonal"
-                          class="font-weight-bold px-1"
-                          style="font-size: 0.65rem; height: 18px;"
-                          label
-                        >
+                          color="info" size="x-small" variant="tonal" class="font-weight-bold px-1"
+                          style="font-size: 0.65rem; height: 18px;" label>
                           OT: {{ item.work_order?.number || item.workOrder?.number }}
                         </VChip>
                       </div>
@@ -613,8 +621,9 @@ onMounted(() => {
                       <div class="d-flex align-center gap-1">
                         <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
                           style="width: 10px; height: 10px;"></span>
-                        <span class="text-body-2 font-weight-bold text-grey-darken-3">{{ getStatusInfo(item.status)?.text
-                        }}</span>
+                        <span class="text-body-2 font-weight-bold text-grey-darken-3">{{
+                          getStatusInfo(item.status)?.text
+                          }}</span>
                       </div>
                       <!-- Estado Pago (Text badge) -->
                       <div v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
@@ -632,6 +641,13 @@ onMounted(() => {
                       <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
                         @click="viewSale(item)">
                         <VIcon icon="ri-eye-line" size="20" />
+                      </VBtn>
+                      <!-- enviar correo de la cotizacion -->
+                      <VBtn v-if="item.document_type === 'quote'" variant="text" color="info"
+                        prepend-icon="ri-mail-send-line" size="small" class="text-none font-weight-bold action-btn px-2"
+                        :loading="mailLoading[item.id]"
+                        @click="mandarCotizacionMail(item.id)">
+                        <span class="d-none d-sm-inline">Correo</span>
                       </VBtn>
 
                       <!-- Más Acciones (Dropdown) -->
@@ -670,12 +686,7 @@ onMounted(() => {
             <div v-for="date in Object.keys(groupedSales)" :key="date" class="mb-6">
               <!-- Cabecera de Grupo por Día -->
               <div class="date-group-header d-flex align-center my-4">
-                <VIcon
-                  icon="ri-calendar-event-line"
-                  color="primary"
-                  class="me-2"
-                  size="20"
-                />
+                <VIcon icon="ri-calendar-event-line" color="primary" class="me-2" size="20" />
                 <span class="text-subtitle-1 font-weight-bold text-grey-darken-3 text-capitalize">
                   {{ formatDateGroup(date) }}
                 </span>
@@ -684,41 +695,27 @@ onMounted(() => {
 
               <!-- Tarjetas del Día -->
               <VRow class="ma-n1 ma-sm-n2">
-                <VCol 
-                  v-for="item in groupedSales[date]" 
-                  :key="item.id"
-                  cols="12"
-                  sm="6"
-                  md="4"
-                  class="d-flex pa-1 pa-sm-2"
-                >
-                  <VCard class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
+                <VCol v-for="item in groupedSales[date]" :key="item.id" cols="12" sm="6" md="4"
+                  class="d-flex pa-1 pa-sm-2">
+                  <VCard
+                    class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
                     <!-- Cabecera de la Tarjeta -->
-                    <VCardText class="pa-1 pa-sm-2 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
+                    <VCardText
+                      class="pa-1 pa-sm-2 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
                       <div class="d-flex align-center gap-1 flex-wrap">
-                        <VChip
-                          :color="getDocumentTypeInfo(item.document_type)?.color"
-                          size="x-small"
-                          variant="tonal"
-                          class="font-weight-bold text-uppercase px-1"
-                          style="font-size: 0.55rem; height: 16px;"
-                          label
-                        >
+                        <VChip :color="getDocumentTypeInfo(item.document_type)?.color" size="x-small" variant="tonal"
+                          class="font-weight-bold text-uppercase px-1" style="font-size: 0.55rem; height: 16px;" label>
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </VChip>
-                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline" @click="viewSale(item)" :title="item.document_number">
+                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline"
+                          @click="viewSale(item)" :title="item.document_number">
                           {{ item.document_number }}
                         </span>
                         <!-- Orden de Trabajo Vinculada (Badge) -->
                         <VChip
                           v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                          color="info"
-                          size="x-small"
-                          variant="flat"
-                          class="font-weight-bold px-1"
-                          style="font-size: 0.55rem; height: 16px;"
-                          label
-                        >
+                          color="info" size="x-small" variant="flat" class="font-weight-bold px-1"
+                          style="font-size: 0.55rem; height: 16px;" label>
                           OT: {{ item.work_order?.number || item.workOrder?.number }}
                         </VChip>
                       </div>
@@ -727,7 +724,8 @@ onMounted(() => {
                       <div class="d-flex align-center gap-1">
                         <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
                           style="width: 5px; height: 5px;"></span>
-                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline" style="font-size: 0.6rem;">{{ getStatusInfo(item.status)?.text }}</span>
+                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline"
+                          style="font-size: 0.6rem;">{{ getStatusInfo(item.status)?.text }}</span>
                       </div>
                     </VCardText>
 
@@ -737,15 +735,18 @@ onMounted(() => {
                         <!-- Cliente -->
                         <div class="d-flex align-center gap-1 overflow-hidden" style="min-height: 20px;">
                           <VIcon icon="ri-user-line" size="14" color="info" class="flex-shrink-0" />
-                          <span class="text-caption text-grey-darken-4 text-truncate" :title="getClientName(item.client)" style="font-size: 0.75rem;">
+                          <span class="text-caption text-grey-darken-4 text-truncate"
+                            :title="getClientName(item.client)" style="font-size: 0.75rem;">
                             {{ getClientName(item.client) }}
                           </span>
                         </div>
 
                         <!-- Vehículo -->
-                        <div v-if="item.vehicle" class="d-flex align-center gap-1 overflow-hidden" style="min-height: 20px;">
+                        <div v-if="item.vehicle" class="d-flex align-center gap-1 overflow-hidden"
+                          style="min-height: 20px;">
                           <VIcon icon="ri-car-line" size="14" color="primary" class="flex-shrink-0" />
-                          <span class="text-caption text-primary text-truncate font-weight-medium" :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.75rem;">
+                          <span class="text-caption text-primary text-truncate font-weight-medium"
+                            :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.75rem;">
                             {{ item.vehicle.license_plate }} {{ formatVehicleInfo(item.vehicle) }}
                           </span>
                         </div>
@@ -754,18 +755,16 @@ onMounted(() => {
                         <div class="d-flex align-center gap-1 justify-space-between flex-wrap mt-1">
                           <div class="d-flex align-center gap-1">
                             <VIcon icon="ri-money-dollar-circle-line" size="14" color="success" class="flex-shrink-0" />
-                            <span class="text-caption font-weight-bold text-success" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''" style="font-size: 0.75rem;">
+                            <span class="text-caption font-weight-bold text-success"
+                              :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''"
+                              style="font-size: 0.75rem;">
                               {{ formatCurrency(item.total) }}
                             </span>
                           </div>
                           <!-- Estado Pago (Text badge) -->
-                          <VChip v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
-                            size="x-small"
-                            :color="getPaymentStatusInfo(item.payment_status)?.color"
-                            variant="tonal"
-                            class="font-weight-bold px-1"
-                            style="font-size: 0.55rem; height: 16px;"
-                          >
+                          <VChip v-if="item.status !== 'canceled' && item.document_type !== 'quote'" size="x-small"
+                            :color="getPaymentStatusInfo(item.payment_status)?.color" variant="tonal"
+                            class="font-weight-bold px-1" style="font-size: 0.55rem; height: 16px;">
                             {{ getPaymentStatusInfo(item.payment_status)?.text }}
                           </VChip>
                         </div>
@@ -777,32 +776,18 @@ onMounted(() => {
                     <!-- Acciones -->
                     <VCardActions class="pa-1 pa-sm-2 justify-end bg-grey-lighten-5 mt-auto">
                       <!-- Ver Detalle (Acción rápida) -->
-                      <VBtn
-                        variant="text"
-                        color="info"
-                        prepend-icon="ri-eye-line"
-                        size="small"
-                        class="text-none font-weight-bold action-btn px-2"
-                        @click="viewSale(item)"
-                      >
+                      <VBtn variant="text" color="info" prepend-icon="ri-eye-line" size="small"
+                        class="text-none font-weight-bold action-btn px-2" @click="viewSale(item)">
                         <span class="d-none d-sm-inline">Ver Detalle</span>
                       </VBtn>
 
+
+
                       <!-- Más Acciones (Dropdown) -->
-                      <VBtn
-                        variant="text"
-                        color="secondary"
-                        prepend-icon="ri-more-2-line"
-                        size="small"
-                        class="text-none font-weight-bold action-btn px-2"
-                      >
+                      <VBtn variant="text" color="secondary" prepend-icon="ri-more-2-line" size="small"
+                        class="text-none font-weight-bold action-btn px-2">
                         <span class="d-none d-sm-inline">Más</span>
-                        <VMenu
-                          activator="parent"
-                          transition="slide-y-transition"
-                          align="end"
-                          location="bottom end"
-                        >
+                        <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                           <VList density="compact" class="py-1">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
                               @click="printSale(item.id)" />
