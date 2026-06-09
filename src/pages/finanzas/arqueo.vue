@@ -300,7 +300,7 @@ onMounted(() => {
             <VIcon icon="ri-safe-2-line" size="28" />
           </VAvatar>
           <div>
-            <h1 class="text-h4 font-weight-bold mb-1 page-title">Arqueo Diario de Caja</h1>
+            <h1 class="text-h4 font-weight-bold mb-1 page-title">Caja Diaria</h1>
             <p class="text-medium-emphasis mb-0 page-subtitle">
               Cierre diario de control físico de dinero y conciliación bancaria
             </p>
@@ -332,385 +332,380 @@ onMounted(() => {
         </div>
       </VCard>
 
-      <!-- Loading overlay for card contents -->
-      <div class="position-relative">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
+      <VRow class="mb-6">
+        <!-- Columna Izquierda (9/12) -->
+        <VCol cols="12" md="9">
+          <VCard elevation="3" class="rounded-xl h-100 border-light border position-relative">
+            <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+              style="top: 0; left: 0; right: 0; z-index: 10;" />
+            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-history-line" size="24" color="primary" />
+                  <span class="text-h6 font-weight-bold text-grey-darken-3">Resumen de Saldos Iniciales del Día
+                    Anterior</span>
+                  <span v-if="initialBalances.origin_date"
+                    class="text-body-2 font-weight-medium text-grey-darken-1 ml-2">
+                    (Saldo Inicial de Arrastre - {{ initialBalances.origin_date }})
+                  </span>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-0">
+              <!-- Fila 1: Efectivo -->
+              <div class="d-flex align-center pa-4 border-b">
+                <div class="d-flex align-center justify-center rounded-circle bg-primary-lighten-5 mr-4"
+                  style="width: 54px; height: 54px; flex-shrink: 0;">
+                  <VIcon icon="ri-money-dollar-circle-line" size="32" color="primary" />
+                </div>
+                <VRow no-gutters class="w-100">
+                  <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Efectivo Físico</div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.cash) }}</div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Sede Principal</div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.cash) }}</div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
+                      Caja Chica <span class="text-caption text-grey ml-1 text-lowercase">(Caja Chica
+                        Principal)</span>
+                    </div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.cash) }}</div>
+                  </VCol>
+                </VRow>
+              </div>
 
-        <VRow class="mb-6">
-          <!-- Columna Izquierda (9/12) -->
-          <VCol cols="12" md="9">
-            <VCard elevation="3" class="rounded-xl h-100 border-light border">
-              <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-                <template #title>
-                  <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-history-line" size="24" color="primary" />
-                    <span class="text-h6 font-weight-bold text-grey-darken-3">Resumen de Saldos Iniciales del Día
-                      Anterior</span>
-                    <span v-if="initialBalances.origin_date"
-                      class="text-body-2 font-weight-medium text-grey-darken-1 ml-2">
-                      (Saldo Inicial de Arrastre - {{ initialBalances.origin_date }})
+              <!-- Fila 2: Banco Pichincha -->
+              <div class="d-flex align-center pa-4 border-b">
+                <div class="d-flex align-center justify-center rounded-circle bg-warning-lighten-5 mr-4"
+                  style="width: 54px; height: 54px; flex-shrink: 0;">
+                  <VIcon icon="ri-bank-line" size="32" color="warning" />
+                </div>
+                <VRow no-gutters class="w-100">
+                  <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Banco Pichincha</div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.pichincha) }}
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Cuenta de Ahorros
+                    </div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.pichincha) }}
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
+                      Pichincha Ahorro <span class="text-caption text-grey ml-1 text-lowercase">(Caja de
+                        Ahorro)</span>
+                    </div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.pichincha) }}
+                    </div>
+                  </VCol>
+                </VRow>
+              </div>
+
+              <!-- Fila 3: Banco Guayaquil -->
+              <div class="d-flex align-center pa-4">
+                <div class="d-flex align-center justify-center rounded-circle bg-error-lighten-5 mr-4"
+                  style="width: 54px; height: 54px; flex-shrink: 0;">
+                  <VIcon icon="ri-safe-2-line" size="32" color="error" />
+                </div>
+                <VRow no-gutters class="w-100">
+                  <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Banco Guayaquil</div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.guayaquil) }}
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Cuenta Principal
+                    </div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.guayaquil) }}
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4" class="px-sm-4">
+                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
+                      BGA Dólares <span class="text-caption text-grey ml-1 text-lowercase">(Cuenta USD)</span>
+                    </div>
+                    <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.guayaquil) }}
+                    </div>
+                  </VCol>
+                </VRow>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- Columna Derecha (3/12) -->
+        <VCol cols="12" md="3">
+          <VCard elevation="3" class="rounded-xl d-flex flex-column h-100 border-light border">
+            <VCardItem class="bg-grey-lighten-4 py-4 text-center border-b">
+              <VCardTitle class="text-h6 font-weight-black text-grey-darken-3">RESUMEN DE CUADRE</VCardTitle>
+            </VCardItem>
+            <VCardText class="pa-4 d-flex flex-column flex-grow-1 justify-center gap-4">
+              <!-- Fila 1 -->
+              <div class="d-flex justify-space-between align-center">
+                <div>
+                  <div class="font-weight-bold text-body-2 text-grey-darken-3">GRAN TOTAL EMPRESA</div>
+                  <div class="text-caption text-grey-darken-1">(Sumen del Sistema Totalea)</div>
+                </div>
+                <div class="text-h6 font-weight-black font-mono text-primary">{{ formatCurrency(grandTotal) }}</div>
+              </div>
+
+              <VDivider />
+
+              <!-- Fila 2 (Alerta) -->
+              <div class="d-flex justify-space-between align-center pa-3 rounded-lg"
+                :class="totalDifferenceSystem === 0 ? 'bg-success-light' : 'bg-error-light'">
+                <div class="font-weight-bold text-body-2"
+                  :class="totalDifferenceSystem === 0 ? 'text-success-dark' : 'text-error-dark'">DIFERENCIA TOTAL
+                </div>
+                <div class="text-h6 font-weight-black font-mono"
+                  :class="totalDifferenceSystem === 0 ? 'text-success-dark' : 'text-error-dark'">{{
+                    formatCurrency(totalDifferenceSystem) }}</div>
+              </div>
+
+              <VDivider />
+
+              <!-- Fila 3 -->
+              <div class="d-flex justify-space-between align-center">
+                <div class="font-weight-bold text-body-2 text-grey-darken-3">EFECTIVO TOTAL FÍSICO</div>
+                <div class="text-h6 font-weight-black font-mono text-success">{{ formatCurrency(totalCash) }}</div>
+              </div>
+            </VCardText>
+
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <!-- Main Form Grid -->
+      <VRow>
+        <!-- Left: Physical Cash Breakdown -->
+        <VCol cols="12" md="8">
+          <VCard elevation="0" class="rounded-lg border-light border h-100">
+            <VCardItem class="bg-grey-lighten-4 py-3 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-coins-line" color="primary" size="20" />
+                  <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Desglose Físico de Efectivo (Caja
+                    Chica)</span>
+                </div>
+              </template>
+            </VCardItem>
+
+            <VCardText class="pa-4 bg-white">
+              <VRow>
+                <!-- Bills Column -->
+                <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
+                  <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                    <VIcon icon="ri-bill-line" color="primary" size="18" />
+                    <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Billetes</span>
+                  </div>
+                  <table class="w-100 table-cash text-uppercase">
+                    <thead>
+                      <tr>
+                        <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
+                        <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">Cant.</th>
+                        <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="denom in billsList" :key="`bill-${denom}`">
+                        <td class="py-2 text-body-1 font-weight-medium">
+                          <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2"
+                            style="width: 55px; justify-content: center;">
+                            ${{ denom }}
+                          </VChip>
+                        </td>
+                        <td class="py-1">
+                          <div class="d-flex align-center justify-center">
+                            <input v-model.number="payload.cash_details.bills[denom]" type="number" min="0"
+                              class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                          </div>
+                        </td>
+                        <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                          {{ formatCurrency(denom * (parseInt(payload.cash_details.bills[denom]) || 0)) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </VCol>
+
+                <!-- Coins Column -->
+                <VCol cols="12" sm="6" class="pl-sm-4">
+                  <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                    <VIcon icon="ri-coins-line" color="primary" size="18" />
+                    <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Monedas</span>
+                  </div>
+                  <table class="w-100 table-cash text-uppercase">
+                    <thead>
+                      <tr>
+                        <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
+                        <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">Cant.</th>
+                        <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="denom in coinsList" :key="`coin-${denom}`">
+                        <td class="py-2 text-body-1 font-weight-medium">
+                          <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2"
+                            style="width: 55px; justify-content: center;">
+                            ${{ denom }}
+                          </VChip>
+                        </td>
+                        <td class="py-1">
+                          <div class="d-flex align-center justify-center">
+                            <input v-model.number="payload.cash_details.coins[denom]" type="number" min="0"
+                              class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                          </div>
+                        </td>
+                        <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                          {{ formatCurrency(parseFloat(denom) * (parseInt(payload.cash_details.coins[denom]) || 0)) }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </VCol>
+              </VRow>
+
+              <!-- Total Cash Box section with live system comparison -->
+              <div class="total-cash-panel mt-4 pa-4 rounded-lg bg-grey-lighten-4">
+                <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
+                  <div class="d-flex flex-column">
+                    <span class="text-caption font-weight-bold text-grey-darken-1 text-uppercase">Subtotales de
+                      Efectivo</span>
+                    <span class="text-body-2 text-grey-darken-3">
+                      Billetes: <strong class="font-mono">{{ formatCurrency(totalBills) }}</strong> |
+                      Monedas: <strong class="font-mono">{{ formatCurrency(totalCoins) }}</strong>
                     </span>
                   </div>
-                </template>
-              </VCardItem>
-              <VCardText class="pa-0">
-                <!-- Fila 1: Efectivo -->
-                <div class="d-flex align-center pa-4 border-b">
-                  <div class="d-flex align-center justify-center rounded-circle bg-primary-lighten-5 mr-4"
-                    style="width: 54px; height: 54px; flex-shrink: 0;">
-                    <VIcon icon="ri-money-dollar-circle-line" size="32" color="primary" />
+                  <div class="d-flex align-center gap-3">
+                    <span class="text-h6 font-weight-black text-grey-darken-3 text-uppercase">Físico Contado:</span>
+                    <span class="text-h5 font-weight-black text-success font-mono">{{ formatCurrency(totalCash)
+                    }}</span>
                   </div>
-                  <VRow no-gutters class="w-100">
-                    <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Efectivo Físico</div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.cash) }}</div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Sede Principal</div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.cash) }}</div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
-                        Caja Chica <span class="text-caption text-grey ml-1 text-lowercase">(Caja Chica
-                          Principal)</span>
-                      </div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.cash) }}</div>
-                    </VCol>
-                  </VRow>
                 </div>
-
-                <!-- Fila 2: Banco Pichincha -->
-                <div class="d-flex align-center pa-4 border-b">
-                  <div class="d-flex align-center justify-center rounded-circle bg-warning-lighten-5 mr-4"
-                    style="width: 54px; height: 54px; flex-shrink: 0;">
-                    <VIcon icon="ri-bank-line" size="32" color="warning" />
-                  </div>
-                  <VRow no-gutters class="w-100">
-                    <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Banco Pichincha</div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.pichincha) }}
-                      </div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Cuenta de Ahorros
-                      </div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.pichincha) }}
-                      </div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
-                        Pichincha Ahorro <span class="text-caption text-grey ml-1 text-lowercase">(Caja de
-                          Ahorro)</span>
-                      </div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.pichincha) }}
-                      </div>
-                    </VCol>
-                  </VRow>
+                <div class="d-flex justify-space-between align-center pt-2 border-t flex-wrap gap-2">
+                  <span class="text-caption font-weight-medium text-grey-darken-1">
+                    Saldo Teórico del Sistema (Caja Chica):
+                    <strong class="font-mono text-grey-darken-4">{{ formatCurrency(systemBalances.cash) }}</strong>
+                  </span>
+                  <span class="text-caption font-weight-bold"
+                    :class="cashDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                    Diferencia Caja:
+                    <strong class="font-mono">{{ cashDifference > 0 ? '+' : '' }}{{ formatCurrency(cashDifference)
+                    }}</strong>
+                  </span>
                 </div>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
 
-                <!-- Fila 3: Banco Guayaquil -->
-                <div class="d-flex align-center pa-4">
-                  <div class="d-flex align-center justify-center rounded-circle bg-error-lighten-5 mr-4"
-                    style="width: 54px; height: 54px; flex-shrink: 0;">
-                    <VIcon icon="ri-safe-2-line" size="32" color="error" />
-                  </div>
-                  <VRow no-gutters class="w-100">
-                    <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Banco Guayaquil</div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.guayaquil) }}
-                      </div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Cuenta Principal
-                      </div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.guayaquil) }}
-                      </div>
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-sm-4">
-                      <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">
-                        BGA Dólares <span class="text-caption text-grey ml-1 text-lowercase">(Cuenta USD)</span>
-                      </div>
-                      <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(systemBalances.guayaquil) }}
-                      </div>
-                    </VCol>
-                  </VRow>
-                </div>
-              </VCardText>
-            </VCard>
-          </VCol>
-
-          <!-- Columna Derecha (3/12) -->
-          <VCol cols="12" md="3">
-            <VCard elevation="3" class="rounded-xl d-flex flex-column h-100 border-light border">
-              <VCardItem class="bg-grey-lighten-4 py-4 text-center border-b">
-                <VCardTitle class="text-h6 font-weight-black text-grey-darken-3">RESUMEN DE CUADRE</VCardTitle>
-              </VCardItem>
-              <VCardText class="pa-4 d-flex flex-column flex-grow-1 justify-center gap-4">
-                <!-- Fila 1 -->
-                <div class="d-flex justify-space-between align-center">
-                  <div>
-                    <div class="font-weight-bold text-body-2 text-grey-darken-3">GRAN TOTAL EMPRESA</div>
-                    <div class="text-caption text-grey-darken-1">(Sumen del Sistema Totalea)</div>
-                  </div>
-                  <div class="text-h6 font-weight-black font-mono text-primary">{{ formatCurrency(grandTotal) }}</div>
-                </div>
-
-                <VDivider />
-
-                <!-- Fila 2 (Alerta) -->
-                <div class="d-flex justify-space-between align-center pa-3 rounded-lg"
-                  :class="totalDifferenceSystem === 0 ? 'bg-success-light' : 'bg-error-light'">
-                  <div class="font-weight-bold text-body-2"
-                    :class="totalDifferenceSystem === 0 ? 'text-success-dark' : 'text-error-dark'">DIFERENCIA TOTAL
-                  </div>
-                  <div class="text-h6 font-weight-black font-mono"
-                    :class="totalDifferenceSystem === 0 ? 'text-success-dark' : 'text-error-dark'">{{
-                      formatCurrency(totalDifferenceSystem) }}</div>
-                </div>
-
-                <VDivider />
-
-                <!-- Fila 3 -->
-                <div class="d-flex justify-space-between align-center">
-                  <div class="font-weight-bold text-body-2 text-grey-darken-3">EFECTIVO TOTAL FÍSICO</div>
-                  <div class="text-h6 font-weight-black font-mono text-success">{{ formatCurrency(totalCash) }}</div>
-                </div>
-              </VCardText>
-
-            </VCard>
-          </VCol>
-        </VRow>
-
-        <!-- Main Form Grid -->
-        <VRow>
-          <!-- Left: Physical Cash Breakdown -->
-          <VCol cols="12" md="8">
-            <VCard elevation="0" class="rounded-lg border-light border h-100">
+        <!-- Right: Banks, Notes, Summary and Actions -->
+        <VCol cols="12" md="4">
+          <div class="d-flex flex-column gap-6 h-100 justify-space-between">
+            <!-- Cuentas Bancarias -->
+            <VCard elevation="0" class="rounded-lg border-light border">
               <VCardItem class="bg-grey-lighten-4 py-3 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-coins-line" color="primary" size="20" />
-                    <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Desglose Físico de Efectivo (Caja
-                      Chica)</span>
+                    <VIcon icon="ri-bank-line" color="primary" size="20" />
+                    <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Saldos en Cuentas
+                      Bancarias</span>
                   </div>
                 </template>
               </VCardItem>
-
-              <VCardText class="pa-4 bg-white">
-                <VRow>
-                  <!-- Bills Column -->
-                  <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
-                    <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                      <VIcon icon="ri-bill-line" color="primary" size="18" />
-                      <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Billetes</span>
-                    </div>
-                    <table class="w-100 table-cash text-uppercase">
-                      <thead>
-                        <tr>
-                          <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
-                          <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">Cant.</th>
-                          <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="denom in billsList" :key="`bill-${denom}`">
-                          <td class="py-2 text-body-1 font-weight-medium">
-                            <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2"
-                              style="width: 55px; justify-content: center;">
-                              ${{ denom }}
-                            </VChip>
-                          </td>
-                          <td class="py-1">
-                            <div class="d-flex align-center justify-center">
-                              <input v-model.number="payload.cash_details.bills[denom]" type="number" min="0"
-                                class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
-                            </div>
-                          </td>
-                          <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
-                            {{ formatCurrency(denom * (parseInt(payload.cash_details.bills[denom]) || 0)) }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </VCol>
-
-                  <!-- Coins Column -->
-                  <VCol cols="12" sm="6" class="pl-sm-4">
-                    <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                      <VIcon icon="ri-coins-line" color="primary" size="18" />
-                      <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Monedas</span>
-                    </div>
-                    <table class="w-100 table-cash text-uppercase">
-                      <thead>
-                        <tr>
-                          <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
-                          <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">Cant.</th>
-                          <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="denom in coinsList" :key="`coin-${denom}`">
-                          <td class="py-2 text-body-1 font-weight-medium">
-                            <VChip variant="tonal" size="small" color="secondary"
-                              class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
-                              ${{ denom }}
-                            </VChip>
-                          </td>
-                          <td class="py-1">
-                            <div class="d-flex align-center justify-center">
-                              <input v-model.number="payload.cash_details.coins[denom]" type="number" min="0"
-                                class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
-                            </div>
-                          </td>
-                          <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
-                            {{ formatCurrency(parseFloat(denom) * (parseInt(payload.cash_details.coins[denom]) || 0)) }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </VCol>
-                </VRow>
-
-                <!-- Total Cash Box section with live system comparison -->
-                <div class="total-cash-panel mt-4 pa-4 rounded-lg bg-grey-lighten-4">
-                  <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
-                    <div class="d-flex flex-column">
-                      <span class="text-caption font-weight-bold text-grey-darken-1 text-uppercase">Subtotales de
-                        Efectivo</span>
-                      <span class="text-body-2 text-grey-darken-3">
-                        Billetes: <strong class="font-mono">{{ formatCurrency(totalBills) }}</strong> |
-                        Monedas: <strong class="font-mono">{{ formatCurrency(totalCoins) }}</strong>
-                      </span>
-                    </div>
-                    <div class="d-flex align-center gap-3">
-                      <span class="text-h6 font-weight-black text-grey-darken-3 text-uppercase">Físico Contado:</span>
-                      <span class="text-h5 font-weight-black text-success font-mono">{{ formatCurrency(totalCash)
-                        }}</span>
-                    </div>
-                  </div>
-                  <div class="d-flex justify-space-between align-center pt-2 border-t flex-wrap gap-2">
+              <VCardText class="pa-4 bg-white d-flex flex-column gap-4 text-uppercase">
+                <!-- Pichincha Input & Comparison -->
+                <div>
+                  <div class="d-flex justify-space-between align-center mb-1">
+                    <label class="text-caption font-weight-bold text-grey-darken-2">Banco Pichincha ($)</label>
                     <span class="text-caption font-weight-medium text-grey-darken-1">
-                      Saldo Teórico del Sistema (Caja Chica):
-                      <strong class="font-mono text-grey-darken-4">{{ formatCurrency(systemBalances.cash) }}</strong>
+                      Sistema: <strong class="font-mono text-grey-darken-4">{{
+                        formatCurrency(systemBalances.pichincha)
+                      }}</strong>
                     </span>
-                    <span class="text-caption font-weight-bold"
-                      :class="cashDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
-                      Diferencia Caja:
-                      <strong class="font-mono">{{ cashDifference > 0 ? '+' : '' }}{{ formatCurrency(cashDifference)
-                        }}</strong>
+                  </div>
+                  <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
+                    prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
+                    color="primary" class="bank-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                  <div class="text-right text-caption mt-1 font-weight-bold"
+                    :class="pichinchaDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                    Dif: {{ pichinchaDifference > 0 ? '+' : '' }}{{ formatCurrency(pichinchaDifference) }}
+                  </div>
+                </div>
+
+                <!-- Guayaquil Input & Comparison -->
+                <div>
+                  <div class="d-flex justify-space-between align-center mb-1">
+                    <label class="text-caption font-weight-bold text-grey-darken-2">Banco Guayaquil ($)</label>
+                    <span class="text-caption font-weight-medium text-grey-darken-1">
+                      Sistema: <strong class="font-mono text-grey-darken-4">{{
+                        formatCurrency(systemBalances.guayaquil)
+                      }}</strong>
                     </span>
+                  </div>
+                  <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
+                    prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
+                    color="primary" class="bank-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                  <div class="text-right text-caption mt-1 font-weight-bold"
+                    :class="guayaquilDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                    Dif: {{ guayaquilDifference > 0 ? '+' : '' }}{{ formatCurrency(guayaquilDifference) }}
                   </div>
                 </div>
               </VCardText>
             </VCard>
-          </VCol>
 
-          <!-- Right: Banks, Notes, Summary and Actions -->
-          <VCol cols="12" md="4">
-            <div class="d-flex flex-column gap-6 h-100 justify-space-between">
-              <!-- Cuentas Bancarias -->
-              <VCard elevation="0" class="rounded-lg border-light border">
-                <VCardItem class="bg-grey-lighten-4 py-3 border-b">
-                  <template #title>
-                    <div class="d-flex align-center gap-2">
-                      <VIcon icon="ri-bank-line" color="primary" size="20" />
-                      <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Saldos en Cuentas
-                        Bancarias</span>
-                    </div>
-                  </template>
-                </VCardItem>
-                <VCardText class="pa-4 bg-white d-flex flex-column gap-4 text-uppercase">
-                  <!-- Pichincha Input & Comparison -->
-                  <div>
-                    <div class="d-flex justify-space-between align-center mb-1">
-                      <label class="text-caption font-weight-bold text-grey-darken-2">Banco Pichincha ($)</label>
-                      <span class="text-caption font-weight-medium text-grey-darken-1">
-                        Sistema: <strong class="font-mono text-grey-darken-4">{{
-                          formatCurrency(systemBalances.pichincha)
-                          }}</strong>
-                      </span>
-                    </div>
-                    <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
-                      prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable"
-                      hide-details="auto" color="primary" class="bank-input" :disabled="saving || loading"
-                      @focus="$event.target.select()" />
-                    <div class="text-right text-caption mt-1 font-weight-bold"
-                      :class="pichinchaDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
-                      Dif: {{ pichinchaDifference > 0 ? '+' : '' }}{{ formatCurrency(pichinchaDifference) }}
-                    </div>
+            <!-- Observaciones -->
+            <VCard elevation="0" class="rounded-lg border-light border">
+              <VCardItem class="bg-grey-lighten-4 py-3 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-file-text-line" color="primary" size="20" />
+                    <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Observaciones / Novedades</span>
                   </div>
-
-                  <!-- Guayaquil Input & Comparison -->
-                  <div>
-                    <div class="d-flex justify-space-between align-center mb-1">
-                      <label class="text-caption font-weight-bold text-grey-darken-2">Banco Guayaquil ($)</label>
-                      <span class="text-caption font-weight-medium text-grey-darken-1">
-                        Sistema: <strong class="font-mono text-grey-darken-4">{{
-                          formatCurrency(systemBalances.guayaquil)
-                          }}</strong>
-                      </span>
-                    </div>
-                    <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
-                      prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable"
-                      hide-details="auto" color="primary" class="bank-input" :disabled="saving || loading"
-                      @focus="$event.target.select()" />
-                    <div class="text-right text-caption mt-1 font-weight-bold"
-                      :class="guayaquilDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
-                      Dif: {{ guayaquilDifference > 0 ? '+' : '' }}{{ formatCurrency(guayaquilDifference) }}
-                    </div>
-                  </div>
-                </VCardText>
-              </VCard>
-
-              <!-- Observaciones -->
-              <VCard elevation="0" class="rounded-lg border-light border">
-                <VCardItem class="bg-grey-lighten-4 py-3 border-b">
-                  <template #title>
-                    <div class="d-flex align-center gap-2">
-                      <VIcon icon="ri-file-text-line" color="primary" size="20" />
-                      <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Observaciones / Novedades</span>
-                    </div>
-                  </template>
-                </VCardItem>
-                <VCardText class="pa-4 bg-white text-uppercase">
-                  <VTextarea v-model="payload.observations" label="Describa diferencias o novedades..." rows="3"
-                    variant="outlined" density="comfortable" hide-details="auto" color="primary"
-                    :disabled="saving || loading" />
-                </VCardText>
-              </VCard>
-              <VCardActions class="pa-4 bg-grey-lighten-5 border-t d-flex flex-column gap-2">
-                <VBtn block variant="flat" color="primary" class="text-none font-weight-bold text-white m-0"
-                  @click="saveArqueo" :loading="saving" :disabled="saving || sealing || loading">
-                  <VIcon start>ri-save-3-line</VIcon>
-                  GUARDAR ARQUEO DIARIO
-                </VBtn>
-                <VBtn block variant="flat" color="success" class="text-none font-weight-bold text-white m-0"
-                  @click="confirmSealDialog = true" :loading="sealing" :disabled="sealing || saving || loading">
-                  <VIcon start>ri-lock-password-line</VIcon>
-                  SELLAR DÍA
-                </VBtn>
-              </VCardActions>
-            </div>
-          </VCol>
-        </VRow>
-        <!-- Confirmación de sellado -->
-        <VDialog v-model="confirmSealDialog" persistent max-width="480">
-          <VCard>
-            <VCardTitle class="text-h6">Confirmar Sellado del Día</VCardTitle>
-            <VCardText>¿Estás seguro de que deseas sellar el día seleccionado? Esta acción no podrá deshacerse.
-            </VCardText>
-            <VCardActions class="pa-4">
-              <VBtn text @click="confirmSealDialog = false" :disabled="sealing">Cancelar</VBtn>
-              <VBtn color="success" @click="confirmSeal" :loading="sealing" :disabled="sealing">
-                Confirmar
+                </template>
+              </VCardItem>
+              <VCardText class="pa-4 bg-white text-uppercase">
+                <VTextarea v-model="payload.observations" label="Describa diferencias o novedades..." rows="3"
+                  variant="outlined" density="comfortable" hide-details="auto" color="primary"
+                  :disabled="saving || loading" />
+              </VCardText>
+            </VCard>
+            <VCardActions class="pa-4 bg-grey-lighten-5 border-t d-flex flex-column gap-2">
+              <VBtn block variant="flat" color="primary" class="text-none font-weight-bold text-white m-0"
+                @click="saveArqueo" :loading="saving" :disabled="saving || sealing || loading">
+                <VIcon start>ri-save-3-line</VIcon>
+                GUARDAR ARQUEO DIARIO
+              </VBtn>
+              <VBtn block variant="flat" color="success" class="text-none font-weight-bold text-white m-0"
+                @click="confirmSealDialog = true" :loading="sealing" :disabled="sealing || saving || loading">
+                <VIcon start>ri-lock-password-line</VIcon>
+                SELLAR DÍA
               </VBtn>
             </VCardActions>
-          </VCard>
-        </VDialog>
-      </div>
+          </div>
+        </VCol>
+      </VRow>
+      <!-- Confirmación de sellado -->
+      <VDialog v-model="confirmSealDialog" persistent max-width="480">
+        <VCard>
+          <VCardTitle class="text-h6">Confirmar Sellado del Día</VCardTitle>
+          <VCardText>¿Estás seguro de que deseas sellar el día seleccionado? Esta acción no podrá deshacerse.
+          </VCardText>
+          <VCardActions class="pa-4">
+            <VBtn text @click="confirmSealDialog = false" :disabled="sealing">Cancelar</VBtn>
+            <VBtn color="success" @click="confirmSeal" :loading="sealing" :disabled="sealing">
+              Confirmar
+            </VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
     </div>
   </div>
+
 </template>
 
 <style scoped>
