@@ -133,6 +133,11 @@ export default [
         icon: { icon: 'ri-exchange-funds-line' },
         activeMatch: /operations|transfers|employee-expenses|aportes|movements/,
       },
+      {
+        title: 'Arqueo de Caja',
+        to: { name: 'finanzas-arqueo' },
+        icon: { icon: 'ri-safe-2-line' },
+      },
     ],
   },
 
