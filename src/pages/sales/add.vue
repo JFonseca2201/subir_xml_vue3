@@ -77,6 +77,14 @@ const sale = ref({
   user_id: userId.value,
 })
 
+// Regla de campo obligatorio que acepta 0 como valor válido
+const requiredRule = v => (
+  v !== null &&
+  v !== undefined &&
+  v !== '' &&
+  !(typeof v === 'number' && Number.isNaN(v))
+) || 'Campo obligatorio'
+
 // Watch para cambiar estado de pago cuando es crédito
 const onCreditChange = () => {
   if (sale.value.is_credited) {
@@ -278,9 +286,6 @@ const openWorkOrderImportDialog = () => {
 
 const searchProduct = ref(null)
 const isClearingSearch = ref(false)
-
-// Reglas de validación
-const requiredRule = v => !!v || 'Campo obligatorio'
 
 // Helpers
 const getClientName = c => {
@@ -608,7 +613,7 @@ const selectedVehicle = computed(() => {
 
 watch(() => sale.value.vehicle_id, (newVal) => {
   if (isLoading.value) return // Ignorar durante la carga inicial
-  
+
   if (newVal) {
     const selectedVeh = vehicles.value.find(v => v.id === newVal)
     if (selectedVeh && selectedVeh.client_id) {
@@ -714,7 +719,7 @@ const submitForm = async () => {
   // Validar pagos distribuidos solo si no es cotización
   if (sale.value.document_type !== 'quote') {
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
-    
+
     if (paymentDistributions.value.length === 0 || totalDist <= 0) {
       showValidationError.value = true
       validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
@@ -1030,7 +1035,8 @@ onMounted(async () => {
         </div>
         <p class="text-medium-emphasis mb-0">Crea un nuevo documento comercial</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list" class="align-self-md-center align-self-end">
+      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list"
+        class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
     </div>
@@ -1299,14 +1305,16 @@ onMounted(async () => {
                               style="white-space: normal !important; max-width: 500px;" :title="item.description">
                               {{ item.description }}
                             </div>
-                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold" style="font-size: 0.75rem;">
+                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
+                              style="font-size: 0.75rem;">
                               SKU: {{ item.sku }}
                             </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="item.type === 'product' && sale.document_type !== 'quote'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
+                              <span v-if="item.type === 'product' && sale.document_type !== 'quote'" class="stock-tag"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
                                 <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                                 {{ getProductStock(item.product_id) }} en stock
                               </span>
@@ -1319,9 +1327,10 @@ onMounted(async () => {
                           <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
                             @click="item.quantity--" class="qty-btn" size="small" />
                           <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
-                            @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
-                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99" @click="item.quantity < 99 ? item.quantity++ : null"
-                            class="qty-btn" size="small" />
+                            @input="item.quantity > 99 ? item.quantity = 99 : null"
+                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
+                            @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
                         </div>
                       </td>
                       <td>
@@ -1568,7 +1577,9 @@ onMounted(async () => {
                       order.client?.n_document }}</small></td>
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
                       order.vehicle?.model }}</small></td>
-                    <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A' }}</td>
+                    <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A'
+                    }}
+                    </td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
                         Importar
