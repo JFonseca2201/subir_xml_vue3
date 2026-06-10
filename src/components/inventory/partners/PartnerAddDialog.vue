@@ -180,7 +180,7 @@ const store = async () => {
       email: newMember.value.email,
       phone: newMember.value.phone,
       address: newMember.value.address,
-      created_at: new Date().toISOString(),
+      created_at: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString(),
     }
 
     // Emitir el evento para agregar el socio a la tabla

@@ -364,15 +364,21 @@ const addProductFromSearch = product => {
   const isService = product.item_type === 2 ||
     (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))
 
-  workOrder.value.items.push({
-    product_id: product.id,
-    description: product.description || product.name || '',
-    quantity: 1,
-    unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
-    discount: 0,
-    type: isService ? 'service' : 'product',
-    sku: product.sku || product.code || '',
-  })
+  const existingItemIndex = workOrder.value.items.findIndex(item => item.product_id === product.id)
+
+  if (existingItemIndex !== -1) {
+    workOrder.value.items[existingItemIndex].quantity += 1
+  } else {
+    workOrder.value.items.push({
+      product_id: product.id,
+      description: product.description || product.name || '',
+      quantity: 1,
+      unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
+      discount: 0,
+      type: isService ? 'service' : 'product',
+      sku: product.sku || product.code || '',
+    })
+  }
   productSearch.value = null
 }
 
@@ -647,8 +653,9 @@ onMounted(() => {
                       <div class="d-inline-flex align-center qty-selector">
                         <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
                           @click="item.quantity--" class="qty-btn" size="small" />
-                        <input v-model.number="item.quantity" type="number" min="1" class="qty-input" />
-                        <VBtn icon="ri-add-line" variant="text" color="primary" @click="item.quantity++" class="qty-btn"
+                        <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
+                          @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                        <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99" @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn"
                           size="small" />
                       </div>
                     </td>

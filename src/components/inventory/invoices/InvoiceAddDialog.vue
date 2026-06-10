@@ -38,65 +38,59 @@ const handleFileUpload = event => {
     if (isXmlFile) {
       const reader = new FileReader()
       reader.onload = function (e) {
-        const xmlString = e.target.result
+        let xmlString = e.target.result
+
+        // 1. Decodificar entidades HTML si el XML viene escapado (muy común en correos de ERPs)
+        if (xmlString.includes('&lt;factura') || xmlString.includes('&lt;Factura')) {
+          const txt = document.createElement("textarea")
+          txt.innerHTML = xmlString
+          xmlString = txt.value
+        }
+
+        let facturaData = null
+
+        // 2. Extraer estrictamente el nodo <factura> ignorando sobres Autorización, CDATA, SOAP, etc.
+        const match = xmlString.match(/<factura[\s\S]*?<\/factura>/i)
+
         const parser = new XMLParser({
           ignoreAttributes: false,
           cdataPropName: '#cdata-section',
           textNodeName: '#text',
           ignoreDeclaration: true,
         })
-        let result
 
-        try {
-          result = parser.parse(xmlString)
-        } catch (parseError) {
-          console.error('Error parsing XML:', parseError)
-          error_exist.value = 'No se pudo leer el XML. Verifica que el archivo sea válido.'
-          clearSelectedFile(true)
-          return
-        }
-
-        const extractFacturaFromComprobante = (comprobanteNode) => {
-          if (!comprobanteNode) return null
-          let innerXmlString = ''
-
-          if (typeof comprobanteNode === 'string') {
-            innerXmlString = comprobanteNode
-          } else if (comprobanteNode && typeof comprobanteNode === 'object') {
-            innerXmlString = comprobanteNode['#cdata-section'] || comprobanteNode['#text'] || comprobanteNode.cdata || ''
-          }
-
-          if (!innerXmlString) {
-            return null
-          }
-
-          innerXmlString = innerXmlString.replace('<![CDATA[', '').replace(']]>', '')
-          const innerParser = new XMLParser({
-            ignoreAttributes: false,
-            cdataPropName: '#cdata-section',
-            textNodeName: '#text',
-            ignoreDeclaration: true,
-          })
+        if (match) {
+          const cleanXml = match[0].trim()
           try {
-            const innerResult = innerParser.parse(innerXmlString)
-            return innerResult.factura || innerResult.notaCredito || innerResult.notacredito || innerResult.comprobante || null
-          } catch (innerError) {
-            console.error('Error parsing inner XML:', innerError)
-            return null
+            const parsed = parser.parse(cleanXml)
+            facturaData = parsed.factura || parsed.Factura
+          } catch (parseError) {
+            console.error('Error parsing extracted XML:', parseError)
           }
-        }
-
-        let facturaData = null
-        if (result.autorizacion && result.autorizacion.comprobante) {
-          facturaData = extractFacturaFromComprobante(result.autorizacion.comprobante)
-        }
-
-        if (!facturaData && result.factura) {
-          facturaData = result.factura
-        }
-
-        if (!facturaData && result.comprobante) {
-          facturaData = result.comprobante.factura || result.comprobante
+        } else {
+          // Fallback tradicional por si acaso
+          try {
+            const parsed = parser.parse(xmlString)
+            if (parsed.factura) {
+              facturaData = parsed.factura
+            } else if (parsed.autorizacion && parsed.autorizacion.comprobante) {
+              let comp = parsed.autorizacion.comprobante
+              if (typeof comp === 'string') {
+                comp = comp.replace('<![CDATA[', '').replace(']]>', '')
+                const innerParsed = parser.parse(comp)
+                facturaData = innerParsed.factura || innerParsed.Factura
+              } else if (comp['#cdata-section'] || comp['#text']) {
+                let inner = comp['#cdata-section'] || comp['#text'] || ''
+                inner = inner.replace('<![CDATA[', '').replace(']]>', '')
+                const innerParsed = parser.parse(inner)
+                facturaData = innerParsed.factura || innerParsed.Factura
+              }
+            } else if (parsed.comprobante && parsed.comprobante.factura) {
+              facturaData = parsed.comprobante.factura
+            }
+          } catch (e) {
+            console.error('Error in fallback parsing:', e)
+          }
         }
 
         if (facturaData) {

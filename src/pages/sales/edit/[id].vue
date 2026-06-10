@@ -133,7 +133,8 @@ const onDocumentTypeChange = async () => {
       }
     }
     // Establecer la fecha actual por defecto al cambiar a venta
-    sale.value.service_date = new Date().toISOString().split('T')[0]
+    const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+    sale.value.service_date = new Date(Date.now() - tzOffset).toISOString().split('T')[0]
   } else if (originalDocumentType.value === 'quote' && sale.value.document_type === 'quote') {
     // Si vuelve a seleccionar cotización, restauramos el número original y la fecha original
     sale.value.document_number = originalDocumentNumber.value
@@ -342,6 +343,13 @@ const taxAmount = computed(() => {
 
 const total = computed(() => {
   return subtotal.value + taxAmount.value
+})
+
+watch(total, (newTotal) => {
+  // Solo actualizar automáticamente si hay un único método de pago
+  if (paymentDistributions.value.length === 1) {
+    paymentDistributions.value[0].amount = newTotal
+  }
 })
 
 // Computed para verificar si es cotización
@@ -997,9 +1005,9 @@ onMounted(() => {
                             :disabled="item.quantity <= 1 || sale.status === 'canceled'" @click="item.quantity--"
                             class="qty-btn" size="small" />
                           <input v-model.number="item.quantity" :disabled="sale.status === 'canceled'" type="number"
-                            min="1" class="qty-input" />
-                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="sale.status === 'canceled'"
-                            @click="item.quantity++" class="qty-btn" size="small" />
+                            min="1" max="99" class="qty-input" @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99 || sale.status === 'canceled'"
+                            @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
                         </div>
                       </td>
                       <td>

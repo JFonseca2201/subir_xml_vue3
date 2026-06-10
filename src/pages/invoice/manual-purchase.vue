@@ -18,11 +18,16 @@ const accounts = ref([])
 const partners = ref([])
 const products = ref([])
 
+const getLocalDateString = () => {
+  const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+  return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+}
+
 // Form State
 const formData = ref({
   supplier_id: null,
   invoice_number: '',
-  issue_date: new Date().toISOString().slice(0, 10),
+  issue_date: getLocalDateString(),
   payment_type: 'credito',
   account_id: null,
   partner_id: null,

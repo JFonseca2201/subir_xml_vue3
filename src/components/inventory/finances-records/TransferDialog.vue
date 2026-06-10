@@ -27,7 +27,7 @@ const form = ref({
   to_account_id: null,
   amount: '',
   description: '',
-  transfer_date: new Date().toISOString().split('T')[0],
+  transfer_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
 })
 
 // Computed
@@ -59,7 +59,7 @@ const resetForm = () => {
     to_account_id: null,
     amount: '',
     description: '',
-    transfer_date: new Date().toISOString().split('T')[0],
+    transfer_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   }
   if (formRef.value) formRef.value.resetValidation()
 }
@@ -111,7 +111,7 @@ watch(() => show.value, newVal => {
           description: props.transferData.description,
           transfer_date: props.transferData.transfer_date
             ? props.transferData.transfer_date.split('T')[0]
-            : (props.transferData.created_at ? props.transferData.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+            : (props.transferData.created_at ? props.transferData.created_at.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]),
         }
       } else {
         resetForm()

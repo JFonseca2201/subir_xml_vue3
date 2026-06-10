@@ -55,6 +55,11 @@ const accounts = ref([])
 const employees = ref([])
 
 // Estado del formulario
+const getLocalDateString = () => {
+  const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+  return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+}
+
 const sale = ref({
   document_type: 'sale_note',
   document_number: '',
@@ -62,7 +67,7 @@ const sale = ref({
   vehicle_id: null,
   work_order_id: null,
   mileage: null,
-  service_date: new Date().toISOString().substr(0, 10),
+  service_date: getLocalDateString(),
   payment_status: 'paid',
   is_credited: false,
   payment_method: 'Efectivo',
@@ -568,6 +573,13 @@ const taxAmount = computed(() => {
 
 const total = computed(() => {
   return subtotal.value + taxAmount.value
+})
+
+watch(total, (newTotal) => {
+  // Solo actualizar automáticamente si hay un único método de pago
+  if (paymentDistributions.value.length === 1) {
+    paymentDistributions.value[0].amount = newTotal
+  }
 })
 
 // Computed para verificar si es cotización
@@ -1306,8 +1318,9 @@ onMounted(async () => {
                         <div class="d-inline-flex align-center qty-selector">
                           <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
                             @click="item.quantity--" class="qty-btn" size="small" />
-                          <input v-model.number="item.quantity" type="number" min="1" class="qty-input" />
-                          <VBtn icon="ri-add-line" variant="text" color="primary" @click="item.quantity++"
+                          <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
+                            @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99" @click="item.quantity < 99 ? item.quantity++ : null"
                             class="qty-btn" size="small" />
                         </div>
                       </td>

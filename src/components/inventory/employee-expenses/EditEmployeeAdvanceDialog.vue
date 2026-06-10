@@ -54,7 +54,7 @@ const form = ref({
   account_name: '',
   amount: null,
   description: '',
-  advance_date: new Date().toISOString().split('T')[0],
+  advance_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   payment_method: 'TRANSFERENCIA',
 })
 
@@ -67,7 +67,7 @@ const resetForm = () => {
     account_name: '',
     amount: null,
     description: '',
-    advance_date: new Date().toISOString().split('T')[0],
+    advance_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
   }
   formRef.value?.reset()
@@ -219,7 +219,7 @@ onMounted(async () => {
     form.value.account_id = props.expense.account_id
     form.value.amount = props.expense.amount
     form.value.description = props.expense.description
-    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
+    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
     form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
 
     console.log('Formulario cargado:', form.value)
@@ -246,7 +246,7 @@ watch(() => show.value, async newVal => {
     form.value.account_id = props.expense.account_id
     form.value.amount = props.expense.amount
     form.value.description = props.expense.description
-    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date().toISOString().split('T')[0])
+    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
     form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
 
     console.log('Formulario cargado:', form.value)

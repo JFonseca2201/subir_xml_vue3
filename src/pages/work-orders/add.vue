@@ -311,21 +311,27 @@ const addProductFromSearch = product => {
   const isService = product.item_type === 2 ||
     (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))
 
-  workOrder.value.items.push({
-    product_id: product.id,
-    description: product.description || product.name || '',
-    quantity: 1,
-    unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
-    discount: 0,
-    type: isService ? 'service' : 'product',
-    sku: product.sku || product.code || '',
-  })
+  const existingItemIndex = workOrder.value.items.findIndex(item => item.product_id === product.id)
+
+  if (existingItemIndex !== -1) {
+    workOrder.value.items[existingItemIndex].quantity += 1
+  } else {
+    workOrder.value.items.push({
+      product_id: product.id,
+      description: product.description || product.name || '',
+      quantity: 1,
+      unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
+      discount: 0,
+      type: isService ? 'service' : 'product',
+      sku: product.sku || product.code || '',
+    })
+  }
   productSearch.value = null
 }
 
 watch(() => workOrder.value.vehicle_id, (newVal) => {
   if (isLoading.value) return // Ignorar durante la carga inicial
-  
+
   if (newVal) {
     const selectedVeh = vehicles.value.find(v => v.id === newVal)
     if (selectedVeh && selectedVeh.client_id) {
@@ -513,10 +519,10 @@ onMounted(() => {
             <!-- Cuadro de búsqueda de productos -->
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
-                <VAutocomplete v-model="productSearch" :items="products" item-title="description"
-                  item-value="id" label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined"
-                  clearable hide-details return-object :custom-filter="productFilter" @update:model-value="(val) => val && addProductFromSearch(val)"
-                  :menu-props="{ maxWidth: 0 }">
+                <VAutocomplete v-model="productSearch" :items="products" item-title="description" item-value="id"
+                  label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined" clearable
+                  hide-details return-object :custom-filter="productFilter"
+                  @update:model-value="(val) => val && addProductFromSearch(val)" :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
@@ -584,7 +590,8 @@ onMounted(() => {
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
                             </span>
                             <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
-                            <span v-if="item.type === 'product'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
+                            <span v-if="item.type === 'product'" class="stock-tag"
+                              :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
                               <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                               {{ getProductStock(item.product_id) }} en stock
                             </span>
@@ -596,8 +603,9 @@ onMounted(() => {
                       <div class="d-inline-flex align-center qty-selector">
                         <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
                           @click="item.quantity--" class="qty-btn" size="small" />
-                        <input v-model.number="item.quantity" type="number" min="1" class="qty-input" />
-                        <VBtn icon="ri-add-line" variant="text" color="primary" @click="item.quantity++" class="qty-btn"
+                        <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
+                          @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                        <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99" @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn"
                           size="small" />
                       </div>
                     </td>

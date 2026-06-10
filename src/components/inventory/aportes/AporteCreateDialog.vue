@@ -45,7 +45,7 @@ const show = computed({
 })
 
 const today = computed(() => {
-  return new Date().toISOString().split('T')[0]
+  return new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
 })
 
 // Computed para el título del diálogo

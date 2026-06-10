@@ -27,7 +27,7 @@ const form = ref({
   work_order_number: '',
   invoice_number: '',
   description: '',
-  entry_date: new Date().toISOString().split('T')[0],
+  entry_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   payments: [
     { account_id: null, amount: 0 },
   ],
@@ -115,7 +115,7 @@ const resetForm = () => {
     work_order_number: '',
     invoice_number: '',
     description: '',
-    entry_date: new Date().toISOString().split('T')[0],
+    entry_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payments: [
       { account_id: null, amount: 0 },
     ],

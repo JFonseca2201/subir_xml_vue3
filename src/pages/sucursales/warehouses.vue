@@ -119,7 +119,7 @@ const formatDate = date => {
   if (!date) return '-'
   const d = new Date(date)
 
-  return isNaN(d) ? '-' : d.toISOString().slice(0, 10)
+  return isNaN(d) ? '-' : new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
 }
 
 onMounted(() => {

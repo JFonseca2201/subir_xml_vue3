@@ -37,8 +37,13 @@ const systemBalances = ref({
 })
 
 // Main reactive payload
+const getLocalDateString = () => {
+  const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+  return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+}
+
 const payload = ref({
-  count_date: new Date().toISOString().split('T')[0],
+  count_date: getLocalDateString(),
   pichincha_total: 0.00,
   guayaquil_total: 0.00,
   cash_details: {

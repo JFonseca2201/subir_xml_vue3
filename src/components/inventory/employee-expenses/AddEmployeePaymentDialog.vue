@@ -34,7 +34,7 @@ const form = ref({
   account_name: null,
   amount: null,
   description: '',
-  payment_date: new Date().toISOString().split('T')[0],
+  payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   payment_method: 'TRANSFERENCIA',
   reference: '',
 })
@@ -198,7 +198,7 @@ const resetForm = () => {
     account_id: null,
     amount: null,
     description: '',
-    payment_date: new Date().toISOString().split('T')[0],
+    payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
     reference: '',
   }

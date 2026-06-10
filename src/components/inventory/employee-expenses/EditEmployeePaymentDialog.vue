@@ -107,7 +107,7 @@ const form = ref({
   account_id: null,
   amount: null,
   description: '',
-  payment_date: new Date().toISOString().split('T')[0],
+  payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
 })
 
 // Funciones
@@ -117,7 +117,7 @@ const resetForm = () => {
     account_id: null,
     amount: null,
     description: '',
-    payment_date: new Date().toISOString().split('T')[0],
+    payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
   }
   formRef.value?.reset()
@@ -229,7 +229,7 @@ watch(() => props.expense, newVal => {
 
 
       // Convertir fecha a formato yyyy-MM-dd para input date
-      const dateValue = newVal.payment_date || newVal.date || new Date().toISOString().split('T')[0]
+      const dateValue = newVal.payment_date || newVal.date || new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
       if (dateValue && typeof dateValue === 'string') {
         // Si está en formato dd/MM/yyyy, convertirlo
         if (dateValue.includes('/')) {
@@ -240,7 +240,7 @@ watch(() => props.expense, newVal => {
           form.value.payment_date = dateValue
         }
       } else {
-        form.value.payment_date = new Date().toISOString().split('T')[0]
+        form.value.payment_date = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
       }
       form.value.payment_method = newVal.payment_method || 'TRANSFERENCIA'
 

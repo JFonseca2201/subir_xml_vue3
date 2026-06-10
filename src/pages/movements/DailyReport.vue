@@ -72,9 +72,13 @@ onMounted(() => {
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
+  const getLocalISO = (d) => {
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  }
+
   dateRange.value = {
-    start_date: firstDay.toISOString().split('T')[0],
-    end_date: lastDay.toISOString().split('T')[0],
+    start_date: getLocalISO(firstDay),
+    end_date: getLocalISO(lastDay),
   }
 
   loadReport()

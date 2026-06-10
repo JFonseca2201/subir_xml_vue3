@@ -241,7 +241,7 @@ const generatePDF = async () => {
     const a = document.createElement('a')
 
     a.href = url
-    a.download = `reporte_financiero_${new Date().toISOString().split('T')[0]}.pdf`
+    a.download = `reporte_financiero_${new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]}.pdf`
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
