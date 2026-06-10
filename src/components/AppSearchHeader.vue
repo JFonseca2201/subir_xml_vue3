@@ -61,23 +61,3 @@ defineOptions({
     </VCardText>
   </VCard>
 </template>
-
-<style lang="scss">
-.search-header {
-  padding: 52px !important;
-  background-size: cover !important;
-}
-
-// search input
-.search-header-input {
-  border-radius: 0.625rem !important;
-  background-color: rgb(var(--v-theme-surface));
-  max-inline-size: 32.125rem;
-}
-
-@media (max-width: 37.5rem) {
-  .search-header {
-    padding: 1.5rem !important;
-  }
-}
-</style>

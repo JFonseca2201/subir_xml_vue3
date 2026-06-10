@@ -43,11 +43,3 @@ const props = defineProps({
     </p>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.error-title {
-  font-size: clamp(3rem, 5vw, 6rem);
-  font-weight: 500;
-  line-height: clamp(3rem, 5vw, 6rem);
-}
-</style>

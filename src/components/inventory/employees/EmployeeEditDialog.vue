@@ -441,7 +441,3 @@ watch(() => props.employee, () => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-/* Estilos específicos si son necesarios */
-</style>

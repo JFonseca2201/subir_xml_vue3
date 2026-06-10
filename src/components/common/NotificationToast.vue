@@ -84,11 +84,3 @@ watch(() => props.show, newVal => {
 <template>
   <!-- Este componente ahora usa SweetAlert2, no necesita template -->
 </template>
-
-<style>
-.custom-swal-toast {
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
-  backdrop-filter: blur(10px) !important;
-}
-</style>

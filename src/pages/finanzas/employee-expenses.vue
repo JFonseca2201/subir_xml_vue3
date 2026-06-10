@@ -365,11 +365,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-</style>
+
 
 <route lang="yaml">
 meta:

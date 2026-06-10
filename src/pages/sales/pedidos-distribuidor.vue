@@ -583,12 +583,3 @@ onMounted(async () => {
     </VForm>
   </div>
 </template>
-
-<style scoped>
-.v-table th {
-  font-weight: 700 !important;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
-}
-</style>

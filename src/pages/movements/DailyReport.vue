@@ -240,28 +240,3 @@ onMounted(() => {
     </VCard>
   </div>
 </template>
-
-<style scoped>
-.report-table {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.report-table th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.025em;
-}
-
-.report-table td {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 12px 8px;
-}
-
-.report-table tr:hover td {
-    background-color: #f8f9fa;
-}
-</style>

@@ -488,21 +488,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.sticky-top {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-}
-.bg-grey-50 {
-  background-color: rgba(var(--v-theme-on-surface), 0.03);
-  backdrop-filter: blur(4px);
-}
-.movement-item:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.02);
-}
-</style>

@@ -568,22 +568,3 @@ onMounted(() => {
     </VCard>
   </div>
 </template>
-
-<style scoped>
-.sticky-top {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.sticky-bottom {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-</style>

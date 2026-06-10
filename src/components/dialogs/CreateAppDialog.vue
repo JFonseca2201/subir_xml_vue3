@@ -443,9 +443,3 @@ const onSubmit = () => {
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.stepper-content .card-list {
-  --v-card-list-gap: 1rem;
-}
-</style>

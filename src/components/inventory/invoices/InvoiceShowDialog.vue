@@ -918,54 +918,5 @@ onMounted(() => {
   </VDialog>
 </template>
 
-<style scoped>
-.inline-category-select :deep(.v-field__input) {
-  font-size: 0.75rem !important;
-  padding-top: 0 !important;
-  padding-bottom: 2px !important;
-  min-height: unset !important;
-}
-.inline-category-select :deep(.v-field) {
-  --v-input-control-height: 24px;
-}
-.animate-fade-in {
-  animation: fadeIn 0.25s ease-out;
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (min-width: 960px) {
-  .border-right-md {
-    border-right: 1px solid #e2e8f0 !important;
-  }
-}
 
-.invoice-table-wrap {
-  border-radius: 8px;
-  overflow-x: auto;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-.invoice-table :deep(table) {
-  table-layout: auto;
-  width: 100%;
-  min-width: 950px;
-}
-.invoice-table :deep(td) {
-  white-space: normal !important;
-  word-break: break-word;
-}
-.invoice-table :deep(td.text-center),
-.invoice-table :deep(td.text-right),
-.invoice-table :deep(thead th.text-center),
-.invoice-table :deep(thead th.text-right) {
-  white-space: nowrap !important;
-}
-</style>
 <!-- @editInvoiceItem="addEditInvoiceItem" -->

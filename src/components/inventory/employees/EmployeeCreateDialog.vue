@@ -411,7 +411,3 @@ watch(() => props.modelValue, newValue => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-/* Estilos específicos si son necesarios */
-</style>

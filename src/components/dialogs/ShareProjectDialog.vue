@@ -193,11 +193,3 @@ const membersList = [
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.share-project-dialog {
-  .card-list {
-    --v-card-list-gap: 1rem;
-  }
-}
-</style>

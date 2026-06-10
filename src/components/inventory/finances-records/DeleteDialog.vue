@@ -150,11 +150,3 @@ watch(() => props.modelValue, newVal => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.text-truncate {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-</style>

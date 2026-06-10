@@ -175,15 +175,3 @@ const referAndEarnSteps = [
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.refer-link-input {
-  .v-field--appended {
-    padding-inline-end: 0.4375rem;
-  }
-
-  .v-field__append-inner {
-    padding-block-start: 0;
-  }
-}
-</style>

@@ -258,15 +258,3 @@ const pricingPlans = [
   </VRow>
   <!-- !SECTION  -->
 </template>
-
-<style lang="scss" scoped>
-.card-list {
-  --v-card-list-gap: 1rem;
-}
-
-.pricing-save-chip {
-  display: flex;
-  inset-block-start: -2.125rem;
-  inset-inline-end: -6.5rem;
-}
-</style>

@@ -271,24 +271,3 @@ const onReset = () => {
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.permission-table {
-  td {
-    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    padding-block: 0.625rem;
-
-    .v-checkbox {
-      min-inline-size: 4.75rem;
-    }
-
-    &:not(:first-child) {
-      padding-inline: 0.75rem;
-    }
-
-    .v-label {
-      white-space: nowrap;
-    }
-  }
-}
-</style>

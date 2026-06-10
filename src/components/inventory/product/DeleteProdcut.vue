@@ -186,21 +186,3 @@ const handleImageError = () => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.product-image {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.product-image-placeholder {
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
-    background-color: rgb(var(--v-theme-grey-lighten-2));
-    border: 2px dashed rgb(var(--v-theme-grey-lighten-1));
-}
-</style>

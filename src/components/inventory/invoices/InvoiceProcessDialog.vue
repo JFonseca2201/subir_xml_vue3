@@ -441,33 +441,3 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.gradient-header {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info)));
-}
-
-.border-s-4 {
-  border-left-width: 4px !important;
-}
-
-.bg-slate-50 {
-  background-color: #f8fafc !important;
-}
-
-.bg-success-lighten-5 {
-  background-color: rgba(40, 199, 111, 0.08) !important;
-}
-
-.border-success-opacity-30 {
-  border-color: rgba(40, 199, 111, 0.3) !important;
-}
-
-.bg-error-lighten-5 {
-  background-color: rgba(234, 84, 85, 0.08) !important;
-}
-
-.border-error-opacity-30 {
-  border-color: rgba(234, 84, 85, 0.3) !important;
-}
-</style>

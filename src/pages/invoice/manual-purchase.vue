@@ -376,9 +376,3 @@ onMounted(() => {
     </VRow>
   </div>
 </template>
-
-<style scoped>
-.border-s-4 {
-  border-left-width: 4px !important;
-}
-</style>

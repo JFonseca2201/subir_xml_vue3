@@ -781,3 +781,3128 @@
         }
     }
 }
+
+// ============================================
+// CUSTOM TABLE AND INPUT STYLES
+// Extracted from Work Orders / Sales / Finanzas
+// ============================================
+
+.custom-items-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(0, 0, 0, 0.6);
+    padding: 12px 16px !important;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.06) !important;
+  }
+
+  td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    vertical-align: middle;
+  }
+}
+
+.hover-row {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  }
+}
+
+/* Custom quantity selector */
+.qty-selector {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: rgba(var(--v-theme-primary), 0.5);
+  }
+}
+
+.qty-btn {
+  height: 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.qty-input {
+  width: 44px;
+  height: 32px;
+  border: none;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+
+  &[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+/* Underline inputs */
+.premium-input {
+  .v-field__outline {
+    --v-field-border-width: 0px !important;
+    --v-field-border-opacity: 0 !important;
+
+    &::before,
+    &::after {
+      display: none !important;
+    }
+  }
+
+  .v-field {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0 !important;
+    padding-inline-start: 4px !important;
+    padding-inline-end: 4px !important;
+    transition: all 0.2s ease;
+
+    &--focused {
+      border-bottom: 2px solid rgb(var(--v-theme-primary)) !important;
+      background-color: transparent !important;
+    }
+
+    &:hover:not(.v-field--focused) {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.4) !important;
+    }
+  }
+}
+
+.sku-tag {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.stock-tag {
+  background-color: rgba(var(--v-theme-success), 0.1);
+  color: rgb(var(--v-theme-success));
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+
+  &.stock-low {
+    background-color: rgba(var(--v-theme-error), 0.1);
+    color: rgb(var(--v-theme-error));
+  }
+}
+
+.delete-btn {
+  transition: transform 0.2s, color 0.2s;
+
+  &:hover {
+    transform: scale(1.15);
+    color: rgb(var(--v-theme-error)) !important;
+  }
+}
+
+/* Cash quantity input (Arqueo) */
+.cash-qty-input {
+    width: 60px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    outline: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 2px 0;
+    transition: all 0.2s;
+
+    &:focus {
+        border-bottom: 2px solid rgb(var(--v-theme-primary));
+        background-color: rgba(var(--v-theme-primary), 0.05);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        border-bottom-style: dashed;
+        background-color: transparent;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    &[type=number] {
+        -moz-appearance: textfield;
+    }
+}
+
+.border-s-4 {
+  border-left-width: 4px !important;
+}
+
+
+// ============================================
+// EXTRACTED STYLES FROM ALL INTERFACES
+// ============================================
+
+/* From src/pages/accounts/index.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de cuentas */
+.account-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.account-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.account-row {
+  height: 52px;
+}
+
+.account-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/aportes/index.vue */
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.hover-bg-light:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+}
+
+/* From src/pages/clients/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de clientes */
+.client-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.client-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.client-row {
+  height: 52px;
+}
+
+.client-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* From src/pages/configuration/categories.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de categorías */
+.categories-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.categories-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.categories-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.categories-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/configuration/providers.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de proveedores */
+.providers-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.providers-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.providers-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.providers-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/configuration/unitconversions.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de conversiones */
+.conversions-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.conversions-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.conversions-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.conversions-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/configuration/units.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de unidades */
+.units-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.units-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.units-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.units-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/dashboard.vue */
+.dashboard-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header-glow {
+  position: absolute;
+  top: -120px;
+  left: 5%;
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-primary), 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(60px);
+}
+
+.gradient-title {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-info)) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.mock-card {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  border-radius: 16px !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mock-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(var(--v-theme-primary), 0.1) !important;
+  border-color: rgba(var(--v-theme-primary), 0.25) !important;
+}
+
+.mock-card-gradient {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-info)) 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.mock-card-gradient:hover {
+  box-shadow: 0 12px 24px rgba(var(--v-theme-primary), 0.25) !important;
+}
+
+/* Custom Search Field styling to match system */
+.search-field :deep(.v-field) {
+  border-radius: 24px !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.search-field :deep(.v-field__outline) {
+  display: none;
+}
+
+.search-field :deep(.v-field__prepend-inner) .v-icon {
+  color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* Floating drop-down list items */
+.search-results-dropdown {
+  backdrop-filter: blur(12px);
+}
+
+.search-result-item {
+  transition: background-color 0.25s ease;
+}
+
+.search-result-item:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+}
+
+/* Custom Calendar Styling using system themes */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.calendar-header-day {
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+  font-weight: bold;
+  padding-bottom: 4px;
+}
+
+.calendar-day {
+  color: rgb(var(--v-theme-on-surface));
+  padding: 6px 0;
+  border-radius: 6px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover:not(.is-empty) {
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  cursor: pointer;
+}
+
+.calendar-day.is-today {
+  background-color: rgb(var(--v-theme-primary)) !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  box-shadow: 0 0 12px rgba(var(--v-theme-primary), 0.4);
+}
+
+.calendar-day.is-selected {
+  border: 1.5px solid rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  font-weight: bold;
+}
+
+.calendar-day.is-empty {
+  visibility: hidden;
+}
+
+/* Custom progress linear styling overrides to match system themes */
+:deep(.v-progress-linear) {
+  background-color: rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+/* Table styles */
+.premium-table {
+  background: transparent !important;
+}
+
+.premium-table :deep(tr:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.05) !important;
+}
+
+.premium-table :deep(th) {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.premium-table :deep(td) {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+}
+
+.pulse-warning {
+  box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7);
+  animation: pulse-warn 2s infinite;
+}
+
+@keyframes pulse-warn {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 179, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 179, 0, 0);
+  }
+}
+
+/* From src/pages/employees/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de empleados */
+.employees-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.employees-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.employees-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.employees-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/finanzas/employee-expenses.vue */
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* From src/pages/invoice/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de facturas */
+.invoices-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.invoices-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.invoices-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.invoices-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/kardex/index.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.day-header {
+  background-color: #f8fafc;
+}
+
+.day-header .v-card-text {
+  color: #334155;
+}
+
+.kardex-table {
+  border-collapse: collapse !important;
+  width: 100%;
+}
+
+.kardex-table :deep(th) {
+  border: 1px solid #e2e8f0 !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.5px;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  vertical-align: middle !important;
+  height: 40px !important;
+}
+
+.kardex-table :deep(th.text-left) {
+  text-align: left !important;
+}
+
+.kardex-table :deep(th.text-right) {
+  text-align: right !important;
+}
+
+.kardex-table :deep(td) {
+  border: 1px solid #e2e8f0 !important;
+  height: 56px !important;
+  vertical-align: middle !important;
+}
+
+.bg-success-light {
+  background-color: rgba(76, 175, 80, 0.01) !important;
+}
+
+.bg-error-light {
+  background-color: rgba(244, 67, 54, 0.01) !important;
+}
+
+.bg-balance {
+  background-color: #fafbfc !important;
+}
+
+.kardex-row {
+  transition: background-color 0.15s ease;
+}
+
+.kardex-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.flow-header-group {
+  border-bottom: 2px solid #cbd5e1 !important;
+  background-color: #f1f5f9 !important;
+}
+
+.flow-in-header {
+  color: #2e7d32 !important;
+  background-color: rgba(76, 175, 80, 0.05) !important;
+}
+
+.flow-out-header {
+  color: #c62828 !important;
+  background-color: rgba(244, 67, 54, 0.05) !important;
+}
+
+/* From src/pages/kardex/producto.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.day-header {
+  background-color: #f8fafc;
+}
+
+.kardex-table {
+  border-collapse: collapse !important;
+  width: 100%;
+}
+
+.kardex-table :deep(th) {
+  border: 1px solid #e2e8f0 !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.5px;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  vertical-align: middle !important;
+  height: 44px !important;
+}
+
+.kardex-table :deep(th.text-left) {
+  text-align: left !important;
+}
+
+.kardex-table :deep(th.text-right) {
+  text-align: right !important;
+}
+
+.kardex-table :deep(td) {
+  border: 1px solid #e2e8f0 !important;
+  height: 56px !important;
+  vertical-align: middle !important;
+}
+
+.bg-success-header {
+  background-color: rgba(76, 175, 80, 0.05) !important;
+  color: #2e7d32 !important;
+}
+
+.bg-error-header {
+  background-color: rgba(244, 67, 54, 0.05) !important;
+  color: #c62828 !important;
+}
+
+.bg-success-light {
+  background-color: rgba(76, 175, 80, 0.02) !important;
+}
+
+.bg-error-light {
+  background-color: rgba(244, 67, 54, 0.02) !important;
+}
+
+.kardex-row {
+  transition: background-color 0.15s ease;
+}
+
+.kardex-row:hover {
+  background-color: #f8fafc !important;
+}
+
+/* From src/pages/movements/DailyReport.vue */
+.report-table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.025em;
+}
+
+.report-table td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 12px 8px;
+}
+
+.report-table tr:hover td {
+    background-color: #f8f9fa;
+}
+
+/* From src/pages/operations/index.vue */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+.bg-grey-50 {
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+  backdrop-filter: blur(4px);
+}
+.movement-item:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+/* From src/pages/partners/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de socios */
+.partners-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.partners-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.partners-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.partners-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/product/add.vue */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* From src/pages/product/edit/[id].vue */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* From src/pages/product/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de productos */
+.products-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.products-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.products-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.products-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/returns/add.vue */
+.hover-card {
+  cursor: pointer;
+}
+.hover-card:hover {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px -10px rgba(var(--v-theme-primary), 0.3) !important;
+  background-color: rgba(var(--v-theme-primary), 0.02);
+}
+
+.search-input-hover:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+/* Círculos decorativos para la tarjeta resumen */
+.decorative-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+.circle-1 {
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  right: -50px;
+}
+.circle-2 {
+  width: 150px;
+  height: 150px;
+  bottom: -30px;
+  left: -20px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.z-1 {
+  z-index: 1;
+}
+
+/* Mejora para la tabla */
+.table-modern tbody tr:hover {
+  background-color: rgba(var(--v-theme-primary), 0.03) !important;
+}
+
+/* Centrar el texto en el input de cantidad */
+:deep(.centered-input input) {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* From src/pages/returns/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de devoluciones */
+.returns-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.returns-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.returns-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.returns-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.return-items-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.return-items-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 600px;
+}
+
+.return-items-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.return-items-table :deep(td:not(:first-child)),
+.return-items-table :deep(th:not(:first-child)) {
+  white-space: nowrap !important;
+}
+
+/* From src/pages/roles-permisos/index.vue */
+.border-light {
+    border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de roles */
+.roles-table :deep(thead) {
+    background-color: #f8fafc !important;
+}
+
+.roles-table :deep(thead th) {
+    color: #475569 !important;
+    font-weight: 700 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid #e2e8f0 !important;
+    height: 48px !important;
+}
+
+.roles-row {
+    height: 52px;
+    transition: background-color 0.2s ease;
+}
+
+.roles-row:hover {
+    background-color: #f8fafc !important;
+}
+
+.action-btn {
+    transition: all 0.2s ease;
+    border-radius: 6px !important;
+}
+
+.action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/sales/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de ventas */
+.sales-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.sales-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.sales-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.sales-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* Estilos de tarjetas y sombreados */
+.hover-shadow {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.hover-underline:hover {
+  text-decoration: underline;
+}
+
+/* From src/pages/sales/pedidos-distribuidor-list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.border-top-light {
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de pedidos */
+.pedidos-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.pedidos-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.pedidos-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.pedidos-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.status-indicator {
+  border: 1px solid currentColor;
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.status-indicator:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Modificadores de fondo por color usando las variables CSS de Vuetify */
+.text-warning.status-indicator { background-color: rgba(var(--v-theme-warning), 0.1); }
+.text-info.status-indicator { background-color: rgba(var(--v-theme-info), 0.1); }
+.text-success.status-indicator { background-color: rgba(var(--v-theme-success), 0.1); }
+.text-error.status-indicator { background-color: rgba(var(--v-theme-error), 0.1); }
+.text-secondary.status-indicator { background-color: rgba(var(--v-theme-secondary), 0.1); }
+
+.pedido-items-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.pedido-items-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 600px;
+}
+
+.pedido-items-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.pedido-items-table :deep(td:not(:first-child)),
+.pedido-items-table :deep(th:not(:first-child)) {
+  white-space: nowrap !important;
+}
+
+/* From src/pages/sales/pedidos-distribuidor.vue */
+.v-table th {
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* From src/pages/sucursales/warehouses.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de almacenes */
+.warehouses-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.warehouses-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.warehouses-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.warehouses-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/transfers/index.vue */
+.border-b {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.transfer-table th {
+  padding: 12px 16px;
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+}
+.transfer-table td {
+  padding: 12px 16px;
+}
+
+/* From src/pages/users/index.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilo de la tabla de usuarios */
+.users-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.users-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.users-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.users-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* From src/pages/vehicles/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Placa de Vehículo - Estilo Sobrio */
+.license-plate-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #334155;
+  letter-spacing: 0.5px;
+  height: 26px;
+  vertical-align: middle;
+}
+
+/* Estilo de la tabla de vehículos */
+.vehicle-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.vehicle-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.vehicle-row {
+  height: 52px;
+}
+
+.vehicle-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.type-chip {
+  font-size: 11px !important;
+  height: 22px !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.clickable-plate {
+  cursor: pointer;
+  border-color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: all 0.2s ease;
+}
+
+.clickable-plate:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+}
+
+/* From src/pages/work-orders/list.vue */
+.border-light {
+  border: 1px solid #e2e8f0 !important;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Estilos de tarjetas y sombreados */
+.hover-shadow {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.hover-underline:hover {
+  text-decoration: underline;
+}
+
+/* Estilo de la tabla de órdenes de trabajo */
+.work-orders-table :deep(thead) {
+  background-color: #f8fafc !important;
+}
+
+.work-orders-table :deep(thead th) {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  height: 48px !important;
+}
+
+.work-orders-row {
+  height: 52px;
+  transition: background-color 0.2s ease;
+}
+
+.work-orders-row:hover {
+  background-color: #f8fafc !important;
+}
+
+.action-btn {
+  transition: all 0.2s ease;
+  border-radius: 6px !important;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.clickable-link {
+  cursor: pointer;
+  color: rgb(var(--v-theme-primary)) !important;
+  transition: opacity 0.2s ease;
+}
+
+.clickable-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.work-order-items-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.work-order-items-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 620px;
+}
+
+.work-order-items-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.work-order-items-table :deep(td:not(:first-child)),
+.work-order-items-table :deep(th:not(:first-child)) {
+  white-space: nowrap !important;
+}
+
+/* From src/components/AppPricing.vue */
+.card-list {
+  --v-card-list-gap: 1rem;
+}
+
+.pricing-save-chip {
+  display: flex;
+  inset-block-start: -2.125rem;
+  inset-inline-end: -6.5rem;
+}
+
+/* From src/components/AppSearchHeader.vue */
+.search-header {
+  padding: 52px !important;
+  background-size: cover !important;
+}
+
+// search input
+.search-header-input {
+  border-radius: 0.625rem !important;
+  background-color: rgb(var(--v-theme-surface));
+  max-inline-size: 32.125rem;
+}
+
+@media (max-width: 37.5rem) {
+  .search-header {
+    padding: 1.5rem !important;
+  }
+}
+
+/* From src/components/common/NotificationToast.vue */
+.custom-swal-toast {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* From src/components/dialogs/AddEditPermissionDialog.vue */
+.permission-table {
+  td {
+    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    padding-block: 0.5rem;
+    padding-inline: 0;
+  }
+}
+
+/* From src/components/dialogs/AddEditRoleDialog.vue */
+.permission-table {
+  td {
+    border-block-end: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    padding-block: 0.625rem;
+
+    .v-checkbox {
+      min-inline-size: 4.75rem;
+    }
+
+    &:not(:first-child) {
+      padding-inline: 0.75rem;
+    }
+
+    .v-label {
+      white-space: nowrap;
+    }
+  }
+}
+
+/* From src/components/dialogs/AddPaymentMethodDialog.vue */
+.refer-link-input {
+  .v-field--appended {
+    padding-inline-end: 0;
+  }
+
+  .v-field__append-inner {
+    padding-block-start: 0.125rem;
+  }
+}
+
+/* From src/components/dialogs/CreateAppDialog.vue */
+.stepper-content .card-list {
+  --v-card-list-gap: 1rem;
+}
+
+/* From src/components/dialogs/PaymentProvidersDialog.vue */
+.refer-link-input {
+  .v-field--appended {
+    padding-inline-end: 0;
+  }
+
+  .v-field__append-inner {
+    padding-block-start: 0.125rem;
+  }
+}
+
+/* From src/components/dialogs/ReferAndEarnDialog.vue */
+.refer-link-input {
+  .v-field--appended {
+    padding-inline-end: 0.4375rem;
+  }
+
+  .v-field__append-inner {
+    padding-block-start: 0;
+  }
+}
+
+/* From src/components/dialogs/ShareProjectDialog.vue */
+.share-project-dialog {
+  .card-list {
+    --v-card-list-gap: 1rem;
+  }
+}
+
+/* From src/components/dialogs/TwoFactorAuthDialog.vue */
+.auth-method-card {
+  &.card-list .v-list-item {
+    padding-block: 20px !important;
+    padding-inline: 30px !important;
+  }
+
+  &.responsive-card {
+    .v-list-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+
+      .v-list-item__prepend {
+        svg {
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+/* From src/components/ErrorHeader.vue */
+.error-title {
+  font-size: clamp(3rem, 5vw, 6rem);
+  font-weight: 500;
+  line-height: clamp(3rem, 5vw, 6rem);
+}
+
+/* From src/components/inventory/aportes/AporteEditDialog.vue */
+/* Estilos para inputs modernos */
+:deep(.v-field) {
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.3s ease !important;
+}
+
+:deep(.v-field:hover) {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-1px);
+}
+
+:deep(.v-field--focused) {
+    box-shadow: 0 4px 20px rgba(240, 147, 251, 0.15) !important;
+    border-color: #f093fb !important;
+}
+
+:deep(.v-field__input) {
+    font-size: 15px;
+    padding: 16px;
+}
+
+:deep(.v-field__prepend-inner) {
+    padding-right: 8px;
+}
+
+/* From src/components/inventory/clients/ClientShowDialog.vue */
+.client-dialog-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Grid de Especificaciones (Brochure Style) */
+.specs-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .specs-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.spec-badge-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.spec-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+}
+
+.spec-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 2px;
+  display: block;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-title {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+}
+
+.info-card-flat {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+/* From src/components/inventory/employees/EmployeeCreateDialog.vue */
+/* Estilos específicos si son necesarios */
+
+/* From src/components/inventory/employees/EmployeeDeleteDialog.vue */
+/* Estilos específicos si son necesarios */
+
+/* From src/components/inventory/employees/EmployeeEditDialog.vue */
+/* Estilos específicos si son necesarios */
+
+/* From src/components/inventory/employees/EmployeeViewDialog.vue */
+/* Estilos específicos si son necesarios */
+
+/* From src/components/inventory/finances-records/DeleteDialog.vue */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* From src/components/inventory/finances-records/GroupedMovementsTable.vue */
+.grouped-movements-table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.grouped-movements-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.025em;
+}
+
+.grouped-movements-table td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 12px 8px;
+}
+
+.grouped-movements-table tr:hover td {
+    background-color: #f8f9fa;
+}
+
+.detailed-movements-table {
+    background-color: transparent;
+}
+
+.detailed-movements-table th {
+    background-color: #fafafa;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.detailed-movements-table td {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 8px;
+}
+
+/* From src/components/inventory/import/ImportData.vue */
+.premium-card {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+.header-icon-container {
+  width: 90px;
+  height: 90px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-primary), 0.05) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+}
+
+.alert-premium {
+  border: 1px solid rgba(var(--v-theme-info), 0.2);
+  background: linear-gradient(145deg, rgba(var(--v-theme-info), 0.05) 0%, transparent 100%) !important;
+}
+
+.drag-drop-zone {
+  border: 2px dashed rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-primary), 0.015);
+  min-height: 240px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.drag-drop-zone:hover,
+.drag-drop-zone.is-dragging {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.08);
+}
+
+.drag-drop-zone.is-dragging {
+  border-width: 3px;
+  transform: scale(1.02);
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-primary), 0.2) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 16px rgba(var(--v-theme-primary), 0.15);
+}
+
+.drag-drop-zone:hover .icon-circle {
+  transform: translateY(-8px) scale(1.05);
+}
+
+.file-preview-card {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgba(var(--v-theme-surface), 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.file-preview-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.4);
+  box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.08);
+  transform: translateY(-2px);
+}
+
+.file-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, rgba(var(--v-theme-success), 0.15) 0%, rgba(var(--v-theme-success), 0.05) 100%);
+  border: 1px solid rgba(var(--v-theme-success), 0.2);
+}
+
+.error-list-container {
+  border: 1px solid rgba(var(--v-theme-error), 0.2);
+}
+
+/* Scrollbar personalizada para errores */
+.error-list-container ul::-webkit-scrollbar {
+  width: 6px;
+}
+
+.error-list-container ul::-webkit-scrollbar-track {
+  background: rgba(var(--v-theme-surface), 0.5);
+  border-radius: 4px;
+}
+
+.error-list-container ul::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-error), 0.3);
+  border-radius: 4px;
+}
+
+.error-list-container ul::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-error), 0.5);
+}
+
+/* From src/components/inventory/invoices/InvoiceAddDialog.vue */
+.gradient-header {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info)));
+}
+
+.preview-card-header {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.85), rgba(var(--v-theme-info), 0.85));
+}
+
+.drag-drop-zone {
+  border: 2px dashed rgba(var(--v-theme-primary), 0.35);
+  background: rgba(var(--v-theme-primary), 0.02);
+  transition: all 0.25s ease-in-out;
+}
+
+.drag-drop-zone:hover {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.05);
+  transform: translateY(-2px);
+}
+
+.drag-drop-zone.drag-over {
+  border-color: rgb(var(--v-theme-success));
+  background: rgba(var(--v-theme-success), 0.05);
+}
+
+.drag-drop-zone.has-file {
+  border: 1px solid rgba(var(--v-theme-success), 0.3);
+  background: rgba(var(--v-theme-success), 0.02);
+}
+
+.pulse-icon {
+  animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.preview-table th {
+  font-size: 0.7rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.clean-table {
+  background: transparent !important;
+  border-collapse: collapse;
+}
+
+.clean-table th,
+.clean-table td {
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+}
+
+.clean-table th {
+  border-bottom: 2px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+}
+
+.clean-table td {
+  border-bottom: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.5)) !important;
+}
+
+.preview-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.5));
+}
+
+.preview-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 500px;
+}
+
+.preview-table :deep(td.text-center),
+.preview-table :deep(td.text-right),
+.preview-table :deep(thead th.text-center),
+.preview-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(4px);
+}
+
+/* 🔹 Botones de radios cuadrados y compactos */
+.square-radio button {
+  padding: 0 !important;
+  font-size: 0.6rem !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: unset !important;
+  line-height: 1 !important;
+}
+
+.square-radio .icon-class {
+  width: 16px !important;
+  height: 16px !important;
+  margin-bottom: 1px;
+}
+
+.square-radio {
+  gap: 2px;
+}
+
+/* From src/components/inventory/invoices/InvoiceProcessDialog.vue */
+.gradient-header {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info)));
+}
+
+.border-s-4 {
+  border-left-width: 4px !important;
+}
+
+.bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+.bg-success-lighten-5 {
+  background-color: rgba(40, 199, 111, 0.08) !important;
+}
+
+.border-success-opacity-30 {
+  border-color: rgba(40, 199, 111, 0.3) !important;
+}
+
+.bg-error-lighten-5 {
+  background-color: rgba(234, 84, 85, 0.08) !important;
+}
+
+.border-error-opacity-30 {
+  border-color: rgba(234, 84, 85, 0.3) !important;
+}
+
+/* From src/components/inventory/invoices/InvoiceShowDialog.vue */
+.inline-category-select :deep(.v-field__input) {
+  font-size: 0.75rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 2px !important;
+  min-height: unset !important;
+}
+.inline-category-select :deep(.v-field) {
+  --v-input-control-height: 24px;
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (min-width: 960px) {
+  .border-right-md {
+    border-right: 1px solid #e2e8f0 !important;
+  }
+}
+
+.invoice-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+.invoice-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 950px;
+}
+.invoice-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+.invoice-table :deep(td.text-center),
+.invoice-table :deep(td.text-right),
+.invoice-table :deep(thead th.text-center),
+.invoice-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
+}
+
+/* From src/components/inventory/partners/PartnerShowDialog.vue */
+.partner-view-card {
+  overflow: hidden;
+}
+
+.partner-avatar {
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.kpi-tile {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  height: 100%;
+}
+
+.kpi-tile--accent {
+  background: rgba(var(--v-theme-success), 0.06);
+  border-color: rgba(var(--v-theme-success), 0.2);
+}
+
+.section-panel {
+  padding: 20px;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.info-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  flex-shrink: 0;
+}
+
+.info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.contact-link {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
+}
+
+.address-block {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(var(--v-theme-success), 0.04);
+  border: 1px solid rgba(var(--v-theme-success), 0.15);
+  line-height: 1.5;
+}
+
+.empty-hint {
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* From src/components/inventory/product/DeleteProdcut.vue */
+.product-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    background-color: rgb(var(--v-theme-grey-lighten-2));
+    border: 2px dashed rgb(var(--v-theme-grey-lighten-1));
+}
+
+/* From src/components/inventory/product/ViewProduct.vue */
+/* Main card styles */
+.product-view-card {
+  overflow: hidden;
+}
+
+/* Image container */
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.product-avatar {
+  transition: all 0.3s ease;
+}
+
+.image-container:hover .product-avatar {
+  transform: scale(1.05);
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+}
+
+.image-container:hover .image-overlay {
+  opacity: 1;
+}
+
+.product-info {
+  margin-top: 16px;
+}
+
+.info-chips {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Info grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.info-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+}
+
+/* Section titles */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Price grid */
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.price-item {
+  text-align: center;
+  padding: 16px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  transition: all 0.3s ease;
+}
+
+.price-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.price-item.highlight {
+  background: rgba(var(--v-theme-success), 0.08);
+  border-color: rgba(var(--v-theme-success), 0.2);
+}
+
+.price-label {
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 8px;
+}
+
+.price-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+}
+
+.price-discount {
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-warning), 0.8);
+  margin-top: 4px;
+}
+
+/* Inventory grid */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.inventory-item {
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  transition: all 0.3s ease;
+}
+
+.inventory-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-item.stock-good {
+  background: rgba(var(--v-theme-success), 0.08);
+  border-color: rgba(var(--v-theme-success), 0.2);
+}
+
+.inventory-item.stock-low {
+  background: rgba(var(--v-theme-warning), 0.08);
+  border-color: rgba(var(--v-theme-warning), 0.2);
+}
+
+.inventory-item.stock-zero {
+  background: rgba(var(--v-theme-error), 0.08);
+  border-color: rgba(var(--v-theme-error), 0.2);
+}
+
+.inventory-label {
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 8px;
+}
+
+.inventory-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.inventory-range {
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+/* Config grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.config-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-weight: 500;
+}
+
+/* Dates grid */
+.dates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.date-item {
+  padding: 16px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.date-label {
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  margin-bottom: 8px;
+}
+
+.date-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.9);
+}
+
+/* Notes */
+.notes-content {
+  padding: 16px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+}
+
+/* Image dialog styles */
+.image-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.image-view-card {
+  overflow: hidden;
+}
+
+.image-container-zoom {
+  position: relative;
+  height: 500px;
+  background: rgba(var(--v-theme-surface), 1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.zoom-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.zoom-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+}
+
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+
+.zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.zoom-level {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.8);
+  min-width: 45px;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .image-container-zoom {
+    height: 400px;
+  }
+
+  .zoom-controls {
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-chips {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-container-zoom {
+    height: 300px;
+  }
+}
+
+/* From src/components/inventory/role/RoleAddDialog.vue */
+.permissions-table {
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 8px;
+}
+
+.permissions-row {
+    transition: background-color 0.2s ease;
+}
+
+.permissions-row:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.permissions-row:not(:last-child) {
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.module-cell {
+    width: 280px;
+    background-color: rgba(var(--v-theme-on-surface), 0.01);
+}
+
+.module-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgb(var(--v-theme-on-surface));
+}
+
+.module-subtitle {
+    font-size: 0.8rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    margin-top: 4px;
+}
+
+.permissions-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* From src/components/inventory/role/RoleEditDialog.vue */
+.permissions-table {
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 8px;
+}
+
+.permissions-row {
+    transition: background-color 0.2s ease;
+}
+
+.permissions-row:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.permissions-row:not(:last-child) {
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.module-cell {
+    width: 280px;
+    background-color: rgba(var(--v-theme-on-surface), 0.01);
+}
+
+.module-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgb(var(--v-theme-on-surface));
+}
+
+.module-subtitle {
+    font-size: 0.8rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    margin-top: 4px;
+}
+
+.permissions-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* From src/components/inventory/sales/SaleViewDialog.vue */
+.sale-view-card {
+  overflow: hidden;
+}
+
+.sale-view-header {
+  background: rgb(var(--v-theme-surface));
+}
+
+.kpi-tile {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  height: 100%;
+}
+
+.section-panel {
+  padding: 20px;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.info-row.align-start {
+  align-items: flex-start;
+}
+
+.info-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  flex-shrink: 0;
+}
+
+.info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.payment-table-wrap,
+.items-table-wrap {
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+.payment-table :deep(table),
+.items-table :deep(table) {
+  table-layout: auto;
+  width: 100%;
+  min-width: 620px;
+}
+
+.payment-table :deep(td),
+.items-table :deep(td) {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.items-table :deep(td.text-center),
+.items-table :deep(td.text-right),
+.items-table :deep(thead th.text-center),
+.items-table :deep(thead th.text-right) {
+  white-space: nowrap !important;
+}
+
+.payment-table :deep(thead th),
+.items-table :deep(thead th) {
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(var(--v-theme-on-surface), 0.04) !important;
+  color: rgba(var(--v-theme-on-surface), 0.65) !important;
+}
+
+.sku-tag {
+  padding: 2px 2px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.items-table :deep(tbody tr:hover) {
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+
+.totals-panel {
+  background: rgba(var(--v-theme-primary), 0.06);
+  border: 1px solid rgba(var(--v-theme-primary), 0.15);
+}
+
+.observations-panel {
+  background: rgba(var(--v-theme-info), 0.04);
+  border-color: rgba(var(--v-theme-info), 0.2);
+}
+
+.observations-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.empty-hint {
+  border-radius: 8px;
+  background: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px dashed rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+/* From src/components/inventory/vehicles/VehicleShowDialog.vue */
+.vehicle-dialog-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.border-bottom-light {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Placa de Vehículo - Estilo Sobrio */
+.license-plate-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #334155;
+  letter-spacing: 0.5px;
+  height: 26px;
+  vertical-align: middle;
+}
+
+/* Grid de Especificaciones (Brochure Style) */
+.specs-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 500px) {
+  .specs-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.spec-badge-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.spec-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+}
+
+.spec-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 2px;
+  display: block;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.color-indicator-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.section-title {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+}
+
+.info-card-flat {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+}
+
+.desc-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.4;
+  height: calc(100% - 28px);
+  min-height: 110px;
+}
+
+/* From src/components/OfflineOverlay.vue */
+.offline-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999999;
+  background-color: rgb(var(--v-theme-background));
+  overflow: hidden;
+}
+
+/* Glassmorphism Effect */
+.glass-card {
+  background: rgba(var(--v-theme-surface), 0.75) !important;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(var(--v-theme-surface), 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 10;
+}
+
+.icon-wrapper {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-error), 0.08);
+  box-shadow: 0 0 40px rgba(var(--v-theme-error), 0.15), inset 0 0 20px rgba(var(--v-theme-error), 0.05);
+  position: relative;
+}
+
+.icon-wrapper::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  border: 2px dashed rgba(var(--v-theme-error), 0.2);
+  animation: spin 10s linear infinite;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: spin 4s linear infinite;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(var(--v-theme-primary), 0.3) !important;
+}
+
+/* Background Blobs for aesthetic wow factor */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.blob-1 {
+  width: 500px;
+  height: 500px;
+  background: rgb(var(--v-theme-error));
+  top: -150px;
+  left: -100px;
+  animation: float 10s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 600px;
+  height: 600px;
+  background: rgb(var(--v-theme-primary));
+  bottom: -200px;
+  right: -150px;
+  animation: float 14s ease-in-out infinite reverse;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 400px;
+  background: rgb(var(--v-theme-warning));
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: float 12s ease-in-out infinite;
+  opacity: 0.2;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+

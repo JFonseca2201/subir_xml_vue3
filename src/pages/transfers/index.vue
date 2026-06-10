@@ -449,19 +449,7 @@ onMounted(() => {
   </VDialog>
 </template>
 
-<style scoped>
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-.transfer-table th {
-  padding: 12px 16px;
-  background-color: transparent !important;
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
-}
-.transfer-table td {
-  padding: 12px 16px;
-}
-</style>
+
 
 <route lang="yaml">
 meta:

@@ -124,27 +124,3 @@ const openSelectedMethodDialog = () => {
     :mobile-number="props.smsCode"
   />
 </template>
-
-<style lang="scss">
-.auth-method-card {
-  &.card-list .v-list-item {
-    padding-block: 20px !important;
-    padding-inline: 30px !important;
-  }
-
-  &.responsive-card {
-    .v-list-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      text-align: center;
-
-      .v-list-item__prepend {
-        svg {
-          margin: 0;
-        }
-      }
-    }
-  }
-}
-</style>

@@ -151,15 +151,3 @@ const paymentProvidersData = [
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss">
-.refer-link-input {
-  .v-field--appended {
-    padding-inline-end: 0;
-  }
-
-  .v-field__append-inner {
-    padding-block-start: 0.125rem;
-  }
-}
-</style>

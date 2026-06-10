@@ -506,14 +506,7 @@ onMounted(() => {
   </VDialog>
 </template>
 
-<style scoped>
-.border-b {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
-.hover-bg-light:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.04);
-}
-</style>
+
 
 <route lang="yaml">
 meta:
