@@ -84,7 +84,7 @@ const formatDate = dateString => {
   const year = date.getFullYear()
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
-  
+
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
 
@@ -97,7 +97,7 @@ const getStatusInfo = status => {
     cancelado: { color: 'error', text: 'Cancelado', icon: 'ri-close-circle-line' },
   }
 
-  
+
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
@@ -124,7 +124,7 @@ const generateSinglePDF = pedido => {
   const token = localStorage.getItem('token')
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedido.id}/pdf?token=${token}`
-  
+
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
     printWindow.focus()
@@ -139,7 +139,7 @@ const printPedido = pedidoId => {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedidoId}/pdf?token=${token}&print=true`
-    
+
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {
       printWindow.focus()
@@ -218,6 +218,10 @@ const updateStatus = async (pedido, newStatus) => {
     cancelButtonColor: '#90a4ae',
     confirmButtonText: 'Sí, cambiar',
     cancelButtonText: 'Cancelar',
+    customClass: {
+      confirmButton: 'text-white',
+      cancelButton: 'text-white'
+    }
   })
 
   if (result.isConfirmed) {
@@ -272,24 +276,15 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-truck-line"
-            color="primary"
-            class="me-2"
-            size="28"
-          />
+          <VIcon icon="ri-truck-line" color="primary" class="me-2" size="28" />
           Pedidos a Distribuidor
         </h1>
         <p class="text-medium-emphasis mb-0">
           Historial y estado de los pedidos solicitados a distribuidores
         </p>
       </div>
-      <VBtn
-        color="primary"
-        prepend-icon="ri-add-line"
-        to="/sales/pedidos-distribuidor"
-        class="align-self-md-center align-self-end"
-      >
+      <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor"
+        class="align-self-md-center align-self-end">
         Nuevo Pedido
       </VBtn>
     </div>
@@ -299,85 +294,42 @@ onMounted(() => {
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow>
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar pedidos"
-              placeholder="Buscar por distribuidor, RUC o ID..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              @click:clear="clearSearch"
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VTextField v-model="search" label="Buscar pedidos" placeholder="Buscar por distribuidor, RUC o ID..."
+              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+              color="primary" @click:clear="clearSearch" />
           </VCol>
         </VRow>
       </VCardText>
 
       <!-- Tabla de Pedidos -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
-        
+        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
+
         <div class="overflow-x-auto">
-          <VTable
-            hover
-            class="pedidos-table"
-          >
+          <VTable hover class="pedidos-table">
             <thead>
               <tr>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 100px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="width: 100px;">
                   ID PEDIDO
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 160px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="width: 160px;">
                   FECHA / HORA
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 200px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
                   DISTRIBUIDOR
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 150px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
                   USUARIO
                 </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 140px;"
-                >
+                <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">
                   ESTADO
                 </th>
-                <th
-                  class="text-right font-weight-bold text-uppercase"
-                  style="width: 110px;"
-                >
+                <th class="text-right font-weight-bold text-uppercase" style="width: 110px;">
                   TOTAL EST.
                 </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 140px;"
-                >
+                <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">
                   ACCIONES
                 </th>
               </tr>
@@ -385,15 +337,8 @@ onMounted(() => {
 
             <tbody v-if="loading">
               <tr>
-                <td
-                  colspan="7"
-                  class="text-center pa-6"
-                >
-                  <VProgressCircular
-                    indeterminate
-                    color="primary"
-                    size="40"
-                  />
+                <td colspan="7" class="text-center pa-6">
+                  <VProgressCircular indeterminate color="primary" size="40" />
                   <div class="mt-2 text-medium-emphasis">
                     Cargando registros...
                   </div>
@@ -403,14 +348,8 @@ onMounted(() => {
 
             <tbody v-else-if="pedidos.length === 0">
               <tr>
-                <td
-                  colspan="7"
-                  class="text-center pa-8 text-medium-emphasis"
-                >
-                  <VIcon
-                    size="48"
-                    class="mb-3 color-grey-lighten-1"
-                  >
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3 color-grey-lighten-1">
                     ri-file-list-3-line
                   </VIcon>
                   <div class="text-h6">
@@ -423,15 +362,8 @@ onMounted(() => {
               </tr>
             </tbody>
 
-            <tbody
-              v-else
-              style="text-transform: uppercase;"
-            >
-              <tr
-                v-for="item in pedidos"
-                :key="item.id"
-                class="pedidos-row align-middle"
-              >
+            <tbody v-else style="text-transform: uppercase;">
+              <tr v-for="item in pedidos" :key="item.id" class="pedidos-row align-middle">
                 <td class="font-weight-bold text-primary text-no-wrap">
                   #{{ String(item.id).padStart(5, '0') }}
                 </td>
@@ -442,10 +374,7 @@ onMounted(() => {
                   <div class="font-weight-semibold text-grey-darken-4">
                     {{ item.distribuidor?.name || 'DESCONOCIDO' }}
                   </div>
-                  <div
-                    v-if="item.distribuidor?.ruc"
-                    class="text-caption text-medium-emphasis mt-0.5"
-                  >
+                  <div v-if="item.distribuidor?.ruc" class="text-caption text-medium-emphasis mt-0.5">
                     RUC: {{ item.distribuidor.ruc }}
                   </div>
                 </td>
@@ -453,40 +382,21 @@ onMounted(() => {
                 <td class="text-center">
                   <VMenu close-on-content-click>
                     <template #activator="{ props }">
-                      <div 
-                        v-bind="props" 
+                      <div v-bind="props"
                         class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
-                        :class="`text-${getStatusInfo(item.estado).color} border-${getStatusInfo(item.estado).color}`"
-                      >
-                        <div
-                          class="status-dot"
-                          :class="`bg-${getStatusInfo(item.estado).color}`"
-                        />
-                        <span
-                          class="font-weight-bold text-caption text-uppercase"
-                          style="letter-spacing: 0.5px;"
-                        >
+                        :class="`text-${getStatusInfo(item.estado).color} border-${getStatusInfo(item.estado).color}`">
+                        <div class="status-dot" :class="`bg-${getStatusInfo(item.estado).color}`" />
+                        <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
                           {{ getStatusInfo(item.estado).text }}
                         </span>
-                        <VIcon
-                          icon="ri-arrow-down-s-line"
-                          size="14"
-                        />
+                        <VIcon icon="ri-arrow-down-s-line" size="14" />
                       </div>
                     </template>
                     <VList density="compact">
-                      <VListItem
-                        v-for="status in statusOptions"
-                        :key="status.value"
-                        @click="updateStatus(item, status.value)"
-                      >
+                      <VListItem v-for="status in statusOptions" :key="status.value"
+                        @click="updateStatus(item, status.value)">
                         <template #prepend>
-                          <VIcon
-                            :icon="status.icon"
-                            :color="status.color"
-                            class="mr-2"
-                            size="20"
-                          />
+                          <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
                         </template>
                         <VListItemTitle>{{ status.label }}</VListItemTitle>
                       </VListItem>
@@ -498,53 +408,18 @@ onMounted(() => {
                 </td>
                 <td class="text-no-wrap text-center">
                   <div class="d-flex justify-center align-center gap-1">
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-printer-line"
-                      variant="text"
-                      size="small"
-                      color="info"
-                      title="Imprimir"
-                      @click="printPedido(item.id)"
-                    />
+                    <VBtn class="action-btn" icon="ri-printer-line" variant="text" size="small" color="info"
+                      title="Imprimir" @click="printPedido(item.id)" />
 
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-file-pdf-line"
-                      variant="text"
-                      size="small"
-                      color="success"
-                      title="Ver PDF (Sin Precios)"
-                      @click="generateSinglePDF(item)"
-                    />
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-eye-line"
-                      variant="text"
-                      size="small"
-                      color="info"
-                      title="Ver Detalle"
-                      :loading="viewLoading && selectedPedido?.id === item.id"
-                      @click="viewPedidoDetails(item)"
-                    />
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-edit-line"
-                      variant="text"
-                      size="small"
-                      color="warning"
-                      title="Editar Pedido"
-                      @click="editPedido(item)"
-                    />
-                    <VBtn
-                      class="action-btn"
-                      icon="ri-delete-bin-line"
-                      variant="text"
-                      size="small"
-                      color="error"
-                      title="Eliminar Pedido"
-                      @click="deletePedido(item)"
-                    />
+                    <VBtn class="action-btn" icon="ri-file-pdf-line" variant="text" size="small" color="success"
+                      title="Ver PDF (Sin Precios)" @click="generateSinglePDF(item)" />
+                    <VBtn class="action-btn" icon="ri-eye-line" variant="text" size="small" color="info"
+                      title="Ver Detalle" :loading="viewLoading && selectedPedido?.id === item.id"
+                      @click="viewPedidoDetails(item)" />
+                    <VBtn class="action-btn" icon="ri-edit-line" variant="text" size="small" color="warning"
+                      title="Editar Pedido" @click="editPedido(item)" />
+                    <VBtn class="action-btn" icon="ri-delete-bin-line" variant="text" size="small" color="error"
+                      title="Eliminar Pedido" @click="deletePedido(item)" />
                   </div>
                 </td>
               </tr>
@@ -559,73 +434,40 @@ onMounted(() => {
       <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
         <div class="d-flex flex-column align-center gap-3 w-100">
           <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ pedidos.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> registros
+            Mostrando <span class="font-weight-bold">{{ pedidos.length }}</span> de <span class="font-weight-bold">{{
+              totalItems }}</span> registros
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary" />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Dialogo de Detalle de Pedido -->
-    <VDialog
-      v-model="isViewDialogVisible"
-      max-width="800"
-    >
-      <VCard
-        v-if="selectedPedido"
-        class="rounded-lg"
-      >
+    <VDialog v-model="isViewDialogVisible" max-width="800">
+      <VCard v-if="selectedPedido" class="rounded-lg">
         <VCardTitle class="pa-6 d-flex align-center justify-space-between border-bottom-light">
           <div class="d-flex align-center">
-            <VIcon
-              icon="ri-truck-line"
-              color="primary"
-              class="mr-2"
-            />
-            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0') }}</span>
+            <VIcon icon="ri-truck-line" color="primary" class="mr-2" />
+            <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0')
+              }}</span>
           </div>
           <VMenu close-on-content-click>
             <template #activator="{ props }">
-              <div 
-                v-bind="props" 
+              <div v-bind="props"
                 class="d-inline-flex align-center gap-2 px-3 py-1 rounded-pill cursor-pointer status-indicator"
-                :class="`text-${getStatusInfo(selectedPedido.estado).color} border-${getStatusInfo(selectedPedido.estado).color}`"
-              >
-                <div
-                  class="status-dot"
-                  :class="`bg-${getStatusInfo(selectedPedido.estado).color}`"
-                />
-                <span
-                  class="font-weight-bold text-caption text-uppercase"
-                  style="letter-spacing: 0.5px;"
-                >
+                :class="`text-${getStatusInfo(selectedPedido.estado).color} border-${getStatusInfo(selectedPedido.estado).color}`">
+                <div class="status-dot" :class="`bg-${getStatusInfo(selectedPedido.estado).color}`" />
+                <span class="font-weight-bold text-caption text-uppercase" style="letter-spacing: 0.5px;">
                   {{ getStatusInfo(selectedPedido.estado).text }}
                 </span>
-                <VIcon
-                  icon="ri-arrow-down-s-line"
-                  size="14"
-                />
+                <VIcon icon="ri-arrow-down-s-line" size="14" />
               </div>
             </template>
             <VList density="compact">
-              <VListItem
-                v-for="status in statusOptions"
-                :key="status.value"
-                @click="updateStatus(selectedPedido, status.value)"
-              >
+              <VListItem v-for="status in statusOptions" :key="status.value"
+                @click="updateStatus(selectedPedido, status.value)">
                 <template #prepend>
-                  <VIcon
-                    :icon="status.icon"
-                    :color="status.color"
-                    class="mr-2"
-                    size="20"
-                  />
+                  <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="20" />
                 </template>
                 <VListItemTitle>{{ status.label }}</VListItemTitle>
               </VListItem>
@@ -635,33 +477,21 @@ onMounted(() => {
 
         <VCardText class="pa-6">
           <VRow class="mb-4">
-            <VCol
-              cols="12"
-              sm="6"
-            >
+            <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">
                 Distribuidor / Proveedor:
               </div>
               <div class="text-body-1 font-weight-bold">
                 {{ selectedPedido.distribuidor?.name || 'DESCONOCIDO' }}
               </div>
-              <div
-                v-if="selectedPedido.distribuidor?.ruc"
-                class="text-body-2 mt-1"
-              >
+              <div v-if="selectedPedido.distribuidor?.ruc" class="text-body-2 mt-1">
                 RUC: {{ selectedPedido.distribuidor.ruc }}
               </div>
-              <div
-                v-if="selectedPedido.distribuidor?.address"
-                class="text-body-2"
-              >
+              <div v-if="selectedPedido.distribuidor?.address" class="text-body-2">
                 Dirección: {{ selectedPedido.distribuidor.address }}
               </div>
             </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-            >
+            <VCol cols="12" sm="6">
               <div class="text-caption text-medium-emphasis">
                 Generado por:
               </div>
@@ -687,54 +517,34 @@ onMounted(() => {
             <VTable class="pedido-items-table w-100">
               <thead class="bg-grey-lighten-5">
                 <tr>
-                  <th
-                    class="font-weight-bold text-left text-grey-darken-3"
-                    style="font-size: 0.72rem; letter-spacing: 0.6px;"
-                  >
+                  <th class="font-weight-bold text-left text-grey-darken-3"
+                    style="font-size: 0.72rem; letter-spacing: 0.6px;">
                     PRODUCTO
                   </th>
-                  <th
-                    class="font-weight-bold text-center text-grey-darken-3"
-                    style="width: 100px; font-size: 0.72rem; letter-spacing: 0.6px;"
-                  >
+                  <th class="font-weight-bold text-center text-grey-darken-3"
+                    style="width: 100px; font-size: 0.72rem; letter-spacing: 0.6px;">
                     CANTIDAD
                   </th>
-                  <th
-                    class="font-weight-bold text-right text-grey-darken-3"
-                    style="width: 160px; font-size: 0.72rem; letter-spacing: 0.6px;"
-                  >
+                  <th class="font-weight-bold text-right text-grey-darken-3"
+                    style="width: 160px; font-size: 0.72rem; letter-spacing: 0.6px;">
                     PRECIO COMPRA EST.
                   </th>
-                  <th
-                    class="font-weight-bold text-right text-grey-darken-3"
-                    style="width: 130px; font-size: 0.72rem; letter-spacing: 0.6px;"
-                  >
+                  <th class="font-weight-bold text-right text-grey-darken-3"
+                    style="width: 130px; font-size: 0.72rem; letter-spacing: 0.6px;">
                     SUBTOTAL
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="item in selectedPedido.detalles"
-                  :key="item.id"
-                >
+                <tr v-for="item in selectedPedido.detalles" :key="item.id">
                   <td>
                     <div class="font-weight-medium text-grey-darken-4 text-wrap">
                       {{ item.description }}
                     </div>
-                    <div
-                      v-if="item.producto?.sku"
-                      class="text-caption text-medium-emphasis mt-0.5"
-                    >
+                    <div v-if="item.producto?.sku" class="text-caption text-medium-emphasis mt-0.5">
                       SKU: {{ item.producto.sku }}
                     </div>
-                    <VChip
-                      v-if="!item.producto_id"
-                      size="x-small"
-                      color="orange"
-                      variant="tonal"
-                      class="mt-1"
-                    >
+                    <VChip v-if="!item.producto_id" size="x-small" color="orange" variant="tonal" class="mt-1">
                       Ingreso Manual
                     </VChip>
                   </td>
@@ -761,26 +571,14 @@ onMounted(() => {
         </VCardText>
 
         <VCardActions class="pa-6 border-top-light justify-end gap-2">
-          <VBtn
-            color="info"
-            prepend-icon="ri-printer-line"
-            @click="printPedido(selectedPedido.id)"
-          >
+          <VBtn color="info" prepend-icon="ri-printer-line" @click="printPedido(selectedPedido.id)">
             Imprimir
           </VBtn>
 
-          <VBtn
-            color="success"
-            prepend-icon="ri-file-pdf-line"
-            @click="generateSinglePDF(selectedPedido)"
-          >
+          <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generateSinglePDF(selectedPedido)">
             Generar PDF
           </VBtn>
-          <VBtn
-            color="secondary"
-            variant="tonal"
-            @click="isViewDialogVisible = false"
-          >
+          <VBtn color="secondary" variant="tonal" @click="isViewDialogVisible = false">
             Cerrar
           </VBtn>
         </VCardActions>
