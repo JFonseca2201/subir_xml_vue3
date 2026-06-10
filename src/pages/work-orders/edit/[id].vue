@@ -473,6 +473,9 @@ onMounted(() => {
                     :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
                     item-value="id" label="Vehículo" prepend-inner-icon="ri-car-line" variant="outlined" clearable
                     :loading="isLoading">
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''}`.trim()" :subtitle="item.raw.license_plate" />
+                    </template>
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary" @click="showVehicleDialog = true">
                         <VIcon icon="ri-add-line" />
@@ -500,8 +503,8 @@ onMounted(() => {
                 <div class="mb-4">
                   <VAutocomplete v-model="workOrder.technicians" :items="employees"
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
-                    clearable :loading="isLoading" multiple chips>
+                    item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line" variant="outlined"
+                    clearable :loading="isLoading" multiple chips class="fix-notch-bug">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -571,9 +574,10 @@ onMounted(() => {
             <!-- Cuadro de búsqueda de productos -->
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
-                <VAutocomplete v-model="productSearch" :items="products" item-title="description"
-                  item-value="id" label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined"
-                  clearable hide-details return-object :custom-filter="productFilter" @update:model-value="(val) => val && addProductFromSearch(val)"
+                <VAutocomplete v-model="productSearch" :items="products" item-title="description" item-value="id"
+                  label="Buscar y agregar producto por nombre, código o SKU..."
+                  prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details return-object
+                  :custom-filter="productFilter" @update:model-value="(val) => val && addProductFromSearch(val)"
                   :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
@@ -582,7 +586,8 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
@@ -755,3 +760,10 @@ onMounted(() => {
       @update:is-dialog-visible="showAddServiceDialog = $event" @service-added="handleServiceAdded" />
   </VContainer>
 </template>
+
+<style scoped>
+:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
+  max-width: 0 !important;
+  border-width: 0 !important;
+}
+</style>

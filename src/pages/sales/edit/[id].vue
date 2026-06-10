@@ -384,7 +384,7 @@ const selectedVehicle = computed(() => {
 
 watch(() => sale.value.vehicle_id, (newVal) => {
   if (isLoading.value) return // Ignorar durante la carga inicial
-  
+
   if (newVal) {
     const selectedVeh = vehicles.value.find(v => v.id === newVal)
     if (selectedVeh && selectedVeh.client_id) {
@@ -729,7 +729,8 @@ onMounted(() => {
         </div>
         <p class="text-medium-emphasis mb-0">Actualiza el documento</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list" class="align-self-md-center align-self-end">
+      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list"
+        class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
     </div>
@@ -871,18 +872,22 @@ onMounted(() => {
                       <div class="font-weight-bold">{{ selectedClient.n_document || "-" }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedClient.phone || "-" }} • {{
                         selectedClient.address || "-"
-                        }}</div>
+                      }}</div>
                     </div>
                   </div>
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
                     <VAutocomplete v-model="sale.vehicle_id" :loading="isLoading" :disabled="sale.status === 'canceled'"
-                      :items="vehicles" item-title="license_plate" item-value="id" label="Vehículo (Opcional)"
-                      variant="outlined" density="comfortable" prepend-inner-icon="ri-car-line" hide-details="auto"
-                      placeholder="Seleccionar vehículo" clearable class="flex-grow-1">
+                      :items="vehicles"
+                      :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
+                      item-value="id" label="Vehículo (Opcional)" variant="outlined" density="comfortable"
+                      prepend-inner-icon="ri-car-line" hide-details="auto" placeholder="Seleccionar vehículo" clearable
+                      class="flex-grow-1">
                       <template #item="{ props, item }">
-                        <VListItem v-bind="props" :title="item.raw.license_plate" :subtitle="item.raw.model || ''" />
+                        <VListItem v-bind="props"
+                          :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''}`.trim()"
+                          :subtitle="item.raw.license_plate" />
                       </template>
                     </VAutocomplete>
                   </div>
@@ -894,7 +899,7 @@ onMounted(() => {
                       <div class="font-weight-bold">{{ selectedVehicle.license_plate }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedVehicle.model || "-" }} • {{
                         selectedVehicle.year || "-"
-                        }}</div>
+                      }}</div>
                     </div>
                   </div>
                   <div class="mt-4" v-if="selectedVehicle">
@@ -903,13 +908,13 @@ onMounted(() => {
                       hide-details="auto" color="primary" />
                   </div>
                 </VCol>
-                <VCol cols="12" class="mt-3">
+                <VCol cols="6" class="mt-3">
                   <VAutocomplete v-model="sale.technicians" :items="employees" :disabled="sale.status === 'canceled'"
                     :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
                     item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
                     density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
                     :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint>
+                    persistent-hint class="fix-notch-bug">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -936,10 +941,9 @@ onMounted(() => {
               <div class="d-flex align-center gap-3 mb-4">
                 <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
                   :disabled="sale.status === 'canceled'" :items="products" item-title="displayTitle" return-object
-                  label="Buscar y agregar producto" placeholder="Escribe para buscar por nombre, código, SKU..."
-                  prepend-inner-icon="ri-search-line" variant="outlined" clearable :custom-filter="productFilter"
-                  @update:model-value="onProductSelected" class="flex-grow-1" hide-details
-                  :menu-props="{ maxWidth: 0 }">
+                  label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
+                  variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
+                  class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
@@ -991,7 +995,8 @@ onMounted(() => {
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="item.type === 'product' && sale.document_type !== 'quote'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
+                              <span v-if="item.type === 'product' && sale.document_type !== 'quote'" class="stock-tag"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
                                 <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                                 {{ getProductStock(item.product_id) }} en stock
                               </span>
@@ -1005,8 +1010,10 @@ onMounted(() => {
                             :disabled="item.quantity <= 1 || sale.status === 'canceled'" @click="item.quantity--"
                             class="qty-btn" size="small" />
                           <input v-model.number="item.quantity" :disabled="sale.status === 'canceled'" type="number"
-                            min="1" max="99" class="qty-input" @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
-                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99 || sale.status === 'canceled'"
+                            min="1" max="99" class="qty-input" @input="item.quantity > 99 ? item.quantity = 99 : null"
+                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                          <VBtn icon="ri-add-line" variant="text" color="primary"
+                            :disabled="item.quantity >= 99 || sale.status === 'canceled'"
                             @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
                         </div>
                       </td>
@@ -1219,3 +1226,10 @@ onMounted(() => {
       @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
   </div>
 </template>
+
+<style scoped>
+:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
+  max-width: 0 !important;
+  border-width: 0 !important;
+}
+</style>

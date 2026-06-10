@@ -420,6 +420,11 @@ onMounted(() => {
                     :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
                     item-value="id" label="Vehículo" prepend-inner-icon="ri-car-line" variant="outlined" clearable
                     :loading="isLoading">
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props"
+                        :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''}`.trim()"
+                        :subtitle="item.raw.license_plate" />
+                    </template>
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary" @click="showVehicleDialog = true">
                         <VIcon icon="ri-add-line" />
@@ -449,7 +454,8 @@ onMounted(() => {
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
                     item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
                     variant="outlined" clearable :loading="isLoading" multiple chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']">
+                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
+                    class="fix-notch-bug">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -520,9 +526,10 @@ onMounted(() => {
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
                 <VAutocomplete v-model="productSearch" :items="products" item-title="description" item-value="id"
-                  label="Buscar producto..." prepend-inner-icon="ri-search-line" variant="outlined" clearable
-                  hide-details return-object :custom-filter="productFilter"
-                  @update:model-value="(val) => val && addProductFromSearch(val)" :menu-props="{ maxWidth: 0 }">
+                  label="Buscar y agregar producto por nombre, código o SKU..."
+                  prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details return-object
+                  :custom-filter="productFilter" @update:model-value="(val) => val && addProductFromSearch(val)"
+                  :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
@@ -604,9 +611,10 @@ onMounted(() => {
                         <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
                           @click="item.quantity--" class="qty-btn" size="small" />
                         <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
-                          @input="item.quantity > 99 ? item.quantity = 99 : null" @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
-                        <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99" @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn"
-                          size="small" />
+                          @input="item.quantity > 99 ? item.quantity = 99 : null"
+                          @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                        <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
+                          @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
                       </div>
                     </td>
                     <td>
@@ -651,7 +659,7 @@ onMounted(() => {
                 </div>
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                  }}</span>
+                    }}</span>
                   <VChip size="small" color="primary" label>
                     {{ workOrder.items.length }} items
                   </VChip>
@@ -704,3 +712,10 @@ onMounted(() => {
       @update:is-dialog-visible="showAddServiceDialog = $event" @service-added="handleServiceAdded" />
   </VContainer>
 </template>
+
+<style scoped>
+:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
+  max-width: 0 !important;
+  border-width: 0 !important;
+}
+</style>

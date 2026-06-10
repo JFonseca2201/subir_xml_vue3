@@ -542,10 +542,10 @@ onMounted(() => {
                   <th class="text-left font-weight-bold text-uppercase" style="width: 135px;">
                     DOC./FECHA
                   </th>
-                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 120px; max-width: 170px;">
                     CLIENTE
                   </th>
-                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 120px; max-width: 170px;">
                     VEHÍCULO
                   </th>
                   <th class="text-right font-weight-bold text-uppercase" style="width: 100px;">
@@ -564,50 +564,59 @@ onMounted(() => {
                   class="sales-row align-middle">
                   <td class="text-no-wrap text-left py-3">
                     <div v-if="item" class="d-flex flex-column align-start">
-                      <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.document_number }}</span>
-                      <div class="d-flex align-center gap-1 flex-wrap">
-                        <span class="text-body-2 text-grey-darken-1 font-weight-medium">{{
-                          getDocumentTypeInfo(item.document_type)?.text }}</span>
+                      <!-- Top row: Doc Type and OT Link -->
+                      <div class="d-flex align-center gap-2 mb-1">
+
+                        <div class="text-body-2 text-secondary mb-1" style="line-height: 1.2;">
+                          {{ getDocumentTypeInfo(item.document_type)?.text }}
+                        </div>
                         <VChip
                           v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
                           color="info" size="x-small" variant="tonal" class="font-weight-bold px-1"
-                          style="font-size: 0.65rem; height: 18px;" label>
-                          OT: {{ item.work_order?.number || item.workOrder?.number }}
+                          style="font-size: 0.6rem; height: 16px;" label>
+                          <VIcon icon="ri-link-m" size="10" class="mr-1" />
+                          {{ item.work_order?.number || item.workOrder?.number }}
                         </VChip>
                       </div>
-                      <span class="text-body-2 text-medium-emphasis d-flex align-center mt-1">
-                        <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+
+                      <!-- Document Number -->
+                      <div class="text-body-1 font-weight-bold text-primary mb-1" style="line-height: 1.2;">
+                        {{ item.document_number }}
+                      </div>
+
+                      <!-- Date -->
+                      <div class="text-medium-emphasis d-flex align-center" style="font-size: 0.65rem;">
+                        <VIcon icon="ri-calendar-line" size="12" class="mr-1" />
                         {{ formatDate(item.service_date) }}
-                      </span>
+                      </div>
                     </div>
                   </td>
-
-                  <td class="text-left py-3" style="max-width: 400px;">
+                  <td class="text-left py-3" style="max-width: 200px;">
                     <div v-if="item">
                       <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
                         :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
                       <div v-if="item.client?.n_document" class="text-body-2 text-medium-emphasis mt-1">
-                        Doc: {{ item.client.n_document }}
+                        {{ item.client.n_document }}
                       </div>
                     </div>
                   </td>
 
                   <td class="text-left py-3" style="max-width: 300px;">
                     <div v-if="item?.vehicle" class="d-flex flex-column">
-                      <div class="font-weight-bold text-body-1 text-truncate text-primary"
+
+                      <div class="text-body-1 text-truncate " :title="formatVehicleInfo(item.vehicle)">
+                        {{ formatVehicleInfo(item.vehicle) }}
+                      </div>
+                      <div class=" text-body-2 text-truncate mt-1 text-medium-emphasis"
                         :title="item.vehicle.license_plate">
                         {{ item.vehicle.license_plate }}
                       </div>
-                      <div class="text-body-2 text-medium-emphasis text-truncate mt-1"
-                        :title="formatVehicleInfo(item.vehicle)">
-                        {{ formatVehicleInfo(item.vehicle) }}
-                      </div>
+
                     </div>
                     <span v-else class="text-medium-emphasis text-body-2">-</span>
                   </td>
-
                   <td class="text-no-wrap text-right py-3">
                     <div v-if="item" class="font-weight-bold text-subtitle-1 text-grey-darken-4"
                       :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
@@ -623,7 +632,7 @@ onMounted(() => {
                           style="width: 10px; height: 10px;"></span>
                         <span class="text-body-2 font-weight-bold text-grey-darken-3">{{
                           getStatusInfo(item.status)?.text
-                          }}</span>
+                        }}</span>
                       </div>
                       <!-- Estado Pago (Text badge) -->
                       <div v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
@@ -642,12 +651,11 @@ onMounted(() => {
                         @click="viewSale(item)">
                         <VIcon icon="ri-eye-line" size="20" />
                       </VBtn>
-                      <!-- enviar correo de la cotizacion -->
-                      <VBtn v-if="item.document_type === 'quote'" variant="text" color="info"
-                        prepend-icon="ri-mail-send-line" size="small" class="text-none font-weight-bold action-btn px-2"
-                        :loading="mailLoading[item.id]"
-                        @click="mandarCotizacionMail(item.id)">
-                        <span class="d-none d-sm-inline">Correo</span>
+
+
+                      <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
+                        @click="editSale(item)">
+                        <VIcon icon="ri-pencil-line" size="20" />
                       </VBtn>
 
                       <!-- Más Acciones (Dropdown) -->
@@ -666,8 +674,11 @@ onMounted(() => {
                               v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
                               prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                               class="text-success text-body-2" @click="openPaymentDialog(item)" />
-                            <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-edit-line"
-                              title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
+
+                            <VListItem v-if="item.document_type === 'quote'" prepend-icon="ri-mail-send-line"
+                              title="Enviar por Correo" class="text-secondary text-body-2"
+                              :loading="mailLoading[item.id]" @click="mandarCotizacionMail(item.id)">
+                            </VListItem>
                             <VDivider class="my-1" />
                             <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
                               title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
@@ -716,7 +727,7 @@ onMounted(() => {
                           v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
                           color="info" size="x-small" variant="flat" class="font-weight-bold px-1"
                           style="font-size: 0.55rem; height: 16px;" label>
-                          OT: {{ item.work_order?.number || item.workOrder?.number }}
+                          {{ item.work_order?.number || item.workOrder?.number }}
                         </VChip>
                       </div>
 
@@ -738,6 +749,9 @@ onMounted(() => {
                           <span class="text-caption text-grey-darken-4 text-truncate"
                             :title="getClientName(item.client)" style="font-size: 0.75rem;">
                             {{ getClientName(item.client) }}
+                            <span v-if="item.client?.n_document" class="text-medium-emphasis ml-1">
+                              {{ item.client.n_document }}
+                            </span>
                           </span>
                         </div>
 
@@ -747,7 +761,7 @@ onMounted(() => {
                           <VIcon icon="ri-car-line" size="14" color="primary" class="flex-shrink-0" />
                           <span class="text-caption text-primary text-truncate font-weight-medium"
                             :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.75rem;">
-                            {{ item.vehicle.license_plate }} {{ formatVehicleInfo(item.vehicle) }}
+                            {{ formatVehicleInfo(item.vehicle) }} - {{ item.vehicle.license_plate }}
                           </span>
                         </div>
 

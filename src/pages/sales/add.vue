@@ -1193,18 +1193,21 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedClient.n_document || "-" }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedClient.phone || "-" }} • {{
                         selectedClient.address || "-"
-                        }}</div>
+                      }}</div>
                     </div>
                   </div>
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
                     <VAutocomplete v-model="sale.vehicle_id" :loading="isLoading" :items="vehicles"
-                      item-title="license_plate" item-value="id" label="Vehículo (Opcional)" variant="outlined"
-                      density="comfortable" prepend-inner-icon="ri-car-line" hide-details="auto"
-                      placeholder="Seleccionar vehículo" clearable class="flex-grow-1">
+                      :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
+                      item-value="id" label="Vehículo (Opcional)" variant="outlined" density="comfortable"
+                      prepend-inner-icon="ri-car-line" hide-details="auto" placeholder="Seleccionar vehículo" clearable
+                      class="flex-grow-1">
                       <template #item="{ props, item }">
-                        <VListItem v-bind="props" :title="item.raw.license_plate" :subtitle="item.raw.model || ''" />
+                        <VListItem v-bind="props"
+                          :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''}`.trim()"
+                          :subtitle="item.raw.license_plate" />
                       </template>
                     </VAutocomplete>
                     <VBtn color="success" variant="tonal" icon="ri-add-line"
@@ -1218,7 +1221,7 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedVehicle.license_plate }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedVehicle.model || "-" }} • {{
                         selectedVehicle.year || "-"
-                        }}</div>
+                      }}</div>
                     </div>
                   </div>
                   <div class="mt-4" v-if="selectedVehicle">
@@ -1227,13 +1230,13 @@ onMounted(async () => {
                       color="primary" />
                   </div>
                 </VCol>
-                <VCol cols="12">
+                <VCol cols="6">
                   <VAutocomplete v-model="sale.technicians" :items="employees"
                     :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
                     item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
                     density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
                     :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint>
+                    persistent-hint class="fix-notch-bug">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -1258,8 +1261,8 @@ onMounted(async () => {
               </div>
               <div class="d-flex align-center gap-3 mb-4">
                 <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
-                  :items="products" item-title="displayTitle" return-object label="Buscar y agregar producto"
-                  placeholder="Escribe para buscar por nombre, código, SKU..." prepend-inner-icon="ri-search-line"
+                  :items="products" item-title="displayTitle" return-object
+                  label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
                   variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
                   class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
@@ -1578,7 +1581,7 @@ onMounted(async () => {
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
                       order.vehicle?.model }}</small></td>
                     <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A'
-                    }}
+                      }}
                     </td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
@@ -1599,3 +1602,10 @@ onMounted(async () => {
       @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
   </div>
 </template>
+
+<style scoped>
+:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
+  max-width: 0 !important;
+  border-width: 0 !important;
+}
+</style>

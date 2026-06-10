@@ -7,6 +7,9 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AAutocompleteCliente: typeof import('./src/components/AAutocompleteCliente.vue')['default']
+    AAutocompleteProduct: typeof import('./src/components/AAutocompleteProduct.vue')['default']
+    AAutocompleteVehicle: typeof import('./src/components/AAutocompleteVehicle.vue')['default']
     AccountFormDialog: typeof import('./src/components/inventory/accounts/AccountFormDialog.vue')['default']
     AddAuthenticatorAppDialog: typeof import('./src/components/dialogs/AddAuthenticatorAppDialog.vue')['default']
     AddEditAddressDialog: typeof import('./src/components/dialogs/AddEditAddressDialog.vue')['default']
@@ -27,6 +30,9 @@ declare module 'vue' {
     AppPricing: typeof import('./src/components/AppPricing.vue')['default']
     AppSearchHeader: typeof import('./src/components/AppSearchHeader.vue')['default']
     AppStepper: typeof import('./src/@core/components/AppStepper.vue')['default']
+    AutocompleteCliente: typeof import('./src/components/AutocompleteCliente.vue')['default']
+    AutocompleteProduct: typeof import('./src/components/AutocompleteProduct.vue')['default']
+    AutocompleteVehicle: typeof import('./src/components/AutocompleteVehicle.vue')['default']
     BuyNow: typeof import('./src/@core/components/BuyNow.vue')['default']
     CardAddEditDialog: typeof import('./src/components/dialogs/CardAddEditDialog.vue')['default']
     CardStatisticsHorizontal: typeof import('./src/@core/components/cards/CardStatisticsHorizontal.vue')['default']
