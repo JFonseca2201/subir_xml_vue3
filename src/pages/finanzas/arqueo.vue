@@ -20,6 +20,7 @@ const confirmSealDialog = ref(false)
 // Display details
 const dateFormatted = ref('')
 const alreadyCounted = ref(false)
+const isSealed = ref(false)
 const initialBalances = ref({
   cash: 0,
   pichincha: 0,
@@ -139,6 +140,7 @@ const fetchStatus = async (date) => {
     if (response.success) {
       dateFormatted.value = response.date_formatted || ''
       alreadyCounted.value = response.already_counted || false
+      isSealed.value = response.is_sealed || false
 
       if (response.initial_balances) {
         initialBalances.value = {
@@ -321,7 +323,11 @@ onMounted(() => {
             <VIcon icon="ri-calendar-event-line" color="primary" size="22" />
             <span class="text-h6 font-weight-bold text-grey-darken-4 capitalize-first">{{ dateFormatted }}</span>
           </div>
-          <VChip v-if="alreadyCounted" color="success" variant="flat" size="small" class="font-weight-bold px-3 py-1">
+          <VChip v-if="isSealed" color="error" variant="flat" size="small" class="font-weight-bold px-3 py-1">
+            <VIcon start size="14">ri-lock-password-fill</VIcon>
+            DÍA SELLADO (SOLO LECTURA)
+          </VChip>
+          <VChip v-else-if="alreadyCounted" color="success" variant="flat" size="small" class="font-weight-bold px-3 py-1">
             <VIcon start size="14">ri-checkbox-circle-fill</VIcon>
             ARQUEO YA REGISTRADO (MODO EDICIÓN)
           </VChip>
@@ -521,7 +527,7 @@ onMounted(() => {
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
                             <input v-model.number="payload.cash_details.bills[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                              class="cash-qty-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
                           </div>
                         </td>
                         <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
@@ -557,7 +563,7 @@ onMounted(() => {
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
                             <input v-model.number="payload.cash_details.coins[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                              class="cash-qty-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
                           </div>
                         </td>
                         <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
@@ -630,7 +636,7 @@ onMounted(() => {
                   </div>
                   <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
                     prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                    color="primary" class="bank-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
                   <div class="text-right text-caption mt-1 font-weight-bold"
                     :class="pichinchaDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
                     Dif: {{ pichinchaDifference > 0 ? '+' : '' }}{{ formatCurrency(pichinchaDifference) }}
@@ -649,7 +655,7 @@ onMounted(() => {
                   </div>
                   <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
                     prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading" @focus="$event.target.select()" />
+                    color="primary" class="bank-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
                   <div class="text-right text-caption mt-1 font-weight-bold"
                     :class="guayaquilDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
                     Dif: {{ guayaquilDifference > 0 ? '+' : '' }}{{ formatCurrency(guayaquilDifference) }}
@@ -671,17 +677,17 @@ onMounted(() => {
               <VCardText class="pa-4 bg-white text-uppercase">
                 <VTextarea v-model="payload.observations" label="Describa diferencias o novedades..." rows="3"
                   variant="outlined" density="comfortable" hide-details="auto" color="primary"
-                  :disabled="saving || loading" />
+                  :disabled="saving || loading || isSealed" />
               </VCardText>
             </VCard>
             <VCardActions class="pa-4 bg-grey-lighten-5 border-t d-flex flex-column gap-2">
               <VBtn block variant="flat" color="primary" class="text-none font-weight-bold text-white m-0"
-                @click="saveArqueo" :loading="saving" :disabled="saving || sealing || loading">
+                @click="saveArqueo" :loading="saving" :disabled="saving || sealing || loading || isSealed">
                 <VIcon start>ri-save-3-line</VIcon>
                 GUARDAR ARQUEO DIARIO
               </VBtn>
               <VBtn block variant="flat" color="success" class="text-none font-weight-bold text-white m-0"
-                @click="confirmSealDialog = true" :loading="sealing" :disabled="sealing || saving || loading">
+                @click="confirmSealDialog = true" :loading="sealing" :disabled="sealing || saving || loading || isSealed">
                 <VIcon start>ri-lock-password-line</VIcon>
                 SELLAR DÍA
               </VBtn>
