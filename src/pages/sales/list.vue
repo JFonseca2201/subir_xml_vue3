@@ -444,91 +444,83 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6 sales-management-page">
+  <div class="pa-4 pa-sm-6 sales-management-page bg-grey-lighten-4 min-vh-100">
     <!-- Encabezado de la página -->
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-file-list-3-line" color="primary" class="me-2" size="28" />
+        <h1 class="text-h4 font-weight-medium mb-1 text-grey-darken-4">
           Ventas y Cotizaciones
         </h1>
-        <p class="text-medium-emphasis mb-0">
-          Historial de transacciones y servicios registrados en el taller
+        <p class="text-medium-emphasis mb-0 text-body-1">
+          Historial de transacciones y servicios del taller
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-pdf-line" :loading="pdfLoading"
-          @click="generatePDF">
-          Generar PDF
+      <div class="d-flex gap-3 flex-wrap">
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-file-pdf-line" :loading="pdfLoading"
+          @click="generatePDF" class="text-none font-weight-medium px-4 bg-white">
+          Exportar PDF
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add">
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/add" class="text-none font-weight-medium px-4" elevation="1">
           Nueva Venta
         </VBtn>
       </div>
     </div>
 
     <!-- Contenedor Principal (Filtros y Tabla) -->
-    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+    <VCard class="border border-opacity-25 overflow-hidden elevation-1 mb-6 rounded-lg">
       <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
+      <VCardText class="pa-5 bg-white border-b border-opacity-25">
         <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
-          <VRow class="align-center">
+          <VRow class="align-center" dense>
             <VCol cols="12" md="4">
               <VTextField v-model="searchForm.search" label="Buscar venta"
                 placeholder="Nombre, cédula o placa del vehículo..." prepend-inner-icon="ri-search-line"
-                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
+                variant="outlined" density="compact" hide-details="auto" clearable color="primary" bg-color="white" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VSelect v-model="searchForm.document_type" :items="documentTypeOptions" item-title="title"
-                item-value="value" label="Tipo de Doc." placeholder="Todos" prepend-inner-icon="ri-file-list-3-line"
-                variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
+                item-value="value" label="Tipo de Doc." placeholder="Todos"
+                variant="outlined" density="compact" hide-details="auto" clearable color="primary" bg-color="white" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VSelect v-model="searchForm.payment_status" :items="paymentStatusOptions" item-title="title"
                 item-value="value" label="Estado Pago" placeholder="Todos"
-                prepend-inner-icon="ri-money-dollar-circle-line" variant="outlined" density="comfortable"
-                hide-details="auto" clearable color="primary" />
+                variant="outlined" density="compact" hide-details="auto" clearable color="primary" bg-color="white" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VTextField v-model="searchForm.start_date" type="date" label="Desde"
-                prepend-inner-icon="ri-calendar-line" variant="outlined" density="comfortable" hide-details="auto"
-                clearable color="primary" />
+                variant="outlined" density="compact" hide-details="auto" clearable color="primary" bg-color="white" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VTextField v-model="searchForm.end_date" type="date" label="Hasta"
-                prepend-inner-icon="ri-calendar-event-line" variant="outlined" density="comfortable" hide-details="auto"
-                clearable color="primary" />
+                variant="outlined" density="compact" hide-details="auto" clearable color="primary" bg-color="white" />
             </VCol>
           </VRow>
-
-
         </VForm>
       </VCardText>
 
-      <!-- Listado de Ventas (Tarjetas Agrupadas por Día) -->
+      <!-- Listado de Ventas -->
       <div class="position-relative bg-white">
         <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
           style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <div v-if="loading" class="text-center pa-12">
-          <VProgressCircular indeterminate color="primary" size="40" />
-          <div class="mt-2 text-medium-emphasis">
+        <div v-if="loading" class="text-center py-10">
+          <VProgressCircular indeterminate color="primary" size="32" width="3" />
+          <div class="mt-3 text-body-1 text-medium-emphasis">
             Cargando registros...
           </div>
         </div>
 
-        <div v-else-if="!sales || sales.length === 0" class="text-center pa-12 text-medium-emphasis">
-          <VIcon size="48" class="mb-3" color="grey-lighten-1">
-            ri-file-text-line
-          </VIcon>
-          <div class="text-h6">
+        <div v-else-if="!sales || sales.length === 0" class="text-center py-12">
+          <VIcon size="40" color="grey-lighten-1" icon="ri-file-text-line" class="mb-3" />
+          <div class="text-h6 text-grey-darken-2 font-weight-regular">
             No se encontraron ventas
           </div>
-          <div class="text-body-2">
+          <div class="text-body-2 text-medium-emphasis mt-1">
             Intenta ajustar los filtros de búsqueda
           </div>
         </div>
@@ -536,145 +528,118 @@ onMounted(() => {
         <div v-else>
           <!-- Vista de Tabla para Computadoras (Desktop) -->
           <div class="d-none d-md-block overflow-x-auto">
-            <VTable hover class="sales-table">
-              <thead>
+            <VTable hover class="sales-table bg-white">
+              <thead class="bg-grey-lighten-4">
                 <tr>
-                  <th class="text-left font-weight-bold text-uppercase" style="width: 135px;">
-                    DOC./FECHA
+                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 160px;">
+                    Documento
                   </th>
-                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 120px; max-width: 170px;">
-                    CLIENTE
+                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 200px;">
+                    Cliente
                   </th>
-                  <th class="text-left font-weight-bold text-uppercase" style="min-width: 120px; max-width: 170px;">
-                    VEHÍCULO
+                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 180px;">
+                    Vehículo
                   </th>
-                  <th class="text-right font-weight-bold text-uppercase" style="width: 100px;">
-                    TOTAL
+                  <th class="text-right font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 120px;">
+                    Total
                   </th>
-                  <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
-                    ESTADO
+                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 130px;">
+                    Estado
                   </th>
-                  <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
-                    ACCIONES
+                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 120px;">
+                    Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody style="text-transform: uppercase;">
+              <tbody>
                 <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
-                  class="sales-row align-middle">
-                  <td class="text-no-wrap text-left py-3">
-                    <div v-if="item" class="d-flex flex-column align-start">
-                      <!-- Top row: Doc Type and OT Link -->
-                      <div class="d-flex align-center gap-2 mb-1">
-
-                        <div class="text-body-2 text-secondary mb-1" style="line-height: 1.2;">
+                  class="align-middle border-b border-opacity-25">
+                  <td class="text-left py-3 px-4">
+                    <div v-if="item" class="d-flex flex-column gap-1">
+                      <div class="d-flex align-center gap-2">
+                        <span class="text-caption font-weight-bold" :class="`text-${getDocumentTypeInfo(item.document_type)?.color}`">
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
-                        </div>
-                        <VChip
-                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                          color="info" size="x-small" variant="tonal" class="font-weight-bold px-1"
-                          style="font-size: 0.6rem; height: 16px;" label>
-                          <VIcon icon="ri-link-m" size="10" class="mr-1" />
+                        </span>
+                        <span v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
+                          class="text-caption font-weight-medium text-indigo bg-indigo-lighten-5 px-1 rounded">
+                          <VIcon icon="ri-link-m" size="12" class="mr-1" />
                           {{ item.work_order?.number || item.workOrder?.number }}
-                        </VChip>
+                        </span>
                       </div>
-
-                      <!-- Document Number -->
-                      <div class="text-body-1 font-weight-bold text-primary mb-1" style="line-height: 1.2;">
+                      <div class="text-body-1 font-weight-medium text-grey-darken-4">
                         {{ item.document_number }}
                       </div>
-
-                      <!-- Date -->
-                      <div class="text-medium-emphasis d-flex align-center" style="font-size: 0.65rem;">
-                        <VIcon icon="ri-calendar-line" size="12" class="mr-1" />
+                      <div class="text-caption text-medium-emphasis">
                         {{ formatDate(item.service_date) }}
                       </div>
                     </div>
                   </td>
-                  <td class="text-left py-3" style="max-width: 200px;">
+                  
+                  <td class="text-left py-3 px-4">
                     <div v-if="item">
-                      <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
-                        :title="getClientName(item.client)">
+                      <div class="text-body-2 font-weight-medium text-grey-darken-4" :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-body-2 text-medium-emphasis mt-1">
+                      <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis mt-1">
                         {{ item.client.n_document }}
                       </div>
                     </div>
                   </td>
 
-                  <td class="text-left py-3" style="max-width: 300px;">
-                    <div v-if="item?.vehicle" class="d-flex flex-column">
-
-                      <div class="text-body-1 text-truncate " :title="formatVehicleInfo(item.vehicle)">
+                  <td class="text-left py-3 px-4">
+                    <div v-if="item?.vehicle">
+                      <div class="text-body-2 font-weight-medium text-grey-darken-4" :title="formatVehicleInfo(item.vehicle)">
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
-                      <div class=" text-body-2 text-truncate mt-1 text-medium-emphasis"
-                        :title="item.vehicle.license_plate">
+                      <div class="text-caption text-medium-emphasis mt-1">
                         {{ item.vehicle.license_plate }}
                       </div>
-
                     </div>
                     <span v-else class="text-medium-emphasis text-body-2">-</span>
                   </td>
-                  <td class="text-no-wrap text-right py-3">
-                    <div v-if="item" class="font-weight-bold text-subtitle-1 text-grey-darken-4"
-                      :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''">
+                  
+                  <td class="text-right py-3 px-4">
+                    <div v-if="item" class="font-weight-medium text-body-1"
+                      :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
                       {{ formatCurrency(item.total) }}
                     </div>
                   </td>
 
-                  <td class="text-no-wrap text-center py-3">
+                  <td class="text-center py-3 px-4">
                     <div v-if="item" class="d-flex flex-column align-center gap-1">
-                      <!-- Estado General (Status dot) -->
                       <div class="d-flex align-center gap-1">
-                        <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
-                          style="width: 10px; height: 10px;"></span>
-                        <span class="text-body-2 font-weight-bold text-grey-darken-3">{{
-                          getStatusInfo(item.status)?.text
-                        }}</span>
+                        <VIcon :icon="getStatusInfo(item.status)?.icon" :color="getStatusInfo(item.status)?.color" size="14" />
+                        <span class="text-caption font-weight-medium" :class="`text-${getStatusInfo(item.status)?.color}`">
+                          {{ getStatusInfo(item.status)?.text }}
+                        </span>
                       </div>
-                      <!-- Estado Pago (Text badge) -->
-                      <div v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
-                        class="text-caption font-weight-bold"
-                        :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`"
-                        style="letter-spacing: 0.05em;">
+                      <span v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
+                        class="text-caption"
+                        :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`">
                         {{ getPaymentStatusInfo(item.payment_status)?.text }}
-                      </div>
+                      </span>
                     </div>
                   </td>
 
-                  <td class="text-no-wrap text-center py-3">
-                    <div v-if="item" class="d-flex justify-center align-center">
-                      <!-- Ver Detalle (Acción rápida) -->
-                      <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
-                        @click="viewSale(item)">
-                        <VIcon icon="ri-eye-line" size="20" />
+                  <td class="text-center py-3 px-4">
+                    <div v-if="item" class="d-flex justify-center align-center gap-1">
+                      <VBtn variant="text" icon size="small" color="info" title="Ver Detalle" @click="viewSale(item)">
+                        <VIcon icon="ri-eye-line" size="18" />
                       </VBtn>
 
-
-                      <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
-                        @click="editSale(item)">
-                        <VIcon icon="ri-pencil-line" size="20" />
+                      <VBtn variant="text" icon size="small" color="warning" title="Editar" @click="editSale(item)">
+                        <VIcon icon="ri-pencil-line" size="18" />
                       </VBtn>
 
-                      <!-- Más Acciones (Dropdown) -->
-                      <VBtn class="action-btn" variant="text" icon size="small" color="secondary" title="Acciones">
-                        <VIcon icon="ri-more-2-line" size="20" />
+                      <VBtn variant="text" icon size="small" color="secondary" title="Acciones">
+                        <VIcon icon="ri-more-2-line" size="18" />
                         <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                          <VList density="compact" class="py-1">
-                            <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
-                              @click="printSale(item.id)" />
-
-                            <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
-                              @click="generateSinglePDF(item)" />
-                            <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
-                              class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                            <VListItem
-                              v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
-                              prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
-                              class="text-success text-body-2" @click="openPaymentDialog(item)" />
-
+                          <VList density="compact" class="py-1 rounded elevation-3 border">
+                            <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2" @click="printSale(item.id)" />
+                            <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2" @click="generateSinglePDF(item)" />
+                            <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
+                            <VListItem v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
+                              prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago" class="text-success text-body-2" @click="openPaymentDialog(item)" />
                             <VListItem v-if="item.document_type === 'quote'" prepend-icon="ri-mail-send-line"
                               title="Enviar por Correo" class="text-secondary text-body-2"
                               :loading="mailLoading[item.id]" @click="mandarCotizacionMail(item.id)">
@@ -693,135 +658,109 @@ onMounted(() => {
           </div>
 
           <!-- Vista de Tarjetas para Dispositivos Móviles y Tabletas -->
-          <div class="d-block d-md-none pa-5">
-            <div v-for="date in Object.keys(groupedSales)" :key="date" class="mb-6">
+          <div class="d-block d-md-none pa-3">
+            <div v-for="date in Object.keys(groupedSales)" :key="date" class="mb-5">
               <!-- Cabecera de Grupo por Día -->
-              <div class="date-group-header d-flex align-center my-4">
-                <VIcon icon="ri-calendar-event-line" color="primary" class="me-2" size="20" />
-                <span class="text-subtitle-1 font-weight-bold text-grey-darken-3 text-capitalize">
+              <div class="d-flex align-center mb-3 px-2">
+                <VIcon icon="ri-calendar-event-line" size="18" color="medium-emphasis" class="mr-2" />
+                <span class="text-body-2 font-weight-medium text-medium-emphasis text-capitalize">
                   {{ formatDateGroup(date) }}
                 </span>
-                <VDivider class="ms-3" />
+                <VDivider class="ms-3 flex-grow-1 border-opacity-25" />
               </div>
 
               <!-- Tarjetas del Día -->
-              <VRow class="ma-n1 ma-sm-n2">
-                <VCol v-for="item in groupedSales[date]" :key="item.id" cols="12" sm="6" md="4"
-                  class="d-flex pa-1 pa-sm-2">
-                  <VCard
-                    class="w-100 rounded-lg border-light border overflow-hidden elevation-1 hover-shadow transition-all d-flex flex-column">
-                    <!-- Cabecera de la Tarjeta -->
-                    <VCardText
-                      class="pa-1 pa-sm-2 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-1">
-                      <div class="d-flex align-center gap-1 flex-wrap">
-                        <VChip :color="getDocumentTypeInfo(item.document_type)?.color" size="x-small" variant="tonal"
-                          class="font-weight-bold text-uppercase px-1" style="font-size: 0.55rem; height: 16px;" label>
-                          {{ getDocumentTypeInfo(item.document_type)?.text }}
-                        </VChip>
-                        <span class="text-caption font-weight-bold text-primary cursor-pointer hover-underline"
-                          @click="viewSale(item)" :title="item.document_number">
-                          {{ item.document_number }}
-                        </span>
-                        <!-- Orden de Trabajo Vinculada (Badge) -->
-                        <VChip
-                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                          color="info" size="x-small" variant="flat" class="font-weight-bold px-1"
-                          style="font-size: 0.55rem; height: 16px;" label>
-                          {{ item.work_order?.number || item.workOrder?.number }}
-                        </VChip>
-                      </div>
-
-                      <!-- Estado General -->
-                      <div class="d-flex align-center gap-1">
-                        <span class="rounded-circle d-inline-block" :class="`bg-${getStatusInfo(item.status)?.color}`"
-                          style="width: 5px; height: 5px;"></span>
-                        <span class="text-caption font-weight-bold text-grey-darken-3 d-none d-sm-inline"
-                          style="font-size: 0.6rem;">{{ getStatusInfo(item.status)?.text }}</span>
-                      </div>
-                    </VCardText>
-
-                    <!-- Cuerpo de la Tarjeta -->
-                    <VCardText class="pa-2 flex-grow-1">
-                      <div class="d-flex flex-column gap-1">
-                        <!-- Cliente -->
-                        <div class="d-flex align-center gap-1 overflow-hidden" style="min-height: 20px;">
-                          <VIcon icon="ri-user-line" size="14" color="info" class="flex-shrink-0" />
-                          <span class="text-caption text-grey-darken-4 text-truncate"
-                            :title="getClientName(item.client)" style="font-size: 0.75rem;">
-                            {{ getClientName(item.client) }}
-                            <span v-if="item.client?.n_document" class="text-medium-emphasis ml-1">
-                              {{ item.client.n_document }}
+              <VRow dense>
+                <VCol v-for="item in groupedSales[date]" :key="item.id" cols="12">
+                  <VCard class="border border-opacity-25 elevation-0 bg-white">
+                    <VCardText class="pa-3">
+                      <!-- Cabecera Tarjeta: Documento y Estado -->
+                      <div class="d-flex justify-space-between align-start mb-3">
+                        <div>
+                          <div class="d-flex align-center gap-2 mb-1">
+                            <span class="text-caption font-weight-bold" :class="`text-${getDocumentTypeInfo(item.document_type)?.color}`">
+                              {{ getDocumentTypeInfo(item.document_type)?.text }}
                             </span>
-                          </span>
+                            <span v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
+                              class="text-caption font-weight-medium text-indigo bg-indigo-lighten-5 px-1 rounded">
+                              <VIcon icon="ri-link-m" size="12" class="mr-1" />
+                              {{ item.work_order?.number || item.workOrder?.number }}
+                            </span>
+                          </div>
+                          <div class="text-subtitle-1 font-weight-medium text-primary cursor-pointer" @click="viewSale(item)">
+                            {{ item.document_number }}
+                          </div>
+                        </div>
+                        <div class="text-right">
+                          <div class="d-flex align-center gap-1 justify-end">
+                            <VIcon :icon="getStatusInfo(item.status)?.icon" :color="getStatusInfo(item.status)?.color" size="14" />
+                            <span class="text-caption font-weight-medium" :class="`text-${getStatusInfo(item.status)?.color}`">
+                              {{ getStatusInfo(item.status)?.text }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <VDivider class="border-opacity-25 my-2" />
+
+                      <!-- Detalles Tarjeta -->
+                      <div class="d-flex flex-column gap-2">
+                        <!-- Cliente -->
+                        <div class="d-flex align-center">
+                          <VIcon icon="ri-user-line" size="16" class="mr-2 text-medium-emphasis" />
+                          <div>
+                            <span class="text-body-2 font-weight-medium text-grey-darken-4 mr-2">{{ getClientName(item.client) }}</span>
+                            <span v-if="item.client?.n_document" class="text-caption text-medium-emphasis">{{ item.client.n_document }}</span>
+                          </div>
                         </div>
 
                         <!-- Vehículo -->
-                        <div v-if="item.vehicle" class="d-flex align-center gap-1 overflow-hidden"
-                          style="min-height: 20px;">
-                          <VIcon icon="ri-car-line" size="14" color="primary" class="flex-shrink-0" />
-                          <span class="text-caption text-primary text-truncate font-weight-medium"
-                            :title="formatVehicleInfo(item.vehicle)" style="font-size: 0.75rem;">
-                            {{ formatVehicleInfo(item.vehicle) }} - {{ item.vehicle.license_plate }}
-                          </span>
-                        </div>
-
-                        <!-- Total y Pago -->
-                        <div class="d-flex align-center gap-1 justify-space-between flex-wrap mt-1">
-                          <div class="d-flex align-center gap-1">
-                            <VIcon icon="ri-money-dollar-circle-line" size="14" color="success" class="flex-shrink-0" />
-                            <span class="text-caption font-weight-bold text-success"
-                              :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : ''"
-                              style="font-size: 0.75rem;">
-                              {{ formatCurrency(item.total) }}
-                            </span>
+                        <div v-if="item.vehicle" class="d-flex align-center">
+                          <VIcon icon="ri-car-line" size="16" class="mr-2 text-medium-emphasis" />
+                          <div>
+                            <span class="text-body-2 text-grey-darken-4 mr-2">{{ formatVehicleInfo(item.vehicle) }}</span>
+                            <span class="text-caption text-medium-emphasis border px-1 rounded">{{ item.vehicle.license_plate }}</span>
                           </div>
-                          <!-- Estado Pago (Text badge) -->
-                          <VChip v-if="item.status !== 'canceled' && item.document_type !== 'quote'" size="x-small"
-                            :color="getPaymentStatusInfo(item.payment_status)?.color" variant="tonal"
-                            class="font-weight-bold px-1" style="font-size: 0.55rem; height: 16px;">
-                            {{ getPaymentStatusInfo(item.payment_status)?.text }}
-                          </VChip>
                         </div>
                       </div>
                     </VCardText>
 
-                    <VDivider />
+                    <VDivider class="border-opacity-25" />
 
-                    <!-- Acciones -->
-                    <VCardActions class="pa-1 pa-sm-2 justify-end bg-grey-lighten-5 mt-auto">
-                      <!-- Ver Detalle (Acción rápida) -->
-                      <VBtn variant="text" color="info" prepend-icon="ri-eye-line" size="small"
-                        class="text-none font-weight-bold action-btn px-2" @click="viewSale(item)">
-                        <span class="d-none d-sm-inline">Ver Detalle</span>
-                      </VBtn>
-
-
-
-                      <!-- Más Acciones (Dropdown) -->
-                      <VBtn variant="text" color="secondary" prepend-icon="ri-more-2-line" size="small"
-                        class="text-none font-weight-bold action-btn px-2">
-                        <span class="d-none d-sm-inline">Más</span>
-                        <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                          <VList density="compact" class="py-1">
-                            <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
-                              @click="printSale(item.id)" />
-
-                            <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
-                              @click="generateSinglePDF(item)" />
-                            <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
-                              class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                            <VListItem
-                              v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
-                              prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
-                              class="text-success text-body-2" @click="openPaymentDialog(item)" />
-                            <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-edit-line"
-                              title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
-                            <VDivider class="my-1" />
-                            <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
-                              title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
-                          </VList>
-                        </VMenu>
-                      </VBtn>
+                    <!-- Pie Tarjeta: Totales y Acciones -->
+                    <VCardActions class="pa-3 bg-grey-lighten-5 d-flex justify-space-between align-center">
+                      <div class="d-flex flex-column">
+                        <span class="text-subtitle-1 font-weight-medium" :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
+                          {{ formatCurrency(item.total) }}
+                        </span>
+                        <span v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
+                          class="text-caption" :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`">
+                          {{ getPaymentStatusInfo(item.payment_status)?.text }}
+                        </span>
+                      </div>
+                      
+                      <div class="d-flex gap-1">
+                        <VBtn variant="text" color="info" size="small" class="text-none px-2" @click="viewSale(item)">
+                          Ver
+                        </VBtn>
+                        <VBtn variant="text" color="secondary" size="small" class="text-none px-2">
+                          Más
+                          <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                            <VList density="compact" class="py-1 border elevation-3">
+                              <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2" @click="printSale(item.id)" />
+                              <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2" @click="generateSinglePDF(item)" />
+                              <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
+                              <VListItem v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
+                                prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago" class="text-success text-body-2" @click="openPaymentDialog(item)" />
+                              <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-edit-line"
+                                title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
+                              <VDivider class="my-1" />
+                              <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
+                                title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
+                            </VList>
+                          </VMenu>
+                        </VBtn>
+                      </div>
                     </VCardActions>
                   </VCard>
                 </VCol>
@@ -831,17 +770,14 @@ onMounted(() => {
         </div>
       </div>
 
-      <VDivider />
+      <VDivider class="border-opacity-25" />
 
       <!-- Paginación -->
-      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
-        <div class="d-flex flex-column align-center gap-3 w-100">
-          <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ sales.length }}</span> de <span class="font-weight-bold">{{
-              totalItems }}</span> registros
-          </div>
-          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary" />
-        </div>
+      <VCardActions class="justify-space-between align-center pa-4 bg-white">
+        <span class="text-caption text-medium-emphasis d-none d-sm-block">
+          Mostrando {{ sales.length }} de {{ totalItems }} registros
+        </span>
+        <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="5" color="primary" density="comfortable" class="mx-auto mx-sm-0" />
       </VCardActions>
     </VCard>
 
@@ -854,36 +790,41 @@ onMounted(() => {
 
 
     <!-- Payment Dialog -->
-    <VDialog v-model="isPaymentDialogVisible" max-width="500">
-      <VCard>
-        <VCardTitle class="text-h5">
+    <VDialog v-model="isPaymentDialogVisible" max-width="450">
+      <VCard class="rounded-lg">
+        <VCardTitle class="text-h6 font-weight-medium pa-4 border-b border-opacity-25">
           Registrar Pago
         </VCardTitle>
-        <VCardText>
+        <VCardText class="pa-4">
           <div class="mb-4">
-            <p class="text-body-1">
-              Venta: <strong>{{ selectedSale?.document_number }}</strong>
-            </p>
-            <p class="text-body-1">
-              Total: <strong>{{ formatCurrency(selectedSale?.total) }}</strong>
-            </p>
+            <div class="d-flex justify-space-between align-center mb-1">
+              <span class="text-body-2 text-medium-emphasis">Documento:</span>
+              <span class="font-weight-medium text-grey-darken-4">{{ selectedSale?.document_number }}</span>
+            </div>
+            <div class="d-flex justify-space-between align-center">
+              <span class="text-body-2 text-medium-emphasis">Total a Pagar:</span>
+              <span class="text-subtitle-1 font-weight-bold text-success">{{ formatCurrency(selectedSale?.total) }}</span>
+            </div>
           </div>
 
           <VSelect v-model="paymentForm.payment_method" :items="paymentMethodOptions" item-title="title"
-            item-value="value" label="Método de Pago" variant="outlined" density="comfortable" />
+            item-value="value" label="Método de Pago" variant="outlined" density="compact" color="primary" class="mb-2" />
 
-          <VCheckbox v-model="paymentForm.convert_to_invoice" label="Convertir a Factura" class="mt-4" />
+          <VCheckbox v-model="paymentForm.convert_to_invoice" label="Convertir a Factura" class="mt-2" color="primary" density="compact" hide-details />
         </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn color="secondary" variant="text" @click="isPaymentDialogVisible = false">
+        <VCardActions class="pa-4 pt-0 justify-end gap-2">
+          <VBtn color="secondary" variant="text" class="text-none font-weight-medium" @click="isPaymentDialogVisible = false">
             Cancelar
           </VBtn>
-          <VBtn color="primary" @click="registerPayment">
-            Registrar Pago
+          <VBtn color="primary" variant="flat" class="text-none font-weight-medium px-4" @click="registerPayment">
+            Confirmar Pago
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+/* Eliminar efectos exagerados, solo estilos sutiles */
+</style>

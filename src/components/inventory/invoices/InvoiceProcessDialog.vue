@@ -74,8 +74,9 @@ const hasMissingCategories = computed(() => {
 
 const addPaymentDistribution = () => {
   const remaining = props.invoice.total - totalPaymentsAmount.value
+  const caja = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
   paymentDistributions.value.push({
-    account_id: null,
+    account_id: caja ? caja.id : null,
     payment_method: 'cash',
     amount: remaining > 0 ? Number(remaining.toFixed(2)) : 0
   })
@@ -103,16 +104,15 @@ watch(paymentType, (newType) => {
   }
 })
 
-watch(paymentDistributions, (newDists) => {
-  newDists.forEach(dist => {
-    if (dist.payment_method === 'cash') {
-      // Allow user to select account instead of hardcoding 1
-      // dist.account_id = null 
-    } else if (dist.payment_method === 'transfer') {
-      // Let user choose
-    }
-  })
-}, { deep: true })
+const onPaymentMethodChange = (dist, newMethod) => {
+  if (newMethod === 'cash') {
+    const caja = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+    dist.account_id = caja ? caja.id : null
+  } else {
+    // Si cambia a transferencia o depósito, limpiar para que elija
+    dist.account_id = null
+  }
+}
 
 const onFormReset = () => {
   paymentType.value = 'credito'
@@ -188,23 +188,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
-    v-model="props.isDialogVisible"
-    max-width="700"
-    persistent
-  >
+  <VDialog v-model="props.isDialogVisible" max-width="700" persistent>
     <VCard class="rounded-xl overflow-hidden elevation-24">
-      <VOverlay
-        :model-value="loader.loading || isLoadingConfig || isLoadingInvoice"
-        class="align-center justify-center"
-        contained
-        persistent
-      >
-        <VProgressCircular
-          color="primary"
-          indeterminate
-          size="64"
-        />
+      <VOverlay :model-value="loader.loading || isLoadingConfig || isLoadingInvoice" class="align-center justify-center"
+        contained persistent>
+        <VProgressCircular color="primary" indeterminate size="64" />
       </VOverlay>
 
       <!-- Header with Premium Gradient -->
@@ -214,17 +202,13 @@ onMounted(() => {
             <VIcon color="white" size="22">ri-checkbox-circle-line</VIcon>
           </VAvatar>
           <div>
-            <div class="text-h6 font-weight-bold leading-tight" style="color: white !important;">Procesar Factura XML</div>
-            <div class="text-caption text-white opacity-80" style="color: white !important;">Define la forma de pago y procesa el stock</div>
+            <div class="text-h6 font-weight-bold leading-tight" style="color: white !important;">Procesar Factura
+            </div>
+            <div class="text-caption text-white opacity-80" style="color: white !important;">Define la forma de pago y
+              procesa el stock</div>
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          color="white"
-          density="comfortable"
-          @click="onFormReset"
-        />
+        <VBtn icon="ri-close-line" variant="text" color="white" density="comfortable" @click="onFormReset" />
       </div>
 
       <VCardText class="pa-6 d-flex flex-column gap-4 bg-slate-50" style="max-height: 70vh; overflow-y: auto;">
@@ -260,16 +244,11 @@ onMounted(() => {
         </div>
 
         <!-- Warning: Missing Categories -->
-        <VAlert
-          v-if="hasMissingCategories"
-          type="error"
-          variant="tonal"
-          icon="ri-alert-line"
-          class="mb-2"
-        >
+        <VAlert v-if="hasMissingCategories" type="error" variant="tonal" icon="ri-alert-line" class="mb-2">
           <div class="text-subtitle-2 font-weight-bold">Faltan Categorías:</div>
           <p class="text-body-2 mb-0">
-            Esta factura contiene productos físicos sin categoría asignada. Debe asignarles una categoría en el diálogo de ver factura antes de poder procesarla.
+            Esta factura contiene productos físicos sin categoría asignada. Debe asignarles una categoría en el diálogo
+            de ver factura antes de poder procesarla.
           </p>
         </VAlert>
 
@@ -283,8 +262,8 @@ onMounted(() => {
           </div>
 
           <VRadioGroup v-model="paymentType" class="mb-4">
-            <VRadio label="Cuenta por Pagar (Crédito)" value="credito" color="primary" class="mb-2" />
             <VRadio label="Pago Inmediato (Caja/Banco)" value="efectivo" color="success" class="mb-2" />
+            <VRadio label="Cuenta por Pagar (Crédito)" value="credito" color="primary" class="mb-2" />
             <VRadio label="Financiado por Socio (Aporte)" value="aporte" color="warning" />
           </VRadioGroup>
 
@@ -293,71 +272,34 @@ onMounted(() => {
             <div v-if="paymentType === 'efectivo'">
               <div class="d-flex align-center justify-space-between mb-3 border-t pt-4">
                 <span class="text-subtitle-2 font-weight-bold">Distribución del Pago:</span>
-                <VBtn
-                  color="primary"
-                  size="small"
-                  prepend-icon="ri-add-line"
-                  variant="outlined"
-                  @click="addPaymentDistribution"
-                >
+                <VBtn color="primary" size="small" prepend-icon="ri-add-line" variant="outlined"
+                  @click="addPaymentDistribution">
                   Añadir Pago
                 </VBtn>
               </div>
 
               <!-- List of Payment Distributions -->
               <div v-for="(dist, index) in paymentDistributions" :key="index" class="d-flex align-center gap-2 mb-3">
-                <VSelect
-                  v-model="dist.account_id"
-                  :items="accounts"
-                  item-title="name"
-                  item-value="id"
-                  label="Cuenta"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  :disabled="false"
-                  style="flex: 2;"
-                />
-                
-                <VSelect
-                  v-model="dist.payment_method"
-                  :items="[
-                    { title: 'Efectivo', value: 'cash' },
-                    { title: 'Transferencia', value: 'transfer' }
-                  ]"
-                  item-title="title"
-                  item-value="value"
-                  label="Método"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  style="flex: 1.5;"
-                />
+                <VSelect v-model="dist.payment_method" :items="[
+                  { title: 'Efectivo', value: 'cash' },
+                  { title: 'Transferencia', value: 'transfer' },
+                  { title: 'Depósito', value: 'deposit' }
+                ]" item-title="title" item-value="value" label="Método" variant="outlined" density="comfortable"
+                  hide-details style="flex: 1.5;" @update:model-value="onPaymentMethodChange(dist, $event)" />
 
-                <VTextField
-                  v-model.number="dist.amount"
-                  type="number"
-                  label="Monto"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  prefix="$"
-                  style="flex: 1.5;"
-                />
+                <VSelect v-model="dist.account_id" :items="accounts" item-title="name" item-value="id" label="Cuenta"
+                  variant="outlined" density="comfortable" hide-details :disabled="dist.payment_method === 'cash'" style="flex: 2;" />
 
-                <VBtn
-                  icon="ri-delete-bin-line"
-                  color="error"
-                  variant="text"
-                  size="small"
-                  :disabled="paymentDistributions.length <= 1"
-                  @click="removePaymentDistribution(index)"
-                />
+                <VTextField v-model.number="dist.amount" type="number" label="Monto" variant="outlined"
+                  density="comfortable" hide-details prefix="$" style="flex: 1.5;" />
+
+                <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small"
+                  :disabled="paymentDistributions.length <= 1" @click="removePaymentDistribution(index)" />
               </div>
 
               <!-- Balance status bar -->
               <div class="mt-4 pa-3 rounded-lg border d-flex justify-space-between align-center"
-                   :class="isPaymentBalanced ? 'bg-success-lighten-5 border-success-opacity-30' : 'bg-error-lighten-5 border-error-opacity-30'">
+                :class="isPaymentBalanced ? 'bg-success-lighten-5 border-success-opacity-30' : 'bg-error-lighten-5 border-error-opacity-30'">
                 <div>
                   <span class="text-body-2 font-weight-medium">Suma de Pagos: </span>
                   <span class="text-body-1 font-weight-bold">${{ totalPaymentsAmount.toFixed(2) }}</span>
@@ -375,38 +317,21 @@ onMounted(() => {
           <!-- Conditional Fields: PARTNER APORTE -->
           <VExpandTransition>
             <div v-if="paymentType === 'aporte'">
-              <VSelect
-                v-model="partnerId"
-                :items="partners"
-                item-title="nombre"
-                item-value="id"
-                label="Seleccionar Socio Capitalista"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-user-star-line"
-                class="mt-2"
-              />
+              <VSelect v-model="partnerId" :items="partners" item-title="nombre" item-value="id"
+                label="Seleccionar Socio Capitalista" variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-user-star-line" class="mt-2" />
             </div>
           </VExpandTransition>
 
-          <VAlert
-            v-if="paymentType === 'credito'"
-            color="primary"
-            variant="tonal"
-            icon="ri-information-line"
-            class="text-caption mt-2"
-          >
-            Se registrarán los productos en inventario y se creará una Cuenta por Pagar asociada al proveedor. No se descontará saldo de caja/bancos inmediatamente.
+          <VAlert v-if="paymentType === 'credito'" color="primary" variant="tonal" icon="ri-information-line"
+            class="text-caption mt-2">
+            Se registrarán los productos en inventario y se creará una Cuenta por Pagar asociada al proveedor. No se
+            descontará saldo de caja/bancos inmediatamente.
           </VAlert>
         </div>
 
         <!-- Alert messages -->
-        <VAlert
-          v-if="errorMsg"
-          type="error"
-          variant="tonal"
-          class="rounded-xl mt-2"
-        >
+        <VAlert v-if="errorMsg" type="error" variant="tonal" class="rounded-xl mt-2">
           {{ errorMsg }}
         </VAlert>
       </VCardText>
@@ -415,26 +340,14 @@ onMounted(() => {
 
       <!-- Footer -->
       <VCardActions class="justify-end px-6 pb-6 pt-3 bg-grey-lighten-4 border-t gap-2">
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          rounded="lg"
-          prepend-icon="ri-close-line"
-          :disabled="loader.loading"
-          @click="onFormReset"
-        >
+        <VBtn color="secondary" variant="tonal" rounded="lg" prepend-icon="ri-close-line" :disabled="loader.loading"
+          @click="onFormReset">
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="success"
-          variant="flat"
-          rounded="lg"
-          prepend-icon="ri-check-line"
-          :loading="loader.loading"
+        <VBtn color="success" variant="flat" rounded="lg" prepend-icon="ri-check-line" :loading="loader.loading"
           :disabled="hasMissingCategories || (paymentType === 'efectivo' && !isPaymentBalanced)"
-          @click="processInvoice"
-        >
+          @click="processInvoice">
           Procesar Factura
         </VBtn>
       </VCardActions>

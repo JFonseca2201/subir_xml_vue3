@@ -69,7 +69,7 @@ watch(() => formData.value.supplier_id, async (newSupplierId) => {
     products.value = []
     return
   }
-  
+
   isLoadingProducts.value = true
   try {
     const productsResp = await $api(`products?supplier_id=${newSupplierId}&per_page=1000`, { method: 'GET' })
@@ -217,7 +217,7 @@ onMounted(() => {
             <VRow>
               <VCol cols="12" md="6">
                 <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
-                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable" 
+                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable"
                   :loading="isLoadingConfig" />
               </VCol>
               <VCol cols="12" md="3">
@@ -243,11 +243,13 @@ onMounted(() => {
             <VAutocomplete v-model="searchProduct" :items="products" item-title="description" item-value="id"
               label="Buscar Producto para añadir..." placeholder="Escribe el nombre o SKU" variant="outlined"
               prepend-inner-icon="ri-search-line" return-object clearable @update:model-value="addProductToItems"
-              class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts"
-              :disabled="!formData.supplier_id">
+              class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts" :disabled="!formData.supplier_id">
               <template #no-data>
                 <div class="pa-4 text-center text-medium-emphasis">
-                  {{ formData.supplier_id ? 'No hay productos disponibles para este proveedor' : 'Seleccione un proveedor primero' }}
+                  {{
+                    formData.supplier_id ? 'No hay productos disponibles para este proveedor'
+                      : 'Seleccione un proveedor primero'
+                  }}
                 </div>
               </template>
               <template #item="{ props, item }">

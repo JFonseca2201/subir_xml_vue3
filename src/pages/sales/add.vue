@@ -519,33 +519,134 @@ const onProductSelected = product => {
   }
 }
 
-const productFilter = (value, query, item) => {
-  if (query == null || query === '') return true
+const showClientSelectDialog = ref(false)
+const clientSearchQuery = ref('')
 
-  const q = String(query).toLowerCase().trim()
-  if (!q) return true
+const showVehicleSelectDialog = ref(false)
+const vehicleSearchQuery = ref('')
 
-  const raw = item?.raw
-  if (!raw) return false
+const productSearchQuery = ref('')
+const productLimit = ref(20)
 
-  // Convertir de forma segura cada campo a texto minúscula para comparación
-  const sku = String(raw.sku || '').toLowerCase()
-  const code = String(raw.code || '').toLowerCase()
-  const name = String(raw.name || '').toLowerCase()
-  const desc = String(raw.description || '').toLowerCase()
+const clientHeaders = [
+  { title: 'Nombre', key: 'full_name', align: 'start' },
+  { title: 'Documento', key: 'n_document', align: 'start' },
+  { title: 'Email', key: 'email', align: 'start' },
+]
 
-  return sku.includes(q) || code.includes(q) || name.includes(q) || desc.includes(q)
+const vehicleHeaders = [
+  { title: 'Placa', key: 'license_plate', align: 'start' },
+  { title: 'Marca/Modelo', key: 'brand_model', align: 'start' },
+]
+
+const getClientNameById = (id) => {
+  const client = clients.value.find(c => c.id === id)
+  return getClientName(client)
 }
 
-const clientFilter = (value, query, item) => {
-  if (query == null || query === '') return true
-  const q = String(query).toLowerCase().trim()
-  const raw = item?.raw
-  if (!raw) return false
-  const n_doc = String(raw.n_document || '').toLowerCase()
-  const name = String(getClientName(raw)).toLowerCase()
+const getVehicleNameById = (id) => {
+  const v = vehicles.value.find(v => v.id === id)
+  if (!v) return ''
+  const brandId = typeof v.brand === 'object' ? v.brand?.id : v.brand
+  const brandName = brandId ? getBrandNameById(brandId) : ''
+  return `${brandName} ${v.model || ''} - ${v.license_plate || ''}`.trim()
+}
 
-  return name.includes(q) || n_doc.includes(q)
+const clientInputText = ref('')
+const vehicleInputText = ref('')
+
+watch(() => sale.value.client_id, (newVal) => {
+  if (newVal) {
+    clientInputText.value = getClientNameById(newVal)
+  } else {
+    clientInputText.value = ''
+  }
+}, { immediate: true })
+
+watch(() => sale.value.vehicle_id, (newVal) => {
+  if (newVal) {
+    vehicleInputText.value = getVehicleNameById(newVal)
+  } else {
+    vehicleInputText.value = ''
+  }
+}, { immediate: true })
+
+const handleClientSearch = () => {
+  if (!clientInputText.value) {
+    sale.value.client_id = null
+    return
+  }
+  // Si el texto ingresado es igual al nombre del cliente ya seleccionado, no hacer nada
+  if (sale.value.client_id && clientInputText.value === getClientNameById(sale.value.client_id)) {
+    return
+  }
+  
+  const q = clientInputText.value.toLowerCase().trim()
+  const matches = clients.value.filter(c => {
+    const name = getClientName(c).toLowerCase()
+    const doc = String(c.n_document || '').toLowerCase()
+    return name.includes(q) || doc.includes(q)
+  })
+
+  if (matches.length === 1) {
+    sale.value.client_id = matches[0].id
+  } else {
+    clientSearchQuery.value = clientInputText.value
+    showClientSelectDialog.value = true
+  }
+}
+
+const handleVehicleSearch = () => {
+  if (!vehicleInputText.value) {
+    sale.value.vehicle_id = null
+    return
+  }
+  // Si el texto ingresado es igual al nombre del vehículo ya seleccionado, no hacer nada
+  if (sale.value.vehicle_id && vehicleInputText.value === getVehicleNameById(sale.value.vehicle_id)) {
+    return
+  }
+  
+  const q = vehicleInputText.value.toLowerCase().trim()
+  const matches = vehicles.value.filter(v => {
+    const name = getVehicleNameById(v.id).toLowerCase()
+    const plate = String(v.license_plate || '').toLowerCase()
+    return name.includes(q) || plate.includes(q)
+  })
+
+  if (matches.length === 1) {
+    sale.value.vehicle_id = matches[0].id
+  } else {
+    vehicleSearchQuery.value = vehicleInputText.value
+    showVehicleSelectDialog.value = true
+  }
+}
+
+const filteredProducts = computed(() => {
+  if (!productSearchQuery.value) return products.value
+  const query = String(productSearchQuery.value).toLowerCase().trim()
+  return products.value.filter(p => {
+    const raw = p.raw || p
+    const sku = String(raw.sku || '').toLowerCase()
+    const code = String(raw.code || '').toLowerCase()
+    const name = String(raw.name || '').toLowerCase()
+    const desc = String(raw.description || '').toLowerCase()
+    return sku.includes(query) || code.includes(query) || name.includes(query) || desc.includes(query)
+  })
+})
+
+const limitedProducts = computed(() => {
+  return filteredProducts.value.slice(0, productLimit.value)
+})
+
+const onProductSearch = (val) => {
+  productSearchQuery.value = val || ''
+  productLimit.value = 20
+}
+
+const loadMoreProducts = (isIntersecting) => {
+  if (isIntersecting && productLimit.value < filteredProducts.value.length) {
+    productLimit.value += 20
+  }
 }
 
 // Cálculos
@@ -614,7 +715,7 @@ const selectedVehicle = computed(() => {
 watch(() => sale.value.vehicle_id, (newVal) => {
   if (isLoading.value) return // Ignorar durante la carga inicial
 
-  if (newVal) {
+  if (newVal && !sale.value.client_id) {
     const selectedVeh = vehicles.value.find(v => v.id === newVal)
     if (selectedVeh && selectedVeh.client_id) {
       sale.value.client_id = selectedVeh.client_id
@@ -1164,15 +1265,21 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
-                    <VAutocomplete v-model="sale.client_id" :loading="isLoading" :items="clients"
-                      :item-title="getClientName" item-value="id" label="Cliente *" :rules="[requiredRule]"
-                      variant="outlined" density="comfortable" prepend-inner-icon="ri-user-line" hide-details="auto"
-                      required placeholder="Buscar cliente..." clearable color="primary" :custom-filter="clientFilter"
-                      class="flex-grow-1">
-                      <template #item="{ props, item }">
-                        <VListItem v-bind="props" :title="getClientName(item.raw)" :subtitle="item.raw?.n_document" />
-                      </template>
-                    </VAutocomplete>
+                    <VTextField
+                      v-model="clientInputText"
+                      label="Cliente *"
+                      prepend-inner-icon="ri-user-line"
+                      append-inner-icon="ri-search-line"
+                      variant="outlined"
+                      density="comfortable"
+                      clearable
+                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']"
+                      @keyup.enter="handleClientSearch"
+                      @blur="handleClientSearch"
+                      @click:append-inner="showClientSelectDialog = true"
+                      @click:clear="sale.client_id = null"
+                    >
+                    </VTextField>
                     <VBtn icon size="40" color="primary" variant="tonal">
                       <VIcon icon="ri-add-line" size="20" />
                       <VMenu activator="parent">
@@ -1199,17 +1306,20 @@ onMounted(async () => {
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
-                    <VAutocomplete v-model="sale.vehicle_id" :loading="isLoading" :items="vehicles"
-                      :item-title="(item) => `${getBrandNameById(item.brand)} ${item.model} - ${item.license_plate}`"
-                      item-value="id" label="Vehículo (Opcional)" variant="outlined" density="comfortable"
-                      prepend-inner-icon="ri-car-line" hide-details="auto" placeholder="Seleccionar vehículo" clearable
-                      class="flex-grow-1">
-                      <template #item="{ props, item }">
-                        <VListItem v-bind="props"
-                          :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''}`.trim()"
-                          :subtitle="item.raw.license_plate" />
-                      </template>
-                    </VAutocomplete>
+                    <VTextField
+                      v-model="vehicleInputText"
+                      label="Vehículo (Opcional)"
+                      prepend-inner-icon="ri-car-line"
+                      append-inner-icon="ri-search-line"
+                      variant="outlined"
+                      density="comfortable"
+                      clearable
+                      @keyup.enter="handleVehicleSearch"
+                      @blur="handleVehicleSearch"
+                      @click:append-inner="showVehicleSelectDialog = true"
+                      @click:clear="sale.vehicle_id = null"
+                    >
+                    </VTextField>
                     <VBtn color="success" variant="tonal" icon="ri-add-line"
                       @click="isVehicleAddDialogVisible = true" />
                   </div>
@@ -1261,9 +1371,9 @@ onMounted(async () => {
               </div>
               <div class="d-flex align-center gap-3 mb-4">
                 <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
-                  :items="products" item-title="displayTitle" return-object
+                  :items="limitedProducts" item-title="displayTitle" return-object
                   label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
-                  variant="outlined" clearable :custom-filter="productFilter" @update:model-value="onProductSelected"
+                  variant="outlined" clearable :custom-filter="() => true" @update:search="onProductSearch" @update:model-value="onProductSelected"
                   class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
@@ -1275,6 +1385,11 @@ onMounted(async () => {
                         Código/SKU: {{ item.raw.code || item.raw.sku }}
                       </VListItemSubtitle>
                     </VListItem>
+                  </template>
+                  <template #append-item>
+                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts" class="pa-4 text-center">
+                      <VProgressCircular indeterminate size="24" color="primary" />
+                    </div>
                   </template>
                 </VAutocomplete>
                 <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56"
@@ -1600,6 +1715,58 @@ onMounted(async () => {
     <!-- Dialog para agregar servicio express -->
     <AddServiceDialog :is-dialog-visible="isAddServiceDialogVisible"
       @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
+
+    <!-- Dialogo para Seleccionar Cliente -->
+    <VDialog v-model="showClientSelectDialog" max-width="800">
+      <VCard>
+        <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4">
+          <span class="text-h6 font-weight-bold">Seleccionar Cliente</span>
+          <VBtn icon="ri-close-line" variant="text" @click="showClientSelectDialog = false" />
+        </VCardTitle>
+        <VCardText class="pa-4">
+          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable
+            :items="clients"
+            :search="clientSearchQuery"
+            :headers="clientHeaders"
+            :items-per-page="10"
+            hover
+            class="elevation-1 cursor-pointer"
+            @click:row="(event, { item }) => { sale.client_id = item.id; showClientSelectDialog = false; }"
+          >
+            <template #item.full_name="{ item }">
+              {{ getClientName(item) }}
+            </template>
+          </VDataTable>
+        </VCardText>
+      </VCard>
+    </VDialog>
+
+    <!-- Dialogo para Seleccionar Vehículo -->
+    <VDialog v-model="showVehicleSelectDialog" max-width="800">
+      <VCard>
+        <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4">
+          <span class="text-h6 font-weight-bold">Seleccionar Vehículo</span>
+          <VBtn icon="ri-close-line" variant="text" @click="showVehicleSelectDialog = false" />
+        </VCardTitle>
+        <VCardText class="pa-4">
+          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable
+            :items="vehicles"
+            :search="vehicleSearchQuery"
+            :headers="vehicleHeaders"
+            :items-per-page="10"
+            hover
+            class="elevation-1 cursor-pointer"
+            @click:row="(event, { item }) => { sale.vehicle_id = item.id; showVehicleSelectDialog = false; }"
+          >
+            <template #item.brand_model="{ item }">
+              {{ getBrandNameById(item.brand) }} {{ item.model || '' }}
+            </template>
+          </VDataTable>
+        </VCardText>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 

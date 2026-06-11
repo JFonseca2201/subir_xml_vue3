@@ -449,7 +449,7 @@ onMounted(() => {
           <div class="d-flex align-center">
             <VIcon icon="ri-truck-line" color="primary" class="mr-2" />
             <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0')
-              }}</span>
+            }}</span>
           </div>
           <VMenu close-on-content-click>
             <template #activator="{ props }">
