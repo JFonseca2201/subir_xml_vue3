@@ -1001,6 +1001,18 @@ onMounted(() => {
                       }}</div>
                     </div>
                   </div>
+                  <div class="mt-4">
+                    <VAutocomplete v-model="sale.technicians" :items="employees" :disabled="sale.status === 'canceled'"
+                      :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
+                      item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
+                      density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
+                      :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
+                      persistent-hint class="fix-notch-bug">
+                      <template #chip="{ props, item }">
+                        <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
+                      </template>
+                    </VAutocomplete>
+                  </div>
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
@@ -1036,18 +1048,6 @@ onMounted(() => {
                       type="number" variant="outlined" density="comfortable" prepend-inner-icon="ri-dashboard-3-line"
                       hide-details="auto" color="primary" />
                   </div>
-                </VCol>
-                <VCol cols="6" class="mt-3">
-                  <VAutocomplete v-model="sale.technicians" :items="employees" :disabled="sale.status === 'canceled'"
-                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
-                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
-                    density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
-                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint class="fix-notch-bug">
-                    <template #chip="{ props, item }">
-                      <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
-                    </template>
-                  </VAutocomplete>
                 </VCol>
               </VRow>
             </VCardText>

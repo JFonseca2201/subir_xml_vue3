@@ -94,21 +94,12 @@ const onCreditChange = () => {
   }
 }
 
-const lastOtNumber = ref(0)
-const lastCotNumber = ref(0)
-const lastSaleNumber = ref(0)
+// Variable reactiva para almacenar el número real desde el backend
+const nextGlobalNumber = ref('')
 
-// Generar número de documento secuencial
+// Generar número de documento
 const generateDocumentNumber = type => {
-  if (type === 'quote') {
-    const newNumber = lastCotNumber.value + 1
-
-    return 'COT-' + String(newNumber).padStart(7, '0')
-  } else {
-    const newNumber = lastSaleNumber.value + 1
-
-    return 'V-' + String(newNumber).padStart(7, '0')
-  }
+  return nextGlobalNumber.value || '000000000'
 }
 
 const isLinkedToWorkOrder = computed(() => !!sale.value.work_order_id)
@@ -299,14 +290,15 @@ const loadInitialData = async () => {
   isLoading.value = true
   try {
     // Cargar datos en paralelo con menos registros para mejorar rendimiento
-    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes] = await Promise.all([
+    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
       $api('clients', { params: { per_page: 1000 } }),
       $api('vehicles', { params: { per_page: 1000 } }),
       $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 100 } }),
-      $api('sales', { params: { per_page: 1000 } }), // Elevado a 1000 para evitar duplicados en la numeración correlativa
-      $api('work-orders'),
+      $api('sales', { params: { per_page: 1 } }), // Reducido ya que no calculamos la secuencia manualmente
+      $api('work-orders', { params: { per_page: 1 } }),
       $api('employees', { params: { per_page: 1000 } }),
+      $api('sales/next-number'),
     ])
 
     const extractArray = (res, key) => {
@@ -350,48 +342,8 @@ const loadInitialData = async () => {
     accounts.value = extractArray(accountsRes, 'accounts')
     employees.value = extractArray(employeesRes, 'employees')
 
-    // Obtener el último número OT- (ventas + órdenes de trabajo) y COT-
-    const sales = extractArray(salesRes, 'data')
-    const workOrders = extractArray(workOrdersRes, 'data')
-    let maxOt = 0
-    let maxCot = 0
-
-    const updateMaxOt = number => {
-      const match = number?.match(/OT-?(\d+)/i)
-      if (match) {
-        const num = parseInt(match[1])
-        if (num > maxOt) maxOt = num
-      }
-    }
-
-    if (sales?.length) {
-      for (const s of sales) {
-        if (s.document_number?.toUpperCase().startsWith('OT-')) {
-          updateMaxOt(s.document_number)
-        } else if (s.document_number?.toUpperCase().startsWith('COT-')) {
-          const match = s.document_number.match(/COT-?(\d+)/i)
-          if (match) {
-            const num = parseInt(match[1])
-            if (num > maxCot) maxCot = num
-          }
-        } else if (s.document_number?.toUpperCase().startsWith('V-')) {
-          const match = s.document_number.match(/V-?(\d+)/i)
-          if (match) {
-            const num = parseInt(match[1])
-            if (num > lastSaleNumber.value) lastSaleNumber.value = num
-          }
-        }
-      }
-    }
-
-    if (workOrders?.length) {
-      for (const wo of workOrders) {
-        updateMaxOt(wo.number)
-      }
-    }
-
-    lastOtNumber.value = maxOt
-    lastCotNumber.value = maxCot
+    // Asignar el correlativo global desde el backend
+    nextGlobalNumber.value = nextNumberRes?.data || '000000000'
 
     sale.value.document_number = generateDocumentNumber(sale.value.document_type)
 
@@ -1238,7 +1190,7 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
-                    required color="primary" :readonly="isLinkedToWorkOrder"
+                    required color="primary" :readonly="isLinkedToWorkOrder" :loading="isLoading"
                     :hint="isLinkedToWorkOrder ? 'Vinculado a la orden de trabajo' : undefined" persistent-hint />
                 </VCol>
                 <VCol cols="12" sm="6">
@@ -1303,6 +1255,18 @@ onMounted(async () => {
                       }}</div>
                     </div>
                   </div>
+                  <div class="mt-4">
+                    <VAutocomplete v-model="sale.technicians" :items="employees"
+                      :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
+                      item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
+                      density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
+                      :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
+                      persistent-hint class="fix-notch-bug">
+                      <template #chip="{ props, item }">
+                        <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
+                      </template>
+                    </VAutocomplete>
+                  </div>
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
@@ -1339,18 +1303,6 @@ onMounted(async () => {
                       density="comfortable" prepend-inner-icon="ri-dashboard-3-line" hide-details="auto"
                       color="primary" />
                   </div>
-                </VCol>
-                <VCol cols="6">
-                  <VAutocomplete v-model="sale.technicians" :items="employees"
-                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
-                    item-value="id" label="Técnicos" prepend-inner-icon="ri-user-settings-line" variant="outlined"
-                    density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
-                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint class="fix-notch-bug">
-                    <template #chip="{ props, item }">
-                      <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
-                    </template>
-                  </VAutocomplete>
                 </VCol>
               </VRow>
             </VCardText>

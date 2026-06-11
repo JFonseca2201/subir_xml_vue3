@@ -65,12 +65,13 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [clientsRes, vehiclesRes, productsRes, employeesRes, workOrdersRes] = await Promise.all([
+    const [clientsRes, vehiclesRes, productsRes, employeesRes, workOrdersRes, nextNumberRes] = await Promise.all([
       $api('clients', { params: { per_page: 1000 } }),
       $api('vehicles', { params: { per_page: 1000 } }),
       $api('products', { params: { per_page: 1000 } }),
       $api('employees', { params: { per_page: 1000 } }),
       $api('work-orders'),
+      $api('work-orders/next-number'),
     ])
 
     console.log('Clients response:', clientsRes)
@@ -93,19 +94,8 @@ const loadInitialData = async () => {
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
 
-    const workOrdersList = Array.isArray(workOrdersRes.data) ? workOrdersRes.data :
-      (Array.isArray(workOrdersRes) ? workOrdersRes : [])
-    let maxOtNumber = 0
-    for (const wo of workOrdersList) {
-      if (wo.number?.toUpperCase().startsWith('OT-')) {
-        const match = wo.number.match(/OT-?(\d+)/i)
-        if (match) {
-          const num = parseInt(match[1])
-          if (num > maxOtNumber) maxOtNumber = num
-        }
-      }
-    }
-    workOrder.value.number = 'OT-' + String(maxOtNumber + 1).padStart(7, '0')
+    // Usamos el número que entrega el backend directamente
+    workOrder.value.number = nextNumberRes?.data || '000000000'
 
     console.log('Clients loaded:', clients.value.length)
     console.log('Vehicles loaded:', vehicles.value.length)
@@ -487,7 +477,7 @@ onMounted(() => {
               <VCol cols="12" md="4">
                 <div class="mb-4">
                   <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
-                    variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" />
+                    variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" :loading="isLoading" />
                 </div>
               </VCol>
 
