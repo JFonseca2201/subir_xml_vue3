@@ -231,7 +231,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog v-model="dialogVisible" max-width="1200" transition="dialog-bottom-transition">
+  <VDialog v-model="dialogVisible" max-width="1400" transition="dialog-bottom-transition">
     <VCard class="rounded-xl" style="text-transform: uppercase;">
       <!-- 🔄 Overlay global -->
       <VOverlay :model-value="isLoading" class="align-center justify-center" contained persistent>
@@ -378,7 +378,7 @@ onMounted(() => {
                 <th style="width: 50px">
                   #
                 </th>
-                <th style="width: 150px">
+                <th style="width: 250px">
                   Código
                 </th>
                 <th style="width: 450px">
@@ -444,11 +444,11 @@ onMounted(() => {
                 <td class="font-weight-medium">
                   <VTooltip location="top" open-on-hover>
                     <template #activator="{ props: tooltipProps }">
-                      <small class="text-medium-emphasis" v-bind="tooltipProps">
-                        {{ truncate(item.code, 20) }}
+                      <small class="text-medium-emphasis font-weight-bold" v-bind="tooltipProps">
+                        {{ truncate(item.code, 40) }}
                       </small>
                     </template>
-                    <span>{{ item.code }}</span> <!-- hora: HH:MM:SS -->
+                    <span>{{ item.code }}</span>
                   </VTooltip>
                 </td>
                 <td class=" text-medium-emphasis">

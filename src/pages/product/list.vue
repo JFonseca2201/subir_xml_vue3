@@ -426,7 +426,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   <div class="font-weight-bold text-subtitle-1 text-success">
                     ${{ item.price_sale?.toFixed(2) || '0.00' }}
                   </div>
-                  <div v-if="item.discount_percentage > 0" class="text-caption text-warning">
+                  <div class="text-caption text-success font-weight-medium" style="opacity: 0.8;">
+                    + IVA: ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
+                  </div>
+                  <div v-if="item.discount_percentage > 0" class="text-caption text-warning mt-1">
                     {{ item.discount_percentage }}% desc
                   </div>
                 </td>

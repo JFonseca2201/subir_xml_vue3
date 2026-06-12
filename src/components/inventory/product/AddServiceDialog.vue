@@ -53,13 +53,13 @@ const loadConfig = async () => {
     const resp = await $api('products/config', { method: 'GET' })
     if (resp && resp.data) {
       categories.value = resp.data.categories || []
-      
+
       // Intentar encontrar la categoría "SERVICIOS" o "SERVICIO"
-      const serviceCat = categories.value.find(c => 
-        c.title?.toUpperCase().includes('SERVICIO') || 
+      const serviceCat = categories.value.find(c =>
+        c.title?.toUpperCase().includes('SERVICIO') ||
         c.title?.toUpperCase().includes('MANO DE OBRA')
       )
-      
+
       if (serviceCat) {
         defaultCategorieId.value = serviceCat.id
       } else if (categories.value.length > 0) {
@@ -137,7 +137,7 @@ const saveService = async () => {
 
     showNotification('Servicio express creado exitosamente', 'success')
     resetForm()
-    
+
     // Esperar un instante corto para que se muestre la notificación y luego cerrar
     setTimeout(() => {
       emit('update:isDialogVisible', false)
@@ -158,25 +158,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
-    max-width="550"
-    :model-value="props.isDialogVisible"
-    persistent
-    @update:model-value="closeDialog"
-  >
+  <VDialog max-width="550" :model-value="props.isDialogVisible" persistent @update:model-value="closeDialog">
     <VCard class="pa-sm-8 pa-4 rounded-lg">
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
+      <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
 
       <VCardText class="text-center pb-4">
         <VAvatar color="info" variant="tonal" size="64" class="mb-3">
-          <VIcon
-            icon="ri-tools-line"
-            size="36"
-          />
+          <VIcon icon="ri-tools-line" size="36" />
         </VAvatar>
         <h4 class="text-h4 font-weight-bold mb-1">
           Registrar Servicio Express
@@ -188,39 +176,18 @@ onMounted(() => {
 
       <VDivider class="mb-6" />
 
-      <VForm
-        ref="formRef"
-        @submit.prevent="saveService"
-      >
+      <VForm ref="formRef" @submit.prevent="saveService">
         <VRow>
           <VCol cols="12">
-            <VTextField
-              v-model="serviceForm.description"
-              label="Descripción del Servicio *"
-              placeholder="Ej. CAMBIO DE ACEITE Y FILTRO"
-              prepend-inner-icon="ri-tools-line"
-              :rules="rules.description"
-              variant="outlined"
-              density="comfortable"
-              required
-            />
+            <VTextField v-model="serviceForm.description" label="Descripción del Servicio *"
+              placeholder="Ej. CAMBIO DE ACEITE Y FILTRO" prepend-inner-icon="ri-tools-line" :rules="rules.description"
+              variant="outlined" density="comfortable" required />
           </VCol>
 
           <VCol cols="12" sm="6">
-            <VTextField
-              v-model="serviceForm.price_sale"
-              label="Precio de Venta *"
-              placeholder="0.00"
-              prefix="$"
-              prepend-inner-icon="ri-money-dollar-circle-line"
-              :rules="rules.price_sale"
-              variant="outlined"
-              density="comfortable"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-            />
+            <VTextField v-model="serviceForm.price_sale" label="Precio de Venta *" placeholder="0.00" prefix="$"
+              prepend-inner-icon="ri-money-dollar-circle-line" :rules="rules.price_sale" variant="outlined"
+              density="comfortable" type="number" step="0.01" min="0" required />
           </VCol>
 
           <VCol cols="12" sm="6" class="d-flex align-center justify-space-between pl-sm-6">
@@ -228,45 +195,20 @@ onMounted(() => {
               <span class="text-subtitle-2 font-weight-bold">Grava IVA (15%)</span>
               <span class="text-caption text-medium-emphasis">¿Aplica impuestos al servicio?</span>
             </div>
-            <VSwitch
-              v-model="serviceForm.is_taxable"
-              color="primary"
-              hide-details
-            />
+            <VSwitch v-model="serviceForm.is_taxable" color="primary" hide-details />
           </VCol>
 
-          <VCol
-            v-if="error"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-              class="ma-0 text-caption"
-            >
+          <VCol v-if="error" cols="12">
+            <VAlert type="error" variant="tonal" closable class="ma-0 text-caption">
               {{ error }}
             </VAlert>
           </VCol>
 
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              :disabled="loading"
-              @click="closeDialog"
-            >
+          <VCol cols="12" class="d-flex justify-end gap-3 mt-4">
+            <VBtn variant="outlined" color="secondary" :disabled="loading" @click="closeDialog">
               Cancelar
             </VBtn>
-            <VBtn
-              type="submit"
-              color="primary"
-              :loading="loading"
-              prepend-icon="ri-save-3-line"
-            >
+            <VBtn type="submit" color="primary" :loading="loading" prepend-icon="ri-save-3-line">
               Guardar Servicio
             </VBtn>
           </VCol>
@@ -275,12 +217,7 @@ onMounted(() => {
     </VCard>
   </VDialog>
 
-  <VSnackbar
-    v-model="notificationShow"
-    :color="notificationType"
-    :timeout="2000"
-    location="top"
-  >
+  <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="2000" location="top">
     {{ notificationMessage }}
   </VSnackbar>
 </template>

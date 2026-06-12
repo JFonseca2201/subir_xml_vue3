@@ -42,12 +42,21 @@
                 <h3 class="text-h6 font-weight-bold mb-2">
                   {{ product.description }}
                 </h3>
-                <div class="info-chips">
+                <div class="info-chips d-flex flex-wrap gap-2 justify-center">
                   <VChip size="x-small" color="primary" variant="tonal">
                     SKU: {{ product.sku }}
                   </VChip>
                   <VChip v-if="product.code_aux" size="x-small" color="grey" variant="tonal">
                     Código: {{ product.code_aux }}
+                  </VChip>
+                  <VChip :color="product.state === 1 ? 'success' : 'error'" size="x-small" variant="flat">
+                    {{ product.state === 1 ? 'Activo' : 'Inactivo' }}
+                  </VChip>
+                  <VChip v-if="product.is_gift === 1" color="warning" size="x-small" variant="tonal">
+                    <VIcon icon="ri-gift-line" size="12" class="mr-1"/> Regalo
+                  </VChip>
+                  <VChip v-if="product.is_taxable" color="info" size="x-small" variant="tonal">
+                    Gravable
                   </VChip>
                 </div>
               </div>
@@ -127,171 +136,108 @@
         </VRow>
 
         <!-- Precios -->
-        <VCard class="mb-6" elevation="1">
-          <VCardText class="pa-4">
-            <div class="section-title">
-              <VIcon icon="ri-money-dollar-circle-line" size="20" color="success" />
-              Información de Precios
-            </div>
-            <VDivider class="mb-4" />
+        <div class="mb-6">
+          <div class="section-title mb-2">
+            <VIcon icon="ri-money-dollar-circle-line" size="20" color="success" />
+            Información de Precios
+          </div>
+          <VDivider class="mb-4" />
 
-            <div class="price-grid">
-              <div class="price-item">
-                <div class="price-label">
-                  Precio Base
-                </div>
-                <div class="price-value">
-                  ${{ product.price?.toFixed(2) || '0.00' }}
-                </div>
+          <div class="price-grid">
+            <div class="price-item">
+              <div class="price-label">
+                Precio Compra (Sin IVA)
               </div>
-              <div class="price-item highlight">
-                <div class="price-label">
-                  Precio Venta
-                </div>
-                <div class="price-value">
-                  ${{ product.price_sale?.toFixed(2) || '0.00' }}
-                </div>
-              </div>
-              <div class="price-item">
-                <div class="price-label">
-                  Precio Compra
-                </div>
-                <div class="price-value">
-                  ${{ product.purchase_price?.toFixed(2) || '0.00' }}
-                </div>
-              </div>
-              <div class="price-item">
-                <div class="price-label">
-                  Descuento Máx
-                </div>
-                <div class="price-value">
-                  ${{ product.max_discount?.toFixed(2) || '0.00' }}
-                </div>
-                <div v-if="product.discount_percentage > 0" class="price-discount">
-                  {{ product.discount_percentage }}%
-                </div>
+              <div class="price-value">
+                ${{ product.purchase_price?.toFixed(2) || '0.00' }}
               </div>
             </div>
-          </VCardText>
-        </VCard>
+            <div class="price-item" style="border-left: 3px solid var(--v-theme-primary); background-color: rgb(var(--v-theme-primary), 0.03);">
+              <div class="price-label text-primary font-weight-bold">
+                Precio Compra (+ IVA)
+              </div>
+              <div class="price-value text-primary">
+                ${{ (product.purchase_price * (1 + (product.tax_rate || 0) / 100)).toFixed(2) }}
+              </div>
+            </div>
+            <div class="price-item highlight">
+              <div class="price-label">
+                Precio Venta (Sin IVA)
+              </div>
+              <div class="price-value">
+                ${{ product.price_sale?.toFixed(2) || '0.00' }}
+              </div>
+            </div>
+            <div class="price-item highlight" style="border-left: 3px solid var(--v-theme-success); background-color: rgb(var(--v-theme-success), 0.05);">
+              <div class="price-label text-success font-weight-bold">
+                Precio Venta (+ IVA)
+              </div>
+              <div class="price-value text-success">
+                ${{ (product.price_sale * (1 + (product.tax_rate || 0) / 100)).toFixed(2) }}
+              </div>
+            </div>
+            <div class="price-item">
+              <div class="price-label">
+                Descuento Máx
+              </div>
+              <div class="price-value">
+                ${{ product.max_discount?.toFixed(2) || '0.00' }}
+              </div>
+              <div v-if="product.discount_percentage > 0" class="price-discount">
+                {{ product.discount_percentage }}%
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <!-- Inventario -->
-        <VCard class="mb-6" elevation="1">
-          <VCardText class="pa-4">
-            <div class="section-title">
-              <VIcon icon="ri-archive-line" size="20" color="primary" />
-              Información de Inventario
-            </div>
-            <VDivider class="mb-4" />
+        <!-- Inventario Simplificado -->
+        <div class="mb-6">
+          <div class="section-title mb-2">
+            <VIcon icon="ri-archive-line" size="20" color="primary" />
+            Inventario
+          </div>
+          <VDivider class="mb-4" />
 
-            <div class="inventory-grid">
-              <div class="inventory-item" :class="getStockClass(product.stock, product.min_stock)">
-                <div class="inventory-label">
-                  Stock Actual
-                </div>
-                <div class="inventory-value">
-                  {{ product.stock || 0 }}
-                </div>
-                <div class="inventory-range">
-                  Min: {{ product.min_stock || 0 }} | Max: {{ product.max_stock || 0 }}
-                </div>
+          <div class="inventory-grid">
+            <div class="inventory-item" :class="getStockClass(product.stock, product.min_stock)">
+              <div class="inventory-label">
+                Stock Actual
               </div>
-              <div class="inventory-item">
-                <div class="inventory-label">
-                  Impuesto
-                </div>
-                <div class="inventory-value">
-                  {{ product.tax_rate || 0 }}%
-                </div>
+              <div class="inventory-value">
+                {{ product.stock || 0 }}
+              </div>
+              <div class="inventory-range">
+                Min: {{ product.min_stock || 0 }} | Max: {{ product.max_stock || 0 }}
               </div>
             </div>
-          </VCardText>
-        </VCard>
-
-        <!-- Configuración -->
-        <VCard class="mb-6" elevation="1">
-          <VCardText class="pa-4">
-            <div class="section-title">
-              <VIcon icon="ri-settings-3-line" size="20" color="primary" />
-              Configuración
-            </div>
-            <VDivider class="mb-4" />
-
-            <div class="config-grid">
-              <div class="config-item">
-                <div class="config-label">
-                  <VIcon icon="ri-receipt-line" size="16" />
-                  Gravable
-                </div>
-                <VChip :color="product.is_taxable ? 'success' : 'error'" size="small" variant="tonal">
-                  {{ product.is_taxable ? 'Sí' : 'No' }}
-                </VChip>
+            <div class="inventory-item">
+              <div class="inventory-label">
+                Impuesto Aplicado
               </div>
-              <div class="config-item">
-                <div class="config-label">
-                  <VIcon icon="ri-gift-line" size="16" />
-                  Es Regalo
-                </div>
-                <VChip :color="product.is_gift === 1 ? 'warning' : 'grey'" size="small" variant="tonal">
-                  {{ product.is_gift === 1 ? 'Sí' : 'No' }}
-                </VChip>
-              </div>
-              <div class="config-item">
-                <div class="config-label">
-                  <VIcon icon="ri-checkbox-circle-line" size="16" />
-                  Estado
-                </div>
-                <VChip :color="product.state === 1 ? 'success' : 'error'" size="small" variant="tonal">
-                  {{ product.state === 1 ? 'Activo' : 'Inactivo' }}
-                </VChip>
+              <div class="inventory-value">
+                {{ product.tax_rate || 0 }}%
               </div>
             </div>
-          </VCardText>
-        </VCard>
+          </div>
+        </div>
 
         <!-- Notas -->
-        <VCard v-if="product.notes" class="mb-6" elevation="1">
-          <VCardText class="pa-4">
-            <div class="section-title">
-              <VIcon icon="ri-file-text-line" size="20" color="primary" />
-              Notas Adicionales
-            </div>
-            <VDivider class="mb-3" />
-            <div class="notes-content">
-              {{ product.notes }}
-            </div>
-          </VCardText>
-        </VCard>
+        <div v-if="product.notes" class="mb-6">
+          <div class="section-title mb-2">
+            <VIcon icon="ri-file-text-line" size="20" color="primary" />
+            Notas Adicionales
+          </div>
+          <VDivider class="mb-3" />
+          <div class="notes-content bg-grey-lighten-4 pa-4 rounded-lg text-body-2">
+            {{ product.notes }}
+          </div>
+        </div>
 
-        <!-- Fechas -->
-        <VCard elevation="1">
-          <VCardText class="pa-4">
-            <div class="section-title">
-              <VIcon icon="ri-calendar-line" size="20" color="primary" />
-              Información de Registro
-            </div>
-            <VDivider class="mb-4" />
-
-            <div class="dates-grid">
-              <div class="date-item">
-                <div class="date-label">
-                  Fecha de Creación
-                </div>
-                <div class="date-value">
-                  {{ formatDate(product.created_at) }}
-                </div>
-              </div>
-              <div class="date-item">
-                <div class="date-label">
-                  Última Actualización
-                </div>
-                <div class="date-value">
-                  {{ formatDate(product.updated_at) }}
-                </div>
-              </div>
-            </div>
-          </VCardText>
-        </VCard>
+        <!-- Fechas en el pie -->
+        <div class="d-flex flex-wrap align-center justify-space-between mt-6 pt-4 border-t text-caption text-medium-emphasis">
+          <span><VIcon icon="ri-calendar-event-line" size="14" class="mr-1"/> Creado: {{ formatDate(product.created_at) }}</span>
+          <span><VIcon icon="ri-edit-line" size="14" class="mr-1"/> Actualizado: {{ formatDate(product.updated_at) }}</span>
+        </div>
       </VCardText>
 
       <VDivider />
