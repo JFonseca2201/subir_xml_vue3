@@ -262,10 +262,10 @@ body .layout-wrapper.layout-nav-type-vertical .layout-page-content {
 @media (max-width: 1279px) {
   .layout-vertical-nav {
     &:not(.visible) {
-      transform: translateX(-#{variables.$layout-vertical-nav-width});
+      transform: translateX(calc(-100% - 2rem));
 
       @include mixins.rtl {
-        transform: translateX(variables.$layout-vertical-nav-width);
+        transform: translateX(calc(100% + 2rem));
       }
     }
 
