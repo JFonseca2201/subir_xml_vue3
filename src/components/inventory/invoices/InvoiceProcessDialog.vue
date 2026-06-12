@@ -288,7 +288,8 @@ onMounted(() => {
                   hide-details style="flex: 1.5;" @update:model-value="onPaymentMethodChange(dist, $event)" />
 
                 <VSelect v-model="dist.account_id" :items="accounts" item-title="name" item-value="id" label="Cuenta"
-                  variant="outlined" density="comfortable" hide-details :disabled="dist.payment_method === 'cash'" style="flex: 2;" />
+                  variant="outlined" density="comfortable" hide-details :disabled="dist.payment_method === 'cash'"
+                  style="flex: 2;" />
 
                 <VTextField v-model.number="dist.amount" type="number" label="Monto" variant="outlined"
                   density="comfortable" hide-details prefix="$" style="flex: 1.5;" />
