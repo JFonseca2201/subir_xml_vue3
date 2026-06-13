@@ -448,7 +448,8 @@ onMounted(() => {
     <!-- Encabezado de la página -->
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
-        <h1 class="text-h4 font-weight-medium mb-1 text-grey-darken-4">
+        <h1 class="text-h4 font-weight-medium mb-1 text-grey-darken-4 d-flex align-center gap-2">
+          <VIcon icon="ri-price-tag-3-line" color="primary" />
           Ventas y Cotizaciones
         </h1>
         <p class="text-medium-emphasis mb-0 text-body-1">
