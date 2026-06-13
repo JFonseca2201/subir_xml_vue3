@@ -200,9 +200,6 @@ onMounted(() => {
           </h2>
           <span class="text-medium-emphasis">Registra una factura física y actualiza stock/finanzas</span>
         </div>
-        <VBtn variant="tonal" color="secondary" prepend-icon="ri-arrow-left-line" @click="router.back()">
-          Regresar
-        </VBtn>
       </VCol>
     </VRow>
 
@@ -267,12 +264,12 @@ onMounted(() => {
             <VTable class="border rounded">
               <thead class="bg-grey-lighten-4">
                 <tr>
-                  <th style="width: 35%">Producto</th>
-                  <th style="width: 10%">Cantidad</th>
-                  <th style="width: 15%">Costo Unit.</th>
-                  <th style="width: 15%">Desc.</th>
-                  <th style="width: 15%">Subtotal</th>
-                  <th style="width: 10%" class="text-center">Acción</th>
+                  <th style="width: 35%">PRODUCTO</th>
+                  <th style="width: 10%">CANT.</th>
+                  <th style="width: 15%">P.U.</th>
+                  <th style="width: 15%">DCTO.</th>
+                  <th style="width: 15%">SUBTOT.</th>
+                  <th style="width: 10%" class="text-center">ACCIÓN</th>
                 </tr>
               </thead>
               <tbody>

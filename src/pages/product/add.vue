@@ -356,8 +356,6 @@ const loadInitialData = async () => {
               el catálogo</span>
           </div>
         </div>
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/product/list" class="align-self-md-center align-self-end">Volver al Listado
-        </VBtn>
       </div>
 
       <VForm ref="formRef" @submit.prevent="store">
@@ -492,7 +490,8 @@ const loadInitialData = async () => {
                     <VCol cols="12" sm="6">
                       <VTextField v-model="product.discount" :rules="discountRules" label="Descuento Inicial ($)"
                         placeholder="0.00" variant="outlined" density="comfortable"
-                        prepend-inner-icon="ri-money-dollar-circle-line" hide-details="auto" type="number" step="0.01" min="0" />
+                        prepend-inner-icon="ri-money-dollar-circle-line" hide-details="auto" type="number" step="0.01"
+                        min="0" />
                     </VCol>
                     <VCol cols="12" sm="6">
                       <VTextField v-model="product.tax_rate" :rules="percentageRules" label="Impuesto (%)"

@@ -532,7 +532,7 @@ const handleClientSearch = () => {
   if (sale.value.client_id && clientInputText.value === getClientNameById(sale.value.client_id)) {
     return
   }
-  
+
   const q = clientInputText.value.toLowerCase().trim()
   const matches = clients.value.filter(c => {
     const name = getClientName(c).toLowerCase()
@@ -557,7 +557,7 @@ const handleVehicleSearch = () => {
   if (sale.value.vehicle_id && vehicleInputText.value === getVehicleNameById(sale.value.vehicle_id)) {
     return
   }
-  
+
   const q = vehicleInputText.value.toLowerCase().trim()
   const matches = vehicles.value.filter(v => {
     const name = getVehicleNameById(v.id).toLowerCase()
@@ -1088,10 +1088,6 @@ onMounted(async () => {
         </div>
         <p class="text-medium-emphasis mb-0">Crea un nuevo documento comercial</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list"
-        class="align-self-md-center align-self-end">
-        Volver al Listado
-      </VBtn>
     </div>
 
     <VForm ref="formRef" @submit.prevent="submitForm">
@@ -1217,20 +1213,11 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
-                    <VTextField
-                      v-model="clientInputText"
-                      label="Cliente *"
-                      prepend-inner-icon="ri-user-line"
-                      append-inner-icon="ri-search-line"
-                      variant="outlined"
-                      density="comfortable"
-                      clearable
-                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']"
-                      @keyup.enter="handleClientSearch"
-                      @blur="handleClientSearch"
-                      @click:append-inner="showClientSelectDialog = true"
-                      @click:clear="sale.client_id = null"
-                    >
+                    <VTextField v-model="clientInputText" label="Cliente *" prepend-inner-icon="ri-user-line"
+                      append-inner-icon="ri-search-line" variant="outlined" density="comfortable" clearable
+                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']" @keyup.enter="handleClientSearch"
+                      @blur="handleClientSearch" @click:append-inner="showClientSelectDialog = true"
+                      @click:clear="sale.client_id = null">
                     </VTextField>
                     <VBtn icon size="40" color="primary" variant="tonal">
                       <VIcon icon="ri-add-line" size="20" />
@@ -1252,7 +1239,7 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedClient.n_document || "-" }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedClient.phone || "-" }} • {{
                         selectedClient.address || "-"
-                      }}</div>
+                        }}</div>
                     </div>
                   </div>
                   <div class="mt-4">
@@ -1270,19 +1257,10 @@ onMounted(async () => {
                 </VCol>
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
-                    <VTextField
-                      v-model="vehicleInputText"
-                      label="Vehículo (Opcional)"
-                      prepend-inner-icon="ri-car-line"
-                      append-inner-icon="ri-search-line"
-                      variant="outlined"
-                      density="comfortable"
-                      clearable
-                      @keyup.enter="handleVehicleSearch"
-                      @blur="handleVehicleSearch"
-                      @click:append-inner="showVehicleSelectDialog = true"
-                      @click:clear="sale.vehicle_id = null"
-                    >
+                    <VTextField v-model="vehicleInputText" label="Vehículo (Opcional)" prepend-inner-icon="ri-car-line"
+                      append-inner-icon="ri-search-line" variant="outlined" density="comfortable" clearable
+                      @keyup.enter="handleVehicleSearch" @blur="handleVehicleSearch"
+                      @click:append-inner="showVehicleSelectDialog = true" @click:clear="sale.vehicle_id = null">
                     </VTextField>
                     <VBtn color="success" variant="tonal" icon="ri-add-line"
                       @click="isVehicleAddDialogVisible = true" />
@@ -1295,7 +1273,7 @@ onMounted(async () => {
                       <div class="font-weight-bold">{{ selectedVehicle.license_plate }}</div>
                       <div class="text-caption text-medium-emphasis">{{ selectedVehicle.model || "-" }} • {{
                         selectedVehicle.year || "-"
-                      }}</div>
+                        }}</div>
                     </div>
                   </div>
                   <div class="mt-4" v-if="selectedVehicle">
@@ -1325,8 +1303,9 @@ onMounted(async () => {
                 <VAutocomplete ref="productAutocompleteRef" v-model="searchProduct" :loading="isLoading"
                   :items="limitedProducts" item-title="displayTitle" return-object
                   label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
-                  variant="outlined" clearable :custom-filter="() => true" @update:search="onProductSearch" @update:model-value="onProductSelected"
-                  class="flex-grow-1" hide-details :menu-props="{ maxWidth: 0 }">
+                  variant="outlined" clearable :custom-filter="() => true" @update:search="onProductSearch"
+                  @update:model-value="onProductSelected" class="flex-grow-1" hide-details
+                  :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
@@ -1339,7 +1318,8 @@ onMounted(async () => {
                     </VListItem>
                   </template>
                   <template #append-item>
-                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts" class="pa-4 text-center">
+                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts"
+                      class="pa-4 text-center">
                       <VProgressCircular indeterminate size="24" color="primary" />
                     </div>
                   </template>
@@ -1648,7 +1628,7 @@ onMounted(async () => {
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
                       order.vehicle?.model }}</small></td>
                     <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A'
-                      }}
+                    }}
                     </td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
@@ -1676,16 +1656,11 @@ onMounted(async () => {
           <VBtn icon="ri-close-line" variant="text" @click="showClientSelectDialog = false" />
         </VCardTitle>
         <VCardText class="pa-4">
-          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="clients"
-            :search="clientSearchQuery"
-            :headers="clientHeaders"
-            :items-per-page="10"
-            hover
+          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line"
+            variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable :items="clients" :search="clientSearchQuery" :headers="clientHeaders" :items-per-page="10" hover
             class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { sale.client_id = item.id; showClientSelectDialog = false; }"
-          >
+            @click:row="(event, { item }) => { sale.client_id = item.id; showClientSelectDialog = false; }">
             <template #item.full_name="{ item }">
               {{ getClientName(item) }}
             </template>
@@ -1702,16 +1677,11 @@ onMounted(async () => {
           <VBtn icon="ri-close-line" variant="text" @click="showVehicleSelectDialog = false" />
         </VCardTitle>
         <VCardText class="pa-4">
-          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="vehicles"
-            :search="vehicleSearchQuery"
-            :headers="vehicleHeaders"
-            :items-per-page="10"
-            hover
-            class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { sale.vehicle_id = item.id; showVehicleSelectDialog = false; }"
-          >
+          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line"
+            variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable :items="vehicles" :search="vehicleSearchQuery" :headers="vehicleHeaders" :items-per-page="10"
+            hover class="elevation-1 cursor-pointer"
+            @click:row="(event, { item }) => { sale.vehicle_id = item.id; showVehicleSelectDialog = false; }">
             <template #item.brand_model="{ item }">
               {{ getBrandNameById(item.brand) }} {{ item.model || '' }}
             </template>
