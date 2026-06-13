@@ -312,7 +312,7 @@ onMounted(() => {
             <thead>
               <tr>
                 <th class="text-left font-weight-bold text-uppercase" style="width: 100px;">
-                  ID PEDIDO
+                  ID
                 </th>
                 <th class="text-left font-weight-bold text-uppercase" style="width: 160px;">
                   FECHA / HORA
@@ -327,7 +327,7 @@ onMounted(() => {
                   ESTADO
                 </th>
                 <th class="text-right font-weight-bold text-uppercase" style="width: 110px;">
-                  TOTAL EST.
+                  TOTAL
                 </th>
                 <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">
                   ACCIONES
