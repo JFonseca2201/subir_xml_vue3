@@ -430,7 +430,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                 <!-- Stock -->
                 <td class="text-no-wrap text-center py-3">
-                  <div class="font-weight-bold text-subtitle-1" :class="item.item_type == 1 ? 'text-grey-darken-4' : 'text-medium-emphasis'">
+                  <div class="font-weight-bold text-subtitle-1"
+                    :class="item.item_type == 1 ? 'text-grey-darken-4' : 'text-medium-emphasis'">
                     {{ item.item_type == 1 ? (item.stock || 0) : '-' }}
                   </div>
                 </td>
