@@ -35,6 +35,40 @@ const kpis = ref({
 const topProducts = ref([])
 const cashFlow = ref([])
 
+// Infinite Scroll state for low stock products
+const displayedLowStock = ref([])
+const lowStockPage = ref(1)
+const lowStockPageSize = 10
+
+watch(isStockDialogVisible, (val) => {
+  if (val) {
+    displayedLowStock.value = []
+    lowStockPage.value = 1
+  }
+})
+
+const loadMoreLowStock = ({ done }) => {
+  const allItems = kpis.value.low_stock_products || []
+  
+  if (displayedLowStock.value.length >= allItems.length && allItems.length > 0) {
+    done('empty')
+    return
+  }
+
+  const start = (lowStockPage.value - 1) * lowStockPageSize
+  const end = lowStockPage.value * lowStockPageSize
+  
+  const newItems = allItems.slice(start, end)
+  
+  if (newItems.length > 0) {
+    displayedLowStock.value.push(...newItems)
+    lowStockPage.value++
+    done('ok')
+  } else {
+    done('empty')
+  }
+}
+
 // Search Engine State & Watcher
 const searchQuery = ref('')
 const isSearchFocused = ref(false)
@@ -75,7 +109,7 @@ const handleSearchBlur = () => {
 const handleResultClick = (item) => {
   searchQuery.value = ''
   isSearchFocused.value = false
-  
+
   if (item.type === 'Cliente' && item.raw_data) {
     selectedClient.value = item.raw_data
     isClientDialogVisible.value = true
@@ -349,6 +383,56 @@ const radialChartOptions = computed(() => {
 const radialChartSeries = computed(() => {
   return [salesTargetPercentage.value]
 })
+
+// ApexChart: Donut Chart for Income vs Expenses
+const donutChartOptions = computed(() => {
+  return {
+    chart: { type: 'donut', background: 'transparent' },
+    labels: ['Ingresos', 'Egresos'],
+    colors: [chartThemes.value.primaryColor, chartThemes.value.infoColor],
+    plotOptions: { pie: { donut: { size: '70%' } } },
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom', labels: { colors: chartThemes.value.textColor } },
+    stroke: { show: false }
+  }
+})
+
+const donutChartSeries = computed(() => {
+  return [Number(kpis.value.monthly_sales) || 0, Number(kpis.value.monthly_expenses) || 0]
+})
+
+// ApexChart: Bar Chart for Top 5 Products
+const barChartOptions = computed(() => {
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
+    colors: [chartThemes.value.primaryColor],
+    plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+    dataLabels: { enabled: false },
+    xaxis: { 
+      categories: topProducts.value.slice(0, 5).map(p => {
+        const desc = p.description || ''
+        return desc.length > 20 ? desc.substring(0, 20) + '...' : desc
+      }),
+      labels: { style: { colors: chartThemes.value.textColor } },
+      axisBorder: { show: false }
+    },
+    yaxis: {
+      labels: { style: { colors: chartThemes.value.textColor } }
+    },
+    grid: {
+      borderColor: chartThemes.value.borderColor,
+      strokeDashArray: 4
+    },
+    tooltip: { theme: chartThemes.value.tooltipTheme }
+  }
+})
+
+const barChartSeries = computed(() => {
+  return [{
+    name: 'Unidades Vendidas',
+    data: topProducts.value.slice(0, 5).map(p => Number(p.total_quantity) || 0)
+  }]
+})
 </script>
 
 <template>
@@ -441,11 +525,13 @@ const radialChartSeries = computed(() => {
     </div>
 
     <!-- Error State -->
-    <div v-else-if="hasError" class="d-flex flex-column align-center justify-center py-12 my-12 text-center" style="max-width: 500px; margin: 0 auto;">
+    <div v-else-if="hasError" class="d-flex flex-column align-center justify-center py-12 my-12 text-center"
+      style="max-width: 500px; margin: 0 auto;">
       <VIcon icon="ri-error-warning-line" size="64" color="error" class="mb-4" />
       <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Error al cargar el Dashboard</h3>
       <p class="text-body-2 text-medium-emphasis mb-6">
-        No se pudieron obtener los datos actualizados del servidor. Por favor, verifica tu conexión o vuelve a intentarlo.
+        No se pudieron obtener los datos actualizados del servidor. Por favor, verifica tu conexión o vuelve a
+        intentarlo.
       </p>
       <VBtn color="primary" prepend-icon="ri-refresh-line" @click="fetchDashboardData" class="rounded-xl px-6">
         Reintentar cargar
@@ -522,7 +608,7 @@ const radialChartSeries = computed(() => {
             <div class="mt-4 pt-3 border-t" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate
-                  }}</span>
+                }}</span>
                 <VChip v-if="activeEvents.length > 0" size="x-small" color="primary" class="font-weight-black">
                   {{ activeEvents.length }} event.
                 </VChip>
@@ -564,6 +650,35 @@ const radialChartSeries = computed(() => {
             </div>
             <div class="pa-2">
               <VueApexCharts type="area" height="325" :options="wavyChartOptions" :series="wavyChartSeries" />
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <!-- Extra Charts Section (Donut & Bar Chart) -->
+      <VRow class="mb-6">
+        <!-- Donut Chart: Ingresos vs Egresos -->
+        <VCol cols="12" md="4">
+          <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column">
+            <div class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              <VIcon icon="ri-pie-chart-2-line" />
+              <span>Distribución Financiera Mensual</span>
+            </div>
+            <div class="pa-2 d-flex justify-center align-center flex-grow-1">
+              <VueApexCharts type="donut" height="250" :options="donutChartOptions" :series="donutChartSeries" />
+            </div>
+          </VCard>
+        </VCol>
+
+        <!-- Bar Chart: Top 5 Productos -->
+        <VCol cols="12" md="8">
+          <VCard elevation="0" class="pa-4 mock-card h-100">
+            <div class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              <VIcon icon="ri-bar-chart-horizontal-line" />
+              <span>Top 5 Productos Vendidos (Unidades)</span>
+            </div>
+            <div class="pa-2">
+              <VueApexCharts type="bar" height="250" :options="barChartOptions" :series="barChartSeries" />
             </div>
           </VCard>
         </VCol>
@@ -686,34 +801,44 @@ const radialChartSeries = computed(() => {
           </template>
         </VCardItem>
         <VCardText class="pa-0">
-          <VTable class="text-no-wrap premium-table">
-            <thead>
-              <tr>
-                <th class="font-weight-bold text-uppercase text-medium-emphasis">SKU</th>
-                <th class="font-weight-bold text-uppercase text-medium-emphasis">Producto</th>
-                <th class="font-weight-bold text-uppercase text-center text-medium-emphasis">Stock Actual</th>
-                <th class="font-weight-bold text-uppercase text-center text-medium-emphasis">Stock Mínimo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="kpis.low_stock_products.length === 0">
-                <td colspan="4" class="text-center py-6 text-medium-emphasis">
-                  ¡Excelente! No hay productos con stock menor o igual al mínimo.
-                </td>
-              </tr>
-              <tr v-for="item in kpis.low_stock_products" :key="item.id"
-                style="border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);">
-                <td><code class="text-primary">{{ item.sku || 'N/A' }}</code></td>
-                <td class="font-weight-bold text-high-emphasis">{{ item.description }}</td>
-                <td class="text-center font-weight-black">
-                  <VChip :color="Number(item.stock) === 0 ? 'error' : 'warning'" size="small">
-                    {{ item.stock }}
-                  </VChip>
-                </td>
-                <td class="text-center text-medium-emphasis">{{ item.min_stock }}</td>
-              </tr>
-            </tbody>
-          </VTable>
+          <VInfiniteScroll :items="displayedLowStock" @load="loadMoreLowStock" class="pa-4" style="max-height: 500px; overflow-y: auto;">
+            <template v-if="kpis.low_stock_products?.length === 0">
+              <div class="text-center py-6 text-medium-emphasis">
+                ¡Excelente! No hay productos con stock menor o igual al mínimo.
+              </div>
+            </template>
+            <template v-else>
+              <div v-for="item in displayedLowStock" :key="item.id" 
+                class="d-flex align-center justify-space-between mb-3 pa-3 rounded-lg border"
+                style="background-color: rgb(var(--v-theme-surface)); border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+                
+                <div class="d-flex align-center gap-3">
+                  <VAvatar color="error" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-error-warning-line" />
+                  </VAvatar>
+                  <div>
+                    <div class="font-weight-bold text-high-emphasis">{{ item.description }}</div>
+                    <div class="text-caption text-medium-emphasis mt-1">
+                      <code class="text-primary bg-primary-lighten-5 px-1 rounded">{{ item.sku || 'N/A' }}</code>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <div class="text-caption text-medium-emphasis mb-1">Stock Actual / Mín</div>
+                  <div class="d-flex align-center justify-end gap-2">
+                    <VChip :color="Number(item.stock) === 0 ? 'error' : 'warning'" size="small" class="font-weight-bold">
+                      {{ item.stock }}
+                    </VChip>
+                    <span class="text-medium-emphasis text-body-2 font-weight-bold">/ {{ item.min_stock }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <template #empty>
+              <div class="text-center text-caption text-medium-emphasis py-4">Fin de la lista</div>
+            </template>
+          </VInfiniteScroll>
         </VCardText>
         <VCardActions class="pa-4 border-t d-flex justify-end"
           style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
@@ -723,17 +848,179 @@ const radialChartSeries = computed(() => {
     </VDialog>
 
     <!-- Client Details Dialog -->
-    <ClientShowDialog
-      v-if="isClientDialogVisible"
-      v-model:isDialogVisible="isClientDialogVisible"
-      :client-data="selectedClient"
-    />
+    <ClientShowDialog v-if="isClientDialogVisible" v-model:isDialogVisible="isClientDialogVisible"
+      :client-data="selectedClient" />
 
     <!-- Vehicle Details Dialog -->
-    <VehicleShowDialog
-      v-if="isVehicleDialogVisible"
-      v-model:isDialogVisible="isVehicleDialogVisible"
-      :vehicle-data="selectedVehicle"
-    />
+    <VehicleShowDialog v-if="isVehicleDialogVisible" v-model:isDialogVisible="isVehicleDialogVisible"
+      :vehicle-data="selectedVehicle" />
   </VContainer>
 </template>
+
+<style scoped>
+/* ULTRA PRO DASHBOARD - MASTERCLASS UI */
+
+.dashboard-container {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 64px);
+}
+
+/* Advanced Mesh Gradient Background (Animated) */
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: -20%; left: -10%;
+  width: 60vw; height: 60vh;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.12), transparent 70%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  animation: float-mesh 12s ease-in-out infinite alternate;
+}
+
+.dashboard-container::after {
+  content: '';
+  position: absolute;
+  bottom: -20%; right: -10%;
+  width: 50vw; height: 50vh;
+  background: radial-gradient(circle, rgba(var(--v-theme-info), 0.1), transparent 70%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  animation: float-mesh 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes float-mesh {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, -50px) scale(1.1); }
+}
+
+/* Entrance Animations for Cards */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(40px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mock-card {
+  border-radius: 28px !important;
+  background: rgba(var(--v-theme-surface), 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.06) !important;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03) !important;
+  
+  /* Stagger setup */
+  opacity: 0;
+  animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays based on layout order */
+.v-row:nth-of-type(1) .v-col:nth-child(1) .mock-card { animation-delay: 0.1s; }
+.v-row:nth-of-type(1) .v-col:nth-child(2) .mock-card { animation-delay: 0.15s; }
+.v-row:nth-of-type(1) .v-col:nth-child(3) .mock-card { animation-delay: 0.2s; }
+.v-row:nth-of-type(2) .v-col:nth-child(1) .mock-card { animation-delay: 0.25s; }
+.v-row:nth-of-type(2) .v-col:nth-child(2) .mock-card { animation-delay: 0.3s; }
+.v-row:nth-of-type(3) .v-col:nth-child(1) .mock-card { animation-delay: 0.35s; }
+.v-row:nth-of-type(3) .v-col:nth-child(2) .mock-card { animation-delay: 0.4s; }
+.v-row:nth-of-type(4) .v-col:nth-child(1) .mock-card { animation-delay: 0.45s; }
+.v-row:nth-of-type(4) .v-col:nth-child(2) .mock-card { animation-delay: 0.5s; }
+.v-row:nth-of-type(4) .v-col:nth-child(3) .mock-card { animation-delay: 0.55s; }
+
+.mock-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(var(--v-theme-primary), 0.15) !important;
+  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+  z-index: 10;
+}
+
+/* Premium Gradient KPI Card */
+.mock-card-gradient {
+  background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(38, 208, 206, 0.3) !important;
+}
+
+.mock-card-gradient::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 50%);
+  animation: rotate-bg 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate-bg { 100% { transform: rotate(360deg); } }
+
+/* Premium Typography */
+.gradient-title {
+  background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+
+/* Search Field Premium Styling */
+.search-field :deep(.v-field) {
+  background: rgba(var(--v-theme-surface), 0.4) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 30px !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+.search-field :deep(.v-field--focused) {
+  background: rgba(var(--v-theme-surface), 0.9) !important;
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.15) !important;
+  transform: translateY(-2px);
+}
+
+/* Calendar Pro Styles */
+.calendar-widget { display: flex; flex-direction: column; }
+.calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center;
+}
+.calendar-header-day {
+  font-size: 0.75rem; font-weight: 800; color: rgb(var(--v-theme-primary)); opacity: 0.7; margin-bottom: 8px;
+}
+.calendar-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 500; border-radius: 12px; cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: rgb(var(--v-theme-on-surface));
+}
+.calendar-day:hover:not(.is-empty) {
+  background-color: rgba(var(--v-theme-primary), 0.1); transform: scale(1.15) translateY(-2px);
+}
+.calendar-day.is-today {
+  background-color: rgba(var(--v-theme-primary), 0.15); color: rgb(var(--v-theme-primary)); font-weight: 800; border: 1px solid rgba(var(--v-theme-primary), 0.3);
+}
+.calendar-day.is-selected {
+  background: linear-gradient(135deg, #fc466b, #3f5efb); color: white;
+  box-shadow: 0 6px 15px rgba(63, 94, 251, 0.4); transform: scale(1.15); border: none; font-weight: bold;
+}
+.calendar-day.is-empty { cursor: default; }
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--v-theme-on-surface), 0.15); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--v-theme-primary), 0.5); }
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .calendar-day { font-size: 0.75rem; border-radius: 8px; }
+  .calendar-header-day { font-size: 0.65rem; margin-bottom: 4px; }
+  .calendar-grid { gap: 2px; }
+  
+  .mock-card { padding: 16px !important; border-radius: 20px !important; }
+}
+</style>

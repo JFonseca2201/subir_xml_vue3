@@ -369,65 +369,37 @@ onMounted(() => {
         <div class="invoice-table-wrap">
           <VTable hover class="invoice-table">
             <!-- 🧾 CABECERA -->
-            <thead class="bg-primary text-white sticky-header">
+            <thead class="bg-grey-lighten-4">
               <tr>
-                <th v-if="props.invoiceSelected.invoice_process != 1" style="width: 55px">
+                <th v-if="props.invoiceSelected.invoice_process != 1" style="width: 50px" class="px-4">
                   <VCheckbox :model-value="isAllSelected" :indeterminate="isSomeSelected && !isAllSelected"
-                    density="compact" hide-details @click.stop="toggleSelectAll" />
+                    density="compact" hide-details @click.stop="toggleSelectAll" color="primary" />
                 </th>
-                <th style="width: 50px">
+                <th class="text-uppercase text-caption font-weight-bold" style="width: 50px">
                   #
                 </th>
-                <th style="width: 250px">
-                  Código
+                <th class="text-uppercase text-caption font-weight-bold">
+                  Producto / Código
                 </th>
-                <th style="width: 450px">
-                  <VIcon size="16" class="mr-1">
-                    ri-box-3-line
-                  </VIcon>
-                  Producto
-                </th>
-                <th style="width: 200px">
-                  <VIcon size="16" class="mr-1">
-                    ri-folder-line
-                  </VIcon>
+                <th class="text-uppercase text-caption font-weight-bold" style="width: 220px">
                   Categoría
                 </th>
-                <th class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-stack-line
-                  </VIcon>
+                <th class="text-uppercase text-caption font-weight-bold text-center" style="width: 90px">
                   Cant.
                 </th>
-                <th class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-money-dollar-circle-line
-                  </VIcon>
-                  Precio
+                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 110px">
+                  Precio U.
                 </th>
-                <th class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-calculator-line
-                  </VIcon>
+                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 110px">
                   Subtotal
                 </th>
-                <th class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-percent-line
-                  </VIcon>
+                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 90px">
                   Dcto.
                 </th>
-                <th class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-money-dollar-circle-line
-                  </VIcon>
+                <th class="text-uppercase text-caption font-weight-bold text-end" style="width: 110px">
                   Total
                 </th>
-
-                <th v-if="props.invoiceSelected.invoice_process != 1" class="text-right">
-                  <VIcon size="16" class="mr-1">
-                    ri-settings-2-line
-                  </VIcon>
+                <th v-if="props.invoiceSelected.invoice_process != 1" class="text-uppercase text-caption font-weight-bold text-center" style="width: 80px">
                   Editar
                 </th>
               </tr>
@@ -435,60 +407,57 @@ onMounted(() => {
 
             <!-- 📦 CUERPO -->
             <tbody>
-              <tr v-for="(item, index) in filteredItems" :key="item.id">
-                <td v-if="props.invoiceSelected.invoice_process != 1">
+              <tr v-for="(item, index) in filteredItems" :key="item.id" class="align-middle">
+                <td v-if="props.invoiceSelected.invoice_process != 1" class="px-4">
                   <VCheckbox v-if="item.item_type === 1" v-model="selectedItems" :value="item.id" density="compact"
-                    hide-details @click.stop />
+                    hide-details @click.stop color="primary" />
                 </td>
-                <td><small>{{ index + 1 }}</small></td>
-                <td class="font-weight-medium">
-                  <VTooltip location="top" open-on-hover>
-                    <template #activator="{ props: tooltipProps }">
-                      <small class="text-medium-emphasis font-weight-bold" v-bind="tooltipProps">
-                        {{ truncate(item.code, 40) }}
-                      </small>
-                    </template>
-                    <span>{{ item.code }}</span>
-                  </VTooltip>
-                </td>
-                <td class=" text-medium-emphasis">
-                  <small>{{ (item.description) }}</small>
+                <td class="text-caption text-medium-emphasis">{{ index + 1 }}</td>
+                
+                <td class="py-2">
+                  <div class="d-flex flex-column">
+                    <span class="text-body-2 font-weight-medium text-high-emphasis text-wrap" style="max-width: 350px;">
+                      {{ item.description || 'Sin descripción' }}
+                    </span>
+                    <span class="text-caption text-medium-emphasis mt-1">
+                      SKU: {{ item.code }}
+                    </span>
+                  </div>
                 </td>
 
-                <td>
+                <td class="py-2">
                   <VSelect v-if="props.invoiceSelected.invoice_process != 1 && item.item_type === 1"
                     v-model="item.product_categorie_id" :items="categories" item-title="title" item-value="id"
-                    density="compact" variant="underlined" hide-details placeholder="Seleccionar..."
+                    density="compact" variant="outlined" hide-details placeholder="Seleccionar..."
                     class="inline-category-select" @update:model-value="updateItemCategory(item)" />
-                  <span v-else class="text-caption text-medium-emphasis">
+                  <VChip v-else size="small" color="grey-darken-1" variant="tonal" class="font-weight-medium">
                     {{ getCategoryName(item.product_categorie_id, item.item_type) }}
-                  </span>
+                  </VChip>
                 </td>
 
-                <td class="text-right">
-                  <small>{{ item.quantity }}</small>
+                <td class="text-center text-body-2">
+                  {{ item.quantity }}
                 </td>
 
-                <td class="text-right">
-                  <small>${{ Number(item.unit_price).toFixed(2) }}</small>
+                <td class="text-end text-body-2">
+                  ${{ Number(item.unit_price).toFixed(2) }}
                 </td>
 
-                <td class="text-right font-weight-bold">
-                  <small>${{ Number(item.quantity * item.unit_price).toFixed(2) }}</small>
+                <td class="text-end text-body-2 font-weight-medium">
+                  ${{ Number(item.quantity * item.unit_price).toFixed(2) }}
                 </td>
 
-                <td class="text-right text-error">
-                  <small>${{ Number(item.discount).toFixed(2) }}</small>
+                <td class="text-end text-body-2 text-error">
+                  ${{ Number(item.discount).toFixed(2) }}
                 </td>
 
-                <td class="text-right font-weight-bold text-primary">
-                  <small>${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2)
-                    }}</small>
+                <td class="text-end text-body-2 font-weight-bold text-primary">
+                  ${{ Number((item.quantity * item.unit_price) - Number(item.discount)).toFixed(2) }}
                 </td>
 
-                <td v-if="props.invoiceSelected.invoice_process != 1" class="text-right font-weight-bold text-primary">
-                  <IconBtn @click="editInvoice(item)">
-                    <VIcon icon="ri-pencil-line" />
+                <td v-if="props.invoiceSelected.invoice_process != 1" class="text-center">
+                  <IconBtn @click="editInvoice(item)" color="primary">
+                    <VIcon icon="ri-pencil-line" size="20" />
                   </IconBtn>
                 </td>
               </tr>
@@ -532,14 +501,14 @@ onMounted(() => {
                 <div class="d-flex align-center justify-space-between mb-2">
                   <span class="text-body-2 text-medium-emphasis">Monto Total:</span>
                   <span class="text-body-2 font-weight-bold">${{ Number(invoice.account_payable.total_amount).toFixed(2)
-                    }}</span>
+                  }}</span>
                 </div>
                 <div class="d-flex align-center justify-space-between mb-2">
                   <span class="text-body-2 text-medium-emphasis">Fecha de Vencimiento:</span>
                   <span class="text-body-2 font-weight-bold">
                     {{ invoice.account_payable.due_date ? new
                       Date(invoice.account_payable.due_date).toISOString().slice(0,
-                    10) : '-' }}
+                        10) : '-' }}
                   </span>
                 </div>
                 <div class="d-flex align-center justify-space-between">
