@@ -35,39 +35,6 @@ const kpis = ref({
 const topProducts = ref([])
 const cashFlow = ref([])
 
-// Infinite Scroll state for low stock products
-const displayedLowStock = ref([])
-const lowStockPage = ref(1)
-const lowStockPageSize = 10
-
-watch(isStockDialogVisible, (val) => {
-  if (val) {
-    displayedLowStock.value = []
-    lowStockPage.value = 1
-  }
-})
-
-const loadMoreLowStock = ({ done }) => {
-  const allItems = kpis.value.low_stock_products || []
-  
-  if (displayedLowStock.value.length >= allItems.length && allItems.length > 0) {
-    done('empty')
-    return
-  }
-
-  const start = (lowStockPage.value - 1) * lowStockPageSize
-  const end = lowStockPage.value * lowStockPageSize
-  
-  const newItems = allItems.slice(start, end)
-  
-  if (newItems.length > 0) {
-    displayedLowStock.value.push(...newItems)
-    lowStockPage.value++
-    done('ok')
-  } else {
-    done('empty')
-  }
-}
 
 // Search Engine State & Watcher
 const searchQuery = ref('')
@@ -279,13 +246,11 @@ const chartThemes = computed(() => {
 const wavyChartOptions = computed(() => {
   return {
     chart: {
-      id: 'wavy-cashflow-chart',
       type: 'area',
       toolbar: { show: false },
-      zoom: { enabled: false },
       background: 'transparent'
     },
-    colors: [chartThemes.value.primaryColor, chartThemes.value.infoColor],
+    colors: ['#7367F0', '#00CFE8'],
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 3 },
     fill: {
@@ -372,7 +337,7 @@ const radialChartOptions = computed(() => {
         }
       }
     },
-    colors: [chartThemes.value.primaryColor],
+    colors: ['#7367F0'],
     stroke: {
       lineCap: 'round'
     },
@@ -389,7 +354,7 @@ const donutChartOptions = computed(() => {
   return {
     chart: { type: 'donut', background: 'transparent' },
     labels: ['Ingresos', 'Egresos'],
-    colors: [chartThemes.value.primaryColor, chartThemes.value.infoColor],
+    colors: ['#00CFE8', '#7367F0'],
     plotOptions: { pie: { donut: { size: '70%' } } },
     dataLabels: { enabled: false },
     legend: { position: 'bottom', labels: { colors: chartThemes.value.textColor } },
@@ -405,8 +370,8 @@ const donutChartSeries = computed(() => {
 const barChartOptions = computed(() => {
   return {
     chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
-    colors: [chartThemes.value.primaryColor],
-    plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+    colors: ['#7367F0', '#00CFE8', '#28C76F', '#FF9F43', '#EA5455'],
+    plotOptions: { bar: { borderRadius: 4, horizontal: true, distributed: true } },
     dataLabels: { enabled: false },
     xaxis: { 
       categories: topProducts.value.slice(0, 5).map(p => {
@@ -433,6 +398,100 @@ const barChartSeries = computed(() => {
     data: topProducts.value.slice(0, 5).map(p => Number(p.total_quantity) || 0)
   }]
 })
+
+// =======================================================
+// NUEVO REPORTE: RENDIMIENTO DE TÉCNICOS (Basado en OTs)
+// =======================================================
+
+const workOrdersReport = computed(() => kpis.value?.work_orders_report || {
+  ot_totales: [],
+  sla: [],
+  technicians: {},
+  satisfaction: []
+});
+
+const otTotalesSeries = computed(() => {
+  return workOrdersReport.value.ot_totales.map(i => i.count)
+})
+const otTotalesOptions = computed(() => {
+  const labels = workOrdersReport.value.ot_totales.map(i => i.status)
+  return {
+    chart: { type: 'donut', background: 'transparent' },
+    labels: labels.length > 0 ? labels : ['Sin datos'],
+    colors: ['#00CFE8', '#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
+    dataLabels: { enabled: true, style: { fontSize: '10px' } },
+    plotOptions: { pie: { donut: { size: '55%' } } },
+    legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
+    stroke: { show: false }
+  }
+})
+
+const slaSeries = computed(() => {
+  if (!workOrdersReport.value.sla) return [];
+  return Object.values(workOrdersReport.value.sla)
+})
+const slaOptions = computed(() => {
+  const labels = Object.keys(workOrdersReport.value.sla || {})
+  return {
+    chart: { type: 'pie', background: 'transparent' },
+    labels: labels.length > 0 ? labels : ['1 día', '2-3 días', '4-7 días', '+8 días'],
+    colors: ['#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
+    dataLabels: { enabled: true },
+    legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
+    stroke: { show: false }
+  }
+})
+
+const satisfaccionSeries = computed(() => {
+  return workOrdersReport.value.satisfaction.map(i => i.count)
+})
+const satisfaccionOptions = computed(() => {
+  const labels = workOrdersReport.value.satisfaction.map(i => i.status)
+  return {
+    chart: { type: 'donut', background: 'transparent' },
+    labels: labels.length > 0 ? labels : ['Sin datos'],
+    colors: ['#28C76F', '#00CFE8', '#EA5455'],
+    legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
+    plotOptions: { pie: { donut: { size: '55%' } } },
+    stroke: { show: false }
+  }
+})
+
+const tecnicosSeries = computed(() => {
+  const techs = workOrdersReport.value.technicians || {};
+  const statusSet = new Set();
+  
+  Object.values(techs).forEach(t => {
+    Object.keys(t).forEach(status => statusSet.add(status));
+  });
+  
+  const statuses = Array.from(statusSet);
+  if (statuses.length === 0) return [];
+  
+  return statuses.map(status => {
+    return {
+      name: status,
+      data: Object.keys(techs).map(techName => techs[techName][status] || 0)
+    };
+  });
+})
+const tecnicosOptions = computed(() => {
+  const techs = workOrdersReport.value.technicians || {};
+  const categories = Object.keys(techs);
+  return {
+    chart: { type: 'bar', stacked: false, background: 'transparent', toolbar: {show: false} },
+    colors: ['#00CFE8', '#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
+    xaxis: { 
+      categories: categories.length > 0 ? categories : ['Sin datos'],
+      labels: { style: { colors: chartThemes.value.textColor } },
+      axisBorder: { show: false }
+    },
+    yaxis: { labels: { style: { colors: chartThemes.value.textColor } } },
+    legend: { position: 'top', labels: { colors: chartThemes.value.textColor } },
+    grid: { borderColor: chartThemes.value.borderColor, strokeDashArray: 4 },
+    plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } }
+  }
+})
 </script>
 
 <template>
@@ -455,7 +514,8 @@ const barChartSeries = computed(() => {
       <div class="d-flex flex-wrap align-center gap-4 mt-4 mt-md-0">
         <div style="width: 250px; position: relative;" class="d-none d-sm-block">
           <VTextField v-model="searchQuery" density="compact" placeholder="Buscar cliente, auto, SKU..."
-            prepend-inner-icon="ri-search-line" variant="outlined" hide-details class="rounded-xl search-field"
+            prepend-inner-icon="ri-search-line" variant="solo" hide-details class="rounded-xl search-field"
+            style="box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;"
             @focus="isSearchFocused = true" @blur="handleSearchBlur" />
 
           <!-- Floating search results drop panel -->
@@ -488,32 +548,40 @@ const barChartSeries = computed(() => {
         <div class="d-flex gap-2">
           <VTooltip text="Nueva Orden de Trabajo" location="bottom">
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-tools-line" color="primary" variant="tonal" size="small" class="rounded-lg"
+              <VBtn v-bind="props" icon="ri-tools-line" variant="elevated" size="small" class="rounded-lg text-white"
+                style="background: linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%); box-shadow: 0 4px 10px rgba(115, 103, 240, 0.3) !important;"
                 @click="router.push('/work-orders/add')" />
             </template>
           </VTooltip>
           <VTooltip text="Registrar Venta" location="bottom">
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-money-dollar-box-line" color="primary" variant="tonal" size="small"
-                class="rounded-lg" @click="router.push('/sales/add')" />
+              <VBtn v-bind="props" icon="ri-money-dollar-box-line" variant="elevated" size="small"
+                class="rounded-lg text-white" 
+                style="background: linear-gradient(135deg, #00CFE8 0%, #1A2980 100%); box-shadow: 0 4px 10px rgba(0, 207, 232, 0.3) !important;"
+                @click="router.push('/sales/add')" />
             </template>
           </VTooltip>
           <VTooltip text="Ingresar Compra" location="bottom">
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-shopping-cart-2-line" color="primary" variant="tonal" size="small"
-                class="rounded-lg" @click="router.push('/invoice/manual-purchase')" />
+              <VBtn v-bind="props" icon="ri-shopping-cart-2-line" variant="elevated" size="small"
+                class="rounded-lg text-white" 
+                style="background: linear-gradient(135deg, #28C76F 0%, #81FBB8 100%); box-shadow: 0 4px 10px rgba(40, 199, 111, 0.3) !important;"
+                @click="router.push('/invoice/manual-purchase')" />
             </template>
           </VTooltip>
           <VTooltip text="Kardex" location="bottom">
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-exchange-funds-line" color="primary" variant="tonal" size="small"
-                class="rounded-lg" @click="router.push('/kardex')" />
+              <VBtn v-bind="props" icon="ri-exchange-funds-line" variant="elevated" size="small"
+                class="rounded-lg text-white" 
+                style="background: linear-gradient(135deg, #FF9F43 0%, #FF5A5F 100%); box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3) !important;"
+                @click="router.push('/kardex')" />
             </template>
           </VTooltip>
         </div>
 
-        <VBtn prepend-icon="ri-refresh-line" color="primary" variant="tonal" @click="fetchDashboardData"
-          :loading="loading" class="rounded-xl px-4" style="border: 1px solid rgba(var(--v-theme-primary), 0.25);">
+        <VBtn prepend-icon="ri-refresh-line" variant="elevated" @click="fetchDashboardData"
+          :loading="loading" class="rounded-xl px-5 text-white font-weight-bold" 
+          style="background: linear-gradient(135deg, #EA5455 0%, #FEB692 100%); box-shadow: 0 6px 15px rgba(234, 84, 85, 0.3) !important; letter-spacing: 0.5px;">
           Actualizar
         </VBtn>
       </div>
@@ -543,17 +611,17 @@ const barChartSeries = computed(() => {
       <VRow class="mb-6">
         <!-- KPI 1: Clientes y Vehículos -->
         <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-6 mock-card h-100 d-flex flex-column justify-center align-center text-center">
-            <div class="text-h3 font-weight-black text-high-emphasis mb-2">{{ kpis.total_clients }}</div>
-            <div class="text-subtitle-2 text-primary font-weight-bold text-uppercase mb-1">Clientes Registrados</div>
-            <div class="text-caption text-medium-emphasis">Total de vehículos asociados: {{ kpis.total_vehicles }}</div>
+          <VCard elevation="0" class="pa-6 mock-card mock-card-gradient-1 h-100 d-flex flex-column justify-center align-center text-center">
+            <div class="text-h3 font-weight-black text-white mb-2">{{ kpis.total_clients }}</div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">Clientes Registrados</div>
+            <div class="text-caption text-white" style="opacity: 0.9;">Total de vehículos asociados: {{ kpis.total_vehicles }}</div>
           </VCard>
         </VCol>
 
         <!-- KPI 2: Balance (Highlighted with system gradient colors) -->
         <VCol cols="12" md="4">
           <VCard elevation="0"
-            class="pa-6 mock-card mock-card-gradient h-100 d-flex flex-column justify-center align-center text-center">
+            class="pa-6 mock-card mock-card-gradient-2 h-100 d-flex flex-column justify-center align-center text-center">
             <div class="text-h4 font-weight-black text-white mb-2">{{ formatCurrency(kpis.monthly_balance) }}</div>
             <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">Balance Mensual</div>
             <div class="text-caption text-white" style="opacity: 0.9;">
@@ -565,11 +633,11 @@ const barChartSeries = computed(() => {
         <!-- KPI 3: Stock Alert -->
         <VCol cols="12" md="4">
           <VCard elevation="0"
-            class="pa-6 mock-card h-100 d-flex flex-column justify-center align-center text-center cursor-pointer"
+            class="pa-6 mock-card mock-card-gradient-3 h-100 d-flex flex-column justify-center align-center text-center cursor-pointer"
             @click="isStockDialogVisible = true">
-            <div class="text-h3 font-weight-black text-high-emphasis mb-2">{{ kpis.low_stock_count }}</div>
-            <div class="text-subtitle-2 text-primary font-weight-bold text-uppercase mb-1">Stock Mínimo Alerta</div>
-            <div class="text-caption text-medium-emphasis">Productos físicos en niveles mínimos regulados</div>
+            <div class="text-h3 font-weight-black text-white mb-2">{{ kpis.low_stock_count }}</div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">Stock Mínimo Alerta</div>
+            <div class="text-caption text-white" style="opacity: 0.9;">Productos físicos en niveles mínimos regulados</div>
           </VCard>
         </VCol>
       </VRow>
@@ -580,7 +648,7 @@ const barChartSeries = computed(() => {
         <VCol cols="12" md="4">
           <VCard elevation="0" class="pa-4 mock-card h-100">
             <div
-              class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2"
+              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <VIcon icon="ri-calendar-todo-line" />
               <span>Calendario de Trabajo</span>
@@ -643,7 +711,7 @@ const barChartSeries = computed(() => {
         <VCol cols="12" md="8">
           <VCard elevation="0" class="pa-4 mock-card h-100">
             <div
-              class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2"
+              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <VIcon icon="ri-line-chart-line" />
               <span>Flujo de Caja YTD (Ingresos vs Egresos)</span>
@@ -660,7 +728,7 @@ const barChartSeries = computed(() => {
         <!-- Donut Chart: Ingresos vs Egresos -->
         <VCol cols="12" md="4">
           <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column">
-            <div class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+            <div class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <VIcon icon="ri-pie-chart-2-line" />
               <span>Distribución Financiera Mensual</span>
             </div>
@@ -673,7 +741,7 @@ const barChartSeries = computed(() => {
         <!-- Bar Chart: Top 5 Productos -->
         <VCol cols="12" md="8">
           <VCard elevation="0" class="pa-4 mock-card h-100">
-            <div class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+            <div class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <VIcon icon="ri-bar-chart-horizontal-line" />
               <span>Top 5 Productos Vendidos (Unidades)</span>
             </div>
@@ -691,7 +759,7 @@ const barChartSeries = computed(() => {
           <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between">
             <div>
               <div
-                class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2"
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
                 style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
                 <VIcon icon="ri-star-line" />
                 <span>Productos Más Vendidos</span>
@@ -712,11 +780,6 @@ const barChartSeries = computed(() => {
                 </div>
               </div>
             </div>
-            <VBtn color="primary" variant="elevated" block class="rounded-xl mt-4 font-weight-bold"
-              style="background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-info)) 100%) !important; color: #ffffff !important;"
-              @click="isStockDialogVisible = true">
-              Ver Alertas Stock
-            </VBtn>
           </VCard>
         </VCol>
 
@@ -724,7 +787,7 @@ const barChartSeries = computed(() => {
         <VCol cols="12" md="4">
           <VCard elevation="0" class="pa-4 mock-card h-100">
             <div
-              class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-4 border-b pb-2 d-flex align-center gap-2"
+              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
               <VIcon icon="ri-bar-chart-fill" />
               <span>Rendimiento Operativo</span>
@@ -736,7 +799,7 @@ const barChartSeries = computed(() => {
                   <span class="font-weight-bold">Eficiencia del Balance</span>
                   <span class="text-primary font-weight-bold">{{ balancePercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="balancePercentage" color="primary" height="8" class="rounded" />
+                <VProgressLinear v-model="balancePercentage" color="#7367F0" height="8" class="rounded" />
               </div>
 
               <div>
@@ -744,7 +807,7 @@ const barChartSeries = computed(() => {
                   <span class="font-weight-bold">Registro de Clientes (Meta 100)</span>
                   <span class="text-primary font-weight-bold">{{ clientsPercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="clientsPercentage" color="primary" height="8" class="rounded" />
+                <VProgressLinear v-model="clientsPercentage" color="#00CFE8" height="8" class="rounded" />
               </div>
 
               <div>
@@ -752,7 +815,7 @@ const barChartSeries = computed(() => {
                   <span class="font-weight-bold">Vehículos Registrados (Meta 150)</span>
                   <span class="text-primary font-weight-bold">{{ vehiclesPercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="vehiclesPercentage" color="primary" height="8" class="rounded" />
+                <VProgressLinear v-model="vehiclesPercentage" color="#28C76F" height="8" class="rounded" />
               </div>
             </div>
           </VCard>
@@ -763,7 +826,7 @@ const barChartSeries = computed(() => {
           <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between align-center">
             <div class="w-100">
               <div
-                class="text-subtitle-2 font-weight-bold text-uppercase text-primary mb-2 border-b pb-2 d-flex align-center gap-2 w-100"
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-2 border-b pb-2 d-flex align-center gap-2 w-100"
                 style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
                 <VIcon icon="ri-radar-line" />
                 <span>Progreso de Meta Mensual</span>
@@ -774,12 +837,61 @@ const barChartSeries = computed(() => {
               <VueApexCharts type="radialBar" height="200" width="100%" :options="radialChartOptions"
                 :series="radialChartSeries" />
             </div>
+          </VCard>
+        </VCol>
+      </VRow>
 
-            <VBtn color="primary" variant="elevated" block class="rounded-xl font-weight-bold"
-              style="background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-info)) 100%) !important; color: #ffffff !important;"
-              @click="router.push('/sales/add')">
-              Registrar Venta
-            </VBtn>
+      <!-- NUEVO: Panel de Rendimiento de Taller (Órdenes de Trabajo) -->
+      <div class="mt-8 mb-4">
+        <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
+          <VIcon icon="ri-tools-fill" color="primary" />
+          Reporte Inicial Técnicos - Basado en OTs
+        </h2>
+        <p class="text-caption text-medium-emphasis">Métricas operativas y rendimiento del personal técnico</p>
+      </div>
+
+      <VRow class="mb-6">
+        <!-- OT Totales -->
+        <VCol cols="12" md="4">
+          <VCard elevation="0" class="pa-4 mock-card h-100">
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">OTs Totales</div>
+            <div class="text-h4 font-weight-black text-high-emphasis mb-4">{{ otTotalesSeries.reduce((a,b) => a+b, 0) }}</div>
+            <div class="pa-2 d-flex justify-center align-center">
+              <VueApexCharts type="donut" height="220" width="100%" :options="otTotalesOptions" :series="otTotalesSeries" />
+            </div>
+          </VCard>
+        </VCol>
+
+        <!-- SLA -->
+        <VCol cols="12" md="4">
+          <VCard elevation="0" class="pa-4 mock-card h-100">
+            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">SLA</div>
+            <div class="text-caption text-medium-emphasis mb-4">Días hasta que la OT queda como Cerrada-OK</div>
+            <div class="pa-2 d-flex justify-center align-center mt-4">
+              <VueApexCharts type="pie" height="220" width="100%" :options="slaOptions" :series="slaSeries" />
+            </div>
+          </VCard>
+        </VCol>
+
+        <!-- Satisfacción del Cliente -->
+        <VCol cols="12" md="4">
+          <VCard elevation="0" class="pa-4 mock-card h-100">
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">Conforme del Cliente</div>
+            <div class="pa-2 d-flex justify-center align-center mt-8">
+              <VueApexCharts type="donut" height="220" width="100%" :options="satisfaccionOptions" :series="satisfaccionSeries" />
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VRow class="mb-6">
+        <!-- Cant de Servicios por Técnico -->
+        <VCol cols="12" md="8">
+          <VCard elevation="0" class="pa-4 mock-card h-100">
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">Cant de Servicios por Técnico</div>
+            <div class="pa-2">
+              <VueApexCharts type="bar" height="300" width="100%" :options="tecnicosOptions" :series="tecnicosSeries" />
+            </div>
           </VCard>
         </VCol>
       </VRow>
@@ -787,7 +899,7 @@ const barChartSeries = computed(() => {
 
     <!-- Low Stock Alert Dialog -->
     <VDialog v-model="isStockDialogVisible" max-width="700">
-      <VCard class="rounded-xl mock-card pa-2">
+      <VCard class="rounded-lg">
         <VCardItem class="pa-4 border-b" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
           <template #title>
             <div class="d-flex align-center gap-2 text-warning">
@@ -800,49 +912,44 @@ const barChartSeries = computed(() => {
               @click="isStockDialogVisible = false" />
           </template>
         </VCardItem>
-        <VCardText class="pa-0">
-          <VInfiniteScroll :items="displayedLowStock" @load="loadMoreLowStock" class="pa-4" style="max-height: 500px; overflow-y: auto;">
-            <template v-if="kpis.low_stock_products?.length === 0">
-              <div class="text-center py-6 text-medium-emphasis">
-                ¡Excelente! No hay productos con stock menor o igual al mínimo.
-              </div>
-            </template>
-            <template v-else>
-              <div v-for="item in displayedLowStock" :key="item.id" 
-                class="d-flex align-center justify-space-between mb-3 pa-3 rounded-lg border"
-                style="background-color: rgb(var(--v-theme-surface)); border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
-                
-                <div class="d-flex align-center gap-3">
-                  <VAvatar color="error" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-error-warning-line" />
-                  </VAvatar>
-                  <div>
-                    <div class="font-weight-bold text-high-emphasis">{{ item.description }}</div>
-                    <div class="text-caption text-medium-emphasis mt-1">
-                      <code class="text-primary bg-primary-lighten-5 px-1 rounded">{{ item.sku || 'N/A' }}</code>
-                    </div>
+        <VCardText class="pa-4" style="max-height: 500px; overflow-y: auto;">
+          <template v-if="kpis.low_stock_products?.length === 0">
+            <div class="text-center py-6 text-medium-emphasis">
+              ¡Excelente! No hay productos con stock menor o igual al mínimo.
+            </div>
+          </template>
+          <template v-else>
+            <div v-for="item in kpis.low_stock_products" :key="item.id" 
+              class="d-flex align-center justify-space-between mb-3 py-3 border-b"
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              
+              <div class="d-flex align-center gap-3">
+                <VAvatar color="error" variant="tonal" rounded="lg">
+                  <VIcon icon="ri-error-warning-line" />
+                </VAvatar>
+                <div>
+                  <div class="font-weight-bold text-high-emphasis">{{ item.description }}</div>
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    <code class="text-primary bg-primary-lighten-5 px-1 rounded">{{ item.sku || 'N/A' }}</code>
                   </div>
                 </div>
+              </div>
 
-                <div class="text-right">
-                  <div class="text-caption text-medium-emphasis mb-1">Stock Actual / Mín</div>
-                  <div class="d-flex align-center justify-end gap-2">
-                    <VChip :color="Number(item.stock) === 0 ? 'error' : 'warning'" size="small" class="font-weight-bold">
-                      {{ item.stock }}
-                    </VChip>
-                    <span class="text-medium-emphasis text-body-2 font-weight-bold">/ {{ item.min_stock }}</span>
-                  </div>
+              <div class="text-right">
+                <div class="text-caption text-medium-emphasis mb-1">Stock Actual / Mín</div>
+                <div class="d-flex align-center justify-end gap-2">
+                  <VChip :color="Number(item.stock) <= 0 ? 'error' : 'warning'" size="small" class="font-weight-bold">
+                    {{ item.stock }}
+                  </VChip>
+                  <span class="text-medium-emphasis text-body-2 font-weight-bold">/ {{ item.min_stock }}</span>
                 </div>
               </div>
-            </template>
-            <template #empty>
-              <div class="text-center text-caption text-medium-emphasis py-4">Fin de la lista</div>
-            </template>
-          </VInfiniteScroll>
+            </div>
+          </template>
         </VCardText>
         <VCardActions class="pa-4 border-t d-flex justify-end"
           style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
-          <VBtn color="primary" variant="text" @click="isStockDialogVisible = false">Cerrar</VBtn>
+          <VBtn color="primary" variant="tonal" @click="isStockDialogVisible = false">Cerrar</VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -935,8 +1042,17 @@ const barChartSeries = computed(() => {
   z-index: 10;
 }
 
-/* Premium Gradient KPI Card */
-.mock-card-gradient {
+/* Premium Gradient KPI Cards */
+.mock-card-gradient-1 {
+  background: linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(115, 103, 240, 0.3) !important;
+}
+
+.mock-card-gradient-2 {
   background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%) !important;
   color: white !important;
   position: relative;
@@ -945,7 +1061,16 @@ const barChartSeries = computed(() => {
   box-shadow: 0 15px 30px rgba(38, 208, 206, 0.3) !important;
 }
 
-.mock-card-gradient::before {
+.mock-card-gradient-3 {
+  background: linear-gradient(135deg, #FF9F43 0%, #FF5A5F 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(255, 159, 67, 0.3) !important;
+}
+
+.mock-card-gradient-1::before, .mock-card-gradient-2::before, .mock-card-gradient-3::before {
   content: '';
   position: absolute;
   top: -50%; left: -50%; width: 200%; height: 200%;
