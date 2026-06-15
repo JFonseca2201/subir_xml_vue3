@@ -15,5 +15,11 @@ const app = createApp(App)
 // Register plugins
 registerPlugins(app)
 
+// Silenciar la advertencia experimental de <Suspense> en Vue 3
+app.config.warnHandler = (msg, instance, trace) => {
+  if (msg.includes('Suspense is an experimental feature')) return
+  console.warn(`[Vue warn]: ${msg}`, trace)
+}
+
 // Mount vue app
 app.mount('#app')

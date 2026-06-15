@@ -110,12 +110,6 @@ const loadInitialData = async () => {
 }
 
 const validateForm = () => {
-  if (!workOrder.value.number) {
-    validationErrorMessage.value = 'El número de orden es requerido'
-    showValidationError.value = true
-
-    return false
-  }
   if (!workOrder.value.client_id) {
     validationErrorMessage.value = 'Debe seleccionar un cliente'
     showValidationError.value = true
@@ -141,18 +135,27 @@ const saveWorkOrder = async () => {
   }
 
   isLoading.value = true
+
+  // Clonar el objeto y eliminar 'number' para que el backend lo genere fresco
+  // y evitar el error de "The number has already been taken" por concurrencia.
+  const payload = { ...workOrder.value }
+  delete payload.number
+
   try {
     const response = await $api('work-orders', {
       method: 'POST',
-      body: workOrder.value,
+      body: payload,
     })
 
     showNotification('Orden de trabajo creada exitosamente', 'success')
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
-    if (error.response && error.response.data) {
-      const errorData = error.response.data
+
+    // ofetch usa error.data para la respuesta JSON
+    const errorData = error.data || (error.response && error.response._data)
+
+    if (errorData) {
       if (errorData.error === 'stock_insufficient' || errorData.error === 'discount_exceeded') {
         showNotification(errorData.message, 'error')
       } else {
@@ -167,11 +170,17 @@ const saveWorkOrder = async () => {
 }
 
 const saveDraft = async () => {
-  if (!validateForm()) return
+  if (!workOrder.value.client_id) {
+    showNotification('Debe seleccionar un cliente para guardar el borrador', 'warning')
+    return
+  }
 
   isLoading.value = true
+
+  const payload = { ...workOrder.value, is_draft: true }
+  delete payload.number
+
   try {
-    const payload = { ...workOrder.value, is_draft: true }
     const response = await $api('work-orders', {
       method: 'POST',
       body: payload,
@@ -181,7 +190,12 @@ const saveDraft = async () => {
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al guardar borrador:', error)
-    showNotification('Error al guardar borrador', 'error')
+    const errorData = error.data || (error.response && error.response._data)
+    if (errorData) {
+      showNotification(errorData.message || 'Error al guardar borrador', 'error')
+    } else {
+      showNotification('Error al guardar borrador', 'error')
+    }
   } finally {
     isLoading.value = false
   }
@@ -258,7 +272,7 @@ const handleClientSearch = () => {
   if (workOrder.value.client_id && clientInputText.value === getClientNameById(workOrder.value.client_id)) {
     return
   }
-  
+
   const q = clientInputText.value.toLowerCase().trim()
   const matches = clients.value.filter(c => {
     const name = getClientName(c).toLowerCase()
@@ -283,7 +297,7 @@ const handleVehicleSearch = () => {
   if (workOrder.value.vehicle_id && vehicleInputText.value === getVehicleNameById(workOrder.value.vehicle_id)) {
     return
   }
-  
+
   const q = vehicleInputText.value.toLowerCase().trim()
   const matches = vehicles.value.filter(v => {
     const name = getVehicleNameById(v.id).toLowerCase()
@@ -443,9 +457,10 @@ onMounted(() => {
       <VCol cols="12">
         <!-- Header -->
         <div class="d-flex align-center mb-6">
-          <VBtn icon="ri-arrow-left-line" variant="text" class="mr-3" size="large" @click="cancel" />
           <div>
-            <h1 class="text-h4 font-weight-bold mb-1">
+
+            <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+              <VIcon icon="ri-draft-line" color="primary" class="me-2" size="28" />
               Nueva Orden de Trabajo
             </h1>
             <p class="text-body-2 text-grey">
@@ -483,19 +498,11 @@ onMounted(() => {
 
               <VCol cols="12" md="4">
                 <div class="mb-4">
-                  <VTextField
-                    v-model="clientInputText"
-                    label="Cliente *"
-                    prepend-inner-icon="ri-user-line"
-                    append-inner-icon="ri-search-line"
-                    variant="outlined"
-                    clearable
-                    :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
-                    @keyup.enter="handleClientSearch"
-                    @blur="handleClientSearch"
-                    @click:append-inner="showClientSelectDialog = true"
-                    @click:clear="workOrder.client_id = null"
-                  >
+                  <VTextField v-model="clientInputText" label="Cliente *" prepend-inner-icon="ri-user-line"
+                    append-inner-icon="ri-search-line" variant="outlined" clearable
+                    :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']" @keyup.enter="handleClientSearch"
+                    @blur="handleClientSearch" @click:append-inner="showClientSelectDialog = true"
+                    @click:clear="workOrder.client_id = null">
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary">
                         <VIcon icon="ri-add-line" />
@@ -515,18 +522,10 @@ onMounted(() => {
 
               <VCol cols="12" md="4">
                 <div class="mb-4" style="text-transform: uppercase;">
-                  <VTextField
-                    v-model="vehicleInputText"
-                    label="Vehículo"
-                    prepend-inner-icon="ri-car-line"
-                    append-inner-icon="ri-search-line"
-                    variant="outlined"
-                    clearable
-                    @keyup.enter="handleVehicleSearch"
-                    @blur="handleVehicleSearch"
-                    @click:append-inner="showVehicleSelectDialog = true"
-                    @click:clear="workOrder.vehicle_id = null"
-                  >
+                  <VTextField v-model="vehicleInputText" label="Vehículo" prepend-inner-icon="ri-car-line"
+                    append-inner-icon="ri-search-line" variant="outlined" clearable @keyup.enter="handleVehicleSearch"
+                    @blur="handleVehicleSearch" @click:append-inner="showVehicleSelectDialog = true"
+                    @click:clear="workOrder.vehicle_id = null">
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary" @click="showVehicleDialog = true">
                         <VIcon icon="ri-add-line" />
@@ -556,8 +555,7 @@ onMounted(() => {
                     :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
                     item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
                     variant="outlined" clearable :loading="isLoading" multiple chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
-                    class="fix-notch-bug">
+                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']" class="fix-notch-bug">
                     <template #chip="{ props, item }">
                       <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
@@ -628,9 +626,9 @@ onMounted(() => {
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
                 <VAutocomplete v-model="productSearch" :items="limitedProducts" item-title="description" item-value="id"
-                  label="Buscar y agregar producto por nombre, código o SKU..."
-                  prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details return-object
-                  :custom-filter="() => true" @update:search="onProductSearch" @update:model-value="(val) => val && addProductFromSearch(val)"
+                  label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
+                  variant="outlined" clearable hide-details return-object :custom-filter="() => true"
+                  @update:search="onProductSearch" @update:model-value="(val) => val && addProductFromSearch(val)"
                   :menu-props="{ maxWidth: 0 }">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
@@ -654,7 +652,8 @@ onMounted(() => {
                     </VListItem>
                   </template>
                   <template #append-item>
-                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts" class="pa-4 text-center">
+                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts"
+                      class="pa-4 text-center">
                       <VProgressCircular indeterminate size="24" color="primary" />
                     </div>
                   </template>
@@ -766,7 +765,7 @@ onMounted(() => {
                 </div>
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                    }}</span>
+                  }}</span>
                   <VChip size="small" color="primary" label>
                     {{ workOrder.items.length }} items
                   </VChip>
@@ -825,16 +824,11 @@ onMounted(() => {
           <VBtn icon="ri-close-line" variant="text" @click="showClientSelectDialog = false" />
         </VCardTitle>
         <VCardText class="pa-4">
-          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="clients"
-            :search="clientSearchQuery"
-            :headers="clientHeaders"
-            :items-per-page="10"
-            hover
+          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line"
+            variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable :items="clients" :search="clientSearchQuery" :headers="clientHeaders" :items-per-page="10" hover
             class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { workOrder.client_id = item.id; showClientSelectDialog = false; }"
-          >
+            @click:row="(event, { item }) => { workOrder.client_id = item.id; showClientSelectDialog = false; }">
             <template #item.full_name="{ item }">
               {{ getClientName(item) }}
             </template>
@@ -851,16 +845,11 @@ onMounted(() => {
           <VBtn icon="ri-close-line" variant="text" @click="showVehicleSelectDialog = false" />
         </VCardTitle>
         <VCardText class="pa-4">
-          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="vehicles"
-            :search="vehicleSearchQuery"
-            :headers="vehicleHeaders"
-            :items-per-page="10"
-            hover
-            class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { workOrder.vehicle_id = item.id; showVehicleSelectDialog = false; }"
-          >
+          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line"
+            variant="outlined" clearable hide-details class="mb-4" />
+          <VDataTable :items="vehicles" :search="vehicleSearchQuery" :headers="vehicleHeaders" :items-per-page="10"
+            hover class="elevation-1 cursor-pointer"
+            @click:row="(event, { item }) => { workOrder.vehicle_id = item.id; showVehicleSelectDialog = false; }">
             <template #item.brand_model="{ item }">
               {{ getBrandNameById(item.brand) }} {{ item.model || '' }}
             </template>

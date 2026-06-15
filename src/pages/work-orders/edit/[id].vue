@@ -209,16 +209,19 @@ const saveWorkOrder = async () => {
     showNotification('Orden de trabajo finalizada exitosamente', 'success')
     router.push({ name: 'work-orders-list' })
   } catch (error) {
-    console.error('Error al crear orden de trabajo:', error)
-    if (error.response && error.response.data) {
-      const errorData = error.response.data
+    console.error('Error al actualizar orden de trabajo:', error)
+    
+    // ofetch usa error.data para la respuesta JSON
+    const errorData = error.data || (error.response && error.response._data)
+
+    if (errorData) {
       if (errorData.error === 'stock_insufficient' || errorData.error === 'discount_exceeded') {
         showNotification(errorData.message, 'error')
       } else {
-        showNotification(errorData.message || 'Error al crear la orden de trabajo', 'error')
+        showNotification(errorData.message || 'Error al actualizar la orden de trabajo', 'error')
       }
     } else {
-      showNotification('Error al crear la orden de trabajo', 'error')
+      showNotification('Error al actualizar la orden de trabajo', 'error')
     }
   } finally {
     isLoading.value = false
@@ -244,7 +247,12 @@ const saveDraft = async () => {
     router.push({ name: 'work-orders-list' })
   } catch (error) {
     console.error('Error al guardar borrador:', error)
-    showNotification('Error al guardar borrador', 'error')
+    const errorData = error.data || (error.response && error.response._data)
+    if (errorData) {
+      showNotification(errorData.message || 'Error al guardar borrador', 'error')
+    } else {
+      showNotification('Error al guardar borrador', 'error')
+    }
   } finally {
     isLoading.value = false
   }

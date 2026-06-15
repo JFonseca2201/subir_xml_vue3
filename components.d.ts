@@ -130,5 +130,6 @@ declare module 'vue' {
     WarehouseAddDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseAddDialog.vue')['default']
     WarehouseDeleteDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseDeleteDialog.vue')['default']
     WarehouseEditDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseEditDialog.vue')['default']
+    WorkOrderTimelineDialog: typeof import('./src/components/dialogs/WorkOrderTimelineDialog.vue')['default']
   }
 }
