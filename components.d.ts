@@ -7,9 +7,6 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AAutocompleteCliente: typeof import('./src/components/AAutocompleteCliente.vue')['default']
-    AAutocompleteProduct: typeof import('./src/components/AAutocompleteProduct.vue')['default']
-    AAutocompleteVehicle: typeof import('./src/components/AAutocompleteVehicle.vue')['default']
     AccountFormDialog: typeof import('./src/components/inventory/accounts/AccountFormDialog.vue')['default']
     AddAuthenticatorAppDialog: typeof import('./src/components/dialogs/AddAuthenticatorAppDialog.vue')['default']
     AddEditAddressDialog: typeof import('./src/components/dialogs/AddEditAddressDialog.vue')['default']

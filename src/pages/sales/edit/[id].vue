@@ -74,7 +74,13 @@ const searchProduct = ref(null)
 const isAddServiceDialogVisible = ref(false)
 
 // Reglas de validación
-const requiredRule = v => !!v || 'Campo obligatorio'
+// Regla de campo obligatorio que acepta 0 como valor válido
+const requiredRule = v => (
+  v !== null &&
+  v !== undefined &&
+  v !== '' &&
+  !(typeof v === 'number' && Number.isNaN(v))
+) || 'Campo obligatorio'
 
 // Helpers
 const getClientName = client => {

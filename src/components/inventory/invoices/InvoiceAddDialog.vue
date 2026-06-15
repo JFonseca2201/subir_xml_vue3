@@ -33,7 +33,6 @@ const xmlTotals = computed(() => {
   if (!xmlData.value?.infoFactura) return { subtotal: 0, iva: 0, total: 0 }
 
   const subtotalRaw = parseFloat(xmlData.value.infoFactura.totalSinImpuestos || 0)
-    + parseFloat(xmlData.value.infoFactura.totalDescuento || 0)
 
   let ivaRaw = 0
   const impuestos = xmlData.value.infoFactura.totalConImpuestos?.totalImpuesto
@@ -312,7 +311,7 @@ const storeXml = async () => {
     formData.append('xml', selectedFile.value)
     formData.append('item_type', selectedRadio.value)
 
-    if (totalAsumidoTerceros.value > 0) {
+    if (isSharedInvoice.value) {
       formData.append('taller_subtotal', tallerMath.value.subtotal)
       formData.append('taller_iva', tallerMath.value.iva)
       formData.append('taller_total', tallerMath.value.total)
@@ -320,6 +319,14 @@ const storeXml = async () => {
       formData.append('terceros_subtotal', tercerosMath.value.subtotal)
       formData.append('terceros_iva', tercerosMath.value.iva)
       formData.append('terceros_total', tercerosMath.value.total)
+
+      const selectedIndices = [];
+      getDetallesArray().forEach((item, index) => {
+        if (item._selectedForInventory) {
+          selectedIndices.push(index);
+        }
+      });
+      formData.append('selected_indices', JSON.stringify(selectedIndices));
     }
 
     const resp = await $api('invoices/import-xml', {

@@ -32,7 +32,12 @@ const pedido = ref({
 })
 
 // Reglas de validación
-const requiredRule = v => !!v || 'Campo obligatorio'
+const requiredRule = v => (
+  v !== null &&
+  v !== undefined &&
+  v !== '' &&
+  !(typeof v === 'number' && Number.isNaN(v))
+) || 'Campo obligatorio'
 
 // Cargar distribuidores al iniciar
 const loadSuppliers = async () => {
