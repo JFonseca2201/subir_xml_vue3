@@ -6,7 +6,6 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import IncomeDialog from '@/components/inventory/finances-records/IncomeDialog.vue'
 import ExpenseDialog from '@/components/inventory/finances-records/ExpenseDialog.vue'
 import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.vue'
-import GroupedMovementsTable from '@/components/inventory/finances-records/GroupedMovementsTable.vue'
 
 // Composable instances
 const loader = useLoaderStore()
@@ -112,6 +111,60 @@ const formatCurrency = (value) => {
         style: 'currency',
         currency: 'USD'
     }).format(value)
+}
+
+const isGeneratingPDF = ref(false)
+
+const generatePDF = async () => {
+    isGeneratingPDF.value = true
+    try {
+        const response = await $api('financial-movements/pdf', {
+            method: 'POST',
+            responseType: 'blob'
+        })
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `reporte_financiero_${new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+        showNotification('Reporte PDF generado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al generar PDF:', error)
+        showNotification('Error al generar el reporte PDF', 'error')
+    } finally {
+        isGeneratingPDF.value = false
+    }
+}
+
+const generatingSingleId = ref(null)
+
+const generateSinglePDF = async (movement) => {
+    generatingSingleId.value = movement.id
+    try {
+        const response = await $api(`financial-movements/${movement.id}/pdf`, {
+            method: 'GET',
+            responseType: 'blob'
+        })
+        const blob = new Blob([response], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `comprobante_${movement.type === 0 ? 'ingreso' : 'egreso'}_${movement.id}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        window.URL.revokeObjectURL(url)
+        showNotification('Comprobante PDF generado exitosamente', 'success')
+    } catch (error) {
+        console.error('Error al generar PDF individual:', error)
+        showNotification('Error al generar el comprobante PDF', 'error')
+    } finally {
+        generatingSingleId.value = null
+    }
 }
 
 const openIncomeDialog = () => {
@@ -341,10 +394,17 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="d-flex gap-3">
-                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-circle-line" @click="openIncomeDialog">
+                        <VBtn color="info" variant="elevated" prepend-icon="ri-file-pdf-line"
+                            :loading="isGeneratingPDF"
+                            @click="generatePDF">
+                            Generar PDF
+                        </VBtn>
+                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-circle-line"
+                            @click="openIncomeDialog">
                             Nuevo Ingreso
                         </VBtn>
-                        <VBtn color="error" variant="elevated" prepend-icon="ri-subtract-line" @click="openExpenseDialog">
+                        <VBtn color="error" variant="elevated" prepend-icon="ri-subtract-line"
+                            @click="openExpenseDialog">
                             Nuevo Egreso
                         </VBtn>
                     </div>
@@ -367,7 +427,8 @@ onMounted(() => {
                     <VCardText class="pa-5">
                         <div class="d-flex justify-space-between align-center">
                             <span class="text-body-1 text-medium-emphasis">Suma de ingresos</span>
-                            <span class="text-h5 font-weight-black text-success">{{ formatCurrency(totals.income) }}</span>
+                            <span class="text-h5 font-weight-black text-success">{{ formatCurrency(totals.income)
+                                }}</span>
                         </div>
                     </VCardText>
                 </VCard>
@@ -386,7 +447,8 @@ onMounted(() => {
                     <VCardText class="pa-5">
                         <div class="d-flex justify-space-between align-center">
                             <span class="text-body-1 text-medium-emphasis">Suma de egresos</span>
-                            <span class="text-h5 font-weight-black text-error">{{ formatCurrency(totals.expenses) }}</span>
+                            <span class="text-h5 font-weight-black text-error">{{ formatCurrency(totals.expenses)
+                                }}</span>
                         </div>
                     </VCardText>
                 </VCard>
@@ -405,7 +467,10 @@ onMounted(() => {
                     <VCardText class="pa-5">
                         <div class="d-flex justify-space-between align-center">
                             <span class="text-body-1 text-medium-emphasis">Diferencia neta</span>
-                            <span class="text-h5 font-weight-black" :class="totals.balance >= 0 ? 'text-primary' : 'text-warning'">{{ formatCurrency(totals.balance) }}</span>
+                            <span class="text-h5 font-weight-black"
+                                :class="totals.balance >= 0 ? 'text-primary' : 'text-warning'">{{
+                                    formatCurrency(totals.balance)
+                                }}</span>
                         </div>
                     </VCardText>
                 </VCard>
@@ -430,9 +495,13 @@ onMounted(() => {
                             </VChip>
                         </div>
                         <div class="d-flex gap-4">
-                            <span class="text-success text-body-2 font-weight-bold">Ingresos: +{{ formatCurrency(day.dailyIncome) }}</span>
-                            <span class="text-error text-body-2 font-weight-bold">Egresos: -{{ formatCurrency(day.dailyExpenses) }}</span>
-                            <VChip size="small" :color="day.dailyBalance >= 0 ? 'primary' : 'warning'" variant="tonal" class="font-weight-bold">
+                            <span class="text-success text-body-2 font-weight-bold">Ingresos: +{{
+                                formatCurrency(day.dailyIncome) }}</span>
+                            <span class="text-error text-body-2 font-weight-bold">Egresos: -{{
+                                formatCurrency(day.dailyExpenses)
+                                }}</span>
+                            <VChip size="small" :color="day.dailyBalance >= 0 ? 'primary' : 'warning'" variant="tonal"
+                                class="font-weight-bold">
                                 Balance: {{ formatCurrency(day.dailyBalance) }}
                             </VChip>
                         </div>
@@ -457,8 +526,10 @@ onMounted(() => {
                                     {{ movement.work_order_number || movement.invoice_number || '-' }}
                                 </td>
                                 <td>
-                                    <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal" size="small" class="font-weight-bold">
-                                        <VIcon start size="14">{{ movement.type === 0 ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line' }}</VIcon>
+                                    <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal"
+                                        size="small" class="font-weight-bold">
+                                        <VIcon start size="14">{{ movement.type === 0 ? 'ri-arrow-up-circle-line' :
+                                            'ri-arrow-down-circle-line' }}</VIcon>
                                         {{ movement.type === 0 ? 'INGRESO' : 'EGRESO' }}
                                     </VChip>
                                 </td>
@@ -469,13 +540,19 @@ onMounted(() => {
                                         {{ getAccountName(movement) }}
                                     </div>
                                 </td>
-                                <td class="font-weight-bold text-end" :class="movement.type === 0 ? 'text-success' : 'text-error'">
+                                <td class="font-weight-bold text-end"
+                                    :class="movement.type === 0 ? 'text-success' : 'text-error'">
                                     {{ movement.type === 0 ? '+' : '-' }}{{ formatCurrency(movement.amount) }}
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-center gap-1">
-                                        <VBtn title="Editar" size="small" variant="tonal" color="primary" icon="ri-edit-line" @click="editMovement(movement)" />
-                                        <VBtn title="Eliminar" size="small" variant="tonal" color="error" icon="ri-delete-bin-line" @click="deleteMovement(movement)" />
+                                        <VBtn title="Comprobante PDF" size="small" variant="tonal" color="info"
+                                            icon="ri-file-pdf-line" @click="generateSinglePDF(movement)"
+                                            :loading="generatingSingleId === movement.id" />
+                                        <VBtn title="Editar" size="small" variant="tonal" color="primary"
+                                            icon="ri-edit-line" @click="editMovement(movement)" />
+                                        <VBtn title="Eliminar" size="small" variant="tonal" color="error"
+                                            icon="ri-delete-bin-line" @click="deleteMovement(movement)" />
                                     </div>
                                 </td>
                             </tr>

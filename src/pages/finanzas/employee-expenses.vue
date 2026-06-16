@@ -163,6 +163,32 @@ const formatCurrency = value => {
   }).format(value)
 }
 
+const generatePDF = async item => {
+  try {
+    const response = await $api(`employee-expenses/${item.type}/${item.id}/pdf`, {
+      responseType: 'blob',
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    
+    // Formatear nombre del empleado (quitar espacios o dejarlos)
+    const safeName = item.employee_name ? item.employee_name.replace(/\s+/g, '_') : 'empleado'
+    const dateStr = new Date().toISOString().split('T')[0]
+    const fileName = `${item.type}_${item.id}_${safeName}_${dateStr}.pdf`
+
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error al generar PDF:', error)
+    showNotification('Error al generar el PDF del comprobante.', 'error')
+  }
+}
+
 const filteredExpenses = computed(() => {
   let filtered = expenses.value
   if (selectedType.value === 'payments') filtered = filtered.filter(e => e.type === 'payment')
@@ -337,6 +363,7 @@ onMounted(() => {
 
           <template #item.actions="{ item }">
             <div class="d-flex gap-2 justify-center">
+              <VBtn title="Descargar PDF" icon="ri-file-pdf-line" variant="tonal" size="small" color="info" @click="generatePDF(item)" />
               <VBtn title="Editar" icon="ri-edit-line" variant="tonal" size="small" color="primary" :disabled="item.type === 'advance' && item.is_deducted" @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)" />
               <VBtn title="Eliminar" icon="ri-delete-bin-line" variant="tonal" size="small" color="error" :disabled="item.type === 'advance' && item.is_deducted" @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)" />
             </div>
