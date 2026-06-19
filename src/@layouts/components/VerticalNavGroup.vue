@@ -201,60 +201,10 @@ const isMounted = useMounted()
 <style lang="scss">
 .layout-vertical-nav {
   .nav-group {
-    margin: 0.3rem 0.8rem;
-    
     &-label {
       display: flex;
       align-items: center;
       cursor: pointer;
-      padding: 0.6rem 1rem;
-      border-radius: 12px;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      border: 1px solid transparent;
-
-      &:hover {
-        background: rgba(var(--v-theme-primary), 0.08);
-        transform: scale(1.02) translateX(4px);
-        border: 1px solid rgba(var(--v-theme-primary), 0.2);
-
-        .nav-item-title, .nav-item-icon {
-          color: rgb(var(--v-theme-primary));
-          font-weight: 500;
-        }
-      }
-    }
-
-    &.active > .nav-group-label {
-      background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15) 0%, rgba(var(--v-theme-primary), 0.05) 100%);
-      border: 1px solid rgba(var(--v-theme-primary), 0.3);
-      
-      .nav-item-title {
-        color: rgb(var(--v-theme-primary));
-        font-weight: 700;
-      }
-      
-      .nav-item-icon {
-        color: rgb(var(--v-theme-primary));
-        transform: scale(1.05);
-      }
-    }
-
-    /* Ocultar el fondo y bordes en los hijos directos para que fluyan naturalmente */
-    .nav-group-children {
-      margin-top: 0.2rem;
-      .nav-link {
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-        
-        a {
-          padding-left: 2rem;
-          border-radius: 10px;
-          
-          &:hover {
-            transform: scale(1.01) translateX(4px);
-          }
-        }
-      }
     }
   }
 }

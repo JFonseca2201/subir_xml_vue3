@@ -167,36 +167,6 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
 @use "@configured-variables" as variables;
 @use "@layouts/styles/mixins";
 
-// ✨ Extremely Elegant & Chevere Sidebar Redesign (Floating Panel)
-.layout-vertical-nav {
-  /* Fondo moderno oscuro/vidrio */
-  background: linear-gradient(145deg, rgba(var(--v-theme-surface), 0.95) 0%, rgba(var(--v-theme-surface), 0.85) 100%) !important;
-  backdrop-filter: blur(24px) saturate(250%);
-  border: 1px solid rgba(var(--v-theme-primary), 0.15) !important;
-  
-  /* Hacerlo Flotante */
-  height: calc(100vh - 2rem) !important;
-  top: 1rem !important;
-  left: 1rem !important;
-  border-radius: 1.5rem !important;
-  overflow: hidden;
-
-  /* Quitar las transiciones nativas raras de inline-size si las tiene o acomodarlas */
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-
-  /* Detalle de línea en la cabecera */
-  .nav-header {
-    border-bottom: 1px dashed rgba(var(--v-theme-on-surface), 0.1);
-    margin-bottom: 0.5rem;
-    padding-bottom: 1rem;
-    padding-top: 1.5rem;
-  }
-}
-
-/* Ajustar el layout principal para que la página no se monte en el sidebar flotante */
-body .layout-wrapper.layout-nav-type-vertical .layout-page-content {
-  padding-left: 1rem;
-}
 
 // 👉 Vertical Nav
 .layout-vertical-nav {

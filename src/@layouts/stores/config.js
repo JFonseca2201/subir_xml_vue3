@@ -19,7 +19,8 @@ export const useLayoutConfigStore = defineStore('layoutConfig', () => {
   const isNavbarBlurEnabled = cookieRef('isNavbarBlurEnabled', layoutConfig.navbar.navbarBlur)
 
   // 👉 Vertical Nav Collapsed
-  const isVerticalNavCollapsed = cookieRef('isVerticalNavCollapsed', layoutConfig.verticalNav.isVerticalNavCollapsed)
+  // Modificado para que siempre inicie expandido (fijo) ignorando la cookie vieja
+  const isVerticalNavCollapsed = ref(layoutConfig.verticalNav.isVerticalNavCollapsed)
 
   // 👉 App Content Width
   const appContentWidth = cookieRef('appContentWidth', layoutConfig.app.contentWidth)

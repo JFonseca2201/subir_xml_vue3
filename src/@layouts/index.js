@@ -58,11 +58,7 @@ export const createLayouts = userConfig => {
         "isNavbarBlurEnabled",
         userConfig.navbar?.navbarBlur ?? layoutConfig.navbar.navbarBlur,
       ).value,
-      isVerticalNavCollapsed: cookieRef(
-        "isVerticalNavCollapsed",
-        userConfig.verticalNav?.isVerticalNavCollapsed ??
-          layoutConfig.verticalNav.isVerticalNavCollapsed,
-      ).value,
+      isVerticalNavCollapsed: false,
 
       // isAppRTL: userConfig.app?.isRTL ?? config.app.isRTL,
       // isLessThanOverlayNavBreakpoint: false,
