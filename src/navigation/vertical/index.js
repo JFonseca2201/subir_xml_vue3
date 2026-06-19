@@ -16,6 +16,51 @@ export default [
     icon: { icon: 'ri-roadster-line' },
     to: 'vehicles-list',
   },
+
+
+  { heading: 'Finanzas' },
+  {
+    title: 'Cuentas/Operaciones',
+    icon: { icon: 'ri-bank-line' },
+    children: [
+      {
+        title: 'Cuentas',
+        to: { name: 'accounts-index' },
+        icon: { icon: 'ri-bank-card-line' },
+      },
+      {
+        title: 'Operaciones',
+        to: { name: 'operations-index' },
+        icon: { icon: 'ri-exchange-funds-line' },
+        activeMatch: /operations|transfers|employee-expenses|aportes|movements/,
+      },
+      {
+        title: 'Arqueo de Caja',
+        to: { name: 'finanzas-arqueo' },
+        icon: { icon: 'ri-safe-2-line' },
+      },
+    ],
+  },
+
+
+  { heading: 'Servicios' },
+
+  {
+    title: 'Ordenes de trabajo',
+    icon: { icon: 'ri-tools-line' },
+    children: [
+      {
+        title: 'Registrar',
+        to: 'work-orders-add',
+        icon: { icon: 'ri-file-list-3-line' },
+      },
+      {
+        title: 'Listado',
+        to: 'work-orders-list',
+        icon: { icon: 'ri-file-list-3-line' },
+      },
+    ],
+  },
   {
     title: 'Ventas',
     icon: { icon: 'ri-money-dollar-box-line' },
@@ -37,12 +82,12 @@ export default [
     icon: { icon: 'ri-box-3-line' },
     children: [
       {
-        title: 'Registrar Pedido',
+        title: 'Registrar',
         to: 'sales-pedidos-distribuidor',
         icon: { icon: 'ri-radio-button-line' },
       },
       {
-        title: 'Listado Pedidos',
+        title: 'Listado',
         to: 'sales-pedidos-distribuidor-list',
         icon: { icon: 'ri-radio-button-line' },
       },
@@ -61,24 +106,6 @@ export default [
         title: 'Listado',
         to: 'returns-list',
         icon: { icon: 'ri-radio-button-line' },
-      },
-    ],
-  },
-
-  { heading: 'Servicios' },
-  {
-    title: 'Ordenes de trabajo',
-    icon: { icon: 'ri-tools-line' },
-    children: [
-      {
-        title: 'Nueva Orden',
-        to: 'work-orders-add',
-        icon: { icon: 'ri-file-list-3-line' },
-      },
-      {
-        title: 'Listado',
-        to: 'work-orders-list',
-        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
@@ -117,29 +144,7 @@ export default [
     ],
   },
 
-  { heading: 'Finanzas' },
-  {
-    title: 'Cuentas y Operaciones',
-    icon: { icon: 'ri-bank-line' },
-    children: [
-      {
-        title: 'Cuentas',
-        to: { name: 'accounts-index' },
-        icon: { icon: 'ri-bank-card-line' },
-      },
-      {
-        title: 'Operaciones',
-        to: { name: 'operations-index' },
-        icon: { icon: 'ri-exchange-funds-line' },
-        activeMatch: /operations|transfers|employee-expenses|aportes|movements/,
-      },
-      {
-        title: 'Arqueo de Caja',
-        to: { name: 'finanzas-arqueo' },
-        icon: { icon: 'ri-safe-2-line' },
-      },
-    ],
-  },
+
 
   { heading: 'Administración' },
   {

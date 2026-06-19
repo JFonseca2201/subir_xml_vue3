@@ -621,7 +621,9 @@ onMounted(() => {
                   <td class="text-right py-3 px-4">
                     <div v-if="item" class="font-weight-medium text-body-1"
                       :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
-                      <div v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'" class="text-caption text-medium-emphasis">
+                      <div
+                        v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
+                        class="text-caption text-medium-emphasis">
                         De: {{ formatCurrency(item.total) }}
                       </div>
                       {{ formatCurrency(getPaidAmount(item)) }}
@@ -669,9 +671,9 @@ onMounted(() => {
                               v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
                               prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                               class="text-success text-body-2" @click="openPaymentDialog(item)" />
-                            <VListItem v-if="item.document_type === 'quote'" prepend-icon="ri-mail-send-line"
-                              title="Enviar por Correo" class="text-secondary text-body-2"
-                              :loading="mailLoading[item.id]" @click="mandarCotizacionMail(item.id)">
+                            <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
+                              class="text-secondary text-body-2" :loading="mailLoading[item.id]"
+                              @click="mandarCotizacionMail(item.id)">
                             </VListItem>
                             <VDivider class="my-1" />
                             <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
@@ -768,7 +770,9 @@ onMounted(() => {
                     <!-- Pie Tarjeta: Totales y Acciones -->
                     <VCardActions class="pa-3 bg-grey-lighten-5 d-flex justify-space-between align-center">
                       <div class="d-flex flex-column">
-                        <span v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'" class="text-caption text-medium-emphasis">
+                        <span
+                          v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
+                          class="text-caption text-medium-emphasis">
                           De: {{ formatCurrency(item.total) }}
                         </span>
                         <span class="text-subtitle-1 font-weight-medium"
@@ -830,13 +834,7 @@ onMounted(() => {
             density="comfortable" show-first-last-page />
         </div>
       </VCardActions>
-
     </VCard>
-
-
-
-
-
 
     <!-- Dialogs -->
     <SaleViewDialog v-if="isViewDialogVisible" v-model:is-dialog-visible="isViewDialogVisible" :sale-data="selectedSale"
