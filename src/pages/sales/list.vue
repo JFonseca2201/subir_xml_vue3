@@ -132,22 +132,31 @@ const formatCurrency = value => {
 
 
 //enviar correo electronico
-const mailLoading = ref({})
+const isMailDialogVisible = ref(false)
+const mailSaleSelected = ref(null)
+const isMailSending = ref(false)
 
-const mandarCotizacionMail = async id => {
-  mailLoading.value[id] = true
+const openMailDialog = sale => {
+  mailSaleSelected.value = sale
+  isMailDialogVisible.value = true
+}
+
+const confirmSendMail = async () => {
+  if (!mailSaleSelected.value) return
+  isMailSending.value = true
   try {
-    const response = await $api(`sales/${id}/enviar-cotizacion`, { method: 'POST' })
+    const response = await $api(`sales/${mailSaleSelected.value.id}/enviar-cotizacion`, { method: 'POST' })
     if (response.success) {
-      showNotification(response.message || '¡Cotización enviada al correo con éxito, mi compa!', 'success')
+      showNotification(response.message || '¡Correo enviado con éxito, mi compa!', 'success')
+      isMailDialogVisible.value = false
     } else {
-      showNotification(response.message || 'Error al despachar el correo de la cotización.', 'error')
+      showNotification(response.message || 'Error al despachar el correo.', 'error')
     }
   } catch (error) {
     console.error(error)
-    showNotification('Error al despachar el correo de la cotización.', 'error')
+    showNotification('Error al despachar el correo.', 'error')
   } finally {
-    mailLoading.value[id] = false
+    isMailSending.value = false
   }
 }
 
@@ -672,9 +681,7 @@ onMounted(() => {
                               prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                               class="text-success text-body-2" @click="openPaymentDialog(item)" />
                             <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
-                              class="text-secondary text-body-2" :loading="mailLoading[item.id]"
-                              @click="mandarCotizacionMail(item.id)">
-                            </VListItem>
+                              class="text-secondary text-body-2" @click="openMailDialog(item)" />
                             <VDivider class="my-1" />
                             <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
                               title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
@@ -803,6 +810,8 @@ onMounted(() => {
                                 v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
                                 prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                                 class="text-success text-body-2" @click="openPaymentDialog(item)" />
+                              <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
+                                class="text-secondary text-body-2" @click="openMailDialog(item)" />
                               <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-edit-line"
                                 title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
                               <VDivider class="my-1" />
@@ -877,6 +886,79 @@ onMounted(() => {
           </VBtn>
           <VBtn color="primary" variant="flat" class="text-none font-weight-medium px-4" @click="registerPayment">
             Confirmar Pago
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Mail Confirmation Dialog -->
+    <VDialog v-model="isMailDialogVisible" max-width="480">
+      <VCard class="rounded-xl overflow-hidden elevation-10" border="0">
+        <!-- Header con gradiente suave y elegante -->
+        <div class="pa-6 text-center position-relative" style="background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1) 0%, rgba(var(--v-theme-primary), 0.85) 100%);">
+          <VAvatar color="white" size="64" class="elevation-3 mb-4">
+            <VIcon icon="ri-mail-send-line" size="32" color="primary" />
+          </VAvatar>
+          <h3 class="text-h5 text-white font-weight-bold mb-1">Confirmar Envío</h3>
+          <p class="text-white text-body-2 mb-0" style="opacity: 0.85;">Se enviará el documento por correo electrónico</p>
+        </div>
+
+        <VCardText class="pa-6">
+          <div class="text-center mb-6">
+            <p class="text-body-2 text-medium-emphasis mb-2">
+              ¿Estás seguro de enviar este documento a:
+            </p>
+            <div class="text-h6 font-weight-bold text-grey-darken-4 mb-1">
+              {{ getClientName(mailSaleSelected?.client) }}
+            </div>
+            <div class="d-flex align-center justify-center text-body-2" :class="mailSaleSelected?.client?.email ? 'text-medium-emphasis' : 'text-error font-weight-medium'">
+              <VIcon :icon="mailSaleSelected?.client?.email ? 'ri-mail-line' : 'ri-error-warning-line'" size="16" class="mr-2" />
+              {{ mailSaleSelected?.client?.email || 'El cliente no tiene correo registrado' }}
+            </div>
+          </div>
+
+          <!-- Tarjeta interna de detalles -->
+          <VCard variant="tonal" color="primary" class="rounded-lg border-opacity-25">
+            <VCardText class="pa-4 d-flex justify-space-between align-center">
+              <div class="d-flex flex-column">
+                <span class="text-caption font-weight-bold text-primary text-uppercase mb-1" style="letter-spacing: 0.5px;">Documento</span>
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-file-text-line" size="18" color="primary" />
+                  <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{ mailSaleSelected?.document_number }}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <VChip size="small" :color="getDocumentTypeInfo(mailSaleSelected?.document_type)?.color" variant="elevated" elevation="1" class="font-weight-medium text-capitalize px-3">
+                  {{ getDocumentTypeInfo(mailSaleSelected?.document_type)?.text }}
+                </VChip>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCardText>
+
+        <VDivider class="border-opacity-25" />
+
+        <VCardActions class="pa-4 px-6 justify-space-between bg-grey-lighten-5">
+          <VBtn 
+            color="grey-darken-2" 
+            variant="text" 
+            class="text-none font-weight-medium rounded-lg px-4"
+            :disabled="isMailSending"
+            @click="isMailDialogVisible = false"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn 
+            color="primary" 
+            variant="elevated" 
+            elevation="2"
+            class="text-none font-weight-bold rounded-lg px-6" 
+            :loading="isMailSending"
+            :disabled="!mailSaleSelected?.client?.email"
+            @click="confirmSendMail"
+          >
+            <VIcon icon="ri-send-plane-fill" class="mr-2" size="18" />
+            Enviar Ahora
           </VBtn>
         </VCardActions>
       </VCard>
