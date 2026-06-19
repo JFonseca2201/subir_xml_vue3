@@ -25,6 +25,9 @@ const getUserId = () => {
 
 const formRef = ref(null)
 const isLoading = ref(false)
+const isSavingDraft = ref(false)
+const isDispatching = ref(false)
+const isSubmitting = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 
@@ -87,6 +90,7 @@ const requiredRule = v => (
 
 // Watch para cambiar estado de pago cuando es crédito
 const onCreditChange = () => {
+  sale.value.is_credited = !sale.value.is_credited
   if (sale.value.is_credited) {
     sale.value.payment_status = 'pending'
   } else {
@@ -121,7 +125,7 @@ const paymentDistributions = ref([])
 
 // Inicializar con un pago distribuido cuando hay items
 const initializePaymentDistribution = () => {
-  if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
+  if (paymentDistributions.value.length === 0) {
     const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
     paymentDistributions.value.push({
       account_id: cajaChica ? cajaChica.id : null,
@@ -360,6 +364,18 @@ const removeItem = index => {
   sale.value.items.splice(index, 1)
 }
 
+const addTemporaryProduct = () => {
+  sale.value.items.push({
+    product_id: null,
+    description: 'Producto Temporal',
+    quantity: 1,
+    price: 0,
+    discount: 0,
+    type: 'product',
+    sku: ''
+  })
+}
+
 const getProductStock = productId => {
   const product = products.value.find(p => p.id === productId)
 
@@ -416,9 +432,24 @@ const totalDistributed = computed(() => {
   return paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 })
 
+
+
 const remainingAmount = computed(() => {
   return total.value - totalDistributed.value
 })
+
+const handlePaymentAmountChange = (dist, index) => {
+  const otherPaymentsTotal = paymentDistributions.value.reduce((sum, d, i) => {
+    return i !== index ? sum + (Number(d.amount) || 0) : sum
+  }, 0)
+
+  const maxAllowed = Number((total.value - otherPaymentsTotal).toFixed(2))
+
+  if (Number(dist.amount) > maxAllowed) {
+    dist.amount = maxAllowed > 0 ? maxAllowed : 0
+    showNotification(`El pago no puede exceder el saldo restante ($${maxAllowed.toFixed(2)})`, 'warning')
+  }
+}
 
 const getPaymentIcon = method => {
   const icons = {
@@ -773,7 +804,7 @@ const submitForm = async () => {
   if (sale.value.document_type !== 'quote') {
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 
-    if (paymentDistributions.value.length === 0 || totalDist <= 0) {
+    if ((paymentDistributions.value.length === 0 || totalDist <= 0) && !sale.value.is_credited) {
       showValidationError.value = true
       validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
@@ -787,15 +818,17 @@ const submitForm = async () => {
       return
     }
 
-    // Si el pago no está completado, el estado debe quedar en pendiente. Solo cuando se haya completado el total, cambia a pagado.
+    // Si el pago no está completado, el estado debe quedar en pendiente o partial.
     if (Math.abs(totalDist - total.value) <= 0.01) {
       sale.value.payment_status = 'paid'
+    } else if (totalDist > 0) {
+      sale.value.payment_status = 'partial'
     } else {
       sale.value.payment_status = 'pending'
     }
   }
 
-  loader.start()
+  isSubmitting.value = true
 
   try {
     // Asegurarnos de que las cotizaciones siempre se guarden como pendientes
@@ -843,7 +876,7 @@ const submitForm = async () => {
 
     showNotification(errMsg, 'error')
   } finally {
-    loader.stop()
+    isSubmitting.value = false
   }
 }
 
@@ -867,7 +900,7 @@ const saveDraft = async () => {
     return
   }
 
-  loader.start()
+  isSavingDraft.value = true
 
   try {
     const payload = {
@@ -898,7 +931,7 @@ const saveDraft = async () => {
     const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
     showNotification(errMsg, 'error')
   } finally {
-    loader.stop()
+    isSavingDraft.value = false
   }
 }
 
@@ -910,15 +943,7 @@ const dispatchSale = async () => {
   showValidationError.value = false
   validationErrorMessage.value = ''
 
-  if (formRef.value) {
-    const { valid } = await formRef.value.validate()
-    if (!valid) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
 
-      return
-    }
-  }
 
   // Validar que haya un cliente seleccionado
   if (!sale.value.client_id) {
@@ -991,7 +1016,7 @@ const dispatchSale = async () => {
     }
   }
 
-  loader.start()
+  isDispatching.value = true
 
   try {
     const payload = {
@@ -1028,12 +1053,13 @@ const dispatchSale = async () => {
 
     showNotification(errMsg, 'error')
   } finally {
-    loader.stop()
+    isDispatching.value = false
   }
 }
 
 onMounted(async () => {
   await loadInitialData()
+  initializePaymentDistribution()
 
   // Verificar si hay un work_order_id en el query parameter
   const workOrderId = route.query.work_order_id
@@ -1290,13 +1316,25 @@ onMounted(async () => {
           <!-- Productos y Servicios -->
           <VCard class="elevation-2 mb-4">
             <VCardText class="pa-6">
-              <div class="d-flex align-center mb-6">
-                <VAvatar size="48" color="info" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-shopping-cart-2-line" size="28" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h5 font-weight-bold mb-0">Productos y Servicios</h3>
-                  <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
+              <div class="d-flex align-center justify-space-between mb-6">
+                <div class="d-flex align-center">
+                  <VAvatar size="48" color="info" variant="tonal" class="mr-3">
+                    <VIcon icon="ri-shopping-cart-2-line" size="28" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-h5 font-weight-bold mb-0">Productos y Servicios</h3>
+                    <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
+                    @click="addTemporaryProduct">
+                    Producto Temporal
+                  </VBtn>
+                  <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-add-line"
+                    @click="isAddServiceDialogVisible = true">
+                    Servicio Express
+                  </VBtn>
                 </div>
               </div>
               <div class="d-flex align-center gap-3 mb-4">
@@ -1324,10 +1362,6 @@ onMounted(async () => {
                     </div>
                   </template>
                 </VAutocomplete>
-                <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56"
-                  @click="isAddServiceDialogVisible = true">
-                  Servicio Express
-                </VBtn>
               </div>
 
               <div class="border rounded-lg overflow-x-auto">
@@ -1351,10 +1385,9 @@ onMounted(async () => {
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="20" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <div class="font-weight-medium text-body-1"
-                              style="white-space: normal !important; max-width: 500px;" :title="item.description">
-                              {{ item.description }}
-                            </div>
+                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                              placeholder="Descripción del ítem..." class="premium-input font-weight-medium"
+                              style="white-space: normal !important; max-width: 500px;" />
                             <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
                               style="font-size: 0.75rem;">
                               SKU: {{ item.sku }}
@@ -1452,7 +1485,12 @@ onMounted(async () => {
             </VCardText>
           </VCard>
 
-          <!-- Pagos (Solo si no es cotización y tiene items) -->
+          <!-- Pagos (Solo si no es cotización) -->
+          <VAlert v-if="sale.document_type !== 'quote' && sale.items.length === 0" type="info" variant="tonal"
+            class="mb-4">
+            Agrega productos para configurar pagos.
+          </VAlert>
+
           <VCard v-if="sale.document_type !== 'quote' && sale.items.length > 0"
             class="elevation-2 mb-4 border-primary border">
             <VCardText class="pa-6">
@@ -1512,7 +1550,9 @@ onMounted(async () => {
                       </VCol>
                       <VCol cols="12" :sm="dist.payment_method === 'Transferencia' ? 12 : 6">
                         <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" label="Monto"
-                          variant="outlined" density="compact" hide-details="auto" prefix="$" />
+                          variant="outlined" density="compact" hide-details="auto" prefix="$"
+                          @input="handlePaymentAmountChange(dist, index)"
+                          @blur="handlePaymentAmountChange(dist, index)" />
                       </VCol>
                     </VRow>
                   </div>
@@ -1525,11 +1565,6 @@ onMounted(async () => {
               </VRow>
             </VCardText>
           </VCard>
-
-          <VAlert v-if="sale.document_type !== 'quote' && sale.items.length === 0" type="info" variant="tonal"
-            class="mb-4">
-            Agrega productos para configurar pagos.
-          </VAlert>
 
           <!-- Observaciones -->
           <VCard class="elevation-2 mb-4">
@@ -1558,19 +1593,19 @@ onMounted(async () => {
           <VCard class="elevation-2">
             <VCardText class="pa-6">
               <div class="d-flex justify-end gap-3">
-                <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push('/sales/list')">
+                <VBtn type="button" color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push('/sales/list')">
                   Cancelar
                 </VBtn>
-                <VBtn v-if="sale.document_type !== 'quote'" color="secondary" variant="elevated"
-                  prepend-icon="ri-draft-line" :loading="loader.loading" @click.prevent="saveDraft">
+                <VBtn type="button" v-if="sale.document_type !== 'quote'" color="secondary" variant="elevated"
+                  prepend-icon="ri-draft-line" :loading="isSavingDraft" @click.prevent="saveDraft">
                   Guardar Borrador
                 </VBtn>
-                <VBtn v-if="sale.document_type !== 'quote'" color="warning" variant="elevated"
-                  prepend-icon="ri-truck-line" :loading="loader.loading" @click.prevent="dispatchSale">
+                <VBtn type="button" v-if="sale.document_type !== 'quote'" color="warning" variant="elevated"
+                  prepend-icon="ri-truck-line" :loading="isDispatching" @click.prevent="dispatchSale">
                   Despachar (Pago Pendiente)
                 </VBtn>
                 <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
-                  :loading="loader.loading" size="large">
+                  :loading="isSubmitting" size="large">
                   Registrar Venta
                 </VBtn>
               </div>

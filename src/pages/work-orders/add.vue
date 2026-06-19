@@ -24,6 +24,8 @@ const getUserId = () => {
 
 const formRef = ref(null)
 const isLoading = ref(false)
+const isSavingDraft = ref(false)
+const isSubmitting = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 
@@ -109,7 +111,16 @@ const loadInitialData = async () => {
   }
 }
 
-const validateForm = () => {
+const validateForm = async () => {
+  if (formRef.value) {
+    const { valid } = await formRef.value.validate()
+    if (!valid) {
+      validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+      showValidationError.value = true
+      return false
+    }
+  }
+
   if (!workOrder.value.client_id) {
     validationErrorMessage.value = 'Debe seleccionar un cliente'
     showValidationError.value = true
@@ -121,7 +132,7 @@ const validateForm = () => {
 }
 
 const saveWorkOrder = async () => {
-  if (!validateForm()) return
+  if (!(await validateForm())) return
 
   for (const item of workOrder.value.items) {
     if (item.type === 'product' && item.product_id) {
@@ -134,7 +145,7 @@ const saveWorkOrder = async () => {
     }
   }
 
-  isLoading.value = true
+  isSubmitting.value = true
 
   // Clonar el objeto y eliminar 'number' para que el backend lo genere fresco
   // y evitar el error de "The number has already been taken" por concurrencia.
@@ -165,7 +176,7 @@ const saveWorkOrder = async () => {
       showNotification('Error al crear la orden de trabajo', 'error')
     }
   } finally {
-    isLoading.value = false
+    isSubmitting.value = false
   }
 }
 
@@ -175,7 +186,7 @@ const saveDraft = async () => {
     return
   }
 
-  isLoading.value = true
+  isSavingDraft.value = true
 
   const payload = { ...workOrder.value, is_draft: true }
   delete payload.number
@@ -197,7 +208,7 @@ const saveDraft = async () => {
       showNotification('Error al guardar borrador', 'error')
     }
   } finally {
-    isLoading.value = false
+    isSavingDraft.value = false
   }
 }
 
@@ -343,8 +354,20 @@ const handleServiceAdded = (newService) => {
 
 // Funciones para items
 
-const removeItem = index => {
+const removeItem = (index) => {
   workOrder.value.items.splice(index, 1)
+}
+
+const addTemporaryProduct = () => {
+  workOrder.value.items.push({
+    product_id: null,
+    description: 'Producto Temporal',
+    quantity: 1,
+    unit_price: 0,
+    discount: 0,
+    type: 'product',
+    sku: ''
+  })
 }
 
 const calculateItemSubtotal = item => {
@@ -453,7 +476,8 @@ onMounted(() => {
 
 <template>
   <VContainer class="pa-6">
-    <VRow>
+    <VForm ref="formRef" @submit.prevent="saveWorkOrder">
+      <VRow>
       <VCol cols="12">
         <!-- Header -->
         <div class="d-flex align-center mb-6">
@@ -468,9 +492,6 @@ onMounted(() => {
             </p>
           </div>
         </div>
-
-
-
         <!-- Información del Cliente y Vehículo -->
         <VCard class="elevation-2 mb-4">
           <VCardText class="pa-6">
@@ -615,6 +636,10 @@ onMounted(() => {
                 </div>
               </div>
               <div class="d-flex gap-2">
+                <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
+                  @click="addTemporaryProduct">
+                  Producto Temporal
+                </VBtn>
                 <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
                   @click="showAddServiceDialog = true">
                   Servicio Express
@@ -785,15 +810,15 @@ onMounted(() => {
         <VCard class="elevation-2">
           <VCardText class="pa-6">
             <div class="d-flex justify-end gap-3">
-              <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" :disabled="isLoading" @click="cancel">
+              <VBtn type="button" color="grey" variant="outlined" prepend-icon="ri-close-line" @click="cancel">
                 Cancelar
               </VBtn>
-              <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-draft-line" :loading="isLoading"
+              <VBtn type="button" color="secondary" variant="tonal" prepend-icon="ri-file-draft-line" :loading="isSavingDraft"
                 @click="saveDraft">
                 Guardar Borrador
               </VBtn>
-              <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isLoading"
-                size="large" @click="saveWorkOrder">
+              <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isSubmitting"
+                size="large">
                 Guardar Orden de Trabajo
               </VBtn>
             </div>
@@ -801,6 +826,7 @@ onMounted(() => {
         </VCard>
       </VCol>
     </VRow>
+    </VForm>
 
     <!-- Dialog para agregar cliente -->
     <ClientFinalAddDialog :is-dialog-visible="showClientDialog" @update:is-dialog-visible="showClientDialog = $event"

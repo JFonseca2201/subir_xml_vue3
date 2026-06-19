@@ -207,6 +207,19 @@ const getStatusInfo = status => {
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
+const getPaidAmount = (item) => {
+  if (item.status === 'canceled' || item.document_type === 'quote') {
+    return item.total;
+  }
+  if (item.payment_status === 'paid') {
+    return item.total;
+  }
+  if (item.finance_record && item.finance_record.payment_distributions) {
+    return item.finance_record.payment_distributions.reduce((sum, pd) => sum + Number(pd.amount || 0), 0);
+  }
+  return 0;
+}
+
 // Acciones
 const viewSale = async sale => {
   try {
@@ -608,7 +621,10 @@ onMounted(() => {
                   <td class="text-right py-3 px-4">
                     <div v-if="item" class="font-weight-medium text-body-1"
                       :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
-                      {{ formatCurrency(item.total) }}
+                      <div v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'" class="text-caption text-medium-emphasis">
+                        De: {{ formatCurrency(item.total) }}
+                      </div>
+                      {{ formatCurrency(getPaidAmount(item)) }}
                     </div>
                   </td>
 
@@ -752,9 +768,12 @@ onMounted(() => {
                     <!-- Pie Tarjeta: Totales y Acciones -->
                     <VCardActions class="pa-3 bg-grey-lighten-5 d-flex justify-space-between align-center">
                       <div class="d-flex flex-column">
+                        <span v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'" class="text-caption text-medium-emphasis">
+                          De: {{ formatCurrency(item.total) }}
+                        </span>
                         <span class="text-subtitle-1 font-weight-medium"
                           :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
-                          {{ formatCurrency(item.total) }}
+                          {{ formatCurrency(getPaidAmount(item)) }}
                         </span>
                         <span v-if="item.status !== 'canceled' && item.document_type !== 'quote'" class="text-caption"
                           :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`">

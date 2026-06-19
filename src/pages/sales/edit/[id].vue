@@ -105,6 +105,7 @@ const formatDate = dateString => {
 
 // Watch para cambiar estado de pago cuando es crédito
 const onCreditChange = () => {
+  sale.value.is_credited = !sale.value.is_credited
   if (sale.value.is_credited) {
     sale.value.payment_status = 'pending'
   } else {
@@ -158,6 +159,18 @@ const initializePaymentDistribution = () => {
       payment_method: 'Efectivo',
     })
   }
+}
+
+const addTemporaryProduct = () => {
+  sale.value.items.push({
+    product_id: null,
+    description: 'Producto Temporal',
+    quantity: 1,
+    price: 0,
+    discount: 0,
+    type: 'product',
+    sku: ''
+  })
 }
 
 // Gestión del detalle (items)
@@ -241,6 +254,8 @@ const initializePaymentAccount = dist => {
 const totalDistributed = computed(() => {
   return paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 })
+
+
 
 const remainingAmount = computed(() => {
   return total.value - totalDistributed.value
@@ -470,10 +485,15 @@ const total = computed(() => {
   return subtotal.value + taxAmount.value
 })
 
-watch(total, (newTotal) => {
-  // Solo actualizar automáticamente si hay un único método de pago
+watch(total, (newTotal, oldTotal) => {
+  // Solo actualizar automáticamente si hay un único método de pago y si coincide con el total anterior
   if (paymentDistributions.value.length === 1) {
-    paymentDistributions.value[0].amount = newTotal
+    if (isLoading.value) return;
+    const currentAmount = Number(paymentDistributions.value[0].amount) || 0;
+    const prevTotal = Number(oldTotal) || 0;
+    if (Math.abs(currentAmount - prevTotal) <= 0.01) {
+      paymentDistributions.value[0].amount = newTotal;
+    }
   }
 })
 
@@ -759,7 +779,7 @@ const submitForm = async () => {
   if (sale.value.document_type !== 'quote') {
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 
-    if (paymentDistributions.value.length === 0 || totalDist <= 0) {
+    if ((paymentDistributions.value.length === 0 || totalDist <= 0) && !sale.value.is_credited) {
       showValidationError.value = true
       validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
@@ -773,9 +793,11 @@ const submitForm = async () => {
       return
     }
 
-    // Si el pago no está completado, el estado debe quedar en pendiente. Solo cuando se haya completado el total, cambia a pagado.
+    // Si el pago no está completado, el estado debe quedar en pendiente o partial.
     if (Math.abs(totalDist - total.value) <= 0.01) {
       sale.value.payment_status = 'paid'
+    } else if (totalDist > 0) {
+      sale.value.payment_status = 'partial'
     } else {
       sale.value.payment_status = 'pending'
     }
@@ -1064,13 +1086,25 @@ onMounted(() => {
           <!-- Productos y Servicios -->
           <VCard class="elevation-2 mb-4">
             <VCardText class="pa-6">
-              <div class="d-flex align-center mb-6">
-                <VAvatar size="48" color="info" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-shopping-cart-2-line" size="28" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h5 font-weight-bold mb-0">Productos y Servicios</h3>
-                  <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
+              <div class="d-flex align-center justify-space-between mb-6">
+                <div class="d-flex align-center">
+                  <VAvatar size="48" color="info" variant="tonal" class="mr-3">
+                    <VIcon icon="ri-shopping-cart-2-line" size="28" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-h5 font-weight-bold mb-0">Productos y Servicios</h3>
+                    <p class="text-caption text-grey mb-0">Agrega los ítems a la venta o cotización</p>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
+                    :disabled="sale.status === 'canceled'" @click="addTemporaryProduct">
+                    Producto Temporal
+                  </VBtn>
+                  <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-add-line"
+                    :disabled="sale.status === 'canceled'" @click="isAddServiceDialogVisible = true">
+                    Servicio Express
+                  </VBtn>
                 </div>
               </div>
               <div class="d-flex align-center gap-3 mb-4">
@@ -1096,10 +1130,6 @@ onMounted(() => {
                     </div>
                   </template>
                 </VAutocomplete>
-                <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" height="56"
-                  :disabled="sale.status === 'canceled'" @click="isAddServiceDialogVisible = true">
-                  Servicio Express
-                </VBtn>
               </div>
 
               <div class="border rounded-lg overflow-x-auto">
@@ -1123,10 +1153,9 @@ onMounted(() => {
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="20" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <div class="font-weight-medium text-body-1"
-                              style="white-space: normal !important; max-width: 500px;" :title="item.description">
-                              {{ item.description }}
-                            </div>
+                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                              placeholder="Descripción del ítem..." class="premium-input font-weight-medium"
+                              style="white-space: normal !important; max-width: 500px;" />
                             <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
                               style="font-size: 0.75rem;">
                               SKU: {{ item.sku }}

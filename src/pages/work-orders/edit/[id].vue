@@ -404,6 +404,18 @@ const removeItem = index => {
   workOrder.value.items.splice(index, 1)
 }
 
+const addTemporaryProduct = () => {
+  workOrder.value.items.push({
+    product_id: null,
+    description: 'Producto Temporal',
+    quantity: 1,
+    unit_price: 0,
+    discount: 0,
+    type: 'product',
+    sku: ''
+  })
+}
+
 const calculateItemSubtotal = item => {
   const quantity = parseFloat(item.quantity) || 0
   const unitPrice = parseFloat(item.unit_price) || 0
@@ -686,6 +698,10 @@ onMounted(() => {
                 </div>
               </div>
               <div class="d-flex gap-2">
+                <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
+                  @click="addTemporaryProduct">
+                  Producto Temporal
+                </VBtn>
                 <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
                   @click="showAddServiceDialog = true">
                   Servicio Express
@@ -767,7 +783,7 @@ onMounted(() => {
                         </VAvatar>
                         <div class="flex-grow-1">
                           <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                            placeholder="Descripción del ítem..." readonly class="premium-input font-weight-medium" />
+                            placeholder="Descripción del ítem..." class="premium-input font-weight-medium" />
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
