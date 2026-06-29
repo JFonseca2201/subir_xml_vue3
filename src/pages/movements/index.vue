@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -21,6 +21,19 @@ const accounts = ref([])
 const editingMovement = ref(null)
 const showDeleteDialog = ref(false)
 const movementToDelete = ref(null)
+
+// Búsqueda
+const searchWorkOrder = ref('')
+const searchStartDate = ref('')
+const searchEndDate = ref('')
+
+let searchTimeout = null
+watch([searchWorkOrder, searchStartDate, searchEndDate], () => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+        loadMovements()
+    }, 500)
+})
 
 // Filtrar movimientos
 const incomeMovements = computed(() => {
@@ -328,7 +341,20 @@ const handleMovementDeleted = (movementId) => {
 const loadMovements = async () => {
     loader.start()
     try {
-        const response = await $api('finance-records')
+        const params = {}
+        if (searchWorkOrder.value) {
+            params.search = searchWorkOrder.value
+        }
+        if (searchStartDate.value) {
+            params.start_date = searchStartDate.value
+        }
+        if (searchEndDate.value) {
+            params.end_date = searchEndDate.value
+        }
+
+        const response = await $api('finance-records', {
+            params
+        })
         console.log('API Response:', response)
 
         // Extraer el array de la propiedad data
@@ -384,93 +410,98 @@ onMounted(() => {
         <VRow class="mb-4 mt-2">
             <VCol>
                 <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-                    <div class="d-flex align-center gap-3">
-                        <VAvatar color="primary" variant="tonal" rounded size="48">
-                            <VIcon icon="ri-exchange-dollar-line" size="28" />
-                        </VAvatar>
-                        <div>
-                            <h4 class="text-h5 font-weight-bold mb-1">Gestión de Ingresos y Egresos</h4>
-                            <span class="text-body-2 text-medium-emphasis">Control financiero de movimientos</span>
-                        </div>
+                    <div>
+                        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center text-primary">
+                            <VIcon icon="ri-exchange-dollar-line" class="mr-2" size="32" />
+                            Ingresos y Egresos
+                        </h1>
+                        <p class="text-body-2 text-grey-darken-1 mb-0">
+                            Administración financiera y control de movimientos
+                        </p>
                     </div>
                     <div class="d-flex gap-3">
-                        <VBtn color="info" variant="elevated" prepend-icon="ri-file-pdf-line"
-                            :loading="isGeneratingPDF"
+                        <VBtn color="grey-darken-3" variant="outlined" prepend-icon="ri-file-pdf-line" :loading="isGeneratingPDF"
                             @click="generatePDF">
-                            Generar PDF
+                            Exportar PDF
                         </VBtn>
-                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-circle-line"
+                        <VBtn color="success" variant="elevated" prepend-icon="ri-add-line"
                             @click="openIncomeDialog">
-                            Nuevo Ingreso
+                            Ingreso
                         </VBtn>
                         <VBtn color="error" variant="elevated" prepend-icon="ri-subtract-line"
                             @click="openExpenseDialog">
-                            Nuevo Egreso
+                            Egreso
                         </VBtn>
                     </div>
                 </div>
             </VCol>
         </VRow>
 
+        <!-- Filtros de búsqueda -->
+        <VCard class="elevation-1 mb-6 border">
+            <VCardText class="pa-5">
+                <div class="d-flex align-center mb-4">
+                    <VIcon icon="ri-filter-3-line" color="primary" class="mr-2" size="24" />
+                    <h3 class="text-h6 font-weight-bold mb-0">Filtros de Búsqueda</h3>
+                </div>
+                <VRow>
+                    <VCol cols="12" md="4">
+                        <VTextField v-model="searchWorkOrder" label="Buscar por OT o Factura"
+                            prepend-inner-icon="ri-search-line" variant="outlined" hide-details clearable />
+                    </VCol>
+                    <VCol cols="12" sm="6" md="4">
+                        <VTextField v-model="searchStartDate" type="date" label="Fecha Inicio"
+                            prepend-inner-icon="ri-calendar-line" variant="outlined" hide-details clearable />
+                    </VCol>
+                    <VCol cols="12" sm="6" md="4">
+                        <VTextField v-model="searchEndDate" type="date" label="Fecha Fin"
+                            prepend-inner-icon="ri-calendar-line" variant="outlined" hide-details clearable />
+                    </VCol>
+                </VRow>
+            </VCardText>
+        </VCard>
+
         <!-- Tarjetas de Resumen Estandarizadas -->
         <VRow class="mb-6">
             <VCol cols="12" md="4">
-                <VCard elevation="2" class="rounded-lg h-100">
-                    <VCardItem class="pa-4 border-b">
-                        <template #title>
-                            <div class="d-flex align-center gap-2">
-                                <VIcon icon="ri-arrow-up-circle-line" color="success" />
-                                <span class="font-weight-bold text-h6">Total Ingresos</span>
-                            </div>
-                        </template>
-                    </VCardItem>
-                    <VCardText class="pa-5">
-                        <div class="d-flex justify-space-between align-center">
-                            <span class="text-body-1 text-medium-emphasis">Suma de ingresos</span>
-                            <span class="text-h5 font-weight-black text-success">{{ formatCurrency(totals.income)
-                                }}</span>
+                <VCard elevation="1" class="border rounded-lg h-100">
+                    <VCardText class="pa-5 d-flex align-center">
+                        <VAvatar color="success" variant="tonal" size="56" class="mr-4">
+                            <VIcon icon="ri-arrow-right-up-line" size="28" />
+                        </VAvatar>
+                        <div>
+                            <p class="text-caption text-uppercase text-grey-darken-1 font-weight-bold mb-1">Total Ingresos</p>
+                            <h2 class="text-h4 font-weight-black text-success">{{ formatCurrency(totals.income) }}</h2>
                         </div>
                     </VCardText>
                 </VCard>
             </VCol>
 
             <VCol cols="12" md="4">
-                <VCard elevation="2" class="rounded-lg h-100">
-                    <VCardItem class="pa-4 border-b">
-                        <template #title>
-                            <div class="d-flex align-center gap-2">
-                                <VIcon icon="ri-arrow-down-circle-line" color="error" />
-                                <span class="font-weight-bold text-h6">Total Egresos</span>
-                            </div>
-                        </template>
-                    </VCardItem>
-                    <VCardText class="pa-5">
-                        <div class="d-flex justify-space-between align-center">
-                            <span class="text-body-1 text-medium-emphasis">Suma de egresos</span>
-                            <span class="text-h5 font-weight-black text-error">{{ formatCurrency(totals.expenses)
-                                }}</span>
+                <VCard elevation="1" class="border rounded-lg h-100">
+                    <VCardText class="pa-5 d-flex align-center">
+                        <VAvatar color="error" variant="tonal" size="56" class="mr-4">
+                            <VIcon icon="ri-arrow-right-down-line" size="28" />
+                        </VAvatar>
+                        <div>
+                            <p class="text-caption text-uppercase text-grey-darken-1 font-weight-bold mb-1">Total Egresos</p>
+                            <h2 class="text-h4 font-weight-black text-error">{{ formatCurrency(totals.expenses) }}</h2>
                         </div>
                     </VCardText>
                 </VCard>
             </VCol>
 
             <VCol cols="12" md="4">
-                <VCard elevation="2" class="rounded-lg h-100">
-                    <VCardItem class="pa-4 border-b">
-                        <template #title>
-                            <div class="d-flex align-center gap-2">
-                                <VIcon icon="ri-funds-line" color="primary" />
-                                <span class="font-weight-bold text-h6">Balance Neto</span>
-                            </div>
-                        </template>
-                    </VCardItem>
-                    <VCardText class="pa-5">
-                        <div class="d-flex justify-space-between align-center">
-                            <span class="text-body-1 text-medium-emphasis">Diferencia neta</span>
-                            <span class="text-h5 font-weight-black"
-                                :class="totals.balance >= 0 ? 'text-primary' : 'text-warning'">{{
-                                    formatCurrency(totals.balance)
-                                }}</span>
+                <VCard elevation="1" class="border rounded-lg h-100" :color="totals.balance >= 0 ? 'primary-lighten-5' : 'error-lighten-5'">
+                    <VCardText class="pa-5 d-flex align-center">
+                        <VAvatar :color="totals.balance >= 0 ? 'primary' : 'error'" variant="tonal" size="56" class="mr-4 bg-white">
+                            <VIcon icon="ri-scales-3-line" size="28" />
+                        </VAvatar>
+                        <div>
+                            <p class="text-caption text-uppercase text-grey-darken-1 font-weight-bold mb-1">Balance Neto</p>
+                            <h2 class="text-h4 font-weight-black" :class="totals.balance >= 0 ? 'text-primary' : 'text-error'">
+                                {{ formatCurrency(totals.balance) }}
+                            </h2>
                         </div>
                     </VCardText>
                 </VCard>
@@ -485,24 +516,28 @@ onMounted(() => {
         <!-- Movimientos Agrupados por Día -->
         <div v-else-if="groupedMovements.length > 0">
             <VCard v-for="day in groupedMovements" :key="day.date" class="mb-6 rounded-lg elevation-2">
-                <VCardTitle class="pa-4">
+                <VCardTitle class="pa-5">
                     <div class="d-flex justify-space-between align-center flex-wrap gap-2">
-                        <div class="d-flex align-center gap-2">
-                            <VIcon icon="ri-calendar-event-line" color="primary" />
-                            <h3 class="text-h6 font-weight-bold text-primary">{{ formatDate(day.date) }}</h3>
-                            <VChip size="small" variant="tonal" color="secondary" class="ml-2 font-weight-bold">
-                                {{ day.movements.length }} mov{{ day.movements.length !== 1 ? 's' : '' }}
-                            </VChip>
+                        <div class="d-flex align-center gap-3">
+                            <VAvatar color="primary-lighten-4" size="40" class="rounded-lg">
+                                <VIcon icon="ri-calendar-event-line" color="primary" size="24" />
+                            </VAvatar>
+                            <div>
+                                <h3 class="text-h6 font-weight-bold text-grey-darken-4 mb-0">{{ formatDate(day.date) }}</h3>
+                                <p class="text-caption text-medium-emphasis mb-0">
+                                    {{ day.movements.length }} movimiento{{ day.movements.length !== 1 ? 's' : '' }}
+                                </p>
+                            </div>
                         </div>
-                        <div class="d-flex gap-4">
-                            <span class="text-success text-body-2 font-weight-bold">Ingresos: +{{
-                                formatCurrency(day.dailyIncome) }}</span>
-                            <span class="text-error text-body-2 font-weight-bold">Egresos: -{{
-                                formatCurrency(day.dailyExpenses)
-                                }}</span>
-                            <VChip size="small" :color="day.dailyBalance >= 0 ? 'primary' : 'warning'" variant="tonal"
-                                class="font-weight-bold">
-                                Balance: {{ formatCurrency(day.dailyBalance) }}
+                        <div class="d-flex gap-3 align-center">
+                            <div class="text-end">
+                                <p class="text-caption font-weight-bold text-success mb-0">Ingresos: +{{ formatCurrency(day.dailyIncome) }}</p>
+                                <p class="text-caption font-weight-bold text-error mb-0">Egresos: -{{ formatCurrency(day.dailyExpenses) }}</p>
+                            </div>
+                            <VDivider vertical class="mx-2" />
+                            <VChip size="large" :color="day.dailyBalance >= 0 ? 'primary' : 'error'" variant="tonal"
+                                class="font-weight-black text-body-1">
+                                {{ formatCurrency(day.dailyBalance) }}
                             </VChip>
                         </div>
                     </div>
@@ -563,12 +598,15 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-if="!loader.loading && groupedMovements.length === 0" class="text-center pa-12">
-            <VAvatar color="grey-lighten-3" size="72" class="mb-4">
-                <VIcon icon="ri-inbox-line" size="36" color="grey" />
+        <div v-if="!loader.loading && groupedMovements.length === 0" class="text-center pa-12 mt-6">
+            <VAvatar color="grey-lighten-4" size="80" class="mb-4">
+                <VIcon icon="ri-search-eye-line" size="40" color="grey" />
             </VAvatar>
-            <h3 class="text-h6 font-weight-medium">No hay movimientos registrados</h3>
-            <p class="text-body-2 mt-1 text-medium-emphasis">Comienza registrando tu primer ingreso o egreso</p>
+            <h3 class="text-h5 font-weight-medium text-grey-darken-3">No hay movimientos para mostrar</h3>
+            <p class="text-body-1 mt-2 text-grey">Intenta ajustar los filtros de búsqueda o registra un nuevo movimiento</p>
+            <VBtn color="primary" class="mt-4" prepend-icon="ri-add-line" @click="openIncomeDialog">
+                Agregar Ingreso
+            </VBtn>
         </div>
 
         <!-- Diálogo de Ingreso -->

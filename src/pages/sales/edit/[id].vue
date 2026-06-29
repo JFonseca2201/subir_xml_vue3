@@ -211,6 +211,11 @@ const getProductStock = productId => {
   return product ? product.stock : 0
 }
 
+const getProductSku = productId => {
+  const product = products.value.find(p => p.id === productId)
+  return product ? (product.sku || product.code_aux || product.code || '') : ''
+}
+
 // Gestión de pagos distribuidos
 const addPaymentDistribution = () => {
   const newPayment = {
@@ -763,11 +768,11 @@ const submitForm = async () => {
     if (item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
       if (product && product.item_type === 1 && product.max_discount !== null && product.max_discount !== undefined) {
-        const maxDiscountAmount = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+        const maxDiscountAmount = item.quantity * parseFloat(product.max_discount)
         const itemDiscount = parseFloat(item.discount) || 0
         if (itemDiscount > maxDiscountAmount) {
           showValidationError.value = true
-          validationErrorMessage.value = `Descuento excede el máximo permitido para ${product.description}. Máximo: ${maxDiscountAmount.toFixed(2)}, Ingresado: ${itemDiscount.toFixed(2)}`
+          validationErrorMessage.value = `Descuento total excede el máximo permitido para ${product.description}. Máximo total: ${maxDiscountAmount.toFixed(2)}, Ingresado total: ${itemDiscount.toFixed(2)}`
 
           return
         }
@@ -1156,10 +1161,6 @@ onMounted(() => {
                             <VTextField v-model="item.description" density="compact" variant="plain" hide-details
                               placeholder="Descripción del ítem..." class="premium-input font-weight-medium"
                               style="white-space: normal !important; max-width: 500px;" />
-                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
-                              style="font-size: 0.75rem;">
-                              SKU: {{ item.sku }}
-                            </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
@@ -1168,6 +1169,9 @@ onMounted(() => {
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
                                 <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                                 {{ getProductStock(item.product_id) }} en stock
+                              </span>
+                              <span v-if="getProductSku(item.product_id) || item.sku" class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                                {{ getProductSku(item.product_id) || item.sku }}
                               </span>
                             </div>
                           </div>

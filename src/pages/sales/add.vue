@@ -382,6 +382,11 @@ const getProductStock = productId => {
   return product ? product.stock : 0
 }
 
+const getProductSku = productId => {
+  const product = products.value.find(p => p.id === productId)
+  return product ? (product.sku || product.code_aux || product.code || '') : ''
+}
+
 // Gestión de pagos distribuidos
 const addPaymentDistribution = () => {
   const newPayment = {
@@ -780,7 +785,7 @@ const submitForm = async () => {
           const maxDiscountAmountByPct = (item.quantity * item.price) * (parseFloat(product.discount_percentage) / 100)
           if (itemDiscount > maxDiscountAmountByPct) {
             showValidationError.value = true
-            validationErrorMessage.value = `El descuento excede el porcentaje máximo permitido (${product.discount_percentage}%) para ${product.description}. Máximo permitido: $${maxDiscountAmountByPct.toFixed(2)}`
+            validationErrorMessage.value = `El descuento total excede el porcentaje máximo permitido (${product.discount_percentage}%) para ${product.description}. Máximo permitido: $${maxDiscountAmountByPct.toFixed(2)}`
 
             return
           }
@@ -788,10 +793,10 @@ const submitForm = async () => {
 
         // C. Validar max_discount (monto absoluto o porcentaje según lógica del sistema)
         if (product.max_discount > 0) {
-          const maxDiscountAmountByVal = (item.quantity * item.price) * (parseFloat(product.max_discount) / 100)
+          const maxDiscountAmountByVal = item.quantity * parseFloat(product.max_discount)
           if (itemDiscount > maxDiscountAmountByVal) {
             showValidationError.value = true
-            validationErrorMessage.value = `El descuento excede el máximo permitido para ${product.description}. Máximo permitido: $${maxDiscountAmountByVal.toFixed(2)}`
+            validationErrorMessage.value = `El descuento total excede el máximo permitido para ${product.description}. Máximo permitido: $${maxDiscountAmountByVal.toFixed(2)}`
 
             return
           }
@@ -1388,10 +1393,6 @@ onMounted(async () => {
                             <VTextField v-model="item.description" density="compact" variant="plain" hide-details
                               placeholder="Descripción del ítem..." class="premium-input font-weight-medium"
                               style="white-space: normal !important; max-width: 500px;" />
-                            <div v-if="item.sku" class="text-caption text-grey-darken-1 mt-1 font-weight-semibold"
-                              style="font-size: 0.75rem;">
-                              SKU: {{ item.sku }}
-                            </div>
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
@@ -1400,6 +1401,9 @@ onMounted(async () => {
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
                                 <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                                 {{ getProductStock(item.product_id) }} en stock
+                              </span>
+                              <span v-if="getProductSku(item.product_id) || item.sku" class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                                {{ getProductSku(item.product_id) || item.sku }}
                               </span>
                             </div>
                           </div>

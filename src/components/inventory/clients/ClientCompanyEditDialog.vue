@@ -115,15 +115,14 @@ const validateEcuadorianRUC = (ruc) => {
         return false;
     }
 
-    // Los dos primeros dígitos deben ser válidos para provincia
-    const provincia = parseInt(cleanRUC.substring(0, 2));
-    if (provincia < 1 || provincia > 24) {
-        return false;
-    }
-
-    // El tercer dígito debe ser 6, 7, 8 o 9 para personas jurídicas
+    // El tercer dígito indica el tipo de persona (natural o jurídica)
     const tercerDigito = parseInt(cleanRUC.substring(2, 3));
-    if (![6, 7, 8, 9].includes(tercerDigito)) {
+    
+    if (tercerDigito < 6) {
+        // Persona natural: los primeros 10 dígitos deben ser una cédula válida
+        return validateEcuadorianCedula(cleanRUC.substring(0, 10));
+    } else if (![6, 9].includes(tercerDigito)) {
+        // Persona jurídica o pública: 3er dígito debe ser 6 o 9
         return false;
     }
 

@@ -442,6 +442,11 @@ const getProductStock = productId => {
   return product ? product.stock : 0
 }
 
+const getProductSku = productId => {
+  const product = products.value.find(p => p.id === productId)
+  return product ? (product.sku || product.code_aux || product.code || '') : ''
+}
+
 const onProductChanged = item => {
   if (item.product_id) {
     const product = products.value.find(p => p.id === item.product_id)
@@ -788,10 +793,12 @@ onMounted(() => {
                             <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                               {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
                             </span>
-                            <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
                             <span v-if="item.type === 'product'" class="stock-tag" :class="{'stock-low': item.quantity > getProductStock(item.product_id)}">
                               <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                               {{ getProductStock(item.product_id) }} en stock
+                            </span>
+                            <span v-if="getProductSku(item.product_id) || item.sku" class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                              {{ getProductSku(item.product_id) || item.sku }}
                             </span>
                           </div>
                         </div>

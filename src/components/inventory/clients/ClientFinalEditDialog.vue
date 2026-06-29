@@ -150,13 +150,10 @@ const validateEcuadorianRUC = ruc => {
     return false
   }
 
-  const provincia = parseInt(cleanRUC.substring(0, 2))
-  if (provincia < 1 || provincia > 24) {
-    return false
-  }
-
   const tercerDigito = parseInt(cleanRUC.substring(2, 3))
-  if (![6, 7, 8, 9].includes(tercerDigito)) {
+  if (tercerDigito < 6) {
+    return validateEcuadorianCedula(cleanRUC.substring(0, 10))
+  } else if (![6, 9].includes(tercerDigito)) {
     return false
   }
 

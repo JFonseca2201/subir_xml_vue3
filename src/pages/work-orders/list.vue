@@ -446,7 +446,7 @@ onMounted(() => {
                     class="pa-3 bg-grey-lighten-5 border-bottom-light d-flex justify-space-between align-center flex-wrap gap-2">
                     <div class="d-flex align-center gap-2">
                       <span class="text-subtitle-2 font-weight-bold text-primary cursor-pointer hover-underline"
-                        @click="viewDetails(workOrder)">
+                        @click="workOrder.status !== 'draft' ? viewDetails(workOrder) : null">
                         {{ workOrder.number }}
                       </span>
                       <span class="text-caption text-medium-emphasis">
@@ -456,7 +456,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Estado Interactivo -->
-                    <div class="cursor-pointer d-flex align-center" @click="handleStatusClick(workOrder)"
+                    <div class="cursor-pointer d-flex align-center" @click="workOrder.status !== 'draft' ? handleStatusClick(workOrder) : null"
                       style="user-select: none;">
                       <VChip :color="statusColors[workOrder.status]" variant="tonal" size="small"
                         class="font-weight-bold" label>
@@ -527,7 +527,7 @@ onMounted(() => {
 
                   <!-- Acciones -->
                   <VCardActions class="pa-2 justify-end bg-grey-lighten-5 mt-auto">
-                    <VBtn variant="text" color="info" prepend-icon="ri-eye-line" size="small"
+                    <VBtn v-if="workOrder.status !== 'draft'" variant="text" color="info" prepend-icon="ri-eye-line" size="small"
                       class="text-none font-weight-bold action-btn" @click="viewDetails(workOrder)">
                       Ver Detalle
                     </VBtn>
@@ -538,7 +538,7 @@ onMounted(() => {
                     </VBtn>
 
                     <!-- Menú desplegable -->
-                    <VBtn variant="text" color="secondary" prepend-icon="ri-more-2-line" size="small"
+                    <VBtn v-if="workOrder.status !== 'draft'" variant="text" color="secondary" prepend-icon="ri-more-2-line" size="small"
                       class="text-none font-weight-bold action-btn">
                       Más
                       <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">

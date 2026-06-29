@@ -132,7 +132,10 @@ const validateForm = async () => {
 }
 
 const saveWorkOrder = async () => {
-  if (!(await validateForm())) return
+  if (!(await validateForm())) {
+    console.log('Error de validación')
+    return
+  }
 
   for (const item of workOrder.value.items) {
     if (item.type === 'product' && item.product_id) {
@@ -396,6 +399,11 @@ const getProductStock = productId => {
   return product ? product.stock : 0
 }
 
+const getProductSku = productId => {
+  const product = products.value.find(p => p.id === productId)
+  return product ? (product.sku || product.code_aux || product.code || '') : ''
+}
+
 const onProductChanged = item => {
   if (item.product_id) {
     const product = products.value.find(p => p.id === item.product_id)
@@ -434,7 +442,6 @@ const loadMoreProducts = (isIntersecting) => {
   }
 }
 
-// Agregar producto desde búsqueda
 const addProductFromSearch = product => {
   // Determinar si es servicio basado en item_type o categoría
   const isService = product.item_type === 2 ||
@@ -456,6 +463,7 @@ const addProductFromSearch = product => {
     })
   }
   productSearch.value = null
+  productSearchQuery.value = ''
 }
 
 watch(() => workOrder.value.vehicle_id, (newVal) => {
@@ -476,356 +484,359 @@ onMounted(() => {
 
 <template>
   <VContainer class="pa-6">
-    <VForm ref="formRef" @submit.prevent="saveWorkOrder">
+    <VForm ref="formRef" @submit.prevent>
       <VRow>
-      <VCol cols="12">
-        <!-- Header -->
-        <div class="d-flex align-center mb-6">
-          <div>
+        <VCol cols="12">
+          <!-- Header -->
+          <div class="d-flex align-center mb-6">
+            <div>
 
-            <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-              <VIcon icon="ri-draft-line" color="primary" class="me-2" size="28" />
-              Nueva Orden de Trabajo
-            </h1>
-            <p class="text-body-2 text-grey">
-              Completa la información para crear una orden de trabajo
-            </p>
+              <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+                <VIcon icon="ri-draft-line" color="primary" class="me-2" size="28" />
+                Nueva Orden de Trabajo
+              </h1>
+              <p class="text-body-2 text-grey">
+                Completa la información para crear una orden de trabajo
+              </p>
+            </div>
           </div>
-        </div>
-        <!-- Información del Cliente y Vehículo -->
-        <VCard class="elevation-2 mb-4">
-          <VCardText class="pa-6">
-            <div class="d-flex align-center mb-6">
-              <VAvatar size="48" color="primary" variant="tonal" class="mr-3">
-                <VIcon icon="ri-car-line" size="28" />
-              </VAvatar>
-              <div>
-                <h3 class="text-h5 font-weight-bold mb-0">
-                  Información del Cliente y Vehículo
-                </h3>
-                <p class="text-caption text-grey mb-0">
-                  Selecciona el cliente y el vehículo para la orden
-                </p>
-              </div>
-            </div>
-
-            <VRow>
-              <VCol cols="12" md="4">
-                <div class="mb-4">
-                  <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
-                    variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" :loading="isLoading" />
-                </div>
-              </VCol>
-
-              <VCol cols="12" md="4">
-                <div class="mb-4">
-                  <VTextField v-model="clientInputText" label="Cliente *" prepend-inner-icon="ri-user-line"
-                    append-inner-icon="ri-search-line" variant="outlined" clearable
-                    :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']" @keyup.enter="handleClientSearch"
-                    @blur="handleClientSearch" @click:append-inner="showClientSelectDialog = true"
-                    @click:clear="workOrder.client_id = null">
-                    <template #append>
-                      <VBtn icon size="small" variant="tonal" color="primary">
-                        <VIcon icon="ri-add-line" />
-                        <VMenu activator="parent">
-                          <VList>
-                            <VListItem prepend-icon="ri-user-line" title="Cliente Final"
-                              @click="showClientDialog = true" />
-                            <VListItem prepend-icon="ri-building-line" title="Cliente Empresa"
-                              @click="showCompanyDialog = true" />
-                          </VList>
-                        </VMenu>
-                      </VBtn>
-                    </template>
-                  </VTextField>
-                </div>
-              </VCol>
-
-              <VCol cols="12" md="4">
-                <div class="mb-4" style="text-transform: uppercase;">
-                  <VTextField v-model="vehicleInputText" label="Vehículo" prepend-inner-icon="ri-car-line"
-                    append-inner-icon="ri-search-line" variant="outlined" clearable @keyup.enter="handleVehicleSearch"
-                    @blur="handleVehicleSearch" @click:append-inner="showVehicleSelectDialog = true"
-                    @click:clear="workOrder.vehicle_id = null">
-                    <template #append>
-                      <VBtn icon size="small" variant="tonal" color="primary" @click="showVehicleDialog = true">
-                        <VIcon icon="ri-add-line" />
-                      </VBtn>
-                    </template>
-                  </VTextField>
-                </div>
-              </VCol>
-
-              <VCol cols="12" md="4">
-                <div class="mb-4">
-                  <VTextField v-model.number="workOrder.mileage" type="number" label="Kilometraje"
-                    prepend-inner-icon="ri-speed-line" variant="outlined" />
-                </div>
-              </VCol>
-
-              <VCol cols="12" md="4">
-                <div class="mb-4">
-                  <VSelect v-model="workOrder.fuel_level" :items="fuelLevels" label="Nivel de Combustible"
-                    prepend-inner-icon="ri-gas-station-line" variant="outlined" clearable />
-                </div>
-              </VCol>
-
-              <VCol cols="12" md="4">
-                <div class="mb-4">
-                  <VAutocomplete v-model="workOrder.technicians" :items="employees"
-                    :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined" clearable :loading="isLoading" multiple chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']" class="fix-notch-bug">
-                    <template #chip="{ props, item }">
-                      <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
-                    </template>
-                  </VAutocomplete>
-                </div>
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-
-        <!-- Observaciones y Diagnóstico -->
-        <VCard class="elevation-2 mb-4">
-          <VCardText class="pa-6">
-            <div class="d-flex align-center mb-4">
-              <VAvatar size="40" color="info" variant="tonal" class="mr-3">
-                <VIcon icon="ri-file-text-line" size="24" />
-              </VAvatar>
-              <div>
-                <h3 class="text-h6 font-weight-bold mb-0">
-                  Observaciones y Diagnóstico
-                </h3>
-                <p class="text-caption text-grey mb-0">
-                  Detalles adicionales sobre el trabajo a realizar
-                </p>
-              </div>
-            </div>
-
-            <VRow>
-              <VCol cols="12" md="6">
-                <VTextarea v-model="workOrder.observations" label="Observaciones" prepend-inner-icon="ri-file-text-line"
-                  variant="outlined" rows="4" placeholder="Describe cualquier observación relevante..." />
-              </VCol>
-
-              <VCol cols="12" md="6">
-                <VTextarea v-model="workOrder.diagnostic" label="Diagnóstico" prepend-inner-icon="ri-stethoscope-line"
-                  variant="outlined" rows="4" placeholder="Describe el diagnóstico técnico..." />
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
-
-        <!-- Productos y Servicios -->
-        <VCard class="elevation-2 mb-4">
-          <VCardText class="pa-6">
-            <div class="d-flex align-center justify-space-between mb-4">
-              <div class="d-flex align-center">
-                <VAvatar size="40" color="success" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-shopping-bag-3-line" size="24" />
+          <!-- Información del Cliente y Vehículo -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center mb-6">
+                <VAvatar size="48" color="primary" variant="tonal" class="mr-3">
+                  <VIcon icon="ri-car-line" size="28" />
                 </VAvatar>
                 <div>
-                  <h3 class="text-h6 font-weight-bold mb-0">
-                    Productos y Servicios
+                  <h3 class="text-h5 font-weight-bold mb-0">
+                    Información del Cliente y Vehículo
                   </h3>
                   <p class="text-caption text-grey mb-0">
-                    Agrega los items a la orden de trabajo
+                    Selecciona el cliente y el vehículo para la orden
                   </p>
                 </div>
               </div>
-              <div class="d-flex gap-2">
-                <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
-                  @click="addTemporaryProduct">
-                  Producto Temporal
-                </VBtn>
-                <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
-                  @click="showAddServiceDialog = true">
-                  Servicio Express
-                </VBtn>
-              </div>
-            </div>
 
-            <!-- Cuadro de búsqueda de productos -->
-            <VCard class="mb-4 elevation-1" color="grey-lighten-5">
-              <VCardText class="pa-4">
-                <VAutocomplete v-model="productSearch" :items="limitedProducts" item-title="description" item-value="id"
-                  label="Buscar y agregar producto por nombre, código o SKU..." prepend-inner-icon="ri-search-line"
-                  variant="outlined" clearable hide-details return-object :custom-filter="() => true"
-                  @update:search="onProductSearch" @update:model-value="(val) => val && addProductFromSearch(val)"
-                  :menu-props="{ maxWidth: 0 }">
-                  <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="undefined">
-                      <template #prepend>
-                        <VAvatar size="32" color="primary" variant="tonal">
-                          <VIcon icon="ri-box-3-line" />
-                        </VAvatar>
-                      </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium">
-                        {{ item.raw.description || item.raw.name }}
-                      </VListItemTitle>
-                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
-                        Código/SKU: {{ item.raw.sku || item.raw.code }}
-                      </VListItemSubtitle>
+              <VRow>
+                <VCol cols="12" md="4">
+                  <div class="mb-4">
+                    <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
+                      variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" :loading="isLoading" />
+                  </div>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <div class="mb-4">
+                    <VTextField v-model="clientInputText" label="Cliente *" prepend-inner-icon="ri-user-line"
+                      append-inner-icon="ri-search-line" variant="outlined" clearable
+                      :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
+                      @keydown.enter.prevent="handleClientSearch" @blur="handleClientSearch"
+                      @click:append-inner="showClientSelectDialog = true" @click:clear="workOrder.client_id = null">
                       <template #append>
-                        <VChip size="small" color="success">
-                          ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
-                        </VChip>
+                        <VBtn icon size="small" variant="tonal" color="primary" type="button">
+                          <VIcon icon="ri-add-line" />
+                          <VMenu activator="parent">
+                            <VList>
+                              <VListItem prepend-icon="ri-user-line" title="Cliente Final"
+                                @click="showClientDialog = true" />
+                              <VListItem prepend-icon="ri-building-line" title="Cliente Empresa"
+                                @click="showCompanyDialog = true" />
+                            </VList>
+                          </VMenu>
+                        </VBtn>
                       </template>
-                    </VListItem>
-                  </template>
-                  <template #append-item>
-                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts"
-                      class="pa-4 text-center">
-                      <VProgressCircular indeterminate size="24" color="primary" />
-                    </div>
-                  </template>
-                </VAutocomplete>
-              </VCardText>
-            </VCard>
+                    </VTextField>
+                  </div>
+                </VCol>
 
-            <!-- Tabla de items -->
-            <VCard v-if="workOrder.items.length > 0" class="elevation-1">
-              <VTable class="custom-items-table text-no-wrap">
-                <thead>
-                  <tr class="bg-grey-lighten-4">
-                    <th class="text-left" style="min-width: 250px;">
-                      Ítem / Descripción
-                    </th>
-                    <th class="text-center" style="width: 130px;">
-                      Cantidad
-                    </th>
-                    <th class="text-center" style="width: 140px;">
-                      Precio Unit.
-                    </th>
-                    <th class="text-center" style="width: 120px;">
-                      Descuento
-                    </th>
-                    <th class="text-center" style="width: 130px;">
-                      Subtotal
-                    </th>
-                    <th class="text-center" style="width: 60px;">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(item, index) in workOrder.items" :key="item.id || item.product_id || index"
-                    class="hover-row">
-                    <td>
-                      <div class="d-flex align-center gap-3 py-1">
-                        <VAvatar size="38" :color="item.type === 'product' ? 'primary' : 'info'" variant="tonal"
-                          class="elevation-1">
-                          <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
-                        </VAvatar>
-                        <div class="flex-grow-1">
-                          <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                            placeholder="Descripción del ítem..." class="premium-input font-weight-medium" />
-                          <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
-                            <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
-                              {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
-                            </span>
-                            <span v-if="item.sku" class="sku-tag">{{ item.sku }}</span>
-                            <span v-if="item.type === 'product'" class="stock-tag"
-                              :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
-                              <VIcon icon="ri-stack-line" size="12" class="mr-1" />
-                              {{ getProductStock(item.product_id) }} en stock
-                            </span>
+                <VCol cols="12" md="4">
+                  <div class="mb-4" style="text-transform: uppercase;">
+                    <VTextField v-model="vehicleInputText" label="Vehículo" prepend-inner-icon="ri-car-line"
+                      append-inner-icon="ri-search-line" variant="outlined" clearable @keydown.enter.prevent="handleVehicleSearch"
+                      @blur="handleVehicleSearch" @click:append-inner="showVehicleSelectDialog = true"
+                      @click:clear="workOrder.vehicle_id = null">
+                      <template #append>
+                        <VBtn icon size="small" variant="tonal" color="primary" type="button" @click="showVehicleDialog = true">
+                          <VIcon icon="ri-add-line" />
+                        </VBtn>
+                      </template>
+                    </VTextField>
+                  </div>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <div class="mb-4">
+                    <VTextField v-model.number="workOrder.mileage" type="number" label="Kilometraje"
+                      prepend-inner-icon="ri-speed-line" variant="outlined" />
+                  </div>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <div class="mb-4">
+                    <VSelect v-model="workOrder.fuel_level" :items="fuelLevels" label="Nivel de Combustible"
+                      prepend-inner-icon="ri-gas-station-line" variant="outlined" clearable />
+                  </div>
+                </VCol>
+
+                <VCol cols="12" md="4">
+                  <div class="mb-4">
+                    <VAutocomplete v-model="workOrder.technicians" :items="employees"
+                      :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
+                      item-value="id" label="Técnicos (máximo 2)" prepend-inner-icon="ri-user-settings-line"
+                      variant="outlined" clearable :loading="isLoading" multiple chips
+                      :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']" class="fix-notch-bug">
+                      <template #chip="{ props, item }">
+                        <VChip v-bind="props" :text="`${item.raw.first_name} ${item.raw.last_name}`" />
+                      </template>
+                    </VAutocomplete>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Observaciones y Diagnóstico -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center mb-4">
+                <VAvatar size="40" color="info" variant="tonal" class="mr-3">
+                  <VIcon icon="ri-file-text-line" size="24" />
+                </VAvatar>
+                <div>
+                  <h3 class="text-h6 font-weight-bold mb-0">
+                    Observaciones y Diagnóstico
+                  </h3>
+                  <p class="text-caption text-grey mb-0">
+                    Detalles adicionales sobre el trabajo a realizar
+                  </p>
+                </div>
+              </div>
+
+              <VRow>
+                <VCol cols="12" md="6">
+                  <VTextarea v-model="workOrder.observations" label="Observaciones"
+                    prepend-inner-icon="ri-file-text-line" variant="outlined" rows="4"
+                    placeholder="Describe cualquier observación relevante..." />
+                </VCol>
+
+                <VCol cols="12" md="6">
+                  <VTextarea v-model="workOrder.diagnostic" label="Diagnóstico" prepend-inner-icon="ri-stethoscope-line"
+                    variant="outlined" rows="4" placeholder="Describe el diagnóstico técnico..." />
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Productos y Servicios -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <div class="d-flex align-center justify-space-between mb-4">
+                <div class="d-flex align-center">
+                  <VAvatar size="40" color="success" variant="tonal" class="mr-3">
+                    <VIcon icon="ri-shopping-bag-3-line" size="24" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-h6 font-weight-bold mb-0">
+                      Productos y Servicios
+                    </h3>
+                    <p class="text-caption text-grey mb-0">
+                      Agrega los items a la orden de trabajo
+                    </p>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <VBtn size="small" color="primary" variant="outlined" prepend-icon="ri-box-3-line"
+                    @click="addTemporaryProduct">
+                    Producto Temporal
+                  </VBtn>
+                  <VBtn size="small" color="info" variant="outlined" prepend-icon="ri-tools-line"
+                    @click="showAddServiceDialog = true">
+                    Servicio Express
+                  </VBtn>
+                </div>
+              </div>
+
+              <!-- Cuadro de búsqueda de productos -->
+              <VCard class="mb-4 elevation-1" color="grey-lighten-5">
+                <VCardText class="pa-4">
+                  <VAutocomplete v-model="productSearch" v-model:search="productSearchQuery" :items="limitedProducts" item-title="description"
+                    item-value="id" label="Buscar y agregar producto por nombre, código o SKU..."
+                    prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details return-object
+                    :custom-filter="() => true" @update:search="onProductSearch"
+                    @update:model-value="(val) => val && addProductFromSearch(val)" :menu-props="{ maxWidth: 0 }">
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :title="undefined">
+                        <template #prepend>
+                          <VAvatar size="32" color="primary" variant="tonal">
+                            <VIcon icon="ri-box-3-line" />
+                          </VAvatar>
+                        </template>
+                        <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                          class="font-weight-medium">
+                          {{ item.raw.description || item.raw.name }}
+                        </VListItemTitle>
+                        <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
+                          Código/SKU: {{ item.raw.sku || item.raw.code }}
+                        </VListItemSubtitle>
+                        <template #append>
+                          <VChip size="small" color="success">
+                            ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
+                          </VChip>
+                        </template>
+                      </VListItem>
+                    </template>
+                    <template #append-item>
+                      <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts"
+                        class="pa-4 text-center">
+                        <VProgressCircular indeterminate size="24" color="primary" />
+                      </div>
+                    </template>
+                  </VAutocomplete>
+                </VCardText>
+              </VCard>
+
+              <!-- Tabla de items -->
+              <VCard v-if="workOrder.items.length > 0" class="elevation-1">
+                <VTable class="custom-items-table text-no-wrap">
+                  <thead>
+                    <tr class="bg-grey-lighten-4">
+                      <th class="text-left" style="min-width: 250px;">
+                        Ítem / Descripción
+                      </th>
+                      <th class="text-center" style="width: 130px;">
+                        Cantidad
+                      </th>
+                      <th class="text-center" style="width: 140px;">
+                        Precio Unit.
+                      </th>
+                      <th class="text-center" style="width: 120px;">
+                        Descuento
+                      </th>
+                      <th class="text-center" style="width: 130px;">
+                        Subtotal
+                      </th>
+                      <th class="text-center" style="width: 60px;">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(item, index) in workOrder.items" :key="item.id || item.product_id || index"
+                      class="hover-row">
+                      <td>
+                        <div class="d-flex align-center gap-3 py-1">
+                          <VAvatar size="38" :color="item.type === 'product' ? 'primary' : 'info'" variant="tonal"
+                            class="elevation-1">
+                            <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="20" />
+                          </VAvatar>
+                          <div class="flex-grow-1">
+                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                              placeholder="Descripción del ítem..." class="premium-input font-weight-medium" />
+                            <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
+                              <span class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                                {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
+                              </span>
+                              <span v-if="item.type === 'product'" class="stock-tag"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }">
+                                <VIcon icon="ri-stack-line" size="12" class="mr-1" />
+                                {{ getProductStock(item.product_id) }} en stock
+                              </span>
+                              <span v-if="getProductSku(item.product_id) || item.sku" class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                                {{ getProductSku(item.product_id) || item.sku }}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <div class="d-inline-flex align-center qty-selector">
-                        <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
-                          @click="item.quantity--" class="qty-btn" size="small" />
-                        <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
-                          @input="item.quantity > 99 ? item.quantity = 99 : null"
-                          @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
-                        <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
-                          @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
-                      </div>
-                    </td>
-                    <td>
-                      <VTextField v-model.number="item.unit_price" type="number" density="compact" variant="plain"
-                        hide-details min="0" step="0.01" prefix="$" class="premium-input font-weight-bold" />
-                    </td>
-                    <td>
-                      <VTextField v-model.number="item.discount" type="number" density="compact" variant="plain"
-                        hide-details min="0" step="0.01" prefix="$"
-                        class="premium-input text-error font-weight-medium" />
-                    </td>
-                    <td class="text-center">
-                      <span class="text-h6 font-weight-black text-success">
-                        ${{ calculateItemSubtotal(item).toFixed(2) }}
-                      </span>
-                    </td>
-                    <td class="text-center">
-                      <VBtn icon="ri-delete-bin-line" size="small" color="error" variant="text" class="delete-btn"
-                        @click="removeItem(index)" />
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </VCard>
-
-            <div v-else class="text-center pa-8">
-              <VIcon icon="ri-shopping-bag-3-line" size="64" color="grey-lighten-1" />
-              <p class="mt-4 text-body-2 text-grey">
-                No hay productos o servicios agregados
-              </p>
-              <p class="text-caption text-grey">
-                Usa el buscador para agregar items
-              </p>
-            </div>
-
-            <!-- Total -->
-            <div class="d-flex justify-end mt-4">
-              <VCard class="pa-4 elevation-2" width="320" color="primary-lighten-5">
-                <div class="d-flex align-center mb-2">
-                  <VIcon icon="ri-money-dollar-circle-line" size="24" color="primary" class="mr-2" />
-                  <span class="text-body-1 font-weight-medium">Total de la Orden</span>
-                </div>
-                <div class="d-flex justify-space-between align-center">
-                  <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                  }}</span>
-                  <VChip size="small" color="primary" label>
-                    {{ workOrder.items.length }} items
-                  </VChip>
-                </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="d-inline-flex align-center qty-selector">
+                          <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
+                            @click="item.quantity--" class="qty-btn" size="small" />
+                          <input v-model.number="item.quantity" type="number" min="1" max="99" class="qty-input"
+                            @input="item.quantity > 99 ? item.quantity = 99 : null"
+                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null" />
+                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
+                            @click="item.quantity < 99 ? item.quantity++ : null" class="qty-btn" size="small" />
+                        </div>
+                      </td>
+                      <td>
+                        <VTextField v-model.number="item.unit_price" type="number" density="compact" variant="plain"
+                          hide-details min="0" step="0.01" prefix="$" class="premium-input font-weight-bold" />
+                      </td>
+                      <td>
+                        <VTextField v-model.number="item.discount" type="number" density="compact" variant="plain"
+                          hide-details min="0" step="0.01" prefix="$"
+                          class="premium-input text-error font-weight-medium" />
+                      </td>
+                      <td class="text-center">
+                        <span class="text-h6 font-weight-black text-success">
+                          ${{ calculateItemSubtotal(item).toFixed(2) }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <VBtn icon="ri-delete-bin-line" size="small" color="error" variant="text" class="delete-btn"
+                          @click="removeItem(index)" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </VTable>
               </VCard>
+
+              <div v-else class="text-center pa-8">
+                <VIcon icon="ri-shopping-bag-3-line" size="64" color="grey-lighten-1" />
+                <p class="mt-4 text-body-2 text-grey">
+                  No hay productos o servicios agregados
+                </p>
+                <p class="text-caption text-grey">
+                  Usa el buscador para agregar items
+                </p>
+              </div>
+
+              <!-- Total -->
+              <div class="d-flex justify-end mt-4">
+                <VCard class="pa-4 elevation-2" width="320" color="primary-lighten-5">
+                  <div class="d-flex align-center mb-2">
+                    <VIcon icon="ri-money-dollar-circle-line" size="24" color="primary" class="mr-2" />
+                    <span class="text-body-1 font-weight-medium">Total de la Orden</span>
+                  </div>
+                  <div class="d-flex justify-space-between align-center">
+                    <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
+                    }}</span>
+                    <VChip size="small" color="primary" label>
+                      {{ workOrder.items.length }} items
+                    </VChip>
+                  </div>
+                </VCard>
+              </div>
+            </VCardText>
+          </VCard>
+          <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start" closable
+            @click:close="showValidationError = false">
+            <div class="d-flex align-center">
+              <VIcon icon="ri-error-warning-line" class="mr-2" />
+              <span class="text-body-2">{{ validationErrorMessage }}</span>
             </div>
-          </VCardText>
-        </VCard>
-        <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-4" border="start" closable
-          @click:close="showValidationError = false">
-          <div class="d-flex align-center">
-            <VIcon icon="ri-error-warning-line" class="mr-2" />
-            <span class="text-body-2">{{ validationErrorMessage }}</span>
-          </div>
-        </VAlert>
-        <!-- Botones de acción -->
-        <VCard class="elevation-2">
-          <VCardText class="pa-6">
-            <div class="d-flex justify-end gap-3">
-              <VBtn type="button" color="grey" variant="outlined" prepend-icon="ri-close-line" @click="cancel">
-                Cancelar
-              </VBtn>
-              <VBtn type="button" color="secondary" variant="tonal" prepend-icon="ri-file-draft-line" :loading="isSavingDraft"
-                @click="saveDraft">
-                Guardar Borrador
-              </VBtn>
-              <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line" :loading="isSubmitting"
-                size="large">
-                Guardar Orden de Trabajo
-              </VBtn>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+          </VAlert>
+          <!-- Botones de acción -->
+          <VCard class="elevation-2">
+            <VCardText class="pa-6">
+              <div class="d-flex justify-end gap-3">
+                <VBtn type="button" color="grey" variant="outlined" prepend-icon="ri-close-line" @click="cancel">
+                  Cancelar
+                </VBtn>
+                <VBtn type="button" color="secondary" variant="tonal" prepend-icon="ri-file-draft-line"
+                  :loading="isSavingDraft" @click="saveDraft">
+                  Guardar Borrador
+                </VBtn>
+                <VBtn type="button" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
+                  :loading="isSubmitting" size="large" @click="saveWorkOrder">
+                  Guardar Orden de Trabajo
+                </VBtn>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
     </VForm>
 
     <!-- Dialog para agregar cliente -->
