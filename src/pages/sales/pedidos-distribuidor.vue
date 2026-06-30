@@ -43,7 +43,7 @@ const requiredRule = v => (
 const loadSuppliers = async () => {
   isLoading.value = true
   try {
-    const response = await $api('suppliers')
+    const response = await $api('suppliers?per_page=-1')
     // Ajustar según estructura de respuesta del listado de proveedores
     suppliers.value = response.suppliers || response.data || response || []
   } catch (error) {
