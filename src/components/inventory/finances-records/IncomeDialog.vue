@@ -108,19 +108,46 @@ watch(() => props.editingMovement, newVal => {
   }
 })
 
+watch(() => props.modelValue, (isVisible) => {
+  if (isVisible && !props.editingMovement) {
+    resetForm()
+    paymentIdMap.value.clear()
+  }
+})
+
+const generateAutoCode = (dateStr) => {
+  if (!dateStr) return ''
+  const cleanDate = dateStr.replace(/-/g, '')
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000)
+  return `ING-${cleanDate}-${randomSuffix}`
+}
+
 const resetForm = () => {
+  const currentDate = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
   form.value = {
     type: 0, // TYPE_INCOME
     account_id: null,
-    work_order_number: '',
+    work_order_number: generateAutoCode(currentDate),
     invoice_number: '',
     description: '',
-    entry_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
+    entry_date: currentDate,
     payments: [
       { account_id: null, amount: 0 },
     ],
   }
 }
+
+watch(() => form.value.entry_date, (newDate) => {
+  if (!props.editingMovement && form.value) {
+    const currentCode = form.value.work_order_number
+    const pattern = /^ING-\d{8}-\d{4}$/
+    if (!currentCode || pattern.test(currentCode)) {
+      const cleanDate = newDate.replace(/-/g, '')
+      const randomSuffix = currentCode && currentCode.includes('-') ? currentCode.split('-')[2] : Math.floor(1000 + Math.random() * 9000)
+      form.value.work_order_number = `ING-${cleanDate}-${randomSuffix}`
+    }
+  }
+})
 
 const closeDialog = () => {
   emit('update:modelValue', false)

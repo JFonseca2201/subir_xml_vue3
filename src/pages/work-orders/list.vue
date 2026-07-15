@@ -130,7 +130,9 @@ const totalPages = computed(() => {
 const groupedWorkOrders = computed(() => {
   const groups = {}
   paginatedWorkOrders.value.forEach(wo => {
-    const dateStr = wo.created_at ? wo.created_at.split(' ')[0] : 'N/A'
+    // Extraemos la fecha desde 'date' si existe, o si no 'created_at'
+    const sourceDate = wo.date ? wo.date : wo.created_at
+    const dateStr = sourceDate ? sourceDate.split(' ')[0] : 'N/A'
     if (!groups[dateStr]) {
       groups[dateStr] = []
     }

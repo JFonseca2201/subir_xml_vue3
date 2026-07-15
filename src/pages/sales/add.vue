@@ -33,7 +33,6 @@ const validationErrorMessage = ref('')
 
 // Opciones
 const documentTypes = [
-  { title: 'Cotización', value: 'quote' },
   { title: 'Nota de Venta', value: 'sale_note' },
   { title: 'Factura', value: 'invoice' },
 ]
@@ -81,6 +80,8 @@ const sale = ref({
 })
 
 // Regla de campo obligatorio que acepta 0 como valor válido
+const positiveNumberRule = v => v >= 0 || 'El valor no puede ser negativo'
+
 const requiredRule = v => (
   v !== null &&
   v !== undefined &&
@@ -109,9 +110,17 @@ const generateDocumentNumber = type => {
 const isLinkedToWorkOrder = computed(() => !!sale.value.work_order_id)
 
 // Watch para regenerar número cuando cambia el tipo de documento
-const onDocumentTypeChange = () => {
+const onDocumentTypeChange = async () => {
   if (!isLinkedToWorkOrder.value) {
-    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+    // Obtener el secuencial correcto según el tipo de documento
+    try {
+      const docType = sale.value.document_type
+      const nextNumberRes = await $api(`sales/next-number?document_type=${docType}`)
+      nextGlobalNumber.value = nextNumberRes?.data || '000000000'
+      sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+    } catch (error) {
+      console.error('Error al obtener secuencial:', error)
+    }
   }
   if (sale.value.document_type === 'quote') {
     sale.value.payment_status = 'pending'
@@ -302,7 +311,7 @@ const loadInitialData = async () => {
       $api('sales', { params: { per_page: 1 } }), // Reducido ya que no calculamos la secuencia manualmente
       $api('work-orders', { params: { per_page: 1 } }),
       $api('employees', { params: { per_page: 1000 } }),
-      $api('sales/next-number'),
+      $api('sales/next-number?document_type=' + (route.query.type || 'sale_note')),
     ])
 
     const extractArray = (res, key) => {
@@ -870,7 +879,11 @@ const submitForm = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       showNotification('Registro procesado exitosamente', 'success')
-      router.push('/sales/list')
+      if (sale.value.document_type === 'quote') {
+        router.push('/quotes/list')
+      } else {
+        router.push('/sales/list')
+      }
     } else {
       showNotification(response.message || 'Error al registrar', 'error')
     }
@@ -927,7 +940,11 @@ const saveDraft = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       showNotification('Borrador guardado exitosamente', 'success')
-      router.push('/sales/list')
+      if (sale.value.document_type === 'quote') {
+        router.push('/quotes/list')
+      } else {
+        router.push('/sales/list')
+      }
     } else {
       showNotification(response.message || 'Error al guardar borrador', 'error')
     }
@@ -1079,6 +1096,8 @@ onMounted(async () => {
         sale.value.client_id = workOrder.client_id
         sale.value.vehicle_id = workOrder.vehicle_id
         sale.value.mileage = workOrder.mileage
+        sale.value.service_date = workOrder.date ? workOrder.date.split(' ')[0] : sale.value.service_date
+        sale.value.observations = workOrder.observations || ''
         applyWorkOrderTechnicians(workOrder)
 
         // Importar items de la orden de trabajo
@@ -1103,6 +1122,13 @@ onMounted(async () => {
       showNotification('Error al importar la orden de trabajo', 'error')
     }
   }
+
+  // Si viene con ?type=quote, preseleccionar cotización
+  const typeParam = route.query.type
+  if (typeParam === 'quote' && !workOrderId) {
+    sale.value.document_type = 'quote'
+    sale.value.payment_status = 'pending'
+  }
 })
 </script>
 
@@ -1112,12 +1138,12 @@ onMounted(async () => {
       class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
         <div class="d-flex align-center">
-          <VAvatar color="primary-lighten-5" size="48" class="mr-3">
-            <VIcon icon="ri-add-line" size="32" color="primary" />
+          <VAvatar :color="isQuote ? 'info-lighten-5' : 'primary-lighten-5'" size="48" class="mr-3">
+            <VIcon :icon="isQuote ? 'ri-file-list-3-line' : 'ri-add-line'" size="32" :color="isQuote ? 'info' : 'primary'" />
           </VAvatar>
-          <h1 class="text-h4 font-weight-bold mb-1">Registrar Venta o Cotización</h1>
+          <h1 class="text-h4 font-weight-bold mb-1">{{ isQuote ? 'Registrar Cotización' : 'Registrar Venta' }}</h1>
         </div>
-        <p class="text-medium-emphasis mb-0">Crea un nuevo documento comercial</p>
+        <p class="text-medium-emphasis mb-0">{{ isQuote ? 'Crea una nueva cotización para un cliente' : 'Crea un nuevo documento comercial' }}</p>
       </div>
     </div>
 
@@ -1125,7 +1151,7 @@ onMounted(async () => {
       <VRow>
         <VCol cols="12">
           <!-- Tipo de Documento -->
-          <VCard class="elevation-2 mb-4">
+          <VCard v-if="!isQuote" class="elevation-2 mb-4">
             <VCardText class="pa-6">
               <div class="d-flex align-center mb-5">
                 <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
@@ -1137,25 +1163,7 @@ onMounted(async () => {
                 </div>
               </div>
               <VRow>
-                <VCol cols="12" md="4">
-                  <VCard
-                    :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
-                    @click="sale.document_type = 'quote'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="40">
-                        <VIcon icon="ri-file-text-line" :color="sale.document_type === 'quote' ? 'white' : 'grey'" />
-                      </VAvatar>
-                      <div>
-                        <div class="font-weight-bold"
-                          :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">Cotización</div>
-                        <div class="text-caption text-medium-emphasis">Documento de presupuesto</div>
-                      </div>
-                    </div>
-                  </VCard>
-                </VCol>
-
-                <VCol cols="12" md="4">
+                <VCol cols="12" md="6">
                   <VCard
                     :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'"
                     class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
@@ -1174,7 +1182,7 @@ onMounted(async () => {
                   </VCard>
                 </VCol>
 
-                <VCol cols="12" md="4">
+                <VCol cols="12" md="6">
                   <VCard
                     :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'"
                     class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all" variant="outlined"
@@ -1215,14 +1223,14 @@ onMounted(async () => {
               </div>
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule, positiveNumberRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
                     required color="primary" :readonly="isLinkedToWorkOrder" :loading="isLoading"
                     :hint="isLinkedToWorkOrder ? 'Vinculado a la orden de trabajo' : undefined" persistent-hint />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" label="Fecha de Servicio *" type="date"
-                    :rules="[requiredRule]" variant="outlined" density="comfortable"
+                    :rules="[requiredRule, positiveNumberRule]" variant="outlined" density="comfortable"
                     prepend-inner-icon="ri-calendar-line" hide-details="auto" required color="primary" />
                 </VCol>
               </VRow>
@@ -1422,7 +1430,7 @@ onMounted(async () => {
                       </td>
                       <td>
                         <VTextField v-model.number="item.price" type="number" density="compact" variant="plain"
-                          hide-details min="0" step="0.01" prefix="$" :rules="[requiredRule]"
+                          hide-details min="0" step="0.01" prefix="$" :rules="[requiredRule, positiveNumberRule]"
                           class="premium-input font-weight-bold" />
                       </td>
                       <td>
@@ -1511,7 +1519,7 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" md="6">
                   <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title" item-value="value"
-                    label="Estado del pago" :rules="[requiredRule]" variant="outlined" density="comfortable"
+                    label="Estado del pago" :rules="[requiredRule, positiveNumberRule]" variant="outlined" density="comfortable"
                     prepend-inner-icon="ri-flag-line" hide-details="auto" class="mb-4" />
 
                   <VCard variant="tonal" color="primary" class="pa-3 rounded-lg cursor-pointer mb-4"

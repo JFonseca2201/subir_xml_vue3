@@ -78,6 +78,22 @@ export default [
     ],
   },
   {
+    title: 'Cotizaciones',
+    icon: { icon: 'ri-file-list-3-line' },
+    children: [
+      {
+        title: 'Registrar',
+        to: 'quotes-add',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+      {
+        title: 'Listado',
+        to: 'quotes-list',
+        icon: { icon: 'ri-radio-button-line' },
+      },
+    ],
+  },
+  {
     title: 'Pedidos',
     icon: { icon: 'ri-box-3-line' },
     children: [

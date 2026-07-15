@@ -36,13 +36,13 @@ const employees = ref([])
 
 const workOrder = ref({
   number: '',
+  date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   client_id: null,
   vehicle_id: null,
   user_id: userId.value,
   mileage: null,
   fuel_level: '',
   observations: '',
-  diagnostic: '',
   technicians: [],
   items: [],
 })
@@ -518,14 +518,21 @@ onMounted(() => {
               </div>
 
               <VRow>
-                <VCol cols="12" md="4">
+                <VCol cols="12" md="6">
                   <div class="mb-4">
                     <VTextField v-model="workOrder.number" label="Número de Orden *" prepend-inner-icon="ri-hashtag"
                       variant="outlined" :rules="[(v) => !!v || 'Número de orden es requerido']" :loading="isLoading" />
                   </div>
                 </VCol>
 
-                <VCol cols="12" md="4">
+                <VCol cols="12" md="6">
+                  <div class="mb-4">
+                    <VTextField v-model="workOrder.date" type="date" label="Fecha *" prepend-inner-icon="ri-calendar-line"
+                      variant="outlined" :rules="[(v) => !!v || 'Fecha es requerida']" />
+                  </div>
+                </VCol>
+
+                <VCol cols="12" md="6">
                   <div class="mb-4">
                     <VTextField v-model="clientInputText" label="Cliente *" prepend-inner-icon="ri-user-line"
                       append-inner-icon="ri-search-line" variant="outlined" clearable
@@ -549,7 +556,7 @@ onMounted(() => {
                   </div>
                 </VCol>
 
-                <VCol cols="12" md="4">
+                <VCol cols="12" md="6">
                   <div class="mb-4" style="text-transform: uppercase;">
                     <VTextField v-model="vehicleInputText" label="Vehículo" prepend-inner-icon="ri-car-line"
                       append-inner-icon="ri-search-line" variant="outlined" clearable @keydown.enter.prevent="handleVehicleSearch"
@@ -595,37 +602,7 @@ onMounted(() => {
             </VCardText>
           </VCard>
 
-          <!-- Observaciones y Diagnóstico -->
-          <VCard class="elevation-2 mb-4">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center mb-4">
-                <VAvatar size="40" color="info" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-file-text-line" size="24" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h6 font-weight-bold mb-0">
-                    Observaciones y Diagnóstico
-                  </h3>
-                  <p class="text-caption text-grey mb-0">
-                    Detalles adicionales sobre el trabajo a realizar
-                  </p>
-                </div>
-              </div>
 
-              <VRow>
-                <VCol cols="12" md="6">
-                  <VTextarea v-model="workOrder.observations" label="Observaciones"
-                    prepend-inner-icon="ri-file-text-line" variant="outlined" rows="4"
-                    placeholder="Describe cualquier observación relevante..." />
-                </VCol>
-
-                <VCol cols="12" md="6">
-                  <VTextarea v-model="workOrder.diagnostic" label="Diagnóstico" prepend-inner-icon="ri-stethoscope-line"
-                    variant="outlined" rows="4" placeholder="Describe el diagnóstico técnico..." />
-                </VCol>
-              </VRow>
-            </VCardText>
-          </VCard>
 
           <!-- Productos y Servicios -->
           <VCard class="elevation-2 mb-4">
@@ -817,6 +794,16 @@ onMounted(() => {
               <span class="text-body-2">{{ validationErrorMessage }}</span>
             </div>
           </VAlert>
+          <!-- Observaciones -->
+          <VCard class="elevation-2 mb-4">
+            <VCardText class="pa-6">
+              <h3 class="text-h6 font-weight-bold mb-4">Observaciones</h3>
+              <VTextarea v-model="workOrder.observations" label="Observaciones de la orden"
+                prepend-inner-icon="ri-file-text-line" variant="outlined" rows="3"
+                placeholder="Describe cualquier observación relevante..." hide-details />
+            </VCardText>
+          </VCard>
+
           <!-- Botones de acción -->
           <VCard class="elevation-2">
             <VCardText class="pa-6">

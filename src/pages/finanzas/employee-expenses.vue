@@ -53,7 +53,7 @@ const headers = [
   { title: 'DESCRIPCIÓN', key: 'description' },
   { title: 'CUENTA', key: 'account_name', sortable: true },
   { title: 'MONTO', key: 'amount', sortable: true, align: 'end' },
-  { title: 'FECHA', key: 'date', sortable: true },
+  { title: 'FECHA', key: 'raw_date', sortable: true },
   { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center' },
 ]
 
@@ -78,13 +78,25 @@ const loadExpenses = async () => {
         ...payment,
         employee_name: payment.employee_name || 'N/A',
         account_name: payment.account_name || 'N/A',
+        raw_date: payment.date ? payment.date.split('/').reverse().join('-') : '1970-01-01',
       })),
       ...(expensesResponse.advances || []).map(advance => ({
         ...advance,
         employee_name: advance.employee_name || 'N/A',
         account_name: advance.account_name || 'N/A',
+        raw_date: advance.date ? advance.date.split('/').reverse().join('-') : '1970-01-01',
       })),
     ]
+
+    // Ordenar por fecha descendente (más reciente primero)
+    allExpenses.sort((a, b) => {
+      const parseDate = (d) => {
+        if (!d) return 0
+        const [day, month, year] = d.split('/')
+        return new Date(year, month - 1, day).getTime()
+      }
+      return parseDate(b.date) - parseDate(a.date)
+    })
 
     expenses.value = allExpenses
     summary.value.total_payments = parseFloat(expensesResponse.summary?.total_payments) || 0
@@ -171,7 +183,7 @@ const generatePDF = async item => {
 
     const url = window.URL.createObjectURL(new Blob([response]))
     const link = document.createElement('a')
-    
+
     // Formatear nombre del empleado (quitar espacios o dejarlos)
     const safeName = item.employee_name ? item.employee_name.replace(/\s+/g, '_') : 'empleado'
     const dateStr = new Date().toISOString().split('T')[0]
@@ -230,7 +242,8 @@ onMounted(() => {
               </div>
             </div>
             <div class="d-flex gap-3">
-              <VBtn color="primary" variant="elevated" prepend-icon="ri-money-dollar-circle-line" @click="openAddPaymentDialog">
+              <VBtn color="primary" variant="elevated" prepend-icon="ri-money-dollar-circle-line"
+                @click="openAddPaymentDialog">
                 Nuevo Pago
               </VBtn>
               <VBtn color="info" variant="elevated" prepend-icon="ri-hand-coin-line" @click="openAddAdvanceDialog">
@@ -306,33 +319,35 @@ onMounted(() => {
         <VCardItem class="pa-4 border-b">
           <div class="d-flex justify-space-between align-center flex-wrap gap-4">
             <div class="d-flex gap-2">
-              <VBtn :variant="selectedType === 'all' ? 'elevated' : 'tonal'" :color="selectedType === 'all' ? 'primary' : 'secondary'" size="small" @click="selectedType = 'all'">
+              <VBtn :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'all' ? 'primary' : 'secondary'" size="small" @click="selectedType = 'all'">
                 Todos
               </VBtn>
-              <VBtn :variant="selectedType === 'payments' ? 'elevated' : 'tonal'" :color="selectedType === 'payments' ? 'primary' : 'secondary'" size="small" @click="selectedType = 'payments'">
+              <VBtn :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'payments' ? 'primary' : 'secondary'" size="small"
+                @click="selectedType = 'payments'">
                 Pagos
               </VBtn>
-              <VBtn :variant="selectedType === 'advances' ? 'elevated' : 'tonal'" :color="selectedType === 'advances' ? 'primary' : 'secondary'" size="small" @click="selectedType = 'advances'">
+              <VBtn :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'advances' ? 'primary' : 'secondary'" size="small"
+                @click="selectedType = 'advances'">
                 Adelantos
               </VBtn>
             </div>
             <div style="width: 250px;">
-              <VTextField v-model="searchQuery" prepend-inner-icon="ri-search-line" label="Buscar..." density="compact" variant="outlined" hide-details />
+              <VTextField v-model="searchQuery" prepend-inner-icon="ri-search-line" label="Buscar..." density="compact"
+                variant="outlined" hide-details />
             </div>
           </div>
         </VCardItem>
 
-        <VDataTable
-          :headers="headers"
-          :items="filteredExpenses"
-          :search="searchQuery"
-          :loading="loader.loading"
-          class="elevation-0"
-          hover
-        >
+        <VDataTable :headers="headers" :items="filteredExpenses" :search="searchQuery" :loading="loader.loading"
+          :sort-by="[{ key: 'raw_date', order: 'desc' }]" class="elevation-0" hover>
           <template #item.type="{ item }">
-            <VChip :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')" variant="tonal" size="small" class="font-weight-bold">
-              <VIcon start size="14">{{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ? 'ri-check-line' : 'ri-hand-coin-line') }}</VIcon>
+            <VChip :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')" variant="tonal"
+              size="small" class="font-weight-bold">
+              <VIcon start size="14">{{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ?
+                'ri-check-line' : 'ri-hand-coin-line') }}</VIcon>
               {{ item.type === 'payment' ? 'PAGO' : (item.is_deducted ? 'ADELANTO PAGADO' : 'ADELANTO') }}
             </VChip>
           </template>
@@ -357,15 +372,20 @@ onMounted(() => {
             </span>
           </template>
 
-          <template #item.date="{ item }">
+          <template #item.raw_date="{ item }">
             <span class="text-body-2 text-medium-emphasis">{{ item.date }}</span>
           </template>
 
           <template #item.actions="{ item }">
             <div class="d-flex gap-2 justify-center">
-              <VBtn title="Descargar PDF" icon="ri-file-pdf-line" variant="tonal" size="small" color="info" @click="generatePDF(item)" />
-              <VBtn title="Editar" icon="ri-edit-line" variant="tonal" size="small" color="primary" :disabled="item.type === 'advance' && item.is_deducted" @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)" />
-              <VBtn title="Eliminar" icon="ri-delete-bin-line" variant="tonal" size="small" color="error" :disabled="item.type === 'advance' && item.is_deducted" @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)" />
+              <VBtn title="Descargar PDF" icon="ri-file-pdf-line" variant="tonal" size="small" color="info"
+                @click="generatePDF(item)" />
+              <VBtn title="Editar" icon="ri-edit-line" variant="tonal" size="small" color="primary"
+                :disabled="item.type === 'advance' && item.is_deducted"
+                @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)" />
+              <VBtn title="Eliminar" icon="ri-delete-bin-line" variant="tonal" size="small" color="error"
+                :disabled="item.type === 'advance' && item.is_deducted"
+                @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)" />
             </div>
           </template>
 
@@ -382,12 +402,18 @@ onMounted(() => {
       </VCard>
 
       <!-- Diálogos -->
-      <AddEmployeeAdvanceDialog v-if="showAddAdvanceDialog" v-model="showAddAdvanceDialog" :accounts="[]" @created="handleAdvanceCreated" />
-      <AddEmployeePaymentDialog v-if="showAddPaymentDialog" v-model="showAddPaymentDialog" :accounts="[]" @created="handlePaymentCreated" />
-      <EditEmployeeAdvanceDialog v-if="showEditAdvanceDialog" v-model="showEditAdvanceDialog" :expense="selectedAdvance" @updated="handleAdvanceUpdated" />
-      <DeleteEmployeeAdvanceDialog v-if="showDeleteAdvanceDialog" v-model="showDeleteAdvanceDialog" :advance="selectedAdvance" @deleted="handleAdvanceDeleted" />
-      <EditEmployeePaymentDialog v-if="showEditPaymentDialog" v-model="showEditPaymentDialog" :expense="selectedPayment" @updated="handlePaymentUpdated" />
-      <DeleteEmployeePaymentDialog v-if="showDeletePaymentDialog" v-model="showDeletePaymentDialog" :payment="selectedPayment" @deleted="handlePaymentDeleted" />
+      <AddEmployeeAdvanceDialog v-if="showAddAdvanceDialog" v-model="showAddAdvanceDialog" :accounts="[]"
+        @created="handleAdvanceCreated" />
+      <AddEmployeePaymentDialog v-if="showAddPaymentDialog" v-model="showAddPaymentDialog" :accounts="[]"
+        @created="handlePaymentCreated" />
+      <EditEmployeeAdvanceDialog v-if="showEditAdvanceDialog" v-model="showEditAdvanceDialog" :expense="selectedAdvance"
+        @updated="handleAdvanceUpdated" />
+      <DeleteEmployeeAdvanceDialog v-if="showDeleteAdvanceDialog" v-model="showDeleteAdvanceDialog"
+        :advance="selectedAdvance" @deleted="handleAdvanceDeleted" />
+      <EditEmployeePaymentDialog v-if="showEditPaymentDialog" v-model="showEditPaymentDialog" :expense="selectedPayment"
+        @updated="handlePaymentUpdated" />
+      <DeleteEmployeePaymentDialog v-if="showDeletePaymentDialog" v-model="showDeletePaymentDialog"
+        :payment="selectedPayment" @deleted="handlePaymentDeleted" />
     </div>
   </div>
 </template>

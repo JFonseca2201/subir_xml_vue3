@@ -10,6 +10,7 @@ import VehicleDeleteDialog from '@/components/inventory/vehicles/VehicleDeleteDi
 import { getBrandNameById, getBrandOptions } from '@/data/vehicleBrands.js'
 import { getVehicleTypeOptions, getVehicleTypeNameById, getVehicleTypeColor } from '@/data/vehicleTypes.js'
 import ImportData from '@/components/inventory/import/ImportData.vue'
+import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 
 // Router y notificaciones
 const router = useRouter()
@@ -26,6 +27,8 @@ const vehicleToEdit = ref(null)
 const deleteDialog = ref(false)
 const vehicleToDelete = ref(null)
 const isImportDialogVisible = ref(false)
+const isHistoryDialogVisible = ref(false)
+const historyVehicleId = ref(null)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -180,6 +183,11 @@ watch(currentPage, () => {
 const showVehicle = vehicle => {
   vehicleToShow.value = vehicle
   isVehicleShowDialogVisible.value = true
+}
+
+const showHistory = vehicle => {
+  historyVehicleId.value = vehicle.id
+  isHistoryDialogVisible.value = true
 }
 
 const addVehicle = () => {
@@ -384,6 +392,9 @@ onMounted(() => {
               </td>
               <td class="text-center">
                 <div class="d-flex justify-center gap-1">
+                  <IconBtn class="action-btn text-info" @click="showHistory(vehicle)" title="Ver Historial">
+                    <VIcon icon="ri-history-line" />
+                  </IconBtn>
                   <IconBtn class="action-btn text-info" @click="showVehicle(vehicle)" title="Ver Ficha">
                     <VIcon icon="ri-eye-line" />
                   </IconBtn>
@@ -427,6 +438,8 @@ onMounted(() => {
 
     <VehicleDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :vehicle-selected="vehicleToDelete"
       @delete-vehicle="handleVehicleDeleted" />
+
+    <SalesHistoryDialog v-model="isHistoryDialogVisible" :vehicle-id="historyVehicleId" />
 
     <ImportData v-model:is-dialog-visible="isImportDialogVisible" default-tab="vehicles"
       @import-success="loadVehicles" />

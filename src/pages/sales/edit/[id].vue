@@ -75,6 +75,8 @@ const isAddServiceDialogVisible = ref(false)
 
 // Reglas de validación
 // Regla de campo obligatorio que acepta 0 como valor válido
+const positiveNumberRule = v => v >= 0 || 'El valor no puede ser negativo'
+
 const requiredRule = v => (
   v !== null &&
   v !== undefined &&
@@ -660,7 +662,7 @@ const loadSaleData = async () => {
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar los datos de la venta', 'error')
-    router.push('/sales/list')
+    router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
   } finally {
     isLoading.value = false
   }
@@ -706,7 +708,7 @@ const saveDraft = async () => {
 
     if (response?.success || response?.status === 200) {
       showNotification('Borrador actualizado correctamente', 'success')
-      router.push('/sales/list')
+      router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
     } else {
       showNotification(response.message || 'Error al actualizar borrador', 'error')
     }
@@ -847,7 +849,7 @@ const submitForm = async () => {
 
     if (response?.success || response?.status === 200) {
       showNotification('Venta actualizada correctamente', 'success')
-      router.push('/sales/list')
+      router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
     } else {
       showNotification(response.message || 'Error al actualizar', 'error')
     }
@@ -876,12 +878,12 @@ onMounted(() => {
           <VAvatar color="primary-lighten-5" size="48" class="mr-3">
             <VIcon icon="ri-add-line" size="32" color="primary" />
           </VAvatar>
-          <h1 class="text-h4 font-weight-bold mb-1">Editar Documento</h1>
+          <h1 class="text-h4 font-weight-bold mb-1">{{ sale.document_type === 'quote' ? 'Editar Cotización' : 'Editar Documento' }}</h1>
           <VChip v-if="sale.status === 'canceled'" color="error" size="small" class="mt-2">ANULADA</VChip>
         </div>
         <p class="text-medium-emphasis mb-0">Actualiza el documento</p>
       </div>
-      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/list"
+      <VBtn color="primary" variant="tonal" prepend-icon="ri-arrow-left-line" :to="sale.document_type === 'quote' ? '/quotes/list' : '/sales/list'"
         class="align-self-md-center align-self-end">
         Volver al Listado
       </VBtn>
@@ -891,7 +893,7 @@ onMounted(() => {
       <VRow>
         <VCol cols="12">
           <!-- Tipo de Documento -->
-          <VCard class="elevation-2 mb-4">
+          <VCard v-if="false" class="elevation-2 mb-4">
             <VCardText class="pa-6">
               <div class="d-flex align-center mb-5">
                 <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
@@ -977,13 +979,13 @@ onMounted(() => {
               </div>
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule, positiveNumberRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
                     required color="primary" :loading="isDocumentNumberLoading" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" :disabled="sale.status === 'canceled'"
-                    label="Fecha de Servicio *" type="date" :rules="[requiredRule]" variant="outlined"
+                    label="Fecha de Servicio *" type="date" :rules="[requiredRule, positiveNumberRule]" variant="outlined"
                     density="comfortable" prepend-inner-icon="ri-calendar-line" hide-details="auto" required
                     color="primary" />
                 </VCol>
@@ -1193,7 +1195,7 @@ onMounted(() => {
                       <td>
                         <VTextField v-model.number="item.price" :disabled="sale.status === 'canceled'" type="number"
                           density="compact" variant="plain" hide-details min="0" step="0.01" prefix="$"
-                          :rules="[requiredRule]" class="premium-input font-weight-bold" />
+                          :rules="[requiredRule, positiveNumberRule]" class="premium-input font-weight-bold" />
                       </td>
                       <td>
                         <VTextField v-model.number="item.discount" :disabled="sale.status === 'canceled'" type="number"
@@ -1276,7 +1278,7 @@ onMounted(() => {
               <VRow>
                 <VCol cols="12" md="6">
                   <VSelect v-model="sale.payment_status" :disabled="sale.status === 'canceled'" :items="paymentStatuses"
-                    item-title="title" item-value="value" label="Estado del pago" :rules="[requiredRule]"
+                    item-title="title" item-value="value" label="Estado del pago" :rules="[requiredRule, positiveNumberRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-flag-line" hide-details="auto"
                     class="mb-4" />
 
@@ -1378,7 +1380,7 @@ onMounted(() => {
           <VCard class="elevation-2">
             <VCardText class="pa-6">
               <div class="d-flex justify-end gap-3">
-                <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push('/sales/list')">
+                <VBtn color="grey" variant="outlined" prepend-icon="ri-close-line" @click="router.push(sale.document_type === 'quote' ? '/quotes/list' : '/sales/list')">
                   Cancelar
                 </VBtn>
                 <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary"

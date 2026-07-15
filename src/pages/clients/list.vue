@@ -10,6 +10,7 @@ import ClientCompanyEditDialog from '@/components/inventory/clients/ClientCompan
 import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
 import ClientDeleteDialog from '@/components/inventory/clients/ClientDeleteDialog.vue'
 import ImportData from '@/components/inventory/import/ImportData.vue'
+import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 
 // Router
 const router = useRouter()
@@ -30,6 +31,8 @@ const companyToEdit = ref(null)
 const isClientShowDialogVisible = ref(false)
 const clientToShow = ref(null)
 const isImportDialogVisible = ref(false)
+const isHistoryDialogVisible = ref(false)
+const historyClientId = ref(null)
 
 // Formulario de búsqueda
 const searchForm = ref({
@@ -146,6 +149,11 @@ watch(currentPage, () => {
 const showClient = client => {
   clientToShow.value = client
   isClientShowDialogVisible.value = true
+}
+
+const showHistory = client => {
+  historyClientId.value = client.id
+  isHistoryDialogVisible.value = true
 }
 
 const deleteClient = client => {
@@ -395,6 +403,9 @@ onMounted(() => {
               </td>
               <td class="text-center">
                 <div class="d-flex justify-center gap-1">
+                  <IconBtn class="action-btn text-info" title="Ver Historial" @click="showHistory(client)">
+                    <VIcon icon="ri-history-line" />
+                  </IconBtn>
                   <IconBtn class="action-btn text-info" title="Ver Ficha" @click="showClient(client)">
                     <VIcon icon="ri-eye-line" />
                   </IconBtn>
@@ -446,6 +457,8 @@ onMounted(() => {
 
     <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
       @delete-client="handleClientDeleted" />
+
+    <SalesHistoryDialog v-model="isHistoryDialogVisible" :client-id="historyClientId" />
 
     <ImportData v-model:is-dialog-visible="isImportDialogVisible" default-tab="clients" @import-success="loadClients" />
   </div>

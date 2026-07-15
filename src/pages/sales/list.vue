@@ -55,7 +55,6 @@ const totalPages = ref(0)
 
 // Opciones para selects
 const documentTypeOptions = [
-  { title: 'Cotización', value: 'quote' },
   { title: 'Nota de Venta', value: 'sale_note' },
   { title: 'Factura', value: 'invoice' },
 ]
@@ -72,6 +71,7 @@ const loadSales = async () => {
   try {
     const params = {
       page: currentPage.value,
+      exclude_quotes: true,
       ...searchForm.value,
     }
 
@@ -473,7 +473,7 @@ onMounted(() => {
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
           <VIcon icon="ri-price-tag-3-line" color="primary" />
-          Ventas y Cotizaciones
+          Ventas y Facturas
         </h1>
         <p class="text-medium-emphasis mb-0 text-body-1">
           Historial de transacciones y servicios del taller
