@@ -26,6 +26,9 @@ const canAccessOperations = computed(() => {
 
 // --- Estado del Componente ---
 const recentMovements = ref([]) // Datos agrupados para el template
+const rawMovementsList = ref([]) // Datos planos de movimientos
+const rawTransfersList = ref([]) // Datos planos de transferencias
+const accounts = ref([]) // Cuentas bancarias del sistema
 const loading = ref(true)
 const isTransferDialogVisible = ref(false)
 const pdfLoading = ref(false)
@@ -73,9 +76,59 @@ const mainCards = [
   },
 ]
 
+// Determinar método de pago real (TRANSFERENCIA vs EFECTIVO)
+const getPaymentMethod = (movement, accountsList = []) => {
+    const rawMethod = (
+        movement.method ||
+        movement.payment_method ||
+        movement.metodo_pago ||
+        movement.movable?.metodo_pago ||
+        movement.movable?.payment_method ||
+        movement.metadata?.metodo ||
+        movement.metadata?.payment_method ||
+        ''
+    ).toString().toUpperCase()
+
+    if (rawMethod.includes('TRANS') || rawMethod.includes('TRANSFER') || rawMethod.includes('BANCO') || rawMethod.includes('DEPOSITO')) {
+        return 'TRANSFERENCIA'
+    }
+
+    let accountId = movement.account_id
+    if (movement.payment_distributions && movement.payment_distributions.length > 0) {
+        accountId = movement.payment_distributions[0].account_id || movement.payment_distributions[0].account || accountId
+    }
+
+    if (accountId && accountsList.length > 0) {
+        const account = accountsList.find(acc => String(acc.id) === String(accountId))
+        if (account) {
+            const accType = (account.type || '').toLowerCase()
+            const bankName = (account.bank_name || '').toLowerCase()
+            const accName = (account.name || '').toLowerCase()
+
+            if (accType === 'bank' || (bankName && !bankName.includes('efectivo') && !bankName.includes('caja'))) {
+                return 'TRANSFERENCIA'
+            }
+            if (accName.includes('transferencia') || accName.includes('banco') || accName.includes('pichincha') || accName.includes('guayaquil') || accName.includes('produbanco') || accName.includes('pacifico')) {
+                return 'TRANSFERENCIA'
+            }
+            if (accType === 'cash' || bankName.includes('efectivo') || bankName.includes('caja') || accName.includes('efectivo') || accName.includes('caja')) {
+                return 'EFECTIVO'
+            }
+        }
+    }
+
+    const accLabel = (movement.account_name || movement.account_label || '').toLowerCase()
+    if (accLabel.includes('transferencia') || accLabel.includes('banco') || accLabel.includes('pichincha') || accLabel.includes('guayaquil') || accLabel.includes('produbanco') || accLabel.includes('pacifico')) {
+        return 'TRANSFERENCIA'
+    }
+
+    if (rawMethod === 'CASH') return 'EFECTIVO'
+
+    return 'EFECTIVO'
+}
+
 // --- Lógica de Procesamiento ---
 
-// Agrupa la lista plana del backend en el formato que requiere el v-for anidado
 const groupMovementsByDate = movements => {
   if (!movements || !Array.isArray(movements)) return []
 
@@ -96,20 +149,16 @@ const groupMovementsByDate = movements => {
           timeZone: 'UTC',
         }).format(new Date(rawDate))
 
-        // Capitalizar primera letra
         displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1)
       }
       groups[dateKey] = { dateKey, date: displayDate, movements: [] }
     }
 
-    // 1. Extraer y mejorar la descripción
     let finalDesc = m.description || m.movable?.descripcion || 'Movimiento General'
     if (finalDesc.trim().endsWith(':') && m.movable?.descripcion) {
-      // Une descripciones cortadas, ej: "Aporte de socio: " + "APORTE DE CAPITAL"
       finalDesc = `${finalDesc.trim()} ${m.movable.descripcion}`
     }
 
-    // 2. Extraer el origen/módulo de forma legible
     let moduleName = 'General'
     if (m.movable_type) {
       const type = m.movable_type.split('\\').pop()
@@ -118,12 +167,7 @@ const groupMovementsByDate = movements => {
       moduleName = typeMap[type] || type
     }
 
-    // 3. Extraer el método de pago real priorizando metadata o movable
-    let method = m.metadata?.metodo || m.movable?.metodo_pago || m.movable?.payment_method || m.metadata?.payment_method || m.payment_method || 'EFECTIVO'
-
-    method = method.toUpperCase()
-    if (method === 'TRANSFER') method = 'TRANSFERENCIA'
-    if (method === 'CASH') method = 'EFECTIVO'
+    const method = getPaymentMethod(m, accounts.value)
 
     groups[dateKey].movements.push({
       id: m.id,
@@ -131,12 +175,12 @@ const groupMovementsByDate = movements => {
       description: finalDesc,
       module: moduleName,
       method: method,
+      entry_date: m.entry_date || m.created_at,
       time: m.created_at ? new Date(m.created_at).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }) : '--:--',
       amount: parseFloat(m.amount || 0),
     })
   })
 
-  // Ordenar por fecha descendente
   return Object.values(groups).sort((a, b) => {
     if (a.dateKey === 'Sin fecha') return 1
     if (b.dateKey === 'Sin fecha') return -1
@@ -149,11 +193,15 @@ const dashboardOptions = async () => {
   loader.start()
   loading.value = true
   try {
-    const response = await $api('/dashboard-financiero')
+    const [response, accountsRes] = await Promise.all([
+      $api('/dashboard-financiero'),
+      $api('accounts').catch(() => [])
+    ])
 
-    console.log(response)
+    if (accountsRes && Array.isArray(accountsRes)) {
+      accounts.value = accountsRes
+    }
 
-    // Asignar el resumen del backend al estado
     if (response.summary) {
       financialSummary.value = {
         ...financialSummary.value,
@@ -163,10 +211,9 @@ const dashboardOptions = async () => {
       }
     }
 
-    // Procesar movimientos recientes
+    rawMovementsList.value = response.movements || []
     recentMovements.value = groupMovementsByDate(response.movements)
 
-    // Cargar última transferencia para el widget Info. Adicional
     try {
       const transfersResponse = await $api('transfers')
       let dataArray = []
@@ -177,28 +224,27 @@ const dashboardOptions = async () => {
         dataArray = transfersResponse
       }
 
-      if (dataArray && dataArray.length > 0) {
-        let lastTransferObj = null
-        // Verificar si la respuesta viene agrupada o plana
-        if (dataArray[0].transfers && dataArray[0].transfers.length > 0) {
-          lastTransferObj = dataArray[0].transfers[0]
-        } else if (!dataArray[0].transfers) {
-          lastTransferObj = dataArray[0]
-        }
+      const flatTransfers = []
+      dataArray.forEach(group => {
+        const items = group.transfers || [group]
+        items.forEach(t => flatTransfers.push(t))
+      })
 
-        if (lastTransferObj) {
-          const tDate = (lastTransferObj.transfer_date || lastTransferObj.created_at || '').split('T')[0]
-          financialSummary.value = {
-            ...financialSummary.value,
-            lastTransfer: {
-              amount: parseFloat(lastTransferObj.amount || 0),
-              date: tDate || '-'
-            }
+      rawTransfersList.value = flatTransfers
+
+      if (flatTransfers.length > 0) {
+        const lastTransferObj = flatTransfers[0]
+        const tDate = (lastTransferObj.transfer_date || lastTransferObj.created_at || '').split('T')[0]
+        financialSummary.value = {
+          ...financialSummary.value,
+          lastTransfer: {
+            amount: parseFloat(lastTransferObj.amount || 0),
+            date: tDate || '-'
           }
         }
       }
     } catch (e) {
-      console.warn('No se pudo cargar la última transferencia', e)
+      console.warn('No se pudieron cargar las transferencias', e)
     }
 
   } catch (error) {
@@ -224,33 +270,73 @@ const formatCurrency = value => {
   return new Intl.NumberFormat('es-EC', {
     style: 'currency',
     currency: 'USD',
-  }).format(value)
+  }).format(value || 0)
 }
 
+const cleanAccountName = name => {
+  if (!name) return 'N/A'
+  return name
+    .replace(/\(EFECTIVO\)/gi, '')
+    .replace(/\(TRANSFERENCIA\)/gi, '')
+    .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+    .trim()
+}
+
+const formatDate = date => {
+  if (!date) return 'N/A'
+  try {
+    const dStr = typeof date === 'string' ? date.split('T')[0] : date
+    const [year, month, day] = dStr.split('-')
+    if (year && month && day) return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+    return dStr
+  } catch (e) {
+    return 'N/A'
+  }
+}
+
+// Generar PDF DIRECTAMENTE EN EL BACKEND (Separado por tipo de movimiento)
 const generatePDF = async () => {
   pdfLoading.value = true
   try {
-    const response = await $api('financial-movements/pdf', {
-      method: 'POST',
-      responseType: 'blob',
-    })
+    const todayISO = new Date().toISOString().split('T')[0]
+    const params = {
+      group_by_type: true,
+      separate_sections: true,
+      include_transfers: true,
+      include_incomes: true,
+      include_expenses: true,
+    }
 
-    // Crear un blob y descargar el PDF
+    let response
+    try {
+      response = await $api('financial-movements/pdf', {
+        method: 'POST',
+        body: params,
+        responseType: 'blob'
+      })
+    } catch (postErr) {
+      console.warn('POST a financial-movements/pdf falló, reintentando con GET:', postErr)
+      response = await $api('financial-movements/pdf', {
+        method: 'GET',
+        params: params,
+        responseType: 'blob'
+      })
+    }
+
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
-
     a.href = url
-    a.download = `reporte_financiero_${new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]}.pdf`
+    a.download = `Reporte_Operaciones_${todayISO}.pdf`
     document.body.appendChild(a)
     a.click()
-    window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
 
-    showNotification('Reporte PDF generado exitosamente', 'success')
+    showNotification('Reporte PDF (separado por tipos) generado exitosamente desde el servidor', 'success')
   } catch (error) {
-    console.error('Error al generar PDF:', error)
-    showNotification('Error al generar el reporte PDF', 'error')
+    console.error('Error al generar PDF en el backend:', error)
+    showNotification('Error al solicitar el reporte PDF al servidor.', 'error')
   } finally {
     pdfLoading.value = false
   }

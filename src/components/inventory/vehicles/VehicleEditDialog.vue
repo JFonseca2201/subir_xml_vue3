@@ -132,7 +132,7 @@ const brandSearchOptions = ref([])
 
 const generateYearOptions = () => {
   const currentYear = new Date().getFullYear()
-  for (let i = currentYear + 5; i >= currentYear - 20; i--) {
+  for (let i = currentYear + 5; i >= 1980; i--) {
     yearOptions.value.push({ title: i.toString(), value: i })
   }
 }
@@ -227,6 +227,15 @@ const loadVehicleData = () => {
       }
     }
 
+    // Asegurar que el tipo de vehículo sea numérico si es posible
+    let vehicleTypeValue = props.vehicleData.vehicle_type
+    if (vehicleTypeValue !== null && vehicleTypeValue !== undefined && vehicleTypeValue !== '') {
+      const parsedType = parseInt(vehicleTypeValue)
+      if (!isNaN(parsedType)) {
+        vehicleTypeValue = parsedType
+      }
+    }
+
     console.log('Status del vehículo:', statusValue, 'Tipo:', typeof statusValue)
 
     vehicleForm.value = {
@@ -234,6 +243,7 @@ const loadVehicleData = () => {
       license_plate: plate,
       brand: brandValue,
       status: statusValue, // Asegurar que el status sea correcto
+      vehicle_type: vehicleTypeValue, // Asignar el tipo de vehículo formateado
       user_id: getCurrentUserId(), // Asignar el ID del usuario actual
       client_id: props.vehicleData.client_id || null,
     }

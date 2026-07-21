@@ -135,7 +135,7 @@ const brandSearchOptions = ref([])
 
 const generateYearOptions = () => {
   const currentYear = new Date().getFullYear()
-  for (let i = currentYear + 5; i >= currentYear - 40; i--) {
+  for (let i = currentYear + 5; i >= 1980; i--) {
     yearOptions.value.push({ title: i.toString(), value: i })
   }
 }

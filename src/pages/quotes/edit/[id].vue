@@ -408,12 +408,12 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="quote.document_number" label="Secuencial Cotización" variant="outlined"
-                    density="comfortable" :rules="[requiredRule, positiveNumberRule]" readonly bg-color="grey-lighten-4"
+                    density="comfortable" :rules="[requiredRule]" readonly bg-color="grey-lighten-4"
                     prepend-inner-icon="ri-hashtag" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="quote.service_date" type="date" label="Fecha" variant="outlined"
-                    density="comfortable" :rules="[requiredRule, positiveNumberRule]" prepend-inner-icon="ri-calendar-line" />
+                    density="comfortable" :rules="[requiredRule]" prepend-inner-icon="ri-calendar-line" />
                 </VCol>
               </VRow>
             </VCardText>
@@ -433,7 +433,7 @@ onMounted(async () => {
                   <div class="d-flex gap-2 align-center">
                     <VAutocomplete v-model="quote.client_id" :items="clients" item-title="displayName" item-value="id"
                       :custom-filter="clientFilter" label="Cliente *" placeholder="Buscar por nombre o cédula..."
-                      variant="outlined" density="comfortable" hide-no-data clearable :rules="[requiredRule, positiveNumberRule]" />
+                      variant="outlined" density="comfortable" hide-no-data clearable :rules="[requiredRule]" />
                     <VMenu>
                       <template #activator="{ props }">
                         <VBtn icon="ri-add-line" color="info" variant="tonal" v-bind="props" class="mb-5" />

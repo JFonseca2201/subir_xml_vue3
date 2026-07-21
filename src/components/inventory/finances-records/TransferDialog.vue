@@ -38,15 +38,30 @@ const show = computed({
 
 const isEditing = computed(() => !!props.transferData)
 
+const originAccounts = computed(() => {
+  return accounts.value.filter(account => account.id !== form.value.to_account_id)
+})
+
+const destinationAccounts = computed(() => {
+  return accounts.value.filter(account => account.id !== form.value.from_account_id)
+})
+
 // Cargar cuentas desde la API
 const loadAccounts = async () => {
   try {
     const response = await $api('accounts')
 
-    accounts.value = (response || []).map(account => ({
-      ...account,
-      display_name: `${account.bank_name} (${account.name})`,
-    }))
+    accounts.value = (response || []).map(account => {
+      const cleanedName = (account.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .trim()
+
+      return {
+        ...account,
+        display_name: `${account.bank_name} (${cleanedName})`,
+      }
+    })
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
     showNotification('Error al cargar la lista de cuentas', 'error')
@@ -139,7 +154,7 @@ watch(() => show.value, newVal => {
             />
             <div>
               <h3 class="text-h5 font-weight-bold">
-                {{ isEditing ? 'Editar Transferencia' : 'Transferenciaentre Cuentas' }}
+                {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
               </h3>
               <span class="text-medium-emphasis text-body-2">
                 Mueve fondos de una cuenta a otra
@@ -171,7 +186,7 @@ watch(() => show.value, newVal => {
             >
               <VSelect
                 v-model="form.from_account_id"
-                :items="accounts"
+                :items="originAccounts"
                 item-value="id"
                 item-title="display_name"
                 label="Cuenta Origen *"
@@ -188,7 +203,7 @@ watch(() => show.value, newVal => {
             >
               <VSelect
                 v-model="form.to_account_id"
-                :items="accounts"
+                :items="destinationAccounts"
                 item-value="id"
                 item-title="display_name"
                 label="Cuenta Destino *"

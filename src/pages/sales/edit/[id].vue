@@ -979,13 +979,13 @@ onMounted(() => {
               </div>
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule, positiveNumberRule]"
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
                     required color="primary" :loading="isDocumentNumberLoading" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" :disabled="sale.status === 'canceled'"
-                    label="Fecha de Servicio *" type="date" :rules="[requiredRule, positiveNumberRule]" variant="outlined"
+                    label="Fecha de Servicio *" type="date" :rules="[requiredRule]" variant="outlined"
                     density="comfortable" prepend-inner-icon="ri-calendar-line" hide-details="auto" required
                     color="primary" />
                 </VCol>
@@ -1278,7 +1278,7 @@ onMounted(() => {
               <VRow>
                 <VCol cols="12" md="6">
                   <VSelect v-model="sale.payment_status" :disabled="sale.status === 'canceled'" :items="paymentStatuses"
-                    item-title="title" item-value="value" label="Estado del pago" :rules="[requiredRule, positiveNumberRule]"
+                    item-title="title" item-value="value" label="Estado del pago" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-flag-line" hide-details="auto"
                     class="mb-4" />
 

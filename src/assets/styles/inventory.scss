@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // INVENTORY MODULE STYLES
 // Global SCSS for all inventory components
 // ============================================
@@ -3978,4 +3978,101 @@
     box-shadow: 0 4px 8px -4px rgba(0,0,0,0.1) !important;
   }
 }
+
+// ============================================
+// TRANSFERS MODULE STYLES
+// ============================================
+
+.transfers-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tonal-card {
+  border-width: 1px;
+  border-style: solid;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+.bg-primary-tonal {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+  border-color: rgba(var(--v-theme-primary), 0.25) !important;
+}
+
+.bg-success-tonal {
+  background-color: rgba(var(--v-theme-success), 0.08) !important;
+  border-color: rgba(var(--v-theme-success), 0.25) !important;
+}
+
+.bg-info-tonal {
+  background-color: rgba(var(--v-theme-info), 0.08) !important;
+  border-color: rgba(var(--v-theme-info), 0.25) !important;
+}
+
+.bg-error-tonal {
+  background-color: rgba(var(--v-theme-error), 0.08) !important;
+  border-color: rgba(var(--v-theme-error), 0.25) !important;
+}
+
+.border-light {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.12));
+}
+
+.transfer-table-container {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.transfer-table {
+  width: 100%;
+  background: transparent !important;
+
+  th {
+    font-size: 0.725rem !important;
+    letter-spacing: 0.8px;
+    font-weight: 700 !important;
+    color: rgba(var(--v-theme-on-surface), 0.65) !important;
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+    border-bottom: 1px solid rgba(var(--v-border-color), 0.12) !important;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+}
+
+.transfer-date-header-row {
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+  border-top: 1px solid rgba(var(--v-border-color), 0.12);
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.12);
+
+  &:first-child {
+    border-top: none;
+  }
+
+  td {
+    padding: 10px 16px !important;
+  }
+}
+
+.transfer-row {
+  transition: background-color 0.15s ease-in-out;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.06);
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.03) !important;
+  }
+}
+
+.action-btn {
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+}
+
 

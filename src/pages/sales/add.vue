@@ -68,6 +68,7 @@ const sale = ref({
   client_id: null,
   vehicle_id: null,
   work_order_id: null,
+  work_order_number: null,
   mileage: null,
   service_date: getLocalDateString(),
   payment_status: 'paid',
@@ -257,7 +258,7 @@ const applyWorkOrderTechnicians = workOrder => {
 
 const selectWorkOrder = workOrder => {
   sale.value.work_order_id = workOrder.id
-  sale.value.document_number = workOrder.number
+  sale.value.work_order_number = workOrder.number
   sale.value.client_id = workOrder.client_id
   sale.value.vehicle_id = workOrder.vehicle_id
   sale.value.mileage = workOrder.mileage
@@ -1092,7 +1093,7 @@ onMounted(async () => {
 
       if (workOrder) {
         sale.value.work_order_id = workOrder.id
-        sale.value.document_number = workOrder.number
+        sale.value.work_order_number = workOrder.number
         sale.value.client_id = workOrder.client_id
         sale.value.vehicle_id = workOrder.vehicle_id
         sale.value.mileage = workOrder.mileage
@@ -1153,13 +1154,23 @@ onMounted(async () => {
           <!-- Tipo de Documento -->
           <VCard v-if="!isQuote" class="elevation-2 mb-4">
             <VCardText class="pa-6">
-              <div class="d-flex align-center mb-5">
-                <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
-                  <VIcon icon="ri-file-list-3-line" size="24" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h6 font-weight-bold mb-0">Tipo de Documento</h3>
-                  <p class="text-caption text-grey mb-0">Selecciona el tipo de comprobante comercial</p>
+              <div class="d-flex align-center justify-space-between mb-5">
+                <div class="d-flex align-center">
+                  <VAvatar size="40" color="primary" variant="tonal" class="mr-3">
+                    <VIcon icon="ri-file-list-3-line" size="24" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-h6 font-weight-bold mb-0">Tipo de Documento</h3>
+                    <p class="text-caption text-grey mb-0">Selecciona el tipo de comprobante comercial</p>
+                  </div>
+                </div>
+                <div v-if="isLinkedToWorkOrder" class="text-right">
+                  <div style="color: #ff4d4f; font-size: 1.5rem; font-weight: 800; line-height: 1.2;">
+                    #{{ sale.work_order_number }}
+                  </div>
+                  <div style="color: #757575; font-size: 0.75rem; font-weight: 500; text-transform: uppercase;">
+                    Orden de trabajo
+                  </div>
                 </div>
               </div>
               <VRow>
@@ -1223,14 +1234,14 @@ onMounted(async () => {
               </div>
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule, positiveNumberRule]"
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
                     required color="primary" :readonly="isLinkedToWorkOrder" :loading="isLoading"
-                    :hint="isLinkedToWorkOrder ? 'Vinculado a la orden de trabajo' : undefined" persistent-hint />
+                    :hint="isLinkedToWorkOrder ? `Vinculado a la Orden de Trabajo: ${sale.work_order_number || ''}` : undefined" persistent-hint />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.service_date" label="Fecha de Servicio *" type="date"
-                    :rules="[requiredRule, positiveNumberRule]" variant="outlined" density="comfortable"
+                    :rules="[requiredRule]" variant="outlined" density="comfortable"
                     prepend-inner-icon="ri-calendar-line" hide-details="auto" required color="primary" />
                 </VCol>
               </VRow>
@@ -1519,7 +1530,7 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" md="6">
                   <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title" item-value="value"
-                    label="Estado del pago" :rules="[requiredRule, positiveNumberRule]" variant="outlined" density="comfortable"
+                    label="Estado del pago" :rules="[requiredRule]" variant="outlined" density="comfortable"
                     prepend-inner-icon="ri-flag-line" hide-details="auto" class="mb-4" />
 
                   <VCard variant="tonal" color="primary" class="pa-3 rounded-lg cursor-pointer mb-4"

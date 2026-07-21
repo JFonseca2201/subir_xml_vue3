@@ -98,6 +98,15 @@ const isEditing = computed(() => !!props.expense)
 const dialogTitle = computed(() => isEditing.value ? 'Editar Pago' : 'Nuevo Pago')
 
 const filteredAccounts = computed(() => {
+  const method = form.value.payment_method
+  if (!method) return accounts.value
+
+  if (method === 'EFECTIVO') {
+    return accounts.value.filter(acc => acc.type === 'cash')
+  } else if (method === 'TRANSFERENCIA') {
+    return accounts.value.filter(acc => acc.type === 'bank')
+  }
+
   return accounts.value
 })
 
@@ -202,10 +211,17 @@ const loadAccounts = async () => {
     const response = await $api('accounts')
 
     const transformAccounts = accounts => {
-      return (accounts || []).map(account => ({
-        ...account,
-        display_name: `${account.bank_name} (${account.name})`,
-      }))
+      return (accounts || []).map(account => {
+        const cleanedName = (account.name || '')
+          .replace(/\(EFECTIVO\)/gi, '')
+          .replace(/\(TRANSFERENCIA\)/gi, '')
+          .trim()
+
+        return {
+          ...account,
+          display_name: `${account.bank_name} (${cleanedName})`,
+        }
+      })
     }
 
     accounts.value = transformAccounts(response)
@@ -428,7 +444,30 @@ onMounted(() => {
                 placeholder="Seleccionar cuenta"
                 :rules="[v => !!v]"
                 required
-              />
+                variant="outlined"
+                density="comfortable"
+              >
+                <template #prepend-inner>
+                  <VIcon color="primary" size="20">
+                    {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
+                  </VIcon>
+                </template>
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="undefined">
+                    <template #prepend>
+                      <VAvatar size="30" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal" class="me-2">
+                        <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'" size="18" />
+                      </VAvatar>
+                    </template>
+                    <VListItemTitle class="font-weight-medium">
+                      {{ item.raw.display_name }}
+                    </VListItemTitle>
+                    <VListItemSubtitle class="text-caption mt-1">
+                      Saldo: <span class="font-weight-bold" :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+              </VSelect>
             </VCol>
           </VRow>
 
