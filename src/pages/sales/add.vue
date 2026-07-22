@@ -176,49 +176,45 @@ const filteredWorkOrders = computed(() => {
   })
 })
 
+const loadClients = async () => {
+  try {
+    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
+    if (Array.isArray(clientsRes)) clients.value = clientsRes
+    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) clients.value = clientsRes.clients
+    else if (clientsRes?.data && Array.isArray(clientsRes.data)) clients.value = clientsRes.data
+  } catch (error) {
+    console.error('Error al recargar clientes:', error)
+  }
+}
+
+const loadVehicles = async () => {
+  try {
+    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
+    if (Array.isArray(vehiclesRes)) vehicles.value = vehiclesRes
+    else if (vehiclesRes?.vehicles && Array.isArray(vehiclesRes.vehicles)) vehicles.value = vehiclesRes.vehicles
+    else if (vehiclesRes?.data && Array.isArray(vehiclesRes.data)) vehicles.value = vehiclesRes.data
+  } catch (error) {
+    console.error('Error al recargar vehículos:', error)
+  }
+}
+
 const handleClientAdded = async clientData => {
   if (clientData) {
-    const newId = clientData.id || Date.now()
-    const newClient = { ...clientData, id: newId }
-
-    const exists = clients.value.find(c => (c.n_document && c.n_document === newClient.n_document) || c.id === newId)
-    if (!exists) {
-      // Al reasignar el arreglo forzamos a que Vuetify detecte el cambio instantáneamente
-      clients.value = [newClient, ...clients.value]
-    }
-
+    const clientObj = clientData.client || clientData.data || clientData
+    await loadClients()
+    const newId = clientObj.id
     await nextTick()
-    sale.value.client_id = exists ? exists.id : newId
+    sale.value.client_id = newId
   }
 }
 
 const handleVehicleAdded = async vehicleData => {
-  console.log(vehicleData)
-
   if (vehicleData) {
-    // Extract vehicle from response structure
     const vehicle = vehicleData.vehicle || vehicleData
-    const newId = vehicle.id || Date.now()
-    const brandId = typeof vehicle.brand === 'object' ? vehicle.brand.id : vehicle.brand
-    const brandName = brandId ? getBrandNameById(brandId) : ''
-    const parts = [vehicle.license_plate, brandName, vehicle.model].filter(p => p !== undefined && p !== null)
-    const displayTitle = parts.length > 0 ? parts.join(' - ') : vehicle.license_plate || 'Vehículo'
-
-    const newVehicle = {
-      ...vehicle,
-      id: newId,
-      brand: brandId,
-      displayTitle,
-    }
-
-    const exists = vehicles.value.find(v => (v.license_plate && v.license_plate === newVehicle.license_plate) || v.id === newId)
-    if (!exists) {
-      // Al reasignar el arreglo forzamos a que Vuetify detecte el cambio instantáneamente
-      vehicles.value = [newVehicle, ...vehicles.value]
-    }
-
+    await loadVehicles()
+    const newId = vehicle.id
     await nextTick()
-    sale.value.vehicle_id = exists ? exists.id : newId
+    sale.value.vehicle_id = newId
   }
 }
 
@@ -538,12 +534,12 @@ const vehicleHeaders = [
 ]
 
 const getClientNameById = (id) => {
-  const client = clients.value.find(c => c.id === id)
+  const client = clients.value.find(c => String(c.id) === String(id))
   return getClientName(client)
 }
 
 const getVehicleNameById = (id) => {
-  const v = vehicles.value.find(v => v.id === id)
+  const v = vehicles.value.find(v => String(v.id) === String(id))
   if (!v) return ''
   const brandId = typeof v.brand === 'object' ? v.brand?.id : v.brand
   const brandName = brandId ? getBrandNameById(brandId) : ''

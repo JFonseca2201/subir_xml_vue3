@@ -9,7 +9,13 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'addClientCompany'])
+const emit = defineEmits([
+    'update:isDialogVisible',
+    'addClientCompany',
+    'add-client-company',
+    'client-added',
+    'clientAdded'
+])
 
 // Estado del formulario
 const loading = ref(false)
@@ -256,6 +262,9 @@ const saveClient = async () => {
                 console.log('Datos del servidor:', serverData);
                 console.log('Datos emitidos:', updatedData);
                 emit('addClientCompany', updatedData);
+                emit('add-client-company', updatedData);
+                emit('client-added', updatedData);
+                emit('clientAdded', updatedData);
                 // Limpiar formulario después de emitir los datos
                 resetForm();
             }, 100);

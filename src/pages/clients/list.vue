@@ -183,17 +183,7 @@ const addNewClientFinal = () => {
 
 const handleClientFinalAdded = clientData => {
   console.log("Cliente final agregado:", clientData)
-
-  // Agregar nuevo cliente al listado localmente (sin recargar API)
-  if (clientData && clientData.id) {
-    clients.value.unshift(clientData) // Agregar al principio
-    totalItems.value += 1 // Incrementar contador
-  } else {
-    console.error("Datos del cliente inválidos o sin ID:", clientData)
-
-    // Recargar la lista para obtener los datos actualizados
-    loadClients()
-  }
+  loadClients()
 }
 
 const addClient = () => {

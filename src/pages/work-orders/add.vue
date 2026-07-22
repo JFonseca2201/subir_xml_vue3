@@ -246,12 +246,12 @@ const vehicleHeaders = [
 ]
 
 const getClientNameById = (id) => {
-  const client = clients.value.find(c => c.id === id)
+  const client = clients.value.find(c => String(c.id) === String(id))
   return getClientName(client)
 }
 
 const getVehicleNameById = (id) => {
-  const v = vehicles.value.find(v => v.id === id)
+  const v = vehicles.value.find(v => String(v.id) === String(id))
   if (!v) return ''
   const brandId = typeof v.brand === 'object' ? v.brand?.id : v.brand
   const brandName = brandId ? getBrandNameById(brandId) : ''
@@ -327,23 +327,43 @@ const handleVehicleSearch = () => {
   }
 }
 
-const onClientAdded = newClient => {
+const loadClients = async () => {
+  try {
+    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
+    clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
+      Array.isArray(clientsRes.data) ? clientsRes.data : []
+  } catch (error) {
+    console.error('Error al recargar clientes:', error)
+  }
+}
+
+const loadVehicles = async () => {
+  try {
+    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
+    vehicles.value = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
+      Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
+  } catch (error) {
+    console.error('Error al recargar vehículos:', error)
+  }
+}
+
+const onClientAdded = async newClient => {
   const clientObj = newClient.client || newClient.data || newClient
-  clients.value = [clientObj, ...clients.value]
+  await loadClients()
   workOrder.value.client_id = clientObj.id
   showClientDialog.value = false
 }
 
-const onCompanyAdded = newCompany => {
+const onCompanyAdded = async newCompany => {
   const companyObj = newCompany.client || newCompany.data || newCompany
-  clients.value = [companyObj, ...clients.value]
+  await loadClients()
   workOrder.value.client_id = companyObj.id
   showCompanyDialog.value = false
 }
 
-const onVehicleAdded = newVehicle => {
+const onVehicleAdded = async newVehicle => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
-  vehicles.value = [vehicleObj, ...vehicles.value]
+  await loadVehicles()
   workOrder.value.vehicle_id = vehicleObj.id
   showVehicleDialog.value = false
 }

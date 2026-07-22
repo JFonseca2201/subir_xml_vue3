@@ -242,8 +242,8 @@ onMounted(() => {
   </div>
 
   <div v-else class="pa-4 pa-sm-6 employee-expenses-page">
-    <!-- Header Principal -->
-    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1">
+    <!-- Header Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
           <VAvatar color="primary" variant="tonal" rounded="lg" size="56" class="elevation-1">
@@ -541,6 +541,22 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+.sticky-header {
+  position: sticky;
+  top: 62px;
+  z-index: 99;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease;
+}
+@media (min-width: 960px) {
+  .sticky-header {
+    top: 70px;
+  }
+}
+</style>
 
 <route lang="yaml">
 meta:

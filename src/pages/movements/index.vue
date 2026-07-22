@@ -23,40 +23,51 @@ const editingMovement = ref(null)
 const showDeleteDialog = ref(false)
 const movementToDelete = ref(null)
 
-// Búsqueda
+// Búsqueda y Filtros
 const searchWorkOrder = ref('')
-const searchStartDate = ref('')
-const searchEndDate = ref('')
+const rangeDate = ref(null)
+const filterType = ref('')
+const filterMonth = ref('')
+
+const backendTotals = ref({
+    income: 0,
+    expense: 0,
+    transfer: 0,
+    balance: 0
+})
 
 let searchTimeout = null
-watch([searchWorkOrder, searchStartDate, searchEndDate], () => {
+watch([searchWorkOrder, rangeDate, filterType, filterMonth], () => {
     if (searchTimeout) clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => {
         loadMovements()
-        loadTransfers()
     }, 500)
 })
 
 // Filtrar movimientos por Ingreso / Egreso
 const incomeMovements = computed(() => {
-    return movements.value.filter(m => m.type === 0)
+    return movements.value.filter(m => m.type === 0 || m.type === 'income')
 })
 
 const expenseMovements = computed(() => {
-    return movements.value.filter(m => m.type === 1)
+    return movements.value.filter(m => m.type === 1 || m.type === 'expense')
 })
 
-// Total de transferencias acumulado
-const totalTransfersAmount = computed(() => {
-    return transfersList.value.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)
-})
-
-// Computados de totales generales
+// Computados de totales generales (preferir backendTotals si existen)
 const totals = computed(() => {
+    if (backendTotals.value.income > 0 || backendTotals.value.expense > 0 || backendTotals.value.transfer > 0) {
+        return {
+            income: backendTotals.value.income,
+            expense: backendTotals.value.expense,
+            expenses: backendTotals.value.expense,
+            balance: backendTotals.value.balance
+        }
+    }
     const income = incomeMovements.value.reduce((acc, m) => acc + parseFloat(m.amount || 0), 0)
     const expenses = expenseMovements.value.reduce((acc, m) => acc + parseFloat(m.amount || 0), 0)
     return {
         income,
+        expense: expenses,
         expenses,
         balance: income - expenses
     }
@@ -67,7 +78,7 @@ const groupedMovements = computed(() => {
     const groups = {}
 
     movements.value.forEach(movement => {
-        const date = movement.entry_date
+        const date = movement.entry_date ? movement.entry_date.split('T')[0] : 'Sin fecha'
         if (!groups[date]) {
             groups[date] = {
                 date: date,
@@ -80,9 +91,9 @@ const groupedMovements = computed(() => {
 
         groups[date].movements.push(movement)
 
-        if (movement.type === 0) {
+        if (movement.type === 0 || movement.type === 'income') {
             groups[date].dailyIncome += parseFloat(movement.amount || 0)
-        } else {
+        } else if (movement.type === 1 || movement.type === 'expense') {
             groups[date].dailyExpenses += parseFloat(movement.amount || 0)
         }
 
@@ -159,6 +170,9 @@ const cleanAccountName = name => {
 
 // Determinar con precisión si el método de pago es TRANSFERENCIA o EFECTIVO
 const getPaymentMethod = (movement, accountsList = []) => {
+    if (movement.type === 'transfer') {
+        return 'TRANSFERENCIA'
+    }
     const rawMethod = (
         movement.method ||
         movement.payment_method ||
@@ -222,8 +236,10 @@ const generatePDF = async () => {
             include_incomes: true,
             include_expenses: true,
             search: searchWorkOrder.value || undefined,
-            start_date: searchStartDate.value || undefined,
-            end_date: searchEndDate.value || undefined,
+            start_date: rangeDate.value ? rangeDate.value.split(" to ")[0]?.trim() || undefined : undefined,
+            end_date: rangeDate.value ? rangeDate.value.split(" to ")[1]?.trim() || undefined : undefined,
+            type: filterType.value || undefined,
+            month: filterMonth.value || undefined,
         }
 
         let response
@@ -336,12 +352,7 @@ const confirmDelete = async () => {
         })
 
         showNotification(`${movementToDelete.value.type === 0 ? 'Ingreso' : 'Egreso'} eliminado exitosamente`, 'success')
-
-        const index = movements.value.findIndex(m => m.id === movementToDelete.value.id)
-        if (index !== -1) {
-            movements.value.splice(index, 1)
-        }
-
+        await loadMovements(false)
         closeDeleteDialog()
     } catch (error) {
         console.error('Error al eliminar movimiento:', error)
@@ -357,31 +368,20 @@ const closeDeleteDialog = () => {
 const saveIncome = async (data) => {
     try {
         if (editingMovement.value) {
-            const response = await $api(`finance-records/${editingMovement.value.id}`, {
+            await $api(`finance-records/${editingMovement.value.id}`, {
                 method: 'PUT',
                 body: data
             })
             showNotification('Ingreso actualizado exitosamente', 'success')
-
-            if (response?.data) {
-                const index = movements.value.findIndex(m => m.id === editingMovement.value.id)
-                if (index !== -1) {
-                    movements.value[index] = response.data
-                }
-            }
         } else {
-            const response = await $api('finance-records', {
+            await $api('finance-records', {
                 method: 'POST',
                 body: data
             })
             showNotification('Ingreso creado exitosamente', 'success')
-
-            if (response?.data) {
-                const newMovements = Array.isArray(response.data) ? response.data : [response.data]
-                movements.value.unshift(...newMovements)
-            }
         }
 
+        await loadMovements(false)
         closeIncomeDialog()
     } catch (error) {
         console.error('Error al guardar ingreso:', error)
@@ -392,31 +392,20 @@ const saveIncome = async (data) => {
 const saveExpense = async (data) => {
     try {
         if (editingMovement.value) {
-            const response = await $api(`finance-records/${editingMovement.value.id}`, {
+            await $api(`finance-records/${editingMovement.value.id}`, {
                 method: 'PUT',
                 body: data
             })
             showNotification('Egreso actualizado exitosamente', 'success')
-
-            if (response?.data) {
-                const index = movements.value.findIndex(m => m.id === editingMovement.value.id)
-                if (index !== -1) {
-                    movements.value[index] = response.data
-                }
-            }
         } else {
-            const response = await $api('finance-records', {
+            await $api('finance-records', {
                 method: 'POST',
                 body: data
             })
             showNotification('Egreso creado exitosamente', 'success')
-
-            if (response?.data) {
-                const newMovements = Array.isArray(response.data) ? response.data : [response.data]
-                movements.value.unshift(...newMovements)
-            }
         }
 
+        await loadMovements(false)
         closeExpenseDialog()
     } catch (error) {
         console.error('Error al guardar egreso:', error)
@@ -424,31 +413,56 @@ const saveExpense = async (data) => {
     }
 }
 
-const loadMovements = async () => {
-    loader.start()
+const monthsOptions = computed(() => {
+    const options = [{ title: 'Todos los meses', value: '' }]
+    const date = new Date()
+    for (let i = 0; i < 12; i++) {
+        const y = date.getFullYear()
+        const m = date.getMonth()
+        const value = `${y}-${String(m + 1).padStart(2, '0')}`
+        const title = new Date(y, m, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+        options.push({
+            title: title.replace(/^\w/, c => c.toUpperCase()),
+            value: value
+        })
+        date.setMonth(date.getMonth() - 1)
+    }
+    return options
+})
+
+const loadMovements = async (showOverlay = true) => {
+    if (showOverlay) loader.start()
     try {
         const params = {}
         if (searchWorkOrder.value) {
             params.search = searchWorkOrder.value
         }
-        if (searchStartDate.value) {
-            params.start_date = searchStartDate.value
+        if (rangeDate.value) {
+            const parts = rangeDate.value.split(" to ")
+            if (parts[0]) params.start_date = parts[0].trim()
+            if (parts[1]) params.end_date = parts[1].trim()
         }
-        if (searchEndDate.value) {
-            params.end_date = searchEndDate.value
+        if (filterType.value) {
+            params.type = filterType.value
+        }
+        if (filterMonth.value) {
+            params.month = filterMonth.value
         }
 
-        const response = await $api('finance-records', {
+        const response = await $api('financial-movements', {
             params
         })
 
-        movements.value = response?.data || []
+        movements.value = response?.movements || []
+        if (response?.totals) {
+            backendTotals.value = response.totals
+        }
     } catch (error) {
         console.error('Error al cargar movimientos:', error)
         showNotification('Error al cargar movimientos', 'error')
         movements.value = []
     } finally {
-        loader.stop()
+        if (showOverlay) loader.stop()
     }
 }
 
@@ -484,6 +498,12 @@ const loadAccounts = async () => {
 }
 
 const getAccountName = (movement) => {
+    if (movement.type === 'transfer') {
+        const fromName = movement.metadata?.from_account_name || 'Origen'
+        const toName = movement.metadata?.to_account_name || 'Destino'
+        return `${cleanAccountName(fromName)} → ${cleanAccountName(toName)}`
+    }
+
     if (movement.payment_distributions && movement.payment_distributions.length > 1) {
         return `${movement.payment_distributions.length} cuentas`
     }
@@ -505,6 +525,34 @@ const getAccountName = (movement) => {
     return cleanAccountName(fallbackName)
 }
 
+const getMovementDocNumber = (movement) => {
+    // 1. Verificar si existen propiedades directas
+    if (movement.work_order_number) return movement.work_order_number
+    if (movement.invoice_number) return movement.invoice_number
+
+    // 2. Verificar metadata
+    if (movement.metadata) {
+        const metadata = movement.metadata
+        const docNum = metadata.work_order || metadata.work_order_number || metadata.invoice || metadata.document_number || metadata.invoice_number
+        if (docNum) return docNum
+    }
+
+    // 3. Verificar relación polimórfica movable
+    if (movement.movable) {
+        const movable = movement.movable
+        if (movable.finance_record) {
+            const fr = movable.finance_record
+            if (fr.work_order_number) return fr.work_order_number
+            if (fr.invoice_number) return fr.invoice_number
+        }
+        if (movable.work_order_number) return movable.work_order_number
+        if (movable.invoice_number) return movable.invoice_number
+        if (movable.document_number) return movable.document_number
+    }
+
+    return '-'
+}
+
 onMounted(() => {
     loadAccounts()
     loadMovements()
@@ -514,8 +562,8 @@ onMounted(() => {
 
 <template>
     <div class="pa-4 pa-sm-6 movements-page">
-        <!-- Header Principal -->
-        <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1">
+        <!-- Header Principal Sticky -->
+        <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
             <div class="d-flex align-center justify-space-between flex-wrap gap-4">
                 <div class="d-flex align-center gap-4">
                     <VAvatar color="primary" variant="tonal" rounded="lg" size="56" class="elevation-1">
@@ -555,7 +603,12 @@ onMounted(() => {
         <VRow class="mb-6">
             <!-- Total Ingresos -->
             <VCol cols="12" sm="6" md="4">
-                <VCard class="pa-5 rounded-xl tonal-card bg-success-tonal border-success" elevation="0">
+                <VCard 
+                    class="pa-5 rounded-xl tonal-card bg-success-tonal border-success cursor-pointer transition-all hover-scale" 
+                    :class="{ 'active-card border-2 elevation-3': filterType === 'income', 'opacity-60': filterType && filterType !== 'income' }"
+                    elevation="0"
+                    @click="filterType = filterType === 'income' ? '' : 'income'"
+                >
                     <div class="d-flex align-center justify-space-between">
                         <div>
                             <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -577,7 +630,12 @@ onMounted(() => {
 
             <!-- Total Egresos -->
             <VCol cols="12" sm="6" md="4">
-                <VCard class="pa-5 rounded-xl tonal-card bg-error-tonal border-error" elevation="0">
+                <VCard 
+                    class="pa-5 rounded-xl tonal-card bg-error-tonal border-error cursor-pointer transition-all hover-scale" 
+                    :class="{ 'active-card border-2 elevation-3': filterType === 'expense', 'opacity-60': filterType && filterType !== 'expense' }"
+                    elevation="0"
+                    @click="filterType = filterType === 'expense' ? '' : 'expense'"
+                >
                     <div class="d-flex align-center justify-space-between">
                         <div>
                             <span class="text-overline font-weight-bold text-error text-uppercase tracking-wider">
@@ -599,7 +657,12 @@ onMounted(() => {
 
             <!-- Balance Neto -->
             <VCol cols="12" sm="12" md="4">
-                <VCard class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary" elevation="0">
+                <VCard 
+                    class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary cursor-pointer transition-all hover-scale" 
+                    :class="{ 'active-card border-2 elevation-3': filterType === '', 'opacity-60': filterType }"
+                    elevation="0"
+                    @click="filterType = ''"
+                >
                     <div class="d-flex align-center justify-space-between">
                         <div>
                             <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -623,22 +686,35 @@ onMounted(() => {
         <!-- Barra de Filtros de Búsqueda -->
         <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
             <VRow align="center" density="comfortable">
-                <VCol cols="12" md="4">
+                <!-- Buscar por texto -->
+                <VCol cols="12" sm="6" md="3">
                     <VTextField v-model="searchWorkOrder" prepend-inner-icon="ri-search-2-line"
-                        placeholder="Buscar por OT, Factura o descripción..." hide-details clearable variant="outlined"
+                        placeholder="Buscar por OT, Factura..." hide-details clearable variant="outlined"
                         density="compact" />
                 </VCol>
 
-                <VCol cols="12" sm="6" md="4">
-                    <VTextField v-model="searchStartDate" type="date" label="Fecha Inicio"
-                        prepend-inner-icon="ri-calendar-line" hide-details clearable variant="outlined"
+                <!-- Filtrar por Mes -->
+                <VCol cols="12" sm="6" md="3">
+                    <VSelect v-model="filterMonth" :items="monthsOptions" item-title="title" item-value="value"
+                        label="Filtrar por Mes" prepend-inner-icon="ri-calendar-event-line" hide-details variant="outlined"
                         density="compact" />
                 </VCol>
 
-                <VCol cols="12" sm="6" md="4">
-                    <VTextField v-model="searchEndDate" type="date" label="Fecha Fin"
-                        prepend-inner-icon="ri-calendar-line" hide-details clearable variant="outlined"
-                        density="compact" />
+                <!-- Filtrar por Tipo -->
+                <VCol cols="12" sm="6" md="3">
+                    <VSelect v-model="filterType" :items="[
+                        { title: 'Todos los tipos', value: '' },
+                        { title: 'Ingresos', value: 'income' },
+                        { title: 'Egresos', value: 'expense' },
+                        { title: 'Transferencias', value: 'transfer' }
+                    ]" item-title="title" item-value="value" label="Tipo de Movimiento"
+                        prepend-inner-icon="ri-equalizer-line" hide-details variant="outlined" density="compact" />
+                </VCol>
+
+                <!-- Rango de Fechas -->
+                <VCol cols="12" sm="6" md="3">
+                    <AppDateTimePicker v-model="rangeDate" label="Rango de fechas" placeholder="Seleccionar rango"
+                        :config="{ mode: 'range' }" variant="outlined" density="compact" hide-details clearable />
                 </VCol>
             </VRow>
         </VCard>
@@ -676,25 +752,25 @@ onMounted(() => {
 
         <!-- Lista de Movimientos Unificada en una sola Card (sin sub-cards por día) -->
         <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container">
-            <VTable hover class="transfer-table text-no-wrap">
+            <VTable hover class="transfer-table">
                 <thead>
                     <tr>
-                        <th class="text-left py-3" style="width: 140px;">
+                        <th class="text-left py-3" style="width: 15%; min-width: 100px;">
                             OT / FACTURA
                         </th>
-                        <th class="text-left py-3" style="width: 140px;">
+                        <th class="text-left py-3" style="width: 15%; min-width: 120px;">
                             TIPO
                         </th>
-                        <th class="text-left py-3">
+                        <th class="text-left py-3" style="width: 30%; min-width: 200px;">
                             DESCRIPCIÓN & FECHA
                         </th>
-                        <th class="text-left py-3">
+                        <th class="text-left py-3" style="width: 20%; min-width: 160px;">
                             CUENTA & MÉTODO
                         </th>
-                        <th class="text-right py-3" style="width: 160px;">
+                        <th class="text-right py-3" style="width: 10%; min-width: 100px;">
                             MONTO
                         </th>
-                        <th class="text-center py-3" style="width: 140px;">
+                        <th class="text-center py-3" style="width: 10%; min-width: 120px;">
                             ACCIONES
                         </th>
                     </tr>
@@ -727,10 +803,9 @@ onMounted(() => {
                                         <span class="text-caption text-error font-weight-bold">
                                             Egresos: -{{ formatCurrency(day.dailyExpenses) }}
                                         </span>
-                                        <VChip size="small" :color="day.dailyBalance >= 0 ? 'primary' : 'error'"
-                                            variant="tonal" class="font-weight-bold px-3">
+                                        <span class="text-caption font-weight-bold" :class="day.dailyBalance >= 0 ? 'text-success' : 'text-error'">
                                             Balance: {{ formatCurrency(day.dailyBalance) }}
-                                        </VChip>
+                                        </span>
                                     </div>
                                 </div>
                             </td>
@@ -741,18 +816,24 @@ onMounted(() => {
                             <!-- OT / Factura -->
                             <td class="py-3">
                                 <span class="text-body-2 font-weight-bold text-high-emphasis">
-                                    {{ movement.work_order_number || movement.invoice_number || '-' }}
+                                    {{ getMovementDocNumber(movement) }}
                                 </span>
                             </td>
 
-                            <!-- Tipo (Ingreso vs Egreso) con chips tonales -->
+                            <!-- Tipo (Ingreso vs Egreso) -->
                             <td class="py-3">
-                                <VChip :color="movement.type === 0 ? 'success' : 'error'" variant="tonal" size="small"
-                                    class="font-weight-semibold">
-                                    <VIcon start size="14"
-                                        :icon="movement.type === 0 ? 'ri-arrow-up-circle-line' : 'ri-arrow-down-circle-line'" />
-                                    {{ movement.type === 0 ? 'INGRESO' : 'EGRESO' }}
-                                </VChip>
+                                <span v-if="movement.type === 0 || movement.type === 'income'" class="text-success font-weight-bold text-caption text-uppercase">
+                                    INGRESO
+                                </span>
+                                <span v-else-if="movement.type === 1 || movement.type === 'expense'" class="text-error font-weight-bold text-caption text-uppercase">
+                                    EGRESO
+                                </span>
+                                <span v-else-if="movement.type === 'transfer'" class="text-info font-weight-bold text-caption text-uppercase">
+                                    TRANSFERENCIA
+                                </span>
+                                <span v-else class="text-medium-emphasis font-weight-bold text-caption">
+                                    {{ movement.type }}
+                                </span>
                             </td>
 
                             <!-- Descripción & Fecha -->
@@ -769,39 +850,37 @@ onMounted(() => {
 
                             <!-- Cuenta & Método -->
                             <td class="py-3">
-                                <div class="d-flex align-center gap-2 flex-wrap">
+                                <div class="d-flex flex-column gap-0.5">
                                     <div class="d-flex align-center gap-1">
                                         <VIcon size="16" color="primary">ri-bank-line</VIcon>
                                         <span class="text-body-2 font-weight-medium text-high-emphasis">
                                             {{ getAccountName(movement) }}
                                         </span>
                                     </div>
-                                    <VChip size="x-small"
-                                        :color="getPaymentMethod(movement, accounts) === 'TRANSFERENCIA' ? 'info' : 'secondary'"
-                                        variant="tonal" class="font-weight-bold">
+                                    <span class="text-medium-emphasis font-weight-medium ps-5 text-uppercase" style="font-size: 10px !important;">
                                         {{ getPaymentMethod(movement, accounts) }}
-                                    </VChip>
+                                    </span>
                                 </div>
                             </td>
 
                             <!-- Monto -->
                             <td class="py-3 text-right">
                                 <span class="text-subtitle-1 font-weight-extrabold me-1"
-                                    :class="movement.type === 0 ? 'text-success' : 'text-error'">
-                                    {{ movement.type === 0 ? '+' : '-' }}{{ formatCurrency(movement.amount) }}
+                                    :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')">
+                                    {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 || movement.type === 'expense') ? '-' : '') }}{{ formatCurrency(movement.amount) }}
                                 </span>
                             </td>
 
                             <!-- Acciones -->
                             <td class="py-3 text-center">
                                 <div class="d-flex justify-center gap-1">
-                                    <VBtn title="Comprobante PDF" size="small" variant="tonal" color="info"
+                                    <VBtn v-if="movement.type !== 'transfer'" title="Comprobante PDF" size="small" variant="tonal" color="info"
                                         icon="ri-file-pdf-line" class="action-btn"
                                         :loading="generatingSingleId === movement.id"
                                         @click="generateSinglePDF(movement)" />
-                                    <VBtn title="Editar" size="small" variant="tonal" color="primary"
+                                    <VBtn v-if="movement.type !== 'transfer'" title="Editar" size="small" variant="tonal" color="primary"
                                         icon="ri-edit-line" class="action-btn" @click="editMovement(movement)" />
-                                    <VBtn title="Eliminar" size="small" variant="tonal" color="error"
+                                    <VBtn v-if="movement.type !== 'transfer'" title="Eliminar" size="small" variant="tonal" color="error"
                                         icon="ri-delete-bin-line" class="action-btn"
                                         @click="deleteMovement(movement)" />
                                 </div>
@@ -818,6 +897,43 @@ onMounted(() => {
         <DeleteDialog v-model="showDeleteDialog" :movement="movementToDelete" @confirm="confirmDelete" />
     </div>
 </template>
+
+<style scoped>
+.sticky-header {
+  position: sticky;
+  top: 62px;
+  z-index: 99;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease;
+}
+@media (min-width: 960px) {
+  .sticky-header {
+    top: 70px;
+  }
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.transition-all {
+  transition: all 0.25s ease-in-out;
+}
+.hover-scale {
+  transition: all 0.25s ease-in-out;
+}
+.hover-scale:hover {
+  transform: translateY(-2px);
+}
+.opacity-60 {
+  opacity: 0.6;
+}
+.border-2 {
+  border-width: 2px !important;
+}
+.active-card {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+}
+</style>
 
 <route lang="yaml">
 meta:

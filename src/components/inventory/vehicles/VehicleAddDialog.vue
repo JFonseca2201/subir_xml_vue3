@@ -15,7 +15,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'addVehicle'])
+const emit = defineEmits([
+  'update:isDialogVisible',
+  'addVehicle',
+  'add-vehicle',
+  'vehicle-added',
+  'vehicleAdded'
+])
 
 // --- ESTADO ---
 const loading = ref(false)
@@ -196,7 +202,11 @@ const saveVehicle = async () => {
     showNotification('Vehículo guardado correctamente', 'success')
     resetForm()
     setTimeout(() => {
-      emit('addVehicle', resp.data || resp)
+      const vehiclePayload = resp.data || resp;
+      emit('addVehicle', vehiclePayload);
+      emit('add-vehicle', vehiclePayload);
+      emit('vehicle-added', vehiclePayload);
+      emit('vehicleAdded', vehiclePayload);
       emit('update:isDialogVisible', false)
     }, 25)
 

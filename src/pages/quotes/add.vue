@@ -109,30 +109,46 @@ const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 
-const handleClientAdded = (newClient) => {
-  clients.value.unshift(newClient)
-  quote.value.client_id = newClient.id
+const loadClients = async () => {
+  try {
+    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
+    if (Array.isArray(clientsRes)) clients.value = clientsRes
+    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) clients.value = clientsRes.clients
+    else if (clientsRes?.data && Array.isArray(clientsRes.data)) clients.value = clientsRes.data
+  } catch (error) {
+    console.error('Error al recargar clientes:', error)
+  }
+}
+
+const loadVehicles = async () => {
+  try {
+    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
+    if (Array.isArray(vehiclesRes)) vehicles.value = vehiclesRes
+    else if (vehiclesRes?.vehicles && Array.isArray(vehiclesRes.vehicles)) vehicles.value = vehiclesRes.vehicles
+    else if (vehiclesRes?.data && Array.isArray(vehiclesRes.data)) vehicles.value = vehiclesRes.data
+  } catch (error) {
+    console.error('Error al recargar vehículos:', error)
+  }
+}
+
+const handleClientAdded = async (newClient) => {
+  const clientObj = newClient.client || newClient.data || newClient
+  await loadClients()
+  quote.value.client_id = clientObj.id
   showNotification('Cliente registrado exitosamente', 'success')
 }
 
-const handleVehicleAdded = (newVehicle) => {
-  const brandName = newVehicle.brand ? getBrandNameById(newVehicle.brand) : ''
-  const displayTitle = `${newVehicle.license_plate} - ${brandName} ${newVehicle.model || ''}`.trim()
-
-  const formattedVehicle = {
-    ...newVehicle,
-    displayTitle,
-  }
-
-  vehicles.value.unshift(formattedVehicle)
-  quote.value.vehicle_id = newVehicle.id
+const handleVehicleAdded = async (newVehicle) => {
+  const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  await loadVehicles()
+  quote.value.vehicle_id = vehicleObj.id
   showNotification('Vehículo registrado exitosamente', 'success')
 }
 
 // Watchers para sincronizar cliente y vehículo
 watch(() => quote.value.client_id, (newClientId) => {
   if (quote.value.vehicle_id) {
-    const selectedVehicle = vehicles.value.find(v => v.id === quote.value.vehicle_id)
+    const selectedVehicle = vehicles.value.find(v => v.id == quote.value.vehicle_id)
     if (selectedVehicle && selectedVehicle.client_id != newClientId) {
       quote.value.vehicle_id = null
     }
@@ -141,7 +157,7 @@ watch(() => quote.value.client_id, (newClientId) => {
 
 watch(() => quote.value.vehicle_id, (newVehicleId) => {
   if (newVehicleId) {
-    const selectedVehicle = vehicles.value.find(v => v.id === newVehicleId)
+    const selectedVehicle = vehicles.value.find(v => v.id == newVehicleId)
     if (selectedVehicle && selectedVehicle.client_id && quote.value.client_id != selectedVehicle.client_id) {
       quote.value.client_id = selectedVehicle.client_id
     }
