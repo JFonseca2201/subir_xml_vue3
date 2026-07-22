@@ -1,6 +1,7 @@
 import { deepMerge } from '@antfu/utils'
 import { createVuetify } from 'vuetify'
 import { VBtn } from 'vuetify/components/VBtn'
+import * as directives from 'vuetify/directives'
 import defaults from './defaults'
 import { icons } from './icons'
 import { staticPrimaryColor, staticPrimaryDarkenColor, themes } from './theme'
@@ -39,6 +40,7 @@ export default function (app) {
     defaults,
     icons,
     theme: optionTheme,
+    directives,
   })
 
   app.use(vuetify)

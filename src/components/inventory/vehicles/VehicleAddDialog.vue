@@ -315,6 +315,7 @@ onMounted(() => {
               variant="outlined"
               no-data-text="No se encontraron clientes"
               :loading="loadingClients"
+              no-filter
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem v-bind="itemProps" :title="undefined">
