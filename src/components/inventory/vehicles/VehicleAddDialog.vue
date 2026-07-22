@@ -59,11 +59,16 @@ const getCurrentUserId = () => {
 
 const clients = ref([])
 const loadingClients = ref(false)
+const clientSearch = ref('')
 
-const loadClients = async () => {
+const loadClients = async (search = '') => {
   loadingClients.value = true
   try {
-    const resp = await $api('clients', { params: { per_page: 1000 } })
+    const params = { per_page: 50 }
+    if (search && search.trim() !== '') {
+      params.search = search
+    }
+    const resp = await $api('clients', { params })
     clients.value = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
   } catch (err) {
     console.error('Error al cargar clientes:', err)
@@ -120,6 +125,32 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
   if (formatted !== newValue) {
     vehicleForm.value.license_plate = formatted
   }
+})
+
+// Recargar clientes cada vez que el diálogo se abre
+watch(() => props.isDialogVisible, (newVal) => {
+  if (newVal) {
+    clientSearch.value = ''
+    loadClients('')
+    vehicleForm.value.user_id = getCurrentUserId()
+  }
+})
+
+// Buscar clientes directamente en la base de datos con debounce al teclear
+let searchDebounceTimeout = null
+watch(clientSearch, (newVal) => {
+  // Si coincide exactamente con el cliente actualmente seleccionado, no consultar
+  const selected = clients.value.find(c => c.id === vehicleForm.value.client_id)
+  if (selected && selected.full_name === newVal) {
+    return
+  }
+  
+  if (searchDebounceTimeout) {
+    clearTimeout(searchDebounceTimeout)
+  }
+  searchDebounceTimeout = setTimeout(() => {
+    loadClients(newVal)
+  }, 350)
 })
 
 // --- OPCIONES ---
@@ -273,6 +304,7 @@ onMounted(() => {
           >
             <VAutocomplete
               v-model="vehicleForm.client_id"
+              v-model:search="clientSearch"
               :items="clients"
               item-title="full_name"
               item-value="id"
@@ -282,7 +314,6 @@ onMounted(() => {
               :rules="rules.client_id"
               variant="outlined"
               no-data-text="No se encontraron clientes"
-              :custom-filter="clientFilter"
               :loading="loadingClients"
             >
               <template #item="{ props: itemProps, item }">
