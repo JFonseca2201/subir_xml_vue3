@@ -21,12 +21,14 @@ const confirmSealDialog = ref(false)
 const dateFormatted = ref('')
 const alreadyCounted = ref(false)
 const isSealed = ref(false)
+const prevCountDetailsDialog = ref(false)
 const initialBalances = ref({
   cash: 0,
   pichincha: 0,
   guayaquil: 0,
   total: 0,
-  origin_date: null
+  origin_date: null,
+  cash_details: null
 })
 
 // Live system balances for comparison
@@ -153,7 +155,8 @@ const fetchStatus = async (date) => {
           pichincha: parseFloat(response.initial_balances.pichincha) || 0,
           guayaquil: parseFloat(response.initial_balances.guayaquil) || 0,
           total: parseFloat(response.initial_balances.total) || 0,
-          origin_date: response.initial_balances.origin_date || null
+          origin_date: response.initial_balances.origin_date || null,
+          cash_details: response.initial_balances.cash_details || null
         }
       }
 
@@ -275,6 +278,15 @@ watch(() => payload.value.count_date, (newDate) => {
   }
 })
 
+// Helper functions to get previous counts safely
+const getPrevBillQty = (denom) => {
+  return initialBalances.value.cash_details?.bills?.[denom] ?? 0
+}
+
+const getPrevCoinQty = (denom) => {
+  return initialBalances.value.cash_details?.coins?.[denom] ?? 0
+}
+
 // Initialize
 onMounted(() => {
   if (canAccessArqueo.value) {
@@ -332,7 +344,8 @@ onMounted(() => {
             <VIcon start size="14">ri-lock-password-fill</VIcon>
             DÍA SELLADO (SOLO LECTURA)
           </VChip>
-          <VChip v-else-if="alreadyCounted" color="success" variant="flat" size="small" class="font-weight-bold px-3 py-1">
+          <VChip v-else-if="alreadyCounted" color="success" variant="flat" size="small"
+            class="font-weight-bold px-3 py-1">
             <VIcon start size="14">ri-checkbox-circle-fill</VIcon>
             ARQUEO YA REGISTRADO (MODO EDICIÓN)
           </VChip>
@@ -371,7 +384,20 @@ onMounted(() => {
                 </div>
                 <VRow no-gutters class="w-100">
                   <VCol cols="12" sm="4" class="px-2 border-r-sm mb-2 mb-sm-0">
-                    <div class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Efectivo Físico</div>
+                    <div class="d-flex align-center justify-space-between mr-2">
+                      <span class="text-caption text-grey-darken-1 font-weight-bold text-uppercase">Efectivo Físico</span>
+                      <VBtn 
+                        v-if="initialBalances.origin_date"
+                        variant="text" 
+                        color="primary" 
+                        size="x-small" 
+                        class="px-1 text-none font-weight-bold"
+                        prepend-icon="ri-history-line"
+                        @click="prevCountDetailsDialog = true"
+                      >
+                        Ver desglose
+                      </VBtn>
+                    </div>
                     <div class="text-h6 font-weight-bold font-mono">{{ formatCurrency(initialBalances.cash) }}</div>
                   </VCol>
                   <VCol cols="12" sm="4" class="px-sm-4 border-r-sm mb-2 mb-sm-0">
@@ -532,7 +558,8 @@ onMounted(() => {
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
                             <input v-model.number="payload.cash_details.bills[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
+                              class="cash-qty-input" :disabled="saving || loading || isSealed"
+                              @focus="$event.target.select()" />
                           </div>
                         </td>
                         <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
@@ -568,7 +595,8 @@ onMounted(() => {
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
                             <input v-model.number="payload.cash_details.coins[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
+                              class="cash-qty-input" :disabled="saving || loading || isSealed"
+                              @focus="$event.target.select()" />
                           </div>
                         </td>
                         <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
@@ -594,7 +622,7 @@ onMounted(() => {
                   <div class="d-flex align-center gap-3">
                     <span class="text-h6 font-weight-black text-grey-darken-3 text-uppercase">Físico Contado:</span>
                     <span class="text-h5 font-weight-black text-success font-mono">{{ formatCurrency(totalCash)
-                    }}</span>
+                      }}</span>
                   </div>
                 </div>
                 <div class="d-flex justify-space-between align-center pt-2 border-t flex-wrap gap-2">
@@ -606,7 +634,7 @@ onMounted(() => {
                     :class="cashDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
                     Diferencia Caja:
                     <strong class="font-mono">{{ cashDifference > 0 ? '+' : '' }}{{ formatCurrency(cashDifference)
-                    }}</strong>
+                      }}</strong>
                   </span>
                 </div>
               </div>
@@ -636,12 +664,13 @@ onMounted(() => {
                     <span class="text-caption font-weight-medium text-grey-darken-1">
                       Sistema: <strong class="font-mono text-grey-darken-4">{{
                         formatCurrency(systemBalances.pichincha)
-                      }}</strong>
+                        }}</strong>
                     </span>
                   </div>
                   <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
                     prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
+                    color="primary" class="bank-input" :disabled="saving || loading || isSealed"
+                    @focus="$event.target.select()" />
                   <div class="text-right text-caption mt-1 font-weight-bold"
                     :class="pichinchaDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
                     Dif: {{ pichinchaDifference > 0 ? '+' : '' }}{{ formatCurrency(pichinchaDifference) }}
@@ -655,12 +684,13 @@ onMounted(() => {
                     <span class="text-caption font-weight-medium text-grey-darken-1">
                       Sistema: <strong class="font-mono text-grey-darken-4">{{
                         formatCurrency(systemBalances.guayaquil)
-                      }}</strong>
+                        }}</strong>
                     </span>
                   </div>
                   <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
                     prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading || isSealed" @focus="$event.target.select()" />
+                    color="primary" class="bank-input" :disabled="saving || loading || isSealed"
+                    @focus="$event.target.select()" />
                   <div class="text-right text-caption mt-1 font-weight-bold"
                     :class="guayaquilDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
                     Dif: {{ guayaquilDifference > 0 ? '+' : '' }}{{ formatCurrency(guayaquilDifference) }}
@@ -692,7 +722,8 @@ onMounted(() => {
                 GUARDAR ARQUEO DIARIO
               </VBtn>
               <VBtn block variant="flat" color="success" class="text-none font-weight-bold text-white m-0"
-                @click="confirmSealDialog = true" :loading="sealing" :disabled="sealing || saving || loading || isSealed">
+                @click="confirmSealDialog = true" :loading="sealing"
+                :disabled="sealing || saving || loading || isSealed">
                 <VIcon start>ri-lock-password-line</VIcon>
                 SELLAR DÍA
               </VBtn>
@@ -710,6 +741,112 @@ onMounted(() => {
             <VBtn text @click="confirmSealDialog = false" :disabled="sealing">Cancelar</VBtn>
             <VBtn color="success" @click="confirmSeal" :loading="sealing" :disabled="sealing">
               Confirmar
+            </VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Diálogo para ver desglose del día anterior -->
+      <VDialog v-model="prevCountDetailsDialog" max-width="600">
+        <VCard class="rounded-xl border-light border">
+          <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+            <template #title>
+              <div class="d-flex align-center gap-2">
+                <VIcon icon="ri-history-line" color="primary" size="24" />
+                <span class="text-h6 font-weight-bold text-grey-darken-3">Desglose de Efectivo del Día Anterior</span>
+              </div>
+            </template>
+            <template #append>
+              <span class="text-caption text-grey-darken-1 font-weight-bold">
+                {{ initialBalances.origin_date || 'N/A' }}
+              </span>
+            </template>
+          </VCardItem>
+
+          <VCardText class="pa-4 bg-white" v-if="initialBalances.cash_details">
+            <VRow>
+              <!-- Billetes -->
+              <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
+                <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                  <VIcon icon="ri-bill-line" color="primary" size="18" />
+                  <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Billetes</span>
+                </div>
+                <table class="w-100 table-cash text-uppercase">
+                  <thead>
+                    <tr>
+                      <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
+                      <th class="text-center py-1 text-grey-darken-1 text-caption">Cant.</th>
+                      <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="denom in billsList" :key="`prev-bill-${denom}`">
+                      <td class="py-2">
+                        <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
+                          ${{ denom }}
+                        </VChip>
+                      </td>
+                      <td class="py-2 text-center font-weight-bold font-mono">
+                        {{ getPrevBillQty(denom) }}
+                      </td>
+                      <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                        {{ formatCurrency(denom * getPrevBillQty(denom)) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </VCol>
+
+              <!-- Monedas -->
+              <VCol cols="12" sm="6" class="pl-sm-4">
+                <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
+                  <VIcon icon="ri-coins-line" color="primary" size="18" />
+                  <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Monedas</span>
+                </div>
+                <table class="w-100 table-cash text-uppercase">
+                  <thead>
+                    <tr>
+                      <th class="text-left py-1 text-grey-darken-1 text-caption">Denom.</th>
+                      <th class="text-center py-1 text-grey-darken-1 text-caption">Cant.</th>
+                      <th class="text-right py-1 text-grey-darken-1 text-caption">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="denom in coinsList" :key="`prev-coin-${denom}`">
+                      <td class="py-2">
+                        <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
+                          ${{ denom }}
+                        </VChip>
+                      </td>
+                      <td class="py-2 text-center font-weight-bold font-mono">
+                        {{ getPrevCoinQty(denom) }}
+                      </td>
+                      <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                        {{ formatCurrency(parseFloat(denom) * getPrevCoinQty(denom)) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </VCol>
+            </VRow>
+
+            <VDivider class="my-4" />
+
+            <div class="d-flex justify-space-between align-center px-2 py-1">
+              <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Total Efectivo Día Anterior:</span>
+              <span class="text-h6 font-weight-black text-success font-mono">{{ formatCurrency(initialBalances.cash) }}</span>
+            </div>
+          </VCardText>
+
+          <VCardText class="pa-8 text-center" v-else>
+            <VIcon size="48" color="warning" class="mb-2">ri-information-line</VIcon>
+            <p class="text-body-1 text-medium-emphasis mb-0">No se encontraron detalles de billetes y monedas registrados para el día anterior ({{ initialBalances.origin_date || 'N/A' }}).</p>
+          </VCardText>
+
+          <VDivider />
+          <VCardActions class="pa-4 justify-end">
+            <VBtn color="secondary" variant="outlined" class="font-weight-bold text-none" @click="prevCountDetailsDialog = false">
+              Cerrar
             </VBtn>
           </VCardActions>
         </VCard>

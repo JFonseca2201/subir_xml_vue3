@@ -230,6 +230,58 @@ const closeDialog = () => {
             </VCard>
           </VCol>
 
+          <!-- Tarjeta de Datos del Propietario / Cliente -->
+          <VCol cols="12" class="pt-4">
+            <VCard class="pa-4 info-card-flat" variant="outlined">
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-primary">
+                <VIcon icon="ri-user-line" color="primary" class="me-2" size="20" />
+                Información del Propietario / Cliente
+              </VCardTitle>
+
+              <div v-if="vehicleData.client">
+                <VRow>
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Nombre Completo</div>
+                    <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
+                      {{ vehicleData.client.full_name || `${vehicleData.client.name || ''} ${vehicleData.client.surname || ''}`.trim() || 'N/A' }}
+                    </div>
+                  </VCol>
+
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Identificación (DNI / RUC)</div>
+                    <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
+                      {{ vehicleData.client.n_document || 'N/A' }}
+                    </div>
+                  </VCol>
+
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Teléfono / Celular</div>
+                    <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+                      {{ vehicleData.client.phone || 'N/A' }}
+                    </div>
+                  </VCol>
+
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                    <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+                      {{ vehicleData.client.email || 'N/A' }}
+                    </div>
+                  </VCol>
+
+                  <VCol cols="12" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Dirección Domiciliaria</div>
+                    <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+                      {{ vehicleData.client.address || 'No registrada' }}
+                    </div>
+                  </VCol>
+                </VRow>
+              </div>
+              <div v-else class="text-body-2 text-medium-emphasis">
+                Este vehículo no tiene un propietario asociado en el sistema.
+              </div>
+            </VCard>
+          </VCol>
+
           <!-- Tarjeta de Información del Sistema -->
           <VCol cols="12" class="pt-4">
             <VCard class="pa-4 bg-grey-lighten-5 info-card-flat" variant="outlined">

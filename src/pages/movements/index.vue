@@ -314,16 +314,48 @@ const openExpenseDialog = () => {
     showExpenseDialog.value = true
 }
 
+const getFinanceRecordId = (movement) => {
+    if (!movement) return null
+    // 1. Validar en metadata
+    if (movement.metadata?.finance_record_id) {
+        return movement.metadata.finance_record_id
+    }
+    // 2. Validar en el objeto de la distribución / movable
+    if (movement.movable?.finance_record_id) {
+        return movement.movable.finance_record_id
+    }
+    const finRecord = movement.movable?.finance_record || movement.movable?.financeRecord
+    if (finRecord?.id) {
+        return finRecord.id
+    }
+    // 3. Fallback al ID del movimiento
+    return movement.id
+}
+
 const editMovement = (movement) => {
     let movementForEdit = { ...movement }
+    
+    // Extraer datos del FinanceRecord si es un registro manual
+    const finRecord = movement.movable?.finance_record || movement.movable?.financeRecord
+    if (finRecord) {
+        movementForEdit.work_order_number = finRecord.work_order_number
+        movementForEdit.invoice_number = finRecord.invoice_number
+        if (finRecord.payment_distributions || finRecord.paymentDistributions) {
+            movementForEdit.payment_distributions = finRecord.payment_distributions || finRecord.paymentDistributions
+        }
+    }
+
     if (movement.paymentDistributions) {
         movementForEdit.payment_distributions = movement.paymentDistributions
     }
     if (!movementForEdit.payment_distributions && movement.payment_distributions) {
         movementForEdit.payment_distributions = movement.payment_distributions
     }
+
     editingMovement.value = movementForEdit
-    if (movement.type === 0) {
+    
+    // En el listado unificado de movimientos, 'income' o 0 es ingreso, 'expense' o 1 es egreso
+    if (movement.type === 0 || movement.type === 'income') {
         showIncomeDialog.value = true
     } else {
         showExpenseDialog.value = true
@@ -347,11 +379,12 @@ const deleteMovement = (movement) => {
 
 const confirmDelete = async () => {
     try {
-        await $api(`finance-records/${movementToDelete.value.id}`, {
+        const recordId = getFinanceRecordId(movementToDelete.value)
+        await $api(`finance-records/${recordId}`, {
             method: 'DELETE'
         })
 
-        showNotification(`${movementToDelete.value.type === 0 ? 'Ingreso' : 'Egreso'} eliminado exitosamente`, 'success')
+        showNotification(`${(movementToDelete.value.type === 0 || movementToDelete.value.type === 'income') ? 'Ingreso' : 'Egreso'} eliminado exitosamente`, 'success')
         await loadMovements(false)
         closeDeleteDialog()
     } catch (error) {
@@ -368,7 +401,8 @@ const closeDeleteDialog = () => {
 const saveIncome = async (data) => {
     try {
         if (editingMovement.value) {
-            await $api(`finance-records/${editingMovement.value.id}`, {
+            const recordId = getFinanceRecordId(editingMovement.value)
+            await $api(`finance-records/${recordId}`, {
                 method: 'PUT',
                 body: data
             })
@@ -392,7 +426,8 @@ const saveIncome = async (data) => {
 const saveExpense = async (data) => {
     try {
         if (editingMovement.value) {
-            await $api(`finance-records/${editingMovement.value.id}`, {
+            const recordId = getFinanceRecordId(editingMovement.value)
+            await $api(`finance-records/${recordId}`, {
                 method: 'PUT',
                 body: data
             })
@@ -499,8 +534,20 @@ const loadAccounts = async () => {
 
 const getAccountName = (movement) => {
     if (movement.type === 'transfer') {
-        const fromName = movement.metadata?.from_account_name || 'Origen'
-        const toName = movement.metadata?.to_account_name || 'Destino'
+        let fromName = movement.metadata?.from_account_name
+        let toName = movement.metadata?.to_account_name
+
+        if (!fromName && movement.metadata?.from_account) {
+            const acc = accounts.value.find(a => String(a.id) === String(movement.metadata.from_account))
+            if (acc) fromName = acc.name || acc.bank_name
+        }
+        if (!toName && movement.metadata?.to_account) {
+            const acc = accounts.value.find(a => String(a.id) === String(movement.metadata.to_account))
+            if (acc) toName = acc.name || acc.bank_name
+        }
+
+        fromName = fromName || 'Origen'
+        toName = toName || 'Destino'
         return `${cleanAccountName(fromName)} → ${cleanAccountName(toName)}`
     }
 

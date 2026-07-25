@@ -93,7 +93,7 @@ watch(() => props.editingMovement, newVal => {
     console.log('IncomeDialog - final payments:', JSON.stringify(payments, null, 2))
 
     form.value = {
-      type: newVal.type,
+      type: 0,
       work_order_number: newVal.work_order_number || '',
       invoice_number: newVal.invoice_number || '',
       description: newVal.description || '',

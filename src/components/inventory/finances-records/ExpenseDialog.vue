@@ -74,7 +74,7 @@ watch(() => props.editingMovement, newVal => {
     }
 
     form.value = {
-      type: newVal.type,
+      type: 1,
       work_order_number: newVal.work_order_number || '',
       invoice_number: newVal.invoice_number || '',
       description: newVal.description || '',
