@@ -122,7 +122,35 @@ const hasPaymentDistributions = computed(() => getPaymentDistributions.value.len
 
 const itemsCount = computed(() => props.saleData?.details?.length || 0)
 
-const isQuote = computed(() => props.saleData?.document_type === 'quote')
+const isQuote = computed(() => {
+  return props.saleData?.document_type === 'quote' || 
+         !props.saleData?.document_type || 
+         'converted_sale_id' in (props.saleData || {})
+})
+
+const displayTotal = computed(() => {
+  if (isQuote.value) {
+    // Para cotizaciones, el total final es el total con IVA
+    return Number(props.saleData?.total) || 0
+  }
+  return Number(props.saleData?.total) || 0
+})
+
+const displaySubtotal = computed(() => {
+  if (isQuote.value) {
+    // El subtotal mostrado en pantalla debe ser la base neta (sin IVA)
+    return displayTotal.value / 1.15
+  }
+  return Number(props.saleData?.subtotal) || 0
+})
+
+const displayTaxAmount = computed(() => {
+  if (isQuote.value) {
+    // El IVA mostrado en pantalla debe ser la diferencia (el 15% del subtotal neto)
+    return displayTotal.value - displaySubtotal.value
+  }
+  return Number(props.saleData?.tax_amount) || 0
+})
 
 const hasVehicle = computed(() => !!props.saleData?.vehicle || !!getVehicleLicensePlate.value)
 
@@ -159,7 +187,8 @@ const printSale = saleId => {
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
-    const pdfUrl = `${apiBaseUrl}/sales/${saleId}/pdf?token=${token}&print=true`
+    const resource = isQuote.value ? 'quotes' : 'sales'
+    const pdfUrl = `${apiBaseUrl}/${resource}/${saleId}/pdf?token=${token}&print=true`
     
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {
@@ -192,7 +221,8 @@ const printDirectlyFromServer = async (id, type) => {
 const generateSinglePDF = sale => {
   const token = localStorage.getItem('token')
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
-  const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
+  const resource = isQuote.value ? 'quotes' : 'sales'
+  const pdfUrl = `${apiBaseUrl}/${resource}/${sale.id}/pdf?token=${token}`
   
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
@@ -579,16 +609,16 @@ const generateSinglePDF = sale => {
               <div class="totals-panel pa-4 rounded-lg">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">Subtotal</span>
-                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.subtotal) }}</span>
+                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(displaySubtotal) }}</span>
                 </div>
-                <div v-if="saleData.tax_amount > 0" class="d-flex justify-space-between align-center mb-2">
+                <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">IVA (15%)</span>
-                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(saleData.tax_amount) }}</span>
+                  <span class="text-body-1 font-weight-medium">{{ formatCurrency(displayTaxAmount) }}</span>
                 </div>
                 <VDivider class="my-3" />
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-subtitle-1 font-weight-bold">Total</span>
-                  <span class="text-h5 font-weight-bold text-primary">{{ formatCurrency(saleData.total) }}</span>
+                  <span class="text-h5 font-weight-bold text-primary">{{ formatCurrency(displayTotal) }}</span>
                 </div>
               </div>
             </VCol>

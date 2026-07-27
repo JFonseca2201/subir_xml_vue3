@@ -112,9 +112,16 @@ const isAddServiceDialogVisible = ref(false)
 const loadClients = async () => {
   try {
     const clientsRes = await $api('clients', { params: { per_page: 1000 } })
-    if (Array.isArray(clientsRes)) clients.value = clientsRes
-    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) clients.value = clientsRes.clients
-    else if (clientsRes?.data && Array.isArray(clientsRes.data)) clients.value = clientsRes.data
+    let rawClients = []
+    if (Array.isArray(clientsRes)) rawClients = clientsRes
+    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) rawClients = clientsRes.clients
+    else if (clientsRes?.data && Array.isArray(clientsRes.data)) rawClients = clientsRes.data
+    
+    clients.value = rawClients.map(c => ({
+      ...c,
+      displayName: c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente Desconocido',
+      searchText: `${c.full_name || c.name || ''} ${c.n_document || ''}`.toLowerCase()
+    }))
   } catch (error) {
     console.error('Error al recargar clientes:', error)
   }

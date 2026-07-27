@@ -102,8 +102,14 @@ const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 
 const handleClientAdded = (newClient) => {
-  clients.value.unshift(newClient)
-  quote.value.client_id = newClient.id
+  const clientObj = newClient.client || newClient.data || newClient
+  const mappedClient = {
+    ...clientObj,
+    displayName: clientObj.full_name || clientObj.name || `${clientObj.first_name || ''} ${clientObj.last_name || ''}`.trim() || 'Cliente Desconocido',
+    searchText: `${clientObj.full_name || clientObj.name || ''} ${clientObj.n_document || ''}`.toLowerCase()
+  }
+  clients.value.unshift(mappedClient)
+  quote.value.client_id = mappedClient.id
   showNotification('Cliente registrado exitosamente', 'success')
 }
 
