@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
-import { getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
+import { getBrandOptions, filterBrands } from '@/data/vehicleBrands.js'
 import {
   formatEcuadorianPlate,
   plateValidationRule,
@@ -69,7 +69,22 @@ const loadClients = async (search = '') => {
       params.search = search
     }
     const resp = await $api('clients', { params })
-    clients.value = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+    const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+
+    // Si hay un cliente actualmente seleccionado, asegurarnos de preservarlo en la lista para que no se muestre el ID al perder foco
+    if (vehicleForm.value.client_id) {
+      const selectedId = vehicleForm.value.client_id
+      const alreadyExists = fetchedClients.some(c => c.id === selectedId)
+      if (!alreadyExists) {
+        // Buscar el cliente seleccionado en la lista anterior
+        const prevSelected = clients.value.find(c => c.id === selectedId)
+        if (prevSelected) {
+          fetchedClients.unshift(prevSelected)
+        }
+      }
+    }
+
+    clients.value = fetchedClients
   } catch (err) {
     console.error('Error al cargar clientes:', err)
   } finally {
@@ -168,18 +183,7 @@ const colorOptions = [
 ]
 
 const yearOptions = ref([])
-const brandSearchOptions = ref([])
-
-const generateYearOptions = () => {
-  const currentYear = new Date().getFullYear()
-  for (let i = currentYear + 5; i >= 1980; i--) {
-    yearOptions.value.push({ title: i.toString(), value: i })
-  }
-}
-
-const searchBrands = searchText => {
-  brandSearchOptions.value = getBrandSearchOptions(searchText || '')
-}
+const brandOptions = ref(getBrandOptions())
 
 // --- REGLAS ---
 const rules = {
@@ -250,8 +254,11 @@ const saveVehicle = async () => {
 }
 
 onMounted(() => {
-  generateYearOptions()
-  searchBrands('')
+  // Generar opciones de años
+  const currentYear = new Date().getFullYear()
+  for (let i = currentYear + 5; i >= 1980; i--) {
+    yearOptions.value.push({ title: i.toString(), value: i })
+  }
   loadClients()
 
   // Asignar el user_id al montar el componente
@@ -369,13 +376,12 @@ onMounted(() => {
           >
             <VAutocomplete
               v-model="vehicleForm.brand"
-              :items="brandSearchOptions"
+              :items="brandOptions"
               label="Marca *"
               prepend-inner-icon="ri-building-line"
               :rules="rules.brand"
               :filter="filterBrands"
               no-data-text="No se encontraron marcas"
-              @update:search="searchBrands"
             />
           </VCol>
 

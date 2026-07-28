@@ -190,9 +190,22 @@ const loadClients = async () => {
 const loadVehicles = async () => {
   try {
     const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
-    if (Array.isArray(vehiclesRes)) vehicles.value = vehiclesRes
-    else if (vehiclesRes?.vehicles && Array.isArray(vehiclesRes.vehicles)) vehicles.value = vehiclesRes.vehicles
-    else if (vehiclesRes?.data && Array.isArray(vehiclesRes.data)) vehicles.value = vehiclesRes.data
+    let rawVehicles = []
+    if (Array.isArray(vehiclesRes)) rawVehicles = vehiclesRes
+    else if (vehiclesRes?.vehicles && Array.isArray(vehiclesRes.vehicles)) rawVehicles = vehiclesRes.vehicles
+    else if (vehiclesRes?.data && Array.isArray(vehiclesRes.data)) rawVehicles = vehiclesRes.data
+
+    vehicles.value = rawVehicles.map(v => {
+      const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
+      const brandName = brandId ? getBrandNameById(brandId) : ''
+      const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
+      const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
+      return {
+        ...v,
+        brand: brandId,
+        displayTitle,
+      }
+    })
   } catch (error) {
     console.error('Error al recargar vehículos:', error)
   }

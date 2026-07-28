@@ -84,8 +84,12 @@ const loadInitialData = async () => {
 
     clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
       Array.isArray(clientsRes.data) ? clientsRes.data : []
-    vehicles.value = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
+    const rawVehicles = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
       Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
+    vehicles.value = rawVehicles.map(v => ({
+      ...v,
+      brand: typeof v.brand === 'object' ? v.brand?.id : v.brand
+    }))
 
     const productsArray = Array.isArray(productsRes.products?.data) ? productsRes.products.data :
       Array.isArray(productsRes.data) ? productsRes.data :
@@ -340,8 +344,12 @@ const loadClients = async () => {
 const loadVehicles = async () => {
   try {
     const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
-    vehicles.value = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
+    const rawVehicles = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
       Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
+    vehicles.value = rawVehicles.map(v => ({
+      ...v,
+      brand: typeof v.brand === 'object' ? v.brand?.id : v.brand
+    }))
   } catch (error) {
     console.error('Error al recargar vehículos:', error)
   }

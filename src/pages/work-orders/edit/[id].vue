@@ -27,6 +27,7 @@ const formRef = ref(null)
 const isLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
+const originalQuantities = ref({})
 
 const clients = ref([])
 const vehicles = ref([])
@@ -156,6 +157,16 @@ const loadWorkOrder = async (id) => {
         sku: item.product ? item.product.sku : '',
       })),
     }
+
+    // Guardar las cantidades originales de los productos en esta OT
+    originalQuantities.value = {}
+    if (data.items) {
+      data.items.forEach(item => {
+        if (item.product_id) {
+          originalQuantities.value[item.product_id] = (originalQuantities.value[item.product_id] || 0) + item.quantity
+        }
+      })
+    }
   } catch (error) {
     console.error('Error al cargar la orden:', error)
     showNotification('Error al cargar la orden de trabajo', 'error')
@@ -185,10 +196,14 @@ const saveWorkOrder = async () => {
   for (const item of workOrder.value.items) {
     if (item.type === 'product' && item.product_id) {
       const product = products.value.find(p => p.id === item.product_id)
-      if (product && product.stock < item.quantity) {
-        showValidationError.value = true
-        validationErrorMessage.value = `Stock insuficiente para ${product.description || product.name || 'el producto'}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
-        return
+      if (product) {
+        const originalQty = originalQuantities.value[item.product_id] || 0
+        const additionalQty = item.quantity - originalQty
+        if (additionalQty > 0 && product.stock < additionalQty) {
+          showValidationError.value = true
+          validationErrorMessage.value = `Stock insuficiente para ${product.description || product.name || 'el producto'}. Stock disponible: ${product.stock}, Requerido adicional: ${additionalQty}`
+          return
+        }
       }
     }
   }
