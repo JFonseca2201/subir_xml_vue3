@@ -224,10 +224,14 @@ const handleClientAdded = async clientData => {
 const handleVehicleAdded = async vehicleData => {
   if (vehicleData) {
     const vehicle = vehicleData.vehicle || vehicleData
+    await loadClients()
     await loadVehicles()
     const newId = vehicle.id
     await nextTick()
     sale.value.vehicle_id = newId
+    if (vehicle.client_id && !sale.value.client_id) {
+      sale.value.client_id = vehicle.client_id
+    }
   }
 }
 
@@ -311,6 +315,7 @@ const getClientName = c => {
 // Carga inicial
 const loadInitialData = async () => {
   isLoading.value = true
+  loader.start()
   try {
     // Cargar datos en paralelo con menos registros para mejorar rendimiento
     const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
@@ -375,6 +380,7 @@ const loadInitialData = async () => {
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -1653,7 +1659,7 @@ onMounted(async () => {
     <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
       v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientAdded" />
     <VehicleAddDialog v-if="isVehicleAddDialogVisible" v-model:isDialogVisible="isVehicleAddDialogVisible"
-      @add-vehicle="handleVehicleAdded" />
+      :client-selected-id="sale.client_id" @add-vehicle="handleVehicleAdded" />
 
     <!-- Diálogo de importación de orden de trabajo -->
     <VDialog v-model="isWorkOrderImportDialogVisible" max-width="800px">

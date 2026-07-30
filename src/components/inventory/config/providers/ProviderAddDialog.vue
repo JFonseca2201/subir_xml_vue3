@@ -46,6 +46,8 @@ const provider = ref({
   ruc: '',
   name: '',
   address: '',
+  phone: '',
+  email: '',
 })
 
 // Validation rules
@@ -58,6 +60,10 @@ const rucRules = [
 const nameRules = [
   v => !!v || 'El nombre es requerido',
   v => (v && v.length >= 3) || 'El nombre debe tener al menos 3 caracteres',
+]
+
+const emailRules = [
+  v => !v || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'El correo electrónico no es válido',
 ]
 
 const addressRules = [
@@ -95,6 +101,8 @@ const store = async () => {
     formData.append('id', realId.replace('prov00', '')) // Send only the number
     formData.append('name', provider.value.name)
     formData.append('address', provider.value.address)
+    formData.append('phone', provider.value.phone || '')
+    formData.append('email', provider.value.email || '')
 
     const resp = await $api('suppliers', {
       method: 'POST',
@@ -129,6 +137,8 @@ const onFormReset = () => {
     ruc: '',
     name: '',
     address: '',
+    phone: '',
+    email: '',
   }
     
   if (providerForm.value) {
@@ -255,6 +265,37 @@ watch(() => props.isDialogVisible, val => {
                 prepend-inner-icon="ri-map-pin-line"
                 required
                 @input="e => { provider.address = e.target.value.toUpperCase() }"
+              />
+            </VCol>
+
+            <!-- Teléfono -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="provider.phone"
+                label="Teléfono"
+                placeholder="Ej: 0999999999"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-phone-line"
+              />
+            </VCol>
+
+            <!-- Correo Electrónico -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="provider.email"
+                label="Correo Electrónico"
+                placeholder="Ej: info@proveedor.com"
+                :rules="emailRules"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-line"
               />
             </VCol>
           </VRow>

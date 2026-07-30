@@ -76,6 +76,30 @@ const closeDialog = () => {
             </VCard>
           </VCol>
 
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="h-100 pa-4 rounded-lg d-flex align-center gap-3">
+              <VAvatar color="primary" variant="tonal" rounded size="40">
+                <VIcon icon="ri-phone-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">Teléfono</div>
+                <div class="font-weight-bold text-body-1">{{ props.providerSelected.phone || 'Sin teléfono' }}</div>
+              </div>
+            </VCard>
+          </VCol>
+
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="h-100 pa-4 rounded-lg d-flex align-center gap-3">
+              <VAvatar color="info" variant="tonal" rounded size="40">
+                <VIcon icon="ri-mail-line" />
+              </VAvatar>
+              <div>
+                <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                <div class="font-weight-bold text-body-1" style="word-break: break-all;">{{ props.providerSelected.email || 'Sin correo' }}</div>
+              </div>
+            </VCard>
+          </VCol>
+
           <VCol cols="12">
             <VCard variant="outlined" class="pa-4 rounded-lg d-flex align-center gap-3">
               <VAvatar color="success" variant="tonal" rounded size="40">

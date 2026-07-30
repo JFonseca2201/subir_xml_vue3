@@ -161,8 +161,12 @@ const handleClientAdded = async (newClient) => {
 
 const handleVehicleAdded = async (newVehicle) => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  await loadClients()
   await loadVehicles()
   quote.value.vehicle_id = vehicleObj.id
+  if (vehicleObj.client_id && !quote.value.client_id) {
+    quote.value.client_id = vehicleObj.client_id
+  }
   showNotification('Vehículo registrado exitosamente', 'success')
 }
 
@@ -462,6 +466,10 @@ onMounted(async () => {
                           @click="isClientCompanyDialogVisible = true" />
                       </VList>
                     </VMenu>
+                  </div>
+                  <div v-if="selectedClient" class="text-caption text-grey mt-0 mb-3 ms-1">
+                    <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+                    Cédula/RUC: <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
                   </div>
                 </VCol>
 

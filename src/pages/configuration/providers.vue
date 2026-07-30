@@ -289,6 +289,8 @@ definePage({ meta: { permission: "settings" } })
               <tr>
                 <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">PROVEEDOR</th>
                 <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">RUC</th>
+                <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">TELÉFONO</th>
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">CORREO</th>
                 <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">DIRECCIÓN</th>
                 <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
                 <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">ACCIONES</th>
@@ -296,7 +298,7 @@ definePage({ meta: { permission: "settings" } })
             </thead>
             <tbody v-if="isLoading">
               <tr>
-                <td colspan="5" class="text-center pa-6">
+                <td colspan="7" class="text-center pa-6">
                   <VProgressCircular indeterminate color="primary" size="40" />
                   <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
                 </td>
@@ -304,7 +306,7 @@ definePage({ meta: { permission: "settings" } })
             </tbody>
             <tbody v-else-if="!list_providers || list_providers.length === 0">
               <tr>
-                <td colspan="5" class="text-center pa-8 text-medium-emphasis">
+                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-truck-line</VIcon>
                   <div class="text-h6">No hay proveedores registrados</div>
                   <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
@@ -331,6 +333,16 @@ definePage({ meta: { permission: "settings" } })
                 <td class="text-left py-3">
                   <span class="text-body-2 text-grey-darken-3">
                     {{ item.ruc || 'Sin RUC' }}
+                  </span>
+                </td>
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3">
+                    {{ item.phone || 'N/A' }}
+                  </span>
+                </td>
+                <td class="text-left py-3">
+                  <span class="text-body-2 text-grey-darken-3 text-lowercase" style="word-break: break-all;">
+                    {{ item.email || 'N/A' }}
                   </span>
                 </td>
                 <td class="text-left py-3" style="max-width: 250px;">

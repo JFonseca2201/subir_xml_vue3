@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { getBrandOptions, filterBrands } from '@/data/vehicleBrands.js'
 import {
@@ -12,6 +12,10 @@ const props = defineProps({
   isDialogVisible: {
     type: Boolean,
     required: true,
+  },
+  clientSelectedId: {
+    type: [Number, String],
+    default: null,
   },
 })
 
@@ -71,15 +75,26 @@ const loadClients = async (search = '') => {
     const resp = await $api('clients', { params })
     const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
 
-    // Si hay un cliente actualmente seleccionado, asegurarnos de preservarlo en la lista para que no se muestre el ID al perder foco
-    if (vehicleForm.value.client_id) {
-      const selectedId = vehicleForm.value.client_id
+    // Si hay un cliente actualmente seleccionado o en props, asegurarnos de preservarlo en la lista para que no se muestre el ID al perder foco
+    const selectedId = vehicleForm.value.client_id || props.clientSelectedId
+    if (selectedId) {
       const alreadyExists = fetchedClients.some(c => c.id === selectedId)
       if (!alreadyExists) {
         // Buscar el cliente seleccionado en la lista anterior
         const prevSelected = clients.value.find(c => c.id === selectedId)
         if (prevSelected) {
           fetchedClients.unshift(prevSelected)
+        } else {
+          // Cargar el cliente de la API para que exista en el selector
+          try {
+            const clientResp = await $api(`clients/${selectedId}`)
+            const clientObj = clientResp.client || clientResp.data || clientResp
+            if (clientObj) {
+              fetchedClients.unshift(clientObj)
+            }
+          } catch (err) {
+            console.error('Error al cargar cliente por ID:', err)
+          }
         }
       }
     }
@@ -146,6 +161,11 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
 watch(() => props.isDialogVisible, (newVal) => {
   if (newVal) {
     clientSearch.value = ''
+    if (props.clientSelectedId) {
+      vehicleForm.value.client_id = props.clientSelectedId
+    } else {
+      vehicleForm.value.client_id = null
+    }
     loadClients('')
     vehicleForm.value.user_id = getCurrentUserId()
   }
@@ -167,7 +187,10 @@ watch(clientSearch, (newVal) => {
     loadClients(newVal)
   }, 350)
 })
-
+const selectedClient = computed(() => {
+  if (!vehicleForm.value.client_id) return null
+  return clients.value.find(c => c.id === vehicleForm.value.client_id)
+})
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
 
@@ -335,6 +358,10 @@ onMounted(() => {
                 </VListItem>
               </template>
             </VAutocomplete>
+            <div v-if="selectedClient" class="text-caption text-grey mt-1 ms-1">
+              <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+              Documento (Cédula/RUC): <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
+            </div>
           </VCol>
 
           <VCol

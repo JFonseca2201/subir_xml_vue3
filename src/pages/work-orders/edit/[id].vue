@@ -63,6 +63,7 @@ const productSearch = ref(null)
 
 const loadInitialData = async () => {
   isLoading.value = true
+  loader.start()
   try {
     getUserId()
     workOrder.value.user_id = userId.value
@@ -125,6 +126,7 @@ const loadInitialData = async () => {
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 } 
 
@@ -308,6 +310,11 @@ const getClientNameById = (id) => {
   return getClientName(client)
 }
 
+const getClientDocumentById = (id) => {
+  const client = clients.value.find(c => c.id === id)
+  return client ? (client.n_document || 'N/A') : 'N/A'
+}
+
 const getVehicleNameById = (id) => {
   const v = vehicles.value.find(v => v.id === id)
   if (!v) return ''
@@ -385,24 +392,52 @@ const handleVehicleSearch = () => {
   }
 }
 
-const onClientAdded = newClient => {
+const loadClients = async () => {
+  try {
+    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
+    clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
+      Array.isArray(clientsRes.data) ? clientsRes.data : []
+  } catch (error) {
+    console.error('Error al recargar clientes:', error)
+  }
+}
+
+const loadVehicles = async () => {
+  try {
+    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
+    const rawVehicles = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
+      Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
+    vehicles.value = rawVehicles.map(v => ({
+      ...v,
+      brand: typeof v.brand === 'object' ? v.brand?.id : v.brand
+    }))
+  } catch (error) {
+    console.error('Error al recargar vehículos:', error)
+  }
+}
+
+const onClientAdded = async newClient => {
   const clientObj = newClient.client || newClient.data || newClient
-  clients.value = [clientObj, ...clients.value]
+  await loadClients()
   workOrder.value.client_id = clientObj.id
   showClientDialog.value = false
 }
 
-const onCompanyAdded = newCompany => {
+const onCompanyAdded = async newCompany => {
   const companyObj = newCompany.client || newCompany.data || newCompany
-  clients.value = [companyObj, ...clients.value]
+  await loadClients()
   workOrder.value.client_id = companyObj.id
   showCompanyDialog.value = false
 }
 
-const onVehicleAdded = newVehicle => {
+const onVehicleAdded = async newVehicle => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
-  vehicles.value = [vehicleObj, ...vehicles.value]
+  await loadClients()
+  await loadVehicles()
   workOrder.value.vehicle_id = vehicleObj.id
+  if (vehicleObj.client_id && !workOrder.value.client_id) {
+    workOrder.value.client_id = vehicleObj.client_id
+  }
   showVehicleDialog.value = false
 }
 
@@ -620,6 +655,10 @@ onMounted(() => {
                       </VBtn>
                     </template>
                   </VTextField>
+                  <div v-if="workOrder.client_id" class="text-caption text-grey mt-n3 mb-3 ms-1">
+                    <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+                    Cédula/RUC: <span class="font-weight-semibold">{{ getClientDocumentById(workOrder.client_id) }}</span>
+                  </div>
                 </div>
               </VCol>
 
@@ -905,7 +944,7 @@ onMounted(() => {
       @update:is-dialog-visible="showCompanyDialog = $event" @add-client-company="onCompanyAdded" />
 
     <!-- Dialog para agregar vehículo -->
-    <VehicleAddDialog :is-dialog-visible="showVehicleDialog" @update:is-dialog-visible="showVehicleDialog = $event"
+    <VehicleAddDialog :is-dialog-visible="showVehicleDialog" :client-selected-id="workOrder.client_id" @update:is-dialog-visible="showVehicleDialog = $event"
       @add-vehicle="onVehicleAdded" />
 
     <AddServiceDialog v-model:isDialogVisible="showAddServiceDialog" @service-added="handleServiceAdded" />

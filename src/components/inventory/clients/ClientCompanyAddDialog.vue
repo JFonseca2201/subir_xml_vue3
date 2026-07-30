@@ -23,6 +23,14 @@ const error = ref('')
 const success = ref('')
 const userStore = JSON.parse(localStorage.getItem('user'));
 
+const isDocumentChecked = ref(false)
+const isClientExisting = ref(false)
+const matchedClient = ref(null)
+
+const fieldsDisabled = computed(() => {
+    return !isDocumentChecked.value || loading.value
+})
+
 // Notificaciones
 const notificationShow = ref(false);
 const notificationMessage = ref('');
@@ -74,6 +82,9 @@ watch(() => clientForm.value.type_document, (newType) => {
     if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
         clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen);
     }
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
 });
 
 // Opciones para selects
@@ -106,6 +117,28 @@ const actividadEconomicaOptions = ref([
     { title: 'Transporte', value: 'transporte' },
     { title: 'Otros', value: 'otros' }
 ])
+
+// Validación para cédulas ecuatorianas
+const validateEcuadorianCedula = (cedula) => {
+    if (!cedula) return true;
+    const cleanCedula = cedula.replace(/[\s-]/g, '');
+    if (!/^\d{10}$/.test(cleanCedula)) return false;
+    const provincia = parseInt(cleanCedula.substring(0, 2));
+    if (provincia < 1 || provincia > 24) return false;
+    const tercerDigito = parseInt(cleanCedula.substring(2, 3));
+    if (tercerDigito < 0 || tercerDigito >= 6) return false;
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let suma = 0;
+    for (let i = 0; i < 9; i++) {
+        let valor = parseInt(cleanCedula.charAt(i)) * coeficientes[i];
+        if (valor >= 10) valor = valor - 9;
+        suma += valor;
+    }
+    const digitoVerificador = parseInt(cleanCedula.charAt(9));
+    const modulo = suma % 10;
+    const resultado = modulo === 0 ? 0 : 10 - modulo;
+    return resultado === digitoVerificador;
+};
 
 // Referencias del formulario
 const formRef = ref(null)
@@ -190,8 +223,74 @@ const generateFullName = () => {
     }
 }
 
+const checkDocument = async () => {
+    const doc = clientForm.value.n_document;
+    if (!doc) return;
+
+    const type = Number(clientForm.value.type_document);
+    if (type === 1 && !validateEcuadorianCedula(doc)) return;
+    if (type === 2 && !validateEcuadorianRUC(doc)) return;
+    if (type === 3 && doc.length < 5) return;
+
+    loading.value = true;
+    try {
+        const resp = await $api('clients', { params: { search: doc } });
+        const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : []);
+
+        const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim());
+        if (match) {
+            showNotification('Cliente empresa encontrado en la base de datos', 'info');
+            isClientExisting.value = true;
+            matchedClient.value = match;
+
+            clientForm.value.full_name = match.full_name || match.name || '';
+            clientForm.value.phone = match.phone || '';
+            clientForm.value.email = match.email || '';
+            clientForm.value.birth_date = match.birth_date || '';
+            clientForm.value.address = match.address || '';
+            clientForm.value.ubigeo_region = match.ubigeo_region || '';
+            clientForm.value.ubigeo_provincia = match.ubigeo_provincia || '';
+            clientForm.value.ubigeo_distrito = match.ubigeo_distrito || '';
+            clientForm.value.state = match.state || 1;
+        } else {
+            showNotification('RUC/cédula no registrado. Complete los datos para crear el cliente empresa.', 'success');
+            isClientExisting.value = false;
+            matchedClient.value = null;
+
+            clientForm.value.full_name = '';
+            clientForm.value.phone = '';
+            clientForm.value.email = '';
+            clientForm.value.birth_date = '';
+            clientForm.value.address = '';
+            clientForm.value.ubigeo_region = '';
+            clientForm.value.ubigeo_provincia = '';
+            clientForm.value.ubigeo_distrito = '';
+            clientForm.value.state = 1;
+        }
+        isDocumentChecked.value = true;
+    } catch (err) {
+        console.error('Error al verificar RUC/cédula:', err);
+        showNotification('Error al verificar el RUC/cédula', 'error');
+    } finally {
+        loading.value = false;
+    }
+}
+
 // Guardar cliente empresa
 const saveClient = async () => {
+    if (isClientExisting.value && matchedClient.value) {
+        success.value = 'Cliente empresa seleccionado';
+        showNotification('Cliente empresa seleccionado', 'success');
+        setTimeout(() => {
+            emit('update:isDialogVisible', false);
+            emit('addClientCompany', matchedClient.value);
+            emit('add-client-company', matchedClient.value);
+            emit('client-added', matchedClient.value);
+            emit('clientAdded', matchedClient.value);
+            resetForm();
+        }, 100);
+        return;
+    }
     if (clientForm.value.n_document) {
         const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '');
         if (cleanDoc.length === 10) {
@@ -311,6 +410,10 @@ const resetForm = () => {
         capital_social: '',
     };
 
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
+
     if (formRef.value) {
         formRef.value.resetValidation();
     }
@@ -323,13 +426,24 @@ const closeDialog = () => {
 }
 
 watch(() => clientForm.value.n_document, (newVal) => {
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
+
     if (newVal) {
         const cleanDoc = newVal.replace(/[\s-]/g, '');
+        const type = Number(clientForm.value.type_document);
+
         if (cleanDoc.length === 10) {
             const thirdDigit = parseInt(cleanDoc.substring(2, 3));
             if ([6, 9].includes(thirdDigit)) {
                 clientForm.value.n_document = cleanDoc + '001';
             }
+        }
+
+        const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null);
+        if (requiredLen && cleanDoc.length === requiredLen) {
+            checkDocument();
         }
     }
 });
@@ -453,35 +567,43 @@ onMounted(() => {
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de RUC (13 dígitos)" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable @keypress="filterDocumentKey"
-                            :maxlength="documentMaxLength" />
+                            :maxlength="documentMaxLength" @blur="checkDocument" @keyup.enter="checkDocument" />
+                        <div v-if="!isDocumentChecked" class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1">
+                            <VIcon icon="ri-error-warning-line" size="14" />
+                            Digite el RUC o documento completo para habilitar el formulario.
+                        </div>
+                        <div v-else-if="isClientExisting" class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1">
+                            <VIcon icon="ri-checkbox-circle-line" size="14" />
+                            Empresa existente cargada. Pulse "Guardar" para seleccionarla.
+                        </div>
                     </VCol>
 
                     <VCol cols="12" md="12" class="mb-3">
                         <VTextField v-model="clientForm.full_name" label="Nombre Completo *"
                             placeholder="Ingrese nombre completo de la empresa" prepend-inner-icon="ri-building-2-line"
-                            :rules="rules.full_name" required clearable maxlength="255" />
+                            :rules="rules.full_name" required clearable maxlength="255" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable @keypress="filterPhoneKey"
-                            maxlength="20" />
+                            maxlength="20" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" />
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Constitución" type="date"
-                            prepend-inner-icon="ri-calendar-event-line" clearable />
+                            prepend-inner-icon="ri-calendar-event-line" clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.state" :items="stateOptions" item-title="title" item-value="value"
                             label="Estado" prepend-inner-icon="ri-toggle-line" placeholder="Seleccione estado"
-                            clearable />
+                            clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VDivider class="my-6" />
@@ -493,25 +615,25 @@ onMounted(() => {
 
                     <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
-                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
+                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
                             label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
-                            clearable />
+                            clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
                             item-value="id" label="Provincia" placeholder="Seleccione Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_region" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
                             item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_provincia" />
                     </VCol>
 
                     <VDivider class="my-6" />

@@ -101,29 +101,57 @@ const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 
-const handleClientAdded = (newClient) => {
-  const clientObj = newClient.client || newClient.data || newClient
-  const mappedClient = {
-    ...clientObj,
-    displayName: clientObj.full_name || clientObj.name || `${clientObj.first_name || ''} ${clientObj.last_name || ''}`.trim() || 'Cliente Desconocido',
-    searchText: `${clientObj.full_name || clientObj.name || ''} ${clientObj.n_document || ''}`.toLowerCase()
+const loadClients = async () => {
+  try {
+    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
+    let rawClients = []
+    if (Array.isArray(clientsRes)) rawClients = clientsRes
+    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) rawClients = clientsRes.clients
+    else if (clientsRes?.data && Array.isArray(clientsRes.data)) rawClients = clientsRes.data
+    clients.value = rawClients.map(c => ({
+      ...c,
+      displayName: c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente Desconocido',
+      searchText: `${c.full_name || c.name || ''} ${c.n_document || ''}`.toLowerCase()
+    }))
+  } catch (error) {
+    console.error('Error al recargar clientes:', error)
   }
-  clients.value.unshift(mappedClient)
-  quote.value.client_id = mappedClient.id
+}
+
+const loadVehicles = async () => {
+  try {
+    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
+    const rawVehicles = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
+      Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
+    vehicles.value = rawVehicles.map(v => {
+      const brandName = v.brand ? getBrandNameById(typeof v.brand === 'object' ? v.brand.id : v.brand) : ''
+      const displayTitle = `${v.license_plate} - ${brandName} ${v.model || ''}`.trim()
+      return {
+        ...v,
+        displayTitle,
+        brand: typeof v.brand === 'object' ? v.brand.id : v.brand
+      }
+    })
+  } catch (error) {
+    console.error('Error al recargar vehículos:', error)
+  }
+}
+
+const handleClientAdded = async (newClient) => {
+  const clientObj = newClient.client || newClient.data || newClient
+  await loadClients()
+  quote.value.client_id = clientObj.id
   showNotification('Cliente registrado exitosamente', 'success')
 }
 
-const handleVehicleAdded = (newVehicle) => {
-  const brandName = newVehicle.brand ? getBrandNameById(newVehicle.brand) : ''
-  const displayTitle = `${newVehicle.license_plate} - ${brandName} ${newVehicle.model || ''}`.trim()
-
-  const formattedVehicle = {
-    ...newVehicle,
-    displayTitle,
+const handleVehicleAdded = async (newVehicle) => {
+  const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  await loadClients()
+  await loadVehicles()
+  quote.value.vehicle_id = vehicleObj.id
+  if (vehicleObj.client_id && !quote.value.client_id) {
+    quote.value.client_id = vehicleObj.client_id
   }
-
-  vehicles.value.unshift(formattedVehicle)
-  quote.value.vehicle_id = newVehicle.id
   showNotification('Vehículo registrado exitosamente', 'success')
 }
 
@@ -451,6 +479,10 @@ onMounted(async () => {
                           @click="isClientCompanyDialogVisible = true" />
                       </VList>
                     </VMenu>
+                  </div>
+                  <div v-if="selectedClient" class="text-caption text-grey mt-0 mb-3 ms-1">
+                    <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+                    Cédula/RUC: <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
                   </div>
                 </VCol>
 

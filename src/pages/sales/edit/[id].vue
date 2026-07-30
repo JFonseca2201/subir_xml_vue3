@@ -548,6 +548,7 @@ watch(() => sale.value.vehicle_id, (newVal) => {
 // Cargar datos iniciales
 const loadSaleData = async () => {
   isLoading.value = true
+  loader.start()
   try {
     const [saleRes, clientsRes, vehiclesRes, productsRes, accountsRes, employeesRes] = await Promise.all([
       $api(`sales/${route.params.id}`),
@@ -665,6 +666,7 @@ const loadSaleData = async () => {
     router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 }
 

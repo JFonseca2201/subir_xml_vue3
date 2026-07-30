@@ -23,6 +23,14 @@ const error = ref('')
 const success = ref('')
 const userStore = JSON.parse(localStorage.getItem('user'));
 
+const isDocumentChecked = ref(false)
+const isClientExisting = ref(false)
+const matchedClient = ref(null)
+
+const fieldsDisabled = computed(() => {
+    return !isDocumentChecked.value || loading.value
+})
+
 // Notificaciones
 const notificationShow = ref(false);
 const notificationMessage = ref('');
@@ -71,6 +79,9 @@ watch(() => clientForm.value.type_document, (newType) => {
     if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
         clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen);
     }
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
 });
 
 // Opciones para selects
@@ -218,8 +229,78 @@ const generateFullName = () => {
     }
 }
 
+const checkDocument = async () => {
+    const doc = clientForm.value.n_document;
+    if (!doc) return;
+
+    const type = Number(clientForm.value.type_document);
+    if (type === 1 && !validateEcuadorianCedula(doc)) return;
+    if (type === 2 && !validateEcuadorianRUC(doc)) return;
+    if (type === 3 && doc.length < 5) return;
+
+    loading.value = true;
+    try {
+        const resp = await $api('clients', { params: { search: doc } });
+        const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : []);
+
+        const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim());
+        if (match) {
+            showNotification('Cliente encontrado en la base de datos', 'info');
+            isClientExisting.value = true;
+            matchedClient.value = match;
+
+            clientForm.value.name = match.name || '';
+            clientForm.value.surname = match.surname || '';
+            clientForm.value.full_name = match.full_name || '';
+            clientForm.value.phone = match.phone || '';
+            clientForm.value.email = match.email || '';
+            clientForm.value.gender = match.gender ? match.gender.toString() : '';
+            clientForm.value.birth_date = match.birth_date || '';
+            clientForm.value.address = match.address || '';
+            clientForm.value.ubigeo_region = match.ubigeo_region || '';
+            clientForm.value.ubigeo_provincia = match.ubigeo_provincia || '';
+            clientForm.value.ubigeo_distrito = match.ubigeo_distrito || '';
+        } else {
+            showNotification('Documento no registrado. Complete los datos para crear el cliente.', 'success');
+            isClientExisting.value = false;
+            matchedClient.value = null;
+
+            clientForm.value.name = '';
+            clientForm.value.surname = '';
+            clientForm.value.full_name = '';
+            clientForm.value.phone = '';
+            clientForm.value.email = '';
+            clientForm.value.gender = '';
+            clientForm.value.birth_date = '';
+            clientForm.value.address = '';
+            clientForm.value.ubigeo_region = '';
+            clientForm.value.ubigeo_provincia = '';
+            clientForm.value.ubigeo_distrito = '';
+        }
+        isDocumentChecked.value = true;
+    } catch (err) {
+        console.error('Error al verificar documento:', err);
+        showNotification('Error al verificar el documento', 'error');
+    } finally {
+        loading.value = false;
+    }
+}
+
 // Guardar cliente
 const saveClient = async () => {
+    if (isClientExisting.value && matchedClient.value) {
+        success.value = 'Cliente seleccionado';
+        showNotification('Cliente seleccionado', 'success');
+        setTimeout(() => {
+            emit('update:isDialogVisible', false);
+            emit('addClientFinal', matchedClient.value);
+            emit('add-client-final', matchedClient.value);
+            emit('client-added', matchedClient.value);
+            emit('clientAdded', matchedClient.value);
+            resetForm();
+        }, 25);
+        return;
+    }
     if (clientForm.value.n_document) {
         const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '');
         if (cleanDoc.length === 10) {
@@ -334,6 +415,10 @@ const resetForm = () => {
         address: '',
     };
 
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
+
     if (formRef.value) {
         formRef.value.resetValidation();
     }
@@ -355,14 +440,25 @@ const watchSurname = ref(() => {
 });
 
 watch(() => clientForm.value.n_document, (newVal) => {
+    isDocumentChecked.value = false;
+    isClientExisting.value = false;
+    matchedClient.value = null;
+
     if (newVal) {
         const cleanDoc = newVal.replace(/[\s-]/g, '');
+        const type = Number(clientForm.value.type_document);
+
         if (cleanDoc.length === 10) {
             const thirdDigit = parseInt(cleanDoc.substring(2, 3));
             if ([6, 9].includes(thirdDigit)) {
                 clientForm.value.n_document = cleanDoc + '001';
                 clientForm.value.type_document = 2; // RUC
             }
+        }
+
+        const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null);
+        if (requiredLen && cleanDoc.length === requiredLen) {
+            checkDocument();
         }
     }
 });
@@ -494,45 +590,49 @@ onMounted(() => {
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de documento" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable @keypress="filterDocumentKey"
-                            :maxlength="documentMaxLength" />
+                            :maxlength="documentMaxLength" @blur="checkDocument" @keyup.enter="checkDocument" />
+                        <div v-if="!isDocumentChecked" class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1">
+                            <VIcon icon="ri-error-warning-line" size="14" />
+                            Digite el documento completo para habilitar el formulario.
+                        </div>
+                        <div v-else-if="isClientExisting" class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1">
+                            <VIcon icon="ri-checkbox-circle-line" size="14" />
+                            Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
+                        </div>
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
                             prepend-inner-icon="ri-user-3-line" :rules="rules.name" required @input="generateFullName"
-                            clearable @keypress="filterTextKey" maxlength="100" />
+                            clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
                             prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
-                            @input="generateFullName" clearable @keypress="filterTextKey" maxlength="100" />
+                            @input="generateFullName" clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" />
                     </VCol>
-
-
-
-
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable @keypress="filterPhoneKey"
-                            maxlength="20" />
+                            maxlength="20" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" />
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.gender" :items="genderOptions" item-title="title"
                             item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
-                            placeholder="Seleccione género" clearable />
+                            placeholder="Seleccione género" clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Nacimiento" type="date"
-                            prepend-inner-icon="ri-calendar-event-line" clearable />
+                            prepend-inner-icon="ri-calendar-event-line" clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VDivider class="my-6" />
@@ -544,25 +644,25 @@ onMounted(() => {
 
                     <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
-                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable />
+                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
                             label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
-                            clearable />
+                            clearable :disabled="fieldsDisabled" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
                             item-value="id" label="Provincia" placeholder="Seleccione Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_region" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_region" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
                             item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="!clientForm.ubigeo_provincia" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_provincia" />
                     </VCol>
 
                     <VDivider class="my-4" />

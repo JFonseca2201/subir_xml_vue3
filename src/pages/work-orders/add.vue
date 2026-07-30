@@ -63,6 +63,7 @@ const productSearch = ref(null)
 
 const loadInitialData = async () => {
   isLoading.value = true
+  loader.start()
   try {
     getUserId()
     workOrder.value.user_id = userId.value
@@ -81,6 +82,7 @@ const loadInitialData = async () => {
     console.log('Products response:', productsRes)
     console.log('Employees response:', employeesRes)
     console.log('Work orders response:', workOrdersRes)
+    console.log('Next number response:', nextNumberRes)
 
     clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
       Array.isArray(clientsRes.data) ? clientsRes.data : []
@@ -112,6 +114,7 @@ const loadInitialData = async () => {
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -254,6 +257,11 @@ const getClientNameById = (id) => {
   return getClientName(client)
 }
 
+const getClientDocumentById = (id) => {
+  const client = clients.value.find(c => String(c.id) === String(id))
+  return client ? (client.n_document || 'N/A') : 'N/A'
+}
+
 const getVehicleNameById = (id) => {
   const v = vehicles.value.find(v => String(v.id) === String(id))
   if (!v) return ''
@@ -371,8 +379,12 @@ const onCompanyAdded = async newCompany => {
 
 const onVehicleAdded = async newVehicle => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  await loadClients()
   await loadVehicles()
   workOrder.value.vehicle_id = vehicleObj.id
+  if (vehicleObj.client_id && !workOrder.value.client_id) {
+    workOrder.value.client_id = vehicleObj.client_id
+  }
   showVehicleDialog.value = false
 }
 
@@ -581,6 +593,10 @@ onMounted(() => {
                         </VBtn>
                       </template>
                     </VTextField>
+                    <div v-if="workOrder.client_id" class="text-caption text-grey mt-n3 mb-3 ms-1">
+                      <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+                      Cédula/RUC: <span class="font-weight-semibold">{{ getClientDocumentById(workOrder.client_id) }}</span>
+                    </div>
                   </div>
                 </VCol>
 
@@ -862,7 +878,7 @@ onMounted(() => {
     <ClientCompanyAddDialog :is-dialog-visible="showCompanyDialog"
       @update:is-dialog-visible="showCompanyDialog = $event" @add-client-company="onCompanyAdded" />
     <!-- Dialog para agregar vehículo -->
-    <VehicleAddDialog :is-dialog-visible="showVehicleDialog" @update:is-dialog-visible="showVehicleDialog = $event"
+    <VehicleAddDialog :is-dialog-visible="showVehicleDialog" :client-selected-id="workOrder.client_id" @update:is-dialog-visible="showVehicleDialog = $event"
       @add-vehicle="onVehicleAdded" />
 
     <!-- Dialog para agregar servicio express -->
