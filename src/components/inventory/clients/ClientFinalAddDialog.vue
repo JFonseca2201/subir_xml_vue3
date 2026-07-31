@@ -249,8 +249,24 @@ const checkDocument = async () => {
             isClientExisting.value = true;
             matchedClient.value = match;
 
-            clientForm.value.name = match.name || '';
-            clientForm.value.surname = match.surname || '';
+            let fetchedName = match.name || '';
+            let fetchedSurname = match.surname || '';
+
+            // Si el backend solo tiene full_name pero no name/surname (datos antiguos)
+            if (!fetchedName && !fetchedSurname && match.full_name) {
+                const parts = match.full_name.trim().split(' ');
+                if (parts.length >= 2) {
+                    const mid = Math.ceil(parts.length / 2);
+                    fetchedName = parts.slice(0, mid).join(' ');
+                    fetchedSurname = parts.slice(mid).join(' ');
+                } else {
+                    fetchedName = match.full_name;
+                    fetchedSurname = '-';
+                }
+            }
+
+            clientForm.value.name = fetchedName;
+            clientForm.value.surname = fetchedSurname;
             clientForm.value.full_name = match.full_name || '';
             clientForm.value.phone = match.phone || '';
             clientForm.value.email = match.email || '';
