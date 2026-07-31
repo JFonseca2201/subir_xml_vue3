@@ -10,6 +10,7 @@ import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddD
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
+import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -68,40 +69,41 @@ const generateDocumentNumber = () => {
 
 const isLinkedToWorkOrder = computed(() => !!quote.value.work_order_id)
 
-// Autocomplete searches
-// Custom filters for autocomplete searching all records
-const clientFilter = (itemTitle, queryText, item) => {
-  const text = item.raw.searchText || ''
-  const query = queryText.toLowerCase()
-  return text.indexOf(query) > -1
+const selectedClient = ref(null)
+const selectedVehicle = ref(null)
+
+const handleClientAdded = async (newClient) => {
+  const clientObj = newClient.client || newClient.data || newClient
+  selectedClient.value = clientObj
+  showNotification('Cliente registrado exitosamente', 'success')
 }
 
-const vehicleFilter = (itemTitle, queryText, item) => {
-  const text = item.raw.searchText || ''
-  const query = queryText.toLowerCase()
-  return text.indexOf(query) > -1
+const handleVehicleAdded = async (newVehicle) => {
+  const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
+  selectedVehicle.value = vehicleObj
+  showNotification('Vehículo registrado exitosamente', 'success')
 }
 
-const clientVehicles = computed(() => {
-  if (quote.value.client_id) {
-    return vehicles.value.filter(v => v.client_id == quote.value.client_id)
+watch(() => selectedClient.value, (newVal) => {
+  if (newVal && newVal.id) {
+    quote.value.client_id = newVal.id
+  } else {
+    quote.value.client_id = null
   }
-  return vehicles.value
 })
 
-const selectedClient = computed(() => {
-  return clients.value.find(c => c.id == quote.value.client_id)
+watch(() => selectedVehicle.value, (newVal) => {
+  if (newVal && newVal.id) {
+    quote.value.vehicle_id = newVal.id
+    if (newVal.client_id && !quote.value.client_id) {
+      quote.value.client_id = newVal.client_id
+      selectedClient.value = newVal.client || null
+    }
+  } else {
+    quote.value.vehicle_id = null
+  }
 })
 
-const selectedVehicle = computed(() => {
-  return vehicles.value.find(v => v.id == quote.value.vehicle_id)
-})
-
-const productFilter = (itemTitle, queryText, item) => {
-  const text = item.raw.searchText || ''
-  const query = queryText.toLowerCase()
-  return text.indexOf(query) > -1
-}
 const productSearchQuery = ref('')
 // Dialogs state
 const isClientFinalDialogVisible = ref(false)
@@ -109,85 +111,7 @@ const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
 
-const loadClients = async () => {
-  try {
-    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
-    let rawClients = []
-    if (Array.isArray(clientsRes)) rawClients = clientsRes
-    else if (clientsRes?.clients && Array.isArray(clientsRes.clients)) rawClients = clientsRes.clients
-    else if (clientsRes?.data && Array.isArray(clientsRes.data)) rawClients = clientsRes.data
-    
-    clients.value = rawClients.map(c => ({
-      ...c,
-      displayName: c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente Desconocido',
-      searchText: `${c.full_name || c.name || ''} ${c.n_document || ''}`.toLowerCase()
-    }))
-  } catch (error) {
-    console.error('Error al recargar clientes:', error)
-  }
-}
 
-const loadVehicles = async () => {
-  try {
-    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
-    let rawVehicles = []
-    if (Array.isArray(vehiclesRes)) rawVehicles = vehiclesRes
-    else if (vehiclesRes?.vehicles && Array.isArray(vehiclesRes.vehicles)) rawVehicles = vehiclesRes.vehicles
-    else if (vehiclesRes?.data && Array.isArray(vehiclesRes.data)) rawVehicles = vehiclesRes.data
-
-    vehicles.value = rawVehicles.map(v => {
-      const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
-      const brandName = brandId ? getBrandNameById(brandId) : ''
-      const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
-      const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
-      return {
-        ...v,
-        brand: brandId,
-        displayTitle,
-        searchText: `${v.license_plate || ''} ${brandName} ${v.model || ''}`.toLowerCase()
-      }
-    })
-  } catch (error) {
-    console.error('Error al recargar vehículos:', error)
-  }
-}
-
-const handleClientAdded = async (newClient) => {
-  const clientObj = newClient.client || newClient.data || newClient
-  await loadClients()
-  quote.value.client_id = clientObj.id
-  showNotification('Cliente registrado exitosamente', 'success')
-}
-
-const handleVehicleAdded = async (newVehicle) => {
-  const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
-  await loadClients()
-  await loadVehicles()
-  quote.value.vehicle_id = vehicleObj.id
-  if (vehicleObj.client_id && !quote.value.client_id) {
-    quote.value.client_id = vehicleObj.client_id
-  }
-  showNotification('Vehículo registrado exitosamente', 'success')
-}
-
-// Watchers para sincronizar cliente y vehículo
-watch(() => quote.value.client_id, (newClientId) => {
-  if (quote.value.vehicle_id) {
-    const selectedVehicle = vehicles.value.find(v => v.id == quote.value.vehicle_id)
-    if (selectedVehicle && selectedVehicle.client_id != newClientId) {
-      quote.value.vehicle_id = null
-    }
-  }
-})
-
-watch(() => quote.value.vehicle_id, (newVehicleId) => {
-  if (newVehicleId) {
-    const selectedVehicle = vehicles.value.find(v => v.id == newVehicleId)
-    if (selectedVehicle && selectedVehicle.client_id && quote.value.client_id != selectedVehicle.client_id) {
-      quote.value.client_id = selectedVehicle.client_id
-    }
-  }
-})
 
 const selectedProductTemp = ref(null)
 
@@ -282,10 +206,7 @@ const taxAmount = computed(() => {
 const loadInitialData = async () => {
   isLoading.value = true
   try {
-    const [clientsRes, vehiclesRes, productsRes, employeesRes, nextNumberRes] = await Promise.all([
-      $api('clients', { params: { per_page: 1000 } }),
-      $api('vehicles', { params: { per_page: 1000 } }),
-      $api('products', { params: { per_page: 1000 } }),
+    const [employeesRes, nextNumberRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }),
       $api('quotes/next-number'),
     ])
@@ -297,33 +218,6 @@ const loadInitialData = async () => {
       if (res?.data && Array.isArray(res.data)) return res.data
       return []
     }
-
-    clients.value = extractArray(clientsRes, 'clients').map(c => ({
-      ...c,
-      displayName: c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente Desconocido',
-      searchText: `${c.full_name || c.name || ''} ${c.n_document || ''}`.toLowerCase()
-    }))
-
-    const rawVehicles = extractArray(vehiclesRes, 'vehicles')
-    vehicles.value = rawVehicles.map(v => {
-      const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
-      const brandName = brandId ? getBrandNameById(brandId) : ''
-      const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
-      const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
-      return {
-        ...v,
-        brand: brandId,
-        displayTitle,
-        searchText: `${v.license_plate || ''} ${brandName} ${v.model || ''}`.toLowerCase()
-      }
-    })
-
-    const rawProducts = extractArray(productsRes, 'products')
-    products.value = rawProducts.map(p => ({
-      ...p,
-      searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
-      displayTitle: p.description || p.name || '',
-    }))
 
     employees.value = extractArray(employeesRes, 'employees')
     nextQuoteNumber.value = nextNumberRes?.data || '000000000'
@@ -452,9 +346,24 @@ onMounted(async () => {
                 <!-- Cliente -->
                 <VCol cols="12" sm="6">
                   <div class="d-flex gap-2 align-center">
-                    <VAutocomplete v-model="quote.client_id" :items="clients" item-title="displayName" item-value="id"
-                      :custom-filter="clientFilter" label="Cliente *" placeholder="Buscar por nombre o cédula..."
-                      variant="outlined" density="comfortable" hide-no-data clearable :rules="[requiredRule]" />
+                    <VSearch
+                      v-model="selectedClient"
+                      :return-object="true"
+                      endpoint="clients/search"
+                      item-title="full_name"
+                      label="Cliente *"
+                      icon="ri-user-line"
+                      :initial-item="selectedClient"
+                      :rules="[(v) => !!quote.client_id || 'Cliente es requerido']"
+                    >
+                      <template #item="{ props, item }">
+                        <VListItem v-bind="props" :title="item.raw.full_name || item.raw.name">
+                          <VListItemSubtitle v-if="item.raw.n_document" class="mt-1 text-grey">
+                            Documento: {{ item.raw.n_document }}
+                          </VListItemSubtitle>
+                        </VListItem>
+                      </template>
+                    </VSearch>
                     <VMenu>
                       <template #activator="{ props }">
                         <VBtn icon="ri-add-line" color="info" variant="tonal" v-bind="props" class="mb-5" />
@@ -476,10 +385,24 @@ onMounted(async () => {
                 <!-- Vehículo -->
                 <VCol cols="12" sm="6">
                   <div class="d-flex gap-2 align-center">
-                    <VAutocomplete v-model="quote.vehicle_id" :items="clientVehicles" item-title="displayTitle"
-                      item-value="id" :custom-filter="vehicleFilter" label="Vehículo"
-                      placeholder="Buscar por placa o modelo..." variant="outlined" density="comfortable" hide-no-data
-                      clearable />
+                    <VSearch
+                      v-model="selectedVehicle"
+                      :return-object="true"
+                      endpoint="vehicles/search"
+                      item-title="license_plate"
+                      label="Vehículo"
+                      icon="ri-car-line"
+                      :initial-item="selectedVehicle"
+                      :extra-params="quote.client_id ? { client_id: quote.client_id } : {}"
+                    >
+                      <template #item="{ props, item }">
+                        <VListItem v-bind="props" :title="item.raw.license_plate">
+                          <VListItemSubtitle class="mt-1 text-grey">
+                            {{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}
+                          </VListItemSubtitle>
+                        </VListItem>
+                      </template>
+                    </VSearch>
                     <VBtn icon="ri-add-line" color="info" variant="tonal" @click="isVehicleDialogVisible = true"
                       class="mb-5" />
                   </div>
@@ -528,11 +451,27 @@ onMounted(async () => {
                 </VBtn>
               </div>
 
-              <VAutocomplete v-model="selectedProductTemp" v-model:search-input="productSearchQuery" :items="products"
-                item-title="displayTitle" item-value="id" :custom-filter="productFilter" return-object
-                placeholder="Buscar repuesto o servicio por SKU, código o nombre..." variant="outlined"
-                density="comfortable" prepend-inner-icon="ri-search-line" hide-no-data class="mb-6"
-                @update:model-value="addItem" />
+              <VSearch
+                v-model="selectedProductTemp"
+                endpoint="products/search"
+                item-title="description"
+                :return-object="true"
+                label="Buscar repuesto o servicio por SKU, código o nombre..."
+                icon="ri-search-line"
+                @change="addItem"
+                class="mb-6"
+              >
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="undefined">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                      {{ item.raw.description || item.raw.name }}
+                    </VListItemTitle>
+                    <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
+                      Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+              </VSearch>
 
               <!-- Tabla de Items Agregados -->
               <VTable v-if="quote.items.length > 0" hover class="border rounded">

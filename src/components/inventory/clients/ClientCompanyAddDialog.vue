@@ -425,6 +425,14 @@ const closeDialog = () => {
     resetForm();
 }
 
+watch(() => props.isDialogVisible, (newVal) => {
+    if (newVal) {
+        error.value = ''
+        success.value = ''
+        resetForm()
+    }
+})
+
 watch(() => clientForm.value.n_document, (newVal) => {
     isDocumentChecked.value = false;
     isClientExisting.value = false;

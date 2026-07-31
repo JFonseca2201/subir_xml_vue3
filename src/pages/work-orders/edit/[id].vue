@@ -10,6 +10,7 @@ import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddD
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
+import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -68,30 +69,10 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [clientsRes, vehiclesRes, productsRes, employeesRes, workOrdersRes] = await Promise.all([
-      $api('clients', { params: { per_page: 1000 } }),
-      $api('vehicles', { params: { per_page: 1000 } }),
-      $api('products', { params: { per_page: 1000 } }),
+    const [employeesRes, workOrdersRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }),
       $api('work-orders'),
     ])
-
-    console.log('Clients response:', clientsRes)
-    console.log('Vehicles response:', vehiclesRes)
-    console.log('Products response:', productsRes)
-    console.log('Employees response:', employeesRes)
-    console.log('Work orders response:', workOrdersRes)
-
-    clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
-      Array.isArray(clientsRes.data) ? clientsRes.data : []
-    vehicles.value = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
-      Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
-
-    const productsArray = Array.isArray(productsRes.products?.data) ? productsRes.products.data :
-      Array.isArray(productsRes.data) ? productsRes.data :
-        Array.isArray(productsRes.products) ? productsRes.products : []
-
-    products.value = productsArray
 
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
@@ -110,9 +91,6 @@ const loadInitialData = async () => {
     }
     workOrder.value.number = 'OT-' + String(maxOtNumber + 1).padStart(7, '0')
 
-    console.log('Clients loaded:', clients.value.length)
-    console.log('Vehicles loaded:', vehicles.value.length)
-    console.log('Products loaded:', products.value.length)
     console.log('Employees loaded:', employees.value.length)
 
     // Si es edición, cargar la orden de trabajo
@@ -169,6 +147,9 @@ const loadWorkOrder = async (id) => {
         }
       })
     }
+    
+    if (data.client) selectedClient.value = data.client
+    if (data.vehicle) selectedVehicle.value = data.vehicle
   } catch (error) {
     console.error('Error al cargar la orden:', error)
     showNotification('Error al cargar la orden de trabajo', 'error')
@@ -279,167 +260,46 @@ const cancel = () => {
   router.push({ name: 'work-orders-list' })
 }
 
-const getClientName = c => {
-  if (!c) return 'Cliente'
-
-  return c.full_name || c.name || `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Cliente'
-}
-
-const showClientSelectDialog = ref(false)
-const clientSearchQuery = ref('')
-
-const showVehicleSelectDialog = ref(false)
-const vehicleSearchQuery = ref('')
-
-const productSearchQuery = ref('')
-const productLimit = ref(20)
-
-const clientHeaders = [
-  { title: 'Nombre', key: 'full_name', align: 'start' },
-  { title: 'Documento', key: 'n_document', align: 'start' },
-  { title: 'Email', key: 'email', align: 'start' },
-]
-
-const vehicleHeaders = [
-  { title: 'Placa', key: 'license_plate', align: 'start' },
-  { title: 'Marca/Modelo', key: 'brand_model', align: 'start' },
-]
-
-const getClientNameById = (id) => {
-  const client = clients.value.find(c => c.id === id)
-  return getClientName(client)
-}
-
-const getClientDocumentById = (id) => {
-  const client = clients.value.find(c => c.id === id)
-  return client ? (client.n_document || 'N/A') : 'N/A'
-}
-
-const getVehicleNameById = (id) => {
-  const v = vehicles.value.find(v => v.id === id)
-  if (!v) return ''
-  const brandId = typeof v.brand === 'object' ? v.brand?.id : v.brand
-  const brandName = brandId ? getBrandNameById(brandId) : ''
-  return `${brandName} ${v.model || ''} - ${v.license_plate || ''}`.trim()
-}
-
-const clientInputText = ref('')
-const vehicleInputText = ref('')
-
-watch(() => workOrder.value.client_id, (newVal) => {
-  if (newVal) {
-    clientInputText.value = getClientNameById(newVal)
-  } else {
-    clientInputText.value = ''
-  }
-}, { immediate: true })
-
-watch(() => workOrder.value.vehicle_id, (newVal) => {
-  if (newVal) {
-    vehicleInputText.value = getVehicleNameById(newVal)
-  } else {
-    vehicleInputText.value = ''
-  }
-}, { immediate: true })
-
-const handleClientSearch = () => {
-  if (!clientInputText.value) {
-    workOrder.value.client_id = null
-    return
-  }
-  // Si el texto ingresado es igual al nombre del cliente ya seleccionado, no hacer nada
-  if (workOrder.value.client_id && clientInputText.value === getClientNameById(workOrder.value.client_id)) {
-    return
-  }
-  
-  const q = clientInputText.value.toLowerCase().trim()
-  const matches = clients.value.filter(c => {
-    const name = getClientName(c).toLowerCase()
-    const doc = String(c.n_document || '').toLowerCase()
-    return name.includes(q) || doc.includes(q)
-  })
-
-  if (matches.length === 1) {
-    workOrder.value.client_id = matches[0].id
-  } else {
-    clientSearchQuery.value = clientInputText.value
-    showClientSelectDialog.value = true
-  }
-}
-
-const handleVehicleSearch = () => {
-  if (!vehicleInputText.value) {
-    workOrder.value.vehicle_id = null
-    return
-  }
-  // Si el texto ingresado es igual al nombre del vehículo ya seleccionado, no hacer nada
-  if (workOrder.value.vehicle_id && vehicleInputText.value === getVehicleNameById(workOrder.value.vehicle_id)) {
-    return
-  }
-  
-  const q = vehicleInputText.value.toLowerCase().trim()
-  const matches = vehicles.value.filter(v => {
-    const name = getVehicleNameById(v.id).toLowerCase()
-    const plate = String(v.license_plate || '').toLowerCase()
-    return name.includes(q) || plate.includes(q)
-  })
-
-  if (matches.length === 1) {
-    workOrder.value.vehicle_id = matches[0].id
-  } else {
-    vehicleSearchQuery.value = vehicleInputText.value
-    showVehicleSelectDialog.value = true
-  }
-}
-
-const loadClients = async () => {
-  try {
-    const clientsRes = await $api('clients', { params: { per_page: 1000 } })
-    clients.value = Array.isArray(clientsRes.clients) ? clientsRes.clients :
-      Array.isArray(clientsRes.data) ? clientsRes.data : []
-  } catch (error) {
-    console.error('Error al recargar clientes:', error)
-  }
-}
-
-const loadVehicles = async () => {
-  try {
-    const vehiclesRes = await $api('vehicles', { params: { per_page: 1000 } })
-    const rawVehicles = Array.isArray(vehiclesRes.vehicles) ? vehiclesRes.vehicles :
-      Array.isArray(vehiclesRes.data) ? vehiclesRes.data : []
-    vehicles.value = rawVehicles.map(v => ({
-      ...v,
-      brand: typeof v.brand === 'object' ? v.brand?.id : v.brand
-    }))
-  } catch (error) {
-    console.error('Error al recargar vehículos:', error)
-  }
-}
+const selectedClient = ref(null)
+const selectedVehicle = ref(null)
 
 const onClientAdded = async newClient => {
   const clientObj = newClient.client || newClient.data || newClient
-  await loadClients()
-  workOrder.value.client_id = clientObj.id
+  selectedClient.value = clientObj
   showClientDialog.value = false
 }
 
 const onCompanyAdded = async newCompany => {
   const companyObj = newCompany.client || newCompany.data || newCompany
-  await loadClients()
-  workOrder.value.client_id = companyObj.id
+  selectedClient.value = companyObj
   showCompanyDialog.value = false
 }
 
 const onVehicleAdded = async newVehicle => {
   const vehicleObj = newVehicle.vehicle || newVehicle.data || newVehicle
-  await loadClients()
-  await loadVehicles()
-  workOrder.value.vehicle_id = vehicleObj.id
-  if (vehicleObj.client_id && !workOrder.value.client_id) {
-    workOrder.value.client_id = vehicleObj.client_id
-  }
+  selectedVehicle.value = vehicleObj
   showVehicleDialog.value = false
 }
+
+watch(() => selectedClient.value, (newVal) => {
+  if (newVal && newVal.id) {
+    workOrder.value.client_id = newVal.id
+  } else {
+    workOrder.value.client_id = null
+  }
+})
+
+watch(() => selectedVehicle.value, (newVal) => {
+  if (newVal && newVal.id) {
+    workOrder.value.vehicle_id = newVal.id
+    if (newVal.client_id && !workOrder.value.client_id) {
+      workOrder.value.client_id = newVal.client_id
+      selectedClient.value = newVal.client || null
+    }
+  } else {
+    workOrder.value.vehicle_id = null
+  }
+})
 
 const handleServiceAdded = (newService) => {
   if (newService) {
@@ -507,33 +367,7 @@ const onProductChanged = item => {
   }
 }
 
-const filteredProducts = computed(() => {
-  if (!productSearchQuery.value) return products.value
-  const query = String(productSearchQuery.value).toLowerCase().trim()
-  return products.value.filter(p => {
-    const raw = p.raw || p
-    const sku = String(raw.sku || '').toLowerCase()
-    const code = String(raw.code || '').toLowerCase()
-    const name = String(raw.name || '').toLowerCase()
-    const desc = String(raw.description || '').toLowerCase()
-    return sku.includes(query) || code.includes(query) || name.includes(query) || desc.includes(query)
-  })
-})
 
-const limitedProducts = computed(() => {
-  return filteredProducts.value.slice(0, productLimit.value)
-})
-
-const onProductSearch = (val) => {
-  productSearchQuery.value = val || ''
-  productLimit.value = 20
-}
-
-const loadMoreProducts = (isIntersecting) => {
-  if (isIntersecting && productLimit.value < filteredProducts.value.length) {
-    productLimit.value += 20
-  }
-}
 
 // Agregar producto desde búsqueda
 const addProductFromSearch = product => {
@@ -628,19 +462,23 @@ onMounted(() => {
 
               <VCol cols="12" md="6">
                 <div class="mb-4">
-                  <VTextField
-                    v-model="clientInputText"
+                  <VSearch
+                    v-model="selectedClient"
+                    :return-object="true"
+                    endpoint="clients/search"
+                    item-title="full_name"
                     label="Cliente *"
-                    prepend-inner-icon="ri-user-line"
-                    append-inner-icon="ri-search-line"
-                    variant="outlined"
-                    clearable
+                    icon="ri-user-line"
+                    :initial-item="selectedClient"
                     :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
-                    @keyup.enter="handleClientSearch"
-                    @blur="handleClientSearch"
-                    @click:append-inner="showClientSelectDialog = true"
-                    @click:clear="workOrder.client_id = null"
                   >
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :title="item.raw.full_name || item.raw.name">
+                        <VListItemSubtitle v-if="item.raw.n_document" class="mt-1 text-grey">
+                          Documento: {{ item.raw.n_document }}
+                        </VListItemSubtitle>
+                      </VListItem>
+                    </template>
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary">
                         <VIcon icon="ri-add-line" />
@@ -654,34 +492,35 @@ onMounted(() => {
                         </VMenu>
                       </VBtn>
                     </template>
-                  </VTextField>
-                  <div v-if="workOrder.client_id" class="text-caption text-grey mt-n3 mb-3 ms-1">
-                    <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
-                    Cédula/RUC: <span class="font-weight-semibold">{{ getClientDocumentById(workOrder.client_id) }}</span>
-                  </div>
+                  </VSearch>
                 </div>
               </VCol>
 
               <VCol cols="12" md="6">
                 <div class="mb-4" style="text-transform: uppercase;">
-                  <VTextField
-                    v-model="vehicleInputText"
+                  <VSearch
+                    v-model="selectedVehicle"
+                    :return-object="true"
+                    endpoint="vehicles/search"
+                    item-title="license_plate"
                     label="Vehículo"
-                    prepend-inner-icon="ri-car-line"
-                    append-inner-icon="ri-search-line"
-                    variant="outlined"
-                    clearable
-                    @keyup.enter="handleVehicleSearch"
-                    @blur="handleVehicleSearch"
-                    @click:append-inner="showVehicleSelectDialog = true"
-                    @click:clear="workOrder.vehicle_id = null"
+                    icon="ri-car-line"
+                    :initial-item="selectedVehicle"
+                    :extra-params="workOrder.client_id ? { client_id: workOrder.client_id } : {}"
                   >
+                    <template #item="{ props, item }">
+                      <VListItem v-bind="props" :title="item.raw.license_plate">
+                        <VListItemSubtitle class="mt-1 text-grey">
+                          {{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}
+                        </VListItemSubtitle>
+                      </VListItem>
+                    </template>
                     <template #append>
                       <VBtn icon size="small" variant="tonal" color="primary" @click="showVehicleDialog = true">
                         <VIcon icon="ri-add-line" />
                       </VBtn>
                     </template>
-                  </VTextField>
+                  </VSearch>
                 </div>
               </VCol>
 
@@ -749,11 +588,17 @@ onMounted(() => {
             <!-- Cuadro de búsqueda de productos -->
             <VCard class="mb-4 elevation-1" color="grey-lighten-5">
               <VCardText class="pa-4">
-                <VAutocomplete v-model="productSearch" :items="limitedProducts" item-title="description" item-value="id"
+                <VSearch
+                  v-model="productSearch"
+                  endpoint="products/search"
+                  item-title="description"
+                  :return-object="true"
                   label="Buscar y agregar producto por nombre, código o SKU..."
-                  prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details return-object
-                  :custom-filter="() => true" @update:search="onProductSearch" @update:model-value="(val) => val && addProductFromSearch(val)"
-                  :menu-props="{ maxWidth: 0 }">
+                  icon="ri-search-line"
+                  @change="addProductFromSearch"
+                  class="mb-0"
+                  hide-details
+                >
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
@@ -761,12 +606,11 @@ onMounted(() => {
                           <VIcon icon="ri-box-3-line" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium">
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
-                      <VListItemSubtitle v-if="item.raw.sku || item.raw.code" class="mt-1 text-grey">
-                        Código/SKU: {{ item.raw.sku || item.raw.code }}
+                      <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
+                        Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
                       </VListItemSubtitle>
                       <template #append>
                         <VChip size="small" color="success">
@@ -775,12 +619,7 @@ onMounted(() => {
                       </template>
                     </VListItem>
                   </template>
-                  <template #append-item>
-                    <div v-if="productLimit < filteredProducts.length" v-intersect="loadMoreProducts" class="pa-4 text-center">
-                      <VProgressCircular indeterminate size="24" color="primary" />
-                    </div>
-                  </template>
-                </VAutocomplete>
+                </VSearch>
               </VCardText>
             </VCard>
 
@@ -949,57 +788,7 @@ onMounted(() => {
 
     <AddServiceDialog v-model:isDialogVisible="showAddServiceDialog" @service-added="handleServiceAdded" />
 
-    <!-- Dialogo para Seleccionar Cliente -->
-    <VDialog v-model="showClientSelectDialog" max-width="800">
-      <VCard>
-        <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4">
-          <span class="text-h6 font-weight-bold">Seleccionar Cliente</span>
-          <VBtn icon="ri-close-line" variant="text" @click="showClientSelectDialog = false" />
-        </VCardTitle>
-        <VCardText class="pa-4">
-          <VTextField v-model="clientSearchQuery" label="Buscar cliente..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="clients"
-            :search="clientSearchQuery"
-            :headers="clientHeaders"
-            :items-per-page="10"
-            hover
-            class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { workOrder.client_id = item.id; showClientSelectDialog = false; }"
-          >
-            <template #item.full_name="{ item }">
-              {{ getClientName(item) }}
-            </template>
-          </VDataTable>
-        </VCardText>
-      </VCard>
-    </VDialog>
 
-    <!-- Dialogo para Seleccionar Vehículo -->
-    <VDialog v-model="showVehicleSelectDialog" max-width="800">
-      <VCard>
-        <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4">
-          <span class="text-h6 font-weight-bold">Seleccionar Vehículo</span>
-          <VBtn icon="ri-close-line" variant="text" @click="showVehicleSelectDialog = false" />
-        </VCardTitle>
-        <VCardText class="pa-4">
-          <VTextField v-model="vehicleSearchQuery" label="Buscar vehículo..." prepend-inner-icon="ri-search-line" variant="outlined" clearable hide-details class="mb-4" />
-          <VDataTable
-            :items="vehicles"
-            :search="vehicleSearchQuery"
-            :headers="vehicleHeaders"
-            :items-per-page="10"
-            hover
-            class="elevation-1 cursor-pointer"
-            @click:row="(event, { item }) => { workOrder.vehicle_id = item.id; showVehicleSelectDialog = false; }"
-          >
-            <template #item.brand_model="{ item }">
-              {{ getBrandNameById(item.brand) }} {{ item.model || '' }}
-            </template>
-          </VDataTable>
-        </VCardText>
-      </VCard>
-    </VDialog>
   </VContainer>
 </template>
 

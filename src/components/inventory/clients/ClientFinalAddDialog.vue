@@ -430,6 +430,14 @@ const closeDialog = () => {
     resetForm();
 }
 
+watch(() => props.isDialogVisible, (newVal) => {
+    if (newVal) {
+        error.value = ''
+        success.value = ''
+        resetForm()
+    }
+})
+
 // Watch para generar full_name
 const watchName = ref(() => {
     generateFullName();

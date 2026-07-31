@@ -7,6 +7,7 @@ import {
   plateValidationRule,
 } from '@/utils/ecuadorianPlateValidator.js'
 import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
+import VSearch from '@/components/common/VSearch.vue'
 
 const props = defineProps({
   isDialogVisible: {
@@ -61,74 +62,18 @@ const getCurrentUserId = () => {
   }
 }
 
-const clients = ref([])
-const loadingClients = ref(false)
-const clientSearch = ref('')
+const initialClient = ref(null)
 
-const loadClients = async (search = '') => {
-  loadingClients.value = true
+const loadClientById = async (id) => {
   try {
-    const params = { per_page: 50 }
-    if (search && search.trim() !== '') {
-      params.search = search
+    const clientResp = await $api(`clients/${id}`)
+    const clientObj = clientResp.client || clientResp.data || clientResp
+    if (clientObj) {
+      initialClient.value = clientObj
     }
-    const resp = await $api('clients', { params })
-    const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
-
-    // Si hay un cliente actualmente seleccionado o en props, asegurarnos de preservarlo en la lista para que no se muestre el ID al perder foco
-    const selectedId = vehicleForm.value.client_id || props.clientSelectedId
-    if (selectedId) {
-      const alreadyExists = fetchedClients.some(c => c.id === selectedId)
-      if (!alreadyExists) {
-        // Buscar el cliente seleccionado en la lista anterior
-        const prevSelected = clients.value.find(c => c.id === selectedId)
-        if (prevSelected) {
-          fetchedClients.unshift(prevSelected)
-        } else {
-          // Cargar el cliente de la API para que exista en el selector
-          try {
-            const clientResp = await $api(`clients/${selectedId}`)
-            const clientObj = clientResp.client || clientResp.data || clientResp
-            if (clientObj) {
-              fetchedClients.unshift(clientObj)
-            }
-          } catch (err) {
-            console.error('Error al cargar cliente por ID:', err)
-          }
-        }
-      }
-    }
-
-    clients.value = fetchedClients
   } catch (err) {
-    console.error('Error al cargar clientes:', err)
-  } finally {
-    loadingClients.value = false
+    console.error('Error al cargar cliente por ID:', err)
   }
-}
-
-const clientFilter = (value, query, item) => {
-  if (query == null || query === '') return true
-
-  const q = String(query).toLowerCase().trim()
-  if (!q) return true
-
-  const raw = item?.raw
-  if (!raw) return false
-
-  const fullName = String(raw.full_name || '').toLowerCase()
-  const nDocument = String(raw.n_document || '').toLowerCase()
-  const name = String(raw.name || '').toLowerCase()
-  const surname = String(raw.surname || '').toLowerCase()
-  const email = String(raw.email || '').toLowerCase()
-  const phone = String(raw.phone || '').toLowerCase()
-
-  return fullName.includes(q) || 
-         nDocument.includes(q) || 
-         name.includes(q) || 
-         surname.includes(q) || 
-         email.includes(q) || 
-         phone.includes(q)
 }
 
 const vehicleForm = ref({
@@ -160,36 +105,22 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
 // Recargar clientes cada vez que el diálogo se abre
 watch(() => props.isDialogVisible, (newVal) => {
   if (newVal) {
-    clientSearch.value = ''
+    error.value = ''
+    success.value = ''
+    resetForm()
     if (props.clientSelectedId) {
       vehicleForm.value.client_id = props.clientSelectedId
+      loadClientById(props.clientSelectedId)
     } else {
       vehicleForm.value.client_id = null
+      initialClient.value = null
     }
-    loadClients('')
     vehicleForm.value.user_id = getCurrentUserId()
   }
 })
 
-// Buscar clientes directamente en la base de datos con debounce al teclear
-let searchDebounceTimeout = null
-watch(clientSearch, (newVal) => {
-  // Si coincide exactamente con el cliente actualmente seleccionado, no consultar
-  const selected = clients.value.find(c => c.id === vehicleForm.value.client_id)
-  if (selected && selected.full_name === newVal) {
-    return
-  }
-  
-  if (searchDebounceTimeout) {
-    clearTimeout(searchDebounceTimeout)
-  }
-  searchDebounceTimeout = setTimeout(() => {
-    loadClients(newVal)
-  }, 350)
-})
 const selectedClient = computed(() => {
-  if (!vehicleForm.value.client_id) return null
-  return clients.value.find(c => c.id === vehicleForm.value.client_id)
+  return initialClient.value
 })
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
@@ -233,7 +164,7 @@ const resetForm = () => {
     vehicle_type: '',
     description: '',
     user_id: getCurrentUserId(), // Asignar el ID del usuario actual
-    client_id: null,
+    client_id: props.clientSelectedId || null,
     status: 1, // Estado activo por defecto (1 = activo, 2 = inactivo)
   }
   formRef.value?.resetValidation()
@@ -282,7 +213,6 @@ onMounted(() => {
   for (let i = currentYear + 5; i >= 1980; i--) {
     yearOptions.value.push({ title: i.toString(), value: i })
   }
-  loadClients()
 
   // Asignar el user_id al montar el componente
   vehicleForm.value.user_id = getCurrentUserId()
@@ -332,20 +262,16 @@ onMounted(() => {
             cols="12"
             class="mb-3"
           >
-            <VAutocomplete
+            <VSearch
               v-model="vehicleForm.client_id"
-              v-model:search="clientSearch"
-              :items="clients"
+              endpoint="clients/search"
               item-title="full_name"
-              item-value="id"
               label="Propietario / Cliente *"
               placeholder="Buscar cliente por nombre o documento..."
-              prepend-inner-icon="ri-user-line"
+              icon="ri-user-line"
               :rules="rules.client_id"
-              variant="outlined"
-              no-data-text="No se encontraron clientes"
-              :loading="loadingClients"
-              no-filter
+              :initial-item="initialClient"
+              @change="(item) => { initialClient.value = item }"
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem v-bind="itemProps" :title="undefined">
@@ -357,7 +283,7 @@ onMounted(() => {
                   </VListItemSubtitle>
                 </VListItem>
               </template>
-            </VAutocomplete>
+            </VSearch>
             <div v-if="selectedClient" class="text-caption text-grey mt-1 ms-1">
               <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
               Documento (Cédula/RUC): <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>

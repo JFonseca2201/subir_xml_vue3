@@ -4,6 +4,7 @@ import { $api } from '@/utils/api'
 import { getBrandOptions, getBrandNameById, getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
 import { formatEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
 import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
+import VSearch from '@/components/common/VSearch.vue'
 
 const props = defineProps({
   isDialogVisible: {
@@ -52,43 +53,18 @@ const getCurrentUserId = () => {
   }
 }
 
-const clients = ref([])
-const loadingClients = ref(false)
+const initialClient = ref(null)
 
-const loadClients = async () => {
-  loadingClients.value = true
+const loadClientById = async (id) => {
   try {
-    const resp = await $api('clients', { params: { per_page: 1000 } })
-    clients.value = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+    const clientResp = await $api(`clients/${id}`)
+    const clientObj = clientResp.client || clientResp.data || clientResp
+    if (clientObj) {
+      initialClient.value = clientObj
+    }
   } catch (err) {
-    console.error('Error al cargar clientes:', err)
-  } finally {
-    loadingClients.value = false
+    console.error('Error al cargar cliente por ID:', err)
   }
-}
-
-const clientFilter = (value, query, item) => {
-  if (query == null || query === '') return true
-
-  const q = String(query).toLowerCase().trim()
-  if (!q) return true
-
-  const raw = item?.raw
-  if (!raw) return false
-
-  const fullName = String(raw.full_name || '').toLowerCase()
-  const nDocument = String(raw.n_document || '').toLowerCase()
-  const name = String(raw.name || '').toLowerCase()
-  const surname = String(raw.surname || '').toLowerCase()
-  const email = String(raw.email || '').toLowerCase()
-  const phone = String(raw.phone || '').toLowerCase()
-
-  return fullName.includes(q) || 
-         nDocument.includes(q) || 
-         name.includes(q) || 
-         surname.includes(q) || 
-         email.includes(q) || 
-         phone.includes(q)
 }
 
 const vehicleForm = ref({
@@ -247,6 +223,14 @@ const loadVehicleData = () => {
       user_id: getCurrentUserId(), // Asignar el ID del usuario actual
       client_id: props.vehicleData.client_id || null,
     }
+
+    if (props.vehicleData.client) {
+      initialClient.value = props.vehicleData.client
+    } else if (props.vehicleData.client_id) {
+      loadClientById(props.vehicleData.client_id)
+    } else {
+      initialClient.value = null
+    }
   }
 }
 
@@ -286,13 +270,19 @@ const closeDialog = () => {
 onMounted(() => {
   generateYearOptions()
   loadVehicleData()
-  loadClients()
 
   // Sincronizar cuando el prop cambie (al abrir el diálogo)
   watch(() => props.vehicleData, () => {
     loadVehicleData()
     searchBrands('')
   }, { deep: true })
+
+  watch(() => props.isDialogVisible, (newVal) => {
+    if (newVal) {
+      error.value = ''
+      success.value = ''
+    }
+  })
 
   // Inicializar con marcas populares
   searchBrands('')
@@ -339,19 +329,16 @@ onMounted(() => {
             cols="12"
             class="mb-3"
           >
-            <VAutocomplete
+            <VSearch
               v-model="vehicleForm.client_id"
-              :items="clients"
+              endpoint="clients/search"
               item-title="full_name"
-              item-value="id"
               label="Propietario / Cliente *"
               placeholder="Buscar cliente por nombre o documento..."
-              prepend-inner-icon="ri-user-line"
+              icon="ri-user-line"
               :rules="rules.client_id"
-              variant="outlined"
-              no-data-text="No se encontraron clientes"
-              :custom-filter="clientFilter"
-              :loading="loadingClients"
+              :initial-item="initialClient"
+              @change="(item) => { initialClient.value = item }"
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem v-bind="itemProps" :title="undefined">
@@ -363,7 +350,7 @@ onMounted(() => {
                   </VListItemSubtitle>
                 </VListItem>
               </template>
-            </VAutocomplete>
+            </VSearch>
           </VCol>
           <VCol
             cols="12"

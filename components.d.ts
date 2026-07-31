@@ -125,6 +125,7 @@ declare module 'vue' {
     VehicleEditDialog: typeof import('./src/components/inventory/vehicles/VehicleEditDialog.vue')['default']
     VehicleShowDialog: typeof import('./src/components/inventory/vehicles/VehicleShowDialog.vue')['default']
     ViewProduct: typeof import('./src/components/inventory/product/ViewProduct.vue')['default']
+    VSearch: typeof import('./src/components/common/VSearch.vue')['default']
     WarehouseAddDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseAddDialog.vue')['default']
     WarehouseDeleteDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseDeleteDialog.vue')['default']
     WarehouseEditDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseEditDialog.vue')['default']
