@@ -112,10 +112,6 @@ const confirmDelete = async () => {
     return
   }
 
-  if (!window.confirm(`¿Está seguro de anular el documento ${props.saleSelected.document_number}? Esta acción revertirá el stock y anulará la transacción.`)) {
-    return
-  }
-
   loader.start()
 
   try {

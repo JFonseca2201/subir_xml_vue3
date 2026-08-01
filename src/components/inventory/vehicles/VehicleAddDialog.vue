@@ -122,6 +122,14 @@ watch(() => props.isDialogVisible, (newVal) => {
 const selectedClient = computed(() => {
   return initialClient.value
 })
+
+watch(() => initialClient.value, (newVal) => {
+  if (newVal && newVal.id) {
+    vehicleForm.value.client_id = newVal.id
+  } else {
+    vehicleForm.value.client_id = null
+  }
+})
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
 
@@ -263,7 +271,8 @@ onMounted(() => {
             class="mb-3"
           >
             <VSearch
-              v-model="vehicleForm.client_id"
+              v-model="initialClient"
+              :return-object="true"
               endpoint="clients/search"
               item-title="full_name"
               label="Propietario / Cliente *"
@@ -271,7 +280,6 @@ onMounted(() => {
               icon="ri-user-line"
               :rules="rules.client_id"
               :initial-item="initialClient"
-              @change="(item) => { initialClient.value = item }"
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem v-bind="itemProps" :title="undefined">

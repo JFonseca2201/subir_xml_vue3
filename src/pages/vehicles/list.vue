@@ -227,10 +227,10 @@ const handleVehicleUpdated = vehicleData => {
   if (index !== -1) {
     vehicles.value.splice(index, 1, vehicleData)
     console.log("Vehículo actualizado en posición:", index)
-  } else {
-    console.warn("Vehículo no encontrado en el listado, recargando...")
-    loadVehicles()
   }
+  
+  // Recargar la lista completa desde la API para asegurar consistencia
+  loadVehicles()
 }
 
 const handleVehicleDeleted = deletedVehicle => {

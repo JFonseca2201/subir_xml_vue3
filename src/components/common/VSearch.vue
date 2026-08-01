@@ -113,6 +113,20 @@ onMounted(() => {
   }
 })
 
+const onModelValueUpdate = (val) => {
+  emit('update:modelValue', val)
+  if (val) {
+    if (props.returnObject) {
+      emit('change', val)
+    } else {
+      const selectedItem = items.value.find(item => item[props.itemValue] === val)
+      emit('change', selectedItem || val)
+    }
+  } else {
+    emit('change', null)
+  }
+}
+
 watch(() => props.initialItem, (newVal) => {
   if (newVal) {
     items.value = [newVal]
@@ -123,7 +137,7 @@ watch(() => props.initialItem, (newVal) => {
 <template>
   <VAutocomplete
     :model-value="modelValue"
-    @update:model-value="(val) => { emit('update:modelValue', val); emit('change', val) }"
+    @update:model-value="onModelValueUpdate"
     :items="items"
     :item-title="itemTitle"
     :item-value="itemValue"

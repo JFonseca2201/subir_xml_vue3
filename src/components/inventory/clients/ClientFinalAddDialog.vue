@@ -614,7 +614,8 @@ onMounted(() => {
                         <VTextField v-model="clientForm.n_document" label="Número de Documento *"
                             placeholder="Ingrese número de documento" prepend-inner-icon="ri-numbers-line"
                             :rules="rules.n_document" required clearable @keypress="filterDocumentKey"
-                            :maxlength="documentMaxLength" @blur="checkDocument" @keyup.enter="checkDocument" />
+                            :maxlength="documentMaxLength" @blur="checkDocument" @keyup.enter="checkDocument"
+                            :loading="loading" />
                         <div v-if="!isDocumentChecked" class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1">
                             <VIcon icon="ri-error-warning-line" size="14" />
                             Digite el documento completo para habilitar el formulario.
@@ -628,35 +629,35 @@ onMounted(() => {
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
                             prepend-inner-icon="ri-user-3-line" :rules="rules.name" required @input="generateFullName"
-                            clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" />
+                            clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
                             prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
-                            @input="generateFullName" clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" />
+                            @input="generateFullName" clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
                             prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable @keypress="filterPhoneKey"
-                            maxlength="20" :disabled="fieldsDisabled" />
+                            maxlength="20" :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" :disabled="fieldsDisabled" />
+                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VSelect v-model="clientForm.gender" :items="genderOptions" item-title="title"
                             item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
-                            placeholder="Seleccione género" clearable :disabled="fieldsDisabled" />
+                            placeholder="Seleccione género" clearable :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="6" class="mb-3">
                         <VTextField v-model="clientForm.birth_date" label="Fecha de Nacimiento" type="date"
-                            prepend-inner-icon="ri-calendar-event-line" clearable :disabled="fieldsDisabled" />
+                            prepend-inner-icon="ri-calendar-event-line" clearable :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VDivider class="my-6" />
@@ -668,25 +669,25 @@ onMounted(() => {
 
                     <VCol cols="12" class="mb-3">
                         <VTextField v-model="clientForm.address" label="Dirección"
-                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable :disabled="fieldsDisabled" />
+                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
                             label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
-                            clearable :disabled="fieldsDisabled" />
+                            clearable :disabled="fieldsDisabled" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
                             item-value="id" label="Provincia" placeholder="Seleccione Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_region" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_region" :loading="loading" />
                     </VCol>
 
                     <VCol cols="12" md="4" class="mb-3">
                         <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
                             item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_provincia" />
+                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_provincia" :loading="loading" />
                     </VCol>
 
                     <VDivider class="my-4" />

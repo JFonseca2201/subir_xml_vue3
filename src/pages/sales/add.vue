@@ -270,13 +270,35 @@ const applyWorkOrderTechnicians = workOrder => {
   sale.value.technicians = (workOrder.technicians || []).map(t => t.id)
 }
 
-const selectWorkOrder = workOrder => {
+const selectWorkOrder = async workOrder => {
   sale.value.work_order_id = workOrder.id
   sale.value.work_order_number = workOrder.number
   sale.value.client_id = workOrder.client_id
   sale.value.vehicle_id = workOrder.vehicle_id
   sale.value.mileage = workOrder.mileage
   applyWorkOrderTechnicians(workOrder)
+
+  if (workOrder.client) {
+    selectedClient.value = workOrder.client
+  } else if (workOrder.client_id) {
+    try {
+      const clientRes = await $api(`clients/${workOrder.client_id}`)
+      selectedClient.value = clientRes.client || clientRes.data || clientRes
+    } catch (e) {
+      console.error('Error al cargar cliente de la OT:', e)
+    }
+  }
+
+  if (workOrder.vehicle) {
+    selectedVehicle.value = workOrder.vehicle
+  } else if (workOrder.vehicle_id) {
+    try {
+      const vehicleRes = await $api(`vehicles/${workOrder.vehicle_id}`)
+      selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+    } catch (e) {
+      console.error('Error al cargar vehículo de la OT:', e)
+    }
+  }
 
   // Importar items de la orden de trabajo
   if (workOrder.items && workOrder.items.length > 0) {
@@ -992,6 +1014,28 @@ onMounted(async () => {
         sale.value.service_date = workOrder.date ? workOrder.date.split(' ')[0] : sale.value.service_date
         sale.value.observations = workOrder.observations || ''
         applyWorkOrderTechnicians(workOrder)
+
+        if (workOrder.client) {
+          selectedClient.value = workOrder.client
+        } else if (workOrder.client_id) {
+          try {
+            const clientRes = await $api(`clients/${workOrder.client_id}`)
+            selectedClient.value = clientRes.client || clientRes.data || clientRes
+          } catch (e) {
+            console.error('Error al cargar cliente de la OT:', e)
+          }
+        }
+
+        if (workOrder.vehicle) {
+          selectedVehicle.value = workOrder.vehicle
+        } else if (workOrder.vehicle_id) {
+          try {
+            const vehicleRes = await $api(`vehicles/${workOrder.vehicle_id}`)
+            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+          } catch (e) {
+            console.error('Error al cargar vehículo de la OT:', e)
+          }
+        }
 
         // Importar items de la orden de trabajo
         if (workOrder.items && workOrder.items.length > 0) {

@@ -242,16 +242,31 @@ const updateVehicle = async () => {
   error.value = ''
 
   try {
-    const resp = await $api(`vehicles/${vehicleForm.value.id}`, {
+    // Construir un payload limpio solo con los campos de la tabla vehicles para evitar desajustes o ignores de Eloquent
+    const payload = {
+      id: vehicleForm.value.id,
+      license_plate: vehicleForm.value.license_plate,
+      brand: vehicleForm.value.brand,
+      model: vehicleForm.value.model,
+      year: vehicleForm.value.year,
+      color: vehicleForm.value.color,
+      vehicle_type: vehicleForm.value.vehicle_type,
+      description: vehicleForm.value.description,
+      status: vehicleForm.value.status,
+      user_id: vehicleForm.value.user_id,
+      client_id: vehicleForm.value.client_id,
+    }
+
+    const resp = await $api(`vehicles/${payload.id}`, {
       method: "PUT",
-      body: vehicleForm.value,
+      body: payload,
     })
 
     showNotification('Vehículo actualizado con éxito', 'success')
 
     setTimeout(() => {
       emit('update:isDialogVisible', false)
-      emit('vehicleUpdated', resp.vehicle || resp.data || vehicleForm.value)
+      emit('vehicleUpdated', resp.vehicle || resp.data || payload)
     }, 1200)
 
   } catch (err) {
@@ -261,6 +276,14 @@ const updateVehicle = async () => {
     loading.value = false
   }
 }
+
+watch(() => initialClient.value, (newVal) => {
+  if (newVal && newVal.id) {
+    vehicleForm.value.client_id = newVal.id
+  } else {
+    vehicleForm.value.client_id = null
+  }
+})
 
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
@@ -330,7 +353,8 @@ onMounted(() => {
             class="mb-3"
           >
             <VSearch
-              v-model="vehicleForm.client_id"
+              v-model="initialClient"
+              :return-object="true"
               endpoint="clients/search"
               item-title="full_name"
               label="Propietario / Cliente *"
@@ -338,7 +362,6 @@ onMounted(() => {
               icon="ri-user-line"
               :rules="rules.client_id"
               :initial-item="initialClient"
-              @change="(item) => { initialClient.value = item }"
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem v-bind="itemProps" :title="undefined">
