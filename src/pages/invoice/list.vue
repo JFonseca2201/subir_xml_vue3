@@ -10,6 +10,8 @@ const perPage = ref(10)
 const totalItems = ref(0)
 
 const { showNotification } = useGlobalToast()
+import { useLoaderStore } from '@/stores/loader'
+const loader = useLoaderStore()
 
 const list_invoices = ref([])
 const supplier_id = ref(null)
@@ -31,7 +33,7 @@ import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDi
 import InvoiceProcessDialog from '@/components/inventory/invoices/InvoiceProcessDialog.vue'
 
 const list = async () => {
-  isLoading.value = true
+  loader.start()
 
   try {
     let data = {
@@ -72,7 +74,7 @@ const list = async () => {
     console.error('❌ Error al cargar facturas:', error)
     showNotification('Error al cargar las facturas', 'error')
   } finally {
-    isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -215,8 +217,6 @@ onMounted(() => {
 
       <!-- Tabla de Facturas -->
       <div class="position-relative">
-        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div class="overflow-x-auto">
           <VTable hover class="invoices-table">
@@ -251,17 +251,7 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="isLoading">
-              <tr>
-                <td colspan="9" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!list_invoices || list_invoices.length === 0">
+            <tbody v-if="!list_invoices || list_invoices.length === 0">
               <tr>
                 <td colspan="9" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">

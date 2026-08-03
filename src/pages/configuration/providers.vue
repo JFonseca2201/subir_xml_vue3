@@ -6,6 +6,9 @@ import ProviderViewDialog from '@/components/inventory/config/providers/Provider
 import ProviderEditDialog from '@/components/inventory/config/providers/ProviderEditDialog.vue'
 import ProviderDeleteDialog from '@/components/inventory/config/providers/ProviderDeleteDialog.vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
+
+const loader = useLoaderStore()
 
 const headers = [
 
@@ -50,7 +53,7 @@ const itemsPerPage = 10
 const { showNotification } = useGlobalToast()
 
 const list = async () => {
-  isLoading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -88,7 +91,7 @@ const list = async () => {
     console.log(error)
     showNotification('Error al cargar la lista de proveedores', 'error')
   } finally {
-    isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -281,8 +284,6 @@ definePage({ meta: { permission: "settings" } })
 
       <!-- Tabla de Proveedores -->
       <div class="position-relative">
-        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
         <div class="overflow-x-auto">
           <VTable hover class="providers-table">
             <thead>
@@ -296,15 +297,7 @@ definePage({ meta: { permission: "settings" } })
                 <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">ACCIONES</th>
               </tr>
             </thead>
-            <tbody v-if="isLoading">
-              <tr>
-                <td colspan="7" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!list_providers || list_providers.length === 0">
+            <tbody v-if="!list_providers || list_providers.length === 0">
               <tr>
                 <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-truck-line</VIcon>

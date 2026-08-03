@@ -9,6 +9,8 @@ import WarehouseDeleteDialog from '@/components/inventory/config/warehouses/Ware
 const warehouseSelected = ref(null)
 
 const { showNotification } = useGlobalToast()
+import { useLoaderStore } from '@/stores/loader'
+const loader = useLoaderStore()
 
 const list_warehouses = ref([])
 const search = ref(null)
@@ -29,7 +31,7 @@ watch(search, () => {
 })
 
 const list = async () => {
-  isLoading.value = true
+  loader.start()
 
   try {
     const resp = await $api("warehouses?search=" + (search.value ? search.value : ""), {
@@ -54,7 +56,7 @@ const list = async () => {
     console.error(error)
     showNotification('Error al cargar la lista de almacenes', 'error')
   } finally {
-    isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -163,8 +165,6 @@ onMounted(() => {
 
       <!-- Tabla de Almacenes -->
       <div class="position-relative">
-        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
         <div class="overflow-x-auto">
           <VTable hover class="warehouses-table">
             <thead>
@@ -177,15 +177,7 @@ onMounted(() => {
                 <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">ACCIONES</th>
               </tr>
             </thead>
-            <tbody v-if="isLoading">
-              <tr>
-                <td colspan="6" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!list_warehouses || list_warehouses.length === 0">
+            <tbody v-if="!list_warehouses || list_warehouses.length === 0">
               <tr>
                 <td colspan="6" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-inbox-line</VIcon>

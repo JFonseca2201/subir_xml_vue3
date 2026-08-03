@@ -1,6 +1,8 @@
 <script setup>
 /* eslint-disable camelcase */
 import defaultCategoryImg from '@images/misc/default_category.png'
+import { useLoaderStore } from '@/stores/loader'
+const loader = useLoaderStore()
 
 const headers = [
   /*     {
@@ -97,7 +99,7 @@ const getCategoryIcon = imagen => {
 }
 
 const list = async () => {
-  isLoading.value = true // ⬅ activar loader
+  loader.start() // ⬅ activar loader
   try {
     const params = {
       page: currentPage.value,
@@ -131,7 +133,7 @@ const list = async () => {
   } catch (error) {
     console.log(error)
   } finally {
-    isLoading.value = false // ocultar overlay
+    loader.stop() // ocultar overlay
   }
 }
 
@@ -246,8 +248,6 @@ definePage({ meta: { permission: "settings" } })
 
       <!-- Tabla de Categorías -->
       <div class="position-relative">
-        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
         <div class="overflow-x-auto">
           <VTable hover class="categories-table">
             <thead>
@@ -266,17 +266,7 @@ definePage({ meta: { permission: "settings" } })
                 </th>
               </tr>
             </thead>
-            <tbody v-if="isLoading">
-              <tr>
-                <td colspan="4" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!list_categories || list_categories.length === 0">
+            <tbody v-if="!list_categories || list_categories.length === 0">
               <tr>
                 <td colspan="4" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">

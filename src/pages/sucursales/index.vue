@@ -160,6 +160,7 @@ const canEditSucursal = computed(() => {
 // Cargar información de la sucursal
 const loadSucursal = async () => {
   isLoading.value = true
+  loader.start()
   try {
     const resp = await $api('sucursales/1', {
       method: 'GET',
@@ -179,6 +180,7 @@ const loadSucursal = async () => {
     showNotification('Error al cargar información de la sucursal', 'error')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -199,6 +201,7 @@ const saveSucursal = async () => {
   if (!valid) return
 
   isLoading.value = true
+  loader.start()
   try {
     const resp = await $api('sucursales/1', {
       method: 'PUT',
@@ -216,6 +219,7 @@ const saveSucursal = async () => {
     showNotification('Error al guardar cambios', 'error')
   } finally {
     isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -250,11 +254,7 @@ onMounted(() => {
       </div>
 
       <!-- Formulario -->
-      <div v-if="isLoading && !isEditing" class="d-flex justify-center align-center py-12">
-        <VProgressCircular indeterminate color="primary" size="64" />
-      </div>
       <VForm
-        v-else
         ref="formRef"
         @submit.prevent="saveSucursal"
       >

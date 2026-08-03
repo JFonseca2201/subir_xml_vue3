@@ -3,9 +3,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import { useLoaderStore } from '@/stores/loader'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 const isSubmitting = ref(false)
 const isLoadingConfig = ref(false)
@@ -38,6 +40,7 @@ const items = ref([])
 const searchProduct = ref(null)
 
 const loadConfig = async () => {
+  loader.start()
   isLoadingConfig.value = true
   try {
     const [configResp, accountsResp, partnersResp] = await Promise.all([
@@ -58,6 +61,7 @@ const loadConfig = async () => {
     showNotification('Error cargando configuraciones iniciales', 'error')
   } finally {
     isLoadingConfig.value = false
+    loader.stop()
   }
 }
 
@@ -159,6 +163,7 @@ const submitPurchase = async () => {
   }
 
   isSubmitting.value = true
+  loader.start()
 
   const payload = {
     ...formData.value,
@@ -181,6 +186,7 @@ const submitPurchase = async () => {
     showNotification(error.response?._data?.message || 'Error al guardar la compra', 'error')
   } finally {
     isSubmitting.value = false
+    loader.stop()
   }
 }
 

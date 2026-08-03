@@ -8,6 +8,8 @@ import WorkOrderTimelineDialog from '@/components/dialogs/WorkOrderTimelineDialo
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+import { useLoaderStore } from '@/stores/loader'
+const loader = useLoaderStore()
 
 const showTimelineDialog = ref(false)
 const selectedTimelineOrder = ref(null)
@@ -157,7 +159,7 @@ watch([searchQuery, statusFilter], () => {
 })
 
 const loadWorkOrders = async () => {
-  isLoading.value = true
+  loader.start()
   try {
     const response = await $api('work-orders')
 
@@ -166,7 +168,7 @@ const loadWorkOrders = async () => {
     console.error('Error al cargar órdenes de trabajo:', error)
     showNotification('Error al cargar las órdenes de trabajo', 'error')
   } finally {
-    isLoading.value = false
+    loader.stop()
   }
 }
 
@@ -403,17 +405,8 @@ onMounted(() => {
 
       <!-- Listado de Órdenes de Trabajo (Tarjetas Agrupadas por Día) -->
       <div class="position-relative bg-white">
-        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <div v-if="isLoading" class="text-center pa-12">
-          <VProgressCircular indeterminate color="primary" size="40" />
-          <div class="mt-2 text-medium-emphasis">
-            Cargando registros...
-          </div>
-        </div>
-
-        <div v-else-if="!filteredWorkOrders || filteredWorkOrders.length === 0"
+        <div v-if="!filteredWorkOrders || filteredWorkOrders.length === 0"
           class="text-center pa-12 text-medium-emphasis">
           <VIcon size="48" class="mb-3" color="grey-lighten-1">
             ri-file-text-line

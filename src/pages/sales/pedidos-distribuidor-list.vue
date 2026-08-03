@@ -737,17 +737,9 @@ onMounted(() => {
             <VSelect v-model="filterCategory" :items="categoriesList" label="Categoría" variant="outlined"
               density="compact" hide-details style="min-width: 160px; flex: 1 1 120px;" color="primary" />
 
-            <AppDateTimePicker
-              v-model="filterRangeDate"
-              label="Rango de Fechas"
-              placeholder="Seleccionar rango"
-              :config="{ mode: 'range' }"
-              variant="outlined"
-              density="compact"
-              hide-details
-              style="min-width: 240px; flex: 1 1 200px;"
-              color="primary"
-            />
+            <AppDateTimePicker v-model="filterRangeDate" label="Rango de Fechas" placeholder="Seleccionar rango"
+              :config="{ mode: 'range' }" variant="outlined" density="compact" hide-details
+              style="min-width: 240px; flex: 1 1 200px;" color="primary" />
 
             <div class="d-flex gap-2 ms-auto">
               <VBtn color="secondary" variant="outlined" prepend-icon="ri-filter-off-line" @click="resetFilters"

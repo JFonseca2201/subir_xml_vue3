@@ -7,8 +7,10 @@ import UnitEditDialog from '@/components/inventory/config/units/UnitEditDialog.v
 import UnitDeleteDialog from '@/components/inventory/config/units/UnitDeleteDialog.vue'
 import UnitAddConversionDialog from '@/components/inventory/config/unit_conversions/UnitAddConversionDialog.vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 const headers = [
   {
@@ -50,7 +52,7 @@ const totalPage = ref(1)
 const itemsPerPage = 10
 
 const list = async () => {
-  isLoading.value = true // Activar loader
+  loader.start() // Activar loader
   try {
     const params = {
       page: currentPage.value,
@@ -88,7 +90,7 @@ const list = async () => {
     console.log(error)
     showNotification('Error al cargar la lista de unidades', 'error')
   } finally {
-    isLoading.value = false // Ocultar overlay
+    loader.stop() // Ocultar overlay
   }
 }
 
@@ -270,14 +272,6 @@ definePage({ meta: { permission: "settings" } })
 
       <!-- Tabla de Unidades -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="isLoading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
         <div class="overflow-x-auto">
           <VTable
             hover
@@ -317,24 +311,7 @@ definePage({ meta: { permission: "settings" } })
                 </th>
               </tr>
             </thead>
-            <tbody v-if="isLoading">
-              <tr>
-                <td
-                  colspan="5"
-                  class="text-center pa-6"
-                >
-                  <VProgressCircular
-                    indeterminate
-                    color="primary"
-                    size="40"
-                  />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!list_units || list_units.length === 0">
+            <tbody v-if="!list_units || list_units.length === 0">
               <tr>
                 <td
                   colspan="5"

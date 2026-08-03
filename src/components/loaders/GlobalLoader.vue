@@ -1,30 +1,23 @@
 <template>
   <VOverlay
     :model-value="loading"
-    class="align-center justify-center"
+    class="align-center justify-center global-loader-overlay"
     persistent
     scrim="#0c111d"
-    opacity="0.7"
+    opacity="0.65"
     style="z-index: 99999;"
   >
-    <div class="d-flex flex-column align-center justify-center pa-8 rounded-xl bg-white text-center loader-card">
-      <div class="position-relative d-flex align-center justify-center mb-4">
-        <VProgressCircular
-          indeterminate
-          color="primary"
-          size="72"
-          width="6"
-          class="loader-progress"
-        />
-        <VIcon
-          icon="ri-loader-4-line"
-          color="primary"
-          size="32"
-          class="position-absolute rotate-icon"
-        />
+    <div class="loader-container">
+      <div class="spinner-container mb-4">
+        <!-- Modern clean gradient spinner -->
+        <div class="custom-spinner"></div>
+        <div
+          v-html="logoHtml"
+          class="center-logo"
+        ></div>
       </div>
-      <div class="text-h6 font-weight-bold text-grey-darken-4 mb-1">Cargando Sistema</div>
-      <div class="text-body-2 text-medium-emphasis px-2">Preparando los datos, por favor espere...</div>
+      <h3 class="loader-title mb-1">Cargando</h3>
+      <p class="loader-subtitle">Por favor espere un momento...</p>
     </div>
   </VOverlay>
 </template>
@@ -32,43 +25,81 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { useLoaderStore } from '@/stores/loader'
+import logoHtml from '@images/logo.svg?raw'
 
 const loaderStore = useLoaderStore()
 const { loading } = storeToRefs(loaderStore)
 </script>
 
 <style scoped>
-.loader-card {
-  min-width: 280px;
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+.global-loader-overlay {
+  backdrop-filter: blur(3px);
 }
 
-.loader-progress {
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.rotate-icon {
-  animation: spin 3s linear infinite;
+/* Elegant minimalist spinner */
+.spinner-container {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-spinner {
+  width: 100%;
+  height: 100%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid var(--v-theme-primary, #6b46c1);
+  border-radius: 50%;
+  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.center-logo {
+  position: absolute;
+  color: var(--v-theme-primary, #6b46c1) !important;
+  animation: pulse-logo 2s infinite ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+/* Style the SVG to match primary color */
+.center-logo :deep(svg) {
+  width: 100%;
+  height: auto;
+  color: var(--v-theme-primary, #6b46c1);
+}
+
+.loader-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.loader-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes pulse-ring {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .7;
-  }
+@keyframes pulse-logo {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
 }
 </style>
+
