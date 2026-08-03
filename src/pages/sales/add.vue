@@ -1654,8 +1654,7 @@ onMounted(async () => {
                       order.client?.n_document }}</small></td>
                     <td>{{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
                       order.vehicle?.model }}</small></td>
-                    <td>{{ order.entry_date ? new Date(order.entry_date.replace(' ', 'T')).toLocaleDateString() : 'N/A'
-                    }}
+                    <td>{{ order.entry_date ? (order.entry_date.includes(':') ? new Date(order.entry_date.replace(' ', 'T')) : new Date(order.entry_date.replace(/-/g, '/'))).toLocaleDateString() : 'N/A' }}
                     </td>
                     <td class="text-right">
                       <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">

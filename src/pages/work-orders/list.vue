@@ -129,12 +129,39 @@ const totalPages = computed(() => {
   return Math.ceil(filteredWorkOrders.value.length / itemsPerPage.value)
 })
 
+const parseDateLocal = (dateStr) => {
+  if (!dateStr) return null
+  let cleanStr = dateStr.trim()
+  
+  if (!cleanStr.includes(':')) {
+    const parts = cleanStr.split(/[-/]/)
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10)
+      const month = parseInt(parts[1], 10) - 1
+      const day = parseInt(parts[2], 10)
+      return new Date(year, month, day)
+    }
+  } else {
+    cleanStr = cleanStr.replace(' ', 'T')
+  }
+  return new Date(cleanStr)
+}
+
+const getLocalDateStr = (dateObj) => {
+  if (!dateObj || isNaN(dateObj.getTime())) return 'N/A'
+  const year = dateObj.getFullYear()
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const day = String(dateObj.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const groupedWorkOrders = computed(() => {
   const groups = {}
   paginatedWorkOrders.value.forEach(wo => {
     // Extraemos la fecha desde 'date' si existe, o si no 'created_at'
     const sourceDate = wo.date ? wo.date : wo.created_at
-    const dateStr = sourceDate ? sourceDate.split(' ')[0] : 'N/A'
+    const dateObj = parseDateLocal(sourceDate)
+    const dateStr = getLocalDateStr(dateObj)
     if (!groups[dateStr]) {
       groups[dateStr] = []
     }
@@ -445,8 +472,7 @@ onMounted(() => {
                         {{ workOrder.number }}
                       </span>
                       <span class="text-caption text-medium-emphasis">
-                        {{ workOrder.created_at ? new Date(workOrder.created_at.replace(' ',
-                          'T')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A' }}
+                        {{ workOrder.created_at ? parseDateLocal(workOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A' }}
                       </span>
                     </div>
 
