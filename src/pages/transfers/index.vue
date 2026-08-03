@@ -44,10 +44,8 @@ const transferToDelete = ref(null)
 const searchQuery = ref('')
 const selectedFilter = ref('all') // 'all', 'today', 'month'
 
-// Cargar listado de transferencias
 const loadTransfers = async () => {
   loader.start()
-  loading.value = true
 
   try {
     const response = await $api('transfers')
@@ -94,7 +92,6 @@ const loadTransfers = async () => {
     showNotification('Error al cargar historial de transferencias', 'error')
   } finally {
     loader.stop()
-    loading.value = false
   }
 }
 
@@ -431,16 +428,8 @@ onMounted(() => {
       </VRow>
     </VCard>
 
-    <!-- Cargando -->
-    <div v-if="loading" class="text-center pa-12">
-      <VProgressCircular indeterminate color="primary" size="54" width="4" />
-      <div class="text-subtitle-1 mt-4 font-weight-medium text-medium-emphasis">
-        Cargando transferencias...
-      </div>
-    </div>
-
     <!-- Sin registros -->
-    <VCard v-else-if="!filteredTransfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
+    <VCard v-if="!filteredTransfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
       <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
         <VIcon icon="ri-inbox-line" size="42" color="primary" />
       </VAvatar>

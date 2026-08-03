@@ -3,9 +3,11 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 // List of denominations
 const billsList = [100, 50, 20, 10, 5, 1]
@@ -136,7 +138,7 @@ const formatCurrency = (value) => {
 
 // Fetch daily status from Laravel API
 const fetchStatus = async (date) => {
-  loading.value = true
+  loader.start()
   try {
     const response = await $api('daily-cash-counts/status', {
       params: { date }
@@ -205,7 +207,7 @@ const fetchStatus = async (date) => {
     console.error('Error fetching cash count status:', error)
     showNotification('Error al cargar la información del arqueo diario.', 'error')
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -360,8 +362,6 @@ onMounted(() => {
         <!-- Columna Izquierda (9/12) -->
         <VCol cols="12" md="9">
           <VCard elevation="3" class="rounded-xl h-100 border-light border position-relative">
-            <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-              style="top: 0; left: 0; right: 0; z-index: 10;" />
             <VCardItem class="bg-grey-lighten-4 py-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">

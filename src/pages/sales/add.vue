@@ -302,16 +302,21 @@ const selectWorkOrder = async workOrder => {
 
   // Importar items de la orden de trabajo
   if (workOrder.items && workOrder.items.length > 0) {
-    sale.value.items = workOrder.items.map(item => ({
-      product_id: item.product_id,
-      description: item.description,
-      quantity: item.quantity,
-      price: item.unit_price || item.price || 0,
-      discount: item.discount || 0,
-      subtotal: item.subtotal,
-      type: item.type || (item.product_id ? 'product' : 'service'),
-      sku: item.product?.sku || item.product?.code || item.sku || '',
-    }))
+    sale.value.items = workOrder.items.map(item => {
+      if (item.product && !products.value.find(p => p.id === item.product.id)) {
+        products.value.push(item.product)
+      }
+      return {
+        product_id: item.product_id,
+        description: item.description,
+        quantity: item.quantity,
+        price: item.unit_price || item.price || 0,
+        discount: item.discount || 0,
+        subtotal: item.subtotal,
+        type: item.type || (item.product_id ? 'product' : 'service'),
+        sku: item.product?.sku || item.product?.code || item.sku || '',
+      }
+    })
     initializePaymentDistribution()
   }
 
@@ -1039,16 +1044,21 @@ onMounted(async () => {
 
         // Importar items de la orden de trabajo
         if (workOrder.items && workOrder.items.length > 0) {
-          sale.value.items = workOrder.items.map(item => ({
-            product_id: item.product_id,
-            description: item.description,
-            quantity: item.quantity,
-            price: item.unit_price || item.price || 0,
-            discount: item.discount || 0,
-            subtotal: item.subtotal,
-            type: item.type || (item.product_id ? 'product' : 'service'),
-            sku: item.product?.sku || item.product?.code || item.sku || '',
-          }))
+          sale.value.items = workOrder.items.map(item => {
+            if (item.product && !products.value.find(p => p.id === item.product.id)) {
+              products.value.push(item.product)
+            }
+            return {
+              product_id: item.product_id,
+              description: item.description,
+              quantity: item.quantity,
+              price: item.unit_price || item.price || 0,
+              discount: item.discount || 0,
+              subtotal: item.subtotal,
+              type: item.type || (item.product_id ? 'product' : 'service'),
+              sku: item.product?.sku || item.product?.code || item.sku || '',
+            }
+          })
           initializePaymentDistribution()
         }
 

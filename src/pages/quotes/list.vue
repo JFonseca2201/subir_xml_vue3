@@ -3,12 +3,14 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 // Router & Composables
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 // Estado general
 const loading = ref(false)
@@ -60,7 +62,7 @@ const totalPages = ref(0)
 
 // Cargar datos
 const loadQuotes = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -94,7 +96,7 @@ const loadQuotes = async () => {
     console.error('Error al cargar cotizaciones:', error)
     showNotification('Error al cargar el historial de cotizaciones', 'error')
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -470,17 +472,8 @@ onMounted(() => {
 
       <!-- Listado de Cotizaciones -->
       <div class="position-relative bg-white">
-        <VProgressLinear v-if="loading" indeterminate color="info" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <div v-if="loading" class="text-center py-10">
-          <VProgressCircular indeterminate color="info" size="32" width="3" />
-          <div class="mt-3 text-body-1 text-medium-emphasis">
-            Cargando cotizaciones...
-          </div>
-        </div>
-
-        <div v-else-if="!quotes || quotes.length === 0" class="text-center py-12">
+        <div v-if="!quotes || quotes.length === 0" class="text-center py-12">
           <VIcon size="40" color="grey-lighten-1" icon="ri-file-text-line" class="mb-3" />
           <div class="text-h6 text-grey-darken-2 font-weight-regular">
             No se encontraron cotizaciones

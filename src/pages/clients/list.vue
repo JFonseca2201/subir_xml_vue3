@@ -3,6 +3,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
+import { useLoaderStore } from '@/stores/loader'
 import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddDialog.vue'
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import ClientFinalEditDialog from '@/components/inventory/clients/ClientFinalEditDialog.vue'
@@ -14,6 +15,7 @@ import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 
 // Router
 const router = useRouter()
+const loader = useLoaderStore()
 
 // Estado
 const loading = ref(false)
@@ -86,7 +88,7 @@ const genderOptions = ref([
 
 // Cargar clientes
 const loadClients = async () => {
-  loading.value = true
+  loader.start()
   try {
     // Primero probar sin filtros para ver si hay datos
     const params = {
@@ -130,7 +132,7 @@ const loadClients = async () => {
   } catch (error) {
     console.error('❌ Error al cargar clientes:', error)
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -302,8 +304,6 @@ onMounted(() => {
 
       <!-- Tabla de clientes -->
       <div class="position-relative">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <VTable hover class="client-table overflow-x-auto">
           <thead>
@@ -335,7 +335,7 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!loading && !clients.length">
+            <tr v-if="!loader.loading && !clients.length">
               <td colspan="8" class="text-center text-medium-emphasis py-12">
                 <VAvatar size="64" color="grey-lighten-4" class="mb-3">
                   <VIcon size="32" color="grey" icon="ri-user-line" />
@@ -349,8 +349,7 @@ onMounted(() => {
               </td>
             </tr>
 
-            <tr v-for="client in clients" :key="client.id" class="client-row transition"
-              :class="{ 'opacity-50 pointer-events-none': loading }">
+            <tr v-for="client in clients" :key="client.id" class="client-row transition">
               <td class="font-weight-medium text-grey-darken-1">
                 #{{ client.id }}
               </td>

@@ -3,6 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
@@ -11,6 +12,7 @@ import { getBrandNameById } from '@/data/vehicleBrands'
 // Router & Composables
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 // Estado general
 const loading = ref(false)
@@ -67,7 +69,7 @@ const paymentStatusOptions = [
 
 // Cargar datos
 const loadSales = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -105,7 +107,7 @@ const loadSales = async () => {
     console.error('Error al cargar ventas:', error)
     showNotification('Error al cargar el historial de ventas', 'error')
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -530,17 +532,8 @@ onMounted(() => {
 
       <!-- Listado de Ventas -->
       <div class="position-relative bg-white">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-        <div v-if="loading" class="text-center py-10">
-          <VProgressCircular indeterminate color="primary" size="32" width="3" />
-          <div class="mt-3 text-body-1 text-medium-emphasis">
-            Cargando registros...
-          </div>
-        </div>
-
-        <div v-else-if="!sales || sales.length === 0" class="text-center py-12">
+        <div v-if="!sales || sales.length === 0" class="text-center py-12">
           <VIcon size="40" color="grey-lighten-1" icon="ri-file-text-line" class="mb-3" />
           <div class="text-h6 text-grey-darken-2 font-weight-regular">
             No se encontraron ventas

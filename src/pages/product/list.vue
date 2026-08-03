@@ -2,12 +2,14 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
+import { useLoaderStore } from '@/stores/loader'
 import ViewProduct from '@/components/inventory/product/ViewProduct.vue'
 import DeleteProduct from '@/components/inventory/product/DeleteProdcut.vue'
 import ImportProductsDialog from '@/components/inventory/product/ImportProductsDialog.vue'
 
 // Router
 const router = useRouter()
+const loader = useLoaderStore()
 
 // Estado
 const loading = ref(false)
@@ -77,7 +79,7 @@ const headers = [
 
 // Métodos
 const searchProducts = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -114,7 +116,7 @@ const searchProducts = async () => {
   } catch (error) {
     console.error('Error al buscar productos:', error)
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -327,8 +329,6 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
       <!-- Tabla de Productos -->
       <div class="position-relative">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div class="overflow-x-auto">
           <VTable hover class="products-table">
@@ -360,17 +360,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loading">
-              <tr>
-                <td colspan="8" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!products || products.length === 0">
+            <tbody v-if="!products || products.length === 0">
               <tr>
                 <td colspan="8" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">

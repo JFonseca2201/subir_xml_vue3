@@ -152,6 +152,33 @@ const calculatePriceByUnit = () => {
   }
 }
 
+const priceSaleWithIva = ref(0)
+
+// Sincronización bidireccional entre precio base (sin IVA) y precio con IVA
+watch(() => product.value.price_sale, (newVal) => {
+  const base = parseFloat(newVal) || 0
+  const tax = parseFloat(product.value.tax_rate) || 0
+  const calculated = parseFloat((base * (1 + tax / 100)).toFixed(2))
+  if (priceSaleWithIva.value === null || parseFloat(priceSaleWithIva.value) !== calculated) {
+    priceSaleWithIva.value = calculated
+  }
+  calculateMaxDiscount()
+}, { immediate: true })
+
+watch(() => priceSaleWithIva.value, (newVal) => {
+  const finalVal = parseFloat(newVal) || 0
+  const tax = parseFloat(product.value.tax_rate) || 0
+  const calculatedBase = parseFloat((finalVal / (1 + tax / 100)).toFixed(2))
+  if (parseFloat(product.value.price_sale) !== calculatedBase) {
+    product.value.price_sale = calculatedBase
+  }
+  calculateMaxDiscount()
+})
+
+watch(() => product.value.purchase_price, () => {
+  calculateMaxDiscount()
+})
+
 watch(() => product.value.discount_percentage, () => {
   if (product.value.discount_percentage > 0) {
     calculateMaxDiscount()
@@ -304,6 +331,7 @@ const onFormReset = () => {
     discount_percentage: 0, discount: 0, brand: '', stock: 0, item_type: null, min_stock: 0, max_stock: 0,
     is_taxable: true, is_gift: false, notes: '', state: 1, user_id: null,
   }
+  priceSaleWithIva.value = 0
   fileData.value.forEach(item => {
     if (item.url && item.url.startsWith('blob:')) {
       try {
@@ -476,7 +504,13 @@ const loadInitialData = async () => {
                         min="0" />
                     </VCol>
                     <VCol cols="12" :sm="product.item_type === '2' ? '12' : '6'">
-                      <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta"
+                      <VTextField v-model="priceSaleWithIva" :rules="priceRules" label="Precio de Venta Final (Con IVA) *"
+                        placeholder="0.00" variant="outlined" density="comfortable"
+                        prepend-inner-icon="ri-money-dollar-circle-fill" hide-details="auto" type="number" step="0.01" min="0"
+                        required color="success" />
+                    </VCol>
+                    <VCol cols="12" :sm="product.item_type === '2' ? '12' : '6'">
+                      <VTextField v-model="product.price_sale" :rules="priceRules" label="Precio de Venta Base (Sin IVA)"
                         placeholder="0.00" variant="outlined" density="comfortable"
                         prepend-inner-icon="ri-price-tag-3-line" hide-details="auto" type="number" step="0.01" min="0"
                         required />

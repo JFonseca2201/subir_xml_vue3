@@ -127,15 +127,20 @@ const loadWorkOrder = async (id) => {
       fuel_level: data.fuel_level,
       observations: data.observations || '',
       technicians: data.technicians ? data.technicians.map(t => t.id) : [],
-      items: (data.items || []).map(item => ({
-        product_id: item.product_id,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: parseFloat(item.unit_price) || 0,
-        discount: parseFloat(item.discount) || 0,
-        type: item.type,
-        sku: item.product ? item.product.sku : '',
-      })),
+      items: (data.items || []).map(item => {
+        if (item.product && !products.value.find(p => p.id === item.product.id)) {
+          products.value.push(item.product)
+        }
+        return {
+          product_id: item.product_id,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: parseFloat(item.unit_price) || 0,
+          discount: parseFloat(item.discount) || 0,
+          type: item.type,
+          sku: item.product ? item.product.sku : '',
+        }
+      }),
     }
 
     // Guardar las cantidades originales de los productos en esta OT
@@ -371,6 +376,10 @@ const onProductChanged = item => {
 
 // Agregar producto desde búsqueda
 const addProductFromSearch = product => {
+  if (product && !products.value.find(p => p.id === product.id)) {
+    products.value.push(product)
+  }
+
   // Determinar si es servicio basado en item_type o categoría
   const isService = product.item_type === 2 ||
     (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))

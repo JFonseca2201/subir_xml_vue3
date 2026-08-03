@@ -3,9 +3,11 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 const loading = ref(false)
 const returns = ref([])
@@ -28,7 +30,7 @@ const totalItems = ref(0)
 const totalPages = ref(0)
 
 const loadReturns = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -63,7 +65,7 @@ const loadReturns = async () => {
     console.error('Error al cargar devoluciones:', error)
     showNotification('Error al cargar el historial de devoluciones', 'error')
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -210,14 +212,6 @@ onMounted(() => {
 
       <!-- Tabla de Devoluciones -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
 
         <div class="overflow-x-auto">
           <VTable
@@ -264,24 +258,7 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loading">
-              <tr>
-                <td
-                  colspan="6"
-                  class="text-center pa-6"
-                >
-                  <VProgressCircular
-                    indeterminate
-                    color="primary"
-                    size="40"
-                  />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!returns || returns.length === 0">
+            <tbody v-if="!returns || returns.length === 0">
               <tr>
                 <td
                   colspan="6"

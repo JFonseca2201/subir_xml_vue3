@@ -293,9 +293,65 @@ const saveDraft = async () => {
   }
 }
 
+// Lógica de repuestos a reponer
+const pendingReplacements = ref([])
+const loadingReplacements = ref(false)
+
+const loadPendingReplacements = async () => {
+  loadingReplacements.value = true
+  try {
+    const response = await $api('repuestos-reposicion/pending')
+    if (response.success || response.status === 200) {
+      pendingReplacements.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error al cargar repuestos a reponer:', error)
+  } finally {
+    loadingReplacements.value = false
+  }
+}
+
+const addReplacementsToOrder = (item) => {
+  // Si no se ha elegido un proveedor, se establece el sugerido
+  if (!pedido.value.distribuidor_id && item.supplier_id) {
+    pedido.value.distribuidor_id = item.supplier_id
+  }
+
+  const existingItem = pedido.value.items.find(i => i.producto_id === item.product_id)
+  if (existingItem) {
+    existingItem.cantidad++
+  } else {
+    pedido.value.items.push({
+      producto_id: item.product_id,
+      description: item.description,
+      sku: item.sku || '',
+      cantidad: 1,
+      precio_compra_estimado: parseFloat(item.purchase_price) || 0,
+    })
+  }
+
+  showNotification('Repuesto agregado al pedido', 'success')
+}
+
+const markAsAcquired = async (replacementId) => {
+  try {
+    const response = await $api(`repuestos-reposicion/${replacementId}/adquirido`, {
+      method: 'PUT'
+    })
+    if (response.success || response.status === 200) {
+      showNotification('Repuesto marcado como adquirido', 'success')
+      await loadPendingReplacements()
+    }
+  } catch (error) {
+    console.error('Error al marcar como adquirido:', error)
+    showNotification('Error al marcar el repuesto como adquirido', 'error')
+  }
+}
+
 onMounted(async () => {
   getUserId()
   await loadSuppliers()
+  await loadPendingReplacements()
 
   const id = route.query.id
   if (id) {
@@ -448,6 +504,78 @@ onMounted(async () => {
                   </tbody>
                 </VTable>
               </div>
+            </VCardText>
+          </VCard>
+
+          <!-- 3. Repuestos Sugeridos a Reponer -->
+          <VCard variant="outlined" class="mb-6 border-opacity-25 rounded-lg elevation-1 bg-white">
+            <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b justify-space-between">
+              <div class="d-flex align-center">
+                <VIcon icon="ri-history-line" color="warning" class="mr-2" />
+                <span class="text-h6 font-weight-bold">3. Repuestos Sugeridos a Reponer</span>
+              </div>
+              <VChip size="small" color="warning" class="font-weight-bold">
+                {{ pendingReplacements.length }} Pendientes
+              </VChip>
+            </VCardTitle>
+            <VCardText class="pa-0">
+              <VTable class="w-100" density="comfortable" hover>
+                <thead class="bg-grey-lighten-5">
+                  <tr>
+                    <th class="text-left font-weight-bold text-grey-darken-3">Repuesto / Código</th>
+                    <th class="text-left font-weight-bold text-grey-darken-3">Distribuidor Sugerido</th>
+                    <th class="text-right font-weight-bold text-grey-darken-3" style="width: 130px;">Costo Adq.</th>
+                    <th class="text-center font-weight-bold text-grey-darken-3" style="width: 150px;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in pendingReplacements" :key="item.id">
+                    <td class="py-3">
+                      <div class="font-weight-medium">{{ item.description }}</div>
+                      <div class="text-caption text-medium-emphasis" v-if="item.sku">SKU: {{ item.sku }}</div>
+                    </td>
+                    <td class="py-3">
+                      <div class="font-weight-medium text-grey-darken-4">
+                        {{ item.supplier?.name || 'Sin Proveedor' }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis" v-if="item.supplier?.ruc">
+                        RUC: {{ item.supplier.ruc }}
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-weight-bold text-body-1">
+                      ${{ parseFloat(item.purchase_price || 0).toFixed(2) }}
+                    </td>
+                    <td class="py-3 text-center">
+                      <div class="d-flex justify-center align-center gap-2">
+                        <!-- Botón para adjuntar al pedido (+) -->
+                        <VBtn
+                          icon="ri-add-line"
+                          variant="tonal"
+                          color="info"
+                          size="small"
+                          title="Adjuntar a este pedido"
+                          @click="addReplacementsToOrder(item)"
+                        />
+                        <!-- Botón check para marcar como adquirido -->
+                        <VBtn
+                          icon="ri-check-line"
+                          variant="tonal"
+                          color="success"
+                          size="small"
+                          title="Marcar como adquirido"
+                          @click="markAsAcquired(item.id)"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                  <tr v-if="pendingReplacements.length === 0">
+                    <td colspan="4" class="text-center py-8 text-medium-emphasis">
+                      <VIcon icon="ri-checkbox-circle-line" size="40" color="success" class="mb-2" /><br>
+                      No hay repuestos pendientes de reposición.
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
             </VCardText>
           </VCard>
 

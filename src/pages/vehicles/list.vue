@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import VehicleEditDialog from '@/components/inventory/vehicles/VehicleEditDialog.vue'
@@ -15,6 +16,7 @@ import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 // Router y notificaciones
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 // Estado
 const loading = ref(false)
@@ -61,7 +63,7 @@ const generateYearOptions = () => {
 
 // Cargar vehículos
 const loadVehicles = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -164,7 +166,7 @@ const loadVehicles = async () => {
     totalPages.value = 0
     totalItems.value = 0
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -314,8 +316,6 @@ onMounted(() => {
 
       <!-- Tabla de vehículos -->
       <div class="position-relative">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <VTable hover class="vehicle-table text-no-wrap overflow-x-auto">
           <thead>
@@ -331,7 +331,7 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!loading && !vehicles.length">
+            <tr v-if="!loader.loading && !vehicles.length">
               <td colspan="8" class="text-center text-medium-emphasis py-12">
                 <VAvatar size="64" color="grey-lighten-4" class="mb-3">
                   <VIcon size="32" color="grey" icon="ri-car-line" />
@@ -341,8 +341,7 @@ onMounted(() => {
               </td>
             </tr>
 
-            <tr v-for="vehicle in vehicles" :key="vehicle.id" class="vehicle-row transition"
-              :class="{ 'opacity-50 pointer-events-none': loading }">
+            <tr v-for="vehicle in vehicles" :key="vehicle.id" class="vehicle-row transition">
               <td class="font-weight-medium text-grey-darken-1">
                 #{{ vehicle.id }}
               </td>

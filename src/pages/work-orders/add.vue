@@ -309,6 +309,10 @@ const onProductChanged = item => {
 
 
 const addProductFromSearch = product => {
+  if (product && !products.value.find(p => p.id === product.id)) {
+    products.value.push(product)
+  }
+
   // Determinar si es servicio basado en item_type o categoría
   const isService = product.item_type === 2 ||
     (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))

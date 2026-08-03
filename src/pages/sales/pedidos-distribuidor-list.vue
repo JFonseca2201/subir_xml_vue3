@@ -1,12 +1,14 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import Swal from 'sweetalert2'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
+const loader = useLoaderStore()
 
 const loading = ref(false)
 const pedidos = ref([])
@@ -31,7 +33,7 @@ const selectedPedido = ref(null)
 const viewLoading = ref(false)
 
 const loadPedidos = async () => {
-  loading.value = true
+  loader.start()
   try {
     const params = {
       page: currentPage.value,
@@ -58,7 +60,7 @@ const loadPedidos = async () => {
     console.error('Error al cargar pedidos:', error)
     showNotification('Error al cargar la lista de pedidos', 'error')
   } finally {
-    loading.value = false
+    loader.stop()
   }
 }
 
@@ -86,6 +88,20 @@ const formatDate = dateString => {
   const minutes = String(date.getMinutes()).padStart(2, '0')
 
   return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+const formatShortDate = dateString => {
+  if (!dateString) return '-'
+  const cleanDateStr = dateString.split(' ')[0]
+  const parts = cleanDateStr.split('-')
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`
+  }
+  const date = new Date(dateString)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
 }
 
 const getStatusInfo = status => {
@@ -265,8 +281,130 @@ watch(search, () => {
   }, 500)
 })
 
+// Historial de repuestos
+const isRepuestosDialogVisible = ref(false)
+const repuestosHistorial = ref([])
+const loadingRepuestos = ref(false)
+const searchRepuesto = ref('')
+
+// Filtros adicionales del diálogo
+const filterCategory = ref('TODAS')
+const filterRangeDate = ref(null)
+const categoriesList = ref(['TODAS'])
+
+const loadCategories = async () => {
+  try {
+    const response = await $api('categories?per_page=1000')
+    const dbCats = response.categories || []
+    const titles = dbCats.map(c => c.title).filter(Boolean)
+    categoriesList.value = ['TODAS', ...titles]
+  } catch (error) {
+    console.error('Error al cargar categorías desde el backend:', error)
+  }
+}
+
+const loadRepuestosHistorial = async () => {
+  loadingRepuestos.value = true
+  try {
+    const response = await $api('sales/repuestos/historial')
+    if (response.success || response.status === 200) {
+      repuestosHistorial.value = response.data || []
+    }
+  } catch (error) {
+    console.error('Error al cargar historial de repuestos:', error)
+    showNotification('Error al cargar el historial de repuestos', 'error')
+  } finally {
+    loadingRepuestos.value = false
+  }
+}
+
+const openRepuestosDialog = () => {
+  isRepuestosDialogVisible.value = true
+  loadRepuestosHistorial()
+}
+
+const resetFilters = () => {
+  searchRepuesto.value = ''
+  filterCategory.value = 'TODAS'
+  filterRangeDate.value = null
+}
+
+const filteredRepuestos = computed(() => {
+  let list = repuestosHistorial.value
+
+  // 1. Filtro por categoría
+  if (filterCategory.value && filterCategory.value !== 'TODAS') {
+    list = list.filter(item => item.categoria === filterCategory.value)
+  }
+
+  // 2. Filtro por rango de fechas
+  if (filterRangeDate.value) {
+    const parts = filterRangeDate.value.split(" to ")
+    const startDateStr = parts[0] ? parts[0].trim() : ""
+    const endDateStr = parts[1] ? parts[1].trim() : ""
+
+    if (startDateStr) {
+      const start = new Date(startDateStr)
+      list = list.filter(item => {
+        if (!item.fecha) return false
+        const itemDate = new Date(item.fecha.split(' ')[0])
+        return itemDate >= start
+      })
+    }
+    if (endDateStr) {
+      const end = new Date(endDateStr)
+      list = list.filter(item => {
+        if (!item.fecha) return false
+        const itemDate = new Date(item.fecha.split(' ')[0])
+        return itemDate <= end
+      })
+    }
+  }
+
+  // 3. Filtro de búsqueda por texto
+  const q = (searchRepuesto.value || '').toLowerCase().trim()
+  if (q) {
+    list = list.filter(item => {
+      return (
+        (item.cliente && item.cliente.toLowerCase().includes(q)) ||
+        (item.cliente_dni && item.cliente_dni.toLowerCase().includes(q)) ||
+        (item.vehiculo_placa && item.vehiculo_placa.toLowerCase().includes(q)) ||
+        (item.vehiculo_modelo && item.vehiculo_modelo.toLowerCase().includes(q)) ||
+        (item.repuesto && item.repuesto.toLowerCase().includes(q)) ||
+        (item.categoria && item.categoria.toLowerCase().includes(q))
+      )
+    })
+  }
+
+  return list
+})
+
+const getCategoryColor = category => {
+  const colors = {
+    'Aceite': 'amber-darken-2',
+    'Pastillas de Freno': 'deep-orange',
+    'Amortiguadores': 'blue',
+    'Filtros': 'teal',
+    'Aire Acondicionado': 'cyan',
+    'Otros Repuestos': 'grey',
+  }
+  return colors[category] || 'primary'
+}
+
+const getSuggestionColor = category => {
+  const colors = {
+    'Aceite': 'warning',
+    'Pastillas de Freno': 'error',
+    'Amortiguadores': 'indigo',
+    'Filtros': 'success',
+    'Aire Acondicionado': 'info',
+  }
+  return colors[category] || 'primary'
+}
+
 onMounted(() => {
   loadPedidos()
+  loadCategories()
 })
 </script>
 
@@ -283,10 +421,14 @@ onMounted(() => {
           Historial y estado de los pedidos solicitados a distribuidores
         </p>
       </div>
-      <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor"
-        class="align-self-md-center align-self-end">
-        Nuevo Pedido
-      </VBtn>
+      <div class="d-flex gap-2 align-self-md-center align-self-end">
+        <VBtn color="info" variant="outlined" prepend-icon="ri-history-line" @click="openRepuestosDialog">
+          Historial Repuestos
+        </VBtn>
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor">
+          Nuevo Pedido
+        </VBtn>
+      </div>
     </div>
 
     <!-- Contenedor Principal (Filtros y Tabla) -->
@@ -304,8 +446,6 @@ onMounted(() => {
 
       <!-- Tabla de Pedidos -->
       <div class="position-relative">
-        <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div class="overflow-x-auto">
           <VTable hover class="pedidos-table">
@@ -335,18 +475,7 @@ onMounted(() => {
               </tr>
             </thead>
 
-            <tbody v-if="loading">
-              <tr>
-                <td colspan="7" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-
-            <tbody v-else-if="pedidos.length === 0">
+            <tbody v-if="pedidos.length === 0">
               <tr>
                 <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3 color-grey-lighten-1">
@@ -449,7 +578,7 @@ onMounted(() => {
           <div class="d-flex align-center">
             <VIcon icon="ri-truck-line" color="primary" class="mr-2" />
             <span class="text-h6 font-weight-bold">Detalle de Pedido #{{ String(selectedPedido.id).padStart(5, '0')
-            }}</span>
+              }}</span>
           </div>
           <VMenu close-on-content-click>
             <template #activator="{ props }">
@@ -579,6 +708,123 @@ onMounted(() => {
             Generar PDF
           </VBtn>
           <VBtn color="secondary" variant="tonal" @click="isViewDialogVisible = false">
+            Cerrar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Diálogo de Historial de Repuestos Vendidos -->
+    <VDialog v-model="isRepuestosDialogVisible" max-width="1200px" scrollable>
+      <VCard class="rounded-lg">
+        <!-- Encabezado del diálogo acorde al sistema -->
+        <VCardTitle class="pa-6 d-flex align-center justify-space-between border-bottom-light">
+          <div class="d-flex align-center">
+            <VIcon icon="ri-history-line" color="primary" class="mr-2" />
+            <span class="text-h6 font-weight-bold">Historial de Repuestos & Mantenimiento</span>
+          </div>
+          <VBtn icon="ri-close-line" color="grey-darken-1" variant="text" size="small"
+            @click="isRepuestosDialogVisible = false" />
+        </VCardTitle>
+
+        <VCardText class="pa-6 bg-grey-lighten-5">
+          <!-- Filtros de búsqueda locales -->
+          <div class="d-flex flex-wrap align-center gap-3 mb-5 bg-white pa-4 rounded-lg border">
+            <VTextField v-model="searchRepuesto" label="Buscar por repuesto, placa, marca..."
+              placeholder="Ej. Aceite, GSM-1234..." prepend-inner-icon="ri-search-line" variant="outlined"
+              density="compact" hide-details clearable style="min-width: 240px; flex: 1 1 200px;" color="primary" />
+
+            <VSelect v-model="filterCategory" :items="categoriesList" label="Categoría" variant="outlined"
+              density="compact" hide-details style="min-width: 160px; flex: 1 1 120px;" color="primary" />
+
+            <AppDateTimePicker
+              v-model="filterRangeDate"
+              label="Rango de Fechas"
+              placeholder="Seleccionar rango"
+              :config="{ mode: 'range' }"
+              variant="outlined"
+              density="compact"
+              hide-details
+              style="min-width: 240px; flex: 1 1 200px;"
+              color="primary"
+            />
+
+            <div class="d-flex gap-2 ms-auto">
+              <VBtn color="secondary" variant="outlined" prepend-icon="ri-filter-off-line" @click="resetFilters"
+                size="comfortable">
+                Limpiar
+              </VBtn>
+              <VBtn color="primary" variant="tonal" prepend-icon="ri-refresh-line" @click="loadRepuestosHistorial"
+                :loading="loadingRepuestos" size="comfortable">
+                Actualizar
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Loader de carga -->
+          <div v-if="loadingRepuestos" class="d-flex flex-column align-center justify-center py-12">
+            <VProgressCircular indeterminate color="primary" size="64" width="6" class="mb-4" />
+            <span class="text-subtitle-1 text-medium-emphasis">Cargando historial de repuestos...</span>
+          </div>
+
+          <!-- Tabla de Resultados -->
+          <div v-else-if="filteredRepuestos.length > 0" class="rounded-lg border bg-white overflow-hidden elevation-0">
+            <VTable hover class="pedidos-table">
+              <thead class="bg-grey-lighten-4">
+                <tr>
+                  <th class="text-left font-weight-bold text-grey-darken-3">FECHA</th>
+                  <th class="text-left font-weight-bold text-grey-darken-3">COMPROBANTE</th>
+                  <th class="text-left font-weight-bold text-grey-darken-3">CATEGORÍA</th>
+                  <th class="text-center font-weight-bold text-grey-darken-3">CANT.</th>
+                  <th class="text-left font-weight-bold text-grey-darken-3">REPUESTO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in filteredRepuestos" :key="item.id" class="align-middle">
+                  <td class="text-no-wrap text-caption text-grey-darken-3">
+                    {{ formatShortDate(item.fecha) }}
+                  </td>
+                  <td class="text-no-wrap text-caption text-grey-darken-3">
+                    {{ item.comprobante }}
+                  </td>
+                  <td>
+                    <VChip size="small" :color="getCategoryColor(item.categoria)" variant="tonal"
+                      class="font-weight-bold">
+                      {{ item.categoria }}
+                    </VChip>
+                  </td>
+                  <td class="text-center font-weight-bold">
+                    {{ item.cantidad }}
+                  </td>
+                  <td>
+                    <div class="text-wrap font-weight-medium max-w-200">
+                      {{ item.repuesto }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-0" v-if="item.sku">
+                      SKU: {{ item.sku }}
+                    </div>
+                  </td>
+
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="text-center py-12 bg-white rounded-xl border">
+            <VAvatar size="80" color="grey-lighten-3" class="mb-4">
+              <VIcon icon="ri-file-history-line" size="40" class="text-grey-darken-1" />
+            </VAvatar>
+            <h4 class="text-h6 font-weight-bold text-grey-darken-3 mb-1">Sin registros encontrados</h4>
+            <p class="text-body-2 text-medium-emphasis mb-0 max-w-400 mx-auto">
+              No se encontraron repuestos vendidos que coincidan con la búsqueda o no hay ventas registradas con estos
+              componentes.
+            </p>
+          </div>
+        </VCardText>
+
+        <VCardActions class="pa-5 bg-grey-lighten-4 border-top-light justify-end">
+          <VBtn color="secondary" variant="tonal" @click="isRepuestosDialogVisible = false" class="px-5">
             Cerrar
           </VBtn>
         </VCardActions>

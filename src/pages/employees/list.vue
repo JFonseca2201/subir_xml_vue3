@@ -257,8 +257,6 @@ onMounted(() => {
 
       <!-- Tabla de Empleados -->
       <div class="position-relative">
-        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div class="overflow-x-auto">
           <VTable hover class="employees-table">
@@ -287,17 +285,7 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loader.loading">
-              <tr>
-                <td colspan="7" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else-if="!employees || employees.length === 0">
+            <tbody v-if="!employees || employees.length === 0">
               <tr>
                 <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">
