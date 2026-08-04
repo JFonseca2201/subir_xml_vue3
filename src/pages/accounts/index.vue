@@ -54,7 +54,7 @@ const headers = [
 
 // Cargar cuentas
 const loadAccounts = async () => {
-  loader.start()
+  loading.value = true
   try {
     console.log('🔄 Iniciando carga de cuentas...')
 
@@ -102,7 +102,7 @@ const loadAccounts = async () => {
     console.error('❌ Detalles del error:', error.response?.data)
     showNotification('Error al cargar las cuentas', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -309,7 +309,7 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <div class="position-relative">
         <VProgressLinear
-          v-if="loader.loading"
+          v-if="loading"
           indeterminate
           color="primary"
           height="3"
@@ -328,8 +328,36 @@ onMounted(() => {
               <th class="text-center font-weight-bold text-uppercase" style="width: 140px;">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="!loader.loading && !accounts.length">
+          <!-- Cargando (Skeleton Rows) -->
+          <tbody v-if="loading">
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+              <td class="py-4">
+                <div class="shimmer-line w-40"></div>
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60"></div>
+              </td>
+              <td class="py-4">
+                <div class="shimmer-chip"></div>
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-50"></div>
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-40 ms-auto"></div>
+              </td>
+              <td class="py-4 text-center">
+                <div class="d-flex justify-center gap-2">
+                  <div class="shimmer-button"></div>
+                  <div class="shimmer-button"></div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- Sin resultados -->
+          <tbody v-else-if="!accounts.length">
+            <tr>
               <td colspan="6" class="text-center text-medium-emphasis py-12">
                 <VAvatar size="64" color="grey-lighten-4" class="mb-3">
                   <VIcon size="32" color="grey" icon="ri-bank-line" />
@@ -338,13 +366,15 @@ onMounted(() => {
                 <div class="text-body-2 text-grey">Intenta crear una nueva cuenta bancaria o de caja.</div>
               </td>
             </tr>
-            
+          </tbody>
+          
+          <!-- Datos Reales -->
+          <tbody v-else>
             <tr
               v-for="account in accounts"
-              v-else
               :key="account.id"
               class="account-row transition"
-              :class="[getRowClass(account), { 'opacity-50 pointer-events-none': loader.loading }]"
+              :class="getRowClass(account)"
             >
               <!-- ID -->
               <td class="font-weight-medium text-grey-darken-1">
@@ -450,3 +480,49 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

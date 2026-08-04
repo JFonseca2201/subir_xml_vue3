@@ -138,7 +138,7 @@ const formatCurrency = (value) => {
 
 // Fetch daily status from Laravel API
 const fetchStatus = async (date) => {
-  loader.start()
+  loading.value = true
   try {
     const response = await $api('daily-cash-counts/status', {
       params: { date }
@@ -207,7 +207,7 @@ const fetchStatus = async (date) => {
     console.error('Error fetching cash count status:', error)
     showNotification('Error al cargar la información del arqueo diario.', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -298,7 +298,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="arqueo-container pa-4 pa-sm-6">
+  <div class="arqueo-container pa-4 pa-sm-6 position-relative">
+    <VProgressLinear
+      v-if="loading"
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 99;"
+    />
+
     <!-- Restrict Access Screen -->
     <div v-if="!canAccessArqueo" class="d-flex justify-center align-center" style="height: 450px">
       <VCard class="pa-8 text-center rounded-xl border-thin" elevation="8" max-width="450">
@@ -313,7 +322,120 @@ onMounted(() => {
       </VCard>
     </div>
 
+    <!-- Loading Skeleton Screen -->
+    <div v-else-if="loading" class="arqueo-content-layout">
+      <!-- Top Title Bar Shimmer -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
+        <div class="d-flex align-center gap-3">
+          <div class="shimmer-circle" style="width: 48px; height: 48px;"></div>
+          <div>
+            <div class="shimmer-line w-40 mb-2" style="height: 24px;"></div>
+            <div class="shimmer-line w-75" style="height: 14px;"></div>
+          </div>
+        </div>
+        <div class="shimmer-chip" style="width: 150px; height: 36px;"></div>
+      </div>
+
+      <!-- Date Formatted Alert Shimmer -->
+      <VCard elevation="0" class="mb-5 pa-4 rounded-lg border-light border">
+        <div class="d-flex justify-space-between align-center">
+          <div class="shimmer-line w-40" style="height: 20px;"></div>
+          <div class="shimmer-chip" style="width: 200px;"></div>
+        </div>
+      </VCard>
+
+      <VRow class="mb-6">
+        <!-- Columna Izquierda (9/12) -->
+        <VCol cols="12" md="9">
+          <VCard elevation="3" class="rounded-xl h-100 border-light border">
+            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+              <div class="shimmer-line w-50" style="height: 20px;"></div>
+            </VCardItem>
+            <VCardText class="pa-0">
+              <!-- Shimmer Rows -->
+              <div v-for="n in 3" :key="n" class="d-flex align-center pa-4 border-b">
+                <div class="shimmer-circle mr-4" style="width: 54px; height: 54px;"></div>
+                <div class="w-100">
+                  <VRow no-gutters>
+                    <VCol cols="12" sm="4" class="px-2 mb-2 mb-sm-0"><div class="shimmer-line w-60 mb-2"></div><div class="shimmer-line w-40"></div></VCol>
+                    <VCol cols="12" sm="4" class="px-2 mb-2 mb-sm-0"><div class="shimmer-line w-50 mb-2"></div><div class="shimmer-line w-30"></div></VCol>
+                    <VCol cols="12" sm="4" class="px-2"><div class="shimmer-line w-70 mb-2"></div><div class="shimmer-line w-50"></div></VCol>
+                  </VRow>
+                </div>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+        
+        <!-- Columna Derecha (3/12) -->
+        <VCol cols="12" md="3">
+          <VCard elevation="3" class="rounded-xl h-100 border-light border">
+            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+              <div class="shimmer-line w-75" style="height: 20px;"></div>
+            </VCardItem>
+            <VCardText class="pa-4 d-flex flex-column gap-4 justify-center" style="height: 180px;">
+              <div class="shimmer-line w-80"></div>
+              <div class="shimmer-line w-100" style="height: 36px;"></div>
+              <div class="shimmer-line w-60"></div>
+              <div class="shimmer-line w-100" style="height: 36px;"></div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <VRow>
+        <!-- Left Breakdown -->
+        <VCol cols="12" md="8">
+          <VCard elevation="3" class="rounded-xl border-light border">
+            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+              <div class="shimmer-line w-60" style="height: 20px;"></div>
+            </VCardItem>
+            <VCardText class="pa-4">
+              <VRow>
+                <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
+                  <div class="shimmer-line w-50 mb-4"></div>
+                  <div v-for="i in 5" :key="i" class="d-flex justify-space-between mb-3 align-center">
+                    <div class="shimmer-chip" style="width: 50px;"></div>
+                    <div class="shimmer-line w-30"></div>
+                    <div class="shimmer-line w-20"></div>
+                  </div>
+                </VCol>
+                <VCol cols="12" sm="6" class="pl-sm-4">
+                  <div class="shimmer-line w-50 mb-4"></div>
+                  <div v-for="i in 5" :key="i" class="d-flex justify-space-between mb-3 align-center">
+                    <div class="shimmer-chip" style="width: 50px;"></div>
+                    <div class="shimmer-line w-30"></div>
+                    <div class="shimmer-line w-20"></div>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- Right Breakdown -->
+        <VCol cols="12" md="4">
+          <VCard elevation="3" class="rounded-xl border-light border">
+            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
+              <div class="shimmer-line w-60" style="height: 20px;"></div>
+            </VCardItem>
+            <VCardText class="pa-4 d-flex flex-column gap-4">
+              <div class="shimmer-line w-50"></div>
+              <div class="shimmer-line w-100" style="height: 48px;"></div>
+              <div class="shimmer-line w-50"></div>
+              <div class="shimmer-line w-100" style="height: 48px;"></div>
+              <div class="shimmer-line w-100" style="height: 60px;"></div>
+              <div class="shimmer-button w-100" style="height: 36px;"></div>
+              <div class="shimmer-button w-100" style="height: 36px;"></div>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
+
+    <!-- Actual Content -->
     <div v-else class="arqueo-content-layout">
+
       <!-- Top Title Bar -->
       <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
         <div class="d-flex align-center gap-3">
@@ -857,6 +979,52 @@ onMounted(() => {
 </template>
 
 
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>
 
 <route lang="yaml">
 meta:

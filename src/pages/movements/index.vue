@@ -22,6 +22,7 @@ const accounts = ref([])
 const editingMovement = ref(null)
 const showDeleteDialog = ref(false)
 const movementToDelete = ref(null)
+const loading = ref(false)
 
 // Búsqueda y Filtros
 const searchWorkOrder = ref('')
@@ -466,7 +467,7 @@ const monthsOptions = computed(() => {
 })
 
 const loadMovements = async (showOverlay = true) => {
-    if (showOverlay) loader.start()
+    loading.value = true
     try {
         const params = {}
         if (searchWorkOrder.value) {
@@ -497,7 +498,7 @@ const loadMovements = async (showOverlay = true) => {
         showNotification('Error al cargar movimientos', 'error')
         movements.value = []
     } finally {
-        if (showOverlay) loader.stop()
+        loading.value = false
     }
 }
 
@@ -767,15 +768,8 @@ onMounted(() => {
         </VCard>
 
         <!-- Cargando -->
-        <div v-if="loader.loading" class="text-center pa-12">
-            <VProgressCircular indeterminate color="primary" size="54" width="4" />
-            <div class="text-subtitle-1 mt-4 font-weight-medium text-medium-emphasis">
-                Cargando movimientos...
-            </div>
-        </div>
-
-        <!-- Sin registros -->
-        <VCard v-else-if="groupedMovements.length === 0" class="text-center pa-12 rounded-xl border-light elevation-1">
+        <!-- Sin registros iniciales (Base de datos vacía) -->
+        <VCard v-if="!loading && !movements.length" class="text-center pa-12 rounded-xl border-light elevation-1">
             <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
                 <VIcon icon="ri-inbox-line" size="42" color="primary" />
             </VAvatar>
@@ -797,8 +791,17 @@ onMounted(() => {
             </div>
         </VCard>
 
-        <!-- Lista de Movimientos Unificada en una sola Card (sin sub-cards por día) -->
-        <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container">
+        <!-- Lista de Movimientos Unificada (Se muestra si está cargando o si ya hay registros) -->
+        <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+            <VProgressLinear
+                v-slot:default
+                v-if="loading"
+                indeterminate
+                color="primary"
+                height="3"
+                class="position-absolute"
+                style="top: 0; left: 0; right: 0; z-index: 10;"
+            />
             <VTable hover class="transfer-table">
                 <thead>
                     <tr>
@@ -822,7 +825,51 @@ onMounted(() => {
                         </th>
                     </tr>
                 </thead>
-                <tbody>
+                
+                <!-- Cargando (Skeleton Rows) -->
+                <tbody v-if="loading">
+                    <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+                        <td class="py-4">
+                            <div class="shimmer-line w-40"></div>
+                        </td>
+                        <td class="py-4">
+                            <div class="shimmer-chip"></div>
+                        </td>
+                        <td class="py-4">
+                            <div class="shimmer-line w-75 mb-2"></div>
+                            <div class="shimmer-line w-40"></div>
+                        </td>
+                        <td class="py-4">
+                            <div class="shimmer-line w-60"></div>
+                        </td>
+                        <td class="py-4">
+                            <div class="shimmer-line w-40 ms-auto"></div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="d-flex justify-center gap-2">
+                                <div class="shimmer-button"></div>
+                                <div class="shimmer-button"></div>
+                                <div class="shimmer-button"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <!-- Sin resultados filtrados -->
+                <tbody v-else-if="groupedMovements.length === 0">
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-medium-emphasis">
+                            <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                                <VIcon icon="ri-inbox-line" size="32" color="primary" />
+                            </VAvatar>
+                            <div class="text-h6 font-weight-bold text-high-emphasis">Sin resultados para la búsqueda</div>
+                            <div class="text-body-2 text-medium-emphasis mt-1">Prueba cambiando el término de búsqueda o limpia el filtro aplicado.</div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <!-- Datos reales -->
+                <tbody v-else>
                     <template v-for="day in groupedMovements" :key="day.date">
                         <!-- Fila de Encabezado por Fecha -->
                         <tr class="transfer-date-header-row">
@@ -979,6 +1026,50 @@ onMounted(() => {
 }
 .active-card {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>
 

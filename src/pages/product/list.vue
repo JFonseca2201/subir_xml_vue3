@@ -79,7 +79,7 @@ const headers = [
 
 // Métodos
 const searchProducts = async () => {
-  loader.start()
+  loading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -116,7 +116,7 @@ const searchProducts = async () => {
   } catch (error) {
     console.error('Error al buscar productos:', error)
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -303,25 +303,25 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <VCol cols="12" md="6">
               <VTextField v-model="searchForm.search" label="Búsqueda General" placeholder="Descripción, SKU, código..."
                 prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
-                clearable color="primary" />
+                clearable color="primary" :loading="loading" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
                 label="Categoría" placeholder="Todos" prepend-inner-icon="ri-folder-line" variant="outlined"
-                density="comfortable" hide-details="auto" clearable color="primary" />
+                density="comfortable" hide-details="auto" clearable color="primary" :loading="loading" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
                 label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
-                density="comfortable" hide-details="auto" clearable color="primary" />
+                density="comfortable" hide-details="auto" clearable color="primary" :loading="loading" />
             </VCol>
 
             <VCol cols="12" sm="6" md="2">
               <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
                 placeholder="Todos" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
-                hide-details="auto" clearable color="primary" />
+                hide-details="auto" clearable color="primary" :loading="loading" />
             </VCol>
           </VRow>
         </VForm>
@@ -360,7 +360,51 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!products || products.length === 0">
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="loading">
+              <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+                <!-- Imagen -->
+                <td class="text-center py-4">
+                  <div class="shimmer-circle mx-auto"></div>
+                </td>
+                <!-- Producto -->
+                <td class="py-4">
+                  <div class="shimmer-line w-75 mb-2"></div>
+                  <div class="shimmer-line w-50"></div>
+                </td>
+                <!-- Categoría -->
+                <td class="py-4">
+                  <div class="shimmer-line w-60"></div>
+                </td>
+                <!-- Almacén -->
+                <td class="py-4">
+                  <div class="shimmer-line w-60"></div>
+                </td>
+                <!-- Precio -->
+                <td class="py-4">
+                  <div class="shimmer-line w-40 ms-auto"></div>
+                </td>
+                <!-- Stock -->
+                <td class="py-4">
+                  <div class="shimmer-line w-30 mx-auto"></div>
+                </td>
+                <!-- Estado -->
+                <td class="py-4">
+                  <div class="shimmer-chip mx-auto"></div>
+                </td>
+                <!-- Acciones -->
+                <td class="py-4">
+                  <div class="d-flex justify-center gap-2">
+                    <div class="shimmer-button"></div>
+                    <div class="shimmer-button"></div>
+                    <div class="shimmer-button"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <!-- Sin resultados -->
+            <tbody v-else-if="!products || products.length === 0">
               <tr>
                 <td colspan="8" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">
@@ -389,9 +433,11 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                 <!-- Producto -->
                 <td class="text-left py-3" style="max-width: 300px;">
-                  <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
-                    :title="item.description">
+                  <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4 cursor-pointer">
                     {{ item.description }}
+                    <VTooltip activator="parent" location="top" max-width="400" close-delay="100">
+                      {{ item.description }}
+                    </VTooltip>
                   </div>
                   <div class="text-body-2 text-medium-emphasis mt-1">
                     SKU: {{ item.sku }}
@@ -487,3 +533,49 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
     <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

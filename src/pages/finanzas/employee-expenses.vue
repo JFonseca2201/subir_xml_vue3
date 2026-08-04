@@ -29,6 +29,7 @@ const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 const selectedType = ref('all')
 const searchQuery = ref('')
+const loading = ref(false)
 
 // Dialog state
 const showAddPaymentDialog = ref(false)
@@ -63,7 +64,7 @@ const headers = [
 
 // Functions
 const loadExpenses = async () => {
-  loader.start()
+  loading.value = true
   try {
     const [expensesResponse, accountsResponse, employeesResponse] = await Promise.all([
       $api('employee-expenses'),
@@ -110,7 +111,7 @@ const loadExpenses = async () => {
     console.error('Error al cargar gastos:', error)
     showNotification('Error al cargar los gastos de empleados.', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -410,11 +411,20 @@ onMounted(() => {
         :headers="headers"
         :items="filteredExpenses"
         :search="searchQuery"
-        :loading="loader.loading"
+        :loading="loading"
         :sort-by="[{ key: 'raw_date', order: 'desc' }]"
         class="transfer-table text-no-wrap"
         hover
       >
+        <template #loader>
+          <VProgressLinear
+            indeterminate
+            color="primary"
+            height="3"
+            class="position-absolute"
+            style="top: 0; left: 0; right: 0; z-index: 10;"
+          />
+        </template>
         <template #item.type="{ item }">
           <VChip
             :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')"

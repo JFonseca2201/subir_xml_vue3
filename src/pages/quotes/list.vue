@@ -53,7 +53,6 @@ const searchForm = ref({
   end_date: null,
   search: null,
 })
-
 // Paginación
 const currentPage = ref(1)
 const itemsPerPage = ref(15)
@@ -62,7 +61,7 @@ const totalPages = ref(0)
 
 // Cargar datos
 const loadQuotes = async () => {
-  loader.start()
+  loading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -96,7 +95,7 @@ const loadQuotes = async () => {
     console.error('Error al cargar cotizaciones:', error)
     showNotification('Error al cargar el historial de cotizaciones', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -150,7 +149,7 @@ const confirmSendMail = async () => {
 
 const formatDate = dateString => {
   if (!dateString) return '-'
-  const [year, month, day] = dateString.split('T')[0].split('-')
+  const [year, month, day] = dateString.split('T')[0].split(' ')[0].split('-')
   return `${day}/${month}/${year}`
 }
 
@@ -386,7 +385,7 @@ const confirmConvert = async () => {
 const groupedQuotes = computed(() => {
   const groups = {}
   quotes.value.forEach(quote => {
-    const dateStr = quote.service_date ? quote.service_date.split('T')[0] : 'N/A'
+    const dateStr = quote.service_date ? quote.service_date.split('T')[0].split(' ')[0] : 'N/A'
     if (!groups[dateStr]) {
       groups[dateStr] = []
     }
@@ -471,9 +470,17 @@ onMounted(() => {
       </VCardText>
 
       <!-- Listado de Cotizaciones -->
-      <div class="position-relative bg-white">
+      <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
+        <VProgressLinear
+          v-if="loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
 
-        <div v-if="!quotes || quotes.length === 0" class="text-center py-12">
+        <div v-if="!loading && (!quotes || quotes.length === 0)" class="text-center py-12">
           <VIcon size="40" color="grey-lighten-1" icon="ri-file-text-line" class="mb-3" />
           <div class="text-h6 text-grey-darken-2 font-weight-regular">
             No se encontraron cotizaciones
@@ -509,7 +516,39 @@ onMounted(() => {
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              
+              <!-- Cargando (Skeleton Rows) -->
+              <tbody v-if="loading">
+                <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
+                  <td class="py-4 px-4">
+                    <div class="shimmer-line w-40 mb-2"></div>
+                    <div class="shimmer-line w-60"></div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="shimmer-line w-75 mb-2"></div>
+                    <div class="shimmer-line w-50"></div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="shimmer-line w-60 mb-2"></div>
+                    <div class="shimmer-line w-40"></div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="shimmer-line w-50 ms-auto"></div>
+                  </td>
+                  <td class="py-4 px-4 text-center">
+                    <div class="shimmer-chip mx-auto"></div>
+                  </td>
+                  <td class="py-4 px-4 text-center">
+                    <div class="d-flex justify-center gap-1">
+                      <div class="shimmer-button"></div>
+                      <div class="shimmer-button"></div>
+                      <div class="shimmer-button"></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+
+              <tbody v-else>
                 <tr v-for="(item, index) in quotes" :key="item?.id ? `quote-${item.id}` : `quote-idx-${index}`"
                   class="align-middle border-b border-opacity-25">
                   <td class="text-left py-3 px-4">
@@ -615,7 +654,19 @@ onMounted(() => {
 
           <!-- Vista de Tarjetas para Móviles -->
           <div class="d-block d-md-none pa-3">
-            <div v-for="date in Object.keys(groupedQuotes)" :key="date" class="mb-5">
+            <!-- Cargando en Móvil (Skeleton Cards) -->
+            <div v-if="loading">
+              <VCard v-for="n in 3" :key="n" class="border border-opacity-25 elevation-0 bg-white mb-3 pa-3 rounded-lg">
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <div class="shimmer-line w-30"></div>
+                  <div class="shimmer-chip"></div>
+                </div>
+                <div class="shimmer-line w-60 mb-2"></div>
+                <div class="shimmer-line w-40"></div>
+              </VCard>
+            </div>
+
+            <div v-else v-for="date in Object.keys(groupedQuotes)" :key="date" class="mb-5">
               <div class="d-flex align-center mb-3 px-2">
                 <VIcon icon="ri-calendar-event-line" size="18" color="medium-emphasis" class="mr-2" />
                 <span class="text-body-2 font-weight-medium text-medium-emphasis text-capitalize">
@@ -951,5 +1002,47 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos sutiles para la página de cotizaciones */
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
 </style>

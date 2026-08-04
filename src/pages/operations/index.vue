@@ -190,7 +190,6 @@ const groupMovementsByDate = movements => {
 }
 
 const dashboardOptions = async () => {
-  loader.start()
   loading.value = true
   try {
     const [response, accountsRes] = await Promise.all([
@@ -252,7 +251,6 @@ const dashboardOptions = async () => {
     showNotification('No se pudieron cargar los datos financieros', 'error')
   } finally {
     loading.value = false
-    loader.stop()
   }
 }
 
@@ -412,15 +410,18 @@ onMounted(() => {
         </VCol>
       </VRow>
 
-      <!-- Estado de Carga -->
-      <div v-if="loading" class="d-flex justify-center align-center py-12 my-12">
-        <VProgressCircular indeterminate color="primary" size="48" width="5" />
-      </div>
-
-      <VRow v-else>
+      <VRow>
         <!-- Columna Movimientos -->
         <VCol cols="12" md="8">
-          <VCard elevation="2" class="rounded-lg h-100">
+          <VCard elevation="2" class="rounded-lg h-100 position-relative">
+            <VProgressLinear
+              v-if="loading"
+              indeterminate
+              color="primary"
+              height="3"
+              class="position-absolute"
+              style="top: 0; left: 0; right: 0; z-index: 10;"
+            />
             <VCardItem class="pa-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">
@@ -443,7 +444,22 @@ onMounted(() => {
             </VCardItem>
 
             <VCardText class="pa-0">
-              <div v-if="recentMovements.length === 0" class="pa-10 text-center text-medium-emphasis">
+              <!-- Cargando (Skeleton List) -->
+              <VList v-if="loading" lines="two" class="bg-transparent">
+                <div v-for="n in 4" :key="n" class="pa-4 border-b d-flex align-center">
+                  <div class="shimmer-circle mr-4"></div>
+                  <div class="flex-grow-1">
+                    <div class="shimmer-line w-50 mb-2"></div>
+                    <div class="shimmer-line w-75"></div>
+                  </div>
+                  <div class="text-right">
+                    <div class="shimmer-line w-40 ms-auto"></div>
+                  </div>
+                </div>
+              </VList>
+
+              <!-- Sin resultados -->
+              <div v-else-if="recentMovements.length === 0" class="pa-10 text-center text-medium-emphasis">
                 <VAvatar color="grey-lighten-3" size="72" class="mb-4">
                   <VIcon icon="ri-folder-info-line" size="36" color="grey" />
                 </VAvatar>
@@ -587,6 +603,32 @@ onMounted(() => {
 @media (min-width: 960px) {
   .sticky-header {
     top: 70px;
+  }
+}
+
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

@@ -30,7 +30,7 @@ const totalItems = ref(0)
 const totalPages = ref(0)
 
 const loadReturns = async () => {
-  loader.start()
+  loading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -65,7 +65,7 @@ const loadReturns = async () => {
     console.error('Error al cargar devoluciones:', error)
     showNotification('Error al cargar el historial de devoluciones', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -211,7 +211,16 @@ onMounted(() => {
       </VCardText>
 
       <!-- Tabla de Devoluciones -->
-      <div class="position-relative">
+      <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
+        <VProgressLinear
+          v-slot:default
+          v-if="loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
 
         <div class="overflow-x-auto">
           <VTable
@@ -258,7 +267,36 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!returns || returns.length === 0">
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="loading">
+              <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
+                <td class="py-4">
+                  <div class="shimmer-line w-60 mb-2"></div>
+                  <div class="shimmer-line w-45"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-50"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-40 ms-auto"></div>
+                </td>
+                <td class="py-4 text-center">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button"></div>
+                    <div class="shimmer-button"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="!returns || returns.length === 0">
               <tr>
                 <td
                   colspan="6"
@@ -658,3 +696,49 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

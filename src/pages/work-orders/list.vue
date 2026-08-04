@@ -186,7 +186,7 @@ watch([searchQuery, statusFilter], () => {
 })
 
 const loadWorkOrders = async () => {
-  loader.start()
+  isLoading.value = true
   try {
     const response = await $api('work-orders')
 
@@ -195,7 +195,7 @@ const loadWorkOrders = async () => {
     console.error('Error al cargar órdenes de trabajo:', error)
     showNotification('Error al cargar las órdenes de trabajo', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
   }
 }
 
@@ -431,9 +431,50 @@ onMounted(() => {
       </VCardText>
 
       <!-- Listado de Órdenes de Trabajo (Tarjetas Agrupadas por Día) -->
-      <div class="position-relative bg-white">
+      <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
+        <VProgressLinear
+          v-if="isLoading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
 
-        <div v-if="!filteredWorkOrders || filteredWorkOrders.length === 0"
+        <!-- Shimmer Skeleton Grid -->
+        <div v-if="isLoading" class="pa-5">
+          <div class="mb-6">
+            <!-- Cabecera Shimmer -->
+            <div class="d-flex align-center my-4">
+              <div class="shimmer-circle me-2" style="width: 20px; height: 20px;"></div>
+              <div class="shimmer-line w-25"></div>
+              <VDivider class="ms-3" />
+            </div>
+
+            <!-- Grid de Tarjetas Shimmer -->
+            <VRow>
+              <VCol v-for="n in 6" :key="n" cols="12" sm="6" md="4" class="d-flex">
+                <VCard class="w-100 rounded-lg border-light border overflow-hidden d-flex flex-column pa-4" style="height: 230px;">
+                  <div class="d-flex justify-space-between align-center mb-3">
+                    <div class="shimmer-line w-40"></div>
+                    <div class="shimmer-chip"></div>
+                  </div>
+                  <VDivider class="mb-3" />
+                  <div class="shimmer-line w-75 mb-2"></div>
+                  <div class="shimmer-line w-60 mb-2"></div>
+                  <div class="shimmer-line w-50 mb-4"></div>
+                  <VSpacer />
+                  <div class="d-flex gap-2">
+                    <div class="shimmer-button w-50" style="height: 36px;"></div>
+                    <div class="shimmer-button w-50" style="height: 36px;"></div>
+                  </div>
+                </VCard>
+              </VCol>
+            </VRow>
+          </div>
+        </div>
+
+        <div v-else-if="!filteredWorkOrders || filteredWorkOrders.length === 0"
           class="text-center pa-12 text-medium-emphasis">
           <VIcon size="48" class="mb-3" color="grey-lighten-1">
             ri-file-text-line
@@ -756,3 +797,49 @@ onMounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

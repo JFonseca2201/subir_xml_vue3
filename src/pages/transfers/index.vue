@@ -45,7 +45,7 @@ const searchQuery = ref('')
 const selectedFilter = ref('all') // 'all', 'today', 'month'
 
 const loadTransfers = async () => {
-  loader.start()
+  loading.value = true
 
   try {
     const response = await $api('transfers')
@@ -91,8 +91,16 @@ const loadTransfers = async () => {
     console.error('Error al cargar transferencias:', error)
     showNotification('Error al cargar historial de transferencias', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
+}
+const cleanAccountName = name => {
+  if (!name) return 'N/A'
+  return name
+    .replace(/\(EFECTIVO\)/gi, '')
+    .replace(/\(TRANSFERENCIA\)/gi, '')
+    .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+    .trim()
 }
 
 const openTransferDialog = () => {
@@ -428,19 +436,18 @@ onMounted(() => {
       </VRow>
     </VCard>
 
-    <!-- Sin registros -->
-    <VCard v-if="!filteredTransfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
+    <!-- Sin registros iniciales (Base de datos vacía) -->
+    <VCard v-if="!loading && !transfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
       <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
         <VIcon icon="ri-inbox-line" size="42" color="primary" />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold text-high-emphasis">
-        {{ searchQuery ? 'Sin resultados para la búsqueda' : 'No hay transferencias registradas' }}
+        No hay transferencias registradas
       </h3>
       <p class="text-body-2 text-medium-emphasis max-w-md mx-auto mt-1 mb-6">
-        {{ searchQuery ? 'Prueba cambiando el término de búsqueda o limpia el filtro aplicado.' : 'Registra movimientos entre tus cuentas bancarias o cajas de efectivo.' }}
+        Registra movimientos entre tus cuentas bancarias o cajas de efectivo.
       </p>
       <VBtn
-        v-if="!searchQuery"
         color="primary"
         variant="elevated"
         prepend-icon="ri-add-line"
@@ -449,20 +456,19 @@ onMounted(() => {
       >
         Registrar Primera Transferencia
       </VBtn>
-      <VBtn
-        v-else
-        color="secondary"
-        variant="tonal"
-        prepend-icon="ri-filter-off-line"
-        class="font-weight-semibold"
-        @click="searchQuery = ''; selectedFilter = 'all'"
-      >
-        Limpiar Filtros
-      </VBtn>
     </VCard>
 
-    <!-- Lista de Transferencias Unificada en una sola Card (sin sub-cards por día) -->
-    <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container">
+    <!-- Lista de Transferencias Unificada (Se muestra si está cargando o si ya hay registros) -->
+    <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+      <VProgressLinear
+        v-slot:default
+        v-if="loading"
+        indeterminate
+        color="primary"
+        height="3"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
       <VTable hover class="transfer-table text-no-wrap">
         <thead>
           <tr>
@@ -480,7 +486,44 @@ onMounted(() => {
             </th>
           </tr>
         </thead>
-        <tbody>
+        
+        <!-- Cargando (Skeleton Rows) -->
+        <tbody v-if="loading">
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4">
+              <div class="shimmer-line w-75"></div>
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-60 mb-2"></div>
+              <div class="shimmer-line w-40"></div>
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-40 ms-auto"></div>
+            </td>
+            <td class="py-4 text-center">
+              <div class="d-flex justify-center gap-2">
+                <div class="shimmer-button"></div>
+                <div class="shimmer-button"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- Sin resultados filtrados -->
+        <tbody v-else-if="!filteredTransfers.length">
+          <tr>
+            <td colspan="4" class="text-center py-12 text-medium-emphasis">
+              <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
+                <VIcon icon="ri-inbox-line" size="32" color="primary" />
+              </VAvatar>
+              <div class="text-h6 font-weight-bold text-high-emphasis">Sin resultados para la búsqueda</div>
+              <div class="text-body-2 text-medium-emphasis mt-1">Prueba cambiando el término de búsqueda o limpia el filtro aplicado.</div>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- Datos reales -->
+        <tbody v-else>
           <template v-for="group in filteredTransfers" :key="group.label">
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
@@ -519,34 +562,28 @@ onMounted(() => {
               <!-- Flujo: Origen -> Destino con chips tonales y nombres adaptados (bank_name) -->
               <td class="py-3">
                 <div class="d-flex align-center gap-2 flex-wrap">
-                  <VChip
-                    color="error"
-                    variant="tonal"
-                    size="small"
-                    class="font-weight-semibold"
-                  >
-                    <VIcon start size="14" icon="ri-arrow-up-line" />
-                    {{ getAccountName(transfer.source_account) }}
-                  </VChip>
+                  <div class="d-flex align-center gap-1 bg-red-tonal px-3 py-1 rounded-lg border-danger">
+                    <VIcon start size="14" icon="ri-bank-line" color="error" />
+                    <span class="text-body-2 font-weight-bold text-error">
+                      {{ getAccountName(transfer.source_account) }}
+                    </span>
+                  </div>
 
-                  <VIcon icon="ri-arrow-right-line" color="medium-emphasis" size="16" class="mx-1" />
+                  <VIcon icon="ri-arrow-right-line" size="16" class="text-medium-emphasis mx-1 animate-arrow" />
 
-                  <VChip
-                    color="success"
-                    variant="tonal"
-                    size="small"
-                    class="font-weight-semibold"
-                  >
-                    <VIcon start size="14" icon="ri-arrow-down-line" />
-                    {{ getAccountName(transfer.destination_account) }}
-                  </VChip>
+                  <div class="d-flex align-center gap-1 bg-success-tonal px-3 py-1 rounded-lg border-success">
+                    <VIcon start size="14" icon="ri-bank-line" color="success" />
+                    <span class="text-body-2 font-weight-bold text-success">
+                      {{ getAccountName(transfer.destination_account) }}
+                    </span>
+                  </div>
                 </div>
               </td>
 
               <!-- Descripción & Fecha -->
               <td class="py-3">
                 <div class="d-flex flex-column">
-                  <span class="text-body-2 font-weight-medium text-high-emphasis">
+                  <span class="text-body-2 font-weight-semibold text-high-emphasis">
                     {{ transfer.description || 'Sin descripción' }}
                   </span>
                   <span class="text-caption text-medium-emphasis">
@@ -648,6 +685,50 @@ onMounted(() => {
 @media (min-width: 960px) {
   .sticky-header {
     top: 70px;
+  }
+}
+
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>

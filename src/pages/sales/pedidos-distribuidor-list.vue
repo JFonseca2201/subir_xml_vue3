@@ -33,7 +33,7 @@ const selectedPedido = ref(null)
 const viewLoading = ref(false)
 
 const loadPedidos = async () => {
-  loader.start()
+  loading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -60,7 +60,7 @@ const loadPedidos = async () => {
     console.error('Error al cargar pedidos:', error)
     showNotification('Error al cargar la lista de pedidos', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -445,7 +445,15 @@ onMounted(() => {
       </VCardText>
 
       <!-- Tabla de Pedidos -->
-      <div class="position-relative">
+      <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
+        <VProgressLinear
+          v-if="loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
 
         <div class="overflow-x-auto">
           <VTable hover class="pedidos-table">
@@ -475,7 +483,37 @@ onMounted(() => {
               </tr>
             </thead>
 
-            <tbody v-if="pedidos.length === 0">
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="loading">
+              <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+                <td class="py-4">
+                  <div class="shimmer-line w-50"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60"></div>
+                </td>
+                <td class="py-4 text-center">
+                  <div class="shimmer-chip mx-auto"></div>
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-50 ms-auto"></div>
+                </td>
+                <td class="py-4 text-center">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button"></div>
+                    <div class="shimmer-button"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="pedidos.length === 0">
               <tr>
                 <td colspan="7" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3 color-grey-lighten-1">
@@ -824,3 +862,49 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

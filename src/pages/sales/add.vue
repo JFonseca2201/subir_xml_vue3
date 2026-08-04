@@ -343,7 +343,6 @@ const getClientName = c => {
 // Carga inicial
 const loadInitialData = async () => {
   isLoading.value = true
-  loader.start()
   try {
     // Cargar datos en paralelo con menos registros para mejorar rendimiento
     const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
@@ -408,7 +407,6 @@ const loadInitialData = async () => {
     showNotification('Error al cargar datos iniciales', 'error')
   } finally {
     isLoading.value = false
-    loader.stop()
   }
 }
 
@@ -1080,7 +1078,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6">
+  <div class="pa-4 pa-sm-6 position-relative">
+    <VProgressLinear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;"
+    />
+
     <div
       class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
@@ -1094,7 +1101,45 @@ onMounted(async () => {
       </div>
     </div>
 
-    <VForm ref="formRef" @submit.prevent="submitForm">
+    <!-- Form Skeleton loader -->
+    <div v-if="isLoading" class="d-flex flex-column gap-6">
+      <VRow>
+        <VCol cols="12" md="8">
+          <VCard class="pa-6 rounded-xl border-light mb-6">
+            <div class="shimmer-line w-40 mb-6" style="height: 24px;"></div>
+            <VRow class="mb-4">
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              </VCol>
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              </VCol>
+            </VRow>
+            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;"></div>
+            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;"></div>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="4">
+          <VCard class="pa-6 rounded-xl border-light mb-6">
+            <div class="shimmer-line w-60 mb-6" style="height: 24px;"></div>
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <VDivider class="my-4" />
+            <div class="d-flex justify-space-between mb-2">
+              <div class="shimmer-line w-30"></div>
+              <div class="shimmer-line w-20"></div>
+            </div>
+            <div class="d-flex justify-space-between mb-4">
+              <div class="shimmer-line w-40"></div>
+              <div class="shimmer-line w-30"></div>
+            </div>
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
+
+    <VForm v-else ref="formRef" @submit.prevent="submitForm">
       <VRow>
         <VCol cols="12">
           <!-- Tipo de Documento -->
@@ -1682,5 +1727,49 @@ onMounted(async () => {
 :deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
   max-width: 0 !important;
   border-width: 0 !important;
+}
+
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>
