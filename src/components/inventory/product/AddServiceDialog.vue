@@ -105,13 +105,16 @@ const saveService = async () => {
   const autoSku = `SRV-${Date.now().toString().slice(-6)}-${randomSuffix}`
 
   // Construir el payload completo para el backend respetando item_type = 2
+  const inputPrice = parseFloat(serviceForm.value.price_sale) || 0
+  const finalPrice = serviceForm.value.is_taxable ? inputPrice / 1.15 : inputPrice
+
   const payload = {
     description: serviceForm.value.description.toUpperCase().trim(),
     sku: autoSku,
     product_categorie_id: defaultCategorieId.value || 1,
     unit_id: defaultUnitId.value || 1,
-    price: parseFloat(serviceForm.value.price_sale) || 0,
-    price_sale: parseFloat(serviceForm.value.price_sale) || 0,
+    price: finalPrice,
+    price_sale: finalPrice,
     purchase_price: 0.00,
     tax_rate: 15.00, // Impuesto general de taller (15% IVA)
     max_discount: 0.00,

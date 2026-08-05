@@ -113,7 +113,17 @@ const loadAccounts = async () => {
       accountsData = response
     }
 
-    accounts.value = accountsData
+    accounts.value = accountsData.map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
     console.log('✅ Cuentas cargadas:', accountsData.length)
   } catch (error) {
     console.error('Error al cargar cuentas:', error)

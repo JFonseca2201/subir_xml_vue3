@@ -41,10 +41,17 @@ const loadAccounts = async () => {
   try {
     const response = await $api('accounts')
 
-    accountOptions.value = response.map(account => ({
-      title: account.name,
-      value: account.id,
-    }))
+    accountOptions.value = response.map(account => {
+      const cleaned = (account.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        title: account.bank_name ? `${account.bank_name} (${cleaned})` : cleaned,
+        value: account.id,
+      }
+    })
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
     showNotification('Error al cargar cuentas', 'error')

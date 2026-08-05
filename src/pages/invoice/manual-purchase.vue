@@ -40,7 +40,6 @@ const items = ref([])
 const searchProduct = ref(null)
 
 const loadConfig = async () => {
-  loader.start()
   isLoadingConfig.value = true
   try {
     const [configResp, accountsResp, partnersResp] = await Promise.all([
@@ -51,7 +50,18 @@ const loadConfig = async () => {
 
     suppliers.value = configResp.suppliers || []
     categories.value = configResp.categories || []
-    accounts.value = accountsResp.data || accountsResp || []
+    const rawAccounts = accountsResp.data || accountsResp || []
+    accounts.value = rawAccounts.map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
 
     // Partners returns object with data in many laravel resources
     partners.value = partnersResp.data?.data || partnersResp.data || []
@@ -61,7 +71,6 @@ const loadConfig = async () => {
     showNotification('Error cargando configuraciones iniciales', 'error')
   } finally {
     isLoadingConfig.value = false
-    loader.stop()
   }
 }
 
@@ -196,7 +205,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-6">
+  <div class="pa-6 position-relative">
+    <VProgressLinear
+      v-slot:default
+      v-if="isLoadingConfig"
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;"
+    />
+
     <VRow>
       <VCol cols="12" class="d-flex align-center justify-space-between mb-4">
         <div>
@@ -209,7 +228,48 @@ onMounted(() => {
       </VCol>
     </VRow>
 
-    <VRow>
+    <!-- Form Skeleton loader -->
+    <div v-if="isLoadingConfig" class="d-flex flex-column gap-6">
+      <VRow>
+        <VCol cols="12" md="8">
+          <VCard class="pa-6 rounded-xl border-light mb-6">
+            <div class="shimmer-line w-40 mb-6" style="height: 24px;"></div>
+            <VRow class="mb-4">
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              </VCol>
+              <VCol cols="12" sm="3">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              </VCol>
+              <VCol cols="12" sm="3">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              </VCol>
+            </VRow>
+            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;"></div>
+            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;"></div>
+          </VCard>
+        </VCol>
+        <VCol cols="12" md="4">
+          <VCard class="pa-6 rounded-xl border-light mb-6">
+            <div class="shimmer-line w-60 mb-6" style="height: 24px;"></div>
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <VDivider class="my-4" />
+            <div class="d-flex justify-space-between mb-2">
+              <div class="shimmer-line w-30"></div>
+              <div class="shimmer-line w-20"></div>
+            </div>
+            <div class="d-flex justify-space-between mb-4">
+              <div class="shimmer-line w-40"></div>
+              <div class="shimmer-line w-30"></div>
+            </div>
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
+
+    <VRow v-else>
       <!-- HEADER COMPRA -->
       <VCol cols="12" md="8">
         <VCard class="elevation-3 rounded-xl mb-6">
@@ -381,3 +441,49 @@ onMounted(() => {
     </VRow>
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

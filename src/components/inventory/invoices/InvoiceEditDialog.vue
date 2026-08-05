@@ -29,9 +29,11 @@ const item_type = ref(1)
 const radioGroup = ref(1)
 const categories = ref([])
 const selectedCategory = ref(null)
+const loadingCategories = ref(false)
 
 // Cargar categorías
 const loadCategories = async () => {
+  loadingCategories.value = true
   try {
     const response = await $api('invoices/config')
     if (response.status === 200) {
@@ -43,6 +45,8 @@ const loadCategories = async () => {
     console.error('Error al cargar categorías:', error)
     
     return []
+  } finally {
+    loadingCategories.value = false
   }
 }
 
@@ -118,7 +122,16 @@ onMounted(() => {
     v-model="props.isDialogVisible"
     max-width="700"
   >
-    <VCard class="invoice-dialog elevation-15 rounded-xl">
+    <VCard class="invoice-dialog elevation-15 rounded-xl position-relative">
+      <VProgressLinear
+        v-if="loadingCategories"
+        indeterminate
+        color="primary"
+        height="3"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
+
       <VOverlay
         :model-value="loader.loading"
         class="align-center justify-center"
@@ -137,7 +150,14 @@ onMounted(() => {
       </VCardTitle>
 
       <VCardText>
-        <VRow>
+        <!-- Skeleton Loader -->
+        <div v-if="loadingCategories" class="d-flex flex-column gap-4 py-4">
+          <div class="shimmer-line w-60 mb-2" style="height: 20px;"></div>
+          <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+          <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+        </div>
+
+        <VRow v-else>
           <VCol cols="6">
             <!-- Grupo de radio botones -->
             <VRadioGroup
@@ -237,3 +257,49 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

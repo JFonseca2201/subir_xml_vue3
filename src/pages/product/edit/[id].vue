@@ -314,7 +314,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6">
+  <div class="pa-4 pa-sm-6 position-relative">
+    <VProgressLinear
+      v-slot:default
+      v-if="isLoading || isLoadingConfig"
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;"
+    />
+
     <VCard class="rounded-lg elevation-2 max-w-1200 mx-auto overflow-hidden">
       <!-- Header -->
       <div class="pa-6 border-b bg-surface sticky-top d-flex justify-space-between align-center" style="z-index: 10;">
@@ -331,7 +341,43 @@ onMounted(() => {
         </VBtn>
       </div>
 
-      <VForm ref="formRef" @submit.prevent="updateProduct">
+      <!-- Form Skeleton Loader -->
+      <div v-if="isLoading || isLoadingConfig" class="pa-6 pb-12 d-flex flex-column gap-6">
+        <div class="mb-8">
+          <div class="shimmer-line w-30 mb-6" style="height: 24px;"></div>
+          <VRow>
+            <VCol cols="12" md="6">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+            <VCol cols="12" md="4">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+            <VCol cols="12" md="4">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+            <VCol cols="12" md="4">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+          </VRow>
+        </div>
+        <VDivider class="my-4" />
+        <div class="mb-8">
+          <div class="shimmer-line w-25 mb-6" style="height: 24px;"></div>
+          <VRow>
+            <VCol cols="12" md="6">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+            <VCol cols="12" md="6">
+              <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+            </VCol>
+          </VRow>
+        </div>
+      </div>
+
+      <VForm v-else ref="formRef" @submit.prevent="updateProduct">
         <div class="pa-6 pb-12">
 
           <!-- 1. Información Básica -->
@@ -596,3 +642,49 @@ onMounted(() => {
     </VCard>
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>

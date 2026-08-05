@@ -394,7 +394,17 @@ const loadInitialData = async () => {
       searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
       displayTitle: p.description || p.name || '',
     }))
-    accounts.value = extractArray(accountsRes, 'accounts')
+    accounts.value = extractArray(accountsRes, 'accounts').map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
     employees.value = extractArray(employeesRes, 'employees')
 
     // Asignar el correlativo global desde el backend
@@ -734,6 +744,11 @@ const submitForm = async () => {
 
   // Validar pagos distribuidos solo si no es cotización
   if (sale.value.document_type !== 'quote') {
+    if (sale.value.payment_status === 'pending') {
+      sale.value.is_credited = true
+      paymentDistributions.value = []
+    }
+
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 
     if ((paymentDistributions.value.length === 0 || totalDist <= 0) && !sale.value.is_credited) {

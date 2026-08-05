@@ -610,6 +610,9 @@ onMounted(() => {
                           <VListItem v-if="workOrder.status === 'ready' && !workOrder.sale"
                             prepend-icon="ri-shopping-cart-line" title="Generar Venta" class="text-success text-body-2"
                             @click="goToSale(workOrder.id)" />
+                          <VListItem v-if="workOrder.status !== 'delivered' && workOrder.status !== 'draft'"
+                            prepend-icon="ri-truck-line" title="Marcar como Entregado" class="text-success text-body-2"
+                            @click="updateStatus(workOrder.id, 'delivered')" />
                           <VListItem v-if="workOrder.status !== 'draft'" prepend-icon="ri-printer-line"
                             title="Imprimir Orden" class="text-info text-body-2" @click="printPDF(workOrder.id)" />
 

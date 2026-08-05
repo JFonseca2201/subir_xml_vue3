@@ -41,7 +41,18 @@ const loadConfig = async () => {
       $api('partners', { method: 'GET' }),
     ])
 
-    accounts.value = accountsResp.data || accountsResp || []
+    const rawAccounts = accountsResp.data || accountsResp || []
+    accounts.value = rawAccounts.map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
     partners.value = partnersResp.data?.data || partnersResp.data || []
   } catch (error) {
     console.error(error)

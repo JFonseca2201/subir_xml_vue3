@@ -477,7 +477,17 @@ const loadSaleData = async () => {
     if (saleData.client) selectedClient.value = saleData.client
     if (saleData.vehicle) selectedVehicle.value = saleData.vehicle
 
-    accounts.value = extractArray(accountsRes, 'accounts')
+    accounts.value = extractArray(accountsRes, 'accounts').map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
     employees.value = extractArray(employeesRes, 'employees')
 
     // Si no es cotización, cargar los pagos distribuidos existentes
@@ -624,6 +634,11 @@ const submitForm = async () => {
 
   // Validar pagos distribuidos solo si no es cotización
   if (sale.value.document_type !== 'quote') {
+    if (sale.value.payment_status === 'pending') {
+      sale.value.is_credited = true
+      paymentDistributions.value = []
+    }
+
     const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 
     if ((paymentDistributions.value.length === 0 || totalDist <= 0) && !sale.value.is_credited) {
@@ -701,6 +716,20 @@ const submitForm = async () => {
     showNotification(errMsg, 'error')
   } finally {
     loader.stop()
+  }
+}
+
+const isDispatching = ref(false)
+
+const dispatchSale = async () => {
+  isDispatching.value = true
+  sale.value.payment_status = 'pending'
+  sale.value.is_credited = true
+  paymentDistributions.value = []
+  try {
+    await submitForm()
+  } finally {
+    isDispatching.value = false
   }
 }
 
@@ -1281,6 +1310,10 @@ onMounted(() => {
                 <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary"
                   variant="elevated" prepend-icon="ri-draft-line" :loading="loader.loading" @click.prevent="saveDraft">
                   Actualizar Borrador
+                </VBtn>
+                <VBtn v-if="sale.document_type !== 'quote'" color="warning" variant="elevated"
+                  prepend-icon="ri-truck-line" :loading="isDispatching" @click.prevent="dispatchSale">
+                  Despachar (Pago Pendiente)
                 </VBtn>
                 <VBtn type="submit" :disabled="sale.status === 'canceled'" color="primary" variant="elevated"
                   prepend-icon="ri-save-3-line" :loading="loader.loading" size="large">

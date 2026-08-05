@@ -49,8 +49,6 @@ const searchForm = ref({
   search: null, // Búsqueda por nombre, cédula o placa de vehículo
 })
 
-const loading = ref(false)
-
 // Paginación
 const currentPage = ref(1)
 const itemsPerPage = ref(15)

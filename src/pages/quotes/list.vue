@@ -292,17 +292,27 @@ const confirmCancelQuote = async () => {
 const loadAccounts = async () => {
   try {
     const response = await $api('accounts', { params: { per_page: 100 } })
+    let rawList = []
     if (Array.isArray(response)) {
-      accounts.value = response
+      rawList = response
     } else if (response?.data && Array.isArray(response.data)) {
-      accounts.value = response.data
+      rawList = response.data
     } else if (response?.accounts && Array.isArray(response.accounts)) {
-      accounts.value = response.accounts
+      rawList = response.accounts
     } else if (response?.data?.data && Array.isArray(response.data.data)) {
-      accounts.value = response.data.data
-    } else {
-      accounts.value = []
+      rawList = response.data.data
     }
+    accounts.value = rawList.map(acc => {
+      const cleaned = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim();
+      return {
+        ...acc,
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+      }
+    })
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
   }

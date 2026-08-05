@@ -33,7 +33,7 @@ import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDi
 import InvoiceProcessDialog from '@/components/inventory/invoices/InvoiceProcessDialog.vue'
 
 const list = async () => {
-  loader.start()
+  isLoading.value = true
 
   try {
     let data = {
@@ -74,7 +74,7 @@ const list = async () => {
     console.error('❌ Error al cargar facturas:', error)
     showNotification('Error al cargar las facturas', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
   }
 }
 
@@ -217,6 +217,14 @@ onMounted(() => {
 
       <!-- Tabla de Facturas -->
       <div class="position-relative">
+        <VProgressLinear
+          v-if="isLoading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
 
         <div class="overflow-x-auto">
           <VTable hover class="invoices-table">
@@ -251,7 +259,20 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!list_invoices || list_invoices.length === 0">
+            <tbody v-if="isLoading">
+              <tr v-for="i in 5" :key="i">
+                <td class="text-center py-3"><div class="shimmer-line mx-auto" style="width: 20px;"></div></td>
+                <td class="text-left py-3"><div class="shimmer-line" style="width: 80%;"></div></td>
+                <td class="text-left py-3"><div class="shimmer-line" style="width: 60%;"></div></td>
+                <td class="text-left py-3"><div class="shimmer-line" style="width: 50%;"></div></td>
+                <td class="text-right py-3"><div class="shimmer-line ms-auto" style="width: 50px;"></div></td>
+                <td class="text-right py-3"><div class="shimmer-line ms-auto" style="width: 50px;"></div></td>
+                <td class="text-right py-3"><div class="shimmer-line ms-auto" style="width: 60px;"></div></td>
+                <td class="text-center py-3"><div class="shimmer-chip mx-auto"></div></td>
+                <td class="text-center py-3"><div class="shimmer-button mx-auto"></div></td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="!list_invoices || list_invoices.length === 0">
               <tr>
                 <td colspan="9" class="text-center pa-8 text-medium-emphasis">
                   <VIcon size="48" class="mb-3" color="grey-lighten-1">
@@ -374,3 +395,49 @@ onMounted(() => {
       :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
+
+<style scoped>
+.shimmer-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>
