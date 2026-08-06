@@ -16,6 +16,11 @@ export default [
     icon: { icon: 'ri-roadster-line' },
     to: 'vehicles-list',
   },
+  {
+    title: 'Info Repuestos',
+    to: 'inforepuestos',
+    icon: { icon: 'ri-file-list-3-line' },
+  },
 
 
   { heading: 'Finanzas' },

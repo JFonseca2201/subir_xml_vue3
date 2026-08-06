@@ -42,7 +42,7 @@ const update = async () => {
     setTimeout(() => {
       warning.value = "Se debe llenar un nombre para la categoria"
     }, 50)
-    
+
     return
   }
 
@@ -96,7 +96,7 @@ const update = async () => {
 const loadFile = $event => {
   if ($event.target.files[0].type.indexOf("image") < 0) {
     error_exits.value = "SOLAMENTE PUEDEN SER ARCHIVOS DE TIPO IMAGEN"
-    
+
     return
   }
   error_exits.value = ""
@@ -133,27 +133,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
-    max-width="650"
-    :model-value="props.isDialogVisible"
-    @update:model-value="dialogVisibleUpdate"
-  >
+  <VDialog max-width="650" :model-value="props.isDialogVisible" @update:model-value="dialogVisibleUpdate">
     <VCard class="pa-sm-10 pa-5">
       <!-- 👉 Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="onFormReset"
-      />
+      <DialogCloseBtn variant="text" size="default" @click="onFormReset" />
 
       <!-- 👉 Header -->
       <VCardText class="text-center pb-6">
-        <VIcon
-          icon="ri-file-chart-line"
-          size="42"
-          color="primary"
-          class="mb-3"
-        />
+        <VIcon icon="ri-file-chart-line" size="42" color="primary" class="mb-3" />
         <h4 class="text-h4 font-weight-bold mb-1">
           Editar Categoría
         </h4>
@@ -169,132 +156,61 @@ onMounted(() => {
         <VRow dense>
           <!-- 👉 Nombre -->
           <VCol cols="12">
-            <VTextField
-              v-model="name"
-              label="Nombre de la categoría"
-              placeholder="Ej: Repuestos, Accesorios"
-              prepend-inner-icon="ri-store-line"
-              clearable
-            />
+            <VTextField v-model="name" label="Nombre de la categoría" placeholder="Ej: Repuestos, Accesorios"
+              prepend-inner-icon="ri-store-line" clearable />
           </VCol>
 
           <!-- 👉 Alerts -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              type="warning"
-              variant="tonal"
-              closable
-            >
+          <VCol v-if="warning" cols="12">
+            <VAlert type="warning" variant="tonal" closable>
               {{ warning }}
             </VAlert>
           </VCol>
 
-          <VCol
-            v-if="error_exits"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-            >
+          <VCol v-if="error_exits" cols="12">
+            <VAlert type="error" variant="tonal" closable>
               {{ error_exits }}
             </VAlert>
           </VCol>
 
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              type="success"
-              variant="tonal"
-              closable
-            >
+          <VCol v-if="success" cols="12">
+            <VAlert type="success" variant="tonal" closable>
               {{ success }}
             </VAlert>
           </VCol>
 
           <!-- 👉 Imagen -->
-          <VCol
-            cols="12"
-            md="12"
-          >
+          <VCol cols="12" md="12">
             <VRow align="center">
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <VFileInput
-                  label="Imagen de la categoría"
-                  prepend-inner-icon="ri-image-line"
-                  accept="image/*"
-                  clearable
-                  @change="loadFile($event)"
-                  @click:clear="clearImage"
-                />
+              <VCol cols="12" md="6">
+                <VFileInput label="Imagen de la categoría" prepend-inner-icon="ri-image-line" accept="image/*" clearable
+                  @change="loadFile($event)" @click:clear="clearImage" />
               </VCol>
-              <VCol
-                cols="12"
-                md="6"
-                class="d-flex justify-center"
-              >
-                <VAvatar
-                  v-if="PREVIZUALIZA_IMAGEN"
-                  :image="PREVIZUALIZA_IMAGEN" 
-                  size="80"
-                  class="elevation-3"
-                />
+              <VCol cols="12" md="6" class="d-flex justify-center">
+                <VAvatar v-if="PREVIZUALIZA_IMAGEN" :image="PREVIZUALIZA_IMAGEN" size="80" class="elevation-3" />
               </VCol>
             </VRow>
           </VCol>
 
           <!-- 👉 Estado -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VSelect
-              v-model="state"
-              label="Estado"
-              prepend-inner-icon="ri-toggle-line"
-              :items="[
-                { name: 'Activo', id: 1 },
-                { name: 'Inactivo', id: 2 },
-              ]"
-              item-title="name"
-              item-value="id"
-              eager
-            />
+          <VCol cols="12" md="6">
+            <VSelect v-model="state" label="Estado" prepend-inner-icon="ri-toggle-line" :items="[
+              { name: 'Activo', id: 1 },
+              { name: 'Inactivo', id: 2 },
+            ]" item-title="name" item-value="id" eager />
           </VCol>
 
           <VDivider class="my-6" />
 
           <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-edit-line"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
+          <VCol cols="12" class="d-flex justify-center gap-4">
+            <VBtn type="submit" color="primary" prepend-icon="ri-edit-line" :loading="loader.loading"
+              :disabled="loader.loading">
               Actualizar
             </VBtn>
 
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loader.loading"
-              @click="onFormReset"
-            >
+            <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" :disabled="loader.loading"
+              @click="onFormReset">
               Cancelar
             </VBtn>
           </VCol>
@@ -304,12 +220,7 @@ onMounted(() => {
   </VDialog>
 
   <!-- Notificación Toast -->
-  <VSnackbar
-    v-model="notificationShow"
-    :color="notificationType"
-    :timeout="3000"
-    location="top"
-  >
+  <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
     {{ notificationMessage }}
   </VSnackbar>
 </template>

@@ -4075,4 +4075,241 @@
   }
 }
 
+/* From src/pages/inforepuestos/index.vue */
+.inforepuestos-container {
+  position: relative;
+  min-height: 80vh;
+}
+
+.header-preview-box {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  border: 1px dashed rgba(var(--v-theme-primary), 0.3) !important;
+  letter-spacing: 0.5px;
+}
+
+.info-header-box {
+  background-color: rgba(var(--v-theme-info), 0.08) !important;
+  color: rgb(var(--v-theme-info)) !important;
+  border: 1px solid rgba(var(--v-theme-info), 0.15) !important;
+  letter-spacing: 0.5px;
+}
+
+.detail-section-title {
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
+  color: rgba(var(--v-theme-on-surface), 0.87);
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.detail-section-content {
+  background-color: rgba(var(--v-theme-surface), 1);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.12));
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+/* Info Repuestos Grid Table Layout Styling */
+.vehicle-info-cell {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  gap: 6px;
+
+  .vehicle-title {
+    font-size: 0.95rem;
+    color: rgb(var(--v-theme-on-surface));
+    letter-spacing: 0.2px;
+  }
+
+  .vehicle-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+.spare-part-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.spare-part-row-item {
+  display: grid;
+  grid-template-columns: 28px 1fr 120px 140px;
+  min-width: 480px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background-color: rgba(var(--v-theme-on-surface), 0.015);
+  border: 1px solid rgba(var(--v-border-color), 0.08);
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.03) !important;
+    border-color: rgba(var(--v-theme-primary), 0.18) !important;
+    transform: translateX(4px);
+  }
+
+  .item-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgb(var(--v-theme-primary));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(var(--v-theme-primary), 0.3);
+  }
+
+  .item-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .item-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: rgba(var(--v-theme-on-surface), 0.87);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-brand {
+      color: rgba(var(--v-theme-on-surface), 0.5);
+      font-size: 0.75rem;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .item-category {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .item-pricing {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 0.75rem;
+    line-height: 1.4;
+
+    .price-buy {
+      color: rgba(var(--v-theme-on-surface), 0.55);
+    }
+
+    .price-sell {
+      color: rgb(var(--v-theme-success));
+    }
+  }
+}
+
+/* Premium Card request list styling */
+.vehicle-request-card {
+  border: 1px solid rgba(var(--v-border-color), 0.08) !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgb(var(--v-theme-surface)) !important;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(var(--v-theme-primary), 0.08) !important;
+  }
+}
+
+.bg-card-footer {
+  background-color: rgba(var(--v-theme-on-surface), 0.015);
+}
+
+.spare-part-list-row {
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px solid rgba(var(--v-border-color), 0.06);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.035);
+    border-color: rgba(var(--v-theme-primary), 0.15);
+    transform: translateX(4px);
+  }
+}
+
+.item-badge-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.8));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(var(--v-theme-primary), 0.25);
+}.technical-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 16px;
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+  border: 1px solid rgba(var(--v-border-color), 0.08);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spec-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+}
+
+.spec-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.detail-spare-card {
+  background-color: rgb(var(--v-theme-surface));
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+  .bg-light {
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+  }
+}
+
+.custom-catalog-table {
+  table {
+    min-width: 950px !important;
+    table-layout: fixed !important;
+  }
+  
+  th:nth-child(1), td:nth-child(1) {
+    width: 32% !important;
+  }
+  th:nth-child(2), td:nth-child(2) {
+    width: 53% !important;
+  }
+  th:nth-child(3), td:nth-child(3) {
+    width: 15% !important;
+  }
+}
 

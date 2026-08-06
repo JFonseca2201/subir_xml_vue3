@@ -72,6 +72,8 @@ declare module 'vue' {
     ImportData: typeof import('./src/components/inventory/import/ImportData.vue')['default']
     ImportProductsDialog: typeof import('./src/components/inventory/product/ImportProductsDialog.vue')['default']
     IncomeDialog: typeof import('./src/components/inventory/finances-records/IncomeDialog.vue')['default']
+    InfoRepuestoDetailDialog: typeof import('./src/components/inforepuestos/InfoRepuestoDetailDialog.vue')['default']
+    InfoRepuestoFormDialog: typeof import('./src/components/inforepuestos/InfoRepuestoFormDialog.vue')['default']
     InvoiceAddDialog: typeof import('./src/components/inventory/invoices/InvoiceAddDialog.vue')['default']
     InvoiceDeleteDialog: typeof import('./src/components/inventory/invoices/InvoiceDeleteDialog.vue')['default']
     InvoiceEditDialog: typeof import('./src/components/inventory/invoices/InvoiceEditDialog.vue')['default']
