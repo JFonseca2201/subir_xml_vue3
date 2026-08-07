@@ -223,7 +223,8 @@ onMounted(() => {
                     <VChip v-if="item.traction" size="x-small" color="info" variant="tonal" class="font-weight-bold">
                       {{ item.traction }}
                     </VChip>
-                    <VChip v-if="item.origin_country" size="x-small" color="warning" variant="tonal" class="font-weight-bold">
+                    <VChip v-if="item.origin_country" size="x-small" color="warning" variant="tonal"
+                      class="font-weight-bold">
                       {{ item.origin_country }}
                     </VChip>
                   </div>
@@ -256,8 +257,10 @@ onMounted(() => {
 
                     <!-- Pricing -->
                     <div class="item-pricing">
-                      <span class="price-buy">Compra: <strong>${{ parseFloat(subItem.purchase_price || 0).toFixed(2) }}</strong></span>
-                      <span class="price-sell text-success font-weight-bold">PVP: <strong>${{ parseFloat(subItem.public_price || 0).toFixed(2) }}</strong></span>
+                      <span class="price-buy">Compra: <strong>${{ parseFloat(subItem.purchase_price || 0).toFixed(2)
+                      }}</strong></span>
+                      <span class="price-sell text-success font-weight-bold">PVP: <strong>${{
+                        parseFloat(subItem.public_price || 0).toFixed(2) }}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -269,7 +272,8 @@ onMounted(() => {
                   <!-- Editar -->
                   <VBtn size="small" color="warning" variant="text" icon="ri-edit-line" @click="openEdit(item)" />
                   <!-- Eliminar -->
-                  <VBtn size="small" color="error" variant="text" icon="ri-delete-bin-line" @click="deleteRequest(item)" />
+                  <VBtn size="small" color="error" variant="text" icon="ri-delete-bin-line"
+                    @click="deleteRequest(item)" />
                 </div>
               </td>
             </tr>

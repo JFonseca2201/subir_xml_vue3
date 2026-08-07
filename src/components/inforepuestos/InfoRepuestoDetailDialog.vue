@@ -102,19 +102,17 @@ const vehicleHeader = computed(() => {
           <VCol cols="12" class="mb-4">
             <div class="font-weight-bold text-subtitle-1 text-primary d-flex align-center gap-2 mb-2">
               <VIcon icon="ri-settings-3-line" color="primary" />
-              Repuestos Compatibles Registrados ({{ props.requestSelected.items ? props.requestSelected.items.length : 0 }})
+              Repuestos Compatibles Registrados ({{ props.requestSelected.items ? props.requestSelected.items.length : 0
+              }})
             </div>
             <VDivider />
           </VCol>
 
           <!-- Listado de items de repuesto en tarjetas independientes -->
           <VCol cols="12" class="d-flex flex-column gap-4">
-            <div 
-              v-for="(item, idx) in (props.requestSelected.items || [])" 
-              :key="idx" 
+            <div v-for="(item, idx) in (props.requestSelected.items || [])" :key="idx"
               class="detail-spare-card pa-4 rounded-xl border"
-              style="border-color: rgba(var(--v-border-color), 0.12) !important; background-color: rgb(var(--v-theme-surface));"
-            >
+              style="border-color: rgba(var(--v-border-color), 0.12) !important; background-color: rgb(var(--v-theme-surface));">
               <!-- Card Header -->
               <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
                 <div class="d-flex align-center gap-2">
@@ -138,7 +136,8 @@ const vehicleHeader = computed(() => {
                 <div class="text-caption text-medium-emphasis font-weight-bold mb-1">
                   DETALLE / DESCRIPCIÓN
                 </div>
-                <div class="text-body-1 text-high-emphasis bg-light pa-3 rounded-lg text-pre-wrap" style="background-color: rgba(var(--v-theme-on-surface), 0.02); line-height: 1.5;">
+                <div class="text-body-1 text-high-emphasis bg-light pa-3 rounded-lg text-pre-wrap"
+                  style="background-color: rgba(var(--v-theme-on-surface), 0.02); line-height: 1.5;">
                   {{ item.spare_parts_detail }}
                 </div>
               </div>
@@ -165,10 +164,12 @@ const vehicleHeader = computed(() => {
 
       <!-- Footer Metadata -->
       <VDivider />
-      <VCardText class="bg-card-footer py-3 px-6 d-flex align-center justify-space-between text-caption text-medium-emphasis">
+      <VCardText
+        class="bg-card-footer py-3 px-6 d-flex align-center justify-space-between text-caption text-medium-emphasis">
         <div class="d-flex align-center gap-1">
           <VIcon icon="ri-user-smile-line" size="14" />
-          <span>Registrado por: <strong>{{ props.requestSelected.user ? (props.requestSelected.user.name + ' ' + (props.requestSelected.user.surname || '')) : 'Sistema' }}</strong></span>
+          <span>Registrado por: <strong>{{ props.requestSelected.user ? (props.requestSelected.user.name + ' ' +
+            (props.requestSelected.user.surname || '')) : 'Sistema' }}</strong></span>
         </div>
         <div>
           <strong>Fecha:</strong> {{ new Date(props.requestSelected.created_at).toLocaleDateString() }}
@@ -178,7 +179,8 @@ const vehicleHeader = computed(() => {
       <!-- Sticky Close Button -->
       <VDivider />
       <VCardActions class="pa-4 d-flex justify-center">
-        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" class="px-6 rounded-lg" @click="closeDialog">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" class="px-6 rounded-lg"
+          @click="closeDialog">
           Cerrar Ficha
         </VBtn>
       </VCardActions>

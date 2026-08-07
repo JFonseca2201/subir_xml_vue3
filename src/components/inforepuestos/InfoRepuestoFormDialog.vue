@@ -2,6 +2,36 @@
 import { ref, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { vehicleBrands } from '@/data/vehicleBrands.js'
+
+const brandOptions = computed(() => {
+  return [...new Set(Object.values(vehicleBrands).map(b => b.toUpperCase()))].sort()
+})
+
+const categoryOptions = ref([
+  'SUSPENSIÓN',
+  'MOTOR',
+  'FRENOS',
+  'TRANSMISIÓN',
+  'ELÉCTRICO',
+  'ACCESORIOS',
+  'CARROCERÍA'
+])
+
+const loadCategories = async () => {
+  try {
+    const resp = await $api('products/config', { method: 'GET' })
+    if (resp && resp.data && resp.data.categories) {
+      const apiCats = resp.data.categories
+        .map(cat => (cat.title || '').toUpperCase().trim())
+        .filter(Boolean)
+      
+      categoryOptions.value = [...new Set([...categoryOptions.value, ...apiCats])].sort()
+    }
+  } catch (err) {
+    console.error('Error al cargar categorías de productos:', err)
+  }
+}
 
 const props = defineProps({
   isDialogVisible: {
@@ -81,6 +111,7 @@ watch(
   () => props.isDialogVisible,
   (val) => {
     if (val) {
+      loadCategories()
       if (props.requestSelected) {
         form.value = { 
           ...props.requestSelected,
@@ -203,14 +234,16 @@ const save = async () => {
                 </div>
                 <VRow dense>
                   <VCol cols="12" sm="6">
-                    <VTextField
+                    <VCombobox
                       v-model="form.brand"
+                      :items="brandOptions"
                       label="Marca del Vehículo *"
-                      placeholder="Ej: Chevrolet"
+                      placeholder="Seleccione o escriba la marca"
                       prepend-inner-icon="ri-road-map-line"
                       :rules="[rules.required]"
                       clearable
                       variant="outlined"
+                      auto-select-first
                     />
                   </VCol>
 
@@ -330,14 +363,16 @@ const save = async () => {
                       </VCol>
 
                       <VCol cols="12" sm="6" class="pb-2">
-                        <VTextField
+                        <VCombobox
                           v-model="item.category"
+                          :items="categoryOptions"
                           label="Categoría / Concepto *"
-                          placeholder="Ej: Suspensión"
+                          placeholder="Seleccione o escriba la categoría"
                           prepend-inner-icon="ri-folders-line"
                           :rules="[rules.required]"
                           clearable
                           variant="outlined"
+                          auto-select-first
                         />
                       </VCol>
 
