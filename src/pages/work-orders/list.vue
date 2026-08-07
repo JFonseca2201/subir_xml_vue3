@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
 import WorkOrderTimelineDialog from '@/components/dialogs/WorkOrderTimelineDialog.vue'
@@ -294,7 +294,7 @@ const goToEdit = workOrderId => {
 const downloadPDF = async workOrderId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
 
     const response = await fetch(`${apiBaseUrl}/work-orders/${workOrderId}/pdf`, {
       headers: {
@@ -327,7 +327,7 @@ const downloadPDF = async workOrderId => {
 const printPDF = workOrderId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/work-orders/${workOrderId}/pdf?token=${token}&print=true`
 
     const printWindow = window.open(pdfUrl, '_blank')

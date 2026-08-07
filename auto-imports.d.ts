@@ -54,6 +54,7 @@ declare global {
   const formatDateToMonthShort: typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']
   const formatEcuadorianPlate: typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']
   const getActivePinia: typeof import('pinia')['getActivePinia']
+  const getApiBaseUrl: typeof import('./src/utils/api.js')['getApiBaseUrl']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getPlateInfo: typeof import('./src/utils/ecuadorianPlateValidator.js')['getPlateInfo']
@@ -420,6 +421,7 @@ declare module 'vue' {
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getApiBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getApiBaseUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
@@ -771,6 +773,7 @@ declare module '@vue/runtime-core' {
     readonly formatDateToMonthShort: UnwrapRef<typeof import('./src/@core/utils/formatters.js')['formatDateToMonthShort']>
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
+    readonly getApiBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getApiBaseUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly h: UnwrapRef<typeof import('vue')['h']>

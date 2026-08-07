@@ -33,8 +33,20 @@ function isTokenExpired(token) {
   return decodedToken.exp < currentTime // Retorna true si el token ha expirado
 }
 
+export const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    // Si accedemos por IP de red (ej: 192.168.100.4), adaptamos la llamada de API a esa misma IP
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `http://${hostname}:8000/api/`
+    }
+  }
+  return envUrl || 'http://127.0.0.1:8000/api/'
+}
+
 export const $api = ofetch.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: getApiBaseUrl(),
   async onRequest(response) {
     //console.log(response);
     const accessToken = localStorage.getItem("token")//useCookie('accessToken').value

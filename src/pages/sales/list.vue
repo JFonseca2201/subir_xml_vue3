@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
@@ -304,7 +304,7 @@ const generatePDF = async () => {
 
 const generateSinglePDF = sale => {
   const token = localStorage.getItem('token')
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
 
   const printWindow = window.open(pdfUrl, '_blank')
@@ -319,7 +319,7 @@ const generateSinglePDF = sale => {
 const printSale = saleId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/sales/${saleId}/pdf?token=${token}&print=true`
 
     const printWindow = window.open(pdfUrl, '_blank')

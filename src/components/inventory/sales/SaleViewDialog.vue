@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const props = defineProps({
@@ -186,7 +186,7 @@ const { showNotification } = useGlobalToast()
 const printSale = saleId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const resource = isQuote.value ? 'quotes' : 'sales'
     const pdfUrl = `${apiBaseUrl}/${resource}/${saleId}/pdf?token=${token}&print=true`
     
@@ -220,7 +220,7 @@ const printDirectlyFromServer = async (id, type) => {
 
 const generateSinglePDF = sale => {
   const token = localStorage.getItem('token')
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const resource = isQuote.value ? 'quotes' : 'sales'
   const pdfUrl = `${apiBaseUrl}/${resource}/${sale.id}/pdf?token=${token}`
   

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import Swal from 'sweetalert2'
@@ -138,7 +138,7 @@ const viewPedidoDetails = async pedido => {
 
 const generateSinglePDF = pedido => {
   const token = localStorage.getItem('token')
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedido.id}/pdf?token=${token}`
 
   const printWindow = window.open(pdfUrl, '_blank')
@@ -153,7 +153,7 @@ const generateSinglePDF = pedido => {
 const printPedido = pedidoId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/pedidos-distribuidor/${pedidoId}/pdf?token=${token}&print=true`
 
     const printWindow = window.open(pdfUrl, '_blank')

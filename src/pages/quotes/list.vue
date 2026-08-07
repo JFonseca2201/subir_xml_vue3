@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
@@ -208,7 +208,7 @@ const editQuote = quote => {
 
 const generateSinglePDF = quote => {
   const token = localStorage.getItem('token')
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/quotes/${quote.id}/pdf?token=${token}`
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
@@ -222,7 +222,7 @@ const generateSinglePDF = quote => {
 const printQuote = quoteId => {
   try {
     const token = localStorage.getItem('token')
-    const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const pdfUrl = `${apiBaseUrl}/quotes/${quoteId}/pdf?token=${token}&print=true`
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {

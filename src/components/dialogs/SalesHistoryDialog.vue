@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const { showNotification } = useGlobalToast()
@@ -127,7 +127,7 @@ const getDocumentType = (type) => {
 
 const generateSinglePDF = (sale) => {
   const token = localStorage.getItem('token')
-  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
 
   const printWindow = window.open(pdfUrl, '_blank')

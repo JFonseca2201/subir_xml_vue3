@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import ViewProduct from '@/components/inventory/product/ViewProduct.vue'
 import DeleteProduct from '@/components/inventory/product/DeleteProdcut.vue'
@@ -239,7 +239,7 @@ const downloadExcel = () => {
     query_params += "&unit_id=" + searchForm.value.unit_id
   }
 
-  window.open(import.meta.env.VITE_API_BASE_URL + "products-excel?z=1" + query_params, '_blank')
+  window.open(getApiBaseUrl() + "products-excel?z=1" + query_params, '_blank')
 }
 
 

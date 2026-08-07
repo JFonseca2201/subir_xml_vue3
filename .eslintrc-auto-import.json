@@ -369,6 +369,7 @@
     "plateValidationRule": true,
     "preventInvalidPlateChars": true,
     "validateEcuadorianPlate": true,
-    "showNotification": true
+    "showNotification": true,
+    "getApiBaseUrl": true
   }
 }
