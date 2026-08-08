@@ -22,6 +22,13 @@ export default [
     icon: { icon: 'ri-file-list-3-line' },
   },
 
+  { heading: 'Negocio Paralelo' },
+  {
+    title: 'Cuentas Paralelo',
+    icon: { icon: 'ri-store-2-line' },
+    to: 'negocio-paralelo',
+  },
+
 
   { heading: 'Finanzas' },
   {
