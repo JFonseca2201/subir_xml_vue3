@@ -11,8 +11,8 @@ const transactions = ref([])
 const loading = ref(false)
 
 // Initial mock balances (burned data that can be adjusted)
-const initialCash = ref(150.00)
-const initialTransfer = ref(300.00)
+const initialCash = ref(0.00)
+const initialTransfer = ref(0.00)
 
 // Filters State
 const searchQuery = ref('')
@@ -47,7 +47,8 @@ const incomeForm = ref({
 
 const expenseForm = ref({
   description: '',
-  cost: null,
+  unitCost: null,
+  quantity: 1,
   unit: 'Unidades',
   account: 'EFECTIVO',
   date: new Date().toISOString().substr(0, 10),
@@ -187,7 +188,8 @@ const openExpense = () => {
   editingId.value = null
   expenseForm.value = {
     description: '',
-    cost: null,
+    unitCost: null,
+    quantity: 1,
     unit: 'Unidades',
     account: 'EFECTIVO',
     date: new Date().toISOString().substr(0, 10),
@@ -208,7 +210,9 @@ const saveExpense = async () => {
       body: {
         type: 'expense',
         description: expenseForm.value.description,
-        cost: expenseForm.value.cost,
+        cost: expenseForm.value.unitCost * expenseForm.value.quantity,
+        unit_cost: expenseForm.value.unitCost,
+        quantity: expenseForm.value.quantity,
         unit: expenseForm.value.unit,
         account: expenseForm.value.account,
         date: expenseForm.value.date
@@ -243,7 +247,8 @@ const editTransaction = (item) => {
   } else {
     expenseForm.value = {
       description: item.description,
-      cost: item.amount,
+      unitCost: item.unit_cost ? parseFloat(item.unit_cost) : (parseFloat(item.amount) / (item.quantity || 1)),
+      quantity: item.quantity || 1,
       unit: item.unit || '',
       account: item.account,
       date: item.date,
@@ -309,35 +314,6 @@ const generatePdfReport = () => {
   isPdfDialogOpen.value = false
 }
 
-// Reset initial balances (optional capability to adjust initial values)
-const editInitialBalances = async () => {
-  const { value: formValues } = await Swal.fire({
-    title: 'Establecer Saldos Iniciales',
-    html:
-      `<div class="d-flex flex-column gap-3 pa-2" style="font-family: inherit;">` +
-      `<label class="text-left font-weight-bold text-caption mb-1">SALDO INICIAL EFECTIVO ($):</label>` +
-      `<input id="swal-input-cash" type="number" step="0.01" class="swal2-input m-0 w-100" value="${initialCash.value}">` +
-      `<label class="text-left font-weight-bold text-caption mt-2 mb-1">SALDO INICIAL TRANSFERENCIA ($):</label>` +
-      `<input id="swal-input-transfer" type="number" step="0.01" class="swal2-input m-0 w-100" value="${initialTransfer.value}">` +
-      `</div>`,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'Actualizar Saldos',
-    cancelButtonText: 'Cancelar',
-    preConfirm: () => {
-      const cash = parseFloat(document.getElementById('swal-input-cash').value) || 0
-      const transfer = parseFloat(document.getElementById('swal-input-transfer').value) || 0
-      return { cash, transfer }
-    }
-  })
-
-  if (formValues) {
-    initialCash.value = formValues.cash
-    initialTransfer.value = formValues.transfer
-    showNotification('Saldos iniciales actualizados correctamente', 'success')
-  }
-}
-
 onMounted(() => {
   loadTransactions()
 })
@@ -364,15 +340,6 @@ onMounted(() => {
         <VBtn variant="outlined" color="primary" prepend-icon="ri-file-pdf-line" @click="openPdfDialog">
           Reporte PDF
         </VBtn>
-        <VBtn variant="outlined" color="secondary" prepend-icon="ri-settings-4-line" @click="editInitialBalances">
-          Saldos Iniciales
-        </VBtn>
-        <VBtn color="success" prepend-icon="ri-add-circle-line" @click="openIncome">
-          Registrar Ingreso
-        </VBtn>
-        <VBtn color="error" prepend-icon="ri-indent-decrease" @click="openExpense">
-          Registrar Egreso
-        </VBtn>
       </div>
     </div>
 
@@ -383,7 +350,8 @@ onMounted(() => {
           style="border-left: 5px solid rgb(var(--v-theme-success)) !important;">
           <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total Ingresos</div>
           <h3 class="text-h4 font-weight-bold text-success">
-            ${{ totalIncomes.toFixed(2) }}
+            <VSkeletonLoader v-if="loading" type="text" width="120" style="margin: 0;" />
+            <span v-else>${{ totalIncomes.toFixed(2) }}</span>
           </h3>
         </VCard>
       </VCol>
@@ -393,7 +361,8 @@ onMounted(() => {
           style="border-left: 5px solid rgb(var(--v-theme-error)) !important;">
           <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total Egresos</div>
           <h3 class="text-h4 font-weight-bold text-error">
-            ${{ totalExpenses.toFixed(2) }}
+            <VSkeletonLoader v-if="loading" type="text" width="120" style="margin: 0;" />
+            <span v-else>${{ totalExpenses.toFixed(2) }}</span>
           </h3>
         </VCard>
       </VCol>
@@ -437,9 +406,15 @@ onMounted(() => {
                 <VIcon icon="ri-add-circle-line" />
                 <span class="font-weight-bold">INGRESOS</span>
               </div>
-              <VChip color="success" size="small" class="font-weight-bold">
-                ${{ totalIncomes.toFixed(2) }}
-              </VChip>
+              <div class="d-flex align-center gap-2">
+                <VBtn color="success" size="small" variant="flat" prepend-icon="ri-add-circle-line" @click="openIncome">
+                  Registrar Ingreso
+                </VBtn>
+                <VChip color="success" size="small" class="font-weight-bold">
+                  <span v-if="loading">...</span>
+                  <span v-else>${{ totalIncomes.toFixed(2) }}</span>
+                </VChip>
+              </div>
             </VCardTitle>
           </VCardItem>
           <VCardText class="pa-0">
@@ -453,33 +428,42 @@ onMounted(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="incomeTransactions.length === 0">
-                  <td colspan="4" class="text-center py-6 text-disabled text-caption">
-                    Sin ingresos registrados
-                  </td>
-                </tr>
-                <tr v-else v-for="item in incomeTransactions" :key="item.id">
-                  <td>
-                    <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate" style="max-width: 200px;">
-                      {{ item.description }}
-                    </div>
-                  </td>
-                  <td class="text-caption text-medium-emphasis">
-                    {{ item.quantity }} x ${{ parseFloat(item.unit_cost).toFixed(2) }}
-                  </td>
-                  <td class="text-right py-2">
-                    <div class="text-success text-subtitle-2 font-weight-bold">
-                      +${{ parseFloat(item.amount).toFixed(2) }}
-                    </div>
-                    <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mt-1" style="font-size: 0.65rem; letter-spacing: 0.3px;">
-                      {{ item.account }}
-                    </div>
-                  </td>
-                  <td class="text-center pa-0" style="white-space: nowrap;">
-                    <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1" @click="editTransaction(item)" />
-                    <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line" @click="deleteTransaction(item)" />
-                  </td>
-                </tr>
+                <template v-if="loading">
+                  <tr v-for="i in 3" :key="'sk-inc-'+i">
+                    <td colspan="4" class="pa-3">
+                      <VSkeletonLoader type="list-item-two-line" />
+                    </td>
+                  </tr>
+                </template>
+                <template v-else>
+                  <tr v-if="incomeTransactions.length === 0">
+                    <td colspan="4" class="text-center py-6 text-disabled text-caption">
+                      Sin ingresos registrados
+                    </td>
+                  </tr>
+                  <tr v-else v-for="item in incomeTransactions" :key="item.id">
+                    <td>
+                      <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate" style="max-width: 200px;">
+                        {{ item.description }}
+                      </div>
+                    </td>
+                    <td class="text-caption text-medium-emphasis">
+                      {{ item.quantity }} x ${{ parseFloat(item.unit_cost).toFixed(2) }}
+                    </td>
+                    <td class="text-right py-2">
+                      <div class="text-success text-subtitle-2 font-weight-bold">
+                        +${{ parseFloat(item.amount).toFixed(2) }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mt-1" style="font-size: 0.65rem; letter-spacing: 0.3px;">
+                        {{ item.account }}
+                      </div>
+                    </td>
+                    <td class="text-center pa-0" style="white-space: nowrap;">
+                      <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1" @click="editTransaction(item)" />
+                      <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line" @click="deleteTransaction(item)" />
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </VTable>
           </VCardText>
@@ -495,9 +479,15 @@ onMounted(() => {
                 <VIcon icon="ri-indent-decrease" />
                 <span class="font-weight-bold">EGRESOS</span>
               </div>
-              <VChip color="error" size="small" class="font-weight-bold">
-                ${{ totalExpenses.toFixed(2) }}
-              </VChip>
+              <div class="d-flex align-center gap-2">
+                <VBtn color="error" size="small" variant="flat" prepend-icon="ri-indent-decrease" @click="openExpense">
+                  Registrar Egreso
+                </VBtn>
+                <VChip color="error" size="small" class="font-weight-bold">
+                  <span v-if="loading">...</span>
+                  <span v-else>${{ totalExpenses.toFixed(2) }}</span>
+                </VChip>
+              </div>
             </VCardTitle>
           </VCardItem>
           <VCardText class="pa-0">
@@ -511,33 +501,43 @@ onMounted(() => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="expenseTransactions.length === 0">
-                  <td colspan="4" class="text-center py-6 text-disabled text-caption">
-                    Sin egresos registrados
-                  </td>
-                </tr>
-                <tr v-else v-for="item in expenseTransactions" :key="item.id">
-                  <td>
-                    <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate" style="max-width: 200px;">
-                      {{ item.description }}
-                    </div>
-                  </td>
-                  <td class="text-caption text-medium-emphasis">
-                    {{ item.unit || 'Sin unidad' }}
-                  </td>
-                  <td class="text-right py-2">
-                    <div class="text-error text-subtitle-2 font-weight-bold">
-                      -${{ parseFloat(item.amount).toFixed(2) }}
-                    </div>
-                    <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mt-1" style="font-size: 0.65rem; letter-spacing: 0.3px;">
-                      {{ item.account }}
-                    </div>
-                  </td>
-                  <td class="text-center pa-0" style="white-space: nowrap;">
-                    <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1" @click="editTransaction(item)" />
-                    <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line" @click="deleteTransaction(item)" />
-                  </td>
-                </tr>
+                <template v-if="loading">
+                  <tr v-for="i in 3" :key="'sk-exp-'+i">
+                    <td colspan="4" class="pa-3">
+                      <VSkeletonLoader type="list-item-two-line" />
+                    </td>
+                  </tr>
+                </template>
+                <template v-else>
+                  <tr v-if="expenseTransactions.length === 0">
+                    <td colspan="4" class="text-center py-6 text-disabled text-caption">
+                      Sin egresos registrados
+                    </td>
+                  </tr>
+                  <tr v-else v-for="item in expenseTransactions" :key="item.id">
+                    <td>
+                      <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate" style="max-width: 200px;">
+                        {{ item.description }}
+                      </div>
+                    </td>
+                    <td class="text-caption text-medium-emphasis">
+                      {{ item.quantity || 1 }} {{ item.unit || 'Sin unidad' }} <br>
+                      <span style="font-size: 0.7rem; opacity: 0.8">x ${{ item.unit_cost ? parseFloat(item.unit_cost).toFixed(2) : (parseFloat(item.amount) / (item.quantity || 1)).toFixed(2) }} c/u</span>
+                    </td>
+                    <td class="text-right py-2">
+                      <div class="text-error text-subtitle-2 font-weight-bold">
+                        -${{ parseFloat(item.amount).toFixed(2) }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mt-1" style="font-size: 0.65rem; letter-spacing: 0.3px;">
+                        {{ item.account }}
+                      </div>
+                    </td>
+                    <td class="text-center pa-0" style="white-space: nowrap;">
+                      <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1" @click="editTransaction(item)" />
+                      <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line" @click="deleteTransaction(item)" />
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </VTable>
           </VCardText>
@@ -619,13 +619,18 @@ onMounted(() => {
               </VCol>
 
               <VCol cols="6" class="pb-3">
-                <VTextField v-model.number="expenseForm.cost" label="Costo Total ($) *" type="number" step="0.01"
+                <VTextField v-model.number="expenseForm.unitCost" label="Costo Unitario ($) *" type="number" step="0.01"
                   min="0.01" variant="outlined" prefix="$" :rules="[rules.required, rules.positive, rules.number]" />
               </VCol>
 
               <VCol cols="6" class="pb-3">
-                <VTextField v-model="expenseForm.unit" label="Cantidad/Unidad de compra *"
-                  placeholder="Ej: 10 kg, 3 litros" variant="outlined" :rules="[rules.required]" />
+                <VTextField v-model.number="expenseForm.quantity" label="Cantidad de compra *" type="number" min="1"
+                  variant="outlined" :rules="[rules.required, rules.positive, rules.number]" />
+              </VCol>
+
+              <VCol cols="12" class="pb-3">
+                <VTextField v-model="expenseForm.unit" label="Unidad de medida *"
+                  placeholder="Ej: Unidades, kg, litros" variant="outlined" :rules="[rules.required]" />
               </VCol>
 
               <VCol cols="12" class="pb-3">
