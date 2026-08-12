@@ -16,11 +16,11 @@ export const vehicleTypes = [
 export const getVehicleTypeOptions = () => {
   return vehicleTypes.map(type => ({
     title: type.name,
-    value: type.id
+    value: type.id,
   }))
 }
 
-export const getVehicleTypeNameById = (id) => {
+export const getVehicleTypeNameById = id => {
   if (!id) return 'No especificado'
   
   // Soporte para IDs antiguos guardados como string o ids numéricos
@@ -36,8 +36,9 @@ export const getVehicleTypeNameById = (id) => {
   return type ? type.name : id
 }
 
-export const getVehicleTypeColor = (id) => {
+export const getVehicleTypeColor = id => {
   const numericId = parseInt(id)
+
   const colors = {
     1: 'primary',      // Sedan
     2: 'info',         // Hatchback
@@ -50,7 +51,7 @@ export const getVehicleTypeColor = (id) => {
     9: 'pink',         // Convertible
     10: 'cyan',        // Minivan
     11: 'teal',        // Pickup
-    12: 'indigo'       // Van
+    12: 'indigo',       // Van
   }
   
   return colors[numericId] || 'grey'

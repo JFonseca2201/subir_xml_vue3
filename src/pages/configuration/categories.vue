@@ -2,6 +2,7 @@
 /* eslint-disable camelcase */
 import defaultCategoryImg from '@images/misc/default_category.png'
 import { useLoaderStore } from '@/stores/loader'
+
 const loader = useLoaderStore()
 
 const headers = [
@@ -218,7 +219,12 @@ definePage({ meta: { permission: "settings" } })
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-price-tag-3-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-price-tag-3-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Categorías
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -226,8 +232,11 @@ definePage({ meta: { permission: "settings" } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-line"
-          @click="isCategorieAddDialogVisible = !isCategorieAddDialogVisible">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="isCategorieAddDialogVisible = !isCategorieAddDialogVisible"
+        >
           Nueva Categoría
         </VBtn>
       </div>
@@ -239,9 +248,17 @@ definePage({ meta: { permission: "settings" } })
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
           <VCol cols="12">
-            <VTextField v-model="searchQuery" label="Buscar categoría" placeholder="Nombre de categoría..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" />
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar categoría"
+              placeholder="Nombre de categoría..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
@@ -249,27 +266,49 @@ definePage({ meta: { permission: "settings" } })
       <!-- Tabla de Categorías -->
       <div class="position-relative">
         <div class="overflow-x-auto">
-          <VTable hover class="categories-table">
+          <VTable
+            hover
+            class="categories-table"
+          >
             <thead>
               <tr>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 250px;"
+                >
                   CATEGORÍA
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
                   ESTADO
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
                   FECHA REG.
                 </th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 90px;"
+                >
                   ACCIONES
                 </th>
               </tr>
             </thead>
             <tbody v-if="!list_categories || list_categories.length === 0">
               <tr>
-                <td colspan="4" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                <td
+                  colspan="4"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
                     ri-folder-line
                   </VIcon>
                   <div class="text-h6">
@@ -282,10 +321,18 @@ definePage({ meta: { permission: "settings" } })
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="item in list_categories" :key="item.id" class="categories-row align-middle">
+              <tr
+                v-for="item in list_categories"
+                :key="item.id"
+                class="categories-row align-middle"
+              >
                 <td class="text-left py-3">
                   <div class="d-flex align-center">
-                    <VAvatar size="32" class="cursor-pointer" @click="viewImage(item)">
+                    <VAvatar
+                      size="32"
+                      class="cursor-pointer"
+                      @click="viewImage(item)"
+                    >
                       <VImg :src="getCategoryIcon(item.imagen)">
                         <template #error>
                           <VImg :src="defaultCategoryImg" />
@@ -300,16 +347,30 @@ definePage({ meta: { permission: "settings" } })
                   </div>
                 </td>
                 <td class="text-left py-3">
-                  <VChip v-if="item.state == 1" size="small" color="success" variant="tonal">
+                  <VChip
+                    v-if="item.state == 1"
+                    size="small"
+                    color="success"
+                    variant="tonal"
+                  >
                     Activo
                   </VChip>
-                  <VChip v-if="item.state == 2" size="small" color="error" variant="tonal">
+                  <VChip
+                    v-if="item.state == 2"
+                    size="small"
+                    color="error"
+                    variant="tonal"
+                  >
                     Inactivo
                   </VChip>
                 </td>
                 <td class="text-no-wrap text-left py-3">
                   <div class="d-flex align-center">
-                    <VIcon icon="ri-calendar-line" size="14" class="me-1 text-grey" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="14"
+                      class="me-1 text-grey"
+                    />
                     <span class="text-body-2 text-medium-emphasis">
                       {{ formatDate(item.created_at) }}
                     </span>
@@ -317,13 +378,33 @@ definePage({ meta: { permission: "settings" } })
                 </td>
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn class="action-btn" variant="text" icon size="small" color="primary" title="Editar"
-                      @click="editItem(item)">
-                      <VIcon icon="ri-pencil-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="primary"
+                      title="Editar"
+                      @click="editItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
-                      @click="deleteItem(item)">
-                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -340,32 +421,57 @@ definePage({ meta: { permission: "settings" } })
           <div class="text-caption text-grey-darken-1">
             Mostrando <span class="font-weight-bold">{{ list_categories.length }}</span> registros
           </div>
-          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary"
-            @update:model-value="list" />
+          <VPagination
+            v-model="currentPage"
+            :length="totalPage"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+            @update:model-value="list"
+          />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- DIALOGS -->
-    <CategorieAddDialog v-model:isDialogVisible="isCategorieAddDialogVisible" @add-categorie="addNewCategorie" />
+    <CategorieAddDialog
+      v-model:isDialogVisible="isCategorieAddDialogVisible"
+      @add-categorie="addNewCategorie"
+    />
 
-    <CategorieEditDialog v-if="categorie_selected_edit && isCategorieEditDialogVisible"
-      v-model:isDialogVisible="isCategorieEditDialogVisible" :categorie-selected="categorie_selected_edit"
-      @edit-categorie="addEditCategorie" />
+    <CategorieEditDialog
+      v-if="categorie_selected_edit && isCategorieEditDialogVisible"
+      v-model:isDialogVisible="isCategorieEditDialogVisible"
+      :categorie-selected="categorie_selected_edit"
+      @edit-categorie="addEditCategorie"
+    />
 
-    <CategorieDeleteDialog v-if="categorie_selected_delete && isCategorieDeleteDialogVisible"
-      v-model:isDialogVisible="isCategorieDeleteDialogVisible" :categorie-selected="categorie_selected_delete"
-      @delete-categorie="addDeleteCategorie" />
+    <CategorieDeleteDialog
+      v-if="categorie_selected_delete && isCategorieDeleteDialogVisible"
+      v-model:isDialogVisible="isCategorieDeleteDialogVisible"
+      :categorie-selected="categorie_selected_delete"
+      @delete-categorie="addDeleteCategorie"
+    />
 
     <!-- Diálogo para ver imagen de categoría -->
-    <VDialog v-model="isCategorieImageDialogVisible" max-width="600px">
+    <VDialog
+      v-model="isCategorieImageDialogVisible"
+      max-width="600px"
+    >
       <VCard>
         <VCardTitle class="d-flex align-center justify-space-between pa-4">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-image-line" color="primary" />
+            <VIcon
+              icon="ri-image-line"
+              color="primary"
+            />
             <span>Imagen de Categoría</span>
           </div>
-          <VBtn icon variant="text" @click="isCategorieImageDialogVisible = false">
+          <VBtn
+            icon
+            variant="text"
+            @click="isCategorieImageDialogVisible = false"
+          >
             <VIcon icon="ri-close-line" />
           </VBtn>
         </VCardTitle>
@@ -381,10 +487,20 @@ definePage({ meta: { permission: "settings" } })
             </div>
 
             <div class="d-flex justify-center">
-              <VImg :src="getCategoryIcon(categorie_selected_image?.imagen)" max-width="400" max-height="300" contain
-                class="rounded-lg elevation-4">
+              <VImg
+                :src="getCategoryIcon(categorie_selected_image?.imagen)"
+                max-width="400"
+                max-height="300"
+                contain
+                class="rounded-lg elevation-4"
+              >
                 <template #error>
-                  <VImg :src="defaultCategoryImg" max-width="400" max-height="300" contain />
+                  <VImg
+                    :src="defaultCategoryImg"
+                    max-width="400"
+                    max-height="300"
+                    contain
+                  />
                 </template>
               </VImg>
             </div>
@@ -395,7 +511,11 @@ definePage({ meta: { permission: "settings" } })
 
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn color="primary" variant="elevated" @click="isCategorieImageDialogVisible = false">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            @click="isCategorieImageDialogVisible = false"
+          >
             Cerrar
           </VBtn>
         </VCardActions>

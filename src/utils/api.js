@@ -37,11 +37,13 @@ export const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname
+
     // Si accedemos por IP de red (ej: 192.168.100.4), adaptamos la llamada de API a esa misma IP
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
       return `http://${hostname}:8000/api/`
     }
   }
+  
   return envUrl || 'http://127.0.0.1:8000/api/'
 }
 

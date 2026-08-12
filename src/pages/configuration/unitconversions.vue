@@ -102,6 +102,7 @@ const addDeleteConversion = deletedConversion => {
   if (!deletedConversion || !deletedConversion.id) {
     console.error('Conversión eliminada no válida:', deletedConversion)
     showNotification('Error: datos de la conversión no válidos', 'error')
+    
     return
   }
 
@@ -115,6 +116,7 @@ const addDeleteConversion = deletedConversion => {
   } else {
     console.warn('No se encontró la conversión en la lista local')
     list()
+    
     return
   }
 
@@ -148,7 +150,12 @@ definePage({ meta: { permission: "settings" } })
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-file-ppt-2-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-file-ppt-2-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Conversiones de Unidades
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -156,8 +163,11 @@ definePage({ meta: { permission: "settings" } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-line"
-          @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible"
+        >
           Nueva Conversión
         </VBtn>
       </div>
@@ -168,32 +178,76 @@ definePage({ meta: { permission: "settings" } })
       <!-- Tabla de Conversiones -->
       <div class="position-relative">
         <div class="overflow-x-auto">
-          <VTable hover class="conversions-table">
+          <VTable
+            hover
+            class="conversions-table"
+          >
             <thead>
               <tr>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">UNIDAD ORIGEN</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">UNIDAD DESTINO</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">FACTOR</th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">ACCIONES</th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  UNIDAD ORIGEN
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  UNIDAD DESTINO
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
+                  FACTOR
+                </th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
+                  ACCIONES
+                </th>
               </tr>
             </thead>
             <tbody v-if="!list_conversions || list_conversions.length === 0">
               <tr>
-                <td colspan="4" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-file-ppt-2-line</VIcon>
-                  <div class="text-h6">No hay conversiones registradas</div>
-                  <div class="text-body-2">Agrega conversiones entre unidades de medida</div>
+                <td
+                  colspan="4"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
+                    ri-file-ppt-2-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No hay conversiones registradas
+                  </div>
+                  <div class="text-body-2">
+                    Agrega conversiones entre unidades de medida
+                  </div>
                 </td>
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="item in list_conversions" :key="item.id" class="conversions-row align-middle">
+              <tr
+                v-for="item in list_conversions"
+                :key="item.id"
+                class="conversions-row align-middle"
+              >
                 <td class="text-left py-3">
                   <span class="font-weight-semibold text-body-1 text-grey-darken-4">
                     {{ item.from_unit?.name || 'Sin nombre' }}
                   </span>
-                  <VChip size="x-small" class="ml-2" :color="item.from_unit?.category === 'volume' ? 'info' : 'success'"
-                    variant="tonal">
+                  <VChip
+                    size="x-small"
+                    class="ml-2"
+                    :color="item.from_unit?.category === 'volume' ? 'info' : 'success'"
+                    variant="tonal"
+                  >
                     {{ item.from_unit?.code || '' }}
                   </VChip>
                 </td>
@@ -201,8 +255,12 @@ definePage({ meta: { permission: "settings" } })
                   <span class="font-weight-semibold text-body-1 text-grey-darken-4">
                     {{ item.to_unit?.name || 'Sin nombre' }}
                   </span>
-                  <VChip size="x-small" class="ml-2" :color="item.to_unit?.category === 'volume' ? 'info' : 'success'"
-                    variant="tonal">
+                  <VChip
+                    size="x-small"
+                    class="ml-2"
+                    :color="item.to_unit?.category === 'volume' ? 'info' : 'success'"
+                    variant="tonal"
+                  >
                     {{ item.to_unit?.code || '' }}
                   </VChip>
                 </td>
@@ -213,13 +271,33 @@ definePage({ meta: { permission: "settings" } })
                 </td>
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn class="action-btn" variant="text" icon size="small" color="primary" title="Editar"
-                      @click="editItem(item)">
-                      <VIcon icon="ri-pencil-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="primary"
+                      title="Editar"
+                      @click="editItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
-                      @click="deleteItem(item)">
-                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -231,12 +309,19 @@ definePage({ meta: { permission: "settings" } })
     </VCard>
 
     <!-- DIALOGS -->
-    <UnitAddConversionDialog v-model:isDialogVisible="isUnitAddConversionDialogVisible"
-      :unit-selected="conversion_selected_edit" :units="list_units" @add-conversion="addNewConversion"
-      @edit-conversion="addEditConversion" />
+    <UnitAddConversionDialog
+      v-model:isDialogVisible="isUnitAddConversionDialogVisible"
+      :unit-selected="conversion_selected_edit"
+      :units="list_units"
+      @add-conversion="addNewConversion"
+      @edit-conversion="addEditConversion"
+    />
 
-    <UnitDeleteConversionDialog v-if="conversion_selected_delete && isUnitDeleteConversionDialogVisible"
-      v-model:isDialogVisible="isUnitDeleteConversionDialogVisible" :conversion-selected="conversion_selected_delete"
-      @delete-conversion="addDeleteConversion" />
+    <UnitDeleteConversionDialog
+      v-if="conversion_selected_delete && isUnitDeleteConversionDialogVisible"
+      v-model:isDialogVisible="isUnitDeleteConversionDialogVisible"
+      :conversion-selected="conversion_selected_delete"
+      @delete-conversion="addDeleteConversion"
+    />
   </div>
 </template>

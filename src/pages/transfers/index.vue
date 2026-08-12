@@ -28,6 +28,7 @@ const canAccessTransfers = computed(() => {
 
 // Estado del componente
 const transfers = ref([])
+
 const resumen = ref({
   total_hoy: 0,
   total_mes: 0,
@@ -94,8 +95,10 @@ const loadTransfers = async () => {
     loading.value = false
   }
 }
+
 const cleanAccountName = name => {
   if (!name) return 'N/A'
+  
   return name
     .replace(/\(EFECTIVO\)/gi, '')
     .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -170,6 +173,7 @@ const formatDate = dateString => {
 // Formatear fecha para encabezado de grupos
 const formatDateHeader = labelString => {
   if (!labelString) return 'Transferencias'
+
   // Si la etiqueta es tipo YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(labelString)) {
     const todayObj = new Date()
@@ -182,6 +186,7 @@ const formatDateHeader = labelString => {
     return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       .replace(/^\w/, c => c.toUpperCase())
   }
+  
   return labelString
 }
 
@@ -211,6 +216,7 @@ const filteredTransfers = computed(() => {
   return transfers.value
     .map(group => {
       const items = group.transfers || [group]
+
       const matchingItems = items.filter(t => {
         const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
 
@@ -257,10 +263,25 @@ onMounted(() => {
 
 <template>
   <!-- Estado sin permisos -->
-  <div v-if="!canAccessTransfers" class="d-flex justify-center align-center" style="min-height: 400px">
-    <VCard class="pa-8 text-center rounded-xl elevation-4" max-width="460">
-      <VAvatar color="error" variant="tonal" size="72" class="mb-4">
-        <VIcon size="38" icon="ri-lock-line" />
+  <div
+    v-if="!canAccessTransfers"
+    class="d-flex justify-center align-center"
+    style="min-height: 400px"
+  >
+    <VCard
+      class="pa-8 text-center rounded-xl elevation-4"
+      max-width="460"
+    >
+      <VAvatar
+        color="error"
+        variant="tonal"
+        size="72"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-lock-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">
         Acceso Restringido
@@ -268,24 +289,50 @@ onMounted(() => {
       <p class="text-body-1 text-medium-emphasis mb-6">
         No tienes permisos suficientes para acceder al módulo de gestión de transferencias.
       </p>
-      <VBtn color="primary" size="large" variant="elevated" prepend-icon="ri-dashboard-line" class="font-weight-semibold" @click="router.push('/dashboard')">
+      <VBtn
+        color="primary"
+        size="large"
+        variant="elevated"
+        prepend-icon="ri-dashboard-line"
+        class="font-weight-semibold"
+        @click="router.push('/dashboard')"
+      >
         Volver al Dashboard
       </VBtn>
     </VCard>
   </div>
 
-  <div v-else class="pa-4 pa-sm-6 transfers-page">
+  <div
+    v-else
+    class="pa-4 pa-sm-6 transfers-page"
+  >
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
-          <VAvatar color="primary" variant="tonal" rounded="lg" size="56" class="elevation-1">
-            <VIcon icon="ri-arrow-left-right-line" size="32" />
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            size="56"
+            class="elevation-1"
+          >
+            <VIcon
+              icon="ri-arrow-left-right-line"
+              size="32"
+            />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2">
-              <h1 class="text-h4 font-weight-bold text-high-emphasis mb-0">Transferencias</h1>
-              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+              <h1 class="text-h4 font-weight-bold text-high-emphasis mb-0">
+                Transferencias
+              </h1>
+              <VChip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="font-weight-bold"
+              >
                 {{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
@@ -321,8 +368,15 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales e impresiones de texto de alto contraste -->
     <VRow class="mb-6">
       <!-- Transferido Hoy -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary" elevation="0">
+      <VCol
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -335,16 +389,32 @@ onMounted(() => {
                 Movimientos de la jornada actual
               </span>
             </div>
-            <VAvatar color="primary" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-calendar-check-line" color="white" />
+            <VAvatar
+              color="primary"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-calendar-check-line"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Transferido en el Mes -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-success-tonal border-success" elevation="0">
+      <VCol
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-success-tonal border-success"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -357,16 +427,32 @@ onMounted(() => {
                 Acumulado mes en curso
               </span>
             </div>
-            <VAvatar color="success" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-calendar-event-fill" color="white" />
+            <VAvatar
+              color="success"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-calendar-event-fill"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Histórico -->
-      <VCol cols="12" sm="12" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-info-tonal border-info" elevation="0">
+      <VCol
+        cols="12"
+        sm="12"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-info-tonal border-info"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
@@ -379,8 +465,17 @@ onMounted(() => {
                 Suma total de transferencias
               </span>
             </div>
-            <VAvatar color="info" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-safe-2-line" color="white" />
+            <VAvatar
+              color="info"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-safe-2-line"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
@@ -389,8 +484,14 @@ onMounted(() => {
 
     <!-- Barra de Búsqueda y Filtros Rápidos -->
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
-      <VRow align="center" density="comfortable">
-        <VCol cols="12" md="6">
+      <VRow
+        align="center"
+        density="comfortable"
+      >
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="searchQuery"
             prepend-inner-icon="ri-search-2-line"
@@ -403,7 +504,11 @@ onMounted(() => {
           />
         </VCol>
 
-        <VCol cols="12" md="6" class="d-flex justify-md-end align-center gap-2 flex-wrap">
+        <VCol
+          cols="12"
+          md="6"
+          class="d-flex justify-md-end align-center gap-2 flex-wrap"
+        >
           <span class="text-body-2 font-weight-medium text-medium-emphasis me-2">Filtrar:</span>
           <VBtn
             size="small"
@@ -437,9 +542,21 @@ onMounted(() => {
     </VCard>
 
     <!-- Sin registros iniciales (Base de datos vacía) -->
-    <VCard v-if="!loading && !transfers.length" class="text-center pa-12 rounded-xl border-light elevation-1">
-      <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
-        <VIcon icon="ri-inbox-line" size="42" color="primary" />
+    <VCard
+      v-if="!loading && !transfers.length"
+      class="text-center pa-12 rounded-xl border-light elevation-1"
+    >
+      <VAvatar
+        color="primary"
+        variant="tonal"
+        size="80"
+        class="mb-4"
+      >
+        <VIcon
+          icon="ri-inbox-line"
+          size="42"
+          color="primary"
+        />
       </VAvatar>
       <h3 class="text-h6 font-weight-bold text-high-emphasis">
         No hay transferencias registradas
@@ -459,29 +576,44 @@ onMounted(() => {
     </VCard>
 
     <!-- Lista de Transferencias Unificada (Se muestra si está cargando o si ya hay registros) -->
-    <VCard v-else class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+    <VCard
+      v-else
+      class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative"
+    >
       <VProgressLinear
-        v-slot:default
         v-if="loading"
+        v-slot
         indeterminate
         color="primary"
         height="3"
         class="position-absolute"
         style="top: 0; left: 0; right: 0; z-index: 10;"
       />
-      <VTable hover class="transfer-table text-no-wrap">
+      <VTable
+        hover
+        class="transfer-table text-no-wrap"
+      >
         <thead>
           <tr>
-            <th class="text-left py-3" style="min-width: 320px;">
+            <th
+              class="text-left py-3"
+              style="min-width: 320px;"
+            >
               FLUJO DE LA TRANSFERENCIA
             </th>
             <th class="text-left py-3">
               DESCRIPCIÓN & FECHA
             </th>
-            <th class="text-right py-3" style="width: 160px;">
+            <th
+              class="text-right py-3"
+              style="width: 160px;"
+            >
               MONTO
             </th>
-            <th class="text-center py-3" style="width: 120px;">
+            <th
+              class="text-center py-3"
+              style="width: 120px;"
+            >
               ACCIONES
             </th>
           </tr>
@@ -489,21 +621,25 @@ onMounted(() => {
         
         <!-- Cargando (Skeleton Rows) -->
         <tbody v-if="loading">
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+          <tr
+            v-for="n in 5"
+            :key="n"
+            class="skeleton-row align-middle"
+          >
             <td class="py-4">
-              <div class="shimmer-line w-75"></div>
+              <div class="shimmer-line w-75" />
             </td>
             <td class="py-4">
-              <div class="shimmer-line w-60 mb-2"></div>
-              <div class="shimmer-line w-40"></div>
+              <div class="shimmer-line w-60 mb-2" />
+              <div class="shimmer-line w-40" />
             </td>
             <td class="py-4">
-              <div class="shimmer-line w-40 ms-auto"></div>
+              <div class="shimmer-line w-40 ms-auto" />
             </td>
             <td class="py-4 text-center">
               <div class="d-flex justify-center gap-2">
-                <div class="shimmer-button"></div>
-                <div class="shimmer-button"></div>
+                <div class="shimmer-button" />
+                <div class="shimmer-button" />
               </div>
             </td>
           </tr>
@@ -512,26 +648,54 @@ onMounted(() => {
         <!-- Sin resultados filtrados -->
         <tbody v-else-if="!filteredTransfers.length">
           <tr>
-            <td colspan="4" class="text-center py-12 text-medium-emphasis">
-              <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
-                <VIcon icon="ri-inbox-line" size="32" color="primary" />
+            <td
+              colspan="4"
+              class="text-center py-12 text-medium-emphasis"
+            >
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="64"
+                class="mb-3"
+              >
+                <VIcon
+                  icon="ri-inbox-line"
+                  size="32"
+                  color="primary"
+                />
               </VAvatar>
-              <div class="text-h6 font-weight-bold text-high-emphasis">Sin resultados para la búsqueda</div>
-              <div class="text-body-2 text-medium-emphasis mt-1">Prueba cambiando el término de búsqueda o limpia el filtro aplicado.</div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                Sin resultados para la búsqueda
+              </div>
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                Prueba cambiando el término de búsqueda o limpia el filtro aplicado.
+              </div>
             </td>
           </tr>
         </tbody>
 
         <!-- Datos reales -->
         <tbody v-else>
-          <template v-for="group in filteredTransfers" :key="group.label">
+          <template
+            v-for="group in filteredTransfers"
+            :key="group.label"
+          >
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
               <td colspan="4">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar color="primary" variant="tonal" size="32" rounded="lg">
-                      <VIcon icon="ri-calendar-event-line" size="18" color="primary" />
+                    <VAvatar
+                      color="primary"
+                      variant="tonal"
+                      size="32"
+                      rounded="lg"
+                    >
+                      <VIcon
+                        icon="ri-calendar-event-line"
+                        size="18"
+                        color="primary"
+                      />
                     </VAvatar>
                     <div class="d-flex align-center gap-2">
                       <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
@@ -545,7 +709,12 @@ onMounted(() => {
 
                   <div class="d-flex align-center gap-2 me-2">
                     <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">TOTAL DÍA:</span>
-                    <VChip color="primary" variant="tonal" size="small" class="font-weight-bold px-3">
+                    <VChip
+                      color="primary"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold px-3"
+                    >
                       {{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}
                     </VChip>
                   </div>
@@ -563,16 +732,30 @@ onMounted(() => {
               <td class="py-3">
                 <div class="d-flex align-center gap-2 flex-wrap">
                   <div class="d-flex align-center gap-1 bg-red-tonal px-3 py-1 rounded-lg border-danger">
-                    <VIcon start size="14" icon="ri-bank-line" color="error" />
+                    <VIcon
+                      start
+                      size="14"
+                      icon="ri-bank-line"
+                      color="error"
+                    />
                     <span class="text-body-2 font-weight-bold text-error">
                       {{ getAccountName(transfer.source_account) }}
                     </span>
                   </div>
 
-                  <VIcon icon="ri-arrow-right-line" size="16" class="text-medium-emphasis mx-1 animate-arrow" />
+                  <VIcon
+                    icon="ri-arrow-right-line"
+                    size="16"
+                    class="text-medium-emphasis mx-1 animate-arrow"
+                  />
 
                   <div class="d-flex align-center gap-1 bg-success-tonal px-3 py-1 rounded-lg border-success">
-                    <VIcon start size="14" icon="ri-bank-line" color="success" />
+                    <VIcon
+                      start
+                      size="14"
+                      icon="ri-bank-line"
+                      color="success"
+                    />
                     <span class="text-body-2 font-weight-bold text-success">
                       {{ getAccountName(transfer.destination_account) }}
                     </span>
@@ -637,17 +820,33 @@ onMounted(() => {
   />
 
   <!-- Modal Confirmar Eliminación -->
-  <VDialog v-model="showDeleteDialog" max-width="440">
+  <VDialog
+    v-model="showDeleteDialog"
+    max-width="440"
+  >
     <VCard class="rounded-xl pa-2">
       <VCardTitle class="pa-4 pb-2">
         <div class="d-flex align-center justify-space-between">
           <div class="d-flex align-center gap-3">
-            <VAvatar color="error" variant="tonal" size="40">
-              <VIcon color="error" icon="ri-delete-bin-line" size="22" />
+            <VAvatar
+              color="error"
+              variant="tonal"
+              size="40"
+            >
+              <VIcon
+                color="error"
+                icon="ri-delete-bin-line"
+                size="22"
+              />
             </VAvatar>
             <span class="text-h6 font-weight-bold text-high-emphasis">Eliminar Transferencia</span>
           </div>
-          <VBtn icon="ri-close-line" variant="text" size="small" @click="closeDeleteDialog" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            @click="closeDeleteDialog"
+          />
         </div>
       </VCardTitle>
       <VDivider class="my-2" />
@@ -657,15 +856,33 @@ onMounted(() => {
           <strong class="text-error font-weight-bold">{{ formatCurrency(transferToDelete?.amount) }}</strong>?
         </div>
         <div class="text-caption text-medium-emphasis bg-error-tonal pa-3 rounded-lg border-error">
-          <VIcon icon="ri-alert-line" size="16" color="error" class="me-1" />
+          <VIcon
+            icon="ri-alert-line"
+            size="16"
+            color="error"
+            class="me-1"
+          />
           Esta acción revertirá los fondos a sus cuentas de origen y destino originales.
         </div>
       </VCardText>
       <VCardActions class="pa-4 pt-0 d-flex justify-end gap-2">
-        <VBtn variant="tonal" color="secondary" class="font-weight-semibold" :disabled="loading" @click="closeDeleteDialog">
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          class="font-weight-semibold"
+          :disabled="loading"
+          @click="closeDeleteDialog"
+        >
           Cancelar
         </VBtn>
-        <VBtn color="error" variant="elevated" class="font-weight-semibold" :loading="loading" prepend-icon="ri-delete-bin-line" @click="confirmDeleteTransfer">
+        <VBtn
+          color="error"
+          variant="elevated"
+          class="font-weight-semibold"
+          :loading="loading"
+          prepend-icon="ri-delete-bin-line"
+          @click="confirmDeleteTransfer"
+        >
           Confirmar Eliminación
         </VBtn>
       </VCardActions>

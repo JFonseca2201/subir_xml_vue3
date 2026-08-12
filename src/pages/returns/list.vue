@@ -213,8 +213,8 @@ onMounted(() => {
       <!-- Tabla de Devoluciones -->
       <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
         <VProgressLinear
-          v-slot:default
           v-if="loading"
+          v-slot
           indeterminate
           color="primary"
           height="3"
@@ -270,27 +270,31 @@ onMounted(() => {
 
             <!-- Cargando (Skeleton Rows) -->
             <tbody v-if="loading">
-              <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle border-b border-opacity-25"
+              >
                 <td class="py-4">
-                  <div class="shimmer-line w-60 mb-2"></div>
-                  <div class="shimmer-line w-45"></div>
+                  <div class="shimmer-line w-60 mb-2" />
+                  <div class="shimmer-line w-45" />
                 </td>
                 <td class="py-4">
-                  <div class="shimmer-line w-50"></div>
+                  <div class="shimmer-line w-50" />
                 </td>
                 <td class="py-4">
-                  <div class="shimmer-line w-75"></div>
+                  <div class="shimmer-line w-75" />
                 </td>
                 <td class="py-4">
-                  <div class="shimmer-line w-80"></div>
+                  <div class="shimmer-line w-80" />
                 </td>
                 <td class="py-4">
-                  <div class="shimmer-line w-40 ms-auto"></div>
+                  <div class="shimmer-line w-40 ms-auto" />
                 </td>
                 <td class="py-4 text-center">
                   <div class="d-flex justify-center gap-1">
-                    <div class="shimmer-button"></div>
-                    <div class="shimmer-button"></div>
+                    <div class="shimmer-button" />
+                    <div class="shimmer-button" />
                   </div>
                 </td>
               </tr>

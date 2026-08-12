@@ -28,7 +28,7 @@ const userProfileList = [
       color: "error",
       text: "4",
       size: "small",
-      variant: "elevated"
+      variant: "elevated",
     },
   },
   { type: "divider" },
@@ -52,7 +52,7 @@ const router = useRouter()
 
 const isProfileDialogVisible = ref(false)
 
-const handleProfileUpdate = (updatedUser) => {
+const handleProfileUpdate = updatedUser => {
   user.value = updatedUser
 }
 
@@ -93,17 +93,24 @@ const logout = async () => {
           transition="scale-transition"
         >
           <VList class="pa-0 rounded-xl overflow-hidden elevation-4 border">
-            
             <!-- Modern Profile Header -->
             <div class="user-profile-header pa-5 d-flex flex-column align-center text-center">
-              <VAvatar size="70" class="elevation-3 mb-3 border-avatar">
+              <VAvatar
+                size="70"
+                class="elevation-3 mb-3 border-avatar"
+              >
                 <VImg :src="user && user.avatar ? user.avatar : avatar1" />
               </VAvatar>
               <div v-if="user">
                 <div class="text-h6 font-weight-bold text-high-emphasis mb-1">
                   {{ user.full_name || 'Usuario' }}
                 </div>
-                <VChip size="small" color="primary" variant="tonal" class="font-weight-medium px-4">
+                <VChip
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="font-weight-medium px-4"
+                >
                   {{ user.role?.name || 'Administrador' }}
                 </VChip>
               </div>
@@ -117,8 +124,15 @@ const logout = async () => {
             <VDivider />
 
             <!-- Nav Items -->
-            <PerfectScrollbar :options="{ wheelPropagation: false }" class="px-3 py-2">
-              <VList nav density="compact" class="pa-0">
+            <PerfectScrollbar
+              :options="{ wheelPropagation: false }"
+              class="px-3 py-2"
+            >
+              <VList
+                nav
+                density="compact"
+                class="pa-0"
+              >
                 <template
                   v-for="item in userProfileList"
                   :key="item.title"
@@ -131,7 +145,12 @@ const logout = async () => {
                     @click="item.action === 'open_profile' ? isProfileDialogVisible = true : null"
                   >
                     <template #prepend>
-                      <VAvatar color="primary" variant="tonal" size="32" class="me-3">
+                      <VAvatar
+                        color="primary"
+                        variant="tonal"
+                        size="32"
+                        class="me-3"
+                      >
                         <VIcon
                           :icon="item.icon"
                           size="18"
@@ -139,7 +158,9 @@ const logout = async () => {
                       </VAvatar>
                     </template>
 
-                    <VListItemTitle class="font-weight-medium text-body-2">{{ item.title }}</VListItemTitle>
+                    <VListItemTitle class="font-weight-medium text-body-2">
+                      {{ item.title }}
+                    </VListItemTitle>
 
                     <template
                       v-if="item.chipsProps"

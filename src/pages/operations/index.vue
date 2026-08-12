@@ -78,8 +78,8 @@ const mainCards = [
 
 // Determinar método de pago real (TRANSFERENCIA vs EFECTIVO)
 const getPaymentMethod = (movement, accountsList = []) => {
-    const rawMethod = (
-        movement.method ||
+  const rawMethod = (
+    movement.method ||
         movement.payment_method ||
         movement.metodo_pago ||
         movement.movable?.metodo_pago ||
@@ -87,44 +87,44 @@ const getPaymentMethod = (movement, accountsList = []) => {
         movement.metadata?.metodo ||
         movement.metadata?.payment_method ||
         ''
-    ).toString().toUpperCase()
+  ).toString().toUpperCase()
 
-    if (rawMethod.includes('TRANS') || rawMethod.includes('TRANSFER') || rawMethod.includes('BANCO') || rawMethod.includes('DEPOSITO')) {
+  if (rawMethod.includes('TRANS') || rawMethod.includes('TRANSFER') || rawMethod.includes('BANCO') || rawMethod.includes('DEPOSITO')) {
+    return 'TRANSFERENCIA'
+  }
+
+  let accountId = movement.account_id
+  if (movement.payment_distributions && movement.payment_distributions.length > 0) {
+    accountId = movement.payment_distributions[0].account_id || movement.payment_distributions[0].account || accountId
+  }
+
+  if (accountId && accountsList.length > 0) {
+    const account = accountsList.find(acc => String(acc.id) === String(accountId))
+    if (account) {
+      const accType = (account.type || '').toLowerCase()
+      const bankName = (account.bank_name || '').toLowerCase()
+      const accName = (account.name || '').toLowerCase()
+
+      if (accType === 'bank' || (bankName && !bankName.includes('efectivo') && !bankName.includes('caja'))) {
         return 'TRANSFERENCIA'
-    }
-
-    let accountId = movement.account_id
-    if (movement.payment_distributions && movement.payment_distributions.length > 0) {
-        accountId = movement.payment_distributions[0].account_id || movement.payment_distributions[0].account || accountId
-    }
-
-    if (accountId && accountsList.length > 0) {
-        const account = accountsList.find(acc => String(acc.id) === String(accountId))
-        if (account) {
-            const accType = (account.type || '').toLowerCase()
-            const bankName = (account.bank_name || '').toLowerCase()
-            const accName = (account.name || '').toLowerCase()
-
-            if (accType === 'bank' || (bankName && !bankName.includes('efectivo') && !bankName.includes('caja'))) {
-                return 'TRANSFERENCIA'
-            }
-            if (accName.includes('transferencia') || accName.includes('banco') || accName.includes('pichincha') || accName.includes('guayaquil') || accName.includes('produbanco') || accName.includes('pacifico')) {
-                return 'TRANSFERENCIA'
-            }
-            if (accType === 'cash' || bankName.includes('efectivo') || bankName.includes('caja') || accName.includes('efectivo') || accName.includes('caja')) {
-                return 'EFECTIVO'
-            }
-        }
-    }
-
-    const accLabel = (movement.account_name || movement.account_label || '').toLowerCase()
-    if (accLabel.includes('transferencia') || accLabel.includes('banco') || accLabel.includes('pichincha') || accLabel.includes('guayaquil') || accLabel.includes('produbanco') || accLabel.includes('pacifico')) {
+      }
+      if (accName.includes('transferencia') || accName.includes('banco') || accName.includes('pichincha') || accName.includes('guayaquil') || accName.includes('produbanco') || accName.includes('pacifico')) {
         return 'TRANSFERENCIA'
+      }
+      if (accType === 'cash' || bankName.includes('efectivo') || bankName.includes('caja') || accName.includes('efectivo') || accName.includes('caja')) {
+        return 'EFECTIVO'
+      }
     }
+  }
 
-    if (rawMethod === 'CASH') return 'EFECTIVO'
+  const accLabel = (movement.account_name || movement.account_label || '').toLowerCase()
+  if (accLabel.includes('transferencia') || accLabel.includes('banco') || accLabel.includes('pichincha') || accLabel.includes('guayaquil') || accLabel.includes('produbanco') || accLabel.includes('pacifico')) {
+    return 'TRANSFERENCIA'
+  }
 
-    return 'EFECTIVO'
+  if (rawMethod === 'CASH') return 'EFECTIVO'
+
+  return 'EFECTIVO'
 }
 
 // --- Lógica de Procesamiento ---
@@ -194,7 +194,7 @@ const dashboardOptions = async () => {
   try {
     const [response, accountsRes] = await Promise.all([
       $api('/dashboard-financiero'),
-      $api('accounts').catch(() => [])
+      $api('accounts').catch(() => []),
     ])
 
     if (accountsRes && Array.isArray(accountsRes)) {
@@ -224,8 +224,10 @@ const dashboardOptions = async () => {
       }
 
       const flatTransfers = []
+
       dataArray.forEach(group => {
         const items = group.transfers || [group]
+
         items.forEach(t => flatTransfers.push(t))
       })
 
@@ -234,12 +236,13 @@ const dashboardOptions = async () => {
       if (flatTransfers.length > 0) {
         const lastTransferObj = flatTransfers[0]
         const tDate = (lastTransferObj.transfer_date || lastTransferObj.created_at || '').split('T')[0]
+
         financialSummary.value = {
           ...financialSummary.value,
           lastTransfer: {
             amount: parseFloat(lastTransferObj.amount || 0),
-            date: tDate || '-'
-          }
+            date: tDate || '-',
+          },
         }
       }
     } catch (e) {
@@ -257,10 +260,10 @@ const dashboardOptions = async () => {
 // --- Utilidades ---
 const handleCardAction = action => {
   switch (action) {
-    case 'employee-expenses': router.push('/finanzas/employee-expenses'); break
-    case 'register-contribution': router.push({ name: 'aportes-index' }); break
-    case 'movements-index': router.push({ name: 'movements-index' }); break
-    case 'transfer': router.push('/transfers'); break
+  case 'employee-expenses': router.push('/finanzas/employee-expenses'); break
+  case 'register-contribution': router.push({ name: 'aportes-index' }); break
+  case 'movements-index': router.push({ name: 'movements-index' }); break
+  case 'transfer': router.push('/transfers'); break
   }
 }
 
@@ -273,6 +276,7 @@ const formatCurrency = value => {
 
 const cleanAccountName = name => {
   if (!name) return 'N/A'
+  
   return name
     .replace(/\(EFECTIVO\)/gi, '')
     .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -286,6 +290,7 @@ const formatDate = date => {
     const dStr = typeof date === 'string' ? date.split('T')[0] : date
     const [year, month, day] = dStr.split('-')
     if (year && month && day) return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+    
     return dStr
   } catch (e) {
     return 'N/A'
@@ -297,6 +302,7 @@ const generatePDF = async () => {
   pdfLoading.value = true
   try {
     const todayISO = new Date().toISOString().split('T')[0]
+
     const params = {
       group_by_type: true,
       separate_sections: true,
@@ -310,20 +316,21 @@ const generatePDF = async () => {
       response = await $api('financial-movements/pdf', {
         method: 'POST',
         body: params,
-        responseType: 'blob'
+        responseType: 'blob',
       })
     } catch (postErr) {
       console.warn('POST a financial-movements/pdf falló, reintentando con GET:', postErr)
       response = await $api('financial-movements/pdf', {
         method: 'GET',
         params: params,
-        responseType: 'blob'
+        responseType: 'blob',
       })
     }
 
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
+
     a.href = url
     a.download = `Reporte_Operaciones_${todayISO}.pdf`
     document.body.appendChild(a)
@@ -348,9 +355,21 @@ onMounted(() => {
 <template>
   <div>
     <!-- Pantalla de Bloqueo -->
-    <div v-if="!canAccessOperations" class="d-flex justify-center align-center" style="height: 400px">
-      <VCard class="pa-6 text-center" elevation="4" rounded="xl">
-        <VIcon size="64" color="error" class="mb-4">
+    <div
+      v-if="!canAccessOperations"
+      class="d-flex justify-center align-center"
+      style="height: 400px"
+    >
+      <VCard
+        class="pa-6 text-center"
+        elevation="4"
+        rounded="xl"
+      >
+        <VIcon
+          size="64"
+          color="error"
+          class="mb-4"
+        >
           ri-lock-line
         </VIcon>
         <h3 class="text-h5 mb-2">
@@ -359,7 +378,11 @@ onMounted(() => {
         <p class="text-medium-emphasis">
           No tienes permisos para acceder a la gestión de operaciones.
         </p>
-        <VBtn color="primary" class="mt-4" @click="router.push('/dashboard')">
+        <VBtn
+          color="primary"
+          class="mt-4"
+          @click="router.push('/dashboard')"
+        >
           Volver al Dashboard
         </VBtn>
       </VCard>
@@ -371,8 +394,16 @@ onMounted(() => {
       <VCard class="mb-4 rounded-xl border-light pa-5 elevation-1 sticky-header">
         <div class="d-flex align-center justify-space-between flex-wrap gap-4">
           <div class="d-flex align-center gap-3">
-            <VAvatar color="primary" variant="tonal" rounded size="48">
-              <VIcon icon="ri-exchange-funds-line" size="28" />
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              rounded
+              size="48"
+            >
+              <VIcon
+                icon="ri-exchange-funds-line"
+                size="28"
+              />
             </VAvatar>
             <div>
               <h4 class="text-h5 font-weight-bold mb-1">
@@ -388,7 +419,13 @@ onMounted(() => {
 
       <!-- Cards de Acceso Rápido -->
       <VRow class="mb-6">
-        <VCol v-for="card in mainCards" :key="card.title" cols="12" sm="6" md="3">
+        <VCol
+          v-for="card in mainCards"
+          :key="card.title"
+          cols="12"
+          sm="6"
+          md="3"
+        >
           <VCard
             elevation="2"
             class="h-100 rounded-lg cursor-pointer transition-swing"
@@ -396,8 +433,16 @@ onMounted(() => {
             @click="handleCardAction(card.action)"
           >
             <VCardText class="d-flex flex-column align-center text-center pa-6">
-              <VAvatar :color="card.color" variant="tonal" size="56" class="mb-4">
-                <VIcon :icon="card.icon" size="28" />
+              <VAvatar
+                :color="card.color"
+                variant="tonal"
+                size="56"
+                class="mb-4"
+              >
+                <VIcon
+                  :icon="card.icon"
+                  size="28"
+                />
               </VAvatar>
               <h5 class="text-subtitle-1 font-weight-bold mb-2">
                 {{ card.title }}
@@ -412,8 +457,14 @@ onMounted(() => {
 
       <VRow>
         <!-- Columna Movimientos -->
-        <VCol cols="12" md="8">
-          <VCard elevation="2" class="rounded-lg h-100 position-relative">
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VCard
+            elevation="2"
+            class="rounded-lg h-100 position-relative"
+          >
             <VProgressLinear
               v-if="loading"
               indeterminate
@@ -425,7 +476,10 @@ onMounted(() => {
             <VCardItem class="pa-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-history-line" color="primary" />
+                  <VIcon
+                    icon="ri-history-line"
+                    color="primary"
+                  />
                   <span class="font-weight-bold text-h6">Movimientos Recientes</span>
                 </div>
               </template>
@@ -445,35 +499,70 @@ onMounted(() => {
 
             <VCardText class="pa-0">
               <!-- Cargando (Skeleton List) -->
-              <VList v-if="loading" lines="two" class="bg-transparent">
-                <div v-for="n in 4" :key="n" class="pa-4 border-b d-flex align-center">
-                  <div class="shimmer-circle mr-4"></div>
+              <VList
+                v-if="loading"
+                lines="two"
+                class="bg-transparent"
+              >
+                <div
+                  v-for="n in 4"
+                  :key="n"
+                  class="pa-4 border-b d-flex align-center"
+                >
+                  <div class="shimmer-circle mr-4" />
                   <div class="flex-grow-1">
-                    <div class="shimmer-line w-50 mb-2"></div>
-                    <div class="shimmer-line w-75"></div>
+                    <div class="shimmer-line w-50 mb-2" />
+                    <div class="shimmer-line w-75" />
                   </div>
                   <div class="text-right">
-                    <div class="shimmer-line w-40 ms-auto"></div>
+                    <div class="shimmer-line w-40 ms-auto" />
                   </div>
                 </div>
               </VList>
 
               <!-- Sin resultados -->
-              <div v-else-if="recentMovements.length === 0" class="pa-10 text-center text-medium-emphasis">
-                <VAvatar color="grey-lighten-3" size="72" class="mb-4">
-                  <VIcon icon="ri-folder-info-line" size="36" color="grey" />
+              <div
+                v-else-if="recentMovements.length === 0"
+                class="pa-10 text-center text-medium-emphasis"
+              >
+                <VAvatar
+                  color="grey-lighten-3"
+                  size="72"
+                  class="mb-4"
+                >
+                  <VIcon
+                    icon="ri-folder-info-line"
+                    size="36"
+                    color="grey"
+                  />
                 </VAvatar>
-                <h3 class="text-h6 font-weight-medium">No hay movimientos</h3>
-                <p class="text-body-2 mt-1">No se encontraron registros financieros para este mes.</p>
+                <h3 class="text-h6 font-weight-medium">
+                  No hay movimientos
+                </h3>
+                <p class="text-body-2 mt-1">
+                  No se encontraron registros financieros para este mes.
+                </p>
               </div>
 
-              <VList v-else lines="two" class="bg-transparent" style="max-height: 550px; overflow-y: auto;">
-                <template v-for="day in recentMovements" :key="day.dateKey">
+              <VList
+                v-else
+                lines="two"
+                class="bg-transparent"
+                style="max-height: 550px; overflow-y: auto;"
+              >
+                <template
+                  v-for="day in recentMovements"
+                  :key="day.dateKey"
+                >
                   <VListSubheader class="text-uppercase font-weight-bold text-primary bg-grey-50 pa-4 sticky-top">
                     {{ day.date }}
                   </VListSubheader>
 
-                  <VListItem v-for="movement in day.movements" :key="movement.id" class="border-b movement-item">
+                  <VListItem
+                    v-for="movement in day.movements"
+                    :key="movement.id"
+                    class="border-b movement-item"
+                  >
                     <template #prepend>
                       <VAvatar
                         :color="movement.type === 'transfer' ? 'info' : (movement.type === 'income' ? 'success' : 'error')"
@@ -490,11 +579,23 @@ onMounted(() => {
 
                     <VListItemSubtitle>
                       <div class="d-flex align-center flex-wrap gap-2 text-caption">
-                        <span class="d-flex align-center"><VIcon icon="ri-folder-open-line" size="14" class="mr-1"/>{{ movement.module }}</span>
+                        <span class="d-flex align-center"><VIcon
+                          icon="ri-folder-open-line"
+                          size="14"
+                          class="mr-1"
+                        />{{ movement.module }}</span>
                         <span class="opacity-50">•</span>
-                        <span class="d-flex align-center"><VIcon :icon="movement.method === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'" size="14" class="mr-1"/>{{ movement.method === 'TRANSFERENCIA' ? 'Transferencia' : 'Efectivo' }}</span>
+                        <span class="d-flex align-center"><VIcon
+                          :icon="movement.method === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'"
+                          size="14"
+                          class="mr-1"
+                        />{{ movement.method === 'TRANSFERENCIA' ? 'Transferencia' : 'Efectivo' }}</span>
                         <span class="opacity-50">•</span>
-                        <span class="d-flex align-center"><VIcon icon="ri-time-line" size="14" class="mr-1"/>{{ movement.time }}</span>
+                        <span class="d-flex align-center"><VIcon
+                          icon="ri-time-line"
+                          size="14"
+                          class="mr-1"
+                        />{{ movement.time }}</span>
                       </div>
                     </VListItemSubtitle>
 
@@ -515,12 +616,22 @@ onMounted(() => {
         </VCol>
 
         <!-- Columna Lateral (Resumen) -->
-        <VCol cols="12" md="4" class="d-flex flex-column gap-6">
-          <VCard elevation="2" class="rounded-lg">
+        <VCol
+          cols="12"
+          md="4"
+          class="d-flex flex-column gap-6"
+        >
+          <VCard
+            elevation="2"
+            class="rounded-lg"
+          >
             <VCardItem class="pa-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-pie-chart-line" color="primary" />
+                  <VIcon
+                    icon="ri-pie-chart-line"
+                    color="primary"
+                  />
                   <span class="font-weight-bold text-h6">Resumen Financiero</span>
                 </div>
               </template>
@@ -542,25 +653,46 @@ onMounted(() => {
             </VCardText>
           </VCard>
 
-          <VCard elevation="2" class="rounded-lg">
+          <VCard
+            elevation="2"
+            class="rounded-lg"
+          >
             <VCardItem class="pa-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-information-line" color="primary" />
+                  <VIcon
+                    icon="ri-information-line"
+                    color="primary"
+                  />
                   <span class="font-weight-bold text-h6">Info. Adicional</span>
                 </div>
               </template>
             </VCardItem>
             <VCardText class="pa-5">
               <div class="d-flex align-start gap-4 mb-4">
-                <VAvatar color="info" variant="tonal" rounded size="48">
-                  <VIcon icon="ri-exchange-line" size="24" />
+                <VAvatar
+                  color="info"
+                  variant="tonal"
+                  rounded
+                  size="48"
+                >
+                  <VIcon
+                    icon="ri-exchange-line"
+                    size="24"
+                  />
                 </VAvatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis mb-1 text-uppercase font-weight-medium">Última transferencia</div>
-                  <div class="font-weight-bold text-h6">{{ formatCurrency(financialSummary.lastTransfer.amount) }}</div>
+                  <div class="text-caption text-medium-emphasis mb-1 text-uppercase font-weight-medium">
+                    Última transferencia
+                  </div>
+                  <div class="font-weight-bold text-h6">
+                    {{ formatCurrency(financialSummary.lastTransfer.amount) }}
+                  </div>
                   <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-1">
-                    <VIcon icon="ri-calendar-event-line" size="14" />
+                    <VIcon
+                      icon="ri-calendar-event-line"
+                      size="14"
+                    />
                     {{ financialSummary.lastTransfer.date }}
                   </div>
                 </div>
@@ -576,7 +708,10 @@ onMounted(() => {
                   class="mt-4"
                 >
                   <template #prepend>
-                    <VIcon icon="ri-alert-line" size="small" />
+                    <VIcon
+                      icon="ri-alert-line"
+                      size="small"
+                    />
                   </template>
                   {{ alert }}
                 </VAlert>

@@ -4,16 +4,16 @@ import { ref, watch, computed } from 'vue'
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   order: {
     type: Object,
-    default: () => null
+    default: () => null,
   },
   isUpdating: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['close', 'change-status', 'generate-sale'])
@@ -25,10 +25,12 @@ const handleClose = () => {
 
 // Datos de la orden (Fallback a datos de ejemplo si no se pasan por prop)
 const numeroOrden = computed(() => props.order?.number || 'OT-2026-0089')
+
 const vehiculoInfo = computed(() => {
   if (props.order?.vehicle) {
     return `${props.order.vehicle.brand} ${props.order.vehicle.model} - ${props.order.vehicle.plate}`
   }
+  
   return 'Toyota Hilux - PCT-810'
 })
 
@@ -42,6 +44,7 @@ const timelineSteps = computed(() => {
   if (props.order?.created_at) {
     try {
       const dateObj = new Date(props.order.created_at.replace(' ', 'T'))
+
       orderDate = new Intl.DateTimeFormat('es-EC', { dateStyle: 'medium', timeStyle: 'short' }).format(dateObj)
     } catch(e) {
       orderDate = props.order.created_at
@@ -60,8 +63,8 @@ const timelineSteps = computed(() => {
         label: 'Aprobar Ingreso',
         color: 'info',
         icon: 'ri-arrow-right-line',
-        handler: () => emit('change-status', 'received')
-      }
+        handler: () => emit('change-status', 'received'),
+      },
     },
     {
       id: 2,
@@ -74,8 +77,8 @@ const timelineSteps = computed(() => {
         label: 'Iniciar Diagnóstico',
         color: 'warning',
         icon: 'ri-tools-line',
-        handler: () => emit('change-status', 'in_progress')
-      }
+        handler: () => emit('change-status', 'in_progress'),
+      },
     },
     {
       id: 3,
@@ -88,8 +91,8 @@ const timelineSteps = computed(() => {
         label: 'Marcar como Finalizado',
         color: 'success',
         icon: 'ri-checkbox-circle-line',
-        handler: () => emit('change-status', 'ready')
-      }
+        handler: () => emit('change-status', 'ready'),
+      },
     },
     {
       id: 4,
@@ -102,8 +105,8 @@ const timelineSteps = computed(() => {
         label: props.order?.sale ? 'Entregar Vehículo' : 'Generar Venta / Facturar',
         color: props.order?.sale ? 'primary' : 'success',
         icon: props.order?.sale ? 'ri-truck-line' : 'ri-shopping-cart-line',
-        handler: () => props.order?.sale ? emit('change-status', 'delivered') : emit('generate-sale')
-      }
+        handler: () => props.order?.sale ? emit('change-status', 'delivered') : emit('generate-sale'),
+      },
     },
     {
       id: 5,
@@ -111,46 +114,80 @@ const timelineSteps = computed(() => {
       date: currentIndex === 4 ? 'Entregado' : null,
       description: 'El vehículo y las llaves fueron entregados satisfactoriamente al cliente.',
       status: currentIndex === 4 ? 'active' : 'pending',
-      icon: 'ri-truck-line'
-    }
+      icon: 'ri-truck-line',
+    },
   ]
 })
 </script>
 
 <template>
-  <VDialog :model-value="isOpen" @update:model-value="(val) => !val && handleClose()" max-width="600" scrollable
-    transition="dialog-bottom-transition">
+  <VDialog
+    :model-value="isOpen"
+    max-width="600"
+    scrollable
+    transition="dialog-bottom-transition"
+    @update:model-value="(val) => !val && handleClose()"
+  >
     <VCard class="rounded-xl shadow-lg border-0 bg-white">
       <!-- CABECERA DEL MODAL -->
-      <div class="px-6 py-5 border-b border-gray-100 d-flex justify-space-between align-start relative bg-white"
-        style="border-bottom-color: #f3f4f6;">
+      <div
+        class="px-6 py-5 border-b border-gray-100 d-flex justify-space-between align-start relative bg-white"
+        style="border-bottom-color: #f3f4f6;"
+      >
         <div>
-          <h2 class="text-h5 font-weight-bold text-grey-darken-4 mb-1" style="color: #1f2937;">
+          <h2
+            class="text-h5 font-weight-bold text-grey-darken-4 mb-1"
+            style="color: #1f2937;"
+          >
             Secuencia de la Orden: <span class="text-primary">#{{ numeroOrden }}</span>
           </h2>
-          <div class="text-body-2 d-flex align-center gap-2" style="color: #6b7280;">
-            <VIcon icon="ri-car-line" size="16" />
+          <div
+            class="text-body-2 d-flex align-center gap-2"
+            style="color: #6b7280;"
+          >
+            <VIcon
+              icon="ri-car-line"
+              size="16"
+            />
             <span>{{ vehiculoInfo }}</span>
           </div>
         </div>
 
-        <VBtn icon="ri-close-line" variant="text" color="grey-darken-1" size="small"
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          color="grey-darken-1"
+          size="small"
           class="bg-grey-lighten-4 rounded-circle transition-all hover:bg-red-50 hover:text-red-500"
-          @click="handleClose" />
+          @click="handleClose"
+        />
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->
-      <VCardText class="pa-6 custom-scrollbar bg-gray-50" style="background-color: #fafafa;">
+      <VCardText
+        class="pa-6 custom-scrollbar bg-gray-50"
+        style="background-color: #fafafa;"
+      >
         <div class="timeline-container">
-          <div v-for="(step, index) in timelineSteps" :key="step.id" class="timeline-item"
-            :class="`state-${step.status}`">
+          <div
+            v-for="(step, index) in timelineSteps"
+            :key="step.id"
+            class="timeline-item"
+            :class="`state-${step.status}`"
+          >
             <!-- Línea conectora hacia el siguiente nodo -->
-            <div v-if="index < timelineSteps.length - 1" class="timeline-connector"
-              :class="{ 'completed-line': step.status === 'completed' }"></div>
+            <div
+              v-if="index < timelineSteps.length - 1"
+              class="timeline-connector"
+              :class="{ 'completed-line': step.status === 'completed' }"
+            />
 
             <!-- Icono Circular del Nodo -->
             <div class="timeline-icon-container">
-              <VIcon :icon="step.icon" size="18" />
+              <VIcon
+                :icon="step.icon"
+                size="18"
+              />
             </div>
 
             <!-- Contenido del Nodo -->
@@ -159,18 +196,30 @@ const timelineSteps = computed(() => {
                 <h4 class="text-subtitle-1 font-weight-bold text-uppercase timeline-title">
                   {{ step.title }}
                 </h4>
-                <span v-if="step.date" class="text-caption timeline-date d-flex align-center gap-1">
-                  <VIcon icon="ri-time-line" size="14" />
+                <span
+                  v-if="step.date"
+                  class="text-caption timeline-date d-flex align-center gap-1"
+                >
+                  <VIcon
+                    icon="ri-time-line"
+                    size="14"
+                  />
                   {{ step.date }}
                 </span>
-                <span v-else class="text-caption text-grey-lighten-1">Por definir</span>
+                <span
+                  v-else
+                  class="text-caption text-grey-lighten-1"
+                >Por definir</span>
               </div>
               <p class="text-body-2 timeline-description mb-0">
                 {{ step.description }}
               </p>
               
               <!-- Botón de acción si es el paso activo -->
-              <div v-if="step.status === 'active' && step.action" class="mt-3">
+              <div
+                v-if="step.status === 'active' && step.action"
+                class="mt-3"
+              >
                 <VBtn
                   :color="step.action.color"
                   variant="elevated"
@@ -189,10 +238,16 @@ const timelineSteps = computed(() => {
       </VCardText>
 
       <!-- PIE DEL MODAL -->
-      <VCardActions class="pa-4 border-t border-gray-100 bg-white d-flex justify-end"
-        style="border-top-color: #f3f4f6;">
-        <VBtn color="grey-darken-2" variant="tonal" class="px-6 text-none font-weight-medium rounded-lg"
-          @click="handleClose">
+      <VCardActions
+        class="pa-4 border-t border-gray-100 bg-white d-flex justify-end"
+        style="border-top-color: #f3f4f6;"
+      >
+        <VBtn
+          color="grey-darken-2"
+          variant="tonal"
+          class="px-6 text-none font-weight-medium rounded-lg"
+          @click="handleClose"
+        >
           Cerrar
         </VBtn>
       </VCardActions>

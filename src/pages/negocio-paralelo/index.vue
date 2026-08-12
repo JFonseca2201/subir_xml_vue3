@@ -68,7 +68,7 @@ const incomeProductList = computed(() => Object.keys(incomeProductMap.value))
 
 const incomeProductSelect = ref('')
 
-const onIncomeProductChange = (val) => {
+const onIncomeProductChange = val => {
   if (val && incomeProductMap.value[val] !== undefined) {
     incomeForm.value.unitCost = incomeProductMap.value[val]
   }
@@ -101,6 +101,7 @@ const loadTransactions = async () => {
       params.account = accountFilter.value
     }
     const resp = await $api('parallel-transactions', { params })
+
     transactions.value = resp || []
   } catch (err) {
     console.error('Error al cargar transacciones:', err)
@@ -119,8 +120,9 @@ const loadOptions = async () => {
     const [catResp, unitResp, incomeResp] = await Promise.all([
       $api('parallel-categories'),
       $api('parallel-unit-types'),
-      $api('parallel-income-products')
+      $api('parallel-income-products'),
     ])
+
     expenseCategories.value = catResp || []
     expenseUnits.value = unitResp || []
 
@@ -187,6 +189,7 @@ const summaryTransactions = computed(() => {
   return transactions.value.filter(t => {
     // If the transaction has a full datetime, extract just the date part for comparison
     const tDate = t.date ? t.date.substr(0, 10) : ''
+    
     return tDate === summaryDate.value
   })
 })
@@ -202,7 +205,7 @@ const summaryIncomesGrouped = computed(() => {
         description: t.description,
         unit_cost: parseFloat(t.unit_cost) || 0,
         total_quantity: 0,
-        total_amount: 0
+        total_amount: 0,
       }
     }
     grouped[key].total_quantity += parseInt(t.quantity || 1)
@@ -261,6 +264,7 @@ const saveIncome = async () => {
 
   if (!incomeProductSelect.value) {
     showNotification('Debe seleccionar o escribir un producto', 'error')
+    
     return
   }
 
@@ -278,8 +282,8 @@ const saveIncome = async () => {
           method: 'POST',
           body: {
             name: finalDescription,
-            default_price: incomeForm.value.unitCost || 0
-          }
+            default_price: incomeForm.value.unitCost || 0,
+          },
         })
         incomeProductMap.value[finalDescription] = parseFloat(incomeForm.value.unitCost || 0)
       }
@@ -296,8 +300,8 @@ const saveIncome = async () => {
         quantity: incomeForm.value.quantity,
         unit_cost: incomeForm.value.unitCost,
         account: incomeForm.value.account,
-        date: incomeForm.value.date
-      }
+        date: incomeForm.value.date,
+      },
     })
 
     if (response) {
@@ -337,7 +341,7 @@ const saveExpense = async () => {
     if (expenseForm.value.category && !expenseCategories.value.includes(expenseForm.value.category)) {
       await $api('parallel-categories', {
         method: 'POST',
-        body: { name: expenseForm.value.category }
+        body: { name: expenseForm.value.category },
       })
       expenseCategories.value.push(expenseForm.value.category)
     }
@@ -346,7 +350,7 @@ const saveExpense = async () => {
     if (expenseForm.value.unit && !expenseUnits.value.includes(expenseForm.value.unit)) {
       await $api('parallel-unit-types', {
         method: 'POST',
-        body: { name: expenseForm.value.unit }
+        body: { name: expenseForm.value.unit },
       })
       expenseUnits.value.push(expenseForm.value.unit)
     }
@@ -364,8 +368,8 @@ const saveExpense = async () => {
         quantity: expenseForm.value.quantity,
         unit: expenseForm.value.unit,
         account: expenseForm.value.account,
-        date: expenseForm.value.date
-      }
+        date: expenseForm.value.date,
+      },
     })
 
     if (response) {
@@ -380,7 +384,7 @@ const saveExpense = async () => {
 }
 
 // Edit Transaction Action
-const editTransaction = (item) => {
+const editTransaction = item => {
   isEditing.value = true
   editingId.value = item.id
 
@@ -411,7 +415,7 @@ const editTransaction = (item) => {
 }
 
 // Delete Transaction
-const deleteTransaction = async (item) => {
+const deleteTransaction = async item => {
   const result = await Swal.fire({
     title: '¿Eliminar registro?',
     text: `¿Estás seguro de eliminar "${item.description}"? Se borrará permanentemente de la base de datos.`,
@@ -426,7 +430,7 @@ const deleteTransaction = async (item) => {
   if (result.isConfirmed) {
     try {
       const response = await $api(`parallel-transactions/${item.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       if (response && response.success) {
@@ -458,6 +462,7 @@ const generatePdfReport = () => {
   if (pdfRange.value === 'custom') {
     if (!pdfStartDate.value || !pdfEndDate.value) {
       showNotification('Por favor ingresa ambas fechas para el rango personalizado', 'warning')
+      
       return
     }
     url += `&start_date=${pdfStartDate.value}&end_date=${pdfEndDate.value}`
@@ -474,12 +479,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <VContainer fluid class="negocio-paralelo-container pa-6">
+  <VContainer
+    fluid
+    class="negocio-paralelo-container pa-6"
+  >
     <!-- Header visual -->
     <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-6">
       <div class="d-flex align-center gap-3">
-        <VAvatar color="success" variant="tonal" size="50" class="elevation-1">
-          <VIcon icon="ri-store-2-line" size="28" />
+        <VAvatar
+          color="success"
+          variant="tonal"
+          size="50"
+          class="elevation-1"
+        >
+          <VIcon
+            icon="ri-store-2-line"
+            size="28"
+          />
         </VAvatar>
         <div>
           <h3 class="text-h4 font-weight-bold text-high-emphasis mb-1">
@@ -492,10 +508,20 @@ onMounted(() => {
         </div>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <VBtn variant="tonal" color="info" prepend-icon="ri-calendar-check-line" @click="isSummaryDialogOpen = true">
+        <VBtn
+          variant="tonal"
+          color="info"
+          prepend-icon="ri-calendar-check-line"
+          @click="isSummaryDialogOpen = true"
+        >
           Resumen del Día
         </VBtn>
-        <VBtn variant="outlined" color="primary" prepend-icon="ri-file-pdf-line" @click="openPdfDialog">
+        <VBtn
+          variant="outlined"
+          color="primary"
+          prepend-icon="ri-file-pdf-line"
+          @click="openPdfDialog"
+        >
           Reporte PDF
         </VBtn>
       </div>
@@ -504,45 +530,90 @@ onMounted(() => {
     <div class="d-flex justify-space-between align-center mb-6 px-2">
       <div class="text-subtitle-2 font-weight-medium">
         <span class="text-success mr-4">
-          <VIcon icon="ri-money-dollar-circle-line" class="mr-1" />Efectivo en Caja: ${{ currentCashBalance.toFixed(2)
+          <VIcon
+            icon="ri-money-dollar-circle-line"
+            class="mr-1"
+          />Efectivo en Caja: ${{ currentCashBalance.toFixed(2)
           }}
         </span>
         <span class="text-primary">
-          <VIcon icon="ri-bank-card-line" class="mr-1" />Transferencia: ${{ currentTransferBalance.toFixed(2) }}
+          <VIcon
+            icon="ri-bank-card-line"
+            class="mr-1"
+          />Transferencia: ${{ currentTransferBalance.toFixed(2) }}
         </span>
       </div>
     </div>
 
     <!-- Metricas de Saldos y Cuentas -->
     <VRow class="mb-6">
-      <VCol cols="12" sm="4">
-        <VCard class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
-          style="border-left: 5px solid rgb(var(--v-theme-success)) !important;">
-          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total Ingresos</div>
+      <VCol
+        cols="12"
+        sm="4"
+      >
+        <VCard
+          class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
+          style="border-left: 5px solid rgb(var(--v-theme-success)) !important;"
+        >
+          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+            Total Ingresos
+          </div>
           <h3 class="text-h4 font-weight-bold text-success">
-            <VSkeletonLoader v-if="loading" type="text" width="120" style="margin: 0;" />
+            <VSkeletonLoader
+              v-if="loading"
+              type="text"
+              width="120"
+              style="margin: 0;"
+            />
             <span v-else>${{ totalIncomes.toFixed(2) }}</span>
           </h3>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
-        <VCard class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
-          style="border-left: 5px solid rgb(var(--v-theme-error)) !important;">
-          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Total Egresos</div>
+      <VCol
+        cols="12"
+        sm="4"
+      >
+        <VCard
+          class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
+          style="border-left: 5px solid rgb(var(--v-theme-error)) !important;"
+        >
+          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+            Total Egresos
+          </div>
           <h3 class="text-h4 font-weight-bold text-error">
-            <VSkeletonLoader v-if="loading" type="text" width="120" style="margin: 0;" />
+            <VSkeletonLoader
+              v-if="loading"
+              type="text"
+              width="120"
+              style="margin: 0;"
+            />
             <span v-else>${{ totalExpenses.toFixed(2) }}</span>
           </h3>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
-        <VCard class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
-          :style="`border-left: 5px solid ${netBalance >= 0 ? 'rgb(var(--v-theme-success))' : 'rgb(var(--v-theme-error))'} !important;`">
-          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">Balance Neto</div>
-          <h3 :class="['text-h4 font-weight-bold', netBalance >= 0 ? 'text-success' : 'text-error']">
-            <VSkeletonLoader v-if="loading" type="text" width="120" style="margin: 0;" />
+      <VCol
+        cols="12"
+        sm="4"
+      >
+        <VCard
+          class="rounded-lg elevation-2 border pa-4 h-100 d-flex flex-column justify-center"
+          :style="`border-left: 5px solid ${netBalance >= 0 ? 'rgb(var(--v-theme-success))' : 'rgb(var(--v-theme-error))'} !important;`"
+        >
+          <div class="text-caption text-medium-emphasis font-weight-medium text-uppercase mb-1">
+            Balance Neto
+          </div>
+          <h3
+            class="text-h4 font-weight-bold"
+            :class="[netBalance >= 0 ? 'text-success' : 'text-error']"
+          >
+            <VSkeletonLoader
+              v-if="loading"
+              type="text"
+              width="120"
+              style="margin: 0;"
+            />
             <span v-else>{{ netBalance >= 0 ? '' : '-' }}${{ Math.abs(netBalance).toFixed(2) }}</span>
           </h3>
         </VCard>
@@ -550,27 +621,70 @@ onMounted(() => {
     </VRow>
 
     <!-- Filtros de Búsqueda -->
-    <VCard class="mb-6 elevation-2" variant="outlined" color="rgba(var(--v-border-color), 0.12)">
+    <VCard
+      class="mb-6 elevation-2"
+      variant="outlined"
+      color="rgba(var(--v-border-color), 0.12)"
+    >
       <VCardText class="pa-4">
-        <VRow dense align="center">
-          <VCol cols="12" md="6">
-            <VTextField v-model="searchQuery" label="Buscar por concepto o monto..." placeholder="Ej: Fritada, 5.00..."
-              clearable variant="outlined" density="comfortable" hide-details="auto"
-              prepend-inner-icon="ri-search-2-line" />
+        <VRow
+          dense
+          align="center"
+        >
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar por concepto o monto..."
+              placeholder="Ej: Fritada, 5.00..."
+              clearable
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              prepend-inner-icon="ri-search-2-line"
+            />
           </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VSelect v-model="typeFilter" label="Tipo de Registro" :items="[
-              { title: 'Todos', value: 'ALL' },
-              { title: 'Ingresos (+)', value: 'INCOME' },
-              { title: 'Egresos (-)', value: 'EXPENSE' }
-            ]" item-title="title" item-value="value" variant="outlined" density="comfortable" hide-details="auto" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <VSelect
+              v-model="typeFilter"
+              label="Tipo de Registro"
+              :items="[
+                { title: 'Todos', value: 'ALL' },
+                { title: 'Ingresos (+)', value: 'INCOME' },
+                { title: 'Egresos (-)', value: 'EXPENSE' }
+              ]"
+              item-title="title"
+              item-value="value"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+            />
           </VCol>
-          <VCol cols="12" sm="6" md="3">
-            <VSelect v-model="accountFilter" label="Cuenta de Pago" :items="[
-              { title: 'Todas las Cuentas', value: 'ALL' },
-              { title: 'Efectivo', value: 'EFECTIVO' },
-              { title: 'Transferencia', value: 'TRANSFERENCIA' }
-            ]" item-title="title" item-value="value" variant="outlined" density="comfortable" hide-details="auto" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <VSelect
+              v-model="accountFilter"
+              label="Cuenta de Pago"
+              :items="[
+                { title: 'Todas las Cuentas', value: 'ALL' },
+                { title: 'Efectivo', value: 'EFECTIVO' },
+                { title: 'Transferencia', value: 'TRANSFERENCIA' }
+              ]"
+              item-title="title"
+              item-value="value"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+            />
           </VCol>
         </VRow>
       </VCardText>
@@ -579,8 +693,15 @@ onMounted(() => {
     <!-- Listados de Movimientos (Ingresos y Egresos en Dos Columnas) -->
     <VRow>
       <!-- Columna de Ingresos -->
-      <VCol cols="12" md="6">
-        <VCard class="elevation-2" variant="outlined" color="rgba(var(--v-border-color), 0.12)">
+      <VCol
+        cols="12"
+        md="6"
+      >
+        <VCard
+          class="elevation-2"
+          variant="outlined"
+          color="rgba(var(--v-border-color), 0.12)"
+        >
           <VCardItem class="bg-success-lighten-5 py-3 border-b">
             <VCardTitle class="d-flex align-center justify-space-between text-success">
               <div class="d-flex align-center gap-2">
@@ -588,10 +709,20 @@ onMounted(() => {
                 <span class="font-weight-bold">INGRESOS</span>
               </div>
               <div class="d-flex align-center gap-2">
-                <VBtn color="success" size="small" variant="flat" prepend-icon="ri-add-circle-line" @click="openIncome">
+                <VBtn
+                  color="success"
+                  size="small"
+                  variant="flat"
+                  prepend-icon="ri-add-circle-line"
+                  @click="openIncome"
+                >
                   Registrar Ingreso
                 </VBtn>
-                <VChip color="success" size="small" class="font-weight-bold">
+                <VChip
+                  color="success"
+                  size="small"
+                  class="font-weight-bold"
+                >
                   <span v-if="loading">...</span>
                   <span v-else>${{ totalIncomes.toFixed(2) }}</span>
                 </VChip>
@@ -602,31 +733,60 @@ onMounted(() => {
             <VTable class="negocio-table">
               <thead>
                 <tr>
-                  <th class="text-left font-weight-bold">Concepto</th>
-                  <th class="text-left font-weight-bold" style="width: 120px;">Detalle</th>
-                  <th class="text-right font-weight-bold" style="width: 130px; color: rgb(var(--v-theme-on-surface));">
-                    Monto</th>
-                  <th class="text-center font-weight-bold" style="width: 50px;"></th>
+                  <th class="text-left font-weight-bold">
+                    Concepto
+                  </th>
+                  <th
+                    class="text-left font-weight-bold"
+                    style="width: 120px;"
+                  >
+                    Detalle
+                  </th>
+                  <th
+                    class="text-right font-weight-bold"
+                    style="width: 130px; color: rgb(var(--v-theme-on-surface));"
+                  >
+                    Monto
+                  </th>
+                  <th
+                    class="text-center font-weight-bold"
+                    style="width: 50px;"
+                  />
                 </tr>
               </thead>
               <tbody>
                 <template v-if="loading">
-                  <tr v-for="i in 3" :key="'sk-inc-' + i">
-                    <td colspan="4" class="pa-3">
+                  <tr
+                    v-for="i in 3"
+                    :key="'sk-inc-' + i"
+                  >
+                    <td
+                      colspan="4"
+                      class="pa-3"
+                    >
                       <VSkeletonLoader type="list-item-two-line" />
                     </td>
                   </tr>
                 </template>
                 <template v-else>
                   <tr v-if="incomeTransactions.length === 0">
-                    <td colspan="4" class="text-center py-6 text-disabled text-caption">
+                    <td
+                      colspan="4"
+                      class="text-center py-6 text-disabled text-caption"
+                    >
                       Sin ingresos registrados
                     </td>
                   </tr>
-                  <tr v-else v-for="item in incomeTransactions" :key="item.id">
+                  <tr
+                    v-for="item in incomeTransactions"
+                    v-else
+                    :key="item.id"
+                  >
                     <td>
-                      <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate"
-                        style="max-width: 200px;">
+                      <div
+                        class="font-weight-medium text-high-emphasis text-uppercase text-truncate"
+                        style="max-width: 200px;"
+                      >
                         {{ item.description }}
                       </div>
                     </td>
@@ -640,16 +800,31 @@ onMounted(() => {
                       <div class="mt-1">
                         <small
                           :class="item.account === 'EFECTIVO' ? 'text-warning font-weight-bold' : 'text-primary font-weight-bold'"
-                          style="font-size: 0.65rem;">
+                          style="font-size: 0.65rem;"
+                        >
                           {{ item.account }}
                         </small>
                       </div>
                     </td>
-                    <td class="text-center pa-0" style="white-space: nowrap;">
-                      <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1"
-                        @click="editTransaction(item)" />
-                      <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line"
-                        @click="deleteTransaction(item)" />
+                    <td
+                      class="text-center pa-0"
+                      style="white-space: nowrap;"
+                    >
+                      <VBtn
+                        size="x-small"
+                        color="primary"
+                        variant="text"
+                        icon="ri-pencil-line"
+                        class="me-1"
+                        @click="editTransaction(item)"
+                      />
+                      <VBtn
+                        size="x-small"
+                        color="error"
+                        variant="text"
+                        icon="ri-delete-bin-line"
+                        @click="deleteTransaction(item)"
+                      />
                     </td>
                   </tr>
                 </template>
@@ -660,8 +835,15 @@ onMounted(() => {
       </VCol>
 
       <!-- Columna de Egresos -->
-      <VCol cols="12" md="6">
-        <VCard class="elevation-2" variant="outlined" color="rgba(var(--v-border-color), 0.12)">
+      <VCol
+        cols="12"
+        md="6"
+      >
+        <VCard
+          class="elevation-2"
+          variant="outlined"
+          color="rgba(var(--v-border-color), 0.12)"
+        >
           <VCardItem class="bg-error-lighten-5 py-3 border-b">
             <VCardTitle class="d-flex align-center justify-space-between text-error">
               <div class="d-flex align-center gap-2">
@@ -669,10 +851,20 @@ onMounted(() => {
                 <span class="font-weight-bold">EGRESOS</span>
               </div>
               <div class="d-flex align-center gap-2">
-                <VBtn color="error" size="small" variant="flat" prepend-icon="ri-indent-decrease" @click="openExpense">
+                <VBtn
+                  color="error"
+                  size="small"
+                  variant="flat"
+                  prepend-icon="ri-indent-decrease"
+                  @click="openExpense"
+                >
                   Registrar Egreso
                 </VBtn>
-                <VChip color="error" size="small" class="font-weight-bold">
+                <VChip
+                  color="error"
+                  size="small"
+                  class="font-weight-bold"
+                >
                   <span v-if="loading">...</span>
                   <span v-else>${{ totalExpenses.toFixed(2) }}</span>
                 </VChip>
@@ -683,35 +875,67 @@ onMounted(() => {
             <VTable class="negocio-table">
               <thead>
                 <tr>
-                  <th class="text-left font-weight-bold">Concepto</th>
-                  <th class="text-left font-weight-bold" style="width: 120px;">Unidad</th>
-                  <th class="text-right font-weight-bold" style="width: 130px; color: rgb(var(--v-theme-error));">Monto
+                  <th class="text-left font-weight-bold">
+                    Concepto
                   </th>
-                  <th class="text-center font-weight-bold" style="width: 50px;"></th>
+                  <th
+                    class="text-left font-weight-bold"
+                    style="width: 120px;"
+                  >
+                    Unidad
+                  </th>
+                  <th
+                    class="text-right font-weight-bold"
+                    style="width: 130px; color: rgb(var(--v-theme-error));"
+                  >
+                    Monto
+                  </th>
+                  <th
+                    class="text-center font-weight-bold"
+                    style="width: 50px;"
+                  />
                 </tr>
               </thead>
               <tbody>
                 <template v-if="loading">
-                  <tr v-for="i in 3" :key="'sk-exp-' + i">
-                    <td colspan="4" class="pa-3">
+                  <tr
+                    v-for="i in 3"
+                    :key="'sk-exp-' + i"
+                  >
+                    <td
+                      colspan="4"
+                      class="pa-3"
+                    >
                       <VSkeletonLoader type="list-item-two-line" />
                     </td>
                   </tr>
                 </template>
                 <template v-else>
                   <tr v-if="expenseTransactions.length === 0">
-                    <td colspan="4" class="text-center py-6 text-disabled text-caption">
+                    <td
+                      colspan="4"
+                      class="text-center py-6 text-disabled text-caption"
+                    >
                       Sin egresos registrados
                     </td>
                   </tr>
-                  <tr v-else v-for="item in expenseTransactions" :key="item.id">
+                  <tr
+                    v-for="item in expenseTransactions"
+                    v-else
+                    :key="item.id"
+                  >
                     <td>
-                      <div class="font-weight-medium text-high-emphasis text-uppercase text-truncate"
-                        style="max-width: 200px;">
+                      <div
+                        class="font-weight-medium text-high-emphasis text-uppercase text-truncate"
+                        style="max-width: 200px;"
+                      >
                         {{ item.description }}
                       </div>
-                      <div v-if="item.category" class="text-caption text-disabled text-truncate"
-                        style="max-width: 200px; font-size: 0.65rem;">
+                      <div
+                        v-if="item.category"
+                        class="text-caption text-disabled text-truncate"
+                        style="max-width: 200px; font-size: 0.65rem;"
+                      >
                         {{ item.category }}
                       </div>
                     </td>
@@ -720,13 +944,13 @@ onMounted(() => {
                         {{ item.quantity || 1 }} {{ item.unit }} <br>
                         <span style="font-size: 0.7rem; opacity: 0.8">x ${{ item.unit_cost ?
                           parseFloat(item.unit_cost).toFixed(2) : (parseFloat(item.amount) / (item.quantity ||
-                          1)).toFixed(2) }} c/u</span>
+                            1)).toFixed(2) }} c/u</span>
                       </template>
                       <template v-else-if="item.quantity > 1">
                         {{ item.quantity }} <br>
                         <span style="font-size: 0.7rem; opacity: 0.8">x ${{ item.unit_cost ?
                           parseFloat(item.unit_cost).toFixed(2) : (parseFloat(item.amount) / (item.quantity ||
-                          1)).toFixed(2) }} c/u</span>
+                            1)).toFixed(2) }} c/u</span>
                       </template>
                       <template v-else>
                         -
@@ -739,16 +963,31 @@ onMounted(() => {
                       <div class="mt-1">
                         <small
                           :class="item.account === 'EFECTIVO' ? 'text-warning font-weight-bold' : 'text-primary font-weight-bold'"
-                          style="font-size: 0.65rem;">
+                          style="font-size: 0.65rem;"
+                        >
                           {{ item.account }}
                         </small>
                       </div>
                     </td>
-                    <td class="text-center pa-0" style="white-space: nowrap;">
-                      <VBtn size="x-small" color="primary" variant="text" icon="ri-pencil-line" class="me-1"
-                        @click="editTransaction(item)" />
-                      <VBtn size="x-small" color="error" variant="text" icon="ri-delete-bin-line"
-                        @click="deleteTransaction(item)" />
+                    <td
+                      class="text-center pa-0"
+                      style="white-space: nowrap;"
+                    >
+                      <VBtn
+                        size="x-small"
+                        color="primary"
+                        variant="text"
+                        icon="ri-pencil-line"
+                        class="me-1"
+                        @click="editTransaction(item)"
+                      />
+                      <VBtn
+                        size="x-small"
+                        color="error"
+                        variant="text"
+                        icon="ri-delete-bin-line"
+                        @click="deleteTransaction(item)"
+                      />
                     </td>
                   </tr>
                 </template>
@@ -760,48 +999,119 @@ onMounted(() => {
     </VRow>
 
     <!-- Dialogo de Registrar Ingresos -->
-    <VDialog v-model="isIncomeDialogOpen" max-width="500" scrollable>
+    <VDialog
+      v-model="isIncomeDialogOpen"
+      max-width="500"
+      scrollable
+    >
       <VCard class="rounded-xl">
         <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-add-circle-line" color="success" />
+            <VIcon
+              icon="ri-add-circle-line"
+              color="success"
+            />
             <span class="text-h5 font-weight-bold">{{ isEditing ? 'Editar Ingreso' : 'Registrar Ingreso' }}</span>
           </div>
-          <DialogCloseBtn variant="text" @click="isIncomeDialogOpen = false" />
+          <DialogCloseBtn
+            variant="text"
+            @click="isIncomeDialogOpen = false"
+          />
         </VCardTitle>
 
-        <VCardText class="pa-5" style="max-height: 60vh;">
-          <VForm ref="incomeFormRef" @submit.prevent="saveIncome">
+        <VCardText
+          class="pa-5"
+          style="max-height: 60vh;"
+        >
+          <VForm
+            ref="incomeFormRef"
+            @submit.prevent="saveIncome"
+          >
             <VRow dense>
-              <VCol cols="12" class="pb-3">
-                <VCombobox v-model="incomeProductSelect" label="Concepto / Producto *"
-                  placeholder="Seleccione o escriba un producto" :items="incomeProductList" variant="outlined"
-                  :rules="[rules.required]" clearable @update:modelValue="onIncomeProductChange" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VCombobox
+                  v-model="incomeProductSelect"
+                  label="Concepto / Producto *"
+                  placeholder="Seleccione o escriba un producto"
+                  :items="incomeProductList"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                  clearable
+                  @update:model-value="onIncomeProductChange"
+                />
               </VCol>
 
-              <VCol cols="6" class="pb-3">
-                <VTextField v-model.number="incomeForm.quantity" label="Cantidad *" type="number" min="1"
-                  variant="outlined" :rules="[rules.required, rules.positive, rules.number]" />
+              <VCol
+                cols="6"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model.number="incomeForm.quantity"
+                  label="Cantidad *"
+                  type="number"
+                  min="1"
+                  variant="outlined"
+                  :rules="[rules.required, rules.positive, rules.number]"
+                />
               </VCol>
 
-              <VCol cols="6" class="pb-3">
-                <VTextField v-model.number="incomeForm.unitCost" label="Precio Unitario ($) *" type="number" step="0.01"
-                  min="0.01" variant="outlined" prefix="$" :rules="[rules.required, rules.positive, rules.number]" />
+              <VCol
+                cols="6"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model.number="incomeForm.unitCost"
+                  label="Precio Unitario ($) *"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  variant="outlined"
+                  prefix="$"
+                  :rules="[rules.required, rules.positive, rules.number]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3">
-                <VSelect v-model="incomeForm.account" label="Cuenta de Destino *" :items="['EFECTIVO', 'TRANSFERENCIA']"
-                  variant="outlined" :rules="[rules.required]" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VSelect
+                  v-model="incomeForm.account"
+                  label="Cuenta de Destino *"
+                  :items="['EFECTIVO', 'TRANSFERENCIA']"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-1">
-                <VSwitch v-model="showIncomeDatePicker" label="Editar fecha del registro" color="primary"
-                  density="compact" hide-details />
+              <VCol
+                cols="12"
+                class="pb-1"
+              >
+                <VSwitch
+                  v-model="showIncomeDatePicker"
+                  label="Editar fecha del registro"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3" v-if="showIncomeDatePicker">
-                <VTextField v-model="incomeForm.date" label="Fecha de Registro *" type="date" variant="outlined"
-                  :rules="[rules.required]" />
+              <VCol
+                v-if="showIncomeDatePicker"
+                cols="12"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model="incomeForm.date"
+                  label="Fecha de Registro *"
+                  type="date"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                />
               </VCol>
             </VRow>
           </VForm>
@@ -809,10 +1119,19 @@ onMounted(() => {
 
         <VDivider />
         <VCardActions class="pa-4 d-flex justify-end gap-2">
-          <VBtn variant="outlined" color="secondary" class="rounded-lg" @click="isIncomeDialogOpen = false">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            class="rounded-lg"
+            @click="isIncomeDialogOpen = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="success" class="rounded-lg px-4" @click="saveIncome">
+          <VBtn
+            color="success"
+            class="rounded-lg px-4"
+            @click="saveIncome"
+          >
             Guardar Ingreso
           </VBtn>
         </VCardActions>
@@ -820,58 +1139,145 @@ onMounted(() => {
     </VDialog>
 
     <!-- Dialogo de Registrar Egresos -->
-    <VDialog v-model="isExpenseDialogOpen" max-width="500" scrollable>
+    <VDialog
+      v-model="isExpenseDialogOpen"
+      max-width="500"
+      scrollable
+    >
       <VCard class="rounded-xl">
         <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-indent-decrease" color="error" />
+            <VIcon
+              icon="ri-indent-decrease"
+              color="error"
+            />
             <span class="text-h5 font-weight-bold">{{ isEditing ? 'Editar Egreso' : 'Registrar Egreso' }}</span>
           </div>
-          <DialogCloseBtn variant="text" @click="isExpenseDialogOpen = false" />
+          <DialogCloseBtn
+            variant="text"
+            @click="isExpenseDialogOpen = false"
+          />
         </VCardTitle>
 
-        <VCardText class="pa-5" style="max-height: 60vh;">
-          <VForm ref="expenseFormRef" @submit.prevent="saveExpense">
+        <VCardText
+          class="pa-5"
+          style="max-height: 60vh;"
+        >
+          <VForm
+            ref="expenseFormRef"
+            @submit.prevent="saveExpense"
+          >
             <VRow dense>
-              <VCol cols="12" class="pb-3">
-                <VCombobox v-model="expenseForm.category" label="Categoría de Egreso *" :items="expenseCategories"
-                  variant="outlined" clearable placeholder="Seleccione o escriba una categoría"
-                  :rules="[rules.required]" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VCombobox
+                  v-model="expenseForm.category"
+                  label="Categoría de Egreso *"
+                  :items="expenseCategories"
+                  variant="outlined"
+                  clearable
+                  placeholder="Seleccione o escriba una categoría"
+                  :rules="[rules.required]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3">
-                <VTextField v-model="expenseForm.description" label="Concepto / Gasto *"
-                  placeholder="Ej: Gasto ingredientes o pago" variant="outlined" :rules="[rules.required]" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model="expenseForm.description"
+                  label="Concepto / Gasto *"
+                  placeholder="Ej: Gasto ingredientes o pago"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                />
               </VCol>
 
-              <VCol cols="6" class="pb-3">
-                <VTextField v-model.number="expenseForm.unitCost" label="Costo Unitario ($) *" type="number" step="0.01"
-                  min="0.01" variant="outlined" prefix="$" :rules="[rules.required, rules.positive, rules.number]" />
+              <VCol
+                cols="6"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model.number="expenseForm.unitCost"
+                  label="Costo Unitario ($) *"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  variant="outlined"
+                  prefix="$"
+                  :rules="[rules.required, rules.positive, rules.number]"
+                />
               </VCol>
 
-              <VCol cols="6" class="pb-3">
-                <VTextField v-model.number="expenseForm.quantity" label="Cantidad de compra *" type="number" min="1"
-                  variant="outlined" :rules="[rules.required, rules.positive, rules.number]" />
+              <VCol
+                cols="6"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model.number="expenseForm.quantity"
+                  label="Cantidad de compra *"
+                  type="number"
+                  min="1"
+                  variant="outlined"
+                  :rules="[rules.required, rules.positive, rules.number]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3">
-                <VCombobox v-model="expenseForm.unit" label="Unidad de medida *" :items="expenseUnits"
-                  variant="outlined" placeholder="Seleccione o escriba la unidad" :rules="[rules.required]" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VCombobox
+                  v-model="expenseForm.unit"
+                  label="Unidad de medida *"
+                  :items="expenseUnits"
+                  variant="outlined"
+                  placeholder="Seleccione o escriba la unidad"
+                  :rules="[rules.required]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3">
-                <VSelect v-model="expenseForm.account" label="Cuenta de Pago *" :items="['EFECTIVO', 'TRANSFERENCIA']"
-                  variant="outlined" :rules="[rules.required]" />
+              <VCol
+                cols="12"
+                class="pb-3"
+              >
+                <VSelect
+                  v-model="expenseForm.account"
+                  label="Cuenta de Pago *"
+                  :items="['EFECTIVO', 'TRANSFERENCIA']"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-1">
-                <VSwitch v-model="showExpenseDatePicker" label="Editar fecha del registro" color="primary"
-                  density="compact" hide-details />
+              <VCol
+                cols="12"
+                class="pb-1"
+              >
+                <VSwitch
+                  v-model="showExpenseDatePicker"
+                  label="Editar fecha del registro"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                />
               </VCol>
 
-              <VCol cols="12" class="pb-3" v-if="showExpenseDatePicker">
-                <VTextField v-model="expenseForm.date" label="Fecha de Registro *" type="date" variant="outlined"
-                  :rules="[rules.required]" />
+              <VCol
+                v-if="showExpenseDatePicker"
+                cols="12"
+                class="pb-3"
+              >
+                <VTextField
+                  v-model="expenseForm.date"
+                  label="Fecha de Registro *"
+                  type="date"
+                  variant="outlined"
+                  :rules="[rules.required]"
+                />
               </VCol>
             </VRow>
           </VForm>
@@ -879,10 +1285,19 @@ onMounted(() => {
 
         <VDivider />
         <VCardActions class="pa-4 d-flex justify-end gap-2">
-          <VBtn variant="outlined" color="secondary" class="rounded-lg" @click="isExpenseDialogOpen = false">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            class="rounded-lg"
+            @click="isExpenseDialogOpen = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="error" class="rounded-lg px-4" @click="saveExpense">
+          <VBtn
+            color="error"
+            class="rounded-lg px-4"
+            @click="saveExpense"
+          >
             Guardar Egreso
           </VBtn>
         </VCardActions>
@@ -890,74 +1305,175 @@ onMounted(() => {
     </VDialog>
 
     <!-- Dialogo de Resumen del Día -->
-    <VDialog v-model="isSummaryDialogOpen" max-width="600" scrollable>
+    <VDialog
+      v-model="isSummaryDialogOpen"
+      max-width="600"
+      scrollable
+    >
       <VCard class="rounded-xl">
         <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b bg-info text-white">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-calendar-check-line" color="white" />
+            <VIcon
+              icon="ri-calendar-check-line"
+              color="white"
+            />
             <span class="text-h5 font-weight-bold">Resumen Consolidado del Día</span>
           </div>
-          <DialogCloseBtn variant="text" @click="isSummaryDialogOpen = false" color="white" />
+          <DialogCloseBtn
+            variant="text"
+            color="white"
+            @click="isSummaryDialogOpen = false"
+          />
         </VCardTitle>
 
-        <VCardText class="pa-5" style="max-height: 65vh;">
+        <VCardText
+          class="pa-5"
+          style="max-height: 65vh;"
+        >
           <VRow class="mb-4">
             <VCol cols="12">
-              <VTextField v-model="summaryDate" label="Consultar Fecha" type="date" variant="outlined" hide-details />
+              <VTextField
+                v-model="summaryDate"
+                label="Consultar Fecha"
+                type="date"
+                variant="outlined"
+                hide-details
+              />
             </VCol>
           </VRow>
 
-          <VRow dense class="mb-4 text-center">
-            <VCol cols="12" sm="4">
-              <div class="text-caption text-medium-emphasis">Ingresos Totales</div>
-              <div class="text-h6 text-success font-weight-bold">+${{ summaryTotalIncome.toFixed(2) }}</div>
+          <VRow
+            dense
+            class="mb-4 text-center"
+          >
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <div class="text-caption text-medium-emphasis">
+                Ingresos Totales
+              </div>
+              <div class="text-h6 text-success font-weight-bold">
+                +${{ summaryTotalIncome.toFixed(2) }}
+              </div>
             </VCol>
-            <VCol cols="12" sm="4">
-              <div class="text-caption text-medium-emphasis">Egresos Totales</div>
-              <div class="text-h6 text-error font-weight-bold">-${{ summaryTotalExpense.toFixed(2) }}</div>
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <div class="text-caption text-medium-emphasis">
+                Egresos Totales
+              </div>
+              <div class="text-h6 text-error font-weight-bold">
+                -${{ summaryTotalExpense.toFixed(2) }}
+              </div>
             </VCol>
-            <VCol cols="12" sm="4">
-              <div class="text-caption text-medium-emphasis">Balance Neto</div>
-              <div :class="['text-h6 font-weight-bold', summaryNetBalance >= 0 ? 'text-success' : 'text-error']">
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <div class="text-caption text-medium-emphasis">
+                Balance Neto
+              </div>
+              <div
+                class="text-h6 font-weight-bold"
+                :class="[summaryNetBalance >= 0 ? 'text-success' : 'text-error']"
+              >
                 {{ summaryNetBalance >= 0 ? '' : '-' }}${{ Math.abs(summaryNetBalance).toFixed(2) }}
               </div>
             </VCol>
           </VRow>
 
-          <VRow dense class="mb-4 bg-background rounded-lg pa-3"
-            style="background-color: rgba(var(--v-theme-on-surface), 0.04);">
-            <VCol cols="6" class="text-center border-e">
-              <VIcon icon="ri-money-dollar-circle-line" color="success" class="mb-1" />
-              <div class="text-caption">Efectivo</div>
-              <div class="text-subtitle-2 font-weight-bold">${{ summaryCash.toFixed(2) }}</div>
+          <VRow
+            dense
+            class="mb-4 bg-background rounded-lg pa-3"
+            style="background-color: rgba(var(--v-theme-on-surface), 0.04);"
+          >
+            <VCol
+              cols="6"
+              class="text-center border-e"
+            >
+              <VIcon
+                icon="ri-money-dollar-circle-line"
+                color="success"
+                class="mb-1"
+              />
+              <div class="text-caption">
+                Efectivo
+              </div>
+              <div class="text-subtitle-2 font-weight-bold">
+                ${{ summaryCash.toFixed(2) }}
+              </div>
             </VCol>
-            <VCol cols="6" class="text-center">
-              <VIcon icon="ri-bank-card-line" color="primary" class="mb-1" />
-              <div class="text-caption">Transferencias</div>
-              <div class="text-subtitle-2 font-weight-bold">${{ summaryTransfer.toFixed(2) }}</div>
+            <VCol
+              cols="6"
+              class="text-center"
+            >
+              <VIcon
+                icon="ri-bank-card-line"
+                color="primary"
+                class="mb-1"
+              />
+              <div class="text-caption">
+                Transferencias
+              </div>
+              <div class="text-subtitle-2 font-weight-bold">
+                ${{ summaryTransfer.toFixed(2) }}
+              </div>
             </VCol>
           </VRow>
 
-          <div class="text-subtitle-1 font-weight-bold mb-2">Desglose de Ventas</div>
-          <VTable density="compact" class="border rounded-lg" style="background: transparent;">
+          <div class="text-subtitle-1 font-weight-bold mb-2">
+            Desglose de Ventas
+          </div>
+          <VTable
+            density="compact"
+            class="border rounded-lg"
+            style="background: transparent;"
+          >
             <thead>
               <tr>
-                <th class="text-left font-weight-bold">Producto</th>
-                <th class="text-center font-weight-bold">Cant.</th>
-                <th class="text-right font-weight-bold">Subtotal</th>
+                <th class="text-left font-weight-bold">
+                  Producto
+                </th>
+                <th class="text-center font-weight-bold">
+                  Cant.
+                </th>
+                <th class="text-right font-weight-bold">
+                  Subtotal
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="summaryIncomesGrouped.length === 0">
-                <td colspan="3" class="text-center py-4 text-disabled">No hay ventas registradas</td>
-              </tr>
-              <tr v-for="(item, index) in summaryIncomesGrouped" :key="index">
-                <td>
-                  <div class="font-weight-medium">{{ item.description }}</div>
-                  <div class="text-caption text-disabled" v-if="item.unit_cost">x ${{ item.unit_cost.toFixed(2) }}</div>
+                <td
+                  colspan="3"
+                  class="text-center py-4 text-disabled"
+                >
+                  No hay ventas registradas
                 </td>
-                <td class="text-center">{{ item.total_quantity }}</td>
-                <td class="text-right text-success font-weight-bold">${{ item.total_amount.toFixed(2) }}</td>
+              </tr>
+              <tr
+                v-for="(item, index) in summaryIncomesGrouped"
+                :key="index"
+              >
+                <td>
+                  <div class="font-weight-medium">
+                    {{ item.description }}
+                  </div>
+                  <div
+                    v-if="item.unit_cost"
+                    class="text-caption text-disabled"
+                  >
+                    x ${{ item.unit_cost.toFixed(2) }}
+                  </div>
+                </td>
+                <td class="text-center">
+                  {{ item.total_quantity }}
+                </td>
+                <td class="text-right text-success font-weight-bold">
+                  ${{ item.total_amount.toFixed(2) }}
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -965,7 +1481,11 @@ onMounted(() => {
 
         <VDivider />
         <VCardActions class="pa-4 d-flex justify-end">
-          <VBtn color="primary" class="rounded-lg px-4" @click="isSummaryDialogOpen = false">
+          <VBtn
+            color="primary"
+            class="rounded-lg px-4"
+            @click="isSummaryDialogOpen = false"
+          >
             Cerrar
           </VBtn>
         </VCardActions>
@@ -973,51 +1493,108 @@ onMounted(() => {
     </VDialog>
 
     <!-- Dialogo de Generar Reporte PDF -->
-    <VDialog v-model="isPdfDialogOpen" max-width="450" scrollable>
+    <VDialog
+      v-model="isPdfDialogOpen"
+      max-width="450"
+      scrollable
+    >
       <VCard class="rounded-xl">
         <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-file-pdf-line" color="primary" />
+            <VIcon
+              icon="ri-file-pdf-line"
+              color="primary"
+            />
             <span class="text-h5 font-weight-bold">Reporte PDF</span>
           </div>
-          <DialogCloseBtn variant="text" @click="isPdfDialogOpen = false" />
+          <DialogCloseBtn
+            variant="text"
+            @click="isPdfDialogOpen = false"
+          />
         </VCardTitle>
 
-        <VCardText class="pa-5" style="max-height: 60vh;">
+        <VCardText
+          class="pa-5"
+          style="max-height: 60vh;"
+        >
           <VRow dense>
-            <VCol cols="12" class="pb-3">
-              <VSelect v-model="pdfRange" :items="[
-                { title: 'Día de Hoy', value: 'today' },
-                { title: 'Esta Semana', value: 'week' },
-                { title: 'Este Mes', value: 'month' },
-                { title: 'Rango Personalizado', value: 'custom' }
-              ]" label="Período de Reporte *" variant="outlined" />
+            <VCol
+              cols="12"
+              class="pb-3"
+            >
+              <VSelect
+                v-model="pdfRange"
+                :items="[
+                  { title: 'Día de Hoy', value: 'today' },
+                  { title: 'Esta Semana', value: 'week' },
+                  { title: 'Este Mes', value: 'month' },
+                  { title: 'Rango Personalizado', value: 'custom' }
+                ]"
+                label="Período de Reporte *"
+                variant="outlined"
+              />
             </VCol>
 
-            <VCol v-if="pdfRange === 'custom'" cols="6" class="pb-3">
-              <VTextField v-model="pdfStartDate" label="Fecha Inicio *" type="date" variant="outlined" />
+            <VCol
+              v-if="pdfRange === 'custom'"
+              cols="6"
+              class="pb-3"
+            >
+              <VTextField
+                v-model="pdfStartDate"
+                label="Fecha Inicio *"
+                type="date"
+                variant="outlined"
+              />
             </VCol>
 
-            <VCol v-if="pdfRange === 'custom'" cols="6" class="pb-3">
-              <VTextField v-model="pdfEndDate" label="Fecha Fin *" type="date" variant="outlined" />
+            <VCol
+              v-if="pdfRange === 'custom'"
+              cols="6"
+              class="pb-3"
+            >
+              <VTextField
+                v-model="pdfEndDate"
+                label="Fecha Fin *"
+                type="date"
+                variant="outlined"
+              />
             </VCol>
 
-            <VCol cols="12" class="pb-3">
-              <VSelect v-model="pdfAccount" :items="[
-                { title: 'Todas las Cuentas', value: 'ALL' },
-                { title: 'Efectivo', value: 'EFECTIVO' },
-                { title: 'Transferencia', value: 'TRANSFERENCIA' }
-              ]" label="Filtrar por Cuenta" variant="outlined" />
+            <VCol
+              cols="12"
+              class="pb-3"
+            >
+              <VSelect
+                v-model="pdfAccount"
+                :items="[
+                  { title: 'Todas las Cuentas', value: 'ALL' },
+                  { title: 'Efectivo', value: 'EFECTIVO' },
+                  { title: 'Transferencia', value: 'TRANSFERENCIA' }
+                ]"
+                label="Filtrar por Cuenta"
+                variant="outlined"
+              />
             </VCol>
           </VRow>
         </VCardText>
 
         <VDivider />
         <VCardActions class="pa-4 d-flex justify-end gap-2">
-          <VBtn variant="outlined" color="secondary" class="rounded-lg" @click="isPdfDialogOpen = false">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            class="rounded-lg"
+            @click="isPdfDialogOpen = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="primary" class="rounded-lg px-4" @click="generatePdfReport" prepend-icon="ri-download-line">
+          <VBtn
+            color="primary"
+            class="rounded-lg px-4"
+            prepend-icon="ri-download-line"
+            @click="generatePdfReport"
+          >
             Generar Reporte
           </VBtn>
         </VCardActions>

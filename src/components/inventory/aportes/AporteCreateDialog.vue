@@ -118,10 +118,12 @@ const loadAccounts = async () => {
         .replace(/\(EFECTIVO\)/gi, '')
         .replace(/\(TRANSFERENCIA\)/gi, '')
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
-        .trim();
+        .trim()
+
+      
       return {
         ...acc,
-        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
       }
     })
     console.log('✅ Cuentas cargadas:', accountsData.length)

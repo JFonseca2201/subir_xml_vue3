@@ -224,7 +224,12 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-group-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-group-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Usuarios
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -232,7 +237,11 @@ onMounted(() => {
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-line" @click="isUserAddDialogVisible = !isUserAddDialogVisible">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="isUserAddDialogVisible = !isUserAddDialogVisible"
+        >
           Nuevo Usuario
         </VBtn>
       </div>
@@ -244,64 +253,170 @@ onMounted(() => {
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
           <VCol cols="12">
-            <VTextField v-model="seachQuery" label="Buscar usuario" placeholder="Nombre, email, identificación..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" />
+            <VTextField
+              v-model="seachQuery"
+              label="Buscar usuario"
+              placeholder="Nombre, email, identificación..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
 
       <!-- Tabla de Usuarios -->
       <div class="position-relative">
-        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
+        <VProgressLinear
+          v-if="loader.loading"
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
         <div class="overflow-x-auto">
-          <VTable hover class="users-table">
+          <VTable
+            hover
+            class="users-table"
+          >
             <thead>
               <tr>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 60px;">#</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">IMAGEN</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">NOMBRE</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">EMAIL</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">ROL</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">ACCIONES</th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 60px;"
+                >
+                  #
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 150px;"
+                >
+                  IMAGEN
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  NOMBRE
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  EMAIL
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 150px;"
+                >
+                  ROL
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
+                  FECHA REG.
+                </th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 90px;"
+                >
+                  ACCIONES
+                </th>
               </tr>
             </thead>
             <tbody v-if="loader.loading">
               <tr>
-                <td colspan="7" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">Cargando registros...</div>
+                <td
+                  colspan="7"
+                  class="text-center pa-6"
+                >
+                  <VProgressCircular
+                    indeterminate
+                    color="primary"
+                    size="40"
+                  />
+                  <div class="mt-2 text-medium-emphasis">
+                    Cargando registros...
+                  </div>
                 </td>
               </tr>
             </tbody>
             <tbody v-else-if="!list_users || list_users.length === 0">
               <tr>
-                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-database-2-line</VIcon>
-                  <div class="text-h6">No hay usuarios registrados</div>
-                  <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
+                <td
+                  colspan="7"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
+                    ri-database-2-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No hay usuarios registrados
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
                 </td>
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="item in list_users" :key="item.id" class="users-row align-middle">
+              <tr
+                v-for="item in list_users"
+                :key="item.id"
+                class="users-row align-middle"
+              >
                 <td class="text-center py-3">
                   <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.id }}</span>
                 </td>
                 <td class="text-left py-3">
                   <div class="d-flex justify-center">
-                    <div class="cursor-pointer position-relative" @click="viewItem(item)">
-                      <img v-if="item.avatar" :src="item.avatar" class="rounded-circle elevation-2"
-                        style="width: 40px; height: 40px; object-fit: cover;">
-                      <VAvatar v-else size="40" class="elevation-2">
-                        <VIcon icon="ri-user-line" size="20" />
+                    <div
+                      class="cursor-pointer position-relative"
+                      @click="viewItem(item)"
+                    >
+                      <img
+                        v-if="item.avatar"
+                        :src="item.avatar"
+                        class="rounded-circle elevation-2"
+                        style="width: 40px; height: 40px; object-fit: cover;"
+                      >
+                      <VAvatar
+                        v-else
+                        size="40"
+                        class="elevation-2"
+                      >
+                        <VIcon
+                          icon="ri-user-line"
+                          size="20"
+                        />
                       </VAvatar>
-                      <div class="position-absolute" style="bottom: 0; right: 0;">
-                        <VIcon v-if="item.status == '1'" icon="ri-checkbox-blank-circle-fill" size="12" color="success"
-                          class="elevation-1" />
-                        <VIcon v-else icon="ri-close-circle-fill" size="12" color="error" class="elevation-1" />
+                      <div
+                        class="position-absolute"
+                        style="bottom: 0; right: 0;"
+                      >
+                        <VIcon
+                          v-if="item.status == '1'"
+                          icon="ri-checkbox-blank-circle-fill"
+                          size="12"
+                          color="success"
+                          class="elevation-1"
+                        />
+                        <VIcon
+                          v-else
+                          icon="ri-close-circle-fill"
+                          size="12"
+                          color="error"
+                          class="elevation-1"
+                        />
                       </div>
                     </div>
                   </div>
@@ -311,17 +426,31 @@ onMounted(() => {
                     {{ item.name || '' }}{{ item.surname ? ' ' + item.surname : '' }}
                   </span>
                 </td>
-                <td class="text-left py-3" style="max-width: 250px;">
-                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="item.email">{{ item.email }}</span>
+                <td
+                  class="text-left py-3"
+                  style="max-width: 250px;"
+                >
+                  <span
+                    class="text-body-2 text-grey-darken-3 text-truncate"
+                    :title="item.email"
+                  >{{ item.email }}</span>
                 </td>
                 <td class="text-left py-3">
-                  <VChip color="primary" variant="tonal" size="small">
+                  <VChip
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                  >
                     {{ item.role?.name || 'Sin rol' }}
                   </VChip>
                 </td>
                 <td class="text-no-wrap text-left py-3">
                   <div class="d-flex align-center">
-                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="14"
+                      class="mr-1 text-grey"
+                    />
                     <span class="text-body-2 text-medium-emphasis">
                       {{ item.created_at ? new Date(item.created_at.replace(' ', 'T')).toLocaleDateString('es-EC', {
                         year: 'numeric',
@@ -333,17 +462,49 @@ onMounted(() => {
                 </td>
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver detalle"
-                      @click="viewItem(item)">
-                      <VIcon icon="ri-eye-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="info"
+                      title="Ver detalle"
+                      @click="viewItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-eye-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn v-if="item.id !== 1" class="action-btn" variant="text" icon size="small" color="primary"
-                      title="Editar" @click="editItem(item)">
-                      <VIcon icon="ri-pencil-line" size="20" />
+                    <VBtn
+                      v-if="item.id !== 1"
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="primary"
+                      title="Editar"
+                      @click="editItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn v-if="item.id !== 1" class="action-btn" variant="text" icon size="small" color="error"
-                      title="Eliminar" @click="deleteItem(item)">
-                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    <VBtn
+                      v-if="item.id !== 1"
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -365,13 +526,30 @@ onMounted(() => {
     </VCard>
 
     <!-- Dialogs -->
-    <UserAddDialog v-if="roles && roles.length > 0" v-model:isDialogVisible="isUserAddDialogVisible" :roles="roles"
-      @add-user="addNewUser" />
-    <UserViewDialog v-if="isUserViewDialogVisible" v-model:is-dialog-visible="isUserViewDialogVisible"
-      :user="user_selected_view || {}" :loading="viewLoading" />
-    <UserEditDialog v-if="user_selected_edit" v-model:isDialogVisible="isUserEditDialogVisible"
-      :user-selected="user_selected_edit" :roles="roles" @edit-user="addEditUser" />
-    <UserDeleteDialog v-if="user_selected_delete" v-model:isDialogVisible="isUserDeleteDialogVisible"
-      :user-selected="user_selected_delete" @delete-user="addDeleteUser" />
+    <UserAddDialog
+      v-if="roles && roles.length > 0"
+      v-model:isDialogVisible="isUserAddDialogVisible"
+      :roles="roles"
+      @add-user="addNewUser"
+    />
+    <UserViewDialog
+      v-if="isUserViewDialogVisible"
+      v-model:is-dialog-visible="isUserViewDialogVisible"
+      :user="user_selected_view || {}"
+      :loading="viewLoading"
+    />
+    <UserEditDialog
+      v-if="user_selected_edit"
+      v-model:isDialogVisible="isUserEditDialogVisible"
+      :user-selected="user_selected_edit"
+      :roles="roles"
+      @edit-user="addEditUser"
+    />
+    <UserDeleteDialog
+      v-if="user_selected_delete"
+      v-model:isDialogVisible="isUserDeleteDialogVisible"
+      :user-selected="user_selected_delete"
+      @delete-user="addDeleteUser"
+    />
   </div>
 </template>

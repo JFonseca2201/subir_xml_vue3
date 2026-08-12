@@ -55,7 +55,7 @@ const getCurrentUserId = () => {
 
 const initialClient = ref(null)
 
-const loadClientById = async (id) => {
+const loadClientById = async id => {
   try {
     const clientResp = await $api(`clients/${id}`)
     const clientObj = clientResp.client || clientResp.data || clientResp
@@ -277,7 +277,7 @@ const updateVehicle = async () => {
   }
 }
 
-watch(() => initialClient.value, (newVal) => {
+watch(() => initialClient.value, newVal => {
   if (newVal && newVal.id) {
     vehicleForm.value.client_id = newVal.id
   } else {
@@ -300,7 +300,7 @@ onMounted(() => {
     searchBrands('')
   }, { deep: true })
 
-  watch(() => props.isDialogVisible, (newVal) => {
+  watch(() => props.isDialogVisible, newVal => {
     if (newVal) {
       error.value = ''
       success.value = ''
@@ -364,8 +364,14 @@ onMounted(() => {
               :initial-item="initialClient"
             >
               <template #item="{ props: itemProps, item }">
-                <VListItem v-bind="itemProps" :title="undefined">
-                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                <VListItem
+                  v-bind="itemProps"
+                  :title="undefined"
+                >
+                  <VListItemTitle
+                    style="white-space: normal !important; line-height: 1.4;"
+                    class="font-weight-medium"
+                  >
                     {{ item.raw.full_name }}
                   </VListItemTitle>
                   <VListItemSubtitle class="mt-1 text-grey">

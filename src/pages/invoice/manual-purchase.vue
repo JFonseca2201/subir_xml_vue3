@@ -21,8 +21,9 @@ const partners = ref([])
 const products = ref([])
 
 const getLocalDateString = () => {
-  const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-  return new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+  const tzOffset = (new Date()).getTimezoneOffset() * 60000
+  
+  return new Date(Date.now() - tzOffset).toISOString().split('T')[0]
 }
 
 // Form State
@@ -50,16 +51,20 @@ const loadConfig = async () => {
 
     suppliers.value = configResp.suppliers || []
     categories.value = configResp.categories || []
+
     const rawAccounts = accountsResp.data || accountsResp || []
+
     accounts.value = rawAccounts.map(acc => {
       const cleaned = (acc.name || '')
         .replace(/\(EFECTIVO\)/gi, '')
         .replace(/\(TRANSFERENCIA\)/gi, '')
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
-        .trim();
+        .trim()
+
+      
       return {
         ...acc,
-        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
       }
     })
 
@@ -77,15 +82,17 @@ const loadConfig = async () => {
 // Watcher para buscar productos cuando cambia el proveedor
 import { watch } from 'vue'
 
-watch(() => formData.value.supplier_id, async (newSupplierId) => {
+watch(() => formData.value.supplier_id, async newSupplierId => {
   if (!newSupplierId) {
     products.value = []
+    
     return
   }
 
   isLoadingProducts.value = true
   try {
     const productsResp = await $api(`products?supplier_id=${newSupplierId}&per_page=1000`, { method: 'GET' })
+
     products.value = productsResp.products?.data || productsResp.products || productsResp.data?.data || productsResp.data || []
   } catch (error) {
     console.error(error)
@@ -109,7 +116,7 @@ const grandTotal = computed(() => {
   return subtotal.value + totalTax.value
 })
 
-const addProductToItems = (product) => {
+const addProductToItems = product => {
   if (!product) return
 
   // Check if already exists
@@ -118,6 +125,7 @@ const addProductToItems = (product) => {
     exists.quantity++
     updateItemTotals(exists)
     searchProduct.value = null
+    
     return
   }
 
@@ -133,13 +141,13 @@ const addProductToItems = (product) => {
     total: product.purchase_price || 0,
     item_type: 1, // Physical Product
     product_categorie_id: product.product_categorie_id || categories.value[0]?.id,
-    is_taxable: product.is_taxable || 0
+    is_taxable: product.is_taxable || 0,
   })
 
   searchProduct.value = null
 }
 
-const updateItemTotals = (item) => {
+const updateItemTotals = item => {
   const qty = Number(item.quantity) || 0
   const price = Number(item.unit_price) || 0
   const disc = Number(item.discount) || 0
@@ -151,7 +159,7 @@ const updateItemTotals = (item) => {
   item.total = (item.subtotal - disc) + item.tax
 }
 
-const removeItem = (index) => {
+const removeItem = index => {
   items.value.splice(index, 1)
 }
 
@@ -179,13 +187,13 @@ const submitPurchase = async () => {
     subtotal: subtotal.value,
     tax: totalTax.value,
     total: grandTotal.value,
-    items: items.value
+    items: items.value,
   }
 
   try {
     await $api('purchases/manual', {
       method: 'POST',
-      body: payload
+      body: payload,
     })
 
     showNotification('Compra manual registrada correctamente', 'success')
@@ -207,8 +215,8 @@ onMounted(() => {
 <template>
   <div class="pa-6 position-relative">
     <VProgressLinear
-      v-slot:default
       v-if="isLoadingConfig"
+      v-slot
       indeterminate
       color="primary"
       height="3"
@@ -217,10 +225,16 @@ onMounted(() => {
     />
 
     <VRow>
-      <VCol cols="12" class="d-flex align-center justify-space-between mb-4">
+      <VCol
+        cols="12"
+        class="d-flex align-center justify-space-between mb-4"
+      >
         <div>
           <h2 class="text-h4 font-weight-bold d-flex align-center gap-3">
-            <VIcon icon="ri-shopping-cart-2-line" color="primary" />
+            <VIcon
+              icon="ri-shopping-cart-2-line"
+              color="primary"
+            />
             Nueva Compra Manual
           </h2>
           <span class="text-medium-emphasis">Registra una factura física y actualiza stock/finanzas</span>
@@ -229,41 +243,89 @@ onMounted(() => {
     </VRow>
 
     <!-- Form Skeleton loader -->
-    <div v-if="isLoadingConfig" class="d-flex flex-column gap-6">
+    <div
+      v-if="isLoadingConfig"
+      class="d-flex flex-column gap-6"
+    >
       <VRow>
-        <VCol cols="12" md="8">
+        <VCol
+          cols="12"
+          md="8"
+        >
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div class="shimmer-line w-40 mb-6" style="height: 24px;"></div>
+            <div
+              class="shimmer-line w-40 mb-6"
+              style="height: 24px;"
+            />
             <VRow class="mb-4">
-              <VCol cols="12" sm="6">
-                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              <VCol
+                cols="12"
+                sm="6"
+              >
+                <div
+                  class="shimmer-line w-100 mb-2"
+                  style="height: 48px; border-radius: 8px;"
+                />
               </VCol>
-              <VCol cols="12" sm="3">
-                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              <VCol
+                cols="12"
+                sm="3"
+              >
+                <div
+                  class="shimmer-line w-100 mb-2"
+                  style="height: 48px; border-radius: 8px;"
+                />
               </VCol>
-              <VCol cols="12" sm="3">
-                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              <VCol
+                cols="12"
+                sm="3"
+              >
+                <div
+                  class="shimmer-line w-100 mb-2"
+                  style="height: 48px; border-radius: 8px;"
+                />
               </VCol>
             </VRow>
-            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;"></div>
-            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 80px; border-radius: 8px;"
+            />
+            <div
+              class="shimmer-line w-100"
+              style="height: 120px; border-radius: 8px;"
+            />
           </VCard>
         </VCol>
-        <VCol cols="12" md="4">
+        <VCol
+          cols="12"
+          md="4"
+        >
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div class="shimmer-line w-60 mb-6" style="height: 24px;"></div>
-            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
-            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-60 mb-6"
+              style="height: 24px;"
+            />
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 48px; border-radius: 8px;"
+            />
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 48px; border-radius: 8px;"
+            />
             <VDivider class="my-4" />
             <div class="d-flex justify-space-between mb-2">
-              <div class="shimmer-line w-30"></div>
-              <div class="shimmer-line w-20"></div>
+              <div class="shimmer-line w-30" />
+              <div class="shimmer-line w-20" />
             </div>
             <div class="d-flex justify-space-between mb-4">
-              <div class="shimmer-line w-40"></div>
-              <div class="shimmer-line w-30"></div>
+              <div class="shimmer-line w-40" />
+              <div class="shimmer-line w-30" />
             </div>
-            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-100"
+              style="height: 48px; border-radius: 8px;"
+            />
           </VCard>
         </VCol>
       </VRow>
@@ -271,25 +333,58 @@ onMounted(() => {
 
     <VRow v-else>
       <!-- HEADER COMPRA -->
-      <VCol cols="12" md="8">
+      <VCol
+        cols="12"
+        md="8"
+      >
         <VCard class="elevation-3 rounded-xl mb-6">
           <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold">
-            <VIcon start icon="ri-file-info-line" /> Datos de Factura
+            <VIcon
+              start
+              icon="ri-file-info-line"
+            /> Datos de Factura
           </VCardTitle>
           <VCardText class="px-6 pb-6">
             <VRow>
-              <VCol cols="12" md="6">
-                <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
-                  label="Proveedor" placeholder="Selecciona el proveedor" variant="outlined" density="comfortable"
-                  :loading="isLoadingConfig" />
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VAutocomplete
+                  v-model="formData.supplier_id"
+                  :items="suppliers"
+                  item-title="name"
+                  item-value="id"
+                  label="Proveedor"
+                  placeholder="Selecciona el proveedor"
+                  variant="outlined"
+                  density="comfortable"
+                  :loading="isLoadingConfig"
+                />
               </VCol>
-              <VCol cols="12" md="3">
-                <VTextField v-model="formData.invoice_number" label="N° Factura" placeholder="001-001-0000123"
-                  variant="outlined" density="comfortable" />
+              <VCol
+                cols="12"
+                md="3"
+              >
+                <VTextField
+                  v-model="formData.invoice_number"
+                  label="N° Factura"
+                  placeholder="001-001-0000123"
+                  variant="outlined"
+                  density="comfortable"
+                />
               </VCol>
-              <VCol cols="12" md="3">
-                <VTextField v-model="formData.issue_date" type="date" label="Fecha de Emisión" variant="outlined"
-                  density="comfortable" />
+              <VCol
+                cols="12"
+                md="3"
+              >
+                <VTextField
+                  v-model="formData.issue_date"
+                  type="date"
+                  label="Fecha de Emisión"
+                  variant="outlined"
+                  density="comfortable"
+                />
               </VCol>
             </VRow>
           </VCardText>
@@ -299,25 +394,47 @@ onMounted(() => {
         <VCard class="elevation-3 rounded-xl">
           <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between">
             <div class="text-h6 font-weight-bold">
-              <VIcon start icon="ri-box-3-line" /> Detalle de Productos
+              <VIcon
+                start
+                icon="ri-box-3-line"
+              /> Detalle de Productos
             </div>
           </VCardTitle>
           <VCardText class="px-6">
-            <VAutocomplete v-model="searchProduct" :items="products" item-title="description" item-value="id"
-              label="Buscar Producto para añadir..." placeholder="Escribe el nombre o SKU" variant="outlined"
-              prepend-inner-icon="ri-search-line" return-object clearable @update:model-value="addProductToItems"
-              class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts" :disabled="!formData.supplier_id">
+            <VAutocomplete
+              v-model="searchProduct"
+              :items="products"
+              item-title="description"
+              item-value="id"
+              label="Buscar Producto para añadir..."
+              placeholder="Escribe el nombre o SKU"
+              variant="outlined"
+              prepend-inner-icon="ri-search-line"
+              return-object
+              clearable
+              class="mb-4"
+              :menu-props="{ maxWidth: 0 }"
+              :loading="isLoadingProducts"
+              :disabled="!formData.supplier_id"
+              @update:model-value="addProductToItems"
+            >
               <template #no-data>
                 <div class="pa-4 text-center text-medium-emphasis">
                   {{
                     formData.supplier_id ? 'No hay productos disponibles para este proveedor'
-                      : 'Seleccione un proveedor primero'
+                    : 'Seleccione un proveedor primero'
                   }}
                 </div>
               </template>
               <template #item="{ props, item }">
-                <VListItem v-bind="props" :title="undefined">
-                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                <VListItem
+                  v-bind="props"
+                  :title="undefined"
+                >
+                  <VListItemTitle
+                    style="white-space: normal !important; line-height: 1.4;"
+                    class="font-weight-medium"
+                  >
                     {{ item.raw.description || item.raw.name }}
                   </VListItemTitle>
                   <VListItemSubtitle class="mt-1 text-grey">
@@ -330,43 +447,96 @@ onMounted(() => {
             <VTable class="border rounded">
               <thead class="bg-grey-lighten-4">
                 <tr>
-                  <th style="width: 35%">PRODUCTO</th>
-                  <th style="width: 10%">CANT.</th>
-                  <th style="width: 15%">P.U.</th>
-                  <th style="width: 15%">DCTO.</th>
-                  <th style="width: 15%">SUBTOT.</th>
-                  <th style="width: 10%" class="text-center">ACCIÓN</th>
+                  <th style="width: 35%">
+                    PRODUCTO
+                  </th>
+                  <th style="width: 10%">
+                    CANT.
+                  </th>
+                  <th style="width: 15%">
+                    P.U.
+                  </th>
+                  <th style="width: 15%">
+                    DCTO.
+                  </th>
+                  <th style="width: 15%">
+                    SUBTOT.
+                  </th>
+                  <th
+                    style="width: 10%"
+                    class="text-center"
+                  >
+                    ACCIÓN
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="items.length === 0">
-                  <td colspan="5" class="text-center py-8 text-medium-emphasis">
+                  <td
+                    colspan="5"
+                    class="text-center py-8 text-medium-emphasis"
+                  >
                     No hay productos agregados a la compra
                   </td>
                 </tr>
-                <tr v-for="(item, index) in items" :key="item.id">
+                <tr
+                  v-for="(item, index) in items"
+                  :key="item.id"
+                >
                   <td>
-                    <div class="font-weight-bold">{{ item.description }}</div>
-                    <div class="text-caption text-medium-emphasis">SKU: {{ item.code }}</div>
+                    <div class="font-weight-bold">
+                      {{ item.description }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      SKU: {{ item.code }}
+                    </div>
                   </td>
                   <td>
-                    <VTextField v-model.number="item.quantity" type="number" min="0.01" step="1" density="compact"
-                      hide-details @input="updateItemTotals(item)" />
+                    <VTextField
+                      v-model.number="item.quantity"
+                      type="number"
+                      min="0.01"
+                      step="1"
+                      density="compact"
+                      hide-details
+                      @input="updateItemTotals(item)"
+                    />
                   </td>
                   <td>
-                    <VTextField v-model.number="item.unit_price" type="number" min="0" step="0.01" density="compact"
-                      prefix="$" hide-details @input="updateItemTotals(item)" />
+                    <VTextField
+                      v-model.number="item.unit_price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      density="compact"
+                      prefix="$"
+                      hide-details
+                      @input="updateItemTotals(item)"
+                    />
                   </td>
                   <td>
-                    <VTextField v-model.number="item.discount" type="number" min="0" step="0.01" density="compact"
-                      prefix="$" hide-details @input="updateItemTotals(item)" />
+                    <VTextField
+                      v-model.number="item.discount"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      density="compact"
+                      prefix="$"
+                      hide-details
+                      @input="updateItemTotals(item)"
+                    />
                   </td>
                   <td class="font-weight-bold">
                     ${{ Number(item.subtotal - (item.discount || 0)).toFixed(2) }}
                   </td>
                   <td class="text-center">
-                    <VBtn icon="ri-delete-bin-line" color="error" variant="text" size="small"
-                      @click="removeItem(index)" />
+                    <VBtn
+                      icon="ri-delete-bin-line"
+                      color="error"
+                      variant="text"
+                      size="small"
+                      @click="removeItem(index)"
+                    />
                   </td>
                 </tr>
               </tbody>
@@ -376,37 +546,79 @@ onMounted(() => {
       </VCol>
 
       <!-- SECCION FINANCIERA Y TOTALES -->
-      <VCol cols="12" md="4">
+      <VCol
+        cols="12"
+        md="4"
+      >
         <VCard class="elevation-3 rounded-xl mb-6 border-primary border-opacity-50 border-s-4">
           <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold">
-            <VIcon start icon="ri-money-dollar-circle-line" /> Origen de Fondos
+            <VIcon
+              start
+              icon="ri-money-dollar-circle-line"
+            /> Origen de Fondos
           </VCardTitle>
           <VCardText class="px-6 pb-6">
-            <VRadioGroup v-model="formData.payment_type" class="mb-4">
-              <VRadio label="Cuenta por Pagar (Crédito)" value="credito" color="primary" />
-              <VRadio label="Pago Inmediato (Caja/Banco)" value="efectivo" color="success" />
-              <VRadio label="Financiado por Socio (Aporte)" value="aporte" color="warning" />
+            <VRadioGroup
+              v-model="formData.payment_type"
+              class="mb-4"
+            >
+              <VRadio
+                label="Cuenta por Pagar (Crédito)"
+                value="credito"
+                color="primary"
+              />
+              <VRadio
+                label="Pago Inmediato (Caja/Banco)"
+                value="efectivo"
+                color="success"
+              />
+              <VRadio
+                label="Financiado por Socio (Aporte)"
+                value="aporte"
+                color="warning"
+              />
             </VRadioGroup>
 
             <!-- Conditional Selectors -->
             <VExpandTransition>
               <div v-if="formData.payment_type === 'efectivo'">
-                <VSelect v-model="formData.account_id" :items="accounts" item-title="name" item-value="id"
-                  label="Seleccionar Cuenta de Egreso" variant="outlined" density="comfortable"
-                  prepend-inner-icon="ri-bank-card-line" :loading="isLoadingConfig" />
+                <VSelect
+                  v-model="formData.account_id"
+                  :items="accounts"
+                  item-title="name"
+                  item-value="id"
+                  label="Seleccionar Cuenta de Egreso"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="ri-bank-card-line"
+                  :loading="isLoadingConfig"
+                />
               </div>
             </VExpandTransition>
 
             <VExpandTransition>
               <div v-if="formData.payment_type === 'aporte'">
-                <VSelect v-model="formData.partner_id" :items="partners" item-title="nombre" item-value="id"
-                  label="Seleccionar Socio Capitalista" variant="outlined" density="comfortable"
-                  prepend-inner-icon="ri-user-star-line" :loading="isLoadingConfig" />
+                <VSelect
+                  v-model="formData.partner_id"
+                  :items="partners"
+                  item-title="nombre"
+                  item-value="id"
+                  label="Seleccionar Socio Capitalista"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="ri-user-star-line"
+                  :loading="isLoadingConfig"
+                />
               </div>
             </VExpandTransition>
 
-            <VAlert v-if="formData.payment_type === 'credito'" color="primary" variant="tonal"
-              icon="ri-information-line" class="mt-2 text-caption">
+            <VAlert
+              v-if="formData.payment_type === 'credito'"
+              color="primary"
+              variant="tonal"
+              icon="ri-information-line"
+              class="mt-2 text-caption"
+            >
               Se registrará la compra en el inventario y se creará una Cuenta por Pagar asociada al proveedor. No se
               descontará dinero de las cuentas aún.
             </VAlert>
@@ -415,7 +627,9 @@ onMounted(() => {
 
         <!-- RESUMEN TOTAL -->
         <VCard class="elevation-3 rounded-xl bg-grey-lighten-4">
-          <VCardTitle class="px-6 pt-6 text-h6 font-weight-bold">Resumen</VCardTitle>
+          <VCardTitle class="px-6 pt-6 text-h6 font-weight-bold">
+            Resumen
+          </VCardTitle>
           <VCardText class="px-6">
             <div class="d-flex justify-space-between mb-2">
               <span class="text-medium-emphasis">Subtotal</span>
@@ -431,8 +645,15 @@ onMounted(() => {
               <span class="text-h4 font-weight-black text-primary">${{ grandTotal.toFixed(2) }}</span>
             </div>
 
-            <VBtn block color="primary" size="x-large" elevation="4" :loading="isSubmitting"
-              prepend-icon="ri-save-3-line" @click="submitPurchase">
+            <VBtn
+              block
+              color="primary"
+              size="x-large"
+              elevation="4"
+              :loading="isSubmitting"
+              prepend-icon="ri-save-3-line"
+              @click="submitPurchase"
+            >
               Registrar Compra
             </VBtn>
           </VCardText>

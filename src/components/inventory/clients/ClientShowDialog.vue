@@ -111,10 +111,19 @@ const closeDialog = () => {
       <!-- Header sobrio y limpio alineado con el sistema -->
       <VCardTitle class="d-flex align-center justify-space-between pa-6 border-bottom-light bg-grey-lighten-5">
         <div class="d-flex align-center">
-          <VIcon :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'" color="primary" class="me-3" size="28" />
+          <VIcon
+            :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'"
+            color="primary"
+            class="me-3"
+            size="28"
+          />
           <div>
-            <div class="text-h5 font-weight-bold text-grey-darken-3">Ficha de Cliente</div>
-            <div class="text-caption text-grey text-uppercase">{{ getClientTypeIcon }}</div>
+            <div class="text-h5 font-weight-bold text-grey-darken-3">
+              Ficha de Cliente
+            </div>
+            <div class="text-caption text-grey text-uppercase">
+              {{ getClientTypeIcon }}
+            </div>
           </div>
         </div>
         <VBtn
@@ -149,23 +158,41 @@ const closeDialog = () => {
 
         <VRow>
           <!-- Tarjeta de Información Principal -->
-          <VCol cols="12" md="6">
-            <VCard class="pa-4 h-100 info-card-flat" variant="outlined">
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              class="pa-4 h-100 info-card-flat"
+              variant="outlined"
+            >
               <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
-                <VIcon icon="ri-user-3-line" color="primary" class="me-2" size="20" />
+                <VIcon
+                  icon="ri-user-3-line"
+                  color="primary"
+                  class="me-2"
+                  size="20"
+                />
                 Registro
               </VCardTitle>
 
-              <VRow no-gutters class="gap-y-3">
+              <VRow
+                no-gutters
+                class="gap-y-3"
+              >
                 <VCol cols="12">
-                  <div class="text-caption text-medium-emphasis">Nombre / Razón Social</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Nombre / Razón Social
+                  </div>
                   <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase">
                     {{ fullName || 'No especificado' }}
                   </div>
                 </VCol>
 
                 <VCol cols="12">
-                  <div class="text-caption text-medium-emphasis">Estado</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Estado
+                  </div>
                   <div class="mt-1">
                     <VChip
                       :color="getStateColor"
@@ -181,14 +208,18 @@ const closeDialog = () => {
                 <!-- Campos específicos para cliente final -->
                 <template v-if="!isCompanyClient">
                   <VCol cols="6">
-                    <div class="text-caption text-medium-emphasis">Género</div>
+                    <div class="text-caption text-medium-emphasis">
+                      Género
+                    </div>
                     <div class="text-body-2 font-weight-semibold text-grey-darken-3">
                       {{ getGenderLabel }}
                     </div>
                   </VCol>
 
                   <VCol cols="6">
-                    <div class="text-caption text-medium-emphasis">F. Nacimiento</div>
+                    <div class="text-caption text-medium-emphasis">
+                      F. Nacimiento
+                    </div>
                     <div class="text-body-2 font-weight-semibold text-grey-darken-3">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
@@ -198,7 +229,9 @@ const closeDialog = () => {
                 <!-- Campos específicos para cliente empresa -->
                 <template v-if="isCompanyClient">
                   <VCol cols="12">
-                    <div class="text-caption text-medium-emphasis">Fecha Constitución</div>
+                    <div class="text-caption text-medium-emphasis">
+                      Fecha Constitución
+                    </div>
                     <div class="text-body-2 font-weight-semibold text-grey-darken-3">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
@@ -209,37 +242,59 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Tarjeta de Ubicación -->
-          <VCol cols="12" md="6">
-            <VCard class="pa-4 h-100 info-card-flat" variant="outlined">
+          <VCol
+            cols="12"
+            md="6"
+          >
+            <VCard
+              class="pa-4 h-100 info-card-flat"
+              variant="outlined"
+            >
               <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
-                <VIcon icon="ri-map-pin-line" color="warning" class="me-2" size="20" />
+                <VIcon
+                  icon="ri-map-pin-line"
+                  color="warning"
+                  class="me-2"
+                  size="20"
+                />
                 Ubicación
               </VCardTitle>
 
-              <VRow no-gutters class="gap-y-3">
+              <VRow
+                no-gutters
+                class="gap-y-3"
+              >
                 <VCol cols="12">
-                  <div class="text-caption text-medium-emphasis">Dirección Principal</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Dirección Principal
+                  </div>
                   <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
                     {{ clientData.address || 'No especificada' }}
                   </div>
                 </VCol>
 
                 <VCol cols="4">
-                  <div class="text-caption text-medium-emphasis">Región</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Región
+                  </div>
                   <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
                     {{ clientData.region || '-' }}
                   </div>
                 </VCol>
 
                 <VCol cols="4">
-                  <div class="text-caption text-medium-emphasis">Provincia</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Provincia
+                  </div>
                   <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
                     {{ clientData.provincia || '-' }}
                   </div>
                 </VCol>
 
                 <VCol cols="4">
-                  <div class="text-caption text-medium-emphasis">Distrito</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Distrito
+                  </div>
                   <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
                     {{ clientData.distrito || '-' }}
                   </div>
@@ -249,26 +304,58 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Tarjeta de Contacto -->
-          <VCol cols="12" class="pt-4">
-            <VCard class="pa-4 bg-grey-lighten-5 info-card-flat" variant="outlined">
+          <VCol
+            cols="12"
+            class="pt-4"
+          >
+            <VCard
+              class="pa-4 bg-grey-lighten-5 info-card-flat"
+              variant="outlined"
+            >
               <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-grey-darken-2">
-                <VIcon icon="ri-contacts-line" color="grey-darken-2" class="me-2" size="18" />
+                <VIcon
+                  icon="ri-contacts-line"
+                  color="grey-darken-2"
+                  class="me-2"
+                  size="18"
+                />
                 Contacto
               </VCardTitle>
 
-              <VRow no-gutters class="gap-y-2">
-                <VCol cols="12" sm="6">
-                  <div class="text-caption text-medium-emphasis">Teléfono Móvil</div>
+              <VRow
+                no-gutters
+                class="gap-y-2"
+              >
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <div class="text-caption text-medium-emphasis">
+                    Teléfono Móvil
+                  </div>
                   <div class="text-body-2 font-weight-bold text-grey-darken-3">
-                    <VIcon icon="ri-phone-line" size="14" class="me-1 text-success" />
+                    <VIcon
+                      icon="ri-phone-line"
+                      size="14"
+                      class="me-1 text-success"
+                    />
                     {{ clientData.phone || 'No especificado' }}
                   </div>
                 </VCol>
 
-                <VCol cols="12" sm="6">
-                  <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <div class="text-caption text-medium-emphasis">
+                    Correo Electrónico
+                  </div>
                   <div class="text-body-2 font-weight-bold text-grey-darken-3 text-lowercase">
-                    <VIcon icon="ri-mail-line" size="14" class="me-1 text-info" />
+                    <VIcon
+                      icon="ri-mail-line"
+                      size="14"
+                      class="me-1 text-info"
+                    />
                     {{ clientData.email || 'No especificado' }}
                   </div>
                 </VCol>

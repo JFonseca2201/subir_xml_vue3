@@ -247,7 +247,10 @@ const dialogTitle = computed(() => {
                     size="16"
                   >
                     <VIcon icon="ri-lock-2-line">
-                      <VTooltip activator="parent" text="Cuenta del sistema - no editable" />
+                      <VTooltip
+                        activator="parent"
+                        text="Cuenta del sistema - no editable"
+                      />
                     </VIcon>
                   </VIcon>
                 </template>

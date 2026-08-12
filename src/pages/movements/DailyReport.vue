@@ -72,7 +72,7 @@ onMounted(() => {
   const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
-  const getLocalISO = (d) => {
+  const getLocalISO = d => {
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
   }
 

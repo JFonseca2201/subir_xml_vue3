@@ -10,14 +10,18 @@
     <div class="loader-container">
       <div class="spinner-container mb-4">
         <!-- Modern clean gradient spinner -->
-        <div class="custom-spinner"></div>
+        <div class="custom-spinner" />
         <div
-          v-html="logoHtml"
           class="center-logo"
-        ></div>
+          v-html="logoHtml"
+        />
       </div>
-      <h3 class="loader-title mb-1">Cargando</h3>
-      <p class="loader-subtitle">Por favor espere un momento...</p>
+      <h3 class="loader-title mb-1">
+        Cargando
+      </h3>
+      <p class="loader-subtitle">
+        Por favor espere un momento...
+      </p>
     </div>
   </VOverlay>
 </template>

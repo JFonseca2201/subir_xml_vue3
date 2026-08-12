@@ -19,19 +19,29 @@ const checkConnection = () => {
 <template>
   <div class="offline-overlay d-flex align-center justify-center">
     <!-- Animated background shapes -->
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+    <div class="blob blob-1" />
+    <div class="blob blob-2" />
+    <div class="blob blob-3" />
 
-    <VCard class="pa-10 text-center rounded-xl elevation-24 glass-card mx-4" max-width="550">
+    <VCard
+      class="pa-10 text-center rounded-xl elevation-24 glass-card mx-4"
+      max-width="550"
+    >
       <div class="icon-wrapper mb-8 d-flex align-center justify-center mx-auto">
-        <VIcon icon="ri-wifi-off-line" size="70" color="error" class="pulse-animation" />
+        <VIcon
+          icon="ri-wifi-off-line"
+          size="70"
+          color="error"
+          class="pulse-animation"
+        />
       </div>
       
-      <h1 class="text-h3 font-weight-black mb-4">Sin Conexión</h1>
+      <h1 class="text-h3 font-weight-black mb-4">
+        Sin Conexión
+      </h1>
       
       <p class="text-body-1 text-medium-emphasis mb-8 px-sm-4">
-        Parece que has perdido la conexión a internet. Revisa el estado de tu red, el WiFi o tu router. 
+        Parece que has perdido la conexión a internet. Revisa el estado de tu red, el Wi-Fi o tu router. 
         <strong>Te reconectaremos automáticamente en cuanto vuelvas a tener señal.</strong>
       </p>
 
@@ -49,7 +59,11 @@ const checkConnection = () => {
       </VBtn>
       
       <div class="mt-6 text-caption text-medium-emphasis d-flex align-center justify-center gap-2">
-        <VIcon icon="ri-radar-line" size="small" class="spin-slow" />
+        <VIcon
+          icon="ri-radar-line"
+          size="small"
+          class="spin-slow"
+        />
         Buscando señal en segundo plano...
       </div>
     </VCard>

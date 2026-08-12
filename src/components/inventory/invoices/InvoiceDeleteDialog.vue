@@ -96,7 +96,9 @@ const deleteInvoice = async () => {
           variant="tonal"
           class="text-left mt-4"
         >
-          <div class="text-subtitle-2 font-weight-bold mb-1">Impacto de esta acción:</div>
+          <div class="text-subtitle-2 font-weight-bold mb-1">
+            Impacto de esta acción:
+          </div>
           <ul class="ml-4">
             <li>Se revertirán las cantidades de stock ingresadas.</li>
             <li>Se anularán los movimientos financieros y se repondrá el saldo.</li>

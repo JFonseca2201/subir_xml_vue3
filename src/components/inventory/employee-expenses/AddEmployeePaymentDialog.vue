@@ -495,7 +495,10 @@ onMounted(() => {
                 density="comfortable"
               >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
                     ri-money-dollar-circle-line
                   </VIcon>
                 </template>
@@ -503,7 +506,10 @@ onMounted(() => {
             </VCol>
 
             <!-- Cuenta -->
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VSelect
                 v-model="form.account_id"
                 :items="filteredAccounts"
@@ -524,17 +530,31 @@ onMounted(() => {
                   </VIcon>
                 </template>
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="undefined">
+                  <VListItem
+                    v-bind="props"
+                    :title="undefined"
+                  >
                     <template #prepend>
-                      <VAvatar size="30" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal" class="me-2">
-                        <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'" size="18" />
+                      <VAvatar
+                        size="30"
+                        :color="item.raw.type === 'cash' ? 'success' : 'primary'"
+                        variant="tonal"
+                        class="me-2"
+                      >
+                        <VIcon
+                          :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                          size="18"
+                        />
                       </VAvatar>
                     </template>
                     <VListItemTitle class="font-weight-medium">
                       {{ item.raw.display_name }}
                     </VListItemTitle>
                     <VListItemSubtitle class="text-caption mt-1">
-                      Saldo: <span class="font-weight-bold" :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
+                      Saldo: <span
+                        class="font-weight-bold"
+                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
+                      >${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
                     </VListItemSubtitle>
                   </VListItem>
                 </template>

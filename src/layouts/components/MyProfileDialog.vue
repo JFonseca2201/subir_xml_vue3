@@ -35,7 +35,7 @@ const passwordData = ref({
 })
 
 // Initialize form when dialog opens
-watch(() => props.isDialogVisible, (newVal) => {
+watch(() => props.isDialogVisible, newVal => {
   if (newVal && props.userData) {
     formData.value = {
       phone: props.userData.phone || '',
@@ -68,6 +68,7 @@ const saveGeneralInfo = async () => {
 
     // Actualizar localStorage simulado
     const updatedUser = { ...props.userData, ...formData.value }
+
     localStorage.setItem('user', JSON.stringify(updatedUser))
 
     showNotification('Perfil actualizado correctamente', 'success')
@@ -84,11 +85,13 @@ const saveGeneralInfo = async () => {
 const savePassword = async () => {
   if (passwordData.value.new_password !== passwordData.value.new_password_confirmation) {
     showNotification('Las contraseñas nuevas no coinciden', 'error')
+    
     return
   }
   
   if (passwordData.value.new_password.length < 6) {
     showNotification('La contraseña debe tener al menos 6 caracteres', 'error')
+    
     return
   }
 
@@ -119,6 +122,7 @@ const avatarUrl = computed(() => {
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
 
   const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
+  
   return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
 })
 
@@ -135,15 +139,27 @@ const showConfirmPassword = ref(false)
     scrollable
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="overflow-hidden" rounded="lg">
+    <VCard
+      class="overflow-hidden"
+      rounded="lg"
+    >
       <VCardTitle class="d-flex align-center justify-space-between pa-4 bg-surface-light">
         <div class="d-flex align-center gap-2">
-          <VAvatar color="primary" variant="tonal" size="40">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            size="40"
+          >
             <VIcon icon="ri-user-settings-line" />
           </VAvatar>
           <span class="text-h6 font-weight-bold">Mi Perfil</span>
         </div>
-        <VBtn icon variant="text" @click="closeDialog" color="secondary">
+        <VBtn
+          icon
+          variant="text"
+          color="secondary"
+          @click="closeDialog"
+        >
           <VIcon icon="ri-close-line" />
         </VBtn>
       </VCardTitle>
@@ -156,11 +172,17 @@ const showConfirmPassword = ref(false)
         class="border-b"
       >
         <VTab value="general">
-          <VIcon start icon="ri-user-line" />
+          <VIcon
+            start
+            icon="ri-user-line"
+          />
           General
         </VTab>
         <VTab value="security">
-          <VIcon start icon="ri-lock-password-line" />
+          <VIcon
+            start
+            icon="ri-lock-password-line"
+          />
           Seguridad
         </VTab>
       </VTabs>
@@ -170,15 +192,25 @@ const showConfirmPassword = ref(false)
           <!-- Pestaña General -->
           <VWindowItem value="general">
             <div class="d-flex flex-column align-center mb-6">
-              <VAvatar size="90" class="elevation-2 mb-3 border-avatar">
+              <VAvatar
+                size="90"
+                class="elevation-2 mb-3 border-avatar"
+              >
                 <VImg :src="avatarUrl" />
               </VAvatar>
-              <h3 class="text-h5 font-weight-bold">{{ props.userData?.full_name || 'Usuario' }}</h3>
-              <p class="text-medium-emphasis">{{ props.userData?.role?.name || 'Rol' }}</p>
+              <h3 class="text-h5 font-weight-bold">
+                {{ props.userData?.full_name || 'Usuario' }}
+              </h3>
+              <p class="text-medium-emphasis">
+                {{ props.userData?.role?.name || 'Rol' }}
+              </p>
             </div>
 
             <VRow>
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VTextField
                   :model-value="props.userData?.email"
                   label="Correo Electrónico"
@@ -191,7 +223,10 @@ const showConfirmPassword = ref(false)
                   persistent-hint
                 />
               </VCol>
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VTextField
                   :model-value="props.userData?.identification || 'No registrado'"
                   label="Documento de Identidad"
@@ -203,7 +238,10 @@ const showConfirmPassword = ref(false)
                 />
               </VCol>
               
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VTextField
                   v-model="formData.phone"
                   label="Teléfono"
@@ -213,7 +251,10 @@ const showConfirmPassword = ref(false)
                   placeholder="Ej: 0987654321"
                 />
               </VCol>
-              <VCol cols="12" md="6">
+              <VCol
+                cols="12"
+                md="6"
+              >
                 <VTextField
                   v-model="formData.address"
                   label="Dirección"
@@ -226,8 +267,15 @@ const showConfirmPassword = ref(false)
             </VRow>
 
             <div class="d-flex justify-end mt-6">
-              <VBtn color="primary" @click="saveGeneralInfo" :loading="loader.loading">
-                <VIcon start icon="ri-save-3-line" />
+              <VBtn
+                color="primary"
+                :loading="loader.loading"
+                @click="saveGeneralInfo"
+              >
+                <VIcon
+                  start
+                  icon="ri-save-3-line"
+                />
                 Guardar Cambios
               </VBtn>
             </div>
@@ -261,7 +309,10 @@ const showConfirmPassword = ref(false)
                 
                 <VDivider class="my-3 mx-3" />
 
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="passwordData.new_password"
                     label="Nueva Contraseña"
@@ -273,7 +324,10 @@ const showConfirmPassword = ref(false)
                     @click:append-inner="showNewPassword = !showNewPassword"
                   />
                 </VCol>
-                <VCol cols="12" md="6">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
                   <VTextField
                     v-model="passwordData.new_password_confirmation"
                     label="Confirmar Contraseña"
@@ -288,8 +342,15 @@ const showConfirmPassword = ref(false)
               </VRow>
 
               <div class="d-flex justify-end mt-6">
-                <VBtn color="primary" type="submit" :loading="loader.loading">
-                  <VIcon start icon="ri-shield-check-line" />
+                <VBtn
+                  color="primary"
+                  type="submit"
+                  :loading="loader.loading"
+                >
+                  <VIcon
+                    start
+                    icon="ri-shield-check-line"
+                  />
                   Actualizar Contraseña
                 </VBtn>
               </div>

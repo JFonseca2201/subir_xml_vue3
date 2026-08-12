@@ -25,7 +25,7 @@ const emit = defineEmits([
   'addVehicle',
   'add-vehicle',
   'vehicle-added',
-  'vehicleAdded'
+  'vehicleAdded',
 ])
 
 // --- ESTADO ---
@@ -64,7 +64,7 @@ const getCurrentUserId = () => {
 
 const initialClient = ref(null)
 
-const loadClientById = async (id) => {
+const loadClientById = async id => {
   try {
     const clientResp = await $api(`clients/${id}`)
     const clientObj = clientResp.client || clientResp.data || clientResp
@@ -103,7 +103,7 @@ watch(() => vehicleForm.value.license_plate, (newValue, oldValue) => {
 })
 
 // Recargar clientes cada vez que el diálogo se abre
-watch(() => props.isDialogVisible, (newVal) => {
+watch(() => props.isDialogVisible, newVal => {
   if (newVal) {
     error.value = ''
     success.value = ''
@@ -123,13 +123,15 @@ const selectedClient = computed(() => {
   return initialClient.value
 })
 
-watch(() => initialClient.value, (newVal) => {
+watch(() => initialClient.value, newVal => {
   if (newVal && newVal.id) {
     vehicleForm.value.client_id = newVal.id
   } else {
     vehicleForm.value.client_id = null
   }
 })
+
+
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
 
@@ -199,11 +201,12 @@ const saveVehicle = async () => {
     showNotification('Vehículo guardado correctamente', 'success')
     resetForm()
     setTimeout(() => {
-      const vehiclePayload = resp.data || resp;
-      emit('addVehicle', vehiclePayload);
-      emit('add-vehicle', vehiclePayload);
-      emit('vehicle-added', vehiclePayload);
-      emit('vehicleAdded', vehiclePayload);
+      const vehiclePayload = resp.data || resp
+
+      emit('addVehicle', vehiclePayload)
+      emit('add-vehicle', vehiclePayload)
+      emit('vehicle-added', vehiclePayload)
+      emit('vehicleAdded', vehiclePayload)
       emit('update:isDialogVisible', false)
     }, 25)
 
@@ -282,8 +285,14 @@ onMounted(() => {
               :initial-item="initialClient"
             >
               <template #item="{ props: itemProps, item }">
-                <VListItem v-bind="itemProps" :title="undefined">
-                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
+                <VListItem
+                  v-bind="itemProps"
+                  :title="undefined"
+                >
+                  <VListItemTitle
+                    style="white-space: normal !important; line-height: 1.4;"
+                    class="font-weight-medium"
+                  >
                     {{ item.raw.full_name }}
                   </VListItemTitle>
                   <VListItemSubtitle class="mt-1 text-grey">
@@ -292,8 +301,15 @@ onMounted(() => {
                 </VListItem>
               </template>
             </VSearch>
-            <div v-if="selectedClient" class="text-caption text-grey mt-1 ms-1">
-              <VIcon icon="ri-file-list-3-line" size="14" class="me-1" />
+            <div
+              v-if="selectedClient"
+              class="text-caption text-grey mt-1 ms-1"
+            >
+              <VIcon
+                icon="ri-file-list-3-line"
+                size="14"
+                class="me-1"
+              />
               Documento (Cédula/RUC): <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
             </div>
           </VCol>

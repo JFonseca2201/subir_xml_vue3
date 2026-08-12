@@ -56,13 +56,13 @@ const router = createRouter({
           path: "/finanzas/aportes",
           name: "aportes-index",
           component: () => import("@/pages/aportes/index.vue"),
-          meta: { navActiveLink: 'operations-index' }
+          meta: { navActiveLink: 'operations-index' },
         },
         {
           path: "/finanzas/movimientos",
           name: "movements-index",
           component: () => import("@/pages/movements/index.vue"),
-          meta: { navActiveLink: 'operations-index' }
+          meta: { navActiveLink: 'operations-index' },
         },
         {
           path: "/work-orders",
@@ -88,6 +88,7 @@ const router = createRouter({
       if (opsNames.includes(route.name) || opsPaths.includes(route.path)) {
         route.meta = { ...route.meta, navActiveLink: 'operations-index' }
       }
+      
       return recursiveLayouts(route)
     }),
   ],

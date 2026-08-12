@@ -10,6 +10,7 @@ const warehouseSelected = ref(null)
 
 const { showNotification } = useGlobalToast()
 import { useLoaderStore } from '@/stores/loader'
+
 const loader = useLoaderStore()
 
 const list_warehouses = ref([])
@@ -135,7 +136,12 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-store-2-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-store-2-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Almacenes
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -143,8 +149,11 @@ onMounted(() => {
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-circle-line"
-          @click="isWarehouseAddDialogVisible = !isWarehouseAddDialogVisible">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-circle-line"
+          @click="isWarehouseAddDialogVisible = !isWarehouseAddDialogVisible"
+        >
           Nuevo Almacén
         </VBtn>
       </div>
@@ -156,9 +165,17 @@ onMounted(() => {
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
           <VCol cols="12">
-            <VTextField v-model="search" label="Buscar almacén" placeholder="Nombre, dirección..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" />
+            <VTextField
+              v-model="search"
+              label="Buscar almacén"
+              placeholder="Nombre, dirección..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
@@ -166,28 +183,78 @@ onMounted(() => {
       <!-- Tabla de Almacenes -->
       <div class="position-relative">
         <div class="overflow-x-auto">
-          <VTable hover class="warehouses-table">
+          <VTable
+            hover
+            class="warehouses-table"
+          >
             <thead>
               <tr>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 60px;">#</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">NOMBRE</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">DIRECCIÓN</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">ESTADO</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">ACCIONES</th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 60px;"
+                >
+                  #
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  NOMBRE
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 250px;"
+                >
+                  DIRECCIÓN
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
+                  ESTADO
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
+                  FECHA REG.
+                </th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 90px;"
+                >
+                  ACCIONES
+                </th>
               </tr>
             </thead>
             <tbody v-if="!list_warehouses || list_warehouses.length === 0">
               <tr>
-                <td colspan="6" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-inbox-line</VIcon>
-                  <div class="text-h6">No hay almacenes registrados</div>
-                  <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
+                <td
+                  colspan="6"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
+                    ri-inbox-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No hay almacenes registrados
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
                 </td>
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="warehouse in list_warehouses" :key="warehouse.id" class="warehouses-row align-middle">
+              <tr
+                v-for="warehouse in list_warehouses"
+                :key="warehouse.id"
+                class="warehouses-row align-middle"
+              >
                 <td class="text-center py-3">
                   <span class="font-weight-bold text-subtitle-1 text-primary">{{ warehouse.id }}</span>
                 </td>
@@ -196,19 +263,33 @@ onMounted(() => {
                     {{ warehouse.name }}
                   </span>
                 </td>
-                <td class="text-left py-3" style="max-width: 250px;">
-                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="warehouse.address">
+                <td
+                  class="text-left py-3"
+                  style="max-width: 250px;"
+                >
+                  <span
+                    class="text-body-2 text-grey-darken-3 text-truncate"
+                    :title="warehouse.address"
+                  >
                     {{ warehouse.address }}
                   </span>
                 </td>
                 <td class="text-left py-3">
-                  <VChip :color="Number(warehouse.state) === 0 ? 'success' : 'error'" variant="tonal" size="small">
+                  <VChip
+                    :color="Number(warehouse.state) === 0 ? 'success' : 'error'"
+                    variant="tonal"
+                    size="small"
+                  >
                     {{ Number(warehouse.state) === 0 ? 'Activo' : 'Inactivo' }}
                   </VChip>
                 </td>
                 <td class="text-no-wrap text-left py-3">
                   <div class="d-flex align-center">
-                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="14"
+                      class="mr-1 text-grey"
+                    />
                     <span class="text-body-2 text-medium-emphasis">
                       {{ formatDate(warehouse.created_at) }}
                     </span>
@@ -216,17 +297,47 @@ onMounted(() => {
                 </td>
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver detalle"
-                      @click="showItem(warehouse)">
-                      <VIcon icon="ri-eye-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="info"
+                      title="Ver detalle"
+                      @click="showItem(warehouse)"
+                    >
+                      <VIcon
+                        icon="ri-eye-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="primary" title="Editar"
-                      @click="editWarehouse(warehouse)">
-                      <VIcon icon="ri-pencil-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="primary"
+                      title="Editar"
+                      @click="editWarehouse(warehouse)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
-                      @click="deleteWarehouse(warehouse)">
-                      <VIcon icon="ri-delete-bin-6-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteWarehouse(warehouse)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-6-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -248,12 +359,21 @@ onMounted(() => {
     </VCard>
 
     <!-- DIALOG -->
-    <WarehouseAddDialog v-model:isDialogVisible="isWarehouseAddDialogVisible" @add-warehouse="addWarehouse" />
-    <WarehouseEditDialog v-if="isWarehouseEditDialogVisible && warehouseSelected"
-      v-model:isDialogVisible="isWarehouseEditDialogVisible" :warehouse-selected="warehouseSelected"
-      @update-warehouse="updateWarehouse" />
-    <WarehouseDeleteDialog v-if="isWarehouseDeleteDialogVisible && warehouseSelected"
-      v-model:isDialogVisible="isWarehouseDeleteDialogVisible" :warehouse-selected="warehouseSelected"
-      @delete-warehouse="confirmDeleteWarehouse" />
+    <WarehouseAddDialog
+      v-model:isDialogVisible="isWarehouseAddDialogVisible"
+      @add-warehouse="addWarehouse"
+    />
+    <WarehouseEditDialog
+      v-if="isWarehouseEditDialogVisible && warehouseSelected"
+      v-model:isDialogVisible="isWarehouseEditDialogVisible"
+      :warehouse-selected="warehouseSelected"
+      @update-warehouse="updateWarehouse"
+    />
+    <WarehouseDeleteDialog
+      v-if="isWarehouseDeleteDialogVisible && warehouseSelected"
+      v-model:isDialogVisible="isWarehouseDeleteDialogVisible"
+      :warehouse-selected="warehouseSelected"
+      @delete-warehouse="confirmDeleteWarehouse"
+    />
   </div>
 </template>

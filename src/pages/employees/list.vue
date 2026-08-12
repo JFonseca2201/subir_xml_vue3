@@ -222,7 +222,12 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-user-settings-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-user-settings-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Empleados
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -230,7 +235,11 @@ onMounted(() => {
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-line" @click="addEmployee">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="addEmployee"
+        >
           Agregar Empleado
         </VBtn>
       </div>
@@ -241,54 +250,109 @@ onMounted(() => {
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
-          <VCol cols="12" md="8">
-            <VTextField v-model="searchForm.search" label="Búsqueda General"
-              placeholder="Identificación, nombre, email, cargo..." prepend-inner-icon="ri-search-line"
-              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
+          <VCol
+            cols="12"
+            md="8"
+          >
+            <VTextField
+              v-model="searchForm.search"
+              label="Búsqueda General"
+              placeholder="Identificación, nombre, email, cargo..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
 
-          <VCol cols="12" md="4">
-            <VSelect v-model="searchForm.status" :items="statusOptions" item-title="label" item-value="value"
-              label="Estado" placeholder="Todos" prepend-inner-icon="ri-filter-line" variant="outlined"
-              density="comfortable" hide-details="auto" clearable color="primary" />
+          <VCol
+            cols="12"
+            md="4"
+          >
+            <VSelect
+              v-model="searchForm.status"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              label="Estado"
+              placeholder="Todos"
+              prepend-inner-icon="ri-filter-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
 
       <!-- Tabla de Empleados -->
       <div class="position-relative">
-
         <div class="overflow-x-auto">
-          <VTable hover class="employees-table">
+          <VTable
+            hover
+            class="employees-table"
+          >
             <thead>
               <tr>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
                   IDENTIFICACIÓN
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 180px;"
+                >
                   NOMBRE
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 180px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 180px;"
+                >
                   APELLIDO
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
                   EMAIL
                 </th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 150px;">
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 150px;"
+                >
                   CARGO
                 </th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
                   ESTADO
                 </th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 90px;"
+                >
                   ACCIONES
                 </th>
               </tr>
             </thead>
             <tbody v-if="!employees || employees.length === 0">
               <tr>
-                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
+                <td
+                  colspan="7"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
                     ri-user-unfollow-line
                   </VIcon>
                   <div class="text-h6">
@@ -301,7 +365,11 @@ onMounted(() => {
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="item in employees" :key="item.id" class="employees-row align-middle">
+              <tr
+                v-for="item in employees"
+                :key="item.id"
+                class="employees-row align-middle"
+              >
                 <!-- Identificación -->
                 <td class="text-no-wrap text-left py-3">
                   <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.identification }}</span>
@@ -318,8 +386,14 @@ onMounted(() => {
                 </td>
 
                 <!-- Email -->
-                <td class="text-left py-3" style="max-width: 250px;">
-                  <span class="text-body-2 text-grey-darken-3 text-truncate" :title="item.email">{{ item.email }}</span>
+                <td
+                  class="text-left py-3"
+                  style="max-width: 250px;"
+                >
+                  <span
+                    class="text-body-2 text-grey-darken-3 text-truncate"
+                    :title="item.email"
+                  >{{ item.email }}</span>
                 </td>
 
                 <!-- Cargo -->
@@ -329,7 +403,11 @@ onMounted(() => {
 
                 <!-- Estado -->
                 <td class="text-no-wrap text-center py-3">
-                  <VChip :color="getStatusColor(item.deleted_at ? 'inactive' : 'active')" variant="tonal" size="small">
+                  <VChip
+                    :color="getStatusColor(item.deleted_at ? 'inactive' : 'active')"
+                    variant="tonal"
+                    size="small"
+                  >
                     {{ getStatusText(item.deleted_at ? 'inactive' : 'active') }}
                   </VChip>
                 </td>
@@ -338,25 +416,67 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
                     <!-- Ver Detalle -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Detalle"
-                      @click="viewEmployee(item)">
-                      <VIcon icon="ri-eye-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="info"
+                      title="Ver Detalle"
+                      @click="viewEmployee(item)"
+                    >
+                      <VIcon
+                        icon="ri-eye-line"
+                        size="20"
+                      />
                     </VBtn>
 
                     <!-- Editar -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="warning" title="Editar"
-                      @click="editEmployee(item)">
-                      <VIcon icon="ri-edit-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="warning"
+                      title="Editar"
+                      @click="editEmployee(item)"
+                    >
+                      <VIcon
+                        icon="ri-edit-line"
+                        size="20"
+                      />
                     </VBtn>
 
                     <!-- Eliminar o Restaurar -->
-                    <VBtn v-if="searchForm.status === 'active'" class="action-btn" variant="text" icon size="small"
-                      color="error" title="Eliminar" @click="deleteEmployee(item)">
-                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    <VBtn
+                      v-if="searchForm.status === 'active'"
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteEmployee(item)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn v-else class="action-btn" variant="text" icon size="small" color="success"
-                      title="Restaurar empleado" @click="restoreEmployee(item)">
-                      <VIcon icon="ri-refresh-line" size="20" />
+                    <VBtn
+                      v-else
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="success"
+                      title="Restaurar empleado"
+                      @click="restoreEmployee(item)"
+                    >
+                      <VIcon
+                        icon="ri-refresh-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -375,22 +495,42 @@ onMounted(() => {
             Mostrando <span class="font-weight-bold">{{ employees.length }}</span> de <span class="font-weight-bold">{{
               totalItems }}</span> registros
           </div>
-          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
-            @update:model-value="searchEmployees" />
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+            @update:model-value="searchEmployees"
+          />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Diálogo de Eliminación de Empleado -->
-    <EmployeeDeleteDialog v-model="deleteDialog" :employee="employeeToDelete" @employee-deleted="onEmployeeDeleted" />
+    <EmployeeDeleteDialog
+      v-model="deleteDialog"
+      :employee="employeeToDelete"
+      @employee-deleted="onEmployeeDeleted"
+    />
 
     <!-- Diálogo de Vista de Empleado -->
-    <EmployeeViewDialog v-model="viewDialog" :employee="employeeToView" />
+    <EmployeeViewDialog
+      v-model="viewDialog"
+      :employee="employeeToView"
+    />
 
     <!-- Diálogo de Creación de Empleado -->
-    <EmployeeCreateDialog v-model="createDialog" @employee-created="onEmployeeCreated" />
+    <EmployeeCreateDialog
+      v-model="createDialog"
+      @employee-created="onEmployeeCreated"
+    />
 
     <!-- Diálogo de Edición de Empleado -->
-    <EmployeeEditDialog v-model="editDialog" :employee="employeeToEdit" @employee-updated="onEmployeeUpdated" />
+    <EmployeeEditDialog
+      v-model="editDialog"
+      :employee="employeeToEdit"
+      @employee-updated="onEmployeeUpdated"
+    />
   </div>
 </template>

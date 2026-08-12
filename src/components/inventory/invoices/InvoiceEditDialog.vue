@@ -151,10 +151,22 @@ onMounted(() => {
 
       <VCardText>
         <!-- Skeleton Loader -->
-        <div v-if="loadingCategories" class="d-flex flex-column gap-4 py-4">
-          <div class="shimmer-line w-60 mb-2" style="height: 20px;"></div>
-          <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
-          <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+        <div
+          v-if="loadingCategories"
+          class="d-flex flex-column gap-4 py-4"
+        >
+          <div
+            class="shimmer-line w-60 mb-2"
+            style="height: 20px;"
+          />
+          <div
+            class="shimmer-line w-100"
+            style="height: 48px; border-radius: 8px;"
+          />
+          <div
+            class="shimmer-line w-100"
+            style="height: 48px; border-radius: 8px;"
+          />
         </div>
 
         <VRow v-else>
@@ -248,8 +260,8 @@ onMounted(() => {
           elevation="2"
           class="rounded-lg"
           :loading="loader.loading"
-          @click="editItemInvoice"
           :disabled="loader.loading"
+          @click="editItemInvoice"
         >
           Editar
         </VBtn>

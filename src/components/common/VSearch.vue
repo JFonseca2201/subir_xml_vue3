@@ -6,64 +6,64 @@ import { $api } from '@/utils/api'
 const props = defineProps({
   modelValue: {
     type: [String, Number, Object],
-    default: null
+    default: null,
   },
   endpoint: {
     type: String,
-    required: true
+    required: true,
   },
   itemTitle: {
     type: [String, Function],
-    default: 'title'
+    default: 'title',
   },
   itemValue: {
     type: String,
-    default: 'id'
+    default: 'id',
   },
   label: {
     type: String,
-    default: 'Buscar'
+    default: 'Buscar',
   },
   placeholder: {
     type: String,
-    default: 'Escriba al menos 2 caracteres...'
+    default: 'Escriba al menos 2 caracteres...',
   },
   returnObject: {
     type: Boolean,
-    default: false
+    default: false,
   },
   icon: {
     type: String,
-    default: 'ri-search-line'
+    default: 'ri-search-line',
   },
   minChars: {
     type: Number,
-    default: 2
+    default: 2,
   },
   initialItem: {
     type: Object,
-    default: null
+    default: null,
   },
   extraParams: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   clearable: {
     type: Boolean,
-    default: true
+    default: true,
   },
   variant: {
     type: String,
-    default: 'outlined'
+    default: 'outlined',
   },
   density: {
     type: String,
-    default: 'compact'
+    default: 'compact',
   },
   hideDetails: {
     type: [Boolean, String],
-    default: 'auto'
-  }
+    default: 'auto',
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -72,13 +72,14 @@ const loading = ref(false)
 const items = ref([])
 const search = ref('')
 
-const fetchItems = async (query) => {
+const fetchItems = async query => {
   if (!query || query.length < props.minChars) {
     if (props.modelValue && props.initialItem) {
       items.value = [props.initialItem]
     } else {
       items.value = []
     }
+    
     return
   }
 
@@ -86,9 +87,11 @@ const fetchItems = async (query) => {
   try {
     const params = {
       q: query,
-      ...props.extraParams
+      ...props.extraParams,
     }
+
     const response = await $api(props.endpoint, { params })
+
     items.value = response?.data || response || []
   } catch (error) {
     console.error('Error in VSearch:', error)
@@ -98,7 +101,7 @@ const fetchItems = async (query) => {
   }
 }
 
-const onSearchInput = useDebounceFn((val) => {
+const onSearchInput = useDebounceFn(val => {
   search.value = val || ''
   fetchItems(search.value)
 }, 300)
@@ -113,13 +116,14 @@ onMounted(() => {
   }
 })
 
-const onModelValueUpdate = (val) => {
+const onModelValueUpdate = val => {
   emit('update:modelValue', val)
   if (val) {
     if (props.returnObject) {
       emit('change', val)
     } else {
       const selectedItem = items.value.find(item => item[props.itemValue] === val)
+
       emit('change', selectedItem || val)
     }
   } else {
@@ -127,7 +131,7 @@ const onModelValueUpdate = (val) => {
   }
 }
 
-watch(() => props.initialItem, (newVal) => {
+watch(() => props.initialItem, newVal => {
   if (newVal) {
     items.value = [newVal]
   }
@@ -137,7 +141,6 @@ watch(() => props.initialItem, (newVal) => {
 <template>
   <VAutocomplete
     :model-value="modelValue"
-    @update:model-value="onModelValueUpdate"
     :items="items"
     :item-title="itemTitle"
     :item-value="itemValue"
@@ -148,6 +151,7 @@ watch(() => props.initialItem, (newVal) => {
     :variant="variant"
     :density="density"
     :hide-details="hideDetails"
+    @update:model-value="onModelValueUpdate"
     :hide-no-data="hideNoData"
     :no-filter="true"
     @update:search="onSearchInput"
@@ -160,16 +164,25 @@ watch(() => props.initialItem, (newVal) => {
         size="20"
         width="2"
       />
-      <VIcon v-else :icon="icon" />
+      <VIcon
+        v-else
+        :icon="icon"
+      />
     </template>
     <template #item="data">
-      <slot name="item" v-bind="data">
+      <slot
+        name="item"
+        v-bind="data"
+      >
         <VListItem v-bind="data.props" />
       </slot>
     </template>
 
-    <template #append v-if="$slots.append">
-      <slot name="append"></slot>
+    <template
+      v-if="$slots.append"
+      #append
+    >
+      <slot name="append" />
     </template>
     
     <template #no-data>

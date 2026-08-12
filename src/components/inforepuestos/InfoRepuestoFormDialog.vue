@@ -4,6 +4,19 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { vehicleBrands } from '@/data/vehicleBrands.js'
 
+const props = defineProps({
+  isDialogVisible: {
+    type: Boolean,
+    required: true,
+  },
+  requestSelected: {
+    type: Object,
+    default: null,
+  },
+})
+
+const emit = defineEmits(['update:isDialogVisible', 'saveSuccess'])
+
 const brandOptions = computed(() => {
   return [...new Set(Object.values(vehicleBrands).map(b => b.toUpperCase()))].sort()
 })
@@ -15,7 +28,7 @@ const categoryOptions = ref([
   'TRANSMISIÓN',
   'ELÉCTRICO',
   'ACCESORIOS',
-  'CARROCERÍA'
+  'CARROCERÍA',
 ])
 
 const loadCategories = async () => {
@@ -33,22 +46,10 @@ const loadCategories = async () => {
   }
 }
 
-const props = defineProps({
-  isDialogVisible: {
-    type: Boolean,
-    required: true,
-  },
-  requestSelected: {
-    type: Object,
-    default: null,
-  },
-})
-
-const emit = defineEmits(['update:isDialogVisible', 'saveSuccess'])
-
 const { showNotification } = useGlobalToast()
 
 const isSaving = ref(false)
+
 const form = ref({
   brand: '',
   model: '',
@@ -62,8 +63,8 @@ const form = ref({
       category: '',
       purchase_price: null,
       public_price: null,
-    }
-  ]
+    },
+  ],
 })
 
 // Rules
@@ -87,8 +88,8 @@ const resetForm = () => {
         category: '',
         purchase_price: null,
         public_price: null,
-      }
-    ]
+      },
+    ],
   }
 }
 
@@ -102,14 +103,14 @@ const addItem = () => {
   })
 }
 
-const removeItem = (index) => {
+const removeItem = index => {
   form.value.items.splice(index, 1)
 }
 
 // Watch dialog visibility and request selected
 watch(
   () => props.isDialogVisible,
-  (val) => {
+  val => {
     if (val) {
       loadCategories()
       if (props.requestSelected) {
@@ -122,14 +123,14 @@ watch(
               category: '',
               purchase_price: null,
               public_price: null,
-            }
-          ]
+            },
+          ],
         }
       } else {
         resetForm()
       }
     }
-  }
+  },
 )
 
 const closeDialog = () => {
@@ -143,6 +144,7 @@ const vehicleHeader = computed(() => {
   const model = (form.value.model || '').toUpperCase().trim()
   const traction = (form.value.traction || '').toUpperCase().trim()
   const year = form.value.year || ''
+  
   return `VEHÍCULO: ${brand} ${model} ${traction ? traction + ' ' : ''}DEL ${year}`.trim()
 })
 
@@ -150,12 +152,14 @@ const save = async () => {
   // Validate vehicle info
   if (!form.value.brand || !form.value.model || !form.value.year) {
     showNotification('Por favor, rellene todos los campos del vehículo', 'error')
+    
     return
   }
 
   // Validate items
   if (!form.value.items || form.value.items.length === 0) {
     showNotification('Debe agregar al menos un repuesto', 'error')
+    
     return
   }
 
@@ -171,6 +175,7 @@ const save = async () => {
       item.public_price === undefined
     ) {
       showNotification(`Por favor, rellene todos los campos del repuesto #${i + 1}`, 'error')
+      
       return
     }
   }
@@ -193,7 +198,9 @@ const save = async () => {
     }
   } catch (error) {
     console.error('Error al guardar la búsqueda de repuesto:', error)
+
     const errorMsg = error.response?._data?.message || 'Error al guardar el registro'
+
     showNotification(errorMsg, 'error')
   } finally {
     isSaving.value = false
@@ -202,22 +209,41 @@ const save = async () => {
 </script>
 
 <template>
-  <VDialog max-width="950" :model-value="props.isDialogVisible" @update:model-value="closeDialog" scrollable>
+  <VDialog
+    max-width="950"
+    :model-value="props.isDialogVisible"
+    scrollable
+    @update:model-value="closeDialog"
+  >
     <VCard class="rounded-xl overflow-hidden relative">
       <!-- Clean & Sober Header -->
       <VCardTitle class="d-flex align-center justify-space-between pa-6 border-b">
         <div class="d-flex align-center gap-2">
-          <VIcon icon="ri-roadster-line" color="primary" size="24" />
+          <VIcon
+            icon="ri-roadster-line"
+            color="primary"
+            size="24"
+          />
           <span class="text-h5 font-weight-bold text-high-emphasis">
             {{ props.requestSelected ? 'Editar Búsqueda de Repuestos' : 'Registrar Búsqueda de Repuestos' }}
           </span>
         </div>
-        <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
+        <DialogCloseBtn
+          variant="text"
+          size="default"
+          @click="closeDialog"
+        />
       </VCardTitle>
 
-      <VCardText class="pa-6" style="max-height: 70vh;">
+      <VCardText
+        class="pa-6"
+        style="max-height: 70vh;"
+      >
         <!-- Vista previa del encabezado generado -->
-        <div v-if="vehicleHeader" class="mb-6">
+        <div
+          v-if="vehicleHeader"
+          class="mb-6"
+        >
           <div class="header-preview-box text-center py-2 px-3 rounded text-subtitle-2 font-weight-bold primary--text">
             {{ vehicleHeader }}
           </div>
@@ -226,14 +252,27 @@ const save = async () => {
         <VForm @submit.prevent="save">
           <VRow dense>
             <!-- Sección Datos del Vehículo -->
-            <VCol cols="12" class="mb-4">
-              <div class="form-group-section pa-5 rounded-xl border" style="background-color: rgba(var(--v-theme-on-surface), 0.015); border-color: rgba(var(--v-border-color), 0.12) !important;">
+            <VCol
+              cols="12"
+              class="mb-4"
+            >
+              <div
+                class="form-group-section pa-5 rounded-xl border"
+                style="background-color: rgba(var(--v-theme-on-surface), 0.015); border-color: rgba(var(--v-border-color), 0.12) !important;"
+              >
                 <div class="d-flex align-center gap-2 mb-4">
-                  <VIcon icon="ri-roadster-line" color="primary" size="20" />
+                  <VIcon
+                    icon="ri-roadster-line"
+                    color="primary"
+                    size="20"
+                  />
                   <span class="text-subtitle-1 font-weight-bold text-high-emphasis">DATOS TÉCNICOS DEL VEHÍCULO</span>
                 </div>
                 <VRow dense>
-                  <VCol cols="12" sm="6">
+                  <VCol
+                    cols="12"
+                    sm="6"
+                  >
                     <VCombobox
                       v-model="form.brand"
                       :items="brandOptions"
@@ -247,7 +286,10 @@ const save = async () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" sm="6">
+                  <VCol
+                    cols="12"
+                    sm="6"
+                  >
                     <VTextField
                       v-model="form.model"
                       label="Modelo del Vehículo *"
@@ -259,7 +301,10 @@ const save = async () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" sm="4">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                  >
                     <VTextField
                       v-model.number="form.year"
                       label="Año del Vehículo *"
@@ -272,7 +317,10 @@ const save = async () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" sm="4">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                  >
                     <VTextField
                       v-model="form.traction"
                       label="Tracción / Suspensión"
@@ -283,7 +331,10 @@ const save = async () => {
                     />
                   </VCol>
 
-                  <VCol cols="12" sm="4">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                  >
                     <VTextField
                       v-model="form.origin_country"
                       label="País de Procedencia"
@@ -298,14 +349,31 @@ const save = async () => {
             </VCol>
 
             <!-- Sección de Repuestos -->
-            <VCol cols="12" class="mb-4">
-              <div class="form-group-section pa-5 rounded-xl border" style="border-color: rgba(var(--v-border-color), 0.12) !important;">
+            <VCol
+              cols="12"
+              class="mb-4"
+            >
+              <div
+                class="form-group-section pa-5 rounded-xl border"
+                style="border-color: rgba(var(--v-border-color), 0.12) !important;"
+              >
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-4">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-settings-3-line" color="primary" size="20" />
+                    <VIcon
+                      icon="ri-settings-3-line"
+                      color="primary"
+                      size="20"
+                    />
                     <span class="text-subtitle-1 font-weight-bold text-high-emphasis">REPUESTOS COMPATIBLES REGISTRADOS</span>
                   </div>
-                  <VBtn size="small" color="primary" variant="elevated" prepend-icon="ri-add-line" class="rounded-lg" @click="addItem">
+                  <VBtn
+                    size="small"
+                    color="primary"
+                    variant="elevated"
+                    prepend-icon="ri-add-line"
+                    class="rounded-lg"
+                    @click="addItem"
+                  >
                     Agregar Repuesto
                   </VBtn>
                 </div>
@@ -336,7 +404,10 @@ const save = async () => {
                     </div>
 
                     <VRow dense>
-                      <VCol cols="12" class="pb-2">
+                      <VCol
+                        cols="12"
+                        class="pb-2"
+                      >
                         <VTextarea
                           v-model="item.spare_parts_detail"
                           label="Detalle / Descripción del Repuesto *"
@@ -350,7 +421,11 @@ const save = async () => {
                         />
                       </VCol>
 
-                      <VCol cols="12" sm="6" class="pb-2">
+                      <VCol
+                        cols="12"
+                        sm="6"
+                        class="pb-2"
+                      >
                         <VTextField
                           v-model="item.spare_part_brand"
                           label="Marca del Repuesto *"
@@ -362,7 +437,11 @@ const save = async () => {
                         />
                       </VCol>
 
-                      <VCol cols="12" sm="6" class="pb-2">
+                      <VCol
+                        cols="12"
+                        sm="6"
+                        class="pb-2"
+                      >
                         <VCombobox
                           v-model="item.category"
                           :items="categoryOptions"
@@ -376,7 +455,11 @@ const save = async () => {
                         />
                       </VCol>
 
-                      <VCol cols="12" sm="6" class="pb-2">
+                      <VCol
+                        cols="12"
+                        sm="6"
+                        class="pb-2"
+                      >
                         <VTextField
                           v-model.number="item.purchase_price"
                           label="Costo Adquisición (Compra) *"
@@ -392,7 +475,11 @@ const save = async () => {
                         />
                       </VCol>
 
-                      <VCol cols="12" sm="6" class="pb-2">
+                      <VCol
+                        cols="12"
+                        sm="6"
+                        class="pb-2"
+                      >
                         <VTextField
                           v-model.number="item.public_price"
                           label="PVP (Venta al Público) *"
@@ -415,18 +502,35 @@ const save = async () => {
           </VRow>
           
           <!-- Submit Button dummy to catch form submit -->
-          <input type="submit" style="display: none" />
+          <input
+            type="submit"
+            style="display: none"
+          >
         </VForm>
       </VCardText>
 
       <!-- Bottom Sticky Actions -->
       <VDivider />
       <VCardActions class="pa-4 d-flex justify-center gap-4">
-        <VBtn color="primary" variant="elevated" prepend-icon="ri-save-line" :loading="isSaving" class="px-6 rounded-lg" @click="save">
+        <VBtn
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-line"
+          :loading="isSaving"
+          class="px-6 rounded-lg"
+          @click="save"
+        >
           {{ props.requestSelected ? 'Actualizar Registro' : 'Guardar Registro' }}
         </VBtn>
 
-        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" class="px-6 rounded-lg" @click="closeDialog" :disabled="isSaving">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="px-6 rounded-lg"
+          :disabled="isSaving"
+          @click="closeDialog"
+        >
           Cancelar
         </VBtn>
       </VCardActions>

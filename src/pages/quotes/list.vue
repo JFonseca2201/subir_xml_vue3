@@ -24,6 +24,7 @@ const viewLoading = ref(false)
 
 // Diálogo de conversión
 const isConvertDialogVisible = ref(false)
+
 const convertForm = ref({
   document_type: 'sale_note',
   payment_method: 'Efectivo',
@@ -31,6 +32,7 @@ const convertForm = ref({
   is_credited: false,
   account_id: null,
 })
+
 const isConverting = ref(false)
 const accounts = ref([])
 
@@ -53,6 +55,8 @@ const searchForm = ref({
   end_date: null,
   search: null,
 })
+
+
 // Paginación
 const currentPage = ref(1)
 const itemsPerPage = ref(15)
@@ -82,11 +86,13 @@ const loadQuotes = async () => {
       if (res?.[key] && Array.isArray(res[key])) return res[key]
       if (res?.[key]?.data && Array.isArray(res[key].data)) return res[key].data
       if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data
+      
       return []
     }
 
     // El backend de laravel paginado devuelve la lista en response.data.data o response.data
     const responseData = response?.data || response
+
     quotes.value = responseData?.data || []
 
     totalItems.value = responseData?.total || quotes.value.length || 0
@@ -150,17 +156,20 @@ const confirmSendMail = async () => {
 const formatDate = dateString => {
   if (!dateString) return '-'
   const [year, month, day] = dateString.split('T')[0].split(' ')[0].split('-')
+  
   return `${day}/${month}/${year}`
 }
 
 const formatVehicleInfo = vehicle => {
   if (!vehicle) return '-'
   const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
+  
   return `${brandName} ${vehicle.model || ''}`.trim()
 }
 
 const getClientName = client => {
   if (!client) return 'Consumidor Final'
+  
   return client.full_name || client.name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Cliente Desconocido'
 }
 
@@ -170,6 +179,8 @@ const getStatusInfo = status => {
     completed: { color: 'success', text: 'Convertida', icon: 'ri-check-line' },
     canceled: { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' },
   }
+
+  
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
@@ -177,6 +188,7 @@ const getStatusInfo = status => {
 const viewQuote = async quote => {
   try {
     viewLoading.value = true
+
     const response = await $api(`quotes/${quote.id}`)
     const qData = response?.data || response
     if (qData) {
@@ -197,10 +209,12 @@ const viewQuote = async quote => {
 const editQuote = quote => {
   if (quote.status === 'canceled') {
     showNotification('No se puede editar una cotización anulada', 'warning')
+    
     return
   }
   if (quote.converted_sale_id) {
     showNotification('Esta cotización ya fue convertida y no puede editarse', 'warning')
+    
     return
   }
   router.push(`/quotes/edit/${quote.id}`)
@@ -241,13 +255,15 @@ const downloadSinglePDF = async quote => {
   try {
     const response = await $api(`quotes/${quote.id}/pdf`, {
       method: 'GET',
-      responseType: 'blob'
+      responseType: 'blob',
     })
+
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const clientName = getClientName(quote.client).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_')
     const docNumber = quote.document_number || 'Cotizacion'
     const a = document.createElement('a')
+
     a.href = url
     a.download = `${docNumber}_${clientName}.pdf`
     document.body.appendChild(a)
@@ -307,10 +323,12 @@ const loadAccounts = async () => {
         .replace(/\(EFECTIVO\)/gi, '')
         .replace(/\(TRANSFERENCIA\)/gi, '')
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
-        .trim();
+        .trim()
+
+      
       return {
         ...acc,
-        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned
+        name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
       }
     })
   } catch (error) {
@@ -328,10 +346,12 @@ const showAccountSelect = computed(() => {
 const openConvertDialog = quote => {
   if (quote.converted_sale_id) {
     showNotification('Esta cotización ya fue convertida', 'warning')
+    
     return
   }
   if (quote.status === 'canceled') {
     showNotification('No se puede convertir una cotización anulada', 'warning')
+    
     return
   }
   selectedQuote.value = quote
@@ -339,6 +359,7 @@ const openConvertDialog = quote => {
   let defaultAccountId = null
   if (accounts.value.length > 0) {
     const transferAcc = accounts.value.find(acc => acc.id === 2 || acc.name?.toLowerCase().includes('banco') || acc.name?.toLowerCase().includes('produbanco'))
+
     defaultAccountId = transferAcc ? transferAcc.id : accounts.value[0].id
   }
 
@@ -369,7 +390,7 @@ const confirmConvert = async () => {
           account_id: convertForm.value.account_id,
           amount: parseFloat(selectedQuote.value.total),
           payment_method: convertForm.value.payment_method,
-        }
+        },
       ]
     }
 
@@ -377,6 +398,7 @@ const confirmConvert = async () => {
       method: 'POST',
       body: payload,
     })
+
     if (response?.success) {
       showNotification(response.message || 'Cotización convertida exitosamente', 'success')
       isConvertDialogVisible.value = false
@@ -394,6 +416,7 @@ const confirmConvert = async () => {
 
 const groupedQuotes = computed(() => {
   const groups = {}
+
   quotes.value.forEach(quote => {
     const dateStr = quote.service_date ? quote.service_date.split('T')[0].split(' ')[0] : 'N/A'
     if (!groups[dateStr]) {
@@ -401,17 +424,19 @@ const groupedQuotes = computed(() => {
     }
     groups[dateStr].push(quote)
   })
+  
   return groups
 })
 
-const formatDateGroup = (dateStr) => {
+const formatDateGroup = dateStr => {
   if (dateStr === 'N/A') return 'Sin Fecha'
   const date = new Date(dateStr + 'T00:00:00')
+  
   return new Intl.DateTimeFormat('es-EC', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   }).format(date)
 }
 
@@ -435,11 +460,16 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 quotes-management-page bg-grey-lighten-4 min-vh-100">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4"
-      style="width: 100%;">
+    <div
+      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4"
+      style="width: 100%;"
+    >
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
-          <VIcon icon="ri-file-list-3-line" color="info" />
+          <VIcon
+            icon="ri-file-list-3-line"
+            color="info"
+          />
           Cotizaciones
         </h1>
         <p class="text-medium-emphasis mb-0 text-body-1">
@@ -447,8 +477,13 @@ onMounted(() => {
         </p>
       </div>
       <div class="d-flex gap-3 flex-wrap justify-end">
-        <VBtn color="info" prepend-icon="ri-add-line" to="/quotes/add" class="text-none font-weight-medium px-4"
-          elevation="1">
+        <VBtn
+          color="info"
+          prepend-icon="ri-add-line"
+          to="/quotes/add"
+          class="text-none font-weight-medium px-4"
+          elevation="1"
+        >
           Nueva Cotización
         </VBtn>
       </div>
@@ -459,21 +494,59 @@ onMounted(() => {
       <!-- Filtros y Búsqueda -->
       <VCardText class="pa-5 bg-white border-b border-opacity-25">
         <VForm @submit.prevent="() => { currentPage = 1; loadQuotes() }">
-          <VRow class="align-center" dense>
-            <VCol cols="12" md="6">
-              <VTextField v-model="searchForm.search" label="Buscar cotización"
-                placeholder="Nombre, cédula o placa del vehículo..." prepend-inner-icon="ri-search-line"
-                variant="outlined" density="compact" hide-details="auto" color="info" bg-color="white" />
+          <VRow
+            class="align-center"
+            dense
+          >
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="searchForm.search"
+                label="Buscar cotización"
+                placeholder="Nombre, cédula o placa del vehículo..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                color="info"
+                bg-color="white"
+              />
             </VCol>
 
-            <VCol cols="12" sm="6" md="3">
-              <VTextField v-model="searchForm.start_date" type="date" label="Desde" variant="outlined" density="compact"
-                hide-details="auto" color="info" bg-color="white" />
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <VTextField
+                v-model="searchForm.start_date"
+                type="date"
+                label="Desde"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                color="info"
+                bg-color="white"
+              />
             </VCol>
 
-            <VCol cols="12" sm="6" md="3">
-              <VTextField v-model="searchForm.end_date" type="date" label="Hasta" variant="outlined" density="compact"
-                hide-details="auto" color="info" bg-color="white" />
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
+              <VTextField
+                v-model="searchForm.end_date"
+                type="date"
+                label="Hasta"
+                variant="outlined"
+                density="compact"
+                hide-details="auto"
+                color="info"
+                bg-color="white"
+              />
             </VCol>
           </VRow>
         </VForm>
@@ -490,8 +563,16 @@ onMounted(() => {
           style="top: 0; left: 0; right: 0; z-index: 10;"
         />
 
-        <div v-if="!loading && (!quotes || quotes.length === 0)" class="text-center py-12">
-          <VIcon size="40" color="grey-lighten-1" icon="ri-file-text-line" class="mb-3" />
+        <div
+          v-if="!loading && (!quotes || quotes.length === 0)"
+          class="text-center py-12"
+        >
+          <VIcon
+            size="40"
+            color="grey-lighten-1"
+            icon="ri-file-text-line"
+            class="mb-3"
+          />
           <div class="text-h6 text-grey-darken-2 font-weight-regular">
             No se encontraron cotizaciones
           </div>
@@ -503,25 +584,46 @@ onMounted(() => {
         <div v-else>
           <!-- Vista de Tabla para Desktop -->
           <div class="d-none d-md-block overflow-x-auto">
-            <VTable hover class="quotes-table bg-white">
+            <VTable
+              hover
+              class="quotes-table bg-white"
+            >
               <thead class="bg-grey-lighten-4">
                 <tr>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 160px;">
+                  <th
+                    class="text-left font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="width: 160px;"
+                  >
                     Documento
                   </th>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 200px;">
+                  <th
+                    class="text-left font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="min-width: 200px;"
+                  >
                     Cliente
                   </th>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 180px;">
+                  <th
+                    class="text-left font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="min-width: 180px;"
+                  >
                     Vehículo
                   </th>
-                  <th class="text-right font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 120px;">
+                  <th
+                    class="text-right font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="width: 120px;"
+                  >
                     Total
                   </th>
-                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 140px;">
+                  <th
+                    class="text-center font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="width: 140px;"
+                  >
                     Estado
                   </th>
-                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 140px;">
+                  <th
+                    class="text-center font-weight-medium text-grey-darken-2 py-3 px-4"
+                    style="width: 140px;"
+                  >
                     Acciones
                   </th>
                 </tr>
@@ -529,40 +631,50 @@ onMounted(() => {
               
               <!-- Cargando (Skeleton Rows) -->
               <tbody v-if="loading">
-                <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
+                <tr
+                  v-for="n in 5"
+                  :key="n"
+                  class="skeleton-row align-middle border-b border-opacity-25"
+                >
                   <td class="py-4 px-4">
-                    <div class="shimmer-line w-40 mb-2"></div>
-                    <div class="shimmer-line w-60"></div>
+                    <div class="shimmer-line w-40 mb-2" />
+                    <div class="shimmer-line w-60" />
                   </td>
                   <td class="py-4 px-4">
-                    <div class="shimmer-line w-75 mb-2"></div>
-                    <div class="shimmer-line w-50"></div>
+                    <div class="shimmer-line w-75 mb-2" />
+                    <div class="shimmer-line w-50" />
                   </td>
                   <td class="py-4 px-4">
-                    <div class="shimmer-line w-60 mb-2"></div>
-                    <div class="shimmer-line w-40"></div>
+                    <div class="shimmer-line w-60 mb-2" />
+                    <div class="shimmer-line w-40" />
                   </td>
                   <td class="py-4 px-4">
-                    <div class="shimmer-line w-50 ms-auto"></div>
+                    <div class="shimmer-line w-50 ms-auto" />
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <div class="shimmer-chip mx-auto"></div>
+                    <div class="shimmer-chip mx-auto" />
                   </td>
                   <td class="py-4 px-4 text-center">
                     <div class="d-flex justify-center gap-1">
-                      <div class="shimmer-button"></div>
-                      <div class="shimmer-button"></div>
-                      <div class="shimmer-button"></div>
+                      <div class="shimmer-button" />
+                      <div class="shimmer-button" />
+                      <div class="shimmer-button" />
                     </div>
                   </td>
                 </tr>
               </tbody>
 
               <tbody v-else>
-                <tr v-for="(item, index) in quotes" :key="item?.id ? `quote-${item.id}` : `quote-idx-${index}`"
-                  class="align-middle border-b border-opacity-25">
+                <tr
+                  v-for="(item, index) in quotes"
+                  :key="item?.id ? `quote-${item.id}` : `quote-idx-${index}`"
+                  class="align-middle border-b border-opacity-25"
+                >
                   <td class="text-left py-3 px-4">
-                    <div v-if="item" class="d-flex flex-column gap-1">
+                    <div
+                      v-if="item"
+                      class="d-flex flex-column gap-1"
+                    >
                       <div class="d-flex align-center gap-2">
                         <span class="text-caption font-weight-bold text-info">
                           Cotización
@@ -579,11 +691,16 @@ onMounted(() => {
 
                   <td class="text-left py-3 px-4">
                     <div v-if="item">
-                      <div class="text-body-2 font-weight-medium text-grey-darken-4"
-                        :title="getClientName(item.client)">
+                      <div
+                        class="text-body-2 font-weight-medium text-grey-darken-4"
+                        :title="getClientName(item.client)"
+                      >
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis mt-1">
+                      <div
+                        v-if="item.client?.n_document"
+                        class="text-caption text-medium-emphasis mt-1"
+                      >
                         {{ item.client.n_document }}
                       </div>
                     </div>
@@ -591,31 +708,47 @@ onMounted(() => {
 
                   <td class="text-left py-3 px-4">
                     <div v-if="item?.vehicle">
-                      <div class="text-body-2 font-weight-medium text-grey-darken-4"
-                        :title="formatVehicleInfo(item.vehicle)">
+                      <div
+                        class="text-body-2 font-weight-medium text-grey-darken-4"
+                        :title="formatVehicleInfo(item.vehicle)"
+                      >
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
                       <div class="text-caption text-medium-emphasis mt-1">
                         {{ item.vehicle.license_plate }}
                       </div>
                     </div>
-                    <span v-else class="text-medium-emphasis text-body-2">-</span>
+                    <span
+                      v-else
+                      class="text-medium-emphasis text-body-2"
+                    >-</span>
                   </td>
 
                   <td class="text-right py-3 px-4">
-                    <div v-if="item" class="font-weight-medium text-body-1 text-grey-darken-4">
+                    <div
+                      v-if="item"
+                      class="font-weight-medium text-body-1 text-grey-darken-4"
+                    >
                       {{ formatCurrency(item.total) }}
                     </div>
                   </td>
 
                   <td class="text-center py-3 px-4">
-                    <div v-if="item" class="d-flex flex-column align-center gap-1">
+                    <div
+                      v-if="item"
+                      class="d-flex flex-column align-center gap-1"
+                    >
                       <!-- Estado de la cotización -->
                       <div class="d-flex align-center gap-1">
-                        <VIcon :icon="getStatusInfo(item.status)?.icon" :color="getStatusInfo(item.status)?.color"
-                          size="14" />
-                        <span class="text-caption font-weight-medium"
-                          :class="`text-${getStatusInfo(item.status)?.color}`">
+                        <VIcon
+                          :icon="getStatusInfo(item.status)?.icon"
+                          :color="getStatusInfo(item.status)?.color"
+                          size="14"
+                        />
+                        <span
+                          class="text-caption font-weight-medium"
+                          :class="`text-${getStatusInfo(item.status)?.color}`"
+                        >
                           {{ getStatusInfo(item.status)?.text }}
                         </span>
                       </div>
@@ -623,35 +756,99 @@ onMounted(() => {
                   </td>
 
                   <td class="text-center py-3 px-4">
-                    <div v-if="item" class="d-flex justify-center align-center gap-1">
-                      <VBtn variant="text" icon size="small" color="info" title="Ver Detalle" @click="viewQuote(item)">
-                        <VIcon icon="ri-eye-line" size="18" />
+                    <div
+                      v-if="item"
+                      class="d-flex justify-center align-center gap-1"
+                    >
+                      <VBtn
+                        variant="text"
+                        icon
+                        size="small"
+                        color="info"
+                        title="Ver Detalle"
+                        @click="viewQuote(item)"
+                      >
+                        <VIcon
+                          icon="ri-eye-line"
+                          size="18"
+                        />
                       </VBtn>
 
-                      <VBtn v-if="!item.converted_sale_id && item.status !== 'canceled'" variant="text" icon
-                        size="small" color="success" title="Convertir a Venta/Factura" @click="openConvertDialog(item)">
-                        <VIcon icon="ri-arrow-right-up-line" size="18" />
+                      <VBtn
+                        v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                        variant="text"
+                        icon
+                        size="small"
+                        color="success"
+                        title="Convertir a Venta/Factura"
+                        @click="openConvertDialog(item)"
+                      >
+                        <VIcon
+                          icon="ri-arrow-right-up-line"
+                          size="18"
+                        />
                       </VBtn>
 
-                      <VBtn variant="text" icon size="small" color="secondary" title="Acciones">
-                        <VIcon icon="ri-more-2-line" size="18" />
-                        <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                          <VList density="compact" class="py-1 rounded elevation-3 border">
-                            <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
-                              @click="printQuote(item.id)" />
-                            <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
-                              @click="generateSinglePDF(item)" />
-                            <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
-                              class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                            <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
-                              class="text-secondary text-body-2" @click="openMailDialog(item)" />
-                            <VListItem v-if="!item.converted_sale_id && item.status !== 'canceled'"
-                              prepend-icon="ri-edit-line" title="Editar Cotización"
-                              class="text-warning text-body-2" @click="editQuote(item)" />
+                      <VBtn
+                        variant="text"
+                        icon
+                        size="small"
+                        color="secondary"
+                        title="Acciones"
+                      >
+                        <VIcon
+                          icon="ri-more-2-line"
+                          size="18"
+                        />
+                        <VMenu
+                          activator="parent"
+                          transition="slide-y-transition"
+                          align="end"
+                          location="bottom end"
+                        >
+                          <VList
+                            density="compact"
+                            class="py-1 rounded elevation-3 border"
+                          >
+                            <VListItem
+                              prepend-icon="ri-printer-line"
+                              title="Imprimir"
+                              class="text-info text-body-2"
+                              @click="printQuote(item.id)"
+                            />
+                            <VListItem
+                              prepend-icon="ri-file-pdf-line"
+                              title="Ver PDF"
+                              class="text-success text-body-2"
+                              @click="generateSinglePDF(item)"
+                            />
+                            <VListItem
+                              prepend-icon="ri-download-2-line"
+                              title="Descargar PDF"
+                              class="text-primary text-body-2"
+                              @click="downloadSinglePDF(item)"
+                            />
+                            <VListItem
+                              prepend-icon="ri-mail-send-line"
+                              title="Enviar por Correo"
+                              class="text-secondary text-body-2"
+                              @click="openMailDialog(item)"
+                            />
+                            <VListItem
+                              v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                              prepend-icon="ri-edit-line"
+                              title="Editar Cotización"
+                              class="text-warning text-body-2"
+                              @click="editQuote(item)"
+                            />
                             <VDivider class="my-1" />
-                            <VListItem :disabled="item.status === 'canceled' || !!item.converted_sale_id"
-                              prepend-icon="ri-close-circle-line" title="Anular Cotización"
-                              class="text-error text-body-2" @click="cancelQuote(item)" />
+                            <VListItem
+                              :disabled="item.status === 'canceled' || !!item.converted_sale_id"
+                              prepend-icon="ri-close-circle-line"
+                              title="Anular Cotización"
+                              class="text-error text-body-2"
+                              @click="cancelQuote(item)"
+                            />
                           </VList>
                         </VMenu>
                       </VBtn>
@@ -666,19 +863,33 @@ onMounted(() => {
           <div class="d-block d-md-none pa-3">
             <!-- Cargando en Móvil (Skeleton Cards) -->
             <div v-if="loading">
-              <VCard v-for="n in 3" :key="n" class="border border-opacity-25 elevation-0 bg-white mb-3 pa-3 rounded-lg">
+              <VCard
+                v-for="n in 3"
+                :key="n"
+                class="border border-opacity-25 elevation-0 bg-white mb-3 pa-3 rounded-lg"
+              >
                 <div class="d-flex justify-space-between align-center mb-2">
-                  <div class="shimmer-line w-30"></div>
-                  <div class="shimmer-chip"></div>
+                  <div class="shimmer-line w-30" />
+                  <div class="shimmer-chip" />
                 </div>
-                <div class="shimmer-line w-60 mb-2"></div>
-                <div class="shimmer-line w-40"></div>
+                <div class="shimmer-line w-60 mb-2" />
+                <div class="shimmer-line w-40" />
               </VCard>
             </div>
 
-            <div v-else v-for="date in Object.keys(groupedQuotes)" :key="date" class="mb-5">
+            <div
+              v-for="date in Object.keys(groupedQuotes)"
+              v-else
+              :key="date"
+              class="mb-5"
+            >
               <div class="d-flex align-center mb-3 px-2">
-                <VIcon icon="ri-calendar-event-line" size="18" color="medium-emphasis" class="mr-2" />
+                <VIcon
+                  icon="ri-calendar-event-line"
+                  size="18"
+                  color="medium-emphasis"
+                  class="mr-2"
+                />
                 <span class="text-body-2 font-weight-medium text-medium-emphasis text-capitalize">
                   {{ formatDateGroup(date) }}
                 </span>
@@ -686,7 +897,11 @@ onMounted(() => {
               </div>
 
               <VRow dense>
-                <VCol v-for="item in groupedQuotes[date]" :key="item.id" cols="12">
+                <VCol
+                  v-for="item in groupedQuotes[date]"
+                  :key="item.id"
+                  cols="12"
+                >
                   <VCard class="border border-opacity-25 elevation-0 bg-white">
                     <VCardText class="pa-3">
                       <div class="d-flex justify-space-between align-start mb-3">
@@ -694,17 +909,24 @@ onMounted(() => {
                           <div class="d-flex align-center gap-2 mb-1">
                             <span class="text-caption font-weight-bold text-info">Cotización</span>
                           </div>
-                          <div class="text-subtitle-1 font-weight-medium text-primary cursor-pointer"
-                            @click="viewQuote(item)">
+                          <div
+                            class="text-subtitle-1 font-weight-medium text-primary cursor-pointer"
+                            @click="viewQuote(item)"
+                          >
                             {{ item.document_number }}
                           </div>
                         </div>
                         <div class="text-right">
                           <div class="d-flex align-center gap-1 justify-end">
-                            <VIcon :icon="getStatusInfo(item.status)?.icon" :color="getStatusInfo(item.status)?.color"
-                              size="14" />
-                            <span class="text-caption font-weight-medium"
-                              :class="`text-${getStatusInfo(item.status)?.color}`">
+                            <VIcon
+                              :icon="getStatusInfo(item.status)?.icon"
+                              :color="getStatusInfo(item.status)?.color"
+                              size="14"
+                            />
+                            <span
+                              class="text-caption font-weight-medium"
+                              :class="`text-${getStatusInfo(item.status)?.color}`"
+                            >
                               {{ getStatusInfo(item.status)?.text }}
                             </span>
                           </div>
@@ -715,17 +937,31 @@ onMounted(() => {
 
                       <div class="d-flex flex-column gap-2">
                         <div class="d-flex align-center">
-                          <VIcon icon="ri-user-line" size="16" class="mr-2 text-medium-emphasis" />
+                          <VIcon
+                            icon="ri-user-line"
+                            size="16"
+                            class="mr-2 text-medium-emphasis"
+                          />
                           <div>
                             <span class="text-body-2 font-weight-medium text-grey-darken-4 mr-2">{{
                               getClientName(item.client) }}</span>
-                            <span v-if="item.client?.n_document" class="text-caption text-medium-emphasis">{{
+                            <span
+                              v-if="item.client?.n_document"
+                              class="text-caption text-medium-emphasis"
+                            >{{
                               item.client.n_document }}</span>
                           </div>
                         </div>
 
-                        <div v-if="item.vehicle" class="d-flex align-center">
-                          <VIcon icon="ri-car-line" size="16" class="mr-2 text-medium-emphasis" />
+                        <div
+                          v-if="item.vehicle"
+                          class="d-flex align-center"
+                        >
+                          <VIcon
+                            icon="ri-car-line"
+                            size="16"
+                            class="mr-2 text-medium-emphasis"
+                          />
                           <div>
                             <span class="text-body-2 text-grey-darken-4 mr-2">{{ formatVehicleInfo(item.vehicle)
                             }}</span>
@@ -746,32 +982,81 @@ onMounted(() => {
                       </div>
 
                       <div class="d-flex gap-1">
-                        <VBtn variant="text" color="info" size="small" class="text-none px-2" @click="viewQuote(item)">
+                        <VBtn
+                          variant="text"
+                          color="info"
+                          size="small"
+                          class="text-none px-2"
+                          @click="viewQuote(item)"
+                        >
                           Ver
                         </VBtn>
-                        <VBtn v-if="!item.converted_sale_id && item.status !== 'canceled'" variant="text"
-                          color="success" size="small" class="text-none px-2" @click="openConvertDialog(item)">
+                        <VBtn
+                          v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                          variant="text"
+                          color="success"
+                          size="small"
+                          class="text-none px-2"
+                          @click="openConvertDialog(item)"
+                        >
                           Convertir
                         </VBtn>
-                        <VBtn variant="text" color="secondary" size="small" class="text-none px-2">
+                        <VBtn
+                          variant="text"
+                          color="secondary"
+                          size="small"
+                          class="text-none px-2"
+                        >
                           Más
-                          <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                            <VList density="compact" class="py-1 border elevation-3">
-                              <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
-                                @click="printQuote(item.id)" />
-                              <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF"
-                                class="text-success text-body-2" @click="generateSinglePDF(item)" />
-                              <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
-                                class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                              <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
-                                class="text-secondary text-body-2" @click="openMailDialog(item)" />
-                              <VListItem v-if="!item.converted_sale_id && item.status !== 'canceled'"
-                                prepend-icon="ri-edit-line" title="Editar" class="text-warning text-body-2"
-                                @click="editQuote(item)" />
+                          <VMenu
+                            activator="parent"
+                            transition="slide-y-transition"
+                            align="end"
+                            location="bottom end"
+                          >
+                            <VList
+                              density="compact"
+                              class="py-1 border elevation-3"
+                            >
+                              <VListItem
+                                prepend-icon="ri-printer-line"
+                                title="Imprimir"
+                                class="text-info text-body-2"
+                                @click="printQuote(item.id)"
+                              />
+                              <VListItem
+                                prepend-icon="ri-file-pdf-line"
+                                title="Ver PDF"
+                                class="text-success text-body-2"
+                                @click="generateSinglePDF(item)"
+                              />
+                              <VListItem
+                                prepend-icon="ri-download-2-line"
+                                title="Descargar PDF"
+                                class="text-primary text-body-2"
+                                @click="downloadSinglePDF(item)"
+                              />
+                              <VListItem
+                                prepend-icon="ri-mail-send-line"
+                                title="Enviar por Correo"
+                                class="text-secondary text-body-2"
+                                @click="openMailDialog(item)"
+                              />
+                              <VListItem
+                                v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                                prepend-icon="ri-edit-line"
+                                title="Editar"
+                                class="text-warning text-body-2"
+                                @click="editQuote(item)"
+                              />
                               <VDivider class="my-1" />
-                              <VListItem :disabled="item.status === 'canceled' || !!item.converted_sale_id"
-                                prepend-icon="ri-close-circle-line" title="Anular" class="text-error text-body-2"
-                                @click="cancelQuote(item)" />
+                              <VListItem
+                                :disabled="item.status === 'canceled' || !!item.converted_sale_id"
+                                prepend-icon="ri-close-circle-line"
+                                title="Anular"
+                                class="text-error text-body-2"
+                                @click="cancelQuote(item)"
+                              />
                             </VList>
                           </VMenu>
                         </VBtn>
@@ -791,33 +1076,59 @@ onMounted(() => {
       <VCardActions class="justify-center pa-6 bg-white border-t border-opacity-25">
         <div class="d-flex flex-column align-center gap-3">
           <div class="text-subtitle-2 text-medium-emphasis font-weight-regular">
-            Mostrando <span class="font-weight-bold text-high-emphasis">{{ quotes.length }}</span> de <span
-              class="font-weight-bold text-high-emphasis">{{ totalItems }}</span> cotizaciones
+            Mostrando <span class="font-weight-bold text-high-emphasis">{{ quotes.length }}</span> de <span class="font-weight-bold text-high-emphasis">{{ totalItems }}</span> cotizaciones
           </div>
-          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="info"
-            density="comfortable" show-first-last-page />
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="info"
+            density="comfortable"
+            show-first-last-page
+          />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Dialogs -->
-    <SaleViewDialog v-if="isViewDialogVisible" v-model:is-dialog-visible="isViewDialogVisible" :sale-data="selectedQuote"
-      :loading="viewLoading" />
+    <SaleViewDialog
+      v-if="isViewDialogVisible"
+      v-model:is-dialog-visible="isViewDialogVisible"
+      :sale-data="selectedQuote"
+      :loading="viewLoading"
+    />
 
     <!-- Convert Dialog -->
-    <VDialog v-model="isConvertDialogVisible" max-width="600" persistent>
+    <VDialog
+      v-model="isConvertDialogVisible"
+      max-width="600"
+      persistent
+    >
       <VCard>
         <!-- Header -->
         <VCardTitle class="pa-6 pb-4">
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex align-center gap-3">
-              <VIcon icon="ri-exchange-dollar-line" color="primary" size="28" />
+              <VIcon
+                icon="ri-exchange-dollar-line"
+                color="primary"
+                size="28"
+              />
               <div>
-                <h3 class="text-h5 font-weight-bold">Facturar / Convertir</h3>
+                <h3 class="text-h5 font-weight-bold">
+                  Facturar / Convertir
+                </h3>
                 <span class="text-medium-emphasis text-body-2">Crea una nota de venta o factura de esta cotización</span>
               </div>
             </div>
-            <VBtn icon="ri-close-line" variant="text" size="small" :disabled="isConverting" @click="isConvertDialogVisible = false" />
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              :disabled="isConverting"
+              @click="isConvertDialogVisible = false"
+            />
           </div>
         </VCardTitle>
 
@@ -825,22 +1136,47 @@ onMounted(() => {
 
         <VCardText class="pa-6">
           <!-- Banner resumen -->
-          <div class="rounded-lg pa-4 mb-5 d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-2" style="background-color: #f0f1ff; border: 1px solid #666cff2b;">
+          <div
+            class="rounded-lg pa-4 mb-5 d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-2"
+            style="background-color: #f0f1ff; border: 1px solid #666cff2b;"
+          >
             <div>
-              <div class="text-caption text-uppercase font-weight-bold mb-1" style="color: #666cff;">Cotización a Facturar</div>
-              <div class="text-h6 font-weight-bold text-grey-darken-4">{{ selectedQuote?.document_number }}</div>
-              <div class="text-body-2 text-medium-emphasis">{{ getClientName(selectedQuote?.client) }}</div>
+              <div
+                class="text-caption text-uppercase font-weight-bold mb-1"
+                style="color: #666cff;"
+              >
+                Cotización a Facturar
+              </div>
+              <div class="text-h6 font-weight-bold text-grey-darken-4">
+                {{ selectedQuote?.document_number }}
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                {{ getClientName(selectedQuote?.client) }}
+              </div>
             </div>
             <div class="text-sm-right mt-2 mt-sm-0">
-              <div class="text-caption text-uppercase font-weight-bold mb-1" style="color: #666cff;">Monto Total</div>
-              <div class="text-h5 font-weight-bold" style="color: #666cff;">{{ formatCurrency(selectedQuote?.total) }}</div>
+              <div
+                class="text-caption text-uppercase font-weight-bold mb-1"
+                style="color: #666cff;"
+              >
+                Monto Total
+              </div>
+              <div
+                class="text-h5 font-weight-bold"
+                style="color: #666cff;"
+              >
+                {{ formatCurrency(selectedQuote?.total) }}
+              </div>
             </div>
           </div>
 
           <!-- Campos Formulario -->
           <VRow>
             <!-- Columna izquierda -->
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <VSelect
                 v-model="convertForm.document_type"
                 :items="convertDocTypeOptions"
@@ -868,7 +1204,10 @@ onMounted(() => {
             </VCol>
 
             <!-- Columna derecha -->
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <VSelect
                 v-model="convertForm.payment_method"
                 :items="paymentMethodOptions"
@@ -902,11 +1241,28 @@ onMounted(() => {
 
         <VCardActions class="pa-6">
           <VSpacer />
-          <VBtn color="secondary" variant="outlined" class="text-none font-weight-medium mr-2" :disabled="isConverting" @click="isConvertDialogVisible = false">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            class="text-none font-weight-medium mr-2"
+            :disabled="isConverting"
+            @click="isConvertDialogVisible = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="primary" variant="elevated" elevation="2" class="text-none font-weight-bold" :loading="isConverting" @click="confirmConvert">
-            <VIcon icon="ri-arrow-right-up-line" class="mr-2" size="18" />
+          <VBtn
+            color="primary"
+            variant="elevated"
+            elevation="2"
+            class="text-none font-weight-bold"
+            :loading="isConverting"
+            @click="confirmConvert"
+          >
+            <VIcon
+              icon="ri-arrow-right-up-line"
+              class="mr-2"
+              size="18"
+            />
             Convertir
           </VBtn>
         </VCardActions>
@@ -914,10 +1270,17 @@ onMounted(() => {
     </VDialog>
 
     <!-- Cancel Dialog -->
-    <VDialog v-model="isCancelDialogVisible" max-width="400">
+    <VDialog
+      v-model="isCancelDialogVisible"
+      max-width="400"
+    >
       <VCard>
         <VCardTitle class="text-h5 d-flex align-center">
-          <VIcon icon="ri-close-circle-line" class="mr-2" color="error" />
+          <VIcon
+            icon="ri-close-circle-line"
+            class="mr-2"
+            color="error"
+          />
           Anular Cotización
         </VCardTitle>
         <VDivider />
@@ -935,10 +1298,18 @@ onMounted(() => {
         <VDivider />
         <VCardActions class="pa-4">
           <VSpacer />
-          <VBtn variant="text" @click="isCancelDialogVisible = false">
+          <VBtn
+            variant="text"
+            @click="isCancelDialogVisible = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="error" variant="elevated" prepend-icon="ri-close-circle-line" @click="confirmCancelQuote">
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-close-circle-line"
+            @click="confirmCancelQuote"
+          >
             Anular
           </VBtn>
         </VCardActions>
@@ -946,15 +1317,37 @@ onMounted(() => {
     </VDialog>
 
     <!-- Mail Dialog -->
-    <VDialog v-model="isMailDialogVisible" max-width="480">
-      <VCard class="rounded-xl overflow-hidden elevation-10" border="0">
-        <div class="pa-6 text-center position-relative"
-          style="background: linear-gradient(135deg, rgba(var(--v-theme-info), 1) 0%, rgba(var(--v-theme-info), 0.85) 100%);">
-          <VAvatar color="white" size="64" class="elevation-3 mb-4">
-            <VIcon icon="ri-mail-send-line" size="32" color="info" />
+    <VDialog
+      v-model="isMailDialogVisible"
+      max-width="480"
+    >
+      <VCard
+        class="rounded-xl overflow-hidden elevation-10"
+        border="0"
+      >
+        <div
+          class="pa-6 text-center position-relative"
+          style="background: linear-gradient(135deg, rgba(var(--v-theme-info), 1) 0%, rgba(var(--v-theme-info), 0.85) 100%);"
+        >
+          <VAvatar
+            color="white"
+            size="64"
+            class="elevation-3 mb-4"
+          >
+            <VIcon
+              icon="ri-mail-send-line"
+              size="32"
+              color="info"
+            />
           </VAvatar>
-          <h3 class="text-h5 text-white font-weight-bold mb-1">Enviar Cotización</h3>
-          <p class="text-white text-body-2 mb-0" style="opacity: 0.85;">Se enviará la cotización por correo electrónico
+          <h3 class="text-h5 text-white font-weight-bold mb-1">
+            Enviar Cotización
+          </h3>
+          <p
+            class="text-white text-body-2 mb-0"
+            style="opacity: 0.85;"
+          >
+            Se enviará la cotización por correo electrónico
           </p>
         </div>
 
@@ -966,27 +1359,47 @@ onMounted(() => {
             <div class="text-h6 font-weight-bold text-grey-darken-4 mb-1">
               {{ getClientName(mailQuoteSelected?.client) }}
             </div>
-            <div class="d-flex align-center justify-center text-body-2"
-              :class="mailQuoteSelected?.client?.email ? 'text-medium-emphasis' : 'text-error font-weight-medium'">
-              <VIcon :icon="mailQuoteSelected?.client?.email ? 'ri-mail-line' : 'ri-error-warning-line'" size="16"
-                class="mr-2" />
+            <div
+              class="d-flex align-center justify-center text-body-2"
+              :class="mailQuoteSelected?.client?.email ? 'text-medium-emphasis' : 'text-error font-weight-medium'"
+            >
+              <VIcon
+                :icon="mailQuoteSelected?.client?.email ? 'ri-mail-line' : 'ri-error-warning-line'"
+                size="16"
+                class="mr-2"
+              />
               {{ mailQuoteSelected?.client?.email || 'El cliente no tiene correo registrado' }}
             </div>
           </div>
 
-          <VCard variant="tonal" color="info" class="rounded-lg border-opacity-25">
+          <VCard
+            variant="tonal"
+            color="info"
+            class="rounded-lg border-opacity-25"
+          >
             <VCardText class="pa-4 d-flex justify-space-between align-center">
               <div class="d-flex flex-column">
-                <span class="text-caption font-weight-bold text-info text-uppercase mb-1"
-                  style="letter-spacing: 0.5px;">Documento</span>
+                <span
+                  class="text-caption font-weight-bold text-info text-uppercase mb-1"
+                  style="letter-spacing: 0.5px;"
+                >Documento</span>
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-file-text-line" size="18" color="info" />
+                  <VIcon
+                    icon="ri-file-text-line"
+                    size="18"
+                    color="info"
+                  />
                   <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{
                     mailQuoteSelected?.document_number }}</span>
                 </div>
               </div>
-              <VChip size="small" color="info" variant="elevated" elevation="1"
-                class="font-weight-medium text-capitalize px-3">
+              <VChip
+                size="small"
+                color="info"
+                variant="elevated"
+                elevation="1"
+                class="font-weight-medium text-capitalize px-3"
+              >
                 Cotización
               </VChip>
             </VCardText>
@@ -996,13 +1409,29 @@ onMounted(() => {
         <VDivider class="border-opacity-25" />
 
         <VCardActions class="pa-4 px-6 justify-space-between bg-grey-lighten-5">
-          <VBtn color="grey-darken-2" variant="text" class="text-none font-weight-medium rounded-lg px-4"
-            :disabled="isMailSending" @click="isMailDialogVisible = false">
+          <VBtn
+            color="grey-darken-2"
+            variant="text"
+            class="text-none font-weight-medium rounded-lg px-4"
+            :disabled="isMailSending"
+            @click="isMailDialogVisible = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="info" variant="elevated" elevation="2" class="text-none font-weight-bold rounded-lg px-6"
-            :loading="isMailSending" :disabled="!mailQuoteSelected?.client?.email" @click="confirmSendMail">
-            <VIcon icon="ri-send-plane-fill" class="mr-2" size="18" />
+          <VBtn
+            color="info"
+            variant="elevated"
+            elevation="2"
+            class="text-none font-weight-bold rounded-lg px-6"
+            :loading="isMailSending"
+            :disabled="!mailQuoteSelected?.client?.email"
+            @click="confirmSendMail"
+          >
+            <VIcon
+              icon="ri-send-plane-fill"
+              class="mr-2"
+              size="18"
+            />
             Enviar Ahora
           </VBtn>
         </VCardActions>

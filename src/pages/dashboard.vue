@@ -30,8 +30,9 @@ const kpis = ref({
   low_stock_products: [],
   monthly_sales: 0,
   monthly_expenses: 0,
-  monthly_balance: 0
+  monthly_balance: 0,
 })
+
 const topProducts = ref([])
 const cashFlow = ref([])
 
@@ -43,18 +44,20 @@ const searchResults = ref([])
 const searchLoading = ref(false)
 let debounceTimeout = null
 
-watch(searchQuery, (newVal) => {
+watch(searchQuery, newVal => {
   if (debounceTimeout) clearTimeout(debounceTimeout)
 
   const query = newVal.trim()
   if (query.length < 2) {
     searchResults.value = []
+    
     return
   }
 
   debounceTimeout = setTimeout(async () => {
     try {
       searchLoading.value = true
+
       const response = await $api(`/dashboard/search?q=${encodeURIComponent(query)}`)
       if (response.status === 200) {
         searchResults.value = response.results || []
@@ -73,7 +76,7 @@ const handleSearchBlur = () => {
   }, 200)
 }
 
-const handleResultClick = (item) => {
+const handleResultClick = item => {
   searchQuery.value = ''
   isSearchFocused.value = false
 
@@ -112,6 +115,7 @@ const nextMonth = () => {
 
 const currentMonthName = computed(() => {
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  
   return months[calendarDate.value.getMonth()] + ' ' + calendarDate.value.getFullYear()
 })
 
@@ -135,16 +139,18 @@ const calendarDays = computed(() => {
     const isToday = today.getDate() === i &&
       today.getMonth() === month &&
       today.getFullYear() === year
+
     const isSelected = selectedDay.value === i &&
       selectedMonth.value === month &&
       selectedYear.value === year
+
     days.push({ day: i, isToday, isSelected })
   }
 
   return days
 })
 
-const selectDayObj = (dayObj) => {
+const selectDayObj = dayObj => {
   if (!dayObj.day) return
   selectedDay.value = dayObj.day
   selectedMonth.value = calendarDate.value.getMonth()
@@ -160,11 +166,13 @@ const activeEvents = computed(() => {
   if (calendarDate.value.getMonth() !== selectedMonth.value || calendarDate.value.getFullYear() !== selectedYear.value) {
     return []
   }
+  
   return mockEvents[selectedDay.value] || []
 })
 
 const formattedSelectedDate = computed(() => {
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  
   return `${selectedDay.value} de ${months[selectedMonth.value]}`
 })
 
@@ -172,25 +180,30 @@ const formattedSelectedDate = computed(() => {
 const balancePercentage = computed(() => {
   const target = 10000
   if (!kpis.value.monthly_balance || kpis.value.monthly_balance <= 0) return 40
+  
   return Math.min(100, Math.round((kpis.value.monthly_balance / target) * 100))
 })
 
 const clientsPercentage = computed(() => {
   const target = 100
   if (!kpis.value.total_clients) return 70
+  
   return Math.min(100, Math.round((kpis.value.total_clients / target) * 100))
 })
 
 const vehiclesPercentage = computed(() => {
   const target = 150
   if (!kpis.value.total_vehicles) return 55
+  
   return Math.min(100, Math.round((kpis.value.total_vehicles / target) * 100))
 })
 
 // Circular Radial Bar Progress
 const monthlySalesTarget = 15000
+
 const salesTargetPercentage = computed(() => {
   if (!kpis.value.monthly_sales || kpis.value.monthly_sales <= 0) return 65
+  
   return Math.min(100, Math.round((kpis.value.monthly_sales / monthlySalesTarget) * 100))
 })
 
@@ -199,6 +212,7 @@ const fetchDashboardData = async () => {
   try {
     loading.value = true
     hasError.value = false
+
     const response = await $api('/dashboard', { timeout: 10000 })
     if (response && response.status === 200) {
       kpis.value = response.data.kpis
@@ -226,10 +240,10 @@ onMounted(() => {
 })
 
 // Formatting Helpers
-const formatCurrency = (val) => {
+const formatCurrency = val => {
   return new Intl.NumberFormat('es-EC', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'USD',
   }).format(val || 0)
 }
 
@@ -251,7 +265,7 @@ const wavyChartOptions = computed(() => {
     chart: {
       type: 'area',
       toolbar: { show: false },
-      background: 'transparent'
+      background: 'transparent',
     },
     colors: ['#7367F0', '#00CFE8'],
     dataLabels: { enabled: false },
@@ -262,36 +276,36 @@ const wavyChartOptions = computed(() => {
         shadeIntensity: 1,
         opacityFrom: 0.35,
         opacityTo: 0.02,
-        stops: [0, 95, 100]
-      }
+        stops: [0, 95, 100],
+      },
     },
     grid: {
       borderColor: chartThemes.value.borderColor,
-      strokeDashArray: 4
+      strokeDashArray: 4,
     },
     xaxis: {
       categories: cashFlow.value.map(item => item.month_name.substring(0, 3)),
       labels: { style: { colors: chartThemes.value.textColor, fontSize: '10px' } },
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
     },
     yaxis: {
       labels: {
         style: { colors: chartThemes.value.textColor, fontSize: '10px' },
-        formatter: (val) => `$${Math.round(val)}`
-      }
+        formatter: val => `$${Math.round(val)}`,
+      },
     },
     tooltip: {
       theme: chartThemes.value.tooltipTheme,
       y: {
-        formatter: (val) => `$${val.toFixed(2)}`
-      }
+        formatter: val => `$${val.toFixed(2)}`,
+      },
     },
     legend: {
       position: 'top',
       horizontalAlign: 'right',
-      labels: { colors: chartThemes.value.textColor }
-    }
+      labels: { colors: chartThemes.value.textColor },
+    },
   }
 })
 
@@ -299,12 +313,12 @@ const wavyChartSeries = computed(() => {
   return [
     {
       name: 'Ingresos YTD',
-      data: cashFlow.value.map(item => item.income)
+      data: cashFlow.value.map(item => item.income),
     },
     {
       name: 'Egresos YTD',
-      data: cashFlow.value.map(item => item.expense)
-    }
+      data: cashFlow.value.map(item => item.expense),
+    },
   ]
 })
 
@@ -313,38 +327,38 @@ const radialChartOptions = computed(() => {
   return {
     chart: {
       type: 'radialBar',
-      background: 'transparent'
+      background: 'transparent',
     },
     plotOptions: {
       radialBar: {
         hollow: {
-          size: '65%'
+          size: '65%',
         },
         track: {
           background: chartThemes.value.borderColor,
-          strokeWidth: '100%'
+          strokeWidth: '100%',
         },
         dataLabels: {
           name: {
             show: true,
             color: chartThemes.value.textColor,
-            fontSize: '11px'
+            fontSize: '11px',
           },
           value: {
             show: true,
             color: theme.current.value.dark ? '#ffffff' : '#262B43',
             fontSize: '22px',
             fontWeight: 'bold',
-            formatter: (val) => `${val}%`
-          }
-        }
-      }
+            formatter: val => `${val}%`,
+          },
+        },
+      },
     },
     colors: ['#7367F0'],
     stroke: {
-      lineCap: 'round'
+      lineCap: 'round',
     },
-    labels: ['Meta Alcanzada']
+    labels: ['Meta Alcanzada'],
   }
 })
 
@@ -361,7 +375,7 @@ const donutChartOptions = computed(() => {
     plotOptions: { pie: { donut: { size: '70%' } } },
     dataLabels: { enabled: false },
     legend: { position: 'bottom', labels: { colors: chartThemes.value.textColor } },
-    stroke: { show: false }
+    stroke: { show: false },
   }
 })
 
@@ -379,26 +393,27 @@ const barChartOptions = computed(() => {
     xaxis: {
       categories: topProducts.value.slice(0, 5).map(p => {
         const desc = p.description || ''
+        
         return desc.length > 20 ? desc.substring(0, 20) + '...' : desc
       }),
       labels: { style: { colors: chartThemes.value.textColor } },
-      axisBorder: { show: false }
+      axisBorder: { show: false },
     },
     yaxis: {
-      labels: { style: { colors: chartThemes.value.textColor } }
+      labels: { style: { colors: chartThemes.value.textColor } },
     },
     grid: {
       borderColor: chartThemes.value.borderColor,
-      strokeDashArray: 4
+      strokeDashArray: 4,
     },
-    tooltip: { theme: chartThemes.value.tooltipTheme }
+    tooltip: { theme: chartThemes.value.tooltipTheme },
   }
 })
 
 const barChartSeries = computed(() => {
   return [{
     name: 'Unidades Vendidas',
-    data: topProducts.value.slice(0, 5).map(p => Number(p.total_quantity) || 0)
+    data: topProducts.value.slice(0, 5).map(p => Number(p.total_quantity) || 0),
   }]
 })
 
@@ -410,14 +425,16 @@ const workOrdersReport = computed(() => kpis.value?.work_orders_report || {
   ot_totales: [],
   sla: [],
   technicians: {},
-  satisfaction: []
-});
+  satisfaction: [],
+})
 
 const otTotalesSeries = computed(() => {
   return workOrdersReport.value.ot_totales.map(i => i.count)
 })
+
 const otTotalesOptions = computed(() => {
   const labels = workOrdersReport.value.ot_totales.map(i => i.status)
+  
   return {
     chart: { type: 'donut', background: 'transparent' },
     labels: labels.length > 0 ? labels : ['Sin datos'],
@@ -425,123 +442,180 @@ const otTotalesOptions = computed(() => {
     dataLabels: { enabled: true, style: { fontSize: '10px' } },
     plotOptions: { pie: { donut: { size: '55%' } } },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
-    stroke: { show: false }
+    stroke: { show: false },
   }
 })
 
 const slaSeries = computed(() => {
-  if (!workOrdersReport.value.sla) return [];
+  if (!workOrdersReport.value.sla) return []
+  
   return Object.values(workOrdersReport.value.sla)
 })
+
 const slaOptions = computed(() => {
   const labels = Object.keys(workOrdersReport.value.sla || {})
+  
   return {
     chart: { type: 'pie', background: 'transparent' },
     labels: labels.length > 0 ? labels : ['1 día', '2-3 días', '4-7 días', '+8 días'],
     colors: ['#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
     dataLabels: { enabled: true },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
-    stroke: { show: false }
+    stroke: { show: false },
   }
 })
 
 const satisfaccionSeries = computed(() => {
   return workOrdersReport.value.satisfaction.map(i => i.count)
 })
+
 const satisfaccionOptions = computed(() => {
   const labels = workOrdersReport.value.satisfaction.map(i => i.status)
+  
   return {
     chart: { type: 'donut', background: 'transparent' },
     labels: labels.length > 0 ? labels : ['Sin datos'],
     colors: ['#28C76F', '#00CFE8', '#EA5455'],
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
     plotOptions: { pie: { donut: { size: '55%' } } },
-    stroke: { show: false }
+    stroke: { show: false },
   }
 })
 
 const tecnicosSeries = computed(() => {
-  const techs = workOrdersReport.value.technicians || {};
-  const statusSet = new Set();
+  const techs = workOrdersReport.value.technicians || {}
+  const statusSet = new Set()
 
   Object.values(techs).forEach(t => {
-    Object.keys(t).forEach(status => statusSet.add(status));
-  });
+    Object.keys(t).forEach(status => statusSet.add(status))
+  })
 
-  const statuses = Array.from(statusSet);
-  if (statuses.length === 0) return [];
+  const statuses = Array.from(statusSet)
+  if (statuses.length === 0) return []
 
   return statuses.map(status => {
     return {
       name: status,
-      data: Object.keys(techs).map(techName => techs[techName][status] || 0)
-    };
-  });
+      data: Object.keys(techs).map(techName => techs[techName][status] || 0),
+    }
+  })
 })
+
 const tecnicosOptions = computed(() => {
-  const techs = workOrdersReport.value.technicians || {};
-  const categories = Object.keys(techs);
+  const techs = workOrdersReport.value.technicians || {}
+  const categories = Object.keys(techs)
+  
   return {
     chart: { type: 'bar', stacked: false, background: 'transparent', toolbar: { show: false } },
     colors: ['#00CFE8', '#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
     xaxis: {
       categories: categories.length > 0 ? categories : ['Sin datos'],
       labels: { style: { colors: chartThemes.value.textColor } },
-      axisBorder: { show: false }
+      axisBorder: { show: false },
     },
     yaxis: { labels: { style: { colors: chartThemes.value.textColor } } },
     legend: { position: 'top', labels: { colors: chartThemes.value.textColor } },
     grid: { borderColor: chartThemes.value.borderColor, strokeDashArray: 4 },
-    plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } }
+    plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
   }
 })
 </script>
 
 <template>
-  <VContainer fluid class="pa-6 dashboard-container">
+  <VContainer
+    fluid
+    class="pa-6 dashboard-container"
+  >
     <!-- Header glowing ambient background -->
-    <div class="dashboard-header-glow"></div>
+    <div class="dashboard-header-glow" />
 
     <!-- Header (Mockup Style layout using system colors) -->
-    <div class="d-flex flex-wrap justify-space-between align-center mb-6 position-relative border-b pb-4"
-      style="z-index: 10; border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+    <div
+      class="d-flex flex-wrap justify-space-between align-center mb-6 position-relative border-b pb-4"
+      style="z-index: 10; border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+    >
       <div>
-        <h1 class="text-h4 font-weight-bold text-high-emphasis mb-1" style="letter-spacing: 0.5px;">
+        <h1
+          class="text-h4 font-weight-bold text-high-emphasis mb-1"
+          style="letter-spacing: 0.5px;"
+        >
           <span class="gradient-title">DASHBOARD</span>
-          <span style="font-size: 1.1rem;" class="font-weight-medium text-medium-emphasis">/ ADMIN PANEL</span>
+          <span
+            style="font-size: 1.1rem;"
+            class="font-weight-medium text-medium-emphasis"
+          >/ ADMIN PANEL</span>
         </h1>
-        <p class="text-caption text-medium-emphasis mb-0">Gestión Automotriz - Rendimiento y Balance de Operaciones</p>
+        <p class="text-caption text-medium-emphasis mb-0">
+          Gestión Automotriz - Rendimiento y Balance de Operaciones
+        </p>
       </div>
 
       <!-- Search & quick action shortcuts -->
       <div class="d-flex flex-wrap align-center gap-4 mt-4 mt-md-0">
-        <div style="width: 250px; position: relative;" class="d-none d-sm-block">
-          <VTextField v-model="searchQuery" density="compact" placeholder="Buscar cliente, auto, SKU..."
-            prepend-inner-icon="ri-search-line" variant="solo" hide-details class="rounded-xl search-field"
-            style="box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;" @focus="isSearchFocused = true"
-            @blur="handleSearchBlur" />
+        <div
+          style="width: 250px; position: relative;"
+          class="d-none d-sm-block"
+        >
+          <VTextField
+            v-model="searchQuery"
+            density="compact"
+            placeholder="Buscar cliente, auto, SKU..."
+            prepend-inner-icon="ri-search-line"
+            variant="solo"
+            hide-details
+            class="rounded-xl search-field"
+            style="box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;"
+            @focus="isSearchFocused = true"
+            @blur="handleSearchBlur"
+          />
 
           <!-- Floating search results drop panel -->
-          <VCard v-if="searchQuery && isSearchFocused" elevation="8"
+          <VCard
+            v-if="searchQuery && isSearchFocused"
+            elevation="8"
             class="position-absolute mt-1 pa-1 rounded-xl search-results-dropdown"
-            style="width: 300px; right: 0; z-index: 100; max-height: 250px; overflow-y: auto; background-color: rgb(var(--v-theme-surface)) !important; border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;">
-            <div v-if="searchLoading"
-              class="text-caption text-medium-emphasis text-center py-4 d-flex align-center justify-center gap-2">
-              <VProgressCircular indeterminate size="16" width="2" color="primary" />
+            style="width: 300px; right: 0; z-index: 100; max-height: 250px; overflow-y: auto; background-color: rgb(var(--v-theme-surface)) !important; border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;"
+          >
+            <div
+              v-if="searchLoading"
+              class="text-caption text-medium-emphasis text-center py-4 d-flex align-center justify-center gap-2"
+            >
+              <VProgressCircular
+                indeterminate
+                size="16"
+                width="2"
+                color="primary"
+              />
               <span>Buscando en BD...</span>
             </div>
-            <div v-else-if="searchResults.length === 0" class="text-caption text-medium-emphasis text-center py-4">
+            <div
+              v-else-if="searchResults.length === 0"
+              class="text-caption text-medium-emphasis text-center py-4"
+            >
               Sin coincidencias encontradas
             </div>
             <div v-else>
-              <div v-for="(res, idx) in searchResults" :key="idx"
+              <div
+                v-for="(res, idx) in searchResults"
+                :key="idx"
                 class="search-result-item pa-2 rounded-lg cursor-pointer d-flex flex-column"
-                @mousedown="handleResultClick(res)">
+                @mousedown="handleResultClick(res)"
+              >
                 <div class="d-flex justify-space-between align-center">
                   <span class="font-weight-bold text-caption text-high-emphasis">{{ res.name }}</span>
-                  <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">{{ res.type }}</VChip>
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
+                    {{ res.type }}
+                  </VChip>
                 </div>
-                <span class="text-grey" style="font-size: 0.65rem;">{{ res.detail }}</span>
+                <span
+                  class="text-grey"
+                  style="font-size: 0.65rem;"
+                >{{ res.detail }}</span>
               </div>
             </div>
           </VCard>
@@ -549,111 +623,244 @@ const tecnicosOptions = computed(() => {
 
         <!-- Quick actions buttons -->
         <div class="d-flex gap-2">
-          <VTooltip text="Nueva Orden de Trabajo" location="bottom">
+          <VTooltip
+            text="Nueva Orden de Trabajo"
+            location="bottom"
+          >
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-tools-line" variant="elevated" size="small" class="rounded-lg text-white"
+              <VBtn
+                v-bind="props"
+                icon="ri-tools-line"
+                variant="elevated"
+                size="small"
+                class="rounded-lg text-white"
                 style="background: linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%); box-shadow: 0 4px 10px rgba(115, 103, 240, 0.3) !important;"
-                @click="router.push('/work-orders/add')" />
+                @click="router.push('/work-orders/add')"
+              />
             </template>
           </VTooltip>
-          <VTooltip text="Registrar Venta" location="bottom">
+          <VTooltip
+            text="Registrar Venta"
+            location="bottom"
+          >
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-money-dollar-box-line" variant="elevated" size="small"
+              <VBtn
+                v-bind="props"
+                icon="ri-money-dollar-box-line"
+                variant="elevated"
+                size="small"
                 class="rounded-lg text-white"
                 style="background: linear-gradient(135deg, #00CFE8 0%, #1A2980 100%); box-shadow: 0 4px 10px rgba(0, 207, 232, 0.3) !important;"
-                @click="router.push('/sales/add')" />
+                @click="router.push('/sales/add')"
+              />
             </template>
           </VTooltip>
-          <VTooltip text="Ingresar Compra" location="bottom">
+          <VTooltip
+            text="Ingresar Compra"
+            location="bottom"
+          >
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-shopping-cart-2-line" variant="elevated" size="small"
+              <VBtn
+                v-bind="props"
+                icon="ri-shopping-cart-2-line"
+                variant="elevated"
+                size="small"
                 class="rounded-lg text-white"
                 style="background: linear-gradient(135deg, #28C76F 0%, #81FBB8 100%); box-shadow: 0 4px 10px rgba(40, 199, 111, 0.3) !important;"
-                @click="router.push('/invoice/manual-purchase')" />
+                @click="router.push('/invoice/manual-purchase')"
+              />
             </template>
           </VTooltip>
-          <VTooltip text="Kardex" location="bottom">
+          <VTooltip
+            text="Kardex"
+            location="bottom"
+          >
             <template #activator="{ props }">
-              <VBtn v-bind="props" icon="ri-exchange-funds-line" variant="elevated" size="small"
+              <VBtn
+                v-bind="props"
+                icon="ri-exchange-funds-line"
+                variant="elevated"
+                size="small"
                 class="rounded-lg text-white"
                 style="background: linear-gradient(135deg, #FF9F43 0%, #FF5A5F 100%); box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3) !important;"
-                @click="router.push('/kardex')" />
+                @click="router.push('/kardex')"
+              />
             </template>
           </VTooltip>
         </div>
 
-        <VBtn prepend-icon="ri-refresh-line" variant="elevated" @click="fetchDashboardData" :loading="loading"
+        <VBtn
+          prepend-icon="ri-refresh-line"
+          variant="elevated"
+          :loading="loading"
           class="rounded-xl px-5 text-white font-weight-bold"
-          style="background: linear-gradient(135deg, #EA5455 0%, #FEB692 100%); box-shadow: 0 6px 15px rgba(234, 84, 85, 0.3) !important; letter-spacing: 0.5px;">
+          style="background: linear-gradient(135deg, #EA5455 0%, #FEB692 100%); box-shadow: 0 6px 15px rgba(234, 84, 85, 0.3) !important; letter-spacing: 0.5px;"
+          @click="fetchDashboardData"
+        >
           Actualizar
         </VBtn>
       </div>
     </div>
 
     <!-- Spinner Loader -->
-    <div v-if="loading" class="d-flex justify-center align-center py-12 my-12">
-      <VProgressCircular indeterminate color="primary" size="64" width="6" />
+    <div
+      v-if="loading"
+      class="d-flex justify-center align-center py-12 my-12"
+    >
+      <VProgressCircular
+        indeterminate
+        color="primary"
+        size="64"
+        width="6"
+      />
     </div>
 
     <!-- Error State -->
-    <div v-else-if="hasError" class="d-flex flex-column align-center justify-center py-12 my-12 text-center"
-      style="max-width: 500px; margin: 0 auto;">
-      <VIcon icon="ri-error-warning-line" size="64" color="error" class="mb-4" />
-      <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Error al cargar el Dashboard</h3>
+    <div
+      v-else-if="hasError"
+      class="d-flex flex-column align-center justify-center py-12 my-12 text-center"
+      style="max-width: 500px; margin: 0 auto;"
+    >
+      <VIcon
+        icon="ri-error-warning-line"
+        size="64"
+        color="error"
+        class="mb-4"
+      />
+      <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">
+        Error al cargar el Dashboard
+      </h3>
       <p class="text-body-2 text-medium-emphasis mb-6">
         No se pudieron obtener los datos actualizados del servidor. Por favor, verifica tu conexión o vuelve a
         intentarlo.
       </p>
-      <VBtn color="primary" prepend-icon="ri-refresh-line" @click="fetchDashboardData" class="rounded-xl px-6">
+      <VBtn
+        color="primary"
+        prepend-icon="ri-refresh-line"
+        class="rounded-xl px-6"
+        @click="fetchDashboardData"
+      >
         Reintentar cargar
       </VBtn>
     </div>
 
-    <div v-else class="position-relative" style="z-index: 1;">
+    <div
+      v-else
+      class="position-relative"
+      style="z-index: 1;"
+    >
       <!-- KPIs Section (Matching Mockup layout with system color cards) -->
       <VRow class="mb-6">
         <!-- KPI 1: Clientes -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard elevation="0"
-            class="pa-6 mock-card mock-card-gradient-1 h-100 d-flex flex-column justify-center align-center text-center">
-            <VIcon icon="ri-group-line" size="48" class="mb-3 text-white" style="opacity: 0.9;" />
-            <div class="text-h3 font-weight-black text-white mb-2">{{ kpis.total_clients }}</div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">Clientes Registrados</div>
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
+          <VCard
+            elevation="0"
+            class="pa-6 mock-card mock-card-gradient-1 h-100 d-flex flex-column justify-center align-center text-center"
+          >
+            <VIcon
+              icon="ri-group-line"
+              size="48"
+              class="mb-3 text-white"
+              style="opacity: 0.9;"
+            />
+            <div class="text-h3 font-weight-black text-white mb-2">
+              {{ kpis.total_clients }}
+            </div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">
+              Clientes Registrados
+            </div>
           </VCard>
         </VCol>
 
         <!-- KPI 2: Vehículos -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard elevation="0"
-            class="pa-6 mock-card mock-card-gradient-4 h-100 d-flex flex-column justify-center align-center text-center">
-            <VIcon icon="ri-car-line" size="48" class="mb-3 text-white" style="opacity: 0.9;" />
-            <div class="text-h3 font-weight-black text-white mb-2">{{ kpis.total_vehicles }}</div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">Vehículos Asociados</div>
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
+          <VCard
+            elevation="0"
+            class="pa-6 mock-card mock-card-gradient-4 h-100 d-flex flex-column justify-center align-center text-center"
+          >
+            <VIcon
+              icon="ri-car-line"
+              size="48"
+              class="mb-3 text-white"
+              style="opacity: 0.9;"
+            />
+            <div class="text-h3 font-weight-black text-white mb-2">
+              {{ kpis.total_vehicles }}
+            </div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">
+              Vehículos Asociados
+            </div>
           </VCard>
         </VCol>
 
         <!-- KPI 3: Balance -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard elevation="0"
-            class="pa-6 mock-card mock-card-gradient-2 h-100 d-flex flex-column justify-center align-center text-center">
-            <VIcon icon="ri-wallet-3-line" size="48" class="mb-3 text-white" style="opacity: 0.9;" />
-            <div class="text-h4 font-weight-black text-white mb-2">{{ formatCurrency(kpis.monthly_balance) }}</div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">Balance Mensual</div>
-            <div class="text-caption text-white" style="opacity: 0.9; line-height: 1.2;">
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
+          <VCard
+            elevation="0"
+            class="pa-6 mock-card mock-card-gradient-2 h-100 d-flex flex-column justify-center align-center text-center"
+          >
+            <VIcon
+              icon="ri-wallet-3-line"
+              size="48"
+              class="mb-3 text-white"
+              style="opacity: 0.9;"
+            />
+            <div class="text-h4 font-weight-black text-white mb-2">
+              {{ formatCurrency(kpis.monthly_balance) }}
+            </div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">
+              Balance Mensual
+            </div>
+            <div
+              class="text-caption text-white"
+              style="opacity: 0.9; line-height: 1.2;"
+            >
               VENTAS: {{ formatCurrency(kpis.monthly_sales) }}<br>GASTOS: {{ formatCurrency(kpis.monthly_expenses) }}
             </div>
           </VCard>
         </VCol>
 
         <!-- KPI 4: Stock Alert -->
-        <VCol cols="12" sm="6" md="3">
-          <VCard elevation="0"
+        <VCol
+          cols="12"
+          sm="6"
+          md="3"
+        >
+          <VCard
+            elevation="0"
             class="pa-6 mock-card mock-card-gradient-3 h-100 d-flex flex-column justify-center align-center text-center cursor-pointer"
-            @click="isStockDialogVisible = true">
-            <VIcon icon="ri-alert-line" size="48" class="mb-3 text-white" style="opacity: 0.9;" />
-            <div class="text-h3 font-weight-black text-white mb-2">{{ kpis.low_stock_count }}</div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">Stock Mínimo</div>
-            <div class="text-caption text-white" style="opacity: 0.9;">Alerta de productos</div>
+            @click="isStockDialogVisible = true"
+          >
+            <VIcon
+              icon="ri-alert-line"
+              size="48"
+              class="mb-3 text-white"
+              style="opacity: 0.9;"
+            />
+            <div class="text-h3 font-weight-black text-white mb-2">
+              {{ kpis.low_stock_count }}
+            </div>
+            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">
+              Stock Mínimo
+            </div>
+            <div
+              class="text-caption text-white"
+              style="opacity: 0.9;"
+            >
+              Alerta de productos
+            </div>
           </VCard>
         </VCol>
       </VRow>
@@ -661,60 +868,119 @@ const tecnicosOptions = computed(() => {
       <!-- Middle Section (Calendar & Wavy Chart) -->
       <VRow class="mb-6">
         <!-- Column 1: Calendar -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
             <div
               class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <VIcon icon="ri-calendar-todo-line" />
               <span>Calendario de Trabajo</span>
             </div>
 
             <div class="calendar-widget">
               <div class="d-flex justify-space-between align-center mb-4">
-                <VIcon icon="ri-arrow-left-s-line" class="cursor-pointer text-primary" @click="prevMonth" />
+                <VIcon
+                  icon="ri-arrow-left-s-line"
+                  class="cursor-pointer text-primary"
+                  @click="prevMonth"
+                />
                 <span class="font-weight-bold text-primary text-uppercase text-caption">{{ currentMonthName }}</span>
-                <VIcon icon="ri-arrow-right-s-line" class="cursor-pointer text-primary" @click="nextMonth" />
+                <VIcon
+                  icon="ri-arrow-right-s-line"
+                  class="cursor-pointer text-primary"
+                  @click="nextMonth"
+                />
               </div>
               <div class="calendar-grid">
-                <div v-for="w in daysOfWeek" :key="w" class="calendar-header-day">{{ w }}</div>
-                <div v-for="(dayObj, idx) in calendarDays" :key="idx" class="calendar-day" :class="{
-                  'is-today': dayObj.isToday,
-                  'is-selected': dayObj.isSelected && !dayObj.isToday,
-                  'is-empty': !dayObj.day
-                }" @click="selectDayObj(dayObj)">
+                <div
+                  v-for="w in daysOfWeek"
+                  :key="w"
+                  class="calendar-header-day"
+                >
+                  {{ w }}
+                </div>
+                <div
+                  v-for="(dayObj, idx) in calendarDays"
+                  :key="idx"
+                  class="calendar-day"
+                  :class="{
+                    'is-today': dayObj.isToday,
+                    'is-selected': dayObj.isSelected && !dayObj.isToday,
+                    'is-empty': !dayObj.day
+                  }"
+                  @click="selectDayObj(dayObj)"
+                >
                   {{ dayObj.day }}
                 </div>
               </div>
             </div>
 
             <!-- Calendar Agenda Timeline Feed -->
-            <div class="mt-4 pt-3 border-t" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+            <div
+              class="mt-4 pt-3 border-t"
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate
                 }}</span>
-                <VChip v-if="activeEvents.length > 0" size="x-small" color="primary" class="font-weight-black">
+                <VChip
+                  v-if="activeEvents.length > 0"
+                  size="x-small"
+                  color="primary"
+                  class="font-weight-black"
+                >
                   {{ activeEvents.length }} event.
                 </VChip>
               </div>
 
-              <div v-if="activeEvents.length === 0" class="text-caption text-medium-emphasis text-center py-2">
+              <div
+                v-if="activeEvents.length === 0"
+                class="text-caption text-medium-emphasis text-center py-2"
+              >
                 Sin órdenes de trabajo programadas
               </div>
-              <div class="d-flex flex-column gap-2" v-else>
-                <div v-for="(evt, idx) in activeEvents" :key="idx"
+              <div
+                v-else
+                class="d-flex flex-column gap-2"
+              >
+                <div
+                  v-for="(evt, idx) in activeEvents"
+                  :key="idx"
                   class="d-flex justify-space-between align-center pa-2 rounded-lg"
-                  style="background-color: rgba(var(--v-theme-on-surface), 0.03); border: 1px solid rgba(var(--v-theme-on-surface), 0.05);">
-                  <div class="overflow-hidden" style="max-width: 70%;">
-                    <div
-                      class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
-                      <span style="font-size: 0.75rem;" class="text-primary font-weight-black">{{ evt.time }}</span>
+                  style="background-color: rgba(var(--v-theme-on-surface), 0.03); border: 1px solid rgba(var(--v-theme-on-surface), 0.05);"
+                >
+                  <div
+                    class="overflow-hidden"
+                    style="max-width: 70%;"
+                  >
+                    <div class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
+                      <span
+                        style="font-size: 0.75rem;"
+                        class="text-primary font-weight-black"
+                      >{{ evt.time }}</span>
                       <span>-</span>
                       <span class="text-truncate">{{ evt.title }}</span>
                     </div>
-                    <div class="text-medium-emphasis text-truncate" style="font-size: 0.68rem;">{{ evt.subtitle }}</div>
+                    <div
+                      class="text-medium-emphasis text-truncate"
+                      style="font-size: 0.68rem;"
+                    >
+                      {{ evt.subtitle }}
+                    </div>
                   </div>
-                  <VChip :color="evt.color" size="x-small" variant="tonal" class="font-weight-bold">
+                  <VChip
+                    :color="evt.color"
+                    size="x-small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
                     {{ evt.status }}
                   </VChip>
                 </div>
@@ -724,16 +990,28 @@ const tecnicosOptions = computed(() => {
         </VCol>
 
         <!-- Column 2: Wavy double area chart -->
-        <VCol cols="12" md="8">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
             <div
               class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <VIcon icon="ri-line-chart-line" />
               <span>Flujo de Caja YTD (Ingresos vs Egresos)</span>
             </div>
             <div class="pa-2">
-              <VueApexCharts type="area" height="325" :options="wavyChartOptions" :series="wavyChartSeries" />
+              <VueApexCharts
+                type="area"
+                height="325"
+                :options="wavyChartOptions"
+                :series="wavyChartSeries"
+              />
             </div>
           </VCard>
         </VCol>
@@ -742,31 +1020,55 @@ const tecnicosOptions = computed(() => {
       <!-- Extra Charts Section (Donut & Bar Chart) -->
       <VRow class="mb-6">
         <!-- Donut Chart: Ingresos vs Egresos -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100 d-flex flex-column"
+          >
             <div
               class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <VIcon icon="ri-pie-chart-2-line" />
               <span>Distribución Financiera Mensual</span>
             </div>
             <div class="pa-2 d-flex justify-center align-center flex-grow-1">
-              <VueApexCharts type="donut" height="250" :options="donutChartOptions" :series="donutChartSeries" />
+              <VueApexCharts
+                type="donut"
+                height="250"
+                :options="donutChartOptions"
+                :series="donutChartSeries"
+              />
             </div>
           </VCard>
         </VCol>
 
         <!-- Bar Chart: Top 5 Productos -->
-        <VCol cols="12" md="8">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
             <div
               class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <VIcon icon="ri-bar-chart-horizontal-line" />
               <span>Top 5 Productos Vendidos (Unidades)</span>
             </div>
             <div class="pa-2">
-              <VueApexCharts type="bar" height="250" :options="barChartOptions" :series="barChartSeries" />
+              <VueApexCharts
+                type="bar"
+                height="250"
+                :options="barChartOptions"
+                :series="barChartSeries"
+              />
             </div>
           </VCard>
         </VCol>
@@ -775,28 +1077,49 @@ const tecnicosOptions = computed(() => {
       <!-- Bottom Section (Feed list, progress meters, radial chart) -->
       <VRow class="mb-6">
         <!-- Feed Card: Top Sold Products -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100 d-flex flex-column justify-space-between"
+          >
             <div>
               <div
                 class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
                 <VIcon icon="ri-star-line" />
                 <span>Productos Más Vendidos</span>
               </div>
-              <div v-if="topProducts.length === 0" class="text-center py-6 text-medium-emphasis">
+              <div
+                v-if="topProducts.length === 0"
+                class="text-center py-6 text-medium-emphasis"
+              >
                 Sin registros de ventas en el mes.
               </div>
               <div v-else>
-                <div v-for="(prod, idx) in topProducts.slice(0, 3)" :key="idx" class="mb-4">
+                <div
+                  v-for="(prod, idx) in topProducts.slice(0, 3)"
+                  :key="idx"
+                  class="mb-4"
+                >
                   <div class="d-flex justify-space-between align-center">
-                    <span class="font-weight-bold text-uppercase text-caption text-primary text-truncate"
-                      style="max-width: 70%;">{{ prod.description }}</span>
+                    <span
+                      class="font-weight-bold text-uppercase text-caption text-primary text-truncate"
+                      style="max-width: 70%;"
+                    >{{ prod.description }}</span>
                     <span class="text-caption font-weight-bold text-high-emphasis">{{
                       Number(prod.total_quantity).toLocaleString() }} u.</span>
                   </div>
-                  <p class="text-caption text-medium-emphasis mb-0" style="font-size: 0.75rem;">Monto mensual: {{
-                    formatCurrency(prod.total_revenue) }}</p>
+                  <p
+                    class="text-caption text-medium-emphasis mb-0"
+                    style="font-size: 0.75rem;"
+                  >
+                    Monto mensual: {{
+                      formatCurrency(prod.total_revenue) }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -804,11 +1127,18 @@ const tecnicosOptions = computed(() => {
         </VCol>
 
         <!-- Progress Meters Card -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
             <div
               class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <VIcon icon="ri-bar-chart-fill" />
               <span>Rendimiento Operativo</span>
             </div>
@@ -819,7 +1149,12 @@ const tecnicosOptions = computed(() => {
                   <span class="font-weight-bold">Eficiencia del Balance</span>
                   <span class="text-primary font-weight-bold">{{ balancePercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="balancePercentage" color="#7367F0" height="8" class="rounded" />
+                <VProgressLinear
+                  v-model="balancePercentage"
+                  color="#7367F0"
+                  height="8"
+                  class="rounded"
+                />
               </div>
 
               <div>
@@ -827,7 +1162,12 @@ const tecnicosOptions = computed(() => {
                   <span class="font-weight-bold">Registro de Clientes (Meta 100)</span>
                   <span class="text-primary font-weight-bold">{{ clientsPercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="clientsPercentage" color="#00CFE8" height="8" class="rounded" />
+                <VProgressLinear
+                  v-model="clientsPercentage"
+                  color="#00CFE8"
+                  height="8"
+                  class="rounded"
+                />
               </div>
 
               <div>
@@ -835,27 +1175,47 @@ const tecnicosOptions = computed(() => {
                   <span class="font-weight-bold">Vehículos Registrados (Meta 150)</span>
                   <span class="text-primary font-weight-bold">{{ vehiclesPercentage }}%</span>
                 </div>
-                <VProgressLinear v-model="vehiclesPercentage" color="#28C76F" height="8" class="rounded" />
+                <VProgressLinear
+                  v-model="vehiclesPercentage"
+                  color="#28C76F"
+                  height="8"
+                  class="rounded"
+                />
               </div>
             </div>
           </VCard>
         </VCol>
 
         <!-- Radial Chart Card -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between align-center">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100 d-flex flex-column justify-space-between align-center"
+          >
             <div class="w-100">
               <div
                 class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-2 border-b pb-2 d-flex align-center gap-2 w-100"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
                 <VIcon icon="ri-radar-line" />
                 <span>Progreso de Meta Mensual</span>
               </div>
             </div>
 
-            <div class="d-flex justify-center align-center" style="height: 180px; width: 100%;">
-              <VueApexCharts type="radialBar" height="200" width="100%" :options="radialChartOptions"
-                :series="radialChartSeries" />
+            <div
+              class="d-flex justify-center align-center"
+              style="height: 180px; width: 100%;"
+            >
+              <VueApexCharts
+                type="radialBar"
+                height="200"
+                width="100%"
+                :options="radialChartOptions"
+                :series="radialChartSeries"
+              />
             </div>
           </VCard>
         </VCol>
@@ -864,44 +1224,92 @@ const tecnicosOptions = computed(() => {
       <!-- NUEVO: Panel de Rendimiento de Taller (Órdenes de Trabajo) -->
       <div class="mt-8 mb-4">
         <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
-          <VIcon icon="ri-tools-fill" color="primary" />
+          <VIcon
+            icon="ri-tools-fill"
+            color="primary"
+          />
           Reporte Inicial Técnicos - Basado en OTs
         </h2>
-        <p class="text-caption text-medium-emphasis">Métricas operativas y rendimiento del personal técnico</p>
+        <p class="text-caption text-medium-emphasis">
+          Métricas operativas y rendimiento del personal técnico
+        </p>
       </div>
 
       <VRow class="mb-6">
         <!-- OT Totales -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">OTs Totales</div>
-            <div class="text-h4 font-weight-black text-high-emphasis mb-4">{{otTotalesSeries.reduce((a, b) => a + b, 0)}}
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">
+              OTs Totales
+            </div>
+            <div class="text-h4 font-weight-black text-high-emphasis mb-4">
+              {{ otTotalesSeries.reduce((a, b) => a + b, 0) }}
             </div>
             <div class="pa-2 d-flex justify-center align-center">
-              <VueApexCharts type="donut" height="220" width="100%" :options="otTotalesOptions"
-                :series="otTotalesSeries" />
+              <VueApexCharts
+                type="donut"
+                height="220"
+                width="100%"
+                :options="otTotalesOptions"
+                :series="otTotalesSeries"
+              />
             </div>
           </VCard>
         </VCol>
 
         <!-- SLA -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
-            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">SLA</div>
-            <div class="text-caption text-medium-emphasis mb-4">Días hasta que la OT queda como Cerrada-OK</div>
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
+            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
+              SLA
+            </div>
+            <div class="text-caption text-medium-emphasis mb-4">
+              Días hasta que la OT queda como Cerrada-OK
+            </div>
             <div class="pa-2 d-flex justify-center align-center mt-4">
-              <VueApexCharts type="pie" height="220" width="100%" :options="slaOptions" :series="slaSeries" />
+              <VueApexCharts
+                type="pie"
+                height="220"
+                width="100%"
+                :options="slaOptions"
+                :series="slaSeries"
+              />
             </div>
           </VCard>
         </VCol>
 
         <!-- Satisfacción del Cliente -->
-        <VCol cols="12" md="4">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">Conforme del Cliente</div>
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">
+              Conforme del Cliente
+            </div>
             <div class="pa-2 d-flex justify-center align-center mt-8">
-              <VueApexCharts type="donut" height="220" width="100%" :options="satisfaccionOptions"
-                :series="satisfaccionSeries" />
+              <VueApexCharts
+                type="donut"
+                height="220"
+                width="100%"
+                :options="satisfaccionOptions"
+                :series="satisfaccionSeries"
+              />
             </div>
           </VCard>
         </VCol>
@@ -909,11 +1317,25 @@ const tecnicosOptions = computed(() => {
 
       <VRow class="mb-6">
         <!-- Cant de Servicios por Técnico -->
-        <VCol cols="12" md="8">
-          <VCard elevation="0" class="pa-4 mock-card h-100">
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">Cant de Servicios por Técnico</div>
+        <VCol
+          cols="12"
+          md="8"
+        >
+          <VCard
+            elevation="0"
+            class="pa-4 mock-card h-100"
+          >
+            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">
+              Cant de Servicios por Técnico
+            </div>
             <div class="pa-2">
-              <VueApexCharts type="bar" height="300" width="100%" :options="tecnicosOptions" :series="tecnicosSeries" />
+              <VueApexCharts
+                type="bar"
+                height="300"
+                width="100%"
+                :options="tecnicosOptions"
+                :series="tecnicosSeries"
+              />
             </div>
           </VCard>
         </VCol>
@@ -921,9 +1343,15 @@ const tecnicosOptions = computed(() => {
     </div>
 
     <!-- Low Stock Alert Dialog -->
-    <VDialog v-model="isStockDialogVisible" max-width="700">
+    <VDialog
+      v-model="isStockDialogVisible"
+      max-width="700"
+    >
       <VCard class="rounded-lg">
-        <VCardItem class="pa-4 border-b" style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
+        <VCardItem
+          class="pa-4 border-b"
+          style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+        >
           <template #title>
             <div class="d-flex align-center gap-2 text-warning">
               <VIcon icon="ri-error-warning-line" />
@@ -931,27 +1359,42 @@ const tecnicosOptions = computed(() => {
             </div>
           </template>
           <template #append>
-            <VBtn icon="ri-close-line" variant="text" class="text-high-emphasis"
-              @click="isStockDialogVisible = false" />
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              class="text-high-emphasis"
+              @click="isStockDialogVisible = false"
+            />
           </template>
         </VCardItem>
-        <VCardText class="pa-4" style="max-height: 500px; overflow-y: auto;">
+        <VCardText
+          class="pa-4"
+          style="max-height: 500px; overflow-y: auto;"
+        >
           <template v-if="kpis.low_stock_products?.length === 0">
             <div class="text-center py-6 text-medium-emphasis">
               ¡Excelente! No hay productos con stock menor o igual al mínimo.
             </div>
           </template>
           <template v-else>
-            <div v-for="item in kpis.low_stock_products" :key="item.id"
+            <div
+              v-for="item in kpis.low_stock_products"
+              :key="item.id"
               class="d-flex align-center justify-space-between mb-3 py-3 border-b"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
-
+              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+            >
               <div class="d-flex align-center gap-3">
-                <VAvatar color="error" variant="tonal" rounded="lg">
+                <VAvatar
+                  color="error"
+                  variant="tonal"
+                  rounded="lg"
+                >
                   <VIcon icon="ri-error-warning-line" />
                 </VAvatar>
                 <div>
-                  <div class="font-weight-bold text-high-emphasis">{{ item.description }}</div>
+                  <div class="font-weight-bold text-high-emphasis">
+                    {{ item.description }}
+                  </div>
                   <div class="text-caption text-medium-emphasis mt-1">
                     <code class="text-primary bg-primary-lighten-5 px-1 rounded">{{ item.sku || 'N/A' }}</code>
                   </div>
@@ -959,9 +1402,15 @@ const tecnicosOptions = computed(() => {
               </div>
 
               <div class="text-right">
-                <div class="text-caption text-medium-emphasis mb-1">Stock Actual / Mín</div>
+                <div class="text-caption text-medium-emphasis mb-1">
+                  Stock Actual / Mín
+                </div>
                 <div class="d-flex align-center justify-end gap-2">
-                  <VChip :color="Number(item.stock) <= 0 ? 'error' : 'warning'" size="small" class="font-weight-bold">
+                  <VChip
+                    :color="Number(item.stock) <= 0 ? 'error' : 'warning'"
+                    size="small"
+                    class="font-weight-bold"
+                  >
                     {{ item.stock }}
                   </VChip>
                   <span class="text-medium-emphasis text-body-2 font-weight-bold">/ {{ item.min_stock }}</span>
@@ -970,20 +1419,34 @@ const tecnicosOptions = computed(() => {
             </div>
           </template>
         </VCardText>
-        <VCardActions class="pa-4 border-t d-flex justify-end"
-          style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
-          <VBtn color="primary" variant="tonal" @click="isStockDialogVisible = false">Cerrar</VBtn>
+        <VCardActions
+          class="pa-4 border-t d-flex justify-end"
+          style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+        >
+          <VBtn
+            color="primary"
+            variant="tonal"
+            @click="isStockDialogVisible = false"
+          >
+            Cerrar
+          </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Client Details Dialog -->
-    <ClientShowDialog v-if="isClientDialogVisible" v-model:isDialogVisible="isClientDialogVisible"
-      :client-data="selectedClient" />
+    <ClientShowDialog
+      v-if="isClientDialogVisible"
+      v-model:isDialogVisible="isClientDialogVisible"
+      :client-data="selectedClient"
+    />
 
     <!-- Vehicle Details Dialog -->
-    <VehicleShowDialog v-if="isVehicleDialogVisible" v-model:isDialogVisible="isVehicleDialogVisible"
-      :vehicle-data="selectedVehicle" />
+    <VehicleShowDialog
+      v-if="isVehicleDialogVisible"
+      v-model:isDialogVisible="isVehicleDialogVisible"
+      :vehicle-data="selectedVehicle"
+    />
   </VContainer>
 </template>
 

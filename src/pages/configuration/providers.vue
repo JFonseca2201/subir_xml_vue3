@@ -205,12 +205,14 @@ watch(searchQuery, () => {
 onMounted(() => {
   list()
 })
-const formatName = (item) => {
-  if (!item?.name) return 'Sin nombre';
-  return item.name.length > 25 ? item.name.substring(0, 25) + '...' : item.name;
-};
 
-const formatDate = (dateStr) => {
+const formatName = item => {
+  if (!item?.name) return 'Sin nombre'
+  
+  return item.name.length > 25 ? item.name.substring(0, 25) + '...' : item.name
+}
+
+const formatDate = dateStr => {
   if (!dateStr) return 'N/A'
   
   // 1. Intentar parseo nativo directo (para formatos estándar ISO)
@@ -221,6 +223,7 @@ const formatDate = (dateStr) => {
   
   // 2. Intentar parseo con normalización MySQL/Safari ('2026-05-04 11:44:11' -> '2026/05/04 11:44:11')
   const normalized = dateStr.replace(/-/g, '/')
+
   d = new Date(normalized)
   if (!isNaN(d.getTime())) {
     return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
@@ -254,7 +257,12 @@ definePage({ meta: { permission: "settings" } })
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-truck-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-truck-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Proveedores
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -262,8 +270,11 @@ definePage({ meta: { permission: "settings" } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-add-line"
-          @click="isProviderAddDialogVisible = !isProviderAddDialogVisible">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="isProviderAddDialogVisible = !isProviderAddDialogVisible"
+        >
           Nuevo Proveedor
         </VBtn>
       </div>
@@ -275,9 +286,17 @@ definePage({ meta: { permission: "settings" } })
       <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
         <VRow class="align-center">
           <VCol cols="12">
-            <VTextField v-model="searchQuery" label="Buscar proveedor" placeholder="Nombre, RUC, dirección..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" />
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar proveedor"
+              placeholder="Nombre, RUC, dirección..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
@@ -285,32 +304,91 @@ definePage({ meta: { permission: "settings" } })
       <!-- Tabla de Proveedores -->
       <div class="position-relative">
         <div class="overflow-x-auto">
-          <VTable hover class="providers-table">
+          <VTable
+            hover
+            class="providers-table"
+          >
             <thead>
               <tr>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">PROVEEDOR</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">RUC</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">TELÉFONO</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">CORREO</th>
-                <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">DIRECCIÓN</th>
-                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">FECHA REG.</th>
-                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">ACCIONES</th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 250px;"
+                >
+                  PROVEEDOR
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
+                  RUC
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 140px;"
+                >
+                  TELÉFONO
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 200px;"
+                >
+                  CORREO
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="min-width: 250px;"
+                >
+                  DIRECCIÓN
+                </th>
+                <th
+                  class="text-left font-weight-bold text-uppercase"
+                  style="width: 150px;"
+                >
+                  FECHA REG.
+                </th>
+                <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 120px;"
+                >
+                  ACCIONES
+                </th>
               </tr>
             </thead>
             <tbody v-if="!list_providers || list_providers.length === 0">
               <tr>
-                <td colspan="7" class="text-center pa-8 text-medium-emphasis">
-                  <VIcon size="48" class="mb-3" color="grey-lighten-1">ri-truck-line</VIcon>
-                  <div class="text-h6">No hay proveedores registrados</div>
-                  <div class="text-body-2">Intenta ajustar los filtros de búsqueda</div>
+                <td
+                  colspan="7"
+                  class="text-center pa-8 text-medium-emphasis"
+                >
+                  <VIcon
+                    size="48"
+                    class="mb-3"
+                    color="grey-lighten-1"
+                  >
+                    ri-truck-line
+                  </VIcon>
+                  <div class="text-h6">
+                    No hay proveedores registrados
+                  </div>
+                  <div class="text-body-2">
+                    Intenta ajustar los filtros de búsqueda
+                  </div>
                 </td>
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="item in list_providers" :key="item.id" class="providers-row align-middle">
+              <tr
+                v-for="item in list_providers"
+                :key="item.id"
+                class="providers-row align-middle"
+              >
                 <td class="text-left py-3">
                   <div class="d-flex align-center">
-                    <VAvatar size="32" color="primary" variant="tonal">
+                    <VAvatar
+                      size="32"
+                      color="primary"
+                      variant="tonal"
+                    >
                       <VIcon icon="ri-building-line" />
                     </VAvatar>
                     <div class="d-flex flex-column ms-3">
@@ -334,14 +412,27 @@ definePage({ meta: { permission: "settings" } })
                   </span>
                 </td>
                 <td class="text-left py-3">
-                  <span class="text-body-2 text-grey-darken-3 text-lowercase" style="word-break: break-all;">
+                  <span
+                    class="text-body-2 text-grey-darken-3 text-lowercase"
+                    style="word-break: break-all;"
+                  >
                     {{ item.email || 'N/A' }}
                   </span>
                 </td>
-                <td class="text-left py-3" style="max-width: 250px;">
+                <td
+                  class="text-left py-3"
+                  style="max-width: 250px;"
+                >
                   <div class="d-flex align-center">
-                    <VIcon icon="ri-map-pin-line" size="16" class="mr-2 text-grey" />
-                    <span class="text-body-2 text-grey-darken-3 text-truncate text-uppercase" :title="item.address">
+                    <VIcon
+                      icon="ri-map-pin-line"
+                      size="16"
+                      class="mr-2 text-grey"
+                    />
+                    <span
+                      class="text-body-2 text-grey-darken-3 text-truncate text-uppercase"
+                      :title="item.address"
+                    >
                       {{ item.address ? (item.address.length > 20 ? item.address.substring(0, 25) + '...' :
                         item.address) : 'Sin dirección' }}
                     </span>
@@ -349,7 +440,11 @@ definePage({ meta: { permission: "settings" } })
                 </td>
                 <td class="text-no-wrap text-left py-3">
                   <div class="d-flex align-center">
-                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="14"
+                      class="mr-1 text-grey"
+                    />
                     <span class="text-body-2 text-medium-emphasis">
                       {{ formatDate(item.created_at) }}
                     </span>
@@ -357,17 +452,47 @@ definePage({ meta: { permission: "settings" } })
                 </td>
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver detalle"
-                      @click="viewItem(item)">
-                      <VIcon icon="ri-eye-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="info"
+                      title="Ver detalle"
+                      @click="viewItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-eye-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="primary" title="Editar"
-                      @click="editItem(item)">
-                      <VIcon icon="ri-pencil-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="primary"
+                      title="Editar"
+                      @click="editItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="20"
+                      />
                     </VBtn>
-                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar"
-                      @click="deleteItem(item)">
-                      <VIcon icon="ri-delete-bin-line" size="20" />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      icon
+                      size="small"
+                      color="error"
+                      title="Eliminar"
+                      @click="deleteItem(item)"
+                    >
+                      <VIcon
+                        icon="ri-delete-bin-line"
+                        size="20"
+                      />
                     </VBtn>
                   </div>
                 </td>
@@ -384,24 +509,42 @@ definePage({ meta: { permission: "settings" } })
           <div class="text-caption text-grey-darken-1">
             Mostrando <span class="font-weight-bold">{{ list_providers.length }}</span> registros
           </div>
-          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary" />
+          <VPagination
+            v-model="currentPage"
+            :length="totalPage"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+          />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- DIALOGS -->
-    <ProviderAddDialog v-model:isDialogVisible="isProviderAddDialogVisible" :providers="list_providers"
-      @add-provider="addNewProvider" />
+    <ProviderAddDialog
+      v-model:isDialogVisible="isProviderAddDialogVisible"
+      :providers="list_providers"
+      @add-provider="addNewProvider"
+    />
 
-    <ProviderViewDialog v-if="provider_selected_view && isProviderViewDialogVisible"
-      v-model:isDialogVisible="isProviderViewDialogVisible" :provider-selected="provider_selected_view" />
+    <ProviderViewDialog
+      v-if="provider_selected_view && isProviderViewDialogVisible"
+      v-model:isDialogVisible="isProviderViewDialogVisible"
+      :provider-selected="provider_selected_view"
+    />
 
-    <ProviderEditDialog v-if="provider_selected_edit && isProviderEditDialogVisible"
-      v-model:isDialogVisible="isProviderEditDialogVisible" :provider-selected="provider_selected_edit"
-      @edit-provider="addEditProvider" />
+    <ProviderEditDialog
+      v-if="provider_selected_edit && isProviderEditDialogVisible"
+      v-model:isDialogVisible="isProviderEditDialogVisible"
+      :provider-selected="provider_selected_edit"
+      @edit-provider="addEditProvider"
+    />
 
-    <ProviderDeleteDialog v-if="provider_selected_delete && isProviderDeleteDialogVisible"
-      v-model:isDialogVisible="isProviderDeleteDialogVisible" :provider-selected="provider_selected_delete"
-      @delete-provider="addDeleteProvider" />
+    <ProviderDeleteDialog
+      v-if="provider_selected_delete && isProviderDeleteDialogVisible"
+      v-model:isDialogVisible="isProviderDeleteDialogVisible"
+      :provider-selected="provider_selected_delete"
+      @delete-provider="addDeleteProvider"
+    />
   </div>
 </template>

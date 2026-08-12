@@ -44,11 +44,13 @@ const selectedPayment = ref(null)
 // Authorization
 const currentUser = computed(() => {
   const userStr = localStorage.getItem('user')
+  
   return userStr ? JSON.parse(userStr) : null
 })
 
 const canAccessEmployeeExpenses = computed(() => {
   const roleId = currentUser.value?.role?.id
+  
   return currentUser.value && [1, 2].includes(roleId)
 })
 
@@ -94,11 +96,14 @@ const loadExpenses = async () => {
     ]
 
     allExpenses.sort((a, b) => {
-      const parseDate = (d) => {
+      const parseDate = d => {
         if (!d) return 0
         const [day, month, year] = d.split('/')
+        
         return new Date(year, month - 1, day).getTime()
       }
+
+      
       return parseDate(b.date) - parseDate(a.date)
     })
 
@@ -117,6 +122,7 @@ const loadExpenses = async () => {
 
 const cleanAccountName = name => {
   if (!name) return 'N/A'
+  
   return name
     .replace(/\(EFECTIVO\)/gi, '')
     .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -131,14 +137,17 @@ const openEditAdvanceDialog = advance => {
   selectedAdvance.value = advance
   showEditAdvanceDialog.value = true
 }
+
 const openDeleteAdvanceDialog = advance => {
   selectedAdvance.value = advance
   showDeleteAdvanceDialog.value = true
 }
+
 const openEditPaymentDialog = payment => {
   selectedPayment.value = payment
   showEditPaymentDialog.value = true
 }
+
 const openDeletePaymentDialog = payment => {
   selectedPayment.value = payment
   showDeletePaymentDialog.value = true
@@ -217,6 +226,7 @@ const filteredExpenses = computed(() => {
   let filtered = expenses.value
   if (selectedType.value === 'payments') filtered = filtered.filter(e => e.type === 'payment')
   if (selectedType.value === 'advances') filtered = filtered.filter(e => e.type === 'advance')
+  
   return filtered
 })
 
@@ -229,31 +239,76 @@ onMounted(() => {
 
 <template>
   <!-- Pantalla de Bloqueo -->
-  <div v-if="!canAccessEmployeeExpenses" class="d-flex justify-center align-center" style="min-height: 400px">
-    <VCard class="pa-8 text-center rounded-xl elevation-4" max-width="460">
-      <VAvatar color="error" variant="tonal" size="72" class="mb-4">
-        <VIcon size="38" icon="ri-lock-line" />
+  <div
+    v-if="!canAccessEmployeeExpenses"
+    class="d-flex justify-center align-center"
+    style="min-height: 400px"
+  >
+    <VCard
+      class="pa-8 text-center rounded-xl elevation-4"
+      max-width="460"
+    >
+      <VAvatar
+        color="error"
+        variant="tonal"
+        size="72"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-lock-line"
+        />
       </VAvatar>
-      <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">Acceso Restringido</h3>
-      <p class="text-body-1 text-medium-emphasis mb-6">No tienes permisos para acceder a la gestión de nómina.</p>
-      <VBtn color="primary" size="large" variant="elevated" prepend-icon="ri-dashboard-line" class="font-weight-semibold" @click="router.push('/dashboard')">
+      <h3 class="text-h5 font-weight-bold mb-2 text-high-emphasis">
+        Acceso Restringido
+      </h3>
+      <p class="text-body-1 text-medium-emphasis mb-6">
+        No tienes permisos para acceder a la gestión de nómina.
+      </p>
+      <VBtn
+        color="primary"
+        size="large"
+        variant="elevated"
+        prepend-icon="ri-dashboard-line"
+        class="font-weight-semibold"
+        @click="router.push('/dashboard')"
+      >
         Volver al Dashboard
       </VBtn>
     </VCard>
   </div>
 
-  <div v-else class="pa-4 pa-sm-6 employee-expenses-page">
+  <div
+    v-else
+    class="pa-4 pa-sm-6 employee-expenses-page"
+  >
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
-          <VAvatar color="primary" variant="tonal" rounded="lg" size="56" class="elevation-1">
-            <VIcon icon="ri-user-3-line" size="32" />
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            size="56"
+            class="elevation-1"
+          >
+            <VIcon
+              icon="ri-user-3-line"
+              size="32"
+            />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2">
-              <h1 class="text-h4 font-weight-bold text-high-emphasis mb-0">Pagos de Nómina</h1>
-              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+              <h1 class="text-h4 font-weight-bold text-high-emphasis mb-0">
+                Pagos de Nómina
+              </h1>
+              <VChip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="font-weight-bold"
+              >
                 {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
@@ -291,8 +346,15 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-6">
       <!-- Total Pagos -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary" elevation="0">
+      <VCol
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -305,16 +367,32 @@ onMounted(() => {
                 Suma acumulada de pagos de nómina
               </span>
             </div>
-            <VAvatar color="primary" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-money-dollar-circle-line" color="white" />
+            <VAvatar
+              color="primary"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-money-dollar-circle-line"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Adelantos -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-success-tonal border-success" elevation="0">
+      <VCol
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-success-tonal border-success"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -327,16 +405,32 @@ onMounted(() => {
                 Suma acumulada de adelantos
               </span>
             </div>
-            <VAvatar color="success" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-hand-coin-line" color="white" />
+            <VAvatar
+              color="success"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-hand-coin-line"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total General -->
-      <VCol cols="12" sm="12" md="4">
-        <VCard class="pa-5 rounded-xl tonal-card bg-info-tonal border-info" elevation="0">
+      <VCol
+        cols="12"
+        sm="12"
+        md="4"
+      >
+        <VCard
+          class="pa-5 rounded-xl tonal-card bg-info-tonal border-info"
+          elevation="0"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
@@ -349,8 +443,17 @@ onMounted(() => {
                 Suma total de egresos por nómina
               </span>
             </div>
-            <VAvatar color="info" variant="elevated" size="52" class="elevation-3">
-              <VIcon size="28" icon="ri-funds-line" color="white" />
+            <VAvatar
+              color="info"
+              variant="elevated"
+              size="52"
+              class="elevation-3"
+            >
+              <VIcon
+                size="28"
+                icon="ri-funds-line"
+                color="white"
+              />
             </VAvatar>
           </div>
         </VCard>
@@ -359,8 +462,14 @@ onMounted(() => {
 
     <!-- Barra de Filtros de Búsqueda -->
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
-      <VRow align="center" density="comfortable">
-        <VCol cols="12" md="6">
+      <VRow
+        align="center"
+        density="comfortable"
+      >
+        <VCol
+          cols="12"
+          md="6"
+        >
           <VTextField
             v-model="searchQuery"
             prepend-inner-icon="ri-search-2-line"
@@ -372,7 +481,11 @@ onMounted(() => {
           />
         </VCol>
 
-        <VCol cols="12" md="6" class="d-flex justify-md-end align-center gap-2 flex-wrap">
+        <VCol
+          cols="12"
+          md="6"
+          class="d-flex justify-md-end align-center gap-2 flex-wrap"
+        >
           <span class="text-body-2 font-weight-medium text-medium-emphasis me-2">Filtrar:</span>
           <VBtn
             size="small"
@@ -432,7 +545,10 @@ onMounted(() => {
             size="small"
             class="font-weight-bold"
           >
-            <VIcon start size="14">
+            <VIcon
+              start
+              size="14"
+            >
               {{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ? 'ri-check-line' : 'ri-hand-coin-line') }}
             </VIcon>
             {{ item.type === 'payment' ? 'PAGO' : (item.is_deducted ? 'ADELANTO PAGADO' : 'ADELANTO') }}
@@ -441,14 +557,24 @@ onMounted(() => {
 
         <template #item.employee_name="{ item }">
           <div class="d-flex align-center gap-2 font-weight-medium text-high-emphasis">
-            <VIcon color="primary" size="18">ri-user-line</VIcon>
+            <VIcon
+              color="primary"
+              size="18"
+            >
+              ri-user-line
+            </VIcon>
             {{ item.employee_name }}
           </div>
         </template>
 
         <template #item.account_name="{ item }">
           <div class="d-flex align-center gap-2 font-weight-medium text-high-emphasis">
-            <VIcon color="primary" size="18">ri-bank-line</VIcon>
+            <VIcon
+              color="primary"
+              size="18"
+            >
+              ri-bank-line
+            </VIcon>
             {{ cleanAccountName(item.account_name) }}
           </div>
         </template>
@@ -502,11 +628,24 @@ onMounted(() => {
 
         <template #no-data>
           <div class="text-center pa-12 text-medium-emphasis">
-            <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
-              <VIcon icon="ri-inbox-line" size="42" color="primary" />
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              size="80"
+              class="mb-4"
+            >
+              <VIcon
+                icon="ri-inbox-line"
+                size="42"
+                color="primary"
+              />
             </VAvatar>
-            <h3 class="text-h6 font-weight-bold text-high-emphasis">No hay registros</h3>
-            <p class="text-body-2 text-medium-emphasis mt-1">No se encontraron pagos ni adelantos registrados.</p>
+            <h3 class="text-h6 font-weight-bold text-high-emphasis">
+              No hay registros
+            </h3>
+            <p class="text-body-2 text-medium-emphasis mt-1">
+              No se encontraron pagos ni adelantos registrados.
+            </p>
           </div>
         </template>
       </VDataTable>

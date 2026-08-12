@@ -8,6 +8,7 @@ const toastColor = computed(() => {
   if (notificationType.value === 'success') return 'success'
   if (notificationType.value === 'info') return 'info'
   if (notificationType.value === 'warning') return 'warning'
+  
   return 'error'
 })
 
@@ -15,6 +16,7 @@ const toastIcon = computed(() => {
   if (notificationType.value === 'success') return 'ri-checkbox-circle-line'
   if (notificationType.value === 'info') return 'ri-information-line'
   if (notificationType.value === 'warning') return 'ri-alert-line'
+  
   return 'ri-error-warning-line'
 })
 </script>

@@ -21,6 +21,7 @@ const pedidoId = ref(null)
 
 const getUserId = () => {
   const userData = JSON.parse(localStorage.getItem('user'))
+
   userId.value = userData ? userData.id : null
 }
 
@@ -28,7 +29,7 @@ const getUserId = () => {
 const pedido = ref({
   distribuidor_id: null,
   items: [],
-  observations: ''
+  observations: '',
 })
 
 // Reglas de validación
@@ -44,6 +45,8 @@ const loadSuppliers = async () => {
   isLoading.value = true
   try {
     const response = await $api('suppliers?per_page=-1')
+
+
     // Ajustar según estructura de respuesta del listado de proveedores
     suppliers.value = response.suppliers || response.data || response || []
   } catch (error) {
@@ -55,9 +58,10 @@ const loadSuppliers = async () => {
 }
 
 // Cargar productos del distribuidor seleccionado
-const loadProductsOfSupplier = async (supplierId) => {
+const loadProductsOfSupplier = async supplierId => {
   if (!supplierId) {
     supplierProducts.value = []
+    
     return
   }
 
@@ -145,17 +149,19 @@ const total = computed(() => {
   return pedido.value.items.reduce((sum, item) => {
     const qty = Number(item.cantidad) || 0
     const price = Number(item.precio_compra_estimado) || 0
+    
     return sum + (qty * price)
   }, 0)
 })
 
 // Cargar detalles del pedido para editar
-const loadPedidoDetails = async (id) => {
+const loadPedidoDetails = async id => {
   isLoading.value = true
   try {
     const response = await $api(`pedidos-distribuidor/${id}`)
     if (response.success || response.status === 200) {
       const data = response.data
+
       pedido.value = {
         distribuidor_id: data.distribuidor_id,
         observations: data.observations || '',
@@ -165,7 +171,7 @@ const loadPedidoDetails = async (id) => {
           sku: detail.producto?.sku || '',
           cantidad: detail.cantidad,
           precio_compra_estimado: parseFloat(detail.precio_compra_estimado) || 0,
-        }))
+        })),
       }
     } else {
       showNotification('No se pudieron cargar los detalles del pedido', 'error')
@@ -184,6 +190,7 @@ const submitForm = async () => {
 
   if (!userId.value) {
     showNotification('Sesión inválida o expirada. Por favor vuelva a iniciar sesión.', 'error')
+    
     return
   }
 
@@ -191,17 +198,20 @@ const submitForm = async () => {
     const { valid } = await formRef.value.validate()
     if (!valid) {
       showNotification('Por favor, complete todos los campos obligatorios.', 'error')
+      
       return
     }
   }
 
   if (!pedido.value.distribuidor_id) {
     showNotification('Debe seleccionar un distribuidor para continuar.', 'error')
+    
     return
   }
 
   if (pedido.value.items.length === 0) {
     showNotification('Debe agregar al menos un producto al pedido.', 'error')
+    
     return
   }
 
@@ -216,7 +226,7 @@ const submitForm = async () => {
         description: item.description,
         cantidad: item.cantidad,
         precio_compra_estimado: item.precio_compra_estimado,
-      }))
+      })),
     }
 
     const url = pedidoId.value ? `pedidos-distribuidor/${pedidoId.value}` : 'pedidos-distribuidor'
@@ -224,7 +234,7 @@ const submitForm = async () => {
 
     const response = await $api(url, {
       method: method,
-      body: payload
+      body: payload,
     })
 
     if (response.success || response.status === 200 || response.status === 201) {
@@ -235,7 +245,9 @@ const submitForm = async () => {
     }
   } catch (error) {
     console.error('Error al enviar el pedido:', error)
+
     const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+
     showNotification(errMsg, 'error')
   } finally {
     loader.stop()
@@ -247,11 +259,13 @@ const saveDraft = async () => {
 
   if (!userId.value) {
     showNotification('Sesión inválida o expirada. Por favor vuelva a iniciar sesión.', 'error')
+    
     return
   }
 
   if (pedido.value.items.length === 0) {
     showNotification('Debe agregar al menos un producto al pedido para guardar el borrador.', 'error')
+    
     return
   }
 
@@ -267,7 +281,7 @@ const saveDraft = async () => {
         description: item.description,
         cantidad: item.cantidad,
         precio_compra_estimado: item.precio_compra_estimado,
-      }))
+      })),
     }
 
     const url = pedidoId.value ? `pedidos-distribuidor/${pedidoId.value}` : 'pedidos-distribuidor'
@@ -275,7 +289,7 @@ const saveDraft = async () => {
 
     const response = await $api(url, {
       method: method,
-      body: payload
+      body: payload,
     })
 
     if (response.success || response.status === 200 || response.status === 201) {
@@ -286,7 +300,9 @@ const saveDraft = async () => {
     }
   } catch (error) {
     console.error('Error al enviar el pedido:', error)
+
     const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+
     showNotification(errMsg, 'error')
   } finally {
     loader.stop()
@@ -311,7 +327,7 @@ const loadPendingReplacements = async () => {
   }
 }
 
-const addReplacementsToOrder = (item) => {
+const addReplacementsToOrder = item => {
   // Si no se ha elegido un proveedor, se establece el sugerido
   if (!pedido.value.distribuidor_id && item.supplier_id) {
     pedido.value.distribuidor_id = item.supplier_id
@@ -333,11 +349,12 @@ const addReplacementsToOrder = (item) => {
   showNotification('Repuesto agregado al pedido', 'success')
 }
 
-const markAsAcquired = async (replacementId) => {
+const markAsAcquired = async replacementId => {
   try {
     const response = await $api(`repuestos-reposicion/${replacementId}/adquirido`, {
-      method: 'PUT'
+      method: 'PUT',
     })
+
     if (response.success || response.status === 200) {
       showNotification('Repuesto marcado como adquirido', 'success')
       await loadPendingReplacements()
@@ -364,8 +381,8 @@ onMounted(async () => {
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
     <VProgressLinear
-      v-slot:default
       v-if="isLoading"
+      v-slot
       indeterminate
       color="primary"
       height="3"
@@ -374,109 +391,217 @@ onMounted(async () => {
     />
 
     <!-- Encabezado de la página -->
-    <div
-      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
       <div>
         <div class="d-flex align-center">
-          <VAvatar color="info-lighten-5" size="48" class="mr-3">
-            <VIcon icon="ri-truck-line" size="32" color="info" />
+          <VAvatar
+            color="info-lighten-5"
+            size="48"
+            class="mr-3"
+          >
+            <VIcon
+              icon="ri-truck-line"
+              size="32"
+              color="info"
+            />
           </VAvatar>
           <div>
             <h1 class="text-h4 font-weight-bold mb-1">
               {{ pedidoId ? 'Editar Pedido a Distribuidor' : 'Generar Pedido a Distribuidor' }}
             </h1>
-            <p class="text-medium-emphasis mb-0">Solicitud de productos a proveedor (sin impacto en inventario ni caja)
+            <p class="text-medium-emphasis mb-0">
+              Solicitud de productos a proveedor (sin impacto en inventario ni caja)
             </p>
           </div>
         </div>
       </div>
-      <VBtn color="secondary" variant="tonal" prepend-icon="ri-arrow-left-line" to="/sales/pedidos-distribuidor-list"
-        class="align-self-md-center align-self-end">
+      <VBtn
+        color="secondary"
+        variant="tonal"
+        prepend-icon="ri-arrow-left-line"
+        to="/sales/pedidos-distribuidor-list"
+        class="align-self-md-center align-self-end"
+      >
         Volver al Listado
       </VBtn>
     </div>
 
     <!-- Form Skeleton loader -->
-    <div v-if="isLoading" class="d-flex flex-column gap-6">
+    <div
+      v-if="isLoading"
+      class="d-flex flex-column gap-6"
+    >
       <VRow>
-        <VCol cols="12" md="8">
+        <VCol
+          cols="12"
+          md="8"
+        >
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div class="shimmer-line w-40 mb-6" style="height: 24px;"></div>
+            <div
+              class="shimmer-line w-40 mb-6"
+              style="height: 24px;"
+            />
             <VRow class="mb-4">
-              <VCol cols="12" sm="6">
-                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              <VCol
+                cols="12"
+                sm="6"
+              >
+                <div
+                  class="shimmer-line w-100 mb-2"
+                  style="height: 48px; border-radius: 8px;"
+                />
               </VCol>
-              <VCol cols="12" sm="6">
-                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;"></div>
+              <VCol
+                cols="12"
+                sm="6"
+              >
+                <div
+                  class="shimmer-line w-100 mb-2"
+                  style="height: 48px; border-radius: 8px;"
+                />
               </VCol>
             </VRow>
-            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;"></div>
-            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 80px; border-radius: 8px;"
+            />
+            <div
+              class="shimmer-line w-100"
+              style="height: 120px; border-radius: 8px;"
+            />
           </VCard>
         </VCol>
-        <VCol cols="12" md="4">
+        <VCol
+          cols="12"
+          md="4"
+        >
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div class="shimmer-line w-60 mb-6" style="height: 24px;"></div>
-            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
-            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-60 mb-6"
+              style="height: 24px;"
+            />
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 48px; border-radius: 8px;"
+            />
+            <div
+              class="shimmer-line w-100 mb-4"
+              style="height: 48px; border-radius: 8px;"
+            />
             <VDivider class="my-4" />
             <div class="d-flex justify-space-between mb-2">
-              <div class="shimmer-line w-30"></div>
-              <div class="shimmer-line w-20"></div>
+              <div class="shimmer-line w-30" />
+              <div class="shimmer-line w-20" />
             </div>
             <div class="d-flex justify-space-between mb-4">
-              <div class="shimmer-line w-40"></div>
-              <div class="shimmer-line w-30"></div>
+              <div class="shimmer-line w-40" />
+              <div class="shimmer-line w-30" />
             </div>
-            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;"></div>
+            <div
+              class="shimmer-line w-100"
+              style="height: 48px; border-radius: 8px;"
+            />
           </VCard>
         </VCol>
       </VRow>
     </div>
 
-    <VForm v-else ref="formRef" @submit.prevent="submitForm">
+    <VForm
+      v-else
+      ref="formRef"
+      @submit.prevent="submitForm"
+    >
       <VRow>
         <!-- Columna de Detalles del Pedido -->
-        <VCol cols="12" md="8">
-
+        <VCol
+          cols="12"
+          md="8"
+        >
           <!-- Selección de Distribuidor -->
-          <VCard variant="outlined" class="mb-6 border-opacity-25 rounded-lg elevation-1">
+          <VCard
+            variant="outlined"
+            class="mb-6 border-opacity-25 rounded-lg elevation-1"
+          >
             <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
-              <VIcon icon="ri-store-2-line" color="info" class="mr-2" />
+              <VIcon
+                icon="ri-store-2-line"
+                color="info"
+                class="mr-2"
+              />
               <span class="text-h6 font-weight-bold">1. Selección de Distribuidor</span>
             </VCardTitle>
             <VCardText class="pa-6">
-              <VAutocomplete v-model="pedido.distribuidor_id" :loading="isLoading" :items="suppliers" item-title="name"
-                item-value="id" label="Distribuidor / Proveedor *" placeholder="Seleccione un distribuidor..."
-                prepend-inner-icon="ri-truck-fill" variant="outlined" density="comfortable" :rules="[requiredRule]"
-                color="info" clearable required>
+              <VAutocomplete
+                v-model="pedido.distribuidor_id"
+                :loading="isLoading"
+                :items="suppliers"
+                item-title="name"
+                item-value="id"
+                label="Distribuidor / Proveedor *"
+                placeholder="Seleccione un distribuidor..."
+                prepend-inner-icon="ri-truck-fill"
+                variant="outlined"
+                density="comfortable"
+                :rules="[requiredRule]"
+                color="info"
+                clearable
+                required
+              >
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="item.raw.name"
-                    :subtitle="item.raw.ruc ? `RUC: ${item.raw.ruc}` : ''" />
+                  <VListItem
+                    v-bind="props"
+                    :title="item.raw.name"
+                    :subtitle="item.raw.ruc ? `RUC: ${item.raw.ruc}` : ''"
+                  />
                 </template>
               </VAutocomplete>
             </VCardText>
           </VCard>
 
           <!-- Búsqueda y Selección de Productos -->
-          <VCard variant="outlined" class="mb-6 border-opacity-25 rounded-lg elevation-1">
+          <VCard
+            variant="outlined"
+            class="mb-6 border-opacity-25 rounded-lg elevation-1"
+          >
             <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
-              <VIcon icon="ri-shopping-cart-2-line" color="info" class="mr-2" />
+              <VIcon
+                icon="ri-shopping-cart-2-line"
+                color="info"
+                class="mr-2"
+              />
               <span class="text-h6 font-weight-bold">2. Productos Solicitados</span>
             </VCardTitle>
             <VCardText class="pa-6">
               <!-- Autocomplete y botón manual habilitado solo si hay un distribuidor seleccionado -->
               <div class="d-flex align-center gap-4 mb-4">
-                <VAutocomplete v-model="searchProduct" :loading="isLoadingProducts" :items="supplierProducts"
-                  item-title="displayTitle" return-object label="Buscar y agregar producto de catálogo"
-                  placeholder="Escribe para buscar por nombre, SKU..." prepend-inner-icon="ri-search-line"
-                  variant="outlined" clearable :disabled="!pedido.distribuidor_id" :custom-filter="productFilter"
-                  @update:model-value="onProductSelected" color="info" class="flex-grow-1" hide-details
-                  :menu-props="{ maxWidth: 0 }">
+                <VAutocomplete
+                  v-model="searchProduct"
+                  :loading="isLoadingProducts"
+                  :items="supplierProducts"
+                  item-title="displayTitle"
+                  return-object
+                  label="Buscar y agregar producto de catálogo"
+                  placeholder="Escribe para buscar por nombre, SKU..."
+                  prepend-inner-icon="ri-search-line"
+                  variant="outlined"
+                  clearable
+                  :disabled="!pedido.distribuidor_id"
+                  :custom-filter="productFilter"
+                  color="info"
+                  class="flex-grow-1"
+                  hide-details
+                  :menu-props="{ maxWidth: 0 }"
+                  @update:model-value="onProductSelected"
+                >
                   <template #item="{ props, item }">
-                    <VListItem v-bind="props" :title="undefined">
-                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium">
+                    <VListItem
+                      v-bind="props"
+                      :title="undefined"
+                    >
+                      <VListItemTitle
+                        style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium"
+                      >
                         {{ item.raw.description }}
                       </VListItemTitle>
                       <VListItemSubtitle class="mt-1 text-grey">
@@ -487,17 +612,25 @@ onMounted(async () => {
                   </template>
                   <template #no-data>
                     <div class="pa-4 text-center text-medium-emphasis">
-                      <VIcon icon="ri-information-line" class="mr-1" />
+                      <VIcon
+                        icon="ri-information-line"
+                        class="mr-1"
+                      />
                       {{
                         pedido.distribuidor_id ? 'No se encontraron productos para este distribuidor' :
-                          'Seleccione un distribuidor primero'
+                        'Seleccione un distribuidor primero'
                       }}
                     </div>
                   </template>
                 </VAutocomplete>
 
-                <VBtn color="info" variant="tonal" prepend-icon="ri-add-line" :disabled="!pedido.distribuidor_id"
-                  @click="addManualItem">
+                <VBtn
+                  color="info"
+                  variant="tonal"
+                  prepend-icon="ri-add-line"
+                  :disabled="!pedido.distribuidor_id"
+                  @click="addManualItem"
+                >
                   Ingresar Manual
                 </VBtn>
               </div>
@@ -506,45 +639,114 @@ onMounted(async () => {
                 <VTable class="w-100">
                   <thead class="bg-grey-lighten-4">
                     <tr>
-                      <th class="text-left">Producto</th>
-                      <th style="width: 100px;" class="text-center">Cantidad</th>
-                      <th style="width: 150px;" class="text-center">Precio Compra Est.</th>
-                      <th style="width: 120px;" class="text-right">Subtotal</th>
-                      <th style="width: 50px;" class="text-center"></th>
+                      <th class="text-left">
+                        Producto
+                      </th>
+                      <th
+                        style="width: 100px;"
+                        class="text-center"
+                      >
+                        Cantidad
+                      </th>
+                      <th
+                        style="width: 150px;"
+                        class="text-center"
+                      >
+                        Precio Compra Est.
+                      </th>
+                      <th
+                        style="width: 120px;"
+                        class="text-right"
+                      >
+                        Subtotal
+                      </th>
+                      <th
+                        style="width: 50px;"
+                        class="text-center"
+                      />
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in pedido.items" :key="index">
+                    <tr
+                      v-for="(item, index) in pedido.items"
+                      :key="index"
+                    >
                       <td class="pa-2">
-                        <VTextField v-if="!item.producto_id" v-model="item.description"
-                          placeholder="Descripción del producto manual *" variant="outlined" density="compact"
-                          hide-details="auto" :rules="[requiredRule]" color="info" />
+                        <VTextField
+                          v-if="!item.producto_id"
+                          v-model="item.description"
+                          placeholder="Descripción del producto manual *"
+                          variant="outlined"
+                          density="compact"
+                          hide-details="auto"
+                          :rules="[requiredRule]"
+                          color="info"
+                        />
                         <div v-else>
-                          <div class="font-weight-medium text-body-1">{{ item.description }}</div>
-                          <div class="text-caption text-medium-emphasis" v-if="item.sku">SKU: {{ item.sku }}</div>
+                          <div class="font-weight-medium text-body-1">
+                            {{ item.description }}
+                          </div>
+                          <div
+                            v-if="item.sku"
+                            class="text-caption text-medium-emphasis"
+                          >
+                            SKU: {{ item.sku }}
+                          </div>
                         </div>
                       </td>
                       <td class="pa-2">
-                        <VTextField v-model.number="item.cantidad" type="number" min="1" variant="outlined"
-                          density="compact" hide-details="auto" :rules="[requiredRule]" class="text-center" />
+                        <VTextField
+                          v-model.number="item.cantidad"
+                          type="number"
+                          min="1"
+                          variant="outlined"
+                          density="compact"
+                          hide-details="auto"
+                          :rules="[requiredRule]"
+                          class="text-center"
+                        />
                       </td>
                       <td class="pa-2">
-                        <VTextField v-model.number="item.precio_compra_estimado" type="number" min="0" step="0.01"
-                          variant="outlined" density="compact" hide-details="auto" :rules="[requiredRule]" prefix="$" />
+                        <VTextField
+                          v-model.number="item.precio_compra_estimado"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          variant="outlined"
+                          density="compact"
+                          hide-details="auto"
+                          :rules="[requiredRule]"
+                          prefix="$"
+                        />
                       </td>
                       <td class="pa-2 text-right font-weight-bold text-body-1 text-info">
                         ${{ (item.cantidad * item.precio_compra_estimado).toFixed(2) }}
                       </td>
                       <td class="pa-2 text-center">
-                        <VBtn icon="ri-delete-bin-line" variant="text" color="error" size="small"
-                          @click="removeItem(index)" />
+                        <VBtn
+                          icon="ri-delete-bin-line"
+                          variant="text"
+                          color="error"
+                          size="small"
+                          @click="removeItem(index)"
+                        />
                       </td>
                     </tr>
                     <tr v-if="pedido.items.length === 0">
-                      <td colspan="5" class="text-center pa-8 text-medium-emphasis">
-                        <VIcon icon="ri-inbox-line" size="48" class="mb-2 opacity-50" /><br>
+                      <td
+                        colspan="5"
+                        class="text-center pa-8 text-medium-emphasis"
+                      >
+                        <VIcon
+                          icon="ri-inbox-line"
+                          size="48"
+                          class="mb-2 opacity-50"
+                        /><br>
                         No hay productos agregados.
-                        <div class="text-caption mt-1" v-if="!pedido.distribuidor_id">
+                        <div
+                          v-if="!pedido.distribuidor_id"
+                          class="text-caption mt-1"
+                        >
                           Seleccione un distribuidor arriba para buscar productos.
                         </div>
                       </td>
@@ -556,37 +758,79 @@ onMounted(async () => {
           </VCard>
 
           <!-- 3. Repuestos Sugeridos a Reponer -->
-          <VCard variant="outlined" class="mb-6 border-opacity-25 rounded-lg elevation-1 bg-white">
+          <VCard
+            variant="outlined"
+            class="mb-6 border-opacity-25 rounded-lg elevation-1 bg-white"
+          >
             <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b justify-space-between">
               <div class="d-flex align-center">
-                <VIcon icon="ri-history-line" color="warning" class="mr-2" />
+                <VIcon
+                  icon="ri-history-line"
+                  color="warning"
+                  class="mr-2"
+                />
                 <span class="text-h6 font-weight-bold">3. Repuestos Sugeridos a Reponer</span>
               </div>
-              <VChip size="small" color="warning" class="font-weight-bold">
+              <VChip
+                size="small"
+                color="warning"
+                class="font-weight-bold"
+              >
                 {{ pendingReplacements.length }} Pendientes
               </VChip>
             </VCardTitle>
             <VCardText class="pa-0">
-              <VTable class="w-100" density="comfortable" hover>
+              <VTable
+                class="w-100"
+                density="comfortable"
+                hover
+              >
                 <thead class="bg-grey-lighten-5">
                   <tr>
-                    <th class="text-left font-weight-bold text-grey-darken-3">Repuesto / Código</th>
-                    <th class="text-left font-weight-bold text-grey-darken-3">Distribuidor Sugerido</th>
-                    <th class="text-right font-weight-bold text-grey-darken-3" style="width: 130px;">Costo Adq.</th>
-                    <th class="text-center font-weight-bold text-grey-darken-3" style="width: 150px;">Acciones</th>
+                    <th class="text-left font-weight-bold text-grey-darken-3">
+                      Repuesto / Código
+                    </th>
+                    <th class="text-left font-weight-bold text-grey-darken-3">
+                      Distribuidor Sugerido
+                    </th>
+                    <th
+                      class="text-right font-weight-bold text-grey-darken-3"
+                      style="width: 130px;"
+                    >
+                      Costo Adq.
+                    </th>
+                    <th
+                      class="text-center font-weight-bold text-grey-darken-3"
+                      style="width: 150px;"
+                    >
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in pendingReplacements" :key="item.id">
+                  <tr
+                    v-for="item in pendingReplacements"
+                    :key="item.id"
+                  >
                     <td class="py-3">
-                      <div class="font-weight-medium">{{ item.description }}</div>
-                      <div class="text-caption text-medium-emphasis" v-if="item.sku">SKU: {{ item.sku }}</div>
+                      <div class="font-weight-medium">
+                        {{ item.description }}
+                      </div>
+                      <div
+                        v-if="item.sku"
+                        class="text-caption text-medium-emphasis"
+                      >
+                        SKU: {{ item.sku }}
+                      </div>
                     </td>
                     <td class="py-3">
                       <div class="font-weight-medium text-grey-darken-4">
                         {{ item.supplier?.name || 'Sin Proveedor' }}
                       </div>
-                      <div class="text-caption text-medium-emphasis" v-if="item.supplier?.ruc">
+                      <div
+                        v-if="item.supplier?.ruc"
+                        class="text-caption text-medium-emphasis"
+                      >
                         RUC: {{ item.supplier.ruc }}
                       </div>
                     </td>
@@ -617,8 +861,16 @@ onMounted(async () => {
                     </td>
                   </tr>
                   <tr v-if="pendingReplacements.length === 0">
-                    <td colspan="4" class="text-center py-8 text-medium-emphasis">
-                      <VIcon icon="ri-checkbox-circle-line" size="40" color="success" class="mb-2" /><br>
+                    <td
+                      colspan="4"
+                      class="text-center py-8 text-medium-emphasis"
+                    >
+                      <VIcon
+                        icon="ri-checkbox-circle-line"
+                        size="40"
+                        color="success"
+                        class="mb-2"
+                      /><br>
                       No hay repuestos pendientes de reposición.
                     </td>
                   </tr>
@@ -627,22 +879,40 @@ onMounted(async () => {
             </VCardText>
           </VCard>
 
-          <VTextarea v-model="pedido.observations" label="Notas / Observaciones del Pedido"
-            placeholder="Escriba alguna observación opcional aquí..." variant="outlined"
-            prepend-inner-icon="ri-edit-2-line" hide-details="auto" rows="3" color="info" />
+          <VTextarea
+            v-model="pedido.observations"
+            label="Notas / Observaciones del Pedido"
+            placeholder="Escriba alguna observación opcional aquí..."
+            variant="outlined"
+            prepend-inner-icon="ri-edit-2-line"
+            hide-details="auto"
+            rows="3"
+            color="info"
+          />
         </VCol>
 
         <!-- Columna de Resumen del Pedido -->
-        <VCol cols="12" md="4">
-          <div class="position-sticky" style="top: 24px; z-index: 1;">
-
-            <VCard variant="outlined" class="border-opacity-25 rounded-lg elevation-1 mb-6">
+        <VCol
+          cols="12"
+          md="4"
+        >
+          <div
+            class="position-sticky"
+            style="top: 24px; z-index: 1;"
+          >
+            <VCard
+              variant="outlined"
+              class="border-opacity-25 rounded-lg elevation-1 mb-6"
+            >
               <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
-                <VIcon icon="ri-file-text-line" color="info" class="mr-2" />
+                <VIcon
+                  icon="ri-file-text-line"
+                  color="info"
+                  class="mr-2"
+                />
                 <span class="text-h6 font-weight-bold">Resumen del Pedido</span>
               </VCardTitle>
               <VCardText class="pa-6">
-
                 <div class="d-flex justify-space-between align-center mb-4">
                   <span class="text-body-1 text-medium-emphasis">Items agregados:</span>
                   <span class="text-body-1 font-weight-medium">{{ pedido.items.length }}</span>
@@ -651,7 +921,7 @@ onMounted(async () => {
                 <div class="d-flex justify-space-between align-center mb-6">
                   <span class="text-body-1 text-medium-emphasis">Total cantidades:</span>
                   <span class="text-body-1 font-weight-medium">
-                    {{pedido.items.reduce((sum, i) => sum + (Number(i.cantidad) || 0), 0)}}
+                    {{ pedido.items.reduce((sum, i) => sum + (Number(i.cantidad) || 0), 0) }}
                   </span>
                 </div>
 
@@ -664,7 +934,11 @@ onMounted(async () => {
 
                 <div class="mt-6 pa-3 bg-blue-lighten-5 rounded-lg border border-blue-lighten-4">
                   <div class="d-flex align-start gap-2">
-                    <VIcon icon="ri-information-fill" color="info" class="mt-1" />
+                    <VIcon
+                      icon="ri-information-fill"
+                      color="info"
+                      class="mt-1"
+                    />
                     <div class="text-caption text-info-darken-3">
                       <strong>Información Importante:</strong>
                       Este pedido se registrará en estado <strong>Pendiente</strong>. No afecta el stock actual ni
@@ -676,12 +950,25 @@ onMounted(async () => {
               </VCardText>
 
               <VCardActions class="pa-6 pt-0 d-flex flex-column gap-3">
-                <VBtn color="secondary" variant="outlined" block size="large" prepend-icon="ri-draft-line"
-                  @click.prevent="saveDraft">
+                <VBtn
+                  color="secondary"
+                  variant="outlined"
+                  block
+                  size="large"
+                  prepend-icon="ri-draft-line"
+                  @click.prevent="saveDraft"
+                >
                   {{ pedidoId ? 'Actualizar Borrador' : 'Guardar Borrador' }}
                 </VBtn>
-                <VBtn color="info" variant="flat" block size="large" type="submit" prepend-icon="ri-send-plane-fill"
-                  :disabled="pedido.items.length === 0">
+                <VBtn
+                  color="info"
+                  variant="flat"
+                  block
+                  size="large"
+                  type="submit"
+                  prepend-icon="ri-send-plane-fill"
+                  :disabled="pedido.items.length === 0"
+                >
                   {{ pedidoId ? 'Guardar Cambios' : 'Generar Pedido' }}
                 </VBtn>
               </VCardActions>

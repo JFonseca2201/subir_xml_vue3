@@ -3,47 +3,421 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
-    isDialogVisible: {
-        type: Boolean,
-        required: true,
-    },
+  isDialogVisible: {
+    type: Boolean,
+    required: true,
+  },
 })
 
 const emit = defineEmits([
-    'update:isDialogVisible',
-    'addClientFinal',
-    'add-client-final',
-    'client-added',
-    'clientAdded'
+  'update:isDialogVisible',
+  'addClientFinal',
+  'add-client-final',
+  'client-added',
+  'clientAdded',
 ])
 
 // Estado del formulario
 const loading = ref(false)
 const error = ref('')
 const success = ref('')
-const userStore = JSON.parse(localStorage.getItem('user'));
+const userStore = JSON.parse(localStorage.getItem('user'))
 
 const isDocumentChecked = ref(false)
 const isClientExisting = ref(false)
 const matchedClient = ref(null)
 
 const fieldsDisabled = computed(() => {
-    return !isDocumentChecked.value || loading.value
+  return !isDocumentChecked.value || loading.value
 })
 
 // Notificaciones
-const notificationShow = ref(false);
-const notificationMessage = ref('');
-const notificationType = ref('success');
+const notificationShow = ref(false)
+const notificationMessage = ref('')
+const notificationType = ref('success')
 
 const showNotification = (message, type = 'success') => {
-    notificationMessage.value = message;
-    notificationType.value = type;
-    notificationShow.value = true;
-};
+  notificationMessage.value = message
+  notificationType.value = type
+  notificationShow.value = true
+}
 
 // Formulario de cliente
 const clientForm = ref({
+  name: '',
+  surname: '',
+  full_name: '',
+  phone: '',
+  email: '',
+  type_client: 1,
+  type_document: 1,
+  n_document: '',
+  birth_date: '',
+  user_id: 1,
+  sucursale_id: 1,
+  state: 1,
+  gender: null,
+  ubigeo_region: '',
+  ubigeo_provincia: '',
+  ubigeo_ciudad: '',
+  region: '',
+  provincia: '',
+  distrito: '',
+  address: '',
+})
+
+const documentMaxLength = computed(() => {
+  const type = Number(clientForm.value.type_document)
+  if (type === 1) return 10
+  if (type === 2) return 13
+  
+  return 20 // Pasaporte u otros
+})
+
+watch(() => clientForm.value.type_document, newType => {
+  const type = Number(newType)
+  const maxLen = type === 1 ? 10 : (type === 2 ? 13 : 20)
+  if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
+    clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen)
+  }
+  isDocumentChecked.value = false
+  isClientExisting.value = false
+  matchedClient.value = null
+})
+
+// Opciones para selects
+const typeDocumentOptions = ref([
+  { title: 'Cédula', value: 1 },
+  { title: 'RUC', value: 2 },
+  { title: 'Pasaporte', value: 3 },
+])
+
+const genderOptions = ref([
+  { title: 'Masculino', value: '1' },
+  { title: 'Femenino', value: '2' },
+
+])
+
+const stateOptions = ref([
+  { title: 'Activo', value: 1 },
+  { title: 'Inactivo', value: 2 },
+])
+
+const sucursales = ref([])
+
+// Referencias del formulario
+const formRef = ref(null)
+
+// Validación para cédulas ecuatorianas
+const validateEcuadorianCedula = cedula => {
+  if (!cedula) return true // Permitir vacío si no es requerido
+
+  // Eliminar espacios y guiones
+  const cleanCedula = cedula.replace(/[\s-]/g, '')
+
+  // Verificar que tenga 10 dígitos
+  if (!/^\d{10}$/.test(cleanCedula)) {
+    return false
+  }
+
+  // Verificar que los dos primeros dígitos estén entre 01 y 24 (provincias)
+  const provincia = parseInt(cleanCedula.substring(0, 2))
+  if (provincia < 1 || provincia > 24) {
+    return false
+  }
+
+  // Verificar el tercer dígito (debe ser menor a 6 para personas naturales)
+  const tercerDigito = parseInt(cleanCedula.substring(2, 3))
+  if (tercerDigito < 0 || tercerDigito >= 6) {
+    return false
+  }
+
+  // Algoritmo de validación Módulo 10
+  const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2]
+  let suma = 0
+
+  for (let i = 0; i < 9; i++) {
+    let valor = parseInt(cleanCedula.charAt(i)) * coeficientes[i]
+    if (valor >= 10) {
+      valor = valor - 9
+    }
+    suma += valor
+  }
+
+  const digitoVerificador = parseInt(cleanCedula.charAt(9))
+  const modulo = suma % 10
+  const resultado = modulo === 0 ? 0 : 10 - modulo
+
+  return resultado === digitoVerificador
+}
+
+// Validación para RUC ecuatoriano
+const validateEcuadorianRUC = ruc => {
+  if (!ruc) return true // Permitir vacío si no es requerido
+
+  // Eliminar espacios y guiones
+  let cleanRUC = ruc.replace(/[\s-]/g, '')
+
+  // Si tiene 10 dígitos y el tercer dígito es 6 o 9, normalizar a RUC
+  if (cleanRUC.length === 10) {
+    const tercerDigit = parseInt(cleanRUC.substring(2, 3))
+    if ([6, 9].includes(tercerDigit)) {
+      cleanRUC += '001'
+    }
+  }
+
+  // Verificar que tenga 13 dígitos
+  if (!/^\d{13}$/.test(cleanRUC)) {
+    return false
+  }
+
+  // El tercer dígito indica el tipo de persona (natural o jurídica)
+  const tercerDigito = parseInt(cleanRUC.substring(2, 3))
+    
+  if (tercerDigito < 6) {
+    // Persona natural: los primeros 10 dígitos deben ser una cédula válida
+    return validateEcuadorianCedula(cleanRUC.substring(0, 10))
+  } else if (![6, 9].includes(tercerDigito)) {
+    // Persona jurídica o pública: 3er dígito debe ser 6 o 9
+    return false
+  }
+
+  return true
+}
+
+// Reglas de validación
+const rules = {
+  name: [
+    v => !!v || 'El nombre es requerido',
+    v => (v && v.length >= 2) || 'El nombre debe tener al menos 2 caracteres',
+    v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios',
+  ],
+  surname: [
+    v => !!v || 'El apellido es requerido',
+    v => (v && v.length >= 2) || 'El apellido debe tener al menos 2 caracteres',
+    v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios',
+  ],
+  email: [
+    v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email inválido',
+  ],
+  n_document: [
+    v => !!v || 'El número de documento es requerido',
+    v => (v && v.length >= 5) || 'El documento debe tener al menos 5 caracteres',
+    v => {
+      const type = Number(clientForm.value.type_document)
+      if (type === 1) {
+        return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida'
+      }
+      if (type === 2) {
+        return validateEcuadorianRUC(v) || 'RUC ecuatoriano inválido'
+      }
+      
+      return true
+    },
+  ],
+  phone: [
+    v => !v || /^[0-9+\-\s()]+$/.test(v) || 'Teléfono inválido',
+  ],
+  state: [
+    v => !!v || 'El estado es requerido',
+    v => [1, 2].includes(v) || 'El estado debe ser 1 (Activo) o 2 (Inactivo)',
+  ],
+}
+
+// Generar full_name automáticamente
+const generateFullName = () => {
+  if (clientForm.value.name && clientForm.value.surname) {
+    clientForm.value.full_name = `${clientForm.value.name} ${clientForm.value.surname}`
+  }
+}
+
+const checkDocument = async () => {
+  const doc = clientForm.value.n_document
+  if (!doc) return
+
+  const type = Number(clientForm.value.type_document)
+  if (type === 1 && !validateEcuadorianCedula(doc)) return
+  if (type === 2 && !validateEcuadorianRUC(doc)) return
+  if (type === 3 && doc.length < 5) return
+
+  loading.value = true
+  try {
+    const resp = await $api('clients', { params: { search: doc } })
+    const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
+
+    const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim())
+    if (match) {
+      showNotification('Cliente encontrado en la base de datos', 'info')
+      isClientExisting.value = true
+      matchedClient.value = match
+
+      let fetchedName = match.name || ''
+      let fetchedSurname = match.surname || ''
+
+      // Si el backend solo tiene full_name pero no name/surname (datos antiguos)
+      if (!fetchedName && !fetchedSurname && match.full_name) {
+        const parts = match.full_name.trim().split(' ')
+        if (parts.length >= 2) {
+          const mid = Math.ceil(parts.length / 2)
+
+          fetchedName = parts.slice(0, mid).join(' ')
+          fetchedSurname = parts.slice(mid).join(' ')
+        } else {
+          fetchedName = match.full_name
+          fetchedSurname = '-'
+        }
+      }
+
+      clientForm.value.name = fetchedName
+      clientForm.value.surname = fetchedSurname
+      clientForm.value.full_name = match.full_name || ''
+      clientForm.value.phone = match.phone || ''
+      clientForm.value.email = match.email || ''
+      clientForm.value.gender = match.gender ? match.gender.toString() : ''
+      clientForm.value.birth_date = match.birth_date || ''
+      clientForm.value.address = match.address || ''
+      clientForm.value.ubigeo_region = match.ubigeo_region || ''
+      clientForm.value.ubigeo_provincia = match.ubigeo_provincia || ''
+      clientForm.value.ubigeo_distrito = match.ubigeo_distrito || ''
+    } else {
+      showNotification('Documento no registrado. Complete los datos para crear el cliente.', 'success')
+      isClientExisting.value = false
+      matchedClient.value = null
+
+      clientForm.value.name = ''
+      clientForm.value.surname = ''
+      clientForm.value.full_name = ''
+      clientForm.value.phone = ''
+      clientForm.value.email = ''
+      clientForm.value.gender = ''
+      clientForm.value.birth_date = ''
+      clientForm.value.address = ''
+      clientForm.value.ubigeo_region = ''
+      clientForm.value.ubigeo_provincia = ''
+      clientForm.value.ubigeo_distrito = ''
+    }
+    isDocumentChecked.value = true
+  } catch (err) {
+    console.error('Error al verificar documento:', err)
+    showNotification('Error al verificar el documento', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Guardar cliente
+const saveClient = async () => {
+  if (isClientExisting.value && matchedClient.value) {
+    success.value = 'Cliente seleccionado'
+    showNotification('Cliente seleccionado', 'success')
+    setTimeout(() => {
+      emit('update:isDialogVisible', false)
+      emit('addClientFinal', matchedClient.value)
+      emit('add-client-final', matchedClient.value)
+      emit('client-added', matchedClient.value)
+      emit('clientAdded', matchedClient.value)
+      resetForm()
+    }, 25)
+    
+    return
+  }
+  if (clientForm.value.n_document) {
+    const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '')
+    if (cleanDoc.length === 10) {
+      const thirdDigit = parseInt(cleanDoc.substring(2, 3))
+      if ([6, 9].includes(thirdDigit)) {
+        clientForm.value.n_document = cleanDoc + '001'
+        clientForm.value.type_document = 2 // RUC
+      }
+    }
+  }
+
+  const { valid } = await formRef.value?.validate()
+  if (!valid) return
+
+  loading.value = true
+  error.value = ''
+  success.value = ''
+
+  try {
+    console.log('Datos del cliente a guardar:', clientForm.value)
+
+    // Convertir campos a strings para validación del backend
+    const clientData = {
+      ...clientForm.value,
+      type_client: clientForm.value.type_client.toString(),
+      type_document: clientForm.value.type_document.toString(),
+      state: clientForm.value.state.toString(),
+    }
+
+    console.log('Datos corregidos para enviar:', clientData)
+
+    const resp = await $api("clients", {
+      method: "POST",
+      body: clientData,
+      onResponseError({ response }) {
+        error.value = response._data?.message || 'Error al guardar cliente'
+        console.error('Error response:', response._data)
+      },
+    })
+
+    console.log('Respuesta del servidor:', resp)
+
+    if (resp.status === 200 || resp.status === 201) {
+      success.value = 'Cliente guardado correctamente'
+      showNotification('Cliente guardado correctamente', 'success')
+
+
+
+      // Cerrar diálogo después de un momento
+      setTimeout(() => {
+        emit('update:isDialogVisible', false)
+
+
+        // Emitir datos actualizados con todos los campos necesarios
+        // Usar los datos de la respuesta del servidor si están disponibles
+        const serverData = resp.data || resp.client || resp
+
+        const updatedData = {
+          ...serverData,
+          id: serverData?.id || serverData?.client?.id,
+          full_name: serverData?.full_name || `${serverData?.name || clientForm.value.name} ${serverData?.surname || clientForm.value.surname}`.trim(),
+          name: serverData?.name || clientForm.value.name,
+          surname: serverData?.surname || clientForm.value.surname,
+          type_client: serverData?.type_client?.toString() || clientForm.value.type_client.toString(),
+          type_document: serverData?.type_document?.toString() || clientForm.value.type_document.toString(),
+          state: serverData?.state || parseInt(clientForm.value.state) || 1,
+          phone: serverData?.phone || clientForm.value.phone || '',
+          email: serverData?.email || clientForm.value.email || '',
+          n_document: serverData?.n_document || clientForm.value.n_document || '',
+          address: serverData?.address || clientForm.value.address || '',
+        }
+
+        console.log('Datos emitidos:', updatedData)
+        emit('addClientFinal', updatedData)
+        emit('add-client-final', updatedData)
+        emit('client-added', updatedData)
+        emit('clientAdded', updatedData)
+
+        // Limpiar formulario después de emitir los datos
+        resetForm()
+      }, 25)
+    } else {
+      error.value = resp.message || 'Error al guardar cliente'
+      showNotification(resp.message || 'Error al guardar cliente', 'error')
+    }
+  } catch (error) {
+    console.error('Error al guardar cliente:', error)
+    error.value = 'Error al guardar cliente. Intente nuevamente.'
+    showNotification('Error al guardar cliente. Intente nuevamente.', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Resetear formulario
+const resetForm = () => {
+  clientForm.value = {
     name: '',
     surname: '',
     full_name: '',
@@ -53,10 +427,10 @@ const clientForm = ref({
     type_document: 1,
     n_document: '',
     birth_date: '',
-    user_id: 1,
+    user_id: 1, // ID de usuario por defecto (no nulo)
     sucursale_id: 1,
     state: 1,
-    gender: null,
+    gender: '',
     ubigeo_region: '',
     ubigeo_provincia: '',
     ubigeo_ciudad: '',
@@ -64,668 +438,528 @@ const clientForm = ref({
     provincia: '',
     distrito: '',
     address: '',
-})
+  }
 
-const documentMaxLength = computed(() => {
-    const type = Number(clientForm.value.type_document);
-    if (type === 1) return 10;
-    if (type === 2) return 13;
-    return 20; // Pasaporte u otros
-});
+  isDocumentChecked.value = false
+  isClientExisting.value = false
+  matchedClient.value = null
 
-watch(() => clientForm.value.type_document, (newType) => {
-    const type = Number(newType);
-    const maxLen = type === 1 ? 10 : (type === 2 ? 13 : 20);
-    if (clientForm.value.n_document && clientForm.value.n_document.length > maxLen) {
-        clientForm.value.n_document = clientForm.value.n_document.substring(0, maxLen);
-    }
-    isDocumentChecked.value = false;
-    isClientExisting.value = false;
-    matchedClient.value = null;
-});
-
-// Opciones para selects
-const typeDocumentOptions = ref([
-    { title: 'Cédula', value: 1 },
-    { title: 'RUC', value: 2 },
-    { title: 'Pasaporte', value: 3 }
-])
-
-const genderOptions = ref([
-    { title: 'Masculino', value: '1' },
-    { title: 'Femenino', value: '2' },
-
-])
-
-const stateOptions = ref([
-    { title: 'Activo', value: 1 },
-    { title: 'Inactivo', value: 2 }
-])
-
-const sucursales = ref([])
-
-// Referencias del formulario
-const formRef = ref(null)
-
-// Validación para cédulas ecuatorianas
-const validateEcuadorianCedula = (cedula) => {
-    if (!cedula) return true; // Permitir vacío si no es requerido
-
-    // Eliminar espacios y guiones
-    const cleanCedula = cedula.replace(/[\s-]/g, '');
-
-    // Verificar que tenga 10 dígitos
-    if (!/^\d{10}$/.test(cleanCedula)) {
-        return false;
-    }
-
-    // Verificar que los dos primeros dígitos estén entre 01 y 24 (provincias)
-    const provincia = parseInt(cleanCedula.substring(0, 2));
-    if (provincia < 1 || provincia > 24) {
-        return false;
-    }
-
-    // Verificar el tercer dígito (debe ser menor a 6 para personas naturales)
-    const tercerDigito = parseInt(cleanCedula.substring(2, 3));
-    if (tercerDigito < 0 || tercerDigito >= 6) {
-        return false;
-    }
-
-    // Algoritmo de validación Módulo 10
-    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
-    let suma = 0;
-
-    for (let i = 0; i < 9; i++) {
-        let valor = parseInt(cleanCedula.charAt(i)) * coeficientes[i];
-        if (valor >= 10) {
-            valor = valor - 9;
-        }
-        suma += valor;
-    }
-
-    const digitoVerificador = parseInt(cleanCedula.charAt(9));
-    const modulo = suma % 10;
-    const resultado = modulo === 0 ? 0 : 10 - modulo;
-
-    return resultado === digitoVerificador;
-};
-
-// Validación para RUC ecuatoriano
-const validateEcuadorianRUC = (ruc) => {
-    if (!ruc) return true; // Permitir vacío si no es requerido
-
-    // Eliminar espacios y guiones
-    let cleanRUC = ruc.replace(/[\s-]/g, '');
-
-    // Si tiene 10 dígitos y el tercer dígito es 6 o 9, normalizar a RUC
-    if (cleanRUC.length === 10) {
-        const tercerDigit = parseInt(cleanRUC.substring(2, 3));
-        if ([6, 9].includes(tercerDigit)) {
-            cleanRUC += '001';
-        }
-    }
-
-    // Verificar que tenga 13 dígitos
-    if (!/^\d{13}$/.test(cleanRUC)) {
-        return false;
-    }
-
-    // El tercer dígito indica el tipo de persona (natural o jurídica)
-    const tercerDigito = parseInt(cleanRUC.substring(2, 3));
-    
-    if (tercerDigito < 6) {
-        // Persona natural: los primeros 10 dígitos deben ser una cédula válida
-        return validateEcuadorianCedula(cleanRUC.substring(0, 10));
-    } else if (![6, 9].includes(tercerDigito)) {
-        // Persona jurídica o pública: 3er dígito debe ser 6 o 9
-        return false;
-    }
-
-    return true;
-};
-
-// Reglas de validación
-const rules = {
-    name: [
-        v => !!v || 'El nombre es requerido',
-        v => (v && v.length >= 2) || 'El nombre debe tener al menos 2 caracteres',
-        v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios'
-    ],
-    surname: [
-        v => !!v || 'El apellido es requerido',
-        v => (v && v.length >= 2) || 'El apellido debe tener al menos 2 caracteres',
-        v => !v || /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']+$/.test(v) || 'Solo se permiten letras y espacios'
-    ],
-    email: [
-        v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email inválido'
-    ],
-    n_document: [
-        v => !!v || 'El número de documento es requerido',
-        v => (v && v.length >= 5) || 'El documento debe tener al menos 5 caracteres',
-        v => {
-            const type = Number(clientForm.value.type_document);
-            if (type === 1) {
-                return validateEcuadorianCedula(v) || 'Cédula ecuatoriana inválida';
-            }
-            if (type === 2) {
-                return validateEcuadorianRUC(v) || 'RUC ecuatoriano inválido';
-            }
-            return true;
-        }
-    ],
-    phone: [
-        v => !v || /^[0-9+\-\s()]+$/.test(v) || 'Teléfono inválido'
-    ],
-    state: [
-        v => !!v || 'El estado es requerido',
-        v => [1, 2].includes(v) || 'El estado debe ser 1 (Activo) o 2 (Inactivo)'
-    ]
-}
-
-// Generar full_name automáticamente
-const generateFullName = () => {
-    if (clientForm.value.name && clientForm.value.surname) {
-        clientForm.value.full_name = `${clientForm.value.name} ${clientForm.value.surname}`;
-    }
-}
-
-const checkDocument = async () => {
-    const doc = clientForm.value.n_document;
-    if (!doc) return;
-
-    const type = Number(clientForm.value.type_document);
-    if (type === 1 && !validateEcuadorianCedula(doc)) return;
-    if (type === 2 && !validateEcuadorianRUC(doc)) return;
-    if (type === 3 && doc.length < 5) return;
-
-    loading.value = true;
-    try {
-        const resp = await $api('clients', { params: { search: doc } });
-        const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : []);
-
-        const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim());
-        if (match) {
-            showNotification('Cliente encontrado en la base de datos', 'info');
-            isClientExisting.value = true;
-            matchedClient.value = match;
-
-            let fetchedName = match.name || '';
-            let fetchedSurname = match.surname || '';
-
-            // Si el backend solo tiene full_name pero no name/surname (datos antiguos)
-            if (!fetchedName && !fetchedSurname && match.full_name) {
-                const parts = match.full_name.trim().split(' ');
-                if (parts.length >= 2) {
-                    const mid = Math.ceil(parts.length / 2);
-                    fetchedName = parts.slice(0, mid).join(' ');
-                    fetchedSurname = parts.slice(mid).join(' ');
-                } else {
-                    fetchedName = match.full_name;
-                    fetchedSurname = '-';
-                }
-            }
-
-            clientForm.value.name = fetchedName;
-            clientForm.value.surname = fetchedSurname;
-            clientForm.value.full_name = match.full_name || '';
-            clientForm.value.phone = match.phone || '';
-            clientForm.value.email = match.email || '';
-            clientForm.value.gender = match.gender ? match.gender.toString() : '';
-            clientForm.value.birth_date = match.birth_date || '';
-            clientForm.value.address = match.address || '';
-            clientForm.value.ubigeo_region = match.ubigeo_region || '';
-            clientForm.value.ubigeo_provincia = match.ubigeo_provincia || '';
-            clientForm.value.ubigeo_distrito = match.ubigeo_distrito || '';
-        } else {
-            showNotification('Documento no registrado. Complete los datos para crear el cliente.', 'success');
-            isClientExisting.value = false;
-            matchedClient.value = null;
-
-            clientForm.value.name = '';
-            clientForm.value.surname = '';
-            clientForm.value.full_name = '';
-            clientForm.value.phone = '';
-            clientForm.value.email = '';
-            clientForm.value.gender = '';
-            clientForm.value.birth_date = '';
-            clientForm.value.address = '';
-            clientForm.value.ubigeo_region = '';
-            clientForm.value.ubigeo_provincia = '';
-            clientForm.value.ubigeo_distrito = '';
-        }
-        isDocumentChecked.value = true;
-    } catch (err) {
-        console.error('Error al verificar documento:', err);
-        showNotification('Error al verificar el documento', 'error');
-    } finally {
-        loading.value = false;
-    }
-}
-
-// Guardar cliente
-const saveClient = async () => {
-    if (isClientExisting.value && matchedClient.value) {
-        success.value = 'Cliente seleccionado';
-        showNotification('Cliente seleccionado', 'success');
-        setTimeout(() => {
-            emit('update:isDialogVisible', false);
-            emit('addClientFinal', matchedClient.value);
-            emit('add-client-final', matchedClient.value);
-            emit('client-added', matchedClient.value);
-            emit('clientAdded', matchedClient.value);
-            resetForm();
-        }, 25);
-        return;
-    }
-    if (clientForm.value.n_document) {
-        const cleanDoc = clientForm.value.n_document.replace(/[\s-]/g, '');
-        if (cleanDoc.length === 10) {
-            const thirdDigit = parseInt(cleanDoc.substring(2, 3));
-            if ([6, 9].includes(thirdDigit)) {
-                clientForm.value.n_document = cleanDoc + '001';
-                clientForm.value.type_document = 2; // RUC
-            }
-        }
-    }
-
-    const { valid } = await formRef.value?.validate();
-    if (!valid) return;
-
-    loading.value = true;
-    error.value = '';
-    success.value = '';
-
-    try {
-        console.log('Datos del cliente a guardar:', clientForm.value);
-
-        // Convertir campos a strings para validación del backend
-        const clientData = {
-            ...clientForm.value,
-            type_client: clientForm.value.type_client.toString(),
-            type_document: clientForm.value.type_document.toString(),
-            state: clientForm.value.state.toString(),
-        };
-
-        console.log('Datos corregidos para enviar:', clientData);
-
-        const resp = await $api("clients", {
-            method: "POST",
-            body: clientData,
-            onResponseError({ response }) {
-                error.value = response._data?.message || 'Error al guardar cliente';
-                console.error('Error response:', response._data);
-            },
-        });
-
-        console.log('Respuesta del servidor:', resp);
-
-        if (resp.status === 200 || resp.status === 201) {
-            success.value = 'Cliente guardado correctamente';
-            showNotification('Cliente guardado correctamente', 'success');
-
-
-
-            // Cerrar diálogo después de un momento
-            setTimeout(() => {
-                emit('update:isDialogVisible', false);
-                // Emitir datos actualizados con todos los campos necesarios
-                // Usar los datos de la respuesta del servidor si están disponibles
-                const serverData = resp.data || resp.client || resp;
-                const updatedData = {
-                    ...serverData,
-                    id: serverData?.id || serverData?.client?.id,
-                    full_name: serverData?.full_name || `${serverData?.name || clientForm.value.name} ${serverData?.surname || clientForm.value.surname}`.trim(),
-                    name: serverData?.name || clientForm.value.name,
-                    surname: serverData?.surname || clientForm.value.surname,
-                    type_client: serverData?.type_client?.toString() || clientForm.value.type_client.toString(),
-                    type_document: serverData?.type_document?.toString() || clientForm.value.type_document.toString(),
-                    state: serverData?.state || parseInt(clientForm.value.state) || 1,
-                    phone: serverData?.phone || clientForm.value.phone || '',
-                    email: serverData?.email || clientForm.value.email || '',
-                    n_document: serverData?.n_document || clientForm.value.n_document || '',
-                    address: serverData?.address || clientForm.value.address || '',
-                };
-                console.log('Datos emitidos:', updatedData);
-                emit('addClientFinal', updatedData);
-                emit('add-client-final', updatedData);
-                emit('client-added', updatedData);
-                emit('clientAdded', updatedData);
-                // Limpiar formulario después de emitir los datos
-                resetForm();
-            }, 25);
-        } else {
-            error.value = resp.message || 'Error al guardar cliente';
-            showNotification(resp.message || 'Error al guardar cliente', 'error');
-        }
-    } catch (error) {
-        console.error('Error al guardar cliente:', error);
-        error.value = 'Error al guardar cliente. Intente nuevamente.';
-        showNotification('Error al guardar cliente. Intente nuevamente.', 'error');
-    } finally {
-        loading.value = false;
-    }
-}
-
-// Resetear formulario
-const resetForm = () => {
-    clientForm.value = {
-        name: '',
-        surname: '',
-        full_name: '',
-        phone: '',
-        email: '',
-        type_client: 1,
-        type_document: 1,
-        n_document: '',
-        birth_date: '',
-        user_id: 1, // ID de usuario por defecto (no nulo)
-        sucursale_id: 1,
-        state: 1,
-        gender: '',
-        ubigeo_region: '',
-        ubigeo_provincia: '',
-        ubigeo_ciudad: '',
-        region: '',
-        provincia: '',
-        distrito: '',
-        address: '',
-    };
-
-    isDocumentChecked.value = false;
-    isClientExisting.value = false;
-    matchedClient.value = null;
-
-    if (formRef.value) {
-        formRef.value.resetValidation();
-    }
+  if (formRef.value) {
+    formRef.value.resetValidation()
+  }
 }
 
 // Cerrar diálogo
 const closeDialog = () => {
-    emit('update:isDialogVisible', false);
-    resetForm();
+  emit('update:isDialogVisible', false)
+  resetForm()
 }
 
-watch(() => props.isDialogVisible, (newVal) => {
-    if (newVal) {
-        error.value = ''
-        success.value = ''
-        resetForm()
-    }
+watch(() => props.isDialogVisible, newVal => {
+  if (newVal) {
+    error.value = ''
+    success.value = ''
+    resetForm()
+  }
 })
 
 // Watch para generar full_name
 const watchName = ref(() => {
-    generateFullName();
-});
+  generateFullName()
+})
 
 const watchSurname = ref(() => {
-    generateFullName();
-});
+  generateFullName()
+})
 
-watch(() => clientForm.value.n_document, (newVal) => {
-    isDocumentChecked.value = false;
-    isClientExisting.value = false;
-    matchedClient.value = null;
+watch(() => clientForm.value.n_document, newVal => {
+  isDocumentChecked.value = false
+  isClientExisting.value = false
+  matchedClient.value = null
 
-    if (newVal) {
-        const cleanDoc = newVal.replace(/[\s-]/g, '');
-        const type = Number(clientForm.value.type_document);
+  if (newVal) {
+    const cleanDoc = newVal.replace(/[\s-]/g, '')
+    const type = Number(clientForm.value.type_document)
 
-        if (cleanDoc.length === 10) {
-            const thirdDigit = parseInt(cleanDoc.substring(2, 3));
-            if ([6, 9].includes(thirdDigit)) {
-                clientForm.value.n_document = cleanDoc + '001';
-                clientForm.value.type_document = 2; // RUC
-            }
-        }
-
-        const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null);
-        if (requiredLen && cleanDoc.length === requiredLen) {
-            checkDocument();
-        }
+    if (cleanDoc.length === 10) {
+      const thirdDigit = parseInt(cleanDoc.substring(2, 3))
+      if ([6, 9].includes(thirdDigit)) {
+        clientForm.value.n_document = cleanDoc + '001'
+        clientForm.value.type_document = 2 // RUC
+      }
     }
-});
 
-const filterTextKey = (event) => {
-    if (event.key && event.key.length > 1) return;
-    const charStr = event.key || String.fromCharCode(event.keyCode || event.which);
-    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']$/.test(charStr)) {
-        event.preventDefault();
+    const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null)
+    if (requiredLen && cleanDoc.length === requiredLen) {
+      checkDocument()
     }
-};
+  }
+})
 
-const filterDocumentKey = (event) => {
-    if (event.key && event.key.length > 1) return;
-    const type = Number(clientForm.value.type_document);
-    const charStr = event.key || String.fromCharCode(event.keyCode || event.which);
-    if (type === 1 || type === 2) {
-        if (!/^[0-9]$/.test(charStr)) {
-            event.preventDefault();
-        }
-    } else if (type === 3) {
-        if (!/^[a-zA-Z0-9]$/.test(charStr)) {
-            event.preventDefault();
-        }
-    }
-};
+const filterTextKey = event => {
+  if (event.key && event.key.length > 1) return
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s']$/.test(charStr)) {
+    event.preventDefault()
+  }
+}
 
-const filterPhoneKey = (event) => {
-    if (event.key && event.key.length > 1) return;
-    const charStr = event.key || String.fromCharCode(event.keyCode || event.which);
-    if (!/^[0-9+\-\s()]$/.test(charStr)) {
-        event.preventDefault();
+const filterDocumentKey = event => {
+  if (event.key && event.key.length > 1) return
+  const type = Number(clientForm.value.type_document)
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (type === 1 || type === 2) {
+    if (!/^[0-9]$/.test(charStr)) {
+      event.preventDefault()
     }
-};
+  } else if (type === 3) {
+    if (!/^[a-zA-Z0-9]$/.test(charStr)) {
+      event.preventDefault()
+    }
+  }
+}
+
+const filterPhoneKey = event => {
+  if (event.key && event.key.length > 1) return
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (!/^[0-9+\-\s()]$/.test(charStr)) {
+    event.preventDefault()
+  }
+}
 
 const regions = ref([])
 const provinces = ref([])
 const districts = ref([])
 
 const loadRegions = async () => {
-    try {
-        const resp = await $api('geographic/regions', { method: 'GET' })
-        regions.value = resp
-    } catch (e) {
-        console.error(e)
-    }
+  try {
+    const resp = await $api('geographic/regions', { method: 'GET' })
+
+    regions.value = resp
+  } catch (e) {
+    console.error(e)
+  }
 }
 
-watch(() => clientForm.value.ubigeo_region, async (newVal) => {
-    if (newVal) {
-        try {
-            const resp = await $api(`geographic/provinces/${newVal}`, { method: 'GET' })
-            provinces.value = resp
-            clientForm.value.region = regions.value.find(r => r.id === newVal)?.name || ''
-        } catch (e) {
-            console.error(e)
-        }
-    } else {
-        provinces.value = []
-        districts.value = []
-        clientForm.value.ubigeo_provincia = ''
-        clientForm.value.ubigeo_distrito = ''
-        clientForm.value.region = ''
+watch(() => clientForm.value.ubigeo_region, async newVal => {
+  if (newVal) {
+    try {
+      const resp = await $api(`geographic/provinces/${newVal}`, { method: 'GET' })
+
+      provinces.value = resp
+      clientForm.value.region = regions.value.find(r => r.id === newVal)?.name || ''
+    } catch (e) {
+      console.error(e)
     }
+  } else {
+    provinces.value = []
+    districts.value = []
+    clientForm.value.ubigeo_provincia = ''
+    clientForm.value.ubigeo_distrito = ''
+    clientForm.value.region = ''
+  }
 })
 
-watch(() => clientForm.value.ubigeo_provincia, async (newVal) => {
-    if (newVal) {
-        try {
-            const resp = await $api(`geographic/cities/${newVal}`, { method: 'GET' })
-            districts.value = resp
-            clientForm.value.provincia = provinces.value.find(p => p.id === newVal)?.name || ''
-        } catch (e) {
-            console.error(e)
-        }
-    } else {
-        districts.value = []
-        clientForm.value.ubigeo_distrito = ''
-        clientForm.value.provincia = ''
+watch(() => clientForm.value.ubigeo_provincia, async newVal => {
+  if (newVal) {
+    try {
+      const resp = await $api(`geographic/cities/${newVal}`, { method: 'GET' })
+
+      districts.value = resp
+      clientForm.value.provincia = provinces.value.find(p => p.id === newVal)?.name || ''
+    } catch (e) {
+      console.error(e)
     }
+  } else {
+    districts.value = []
+    clientForm.value.ubigeo_distrito = ''
+    clientForm.value.provincia = ''
+  }
 })
 
-watch(() => clientForm.value.ubigeo_distrito, (newVal) => {
-    if (newVal) {
-        clientForm.value.distrito = districts.value.find(d => d.id === newVal)?.name || ''
-    } else {
-        clientForm.value.distrito = ''
-    }
+watch(() => clientForm.value.ubigeo_distrito, newVal => {
+  if (newVal) {
+    clientForm.value.distrito = districts.value.find(d => d.id === newVal)?.name || ''
+  } else {
+    clientForm.value.distrito = ''
+  }
 })
 
 // Montar componente
 onMounted(() => {
-    loadRegions()
-    clientForm.value.user_id = userStore.id;
-});
+  loadRegions()
+  clientForm.value.user_id = userStore.id
+})
 </script>
 
 <template>
-    <VDialog max-width="800" :model-value="props.isDialogVisible" @update:model-value="closeDialog" persistent>
-        <VCard class="pa-sm-10 pa-5">
-            <!-- 👉 Botón cerrar -->
-            <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
+  <VDialog
+    max-width="800"
+    :model-value="props.isDialogVisible"
+    persistent
+    @update:model-value="closeDialog"
+  >
+    <VCard class="pa-sm-10 pa-5">
+      <!-- 👉 Botón cerrar -->
+      <DialogCloseBtn
+        variant="text"
+        size="default"
+        @click="closeDialog"
+      />
 
-            <!-- 👉 Header -->
-            <VCardText class="text-center pb-6">
-                <VIcon icon="ri-user-add-line" size="42" color="primary" class="mb-3" />
-                <h4 class="text-h4 font-weight-bold mb-1">Nuevo Cliente Final</h4>
-                <p class="text-body-2 text-medium-emphasis">
-                    Registro de un nuevo cliente final
-                </p>
-            </VCardText>
+      <!-- 👉 Header -->
+      <VCardText class="text-center pb-6">
+        <VIcon
+          icon="ri-user-add-line"
+          size="42"
+          color="primary"
+          class="mb-3"
+        />
+        <h4 class="text-h4 font-weight-bold mb-1">
+          Nuevo Cliente Final
+        </h4>
+        <p class="text-body-2 text-medium-emphasis">
+          Registro de un nuevo cliente final
+        </p>
+      </VCardText>
 
-            <VDivider class="mb-6" />
+      <VDivider class="mb-6" />
 
-            <!-- 👉 Form -->
-            <VForm ref="formRef" @submit.prevent="saveClient">
-                <VRow>
-                    <!-- 👉 Datos Personales -->
-                    <VCol cols="12">
-                        <h5 class="text-h5 font-weight-bold mb-3 text-primary">Datos Personales</h5>
-                    </VCol>
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VSelect v-model="clientForm.type_document" :items="typeDocumentOptions" item-title="title"
-                            item-value="value" label="Tipo de Documento *" prepend-inner-icon="ri-file-text-line"
-                            required clearable />
-                    </VCol>
+      <!-- 👉 Form -->
+      <VForm
+        ref="formRef"
+        @submit.prevent="saveClient"
+      >
+        <VRow>
+          <!-- 👉 Datos Personales -->
+          <VCol cols="12">
+            <h5 class="text-h5 font-weight-bold mb-3 text-primary">
+              Datos Personales
+            </h5>
+          </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VSelect
+              v-model="clientForm.type_document"
+              :items="typeDocumentOptions"
+              item-title="title"
+              item-value="value"
+              label="Tipo de Documento *"
+              prepend-inner-icon="ri-file-text-line"
+              required
+              clearable
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.n_document" label="Número de Documento *"
-                            placeholder="Ingrese número de documento" prepend-inner-icon="ri-numbers-line"
-                            :rules="rules.n_document" required clearable @keypress="filterDocumentKey"
-                            :maxlength="documentMaxLength" @blur="checkDocument" @keyup.enter="checkDocument"
-                            :loading="loading" />
-                        <div v-if="!isDocumentChecked" class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1">
-                            <VIcon icon="ri-error-warning-line" size="14" />
-                            Digite el documento completo para habilitar el formulario.
-                        </div>
-                        <div v-else-if="isClientExisting" class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1">
-                            <VIcon icon="ri-checkbox-circle-line" size="14" />
-                            Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
-                        </div>
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.n_document"
+              label="Número de Documento *"
+              placeholder="Ingrese número de documento"
+              prepend-inner-icon="ri-numbers-line"
+              :rules="rules.n_document"
+              required
+              clearable
+              :maxlength="documentMaxLength"
+              :loading="loading"
+              @keypress="filterDocumentKey"
+              @blur="checkDocument"
+              @keyup.enter="checkDocument"
+            />
+            <div
+              v-if="!isDocumentChecked"
+              class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1"
+            >
+              <VIcon
+                icon="ri-error-warning-line"
+                size="14"
+              />
+              Digite el documento completo para habilitar el formulario.
+            </div>
+            <div
+              v-else-if="isClientExisting"
+              class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1"
+            >
+              <VIcon
+                icon="ri-checkbox-circle-line"
+                size="14"
+              />
+              Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
+            </div>
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.name" label="Nombres *" placeholder="Ingrese nombres"
-                            prepend-inner-icon="ri-user-3-line" :rules="rules.name" required @input="generateFullName"
-                            clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.name"
+              label="Nombres *"
+              placeholder="Ingrese nombres"
+              prepend-inner-icon="ri-user-3-line"
+              :rules="rules.name"
+              required
+              clearable
+              maxlength="100"
+              :disabled="fieldsDisabled"
+              :loading="loading"
+              @input="generateFullName"
+              @keypress="filterTextKey"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.surname" label="Apellidos *" placeholder="Ingrese apellidos"
-                            prepend-inner-icon="ri-user-3-line" :rules="rules.surname" required
-                            @input="generateFullName" clearable @keypress="filterTextKey" maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.surname"
+              label="Apellidos *"
+              placeholder="Ingrese apellidos"
+              prepend-inner-icon="ri-user-3-line"
+              :rules="rules.surname"
+              required
+              clearable
+              maxlength="100"
+              :disabled="fieldsDisabled"
+              :loading="loading"
+              @input="generateFullName"
+              @keypress="filterTextKey"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.phone" label="Teléfono" placeholder="Ingrese teléfono"
-                            prepend-inner-icon="ri-phone-line" :rules="rules.phone" clearable @keypress="filterPhoneKey"
-                            maxlength="20" :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.phone"
+              label="Teléfono"
+              placeholder="Ingrese teléfono"
+              prepend-inner-icon="ri-phone-line"
+              :rules="rules.phone"
+              clearable
+              maxlength="20"
+              :disabled="fieldsDisabled"
+              :loading="loading"
+              @keypress="filterPhoneKey"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.email" label="Email" placeholder="Ingrese email"
-                            prepend-inner-icon="ri-mail-line" :rules="rules.email" clearable maxlength="100" :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.email"
+              label="Email"
+              placeholder="Ingrese email"
+              prepend-inner-icon="ri-mail-line"
+              :rules="rules.email"
+              clearable
+              maxlength="100"
+              :disabled="fieldsDisabled"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VSelect v-model="clientForm.gender" :items="genderOptions" item-title="title"
-                            item-value="value" label="Género" prepend-inner-icon="ri-user-settings-line"
-                            placeholder="Seleccione género" clearable :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VSelect
+              v-model="clientForm.gender"
+              :items="genderOptions"
+              item-title="title"
+              item-value="value"
+              label="Género"
+              prepend-inner-icon="ri-user-settings-line"
+              placeholder="Seleccione género"
+              clearable
+              :disabled="fieldsDisabled"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="6" class="mb-3">
-                        <VTextField v-model="clientForm.birth_date" label="Fecha de Nacimiento" type="date"
-                            prepend-inner-icon="ri-calendar-event-line" clearable :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.birth_date"
+              label="Fecha de Nacimiento"
+              type="date"
+              prepend-inner-icon="ri-calendar-event-line"
+              clearable
+              :disabled="fieldsDisabled"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VDivider class="my-6" />
+          <VDivider class="my-6" />
 
-                    <!-- 👉 Ubicación -->
-                    <VCol cols="12">
-                        <h5 class="text-h5 font-weight-bold mb-3 text-primary">Ubicación</h5>
-                    </VCol>
+          <!-- 👉 Ubicación -->
+          <VCol cols="12">
+            <h5 class="text-h5 font-weight-bold mb-3 text-primary">
+              Ubicación
+            </h5>
+          </VCol>
 
-                    <VCol cols="12" class="mb-3">
-                        <VTextField v-model="clientForm.address" label="Dirección"
-                            placeholder="Ingrese dirección completa" prepend-inner-icon="ri-map-pin-line" clearable :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            class="mb-3"
+          >
+            <VTextField
+              v-model="clientForm.address"
+              label="Dirección"
+              placeholder="Ingrese dirección completa"
+              prepend-inner-icon="ri-map-pin-line"
+              clearable
+              :disabled="fieldsDisabled"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_region" :items="regions" item-title="name" item-value="id"
-                            label="Región" placeholder="Seleccione Región" prepend-inner-icon="ri-map-2-line"
-                            clearable :disabled="fieldsDisabled" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            class="mb-3"
+          >
+            <VSelect
+              v-model="clientForm.ubigeo_region"
+              :items="regions"
+              item-title="name"
+              item-value="id"
+              label="Región"
+              placeholder="Seleccione Región"
+              prepend-inner-icon="ri-map-2-line"
+              clearable
+              :disabled="fieldsDisabled"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_provincia" :items="provinces" item-title="name"
-                            item-value="id" label="Provincia" placeholder="Seleccione Provincia"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_region" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            class="mb-3"
+          >
+            <VSelect
+              v-model="clientForm.ubigeo_provincia"
+              :items="provinces"
+              item-title="name"
+              item-value="id"
+              label="Provincia"
+              placeholder="Seleccione Provincia"
+              prepend-inner-icon="ri-map-2-line"
+              clearable
+              :disabled="fieldsDisabled || !clientForm.ubigeo_region"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VCol cols="12" md="4" class="mb-3">
-                        <VSelect v-model="clientForm.ubigeo_distrito" :items="districts" item-title="name"
-                            item-value="id" label="Cantón / Ciudad" placeholder="Seleccione Cantón / Ciudad"
-                            prepend-inner-icon="ri-map-2-line" clearable :disabled="fieldsDisabled || !clientForm.ubigeo_provincia" :loading="loading" />
-                    </VCol>
+          <VCol
+            cols="12"
+            md="4"
+            class="mb-3"
+          >
+            <VSelect
+              v-model="clientForm.ubigeo_distrito"
+              :items="districts"
+              item-title="name"
+              item-value="id"
+              label="Cantón / Ciudad"
+              placeholder="Seleccione Cantón / Ciudad"
+              prepend-inner-icon="ri-map-2-line"
+              clearable
+              :disabled="fieldsDisabled || !clientForm.ubigeo_provincia"
+              :loading="loading"
+            />
+          </VCol>
 
-                    <VDivider class="my-4" />
+          <VDivider class="my-4" />
 
 
 
-                    <!-- 👉 Alerts -->
-                    <VCol cols="12" v-if="error">
-                        <VAlert type="error" variant="tonal" closable @click:close="error = ''">
-                            {{ error }}
-                        </VAlert>
-                    </VCol>
+          <!-- 👉 Alerts -->
+          <VCol
+            v-if="error"
+            cols="12"
+          >
+            <VAlert
+              type="error"
+              variant="tonal"
+              closable
+              @click:close="error = ''"
+            >
+              {{ error }}
+            </VAlert>
+          </VCol>
 
-                    <VCol cols="12" v-if="success">
-                        <VAlert type="success" variant="tonal" closable @click:close="success = ''">
-                            {{ success }}
-                        </VAlert>
-                    </VCol>
+          <VCol
+            v-if="success"
+            cols="12"
+          >
+            <VAlert
+              type="success"
+              variant="tonal"
+              closable
+              @click:close="success = ''"
+            >
+              {{ success }}
+            </VAlert>
+          </VCol>
 
-                    <!-- 👉 Actions -->
-                    <VCol cols="12" class="d-flex justify-center gap-4">
-                        <VBtn type="submit" color="primary" prepend-icon="ri-save-3-line" :loading="loading"
-                            :disabled="loading">
-                            Guardar Cliente
-                        </VBtn>
+          <!-- 👉 Actions -->
+          <VCol
+            cols="12"
+            class="d-flex justify-center gap-4"
+          >
+            <VBtn
+              type="submit"
+              color="primary"
+              prepend-icon="ri-save-3-line"
+              :loading="loading"
+              :disabled="loading"
+            >
+              Guardar Cliente
+            </VBtn>
 
-                        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line" @click="closeDialog"
-                            :disabled="loading">
-                            Cancelar
-                        </VBtn>
-                    </VCol>
-                </VRow>
-            </VForm>
-        </VCard>
-    </VDialog>
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              :disabled="loading"
+              @click="closeDialog"
+            >
+              Cancelar
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VForm>
+    </VCard>
+  </VDialog>
 
-    <!-- Notificación Toast -->
-    <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
-        {{ notificationMessage }}
-    </VSnackbar>
+  <!-- Notificación Toast -->
+  <VSnackbar
+    v-model="notificationShow"
+    :color="notificationType"
+    :timeout="3000"
+    location="top"
+  >
+    {{ notificationMessage }}
+  </VSnackbar>
 </template>
