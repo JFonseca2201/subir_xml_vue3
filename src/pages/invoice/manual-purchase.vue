@@ -40,6 +40,75 @@ const formData = ref({
 const items = ref([])
 const searchProduct = ref(null)
 
+// Manual Product Entry State
+const isManualProductDialogOpen = ref(false)
+const manualItem = ref({
+  description: '',
+  code: '',
+  product_categorie_id: null,
+  quantity: 1,
+  unit_price: null,
+  discount: 0,
+  is_taxable: true,
+})
+
+const openManualProductDialog = (initialSearch = '') => {
+  manualItem.value = {
+    description: typeof initialSearch === 'string' ? initialSearch : '',
+    code: '',
+    product_categorie_id: categories.value[0]?.id || null,
+    quantity: 1,
+    unit_price: null,
+    discount: 0,
+    is_taxable: true,
+  }
+  isManualProductDialogOpen.value = true
+}
+
+const addManualProduct = () => {
+  if (!manualItem.value.description || !manualItem.value.description.trim()) {
+    return showNotification('Debe ingresar la descripción del producto', 'warning')
+  }
+  if (manualItem.value.unit_price === null || manualItem.value.unit_price === undefined || manualItem.value.unit_price < 0) {
+    return showNotification('Debe ingresar un precio unitario válido', 'warning')
+  }
+  if (!manualItem.value.product_categorie_id) {
+    return showNotification('Debe seleccionar una categoría para el producto', 'warning')
+  }
+
+  const qty = Number(manualItem.value.quantity) || 1
+  const price = Number(manualItem.value.unit_price) || 0
+  const disc = Number(manualItem.value.discount) || 0
+  const sub = qty * price
+  const isTaxable = manualItem.value.is_taxable ? 1 : 0
+  const taxVal = isTaxable === 1 ? (sub - disc) * 0.15 : 0
+
+  items.value.push({
+    id: Date.now(),
+    code: manualItem.value.code && manualItem.value.code.trim() ? manualItem.value.code.trim().toUpperCase() : `MANUAL-${Date.now().toString().slice(-6)}`,
+    description: manualItem.value.description.trim(),
+    quantity: qty,
+    unit_price: price,
+    subtotal: sub,
+    discount: disc,
+    tax: taxVal,
+    total: (sub - disc) + taxVal,
+    item_type: 1,
+    product_categorie_id: manualItem.value.product_categorie_id,
+    is_taxable: isTaxable,
+    is_manual: true,
+  })
+
+  showNotification('Producto manual agregado a la compra', 'success')
+  isManualProductDialogOpen.value = false
+}
+
+const getCategoryName = (catId) => {
+  if (!catId) return ''
+  const cat = categories.value.find(c => c.id === catId)
+  return cat ? (cat.title || cat.name || '') : ''
+}
+
 const loadConfig = async () => {
   isLoadingConfig.value = true
   try {
@@ -392,13 +461,23 @@ onMounted(() => {
 
         <!-- SELECCION DE PRODUCTOS -->
         <VCard class="elevation-3 rounded-xl">
-          <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between">
-            <div class="text-h6 font-weight-bold">
+          <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between flex-wrap gap-2">
+            <div class="text-h6 font-weight-bold d-flex align-center gap-2">
               <VIcon
                 start
                 icon="ri-box-3-line"
               /> Detalle de Productos
             </div>
+            <VBtn
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="ri-add-line"
+              class="rounded-lg"
+              @click="openManualProductDialog('')"
+            >
+              Ingresar Producto Manual
+            </VBtn>
           </VCardTitle>
           <VCardText class="px-6">
             <VAutocomplete
@@ -419,11 +498,24 @@ onMounted(() => {
               @update:model-value="addProductToItems"
             >
               <template #no-data>
-                <div class="pa-4 text-center text-medium-emphasis">
-                  {{
-                    formData.supplier_id ? 'No hay productos disponibles para este proveedor'
-                    : 'Seleccione un proveedor primero'
-                  }}
+                <div class="pa-4 text-center">
+                  <p class="text-medium-emphasis mb-2">
+                    {{
+                      formData.supplier_id ? '¿No encuentras el producto en el catálogo?'
+                      : 'Seleccione un proveedor primero'
+                    }}
+                  </p>
+                  <VBtn
+                    v-if="formData.supplier_id"
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                    prepend-icon="ri-edit-box-line"
+                    class="mt-1"
+                    @click="openManualProductDialog(typeof searchProduct === 'string' ? searchProduct : '')"
+                  >
+                    Ingresar Producto Manualmente
+                  </VBtn>
                 </div>
               </template>
               <template #item="{ props, item }">
@@ -444,28 +536,25 @@ onMounted(() => {
               </template>
             </VAutocomplete>
 
-            <VTable class="border rounded">
-              <thead class="bg-grey-lighten-4">
-                <tr>
-                  <th style="width: 35%">
+            <VTable class="manual-purchase-table border rounded-xl overflow-hidden">
+              <thead>
+                <tr class="bg-grey-lighten-4">
+                  <th class="text-left font-weight-bold py-3" style="min-width: 240px;">
                     PRODUCTO
                   </th>
-                  <th style="width: 10%">
+                  <th class="text-center font-weight-bold py-3" style="width: 110px;">
                     CANT.
                   </th>
-                  <th style="width: 15%">
-                    P.U.
+                  <th class="text-center font-weight-bold py-3" style="width: 135px;">
+                    P.U. (COSTO)
                   </th>
-                  <th style="width: 15%">
+                  <th class="text-center font-weight-bold py-3" style="width: 125px;">
                     DCTO.
                   </th>
-                  <th style="width: 15%">
-                    SUBTOT.
+                  <th class="text-right font-weight-bold py-3 pr-4" style="width: 130px;">
+                    SUBTOTAL
                   </th>
-                  <th
-                    style="width: 10%"
-                    class="text-center"
-                  >
+                  <th class="text-center font-weight-bold py-3" style="width: 80px;">
                     ACCIÓN
                   </th>
                 </tr>
@@ -473,68 +562,91 @@ onMounted(() => {
               <tbody>
                 <tr v-if="items.length === 0">
                   <td
-                    colspan="5"
-                    class="text-center py-8 text-medium-emphasis"
+                    colspan="6"
+                    class="text-center py-10 text-medium-emphasis"
                   >
-                    No hay productos agregados a la compra
+                    <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
+                    <div class="text-body-1 font-weight-medium">No hay productos agregados a la compra</div>
+                    <p class="text-caption text-medium-emphasis mb-0">Busca en el catálogo o ingresa productos manualmente</p>
                   </td>
                 </tr>
                 <tr
                   v-for="(item, index) in items"
                   :key="item.id"
+                  class="purchase-item-row"
                 >
-                  <td>
-                    <div class="font-weight-bold">
-                      {{ item.description }}
+                  <td class="py-4">
+                    <div class="font-weight-bold text-high-emphasis text-body-1 d-flex align-center gap-2 flex-wrap">
+                      <span>{{ item.description }}</span>
+                      <VChip
+                        v-if="item.is_manual"
+                        size="x-small"
+                        color="info"
+                        variant="tonal"
+                        class="font-weight-bold"
+                      >
+                        Manual
+                      </VChip>
                     </div>
-                    <div class="text-caption text-medium-emphasis">
-                      SKU: {{ item.code }}
+                    <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-3 flex-wrap">
+                      <span>SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
+                      <span v-if="getCategoryName(item.product_categorie_id)" class="text-primary font-weight-medium">• {{ getCategoryName(item.product_categorie_id) }}</span>
                     </div>
                   </td>
-                  <td>
+                  <td class="text-center py-4">
                     <VTextField
                       v-model.number="item.quantity"
                       type="number"
                       min="0.01"
                       step="1"
+                      variant="outlined"
                       density="compact"
                       hide-details
+                      class="custom-number-input mx-auto"
+                      style="width: 95px;"
                       @input="updateItemTotals(item)"
                     />
                   </td>
-                  <td>
+                  <td class="text-center py-4">
                     <VTextField
                       v-model.number="item.unit_price"
                       type="number"
                       min="0"
                       step="0.01"
-                      density="compact"
                       prefix="$"
+                      variant="outlined"
+                      density="compact"
                       hide-details
+                      class="custom-price-input mx-auto"
+                      style="width: 125px;"
                       @input="updateItemTotals(item)"
                     />
                   </td>
-                  <td>
+                  <td class="text-center py-4">
                     <VTextField
                       v-model.number="item.discount"
                       type="number"
                       min="0"
                       step="0.01"
-                      density="compact"
                       prefix="$"
+                      variant="outlined"
+                      density="compact"
                       hide-details
+                      class="custom-price-input mx-auto"
+                      style="width: 115px;"
                       @input="updateItemTotals(item)"
                     />
                   </td>
-                  <td class="font-weight-bold">
+                  <td class="text-right py-4 text-body-1 font-weight-bold text-high-emphasis pr-4">
                     ${{ Number(item.subtotal - (item.discount || 0)).toFixed(2) }}
                   </td>
-                  <td class="text-center">
+                  <td class="text-center py-4">
                     <VBtn
                       icon="ri-delete-bin-line"
                       color="error"
-                      variant="text"
+                      variant="tonal"
                       size="small"
+                      class="rounded-lg"
                       @click="removeItem(index)"
                     />
                   </td>
@@ -660,10 +772,222 @@ onMounted(() => {
         </VCard>
       </VCol>
     </VRow>
+
+    <!-- Modal Dialog para Agregar Producto Manual -->
+    <VDialog
+      v-model="isManualProductDialogOpen"
+      max-width="600"
+    >
+      <VCard class="rounded-xl pa-2">
+        <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
+          <div class="d-flex align-center gap-2">
+            <VIcon
+              icon="ri-add-box-line"
+              color="primary"
+            />
+            <span class="text-h6 font-weight-bold">Ingresar Producto Manual</span>
+          </div>
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            @click="isManualProductDialogOpen = false"
+          />
+        </VCardTitle>
+
+        <VCardText class="pa-4">
+          <VRow dense>
+            <VCol
+              cols="12"
+              class="mb-2"
+            >
+              <VTextField
+                v-model="manualItem.description"
+                label="Descripción / Nombre del Producto *"
+                placeholder="Ej: Aceite Sintético 5W30 4L"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-text"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+              class="mb-2"
+            >
+              <VTextField
+                v-model="manualItem.code"
+                label="Código / SKU"
+                placeholder="Ej: PROD-101 (Opcional)"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-barcode-line"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+              class="mb-2"
+            >
+              <VSelect
+                v-model="manualItem.product_categorie_id"
+                :items="categories"
+                item-title="title"
+                item-value="id"
+                label="Categoría del Producto *"
+                placeholder="Seleccione categoría"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-folders-line"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+              class="mb-2"
+            >
+              <VTextField
+                v-model.number="manualItem.quantity"
+                type="number"
+                min="0.01"
+                step="1"
+                label="Cantidad *"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+              class="mb-2"
+            >
+              <VTextField
+                v-model.number="manualItem.unit_price"
+                type="number"
+                min="0"
+                step="0.01"
+                prefix="$"
+                label="Precio Unitario *"
+                placeholder="0.00"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="4"
+              class="mb-2"
+            >
+              <VTextField
+                v-model.number="manualItem.discount"
+                type="number"
+                min="0"
+                step="0.01"
+                prefix="$"
+                label="Descuento ($)"
+                placeholder="0.00"
+                variant="outlined"
+                density="comfortable"
+              />
+            </VCol>
+
+            <VCol cols="12">
+              <VSwitch
+                v-model="manualItem.is_taxable"
+                label="Aplica IVA (15%)"
+                color="primary"
+                hide-details
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end gap-2">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            @click="isManualProductDialogOpen = false"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-add-line"
+            @click="addManualProduct"
+          >
+            Añadir a la Compra
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
 <style scoped>
+.manual-purchase-table {
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.manual-purchase-table th {
+  background-color: rgba(var(--v-theme-on-surface), 0.03) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+  height: 48px !important;
+  vertical-align: middle !important;
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
+}
+
+.manual-purchase-table td {
+  vertical-align: middle !important;
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.08) !important;
+}
+
+.purchase-item-row {
+  transition: background-color 0.15s ease;
+}
+
+.purchase-item-row:hover {
+  background-color: rgba(var(--v-theme-primary), 0.015);
+}
+
+.custom-number-input :deep(.v-field) {
+  border-radius: 8px !important;
+}
+
+.custom-number-input :deep(.v-field__input) {
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  padding-inline-start: 6px !important;
+  padding-inline-end: 6px !important;
+}
+
+.custom-price-input :deep(.v-field) {
+  border-radius: 8px !important;
+}
+
+.custom-price-input :deep(.v-field__input) {
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  padding-inline-start: 4px !important;
+  padding-inline-end: 8px !important;
+}
+
+.custom-price-input :deep(.v-field__prefix) {
+  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+  font-weight: 600 !important;
+  padding-inline-end: 2px !important;
+}
+
 .shimmer-circle {
   width: 40px;
   height: 40px;
