@@ -274,7 +274,7 @@ const submitForm = async () => {
   try {
     const payload = {
       ...quote.value,
-      subtotal: subtotal.value,
+      subtotal: displaySubtotalNeto.value,
       tax_amount: taxAmount.value,
       total: total.value,
     }
