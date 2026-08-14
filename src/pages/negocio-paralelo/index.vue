@@ -89,19 +89,7 @@ const rules = {
 // Load transactions from backend API
 const loadTransactions = async () => {
   loading.value = true
-  try {
-    const params = {}
-    if (searchQuery.value && searchQuery.value.trim()) {
-      params.search = searchQuery.value.trim()
-    }
-    if (typeFilter.value !== 'ALL') {
-      params.type = typeFilter.value.toLowerCase()
-    }
-    if (accountFilter.value !== 'ALL') {
-      params.account = accountFilter.value
-    }
-    const resp = await $api('parallel-transactions', { params })
-
+  try {    const resp = await $api('parallel-transactions')
     transactions.value = resp || []
   } catch (err) {
     console.error('Error al cargar transacciones:', err)
@@ -110,6 +98,30 @@ const loadTransactions = async () => {
     loading.value = false
   }
 }
+
+// Opciones de Búsqueda y Filtro (Frontend)
+const filteredTransactions = computed(() => {
+  return transactions.value.filter(t => {
+    if (searchQuery.value && searchQuery.value.trim()) {
+      const search = searchQuery.value.toLowerCase().trim()
+      const desc = (t.description || '').toLowerCase()
+      const amount = (t.amount || '').toString()
+      const unit = (t.unit || '').toLowerCase()
+      const unitCost = (t.unit_cost || '').toString()
+      
+      if (!desc.includes(search) && !amount.includes(search) && !unit.includes(search) && !unitCost.includes(search)) {
+        return false
+      }
+    }
+    if (typeFilter.value !== 'ALL' && t.type.toLowerCase() !== typeFilter.value.toLowerCase()) {
+      return false
+    }
+    if (accountFilter.value !== 'ALL' && t.account.toUpperCase() !== accountFilter.value.toUpperCase()) {
+      return false
+    }
+    return true
+  })
+})
 
 // Options state
 const expenseCategories = ref([])
@@ -138,10 +150,6 @@ const loadOptions = async () => {
   }
 }
 
-// Watch filters to reload transactions
-watch([searchQuery, typeFilter, accountFilter], () => {
-  loadTransactions()
-})
 
 // Computed Balances based on DB records
 const totalIncomes = computed(() => {
@@ -233,7 +241,7 @@ const summaryTransfer = computed(() => {
   return summaryTransactions.value.filter(t => t.type === 'income' && t.account === 'TRANSFERENCIA').reduce((sum, t) => sum + parseFloat(t.amount || 0), 0)
 })
 
-const filteredTransactions = computed(() => transactions.value)
+
 
 const incomeTransactions = computed(() => {
   return filteredTransactions.value.filter(t => t.type === 'income')
