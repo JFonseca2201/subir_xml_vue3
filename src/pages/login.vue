@@ -59,7 +59,7 @@ const login = async () => {
   } catch (error) {
     console.error('Error al iniciar sesión:', error)
     if (!error_login.value) {
-      error_login.value = error.response?._data?.message || 'Error de conexión con el servidor. Verifique si el backend está activo.'
+      error_login.value = error.response?._data?.message || 'Error de conexión con el servidor.'
     }
   } finally {
     loader.stop()
@@ -85,7 +85,7 @@ const authV2LoginIllustration = useGenerateImageVariant(
 </script>
 
 <template>
-  <div>
+  <div class="auth-page-container">
     <RouterLink to="/">
       <div class="app-logo auth-logo">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
@@ -95,154 +95,97 @@ const authV2LoginIllustration = useGenerateImageVariant(
       </div>
     </RouterLink>
 
-    <VRow
-      no-gutters
-      class="auth-wrapper"
-    >
-      <VCol
-        md="8"
-        class="d-none d-md-flex align-center justify-center position-relative"
-      >
+    <VRow no-gutters class="auth-wrapper">
+      <!-- Columna Izquierda con Ilustración y Fondo Tonal Primary -->
+      <VCol md="8" class="d-none d-md-flex align-center justify-center position-relative auth-illustration-wrapper">
         <div class="d-flex align-center justify-center pa-10">
-          <img
-            :src="authV2LoginIllustration"
-            class="auth-illustration w-100"
-            alt="auth-illustration"
-          >
+          <img :src="authV2LoginIllustration" class="auth-illustration w-100" alt="auth-illustration">
         </div>
-        <VImg
-          :src="authV2LoginMask"
-          class="d-none d-md-flex auth-footer-mask"
-          alt="auth-mask"
-        />
+        <VImg :src="authV2LoginMask" class="d-none d-md-flex auth-footer-mask" alt="auth-mask" />
       </VCol>
-      <VCol
-        cols="12"
-        md="4"
-        class="auth-card-v2 d-flex align-center justify-center"
-        style="background-color: rgb(var(--v-theme-surface))"
-      >
-        <VCard
-          flat
-          :max-width="500"
-          class="mt-12 mt-sm-0 pa-5 pa-lg-7"
-        >
-          <VCardText>
-            <h4 class="text-h4 mb-1">
-              Welcome to
-              <span class="text-capitalize">{{ themeConfig.app.title }}! 👋🏻</span>
-            </h4>
 
-            <p class="mb-0">
-              Please sign-in to your account and start the adventure
-            </p>
+      <!-- Columna Derecha: Tarjeta de Inicio de Sesión con Fondo Primary igual a la barra lateral -->
+      <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar">
+        <VCard flat :max-width="480" class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-xl text-white">
+          <VCardText class="pb-2 text-white">
+            <div class="mb-2">
+
+              <h3 class="text-h4 font-weight-bold mb-1 text-white">
+                Bienvenido a
+                <span class="text-capitalize text-white">{{ themeConfig.app.title }}! 👋🏻</span>
+              </h3>
+              <p class="text-body-1 text-white opacity-85 mb-0">
+                Inicia sesión con tus credenciales para acceder al sistema
+              </p>
+            </div>
           </VCardText>
 
           <VCardText>
             <VForm @submit.prevent="login">
               <VRow>
-                <!-- email -->
+                <!-- Email -->
                 <VCol cols="12">
-                  <VTextField
-                    v-model="form.email"
-                    autofocus
-                    label="Email"
-                    type="email"
-                    placeholder="johndoe@email.com"
-                  />
+                  <label class="text-caption font-weight-bold text-white mb-1 d-block">CORREO ELECTRÓNICO</label>
+                  <VTextField v-model="form.email" autofocus placeholder="usuario@correo.com" bg-color="white"
+                    color="primary" variant="solo" density="comfortable" class="auth-input rounded-lg"
+                    prepend-inner-icon="ri-mail-line" />
                 </VCol>
 
-                <!-- password -->
+                <!-- Password -->
                 <VCol cols="12">
-                  <VTextField
-                    v-model="form.password"
-                    label="Password"
-                    placeholder="············"
+                  <label class="text-caption font-weight-bold text-white mb-1 d-block">CONTRASEÑA</label>
+                  <VTextField v-model="form.password" placeholder="············" bg-color="white" color="primary"
+                    variant="solo" density="comfortable" class="auth-input rounded-lg" prepend-inner-icon="ri-lock-line"
                     :type="isPasswordVisible ? 'text' : 'password'"
-                    :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'
-                    "
-                    @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                  />
+                    :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                    @click:append-inner="isPasswordVisible = !isPasswordVisible" />
 
-                  <!-- remember me checkbox -->
-                  <div class="d-flex align-center justify-space-between flex-wrap my-6 gap-x-2">
-                    <VCheckbox
-                      v-model="form.remember"
-                      label="Remember me"
-                    />
+                  <!-- Remember me checkbox & forgot password -->
+                  <div class="d-flex align-center justify-space-between flex-wrap my-4 gap-x-2">
+                    <VCheckbox v-model="form.remember" label="Recordarme" color="white"
+                      class="text-white auth-checkbox" />
 
-                    <a
-                      class="text-primary"
-                      href="#"
-                    > Forgot Password? </a>
+                    <a class="text-white text-decoration-underline font-weight-medium text-body-2" href="#"> ¿Olvidaste
+                      tu contraseña? </a>
                   </div>
                 </VCol>
-                <VCol
-                  v-if="success_login"
-                  cols="12"
-                >
-                  <VAlert
-                    type="success"
-                    color="success"
-                    closable=""
-                    variant="tonal"
-                  >
+
+                <VCol v-if="success_login" cols="12">
+                  <VAlert type="success" color="success" closable="" variant="elevated">
                     {{ success_login }}
                   </VAlert>
                 </VCol>
-                <VCol
-                  v-if="error_login"
-                  cols="12"
-                >
-                  <VAlert
-                    type="error"
-                    color="error"
-                    closable=""
-                    variant="tonal"
-                  >
+
+                <VCol v-if="error_login" cols="12">
+                  <VAlert type="error" color="error" closable="" variant="elevated">
                     {{ error_login }}
                   </VAlert>
                 </VCol>
+
                 <VCol cols="12">
-                  <!-- login button -->
-                  <VBtn
-                    block
-                    type="submit"
-                    :loading="loader.loading"
-                    :disabled="loader.loading"
-                  >
-                    Ingresar
+                  <!-- Botón de Ingreso Blanco con Texto Púrpura -->
+                  <VBtn block size="large" type="submit" class="auth-submit-btn" :loading="loader.loading"
+                    :disabled="loader.loading">
+                    Iniciar Sesión
                   </VBtn>
                 </VCol>
 
-                <!-- create account -->
-                <VCol
-                  cols="12"
-                  class="text-body-1 text-center"
-                >
-                  <span class="d-inline-block"> New on our platform? </span>
-                  <a
-                    class="text-primary ms-1 d-inline-block text-body-1"
-                    href="#"
-                  >
-                    Create an account
+                <!-- Create account -->
+                <VCol cols="12" class="text-body-1 text-center mt-2 text-white">
+                  <span class="opacity-85"> ¿No tienes una cuenta? </span>
+                  <a class="text-white font-weight-bold ms-1 text-decoration-underline" href="#">
+                    Crear una cuenta
                   </a>
                 </VCol>
 
-                <VCol
-                  cols="12"
-                  class="d-flex align-center"
-                >
-                  <VDivider />
-                  <span class="mx-4 text-high-emphasis">or</span>
-                  <VDivider />
+                <VCol cols="12" class="d-flex align-center my-2">
+                  <VDivider color="white" />
+                  <span class="mx-4 text-caption text-white opacity-85 text-uppercase">o continuar con</span>
+                  <VDivider color="white" />
                 </VCol>
 
-                <!-- auth providers -->
-                <VCol
-                  cols="12"
-                  class="text-center"
-                >
+                <!-- Auth providers -->
+                <VCol cols="12" class="text-center auth-providers-container">
                   <AuthProvider />
                 </VCol>
               </VRow>
@@ -256,4 +199,95 @@ const authV2LoginIllustration = useGenerateImageVariant(
 
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth.scss";
+
+.auth-page-container {
+  min-height: 100vh;
+  background: #f4f5fa;
+}
+
+.auth-illustration-wrapper {
+  background: radial-gradient(circle at center, rgba(99, 104, 255, 0.12) 0%, rgba(99, 104, 255, 0.04) 70%, transparent 100%);
+}
+
+// Recuadro derecho en color Primary igual a la barra lateral
+.auth-primary-sidebar {
+  background: linear-gradient(180deg, #6368FF 0%, #4F54E5 60%, #4347D4 100%) !important;
+  box-shadow: -8px 0 32px rgba(79, 84, 229, 0.25) !important;
+  color: #ffffff !important;
+
+  .opacity-85 {
+    opacity: 0.88;
+  }
+
+  .auth-chip-white {
+    background-color: rgba(255, 255, 255, 0.22) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+  }
+
+  .auth-input {
+    .v-field {
+      border-radius: 10px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+      color: #1e293b !important;
+    }
+  }
+
+  .auth-checkbox {
+    .v-label {
+      color: #ffffff !important;
+      opacity: 0.95;
+    }
+  }
+
+  .auth-submit-btn {
+    background: #ffffff !important;
+    color: #484DE6 !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.3px;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3) !important;
+    }
+  }
+
+  .auth-providers-container {
+    .v-btn {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+      border-radius: 50%;
+      margin: 0 4px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #ffffff !important;
+        color: #484DE6 !important;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+.auth-login-card {
+  background: transparent !important;
+}
+
+.auth-logo {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 104, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(99, 104, 255, 0.12);
+
+  .app-logo-title {
+    color: #4F54E5 !important;
+    font-weight: 700;
+  }
+}
 </style>

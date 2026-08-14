@@ -5,6 +5,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // Router y dependencias globales
 const router = useRouter()
@@ -306,8 +307,11 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 transfers-page"
   >
+    <!-- Encabezado de Navegación de Operaciones -->
+    <OperationsHeaderNav active-tab="transferencias" />
+
     <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
+    <VCard class="mb-6 rounded-xl border-light pa-4 pa-sm-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
           <VAvatar

@@ -6,6 +6,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import IncomeDialog from '@/components/inventory/finances-records/IncomeDialog.vue'
 import ExpenseDialog from '@/components/inventory/finances-records/ExpenseDialog.vue'
 import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.vue'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // Composable instances
 const loader = useLoaderStore()
@@ -633,8 +634,11 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 movements-page">
+    <!-- Encabezado de Navegación de Operaciones -->
+    <OperationsHeaderNav active-tab="movimientos" />
+
     <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
+    <VCard class="mb-6 rounded-xl border-light pa-4 pa-sm-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
           <VAvatar

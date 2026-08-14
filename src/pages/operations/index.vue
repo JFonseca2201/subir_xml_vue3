@@ -5,6 +5,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // --- Router y Seguridad ---
 const router = useRouter()
@@ -390,70 +391,8 @@ onMounted(() => {
 
     <!-- Dashboard Principal -->
     <div v-else>
-      <!-- Cabecera Sticky -->
-      <VCard class="mb-4 rounded-xl border-light pa-5 elevation-1 sticky-header">
-        <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              color="primary"
-              variant="tonal"
-              rounded
-              size="48"
-            >
-              <VIcon
-                icon="ri-exchange-funds-line"
-                size="28"
-              />
-            </VAvatar>
-            <div>
-              <h4 class="text-h5 font-weight-bold mb-1">
-                Gestión de Operaciones
-              </h4>
-              <span class="text-body-2 text-medium-emphasis">
-                Control financiero integral para tu negocio
-              </span>
-            </div>
-          </div>
-        </div>
-      </VCard>
-
-      <!-- Cards de Acceso Rápido -->
-      <VRow class="mb-6">
-        <VCol
-          v-for="card in mainCards"
-          :key="card.title"
-          cols="12"
-          sm="6"
-          md="3"
-        >
-          <VCard
-            elevation="2"
-            class="h-100 rounded-lg cursor-pointer transition-swing"
-            hover
-            @click="handleCardAction(card.action)"
-          >
-            <VCardText class="d-flex flex-column align-center text-center pa-6">
-              <VAvatar
-                :color="card.color"
-                variant="tonal"
-                size="56"
-                class="mb-4"
-              >
-                <VIcon
-                  :icon="card.icon"
-                  size="28"
-                />
-              </VAvatar>
-              <h5 class="text-subtitle-1 font-weight-bold mb-2">
-                {{ card.title }}
-              </h5>
-              <span class="text-caption text-medium-emphasis">
-                {{ card.description }}
-              </span>
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
+      <!-- Encabezado y Navegación de Operaciones Compartido -->
+      <OperationsHeaderNav active-tab="dashboard" />
 
       <VRow>
         <!-- Columna Movimientos -->

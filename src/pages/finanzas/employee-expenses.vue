@@ -10,6 +10,7 @@ import EditEmployeePaymentDialog from '@/components/inventory/employee-expenses/
 import DeleteEmployeePaymentDialog from '@/components/inventory/employee-expenses/DeleteEmployeePaymentDialog.vue'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // Router
 const router = useRouter()
@@ -282,8 +283,11 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 employee-expenses-page"
   >
+    <!-- Encabezado de Navegación de Operaciones -->
+    <OperationsHeaderNav active-tab="nomina" />
+
     <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
+    <VCard class="mb-6 rounded-xl border-light pa-4 pa-sm-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
           <VAvatar

@@ -6,6 +6,7 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 import AporteEditDialog from '@/components/inventory/aportes/AporteEditDialog.vue'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // Router y seguridad
 const router = useRouter()
@@ -257,8 +258,11 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 aportes-page"
   >
+    <!-- Encabezado de Navegación de Operaciones -->
+    <OperationsHeaderNav active-tab="socios" />
+
     <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-5 elevation-1 sticky-header">
+    <VCard class="mb-6 rounded-xl border-light pa-4 pa-sm-5 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-4">
           <VAvatar

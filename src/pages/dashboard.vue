@@ -9,6 +9,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 // Dialogs Import
 import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
 import VehicleShowDialog from '@/components/inventory/vehicles/VehicleShowDialog.vue'
+import MonthlySalesBreakdownDialog from '@/components/dashboard/MonthlySalesBreakdownDialog.vue'
 
 const theme = useTheme()
 const router = useRouter()
@@ -22,6 +23,7 @@ const isClientDialogVisible = ref(false)
 const selectedClient = ref({})
 const isVehicleDialogVisible = ref(false)
 const selectedVehicle = ref({})
+const isMonthlySalesBreakdownOpen = ref(false)
 
 const kpis = ref({
   total_clients: 0,
@@ -690,6 +692,16 @@ const tecnicosOptions = computed(() => {
         </div>
 
         <VBtn
+          prepend-icon="ri-bar-chart-grouped-line"
+          variant="elevated"
+          class="rounded-xl px-4 text-white font-weight-bold"
+          style="background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%); box-shadow: 0 6px 15px rgba(115, 103, 240, 0.3) !important; letter-spacing: 0.3px;"
+          @click="isMonthlySalesBreakdownOpen = true"
+        >
+          Ranking Ventas (Prod. vs Serv.)
+        </VBtn>
+
+        <VBtn
           prepend-icon="ri-refresh-line"
           variant="elevated"
           :loading="loading"
@@ -1056,11 +1068,23 @@ const tecnicosOptions = computed(() => {
             class="pa-4 mock-card h-100"
           >
             <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
+              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
             >
-              <VIcon icon="ri-bar-chart-horizontal-line" />
-              <span>Top 5 Productos Vendidos (Unidades)</span>
+              <div class="d-flex align-center gap-2">
+                <VIcon icon="ri-bar-chart-horizontal-line" />
+                <span>Top 5 Productos Vendidos (Unidades)</span>
+              </div>
+              <VBtn
+                size="x-small"
+                variant="tonal"
+                color="primary"
+                class="font-weight-bold text-none"
+                prepend-icon="ri-list-ordered"
+                @click="isMonthlySalesBreakdownOpen = true"
+              >
+                Ver Ranking Completo
+              </VBtn>
             </div>
             <div class="pa-2">
               <VueApexCharts
@@ -1087,11 +1111,22 @@ const tecnicosOptions = computed(() => {
           >
             <div>
               <div
-                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
                 style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
               >
-                <VIcon icon="ri-star-line" />
-                <span>Productos Más Vendidos</span>
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-star-line" />
+                  <span>Productos Más Vendidos</span>
+                </div>
+                <VBtn
+                  size="x-small"
+                  variant="text"
+                  color="primary"
+                  class="font-weight-bold pa-0 text-none"
+                  @click="isMonthlySalesBreakdownOpen = true"
+                >
+                  Ver todos
+                </VBtn>
               </div>
               <div
                 v-if="topProducts.length === 0"
@@ -1447,6 +1482,9 @@ const tecnicosOptions = computed(() => {
       v-model:isDialogVisible="isVehicleDialogVisible"
       :vehicle-data="selectedVehicle"
     />
+
+    <!-- Monthly Sales Breakdown (Mayor a Menor / Productos vs Servicios) Dialog -->
+    <MonthlySalesBreakdownDialog v-model="isMonthlySalesBreakdownOpen" />
   </VContainer>
 </template>
 
