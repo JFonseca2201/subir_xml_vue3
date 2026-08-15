@@ -132,145 +132,146 @@ onMounted(() => {
     transition="dialog-bottom-transition"
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
-      <!-- Close -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="onFormReset"
-      />
-
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <VIcon
-          icon="ri-shield-user-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
-          Crear nuevo rol
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-shield-user-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Crear Nuevo Rol
+        </h3>
+        <p class="custom-dialog-subtitle">
           Define permisos y accesos para el sistema
         </p>
       </div>
 
-      <!-- Form -->
-      <VForm @submit.prevent="store">
-        <VRow>
-          <!-- Nombre -->
-          <VCol cols="12">
-            <VTextField
-              v-model="name"
-              label="Nombre del rol"
-              placeholder="Ej. Administrador"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-settings-line"
-              hide-details
-            />
-          </VCol>
-          <!-- Roles y permisos -->
-          <VCol cols="12">
-            <VTable class="elevation-0 permissions-table">
-              <thead>
-                <tr>
-                  <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                    Módulo
-                  </th>
-                  <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                    Acciones permitidas
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr
-                  v-for="(item, index) in PERMISOS"
-                  :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                  class="permissions-row"
-                >
-                  <!-- MÓDULO -->
-                  <td class="px-6 py-6 align-top module-cell">
-                    <div class="module-name">
-                      {{ item.name }}
-                    </div>
-                    <div class="module-subtitle">
-                      Gestión del módulo
-                    </div>
-                  </td>
-
-                  <!-- PERMISOS -->
-                  <td class="px-6 py-6">
-                    <div class="permissions-wrap">
-                      <VChip
-                        v-for="(permiso, index2) in item.permisos"
-                        :key="index2"
-                        :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
-                        :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
-                        class="cursor-pointer"
-                        :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
-                        @click="AddEditPermissionDialog(permiso.permiso)"
-                      >
-                        {{ permiso.name }}
-                      </VChip>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
-          </VCol>
-
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
-              class="mb-2"
-            >
-              <template #prepend>
-                <VIcon icon="ri-alert-line" />
-              </template>
-              {{ warning }}
-            </VAlert>
-          </VCol>
-
-          <!-- Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              class="text-none px-6"
-              @click="onFormReset"
-            >
-              Cancelar
-            </VBtn>
-
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              class="text-none px-6"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              <VIcon
-                start
-                icon="ri-save-3-line"
+      <!-- Form Body Scrollable -->
+      <VCardText class="pa-6">
+        <VForm
+          id="roleAddForm"
+          @submit.prevent="store"
+        >
+          <VRow>
+            <!-- Nombre -->
+            <VCol cols="12">
+              <VTextField
+                v-model="name"
+                label="Nombre del rol"
+                placeholder="Ej. Administrador"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-settings-line"
+                hide-details
               />
-              Guardar rol
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
+            </VCol>
+            <!-- Roles y permisos -->
+            <VCol cols="12">
+              <VTable class="elevation-0 permissions-table border rounded-lg">
+                <thead>
+                  <tr class="bg-grey-lighten-4">
+                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
+                      Módulo
+                    </th>
+                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
+                      Acciones permitidas
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr
+                    v-for="(item, index) in PERMISOS"
+                    :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
+                    class="permissions-row"
+                  >
+                    <!-- MÓDULO -->
+                    <td class="px-6 py-6 align-top module-cell">
+                      <div class="module-name font-weight-bold">
+                        {{ item.name }}
+                      </div>
+                      <div class="module-subtitle text-caption text-medium-emphasis">
+                        Gestión del módulo
+                      </div>
+                    </td>
+
+                    <!-- PERMISOS -->
+                    <td class="px-6 py-6">
+                      <div class="permissions-wrap d-flex flex-wrap gap-2">
+                        <VChip
+                          v-for="(permiso, index2) in item.permisos"
+                          :key="index2"
+                          :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
+                          :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
+                          class="cursor-pointer font-weight-medium"
+                          :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
+                          @click="AddEditPermissionDialog(permiso.permiso)"
+                        >
+                          {{ permiso.name }}
+                        </VChip>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </VCol>
+
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+                class="mb-2"
+              >
+                <template #prepend>
+                  <VIcon icon="ri-alert-line" />
+                </template>
+                {{ warning }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          class="text-none px-6"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="roleAddForm"
+          color="primary"
+          variant="elevated"
+          class="text-none px-6"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          <VIcon
+            start
+            icon="ri-save-3-line"
+          />
+          Guardar Rol
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

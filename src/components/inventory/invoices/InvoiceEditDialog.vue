@@ -122,11 +122,11 @@ onMounted(() => {
     v-model="props.isDialogVisible"
     max-width="700"
   >
-    <VCard class="invoice-dialog elevation-15 rounded-xl position-relative">
+    <VCard class="custom-dialog-card elevation-15 position-relative">
       <VProgressLinear
         v-if="loadingCategories"
         indeterminate
-        color="primary"
+        color="white"
         height="3"
         class="position-absolute"
         style="top: 0; left: 0; right: 0; z-index: 10;"
@@ -145,9 +145,25 @@ onMounted(() => {
         />
       </VOverlay>
 
-      <VCardTitle class="headline text-center text-primary">
-        Editar {{ props.invoiceSelected.description }}
-      </VCardTitle>
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="emit('update:isDialogVisible', false)"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-edit-box-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Editar {{ props.invoiceSelected.description }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Actualización de categoría y tipo de gasto
+        </p>
+      </div>
 
       <VCardText>
         <!-- Skeleton Loader -->

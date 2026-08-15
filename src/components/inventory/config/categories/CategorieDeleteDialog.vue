@@ -81,26 +81,28 @@ const dialogVisibleUpdate = val => {
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-sm-11 pa-3">
-      <!-- 👉 dialog close btn -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="onFormReset"
-      />
-
-      <VCardText class="pt-5">
-        <div class="text-center pb-6">
-          <VIcon
-            icon="ri-delete-bin-line"
-            size="42"
-            color="error"
-            class="mb-3"
-          />
-          <h4 class="text-h4 mb-2">
-            Eliminar categoria : {{ props.categorieSelected.title }}
-          </h4>
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Categoría
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ props.categorieSelected.title || 'Esta acción removerá la categoría' }}
+        </p>
+      </div>
+
+      <div class="pa-sm-8 pa-4 text-center">
 
         <!-- 👉 Imagen de la categoría -->
         <div class="text-center mb-6">
@@ -195,7 +197,7 @@ const dialogVisibleUpdate = val => {
             </VCol>
           </VRow>
         </VForm>
-      </VCardText>
+      </div>
     </VCard>
   </VDialog>
 

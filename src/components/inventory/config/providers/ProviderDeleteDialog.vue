@@ -80,27 +80,27 @@ const deleteProvider = async () => {
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-delete-bin-line"
-            color="error"
-          />
-          <span class="text-h6 font-weight-bold">Eliminar Proveedor</span>
-        </div>
-        <VBtn 
-          icon 
-          variant="text" 
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
-
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Proveedor
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá el registro comercial del proveedor
+        </p>
+      </div>
 
       <!-- Content -->
       <VCardText class="pa-4">

@@ -107,32 +107,26 @@ const closeDialog = () => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="client-dialog-card pa-0 elevation-8">
-      <!-- Header sobrio y limpio alineado con el sistema -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-bottom-light bg-grey-lighten-5">
-        <div class="d-flex align-center">
-          <VIcon
-            :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'"
-            color="primary"
-            class="me-3"
-            size="28"
-          />
-          <div>
-            <div class="text-h5 font-weight-bold text-grey-darken-3">
-              Ficha de Cliente
-            </div>
-            <div class="text-caption text-grey text-uppercase">
-              {{ getClientTypeIcon }}
-            </div>
-          </div>
-        </div>
+    <VCard class="custom-dialog-card client-dialog-card pa-0 elevation-8">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
-          density="comfortable"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
         />
-      </VCardTitle>
+        <div class="custom-dialog-avatar">
+          <VIcon :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Ficha del Cliente
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Información detallada y datos de contacto del cliente
+        </p>
+      </div>
 
       <!-- Contenido principal -->
       <VCardText class="pa-6">

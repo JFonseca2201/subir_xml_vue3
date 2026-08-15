@@ -109,32 +109,28 @@ const closeDialog = () => {
     @update:model-value="closeDialog"
   >
     <VCard
+      class="custom-dialog-card elevation-24"
       rounded="lg"
-      elevation="4"
     >
-      <!-- Header Tonal -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="40"
-          >
-            <VIcon icon="ri-user-line" />
-          </VAvatar>
-          <span class="text-h6 font-weight-bold">Perfil de Usuario</span>
-        </div>
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
-          icon
+          icon="ri-close-line"
           variant="text"
-          color="secondary"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
-
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-star-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Perfil de Usuario
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Información detallada y permisos asignados al usuario
+        </p>
+      </div>
 
       <VCardText class="pa-5">
         <div

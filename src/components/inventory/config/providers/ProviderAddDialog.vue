@@ -182,27 +182,27 @@ watch(() => props.isDialogVisible, val => {
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-truck-line"
-            color="primary"
-          />
-          <span class="text-h6 font-weight-bold">Nuevo Proveedor</span>
-        </div>
-        <VBtn 
-          icon 
-          variant="text" 
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
-
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-truck-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Nuevo Proveedor
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Completa la información del nuevo proveedor de suministros
+        </p>
+      </div>
 
       <!-- Form -->
       <VCardText class="pa-4">

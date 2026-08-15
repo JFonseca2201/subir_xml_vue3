@@ -59,7 +59,7 @@ const deleteInvoice = async () => {
     max-width="550"
     persistent
   >
-    <VCard class="rounded-xl elevation-15">
+    <VCard class="custom-dialog-card elevation-15">
       <!-- Overlay para bloquear la pantalla si está eliminando -->
       <VOverlay
         :model-value="loader.loading"
@@ -68,23 +68,32 @@ const deleteInvoice = async () => {
         persistent
       >
         <VProgressCircular
-          color="error"
+          color="white"
           indeterminate
           size="64"
         />
       </VOverlay>
 
-      <VCardTitle class="text-center pt-6">
-        <VIcon
-          icon="ri-alert-fill"
-          color="error"
-          size="48"
-          class="mb-3"
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loader.loading"
+          @click="closeDialog"
         />
-        <h3 class="text-h5 font-weight-bold text-error">
-          ¿Eliminar Factura?
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-file-search-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Anular Factura
         </h3>
-      </VCardTitle>
+        <p class="custom-dialog-subtitle">
+          Esta acción revertirá la factura comercial de compra
+        </p>
+      </div>
 
       <VCardText class="text-center pb-6">
         <p class="text-body-1 mb-2">

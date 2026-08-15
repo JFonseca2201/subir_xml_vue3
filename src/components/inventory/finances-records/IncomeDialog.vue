@@ -294,19 +294,26 @@ const formatCurrency = value => {
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard class="income-dialog">
-      <VCardTitle class="pa-4 pb-2">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            color="success"
-            size="24"
-          >
-            ri-arrow-up-circle-line
-          </VIcon>
-          <span>{{ props.editingMovement ? 'Editar Ingreso' : 'Nuevo Ingreso' }}</span>
+    <VCard class="custom-dialog-card income-dialog">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-add-circle-line" />
         </div>
-      </VCardTitle>
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          {{ props.editingMovement ? 'Editar Ingreso' : 'Nuevo Ingreso' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Registra o modifica un ingreso financiero en el sistema
+        </p>
+      </div>
       <VCardText class="pa-4">
         <VForm @submit.prevent="saveIncome">
           <VRow>

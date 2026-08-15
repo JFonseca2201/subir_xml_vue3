@@ -215,25 +215,26 @@ const save = async () => {
     scrollable
     @update:model-value="closeDialog"
   >
-    <VCard class="rounded-xl overflow-hidden relative">
-      <!-- Clean & Sober Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-b">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-roadster-line"
-            color="primary"
-            size="24"
-          />
-          <span class="text-h5 font-weight-bold text-high-emphasis">
-            {{ props.requestSelected ? 'Editar Búsqueda de Repuestos' : 'Registrar Búsqueda de Repuestos' }}
-          </span>
-        </div>
-        <DialogCloseBtn
+    <VCard class="custom-dialog-card overflow-hidden relative">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
           variant="text"
-          size="default"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
         />
-      </VCardTitle>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-roadster-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          {{ props.requestSelected ? 'Editar Búsqueda de Repuestos' : 'Registrar Búsqueda de Repuestos' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Gestión de información y consulta técnica de repuestos automotrices
+        </p>
+      </div>
 
       <VCardText
         class="pa-6"

@@ -103,32 +103,31 @@ const cancelDelete = () => {
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="pa-6 rounded-xl elevation-8">
-      <!-- Close Button -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="cancelDelete"
-      />
-
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <VIcon
-          icon="ri-delete-bin-line"
-          size="48"
-          color="error"
-          class="mb-3"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="cancelDelete"
         />
-        <h4 class="text-h4 font-weight-bold mb-2">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-unfollow-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Eliminar Usuario
-        </h4>
-        <p class="text-body-1 text-medium-emphasis">
-          ¿Estás seguro que deseas eliminar a <strong>{{ props.userSelected.name + ' ' +
-            props.userSelected.surname || 'este usuario'
-          }}</strong>?
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá el acceso del usuario al sistema
         </p>
       </div>
+
+      <VCardText class="pa-6 pa-sm-8">
+        <p class="text-body-1 text-medium-emphasis mb-4 text-center">
+          ¿Estás seguro que deseas eliminar a <strong>{{ props.userSelected.name + ' ' + props.userSelected.surname || 'este usuario' }}</strong>?
+        </p>
 
       <!-- Alerta especial para Super-Admin -->
       <VAlert
@@ -194,6 +193,7 @@ const cancelDelete = () => {
           Eliminar
         </VBtn>
       </div>
+      </VCardText>
     </VCard>
   </VDialog>
 </template>

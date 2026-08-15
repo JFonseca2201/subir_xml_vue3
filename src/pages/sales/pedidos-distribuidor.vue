@@ -395,14 +395,15 @@ onMounted(async () => {
       <div>
         <div class="d-flex align-center">
           <VAvatar
-            color="info-lighten-5"
+            color="primary"
+            variant="tonal"
             size="48"
             class="mr-3"
           >
             <VIcon
               icon="ri-truck-line"
               size="32"
-              color="info"
+              color="primary"
             />
           </VAvatar>
           <div>
@@ -525,7 +526,7 @@ onMounted(async () => {
             <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
               <VIcon
                 icon="ri-store-2-line"
-                color="info"
+                color="primary"
                 class="mr-2"
               />
               <span class="text-h6 font-weight-bold">1. Selección de Distribuidor</span>
@@ -543,7 +544,7 @@ onMounted(async () => {
                 variant="outlined"
                 density="comfortable"
                 :rules="[requiredRule]"
-                color="info"
+                color="primary"
                 clearable
                 required
               >
@@ -566,7 +567,7 @@ onMounted(async () => {
             <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
               <VIcon
                 icon="ri-shopping-cart-2-line"
-                color="info"
+                color="primary"
                 class="mr-2"
               />
               <span class="text-h6 font-weight-bold">2. Productos Solicitados</span>
@@ -587,7 +588,7 @@ onMounted(async () => {
                   clearable
                   :disabled="!pedido.distribuidor_id"
                   :custom-filter="productFilter"
-                  color="info"
+                  color="primary"
                   class="flex-grow-1"
                   hide-details
                   :menu-props="{ maxWidth: 0 }"
@@ -625,7 +626,7 @@ onMounted(async () => {
                 </VAutocomplete>
 
                 <VBtn
-                  color="info"
+                  color="primary"
                   variant="tonal"
                   prepend-icon="ri-add-line"
                   :disabled="!pedido.distribuidor_id"
@@ -680,7 +681,7 @@ onMounted(async () => {
                           density="compact"
                           hide-details="auto"
                           :rules="[requiredRule]"
-                          color="info"
+                          color="primary"
                         />
                         <div v-else>
                           <div class="font-weight-medium text-body-1">
@@ -719,7 +720,7 @@ onMounted(async () => {
                           prefix="$"
                         />
                       </td>
-                      <td class="pa-2 text-right font-weight-bold text-body-1 text-info">
+                      <td class="pa-2 text-right font-weight-bold text-body-1 text-primary">
                         ${{ (item.cantidad * item.precio_compra_estimado).toFixed(2) }}
                       </td>
                       <td class="pa-2 text-center">
@@ -843,7 +844,7 @@ onMounted(async () => {
                         <VBtn
                           icon="ri-add-line"
                           variant="tonal"
-                          color="info"
+                          color="primary"
                           size="small"
                           title="Adjuntar a este pedido"
                           @click="addReplacementsToOrder(item)"
@@ -887,7 +888,7 @@ onMounted(async () => {
             prepend-inner-icon="ri-edit-2-line"
             hide-details="auto"
             rows="3"
-            color="info"
+            color="primary"
           />
         </VCol>
 
@@ -907,7 +908,7 @@ onMounted(async () => {
               <VCardTitle class="bg-grey-lighten-4 pa-4 d-flex align-center border-b">
                 <VIcon
                   icon="ri-file-text-line"
-                  color="info"
+                  color="primary"
                   class="mr-2"
                 />
                 <span class="text-h6 font-weight-bold">Resumen del Pedido</span>
@@ -928,18 +929,18 @@ onMounted(async () => {
                 <div class="border-t pt-4 mt-4">
                   <div class="d-flex justify-space-between align-center mb-2">
                     <span class="text-h6 font-weight-bold">Total Estimado</span>
-                    <span class="text-h5 font-weight-black text-info">${{ total.toFixed(2) }}</span>
+                    <span class="text-h5 font-weight-black text-primary">${{ total.toFixed(2) }}</span>
                   </div>
                 </div>
 
-                <div class="mt-6 pa-3 bg-blue-lighten-5 rounded-lg border border-blue-lighten-4">
+                <div class="mt-6 pa-3 bg-purple-lighten-5 rounded-lg border border-purple-lighten-4">
                   <div class="d-flex align-start gap-2">
                     <VIcon
                       icon="ri-information-fill"
-                      color="info"
+                      color="primary"
                       class="mt-1"
                     />
-                    <div class="text-caption text-info-darken-3">
+                    <div class="text-caption text-primary">
                       <strong>Información Importante:</strong>
                       Este pedido se registrará en estado <strong>Pendiente</strong>. No afecta el stock actual ni
                       genera
@@ -961,7 +962,7 @@ onMounted(async () => {
                   {{ pedidoId ? 'Actualizar Borrador' : 'Guardar Borrador' }}
                 </VBtn>
                 <VBtn
-                  color="info"
+                  color="primary"
                   variant="flat"
                   block
                   size="large"

@@ -784,7 +784,12 @@ onMounted(() => {
                     class="action-btn text-error"
                     title="Eliminar Aporte"
                     @click="deleteAporte(aporte)"
-                  />
+                  >
+                    <VIcon
+                      icon="ri-delete-bin-line"
+                      size="18"
+                    />
+                  </VBtn>
                 </div>
               </td>
             </tr>
@@ -813,33 +818,26 @@ onMounted(() => {
     max-width="440"
     persistent
   >
-    <VCard class="rounded-xl pa-2">
-      <VCardTitle class="pa-4 pb-2">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              color="error"
-              variant="tonal"
-              size="40"
-            >
-              <VIcon
-                color="error"
-                icon="ri-delete-bin-line"
-                size="22"
-              />
-            </VAvatar>
-            <span class="text-h6 font-weight-bold text-high-emphasis">Eliminar Aporte</span>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            @click="closeDeleteDialog"
-          />
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDeleteDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
-      </VCardTitle>
-
-      <VDivider class="my-2" />
+        <h3 class="custom-dialog-title">
+          Eliminar Aporte
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción revertirá el saldo y no se puede deshacer
+        </p>
+      </div>
 
       <VCardText
         v-if="aporteToDelete"

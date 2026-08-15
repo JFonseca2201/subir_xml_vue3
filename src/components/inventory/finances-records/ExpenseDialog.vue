@@ -255,19 +255,26 @@ const openDialog = () => {
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard class="expense-dialog">
-      <VCardTitle class="pa-4 pb-2">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            color="error"
-            size="24"
-          >
-            ri-arrow-down-circle-line
-          </VIcon>
-          <span>{{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}</span>
+    <VCard class="custom-dialog-card expense-dialog">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-indeterminate-circle-line" />
         </div>
-      </VCardTitle>
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          {{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Registra o modifica un egreso financiero en el sistema
+        </p>
+      </div>
       <VCardText class="pa-4">
         <VForm @submit.prevent="saveExpense">
           <VRow>

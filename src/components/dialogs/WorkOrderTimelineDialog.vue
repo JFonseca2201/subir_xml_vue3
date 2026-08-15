@@ -128,39 +128,25 @@ const timelineSteps = computed(() => {
     transition="dialog-bottom-transition"
     @update:model-value="(val) => !val && handleClose()"
   >
-    <VCard class="rounded-xl shadow-lg border-0 bg-white">
-      <!-- CABECERA DEL MODAL -->
-      <div
-        class="px-6 py-5 border-b border-gray-100 d-flex justify-space-between align-start relative bg-white"
-        style="border-bottom-color: #f3f4f6;"
-      >
-        <div>
-          <h2
-            class="text-h5 font-weight-bold text-grey-darken-4 mb-1"
-            style="color: #1f2937;"
-          >
-            Secuencia de la Orden: <span class="text-primary">#{{ numeroOrden }}</span>
-          </h2>
-          <div
-            class="text-body-2 d-flex align-center gap-2"
-            style="color: #6b7280;"
-          >
-            <VIcon
-              icon="ri-car-line"
-              size="16"
-            />
-            <span>{{ vehiculoInfo }}</span>
-          </div>
-        </div>
-
+    <VCard class="custom-dialog-card bg-white">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
           variant="text"
-          color="grey-darken-1"
           size="small"
-          class="bg-grey-lighten-4 rounded-circle transition-all hover:bg-red-50 hover:text-red-500"
+          class="custom-dialog-close-btn"
           @click="handleClose"
         />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-time-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Secuencia de la Orden: #{{ numeroOrden }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ vehiculoInfo }}
+        </p>
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->

@@ -32,15 +32,26 @@ const vehicleHeader = computed(() => {
 
 <template>
   <VDialog max-width="900" :model-value="props.isDialogVisible" scrollable @update:model-value="closeDialog">
-    <VCard v-if="props.requestSelected" class="rounded-xl overflow-hidden relative">
-      <!-- Clean & Sober Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-b">
-        <div class="d-flex align-center gap-2">
-          <VIcon icon="ri-file-list-3-line" color="primary" size="24" />
-          <span class="text-h5 font-weight-bold text-high-emphasis">Ficha de Compatibilidades de Repuestos</span>
+    <VCard v-if="props.requestSelected" class="custom-dialog-card overflow-hidden relative">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-file-list-3-line" />
         </div>
-        <DialogCloseBtn variant="text" size="default" @click="closeDialog" />
-      </VCardTitle>
+        <h3 class="custom-dialog-title">
+          Ficha de Compatibilidad
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Información técnica y catálogo de compatibilidad de repuestos
+        </p>
+      </div>
 
       <VCardText class="pa-6" style="max-height: 70vh;">
         <VRow dense>

@@ -125,50 +125,28 @@ const closeDialog = () => {
     @update:model-value="closeDialog"
   >
     <VCard
-      class="vehicle-dialog-card pa-0 elevation-8"
+      class="custom-dialog-card vehicle-dialog-card pa-0 elevation-8"
       style="overflow: hidden;"
     >
-      <!-- Header sobrio y limpio alineado con el sistema -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-6 border-bottom-light bg-grey-lighten-5">
-        <!-- Parte izquierda: Icono e información del vehículo -->
-        <div class="d-flex align-center min-w-0">
-          <VAvatar
-            size="48"
-            color="primary"
-            variant="tonal"
-            class="me-3 flex-shrink-0"
-          >
-            <VIcon
-              :icon="getVehicleIcon"
-              size="24"
-            />
-          </VAvatar>
-          <div class="min-w-0">
-            <span class="text-h6 font-weight-bold text-grey-darken-3 block">Ficha de Vehículo</span>
-            <div class="text-subtitle-2 text-grey-darken-1 font-weight-medium mt-0.5 text-truncate">
-              {{ getBrandName }} {{ vehicleData.model || '' }} <span class="text-grey-lighten-1 mx-1">•</span> Año {{ vehicleData.year || 'N/A' }}
-            </div>
-          </div>
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-car-line" />
         </div>
-
-        <!-- Parte derecha: Matrícula grande y botón de cerrar -->
-        <div class="d-flex align-center gap-4 flex-shrink-0">
-          <span
-            v-if="vehicleData.license_plate"
-            class="ecuadorian-plate"
-          >
-            <span class="plate-top-text">ECUADOR</span>
-            <span class="plate-number">{{ vehicleData.license_plate.toUpperCase() }}</span>
-          </span>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            density="comfortable"
-            color="grey-darken-1"
-            @click="closeDialog"
-          />
-        </div>
-      </VCardTitle>
+        <h3 class="custom-dialog-title">
+          Ficha del Vehículo
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ getBrandName }} {{ vehicleData.model || '' }} ({{ vehicleData.year || 'N/A' }})
+        </p>
+      </div>
 
       <!-- Contenido principal -->
       <VCardText class="pa-6">

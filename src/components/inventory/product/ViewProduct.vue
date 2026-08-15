@@ -4,37 +4,26 @@
     max-width="900px"
     persistent
   >
-    <VCard class="product-view-card">
-      <VCardTitle class="d-flex justify-space-between align-center pa-4 bg-grey-lighten-4 border-b">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-shopping-bag-3-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="text-h6 font-weight-bold text-high-emphasis">
-              Ficha del Producto
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              Detalle completo e información de inventario
-            </div>
-          </div>
-        </div>
+    <VCard class="custom-dialog-card product-view-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
-          variant="tonal"
-          color="secondary"
-          size="large"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="$emit('update:dialog', false)"
         />
-      </VCardTitle>
-      <VDivider />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-shopping-bag-3-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          {{ product?.name || 'Ficha del Producto' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Detalle completo e información técnica de inventario
+        </p>
+      </div>
 
       <VCardText
         v-if="product"

@@ -237,26 +237,28 @@ onMounted(() => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <VCardText class="text-center pb-6">
-        <VIcon
-          icon="ri-add-circle-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-car-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Nuevo Vehículo
-        </h4>
-      </VCardText>
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Completa los datos del vehículo para ingresar al taller
+        </p>
+      </div>
 
-      <VDivider class="mb-6" />
+      <div class="pa-sm-8 pa-4">
 
       <VForm
         ref="formRef"
@@ -450,6 +452,7 @@ onMounted(() => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

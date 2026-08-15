@@ -599,31 +599,28 @@ onMounted(() => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <!-- 👉 Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <!-- 👉 Header -->
-      <VCardText class="text-center pb-6">
-        <VIcon
-          icon="ri-user-add-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card pa-0">
+      <!-- 👉 Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-add-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Nuevo Cliente Final
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
+        </h3>
+        <p class="custom-dialog-subtitle">
           Registro de un nuevo cliente final
         </p>
-      </VCardText>
+      </div>
 
-      <VDivider class="mb-6" />
+      <div class="pa-sm-8 pa-4">
 
       <!-- 👉 Form -->
       <VForm
@@ -950,6 +947,7 @@ onMounted(() => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

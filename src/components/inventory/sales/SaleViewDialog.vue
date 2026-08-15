@@ -123,9 +123,9 @@ const hasPaymentDistributions = computed(() => getPaymentDistributions.value.len
 const itemsCount = computed(() => props.saleData?.details?.length || 0)
 
 const isQuote = computed(() => {
-  return props.saleData?.document_type === 'quote' || 
-         !props.saleData?.document_type || 
-         'converted_sale_id' in (props.saleData || {})
+  return props.saleData?.document_type === 'quote' ||
+    !props.saleData?.document_type ||
+    'converted_sale_id' in (props.saleData || {})
 })
 
 const displayTotal = computed(() => {
@@ -133,7 +133,7 @@ const displayTotal = computed(() => {
     // Para cotizaciones, el total final es el total con IVA
     return Number(props.saleData?.total) || 0
   }
-  
+
   return Number(props.saleData?.total) || 0
 })
 
@@ -142,7 +142,7 @@ const displaySubtotal = computed(() => {
     // El subtotal mostrado en pantalla debe ser la base neta (sin IVA)
     return displayTotal.value / 1.15
   }
-  
+
   return Number(props.saleData?.subtotal) || 0
 })
 
@@ -151,7 +151,7 @@ const displayTaxAmount = computed(() => {
     // El IVA mostrado en pantalla debe ser la diferencia (el 15% del subtotal neto)
     return displayTotal.value - displaySubtotal.value
   }
-  
+
   return Number(props.saleData?.tax_amount) || 0
 })
 
@@ -192,7 +192,7 @@ const printSale = saleId => {
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     const resource = isQuote.value ? 'quotes' : 'sales'
     const pdfUrl = `${apiBaseUrl}/${resource}/${saleId}/pdf?token=${token}&print=true`
-    
+
     const printWindow = window.open(pdfUrl, '_blank')
     if (printWindow) {
       printWindow.focus()
@@ -226,7 +226,7 @@ const generateSinglePDF = sale => {
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const resource = isQuote.value ? 'quotes' : 'sales'
   const pdfUrl = `${apiBaseUrl}/${resource}/${sale.id}/pdf?token=${token}`
-  
+
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
     printWindow.focus()
@@ -238,103 +238,48 @@ const generateSinglePDF = sale => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="props.isDialogVisible"
-    max-width="960"
-    scrollable
-    @update:model-value="closeDialog"
-  >
-    <VCard
-      class="sale-view-card"
-      rounded="lg"
-      elevation="4"
-    >
-      <!-- Cabecera al estilo del resto del inventario -->
-      <div class="sale-view-header d-flex align-start justify-space-between pa-5 pb-4">
-        <div class="d-flex align-start gap-4 flex-grow-1 min-w-0">
-          <VAvatar
-            size="56"
-            :color="getDocumentTypeColor"
-            variant="tonal"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              :icon="documentTypeIcon"
-              size="28"
-            />
-          </VAvatar>
+  <VDialog :model-value="props.isDialogVisible" max-width="960" scrollable @update:model-value="closeDialog">
+    <VCard class="custom-dialog-card sale-view-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
+        <div class="custom-dialog-avatar">
+          <VIcon :icon="documentTypeIcon" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Venta #{{ saleData.document_number || '—' }}
+        </h3>
 
-          <div class="min-w-0">
-            <div class="d-flex align-center flex-wrap gap-2 mb-1">
-              <span class="text-h5 font-weight-bold text-truncate">
-                {{ saleData.document_number || '—' }}
-              </span>
-              <VChip
-                :color="getDocumentTypeColor"
-                size="small"
-                variant="tonal"
-                label
-              >
-                {{ getDocumentTypeLabel }}
-              </VChip>
-              <VChip
-                :color="getStatusColor"
-                size="small"
-                variant="elevated"
-                label
-              >
-                <VIcon
-                  start
-                  :icon="statusIcon"
-                  size="14"
-                />
-                {{ getStatusLabel }}
-              </VChip>
-            </div>
+        <!-- Badges y Estado -->
+        <div class="d-flex align-center justify-center gap-2 mt-2 flex-wrap">
+          <VChip size="small" variant="flat"
+            style="background-color: #ffffff; color: #3a2b72 !important; font-weight: 700;" label>
+            {{ getDocumentTypeLabel }}
+          </VChip>
 
-            <div class="d-flex align-center flex-wrap gap-3 text-body-2 text-medium-emphasis">
-              <span class="d-inline-flex align-center gap-1">
-                <VIcon
-                  icon="ri-calendar-line"
-                  size="16"
-                />
-                {{ formatDate(saleData.service_date) }}
-              </span>
-              <span
-                v-if="saleData.work_order_id"
-                class="d-inline-flex align-center gap-1 text-primary"
-              >
-                <VIcon
-                  icon="ri-link"
-                  size="16"
-                />
-                Orden de trabajo vinculada
-              </span>
-            </div>
-          </div>
+          <VChip :color="getStatusColor" size="small" variant="flat"
+            style="color: #ffffff !important; font-weight: 700;" label>
+            <VIcon start :icon="statusIcon" size="14" />
+            {{ getStatusLabel }}
+          </VChip>
         </div>
 
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="flex-shrink-0 ms-2"
-          @click="closeDialog"
-        />
+        <!-- Fecha y Orden Vinculada -->
+        <div class="d-flex align-center justify-center gap-4 text-caption text-white mt-3" style="opacity: 0.9;">
+          <span class="d-inline-flex align-center gap-1">
+            <VIcon icon="ri-calendar-line" size="14" />
+            {{ formatDate(saleData.service_date) }}
+          </span>
+          <span v-if="saleData.work_order_id" class="d-inline-flex align-center gap-1">
+            <VIcon icon="ri-link" size="14" />
+            Orden de trabajo vinculada
+          </span>
+        </div>
       </div>
 
-      <VDivider />
-
       <VCardText class="pa-5">
-        <div
-          v-if="loading"
-          class="d-flex flex-column align-center justify-center py-12"
-        >
-          <VProgressCircular
-            indeterminate
-            color="primary"
-            size="48"
-          />
+        <div v-if="loading" class="d-flex flex-column align-center justify-center py-12">
+          <VProgressCircular indeterminate color="primary" size="48" />
           <p class="text-body-2 text-medium-emphasis mt-4 mb-0">
             Cargando detalle de la venta...
           </p>
@@ -343,17 +288,9 @@ const generateSinglePDF = sale => {
         <template v-else>
           <!-- Resumen rápido -->
           <VRow class="mb-5">
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-money-dollar-circle-line"
-                  size="22"
-                  color="primary"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-money-dollar-circle-line" size="22" color="primary" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Total
                 </div>
@@ -362,41 +299,20 @@ const generateSinglePDF = sale => {
                 </div>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-wallet-3-line"
-                  size="22"
-                  :color="getPaymentStatusColor"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-wallet-3-line" size="22" :color="getPaymentStatusColor" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Estado de pago
                 </div>
-                <VChip
-                  :color="getPaymentStatusColor"
-                  size="small"
-                  variant="tonal"
-                  class="mt-1"
-                >
+                <VChip :color="getPaymentStatusColor" size="small" variant="tonal" class="mt-1">
                   {{ getPaymentStatusLabel }}
                 </VChip>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-shopping-bag-3-line"
-                  size="22"
-                  color="info"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-shopping-bag-3-line" size="22" color="info" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Ítems
                 </div>
@@ -405,17 +321,9 @@ const generateSinglePDF = sale => {
                 </div>
               </div>
             </VCol>
-            <VCol
-              cols="6"
-              sm="3"
-            >
+            <VCol cols="6" sm="3">
               <div class="kpi-tile">
-                <VIcon
-                  icon="ri-bank-card-line"
-                  size="22"
-                  color="secondary"
-                  class="mb-2"
-                />
+                <VIcon icon="ri-bank-card-line" size="22" color="secondary" class="mb-2" />
                 <div class="text-caption text-medium-emphasis">
                   Método de pago
                 </div>
@@ -428,22 +336,11 @@ const generateSinglePDF = sale => {
 
           <VRow>
             <!-- Cliente -->
-            <VCol
-              cols="12"
-              :md="hasVehicle ? 6 : 12"
-            >
+            <VCol cols="12" :md="hasVehicle ? 6 : 12">
               <div class="section-panel h-100">
                 <div class="section-title">
-                  <VAvatar
-                    size="36"
-                    color="success"
-                    variant="tonal"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-user-star-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="success" variant="tonal" class="me-3">
+                    <VIcon icon="ri-user-star-line" size="20" />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-1 font-weight-bold">
@@ -458,64 +355,40 @@ const generateSinglePDF = sale => {
                 <div class="info-list">
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-user-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-user-line" size="16" />
                       Nombre
                     </span>
                     <span class="info-value font-weight-semibold text-primary">{{ getClientName }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-id-card-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-id-card-line" size="16" />
                       Documento
                     </span>
                     <span class="info-value">{{ getClientDocument }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-phone-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-phone-line" size="16" />
                       Teléfono
                     </span>
                     <span class="info-value">{{ getClientPhone }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-mail-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-mail-line" size="16" />
                       Email
                     </span>
                     <span class="info-value text-lowercase">{{ getClientEmail }}</span>
                   </div>
-                  <div
-                    v-if="!hasVehicle && technicians.length"
-                    class="info-row align-start mt-2"
-                  >
+                  <div v-if="!hasVehicle && technicians.length" class="info-row align-start mt-2">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-user-settings-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-user-settings-line" size="16" />
                       Técnicos
                     </span>
                     <span class="info-value">
                       <div class="d-flex flex-wrap gap-1 justify-end">
-                        <VChip
-                          v-for="tech in technicians"
-                          :key="tech.id"
-                          size="small"
-                          color="primary"
-                          variant="tonal"
-                        >
+                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal">
                           {{ tech.first_name }} {{ tech.last_name }}
                         </VChip>
                       </div>
@@ -526,23 +399,11 @@ const generateSinglePDF = sale => {
             </VCol>
 
             <!-- Vehículo -->
-            <VCol
-              v-if="hasVehicle"
-              cols="12"
-              md="6"
-            >
+            <VCol v-if="hasVehicle" cols="12" md="6">
               <div class="section-panel h-100">
                 <div class="section-title">
-                  <VAvatar
-                    size="36"
-                    color="primary"
-                    variant="tonal"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-car-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="primary" variant="tonal" class="me-3">
+                    <VIcon icon="ri-car-line" size="20" />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-1 font-weight-bold">
@@ -557,74 +418,41 @@ const generateSinglePDF = sale => {
                 <div class="info-list">
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-qr-code-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-qr-code-line" size="16" />
                       Placa
                     </span>
                     <span class="info-value">
-                      <VChip
-                        v-if="getVehicleLicensePlate"
-                        size="small"
-                        color="primary"
-                        variant="elevated"
-                        label
-                        class="font-weight-bold"
-                      >
+                      <VChip v-if="getVehicleLicensePlate" size="small" color="primary" variant="elevated" label
+                        class="font-weight-bold">
                         {{ getVehicleLicensePlate }}
                       </VChip>
-                      <span
-                        v-else
-                        class="text-medium-emphasis"
-                      >—</span>
+                      <span v-else class="text-medium-emphasis">—</span>
                     </span>
                   </div>
-                  <div
-                    v-if="saleData.vehicle"
-                    class="info-row"
-                  >
+                  <div v-if="saleData.vehicle" class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-roadster-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-roadster-line" size="16" />
                       Detalle
                     </span>
                     <span class="info-value font-weight-medium">{{ getVehicleInfo }}</span>
                   </div>
                   <div class="info-row">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-dashboard-3-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-dashboard-3-line" size="16" />
                       Kilometraje
                     </span>
                     <span class="info-value font-weight-semibold">
                       {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
                     </span>
                   </div>
-                  <div
-                    v-if="technicians.length"
-                    class="info-row align-start mt-2"
-                  >
+                  <div v-if="technicians.length" class="info-row align-start mt-2">
                     <span class="info-label">
-                      <VIcon
-                        icon="ri-user-settings-line"
-                        size="16"
-                      />
+                      <VIcon icon="ri-user-settings-line" size="16" />
                       Técnicos
                     </span>
                     <span class="info-value">
                       <div class="d-flex flex-wrap gap-1 justify-end">
-                        <VChip
-                          v-for="tech in technicians"
-                          :key="tech.id"
-                          size="small"
-                          color="primary"
-                          variant="tonal"
-                        >
+                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal">
                           {{ tech.first_name }} {{ tech.last_name }}
                         </VChip>
                       </div>
@@ -640,16 +468,8 @@ const generateSinglePDF = sale => {
             <VCol cols="12">
               <div class="section-panel">
                 <div class="section-title">
-                  <VAvatar
-                    size="36"
-                    color="warning"
-                    variant="tonal"
-                    class="me-3"
-                  >
-                    <VIcon
-                      icon="ri-wallet-3-line"
-                      size="20"
-                    />
+                  <VAvatar size="36" color="warning" variant="tonal" class="me-3">
+                    <VIcon icon="ri-wallet-3-line" size="20" />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-1 font-weight-bold">
@@ -661,14 +481,8 @@ const generateSinglePDF = sale => {
                   </div>
                 </div>
 
-                <div
-                  v-if="hasPaymentDistributions"
-                  class="payment-table-wrap"
-                >
-                  <VTable
-                    density="compact"
-                    class="payment-table"
-                  >
+                <div v-if="hasPaymentDistributions" class="payment-table-wrap">
+                  <VTable density="compact" class="payment-table">
                     <thead>
                       <tr>
                         <th style="width: 50px;">
@@ -676,19 +490,13 @@ const generateSinglePDF = sale => {
                         </th>
                         <th>Método de pago</th>
                         <th>Cuenta destino</th>
-                        <th
-                          class="text-right"
-                          style="width: 150px;"
-                        >
+                        <th class="text-right" style="width: 150px;">
                           Monto
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr
-                        v-for="(dist, index) in getPaymentDistributions"
-                        :key="dist.id || index"
-                      >
+                      <tr v-for="(dist, index) in getPaymentDistributions" :key="dist.id || index">
                         <td class="text-medium-emphasis">
                           {{ index + 1 }}
                         </td>
@@ -706,17 +514,11 @@ const generateSinglePDF = sale => {
                   </VTable>
                 </div>
 
-                <div
-                  v-else
-                  class="d-flex flex-column align-center justify-center py-6 text-center empty-hint"
-                  style="min-height: 120px;"
-                >
+                <div v-else class="d-flex flex-column align-center justify-center py-6 text-center empty-hint"
+                  style="min-height: 120px;">
                   <VIcon
                     :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
-                    size="36"
-                    :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')"
-                    class="mb-2"
-                  />
+                    size="36" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
                   <div class="text-body-2 font-weight-semibold">
                     {{ isQuote ? 'Documento de Cotización' :
                       (saleData.is_credited ? 'Venta a Crédito' : 'Venta de Contado')
@@ -735,16 +537,8 @@ const generateSinglePDF = sale => {
           <!-- Detalle de ítems -->
           <div class="section-panel mt-4">
             <div class="section-title mb-3">
-              <VAvatar
-                size="36"
-                color="info"
-                variant="tonal"
-                class="me-3"
-              >
-                <VIcon
-                  icon="ri-shopping-cart-2-line"
-                  size="20"
-                />
+              <VAvatar size="36" color="info" variant="tonal" class="me-3">
+                <VIcon icon="ri-shopping-cart-2-line" size="20" />
               </VAvatar>
               <div>
                 <div class="text-subtitle-1 font-weight-bold">
@@ -756,58 +550,34 @@ const generateSinglePDF = sale => {
               </div>
             </div>
 
-            <div
-              v-if="saleData.details?.length"
-              class="items-table-wrap"
-            >
-              <VTable
-                density="comfortable"
-                class="items-table"
-              >
+            <div v-if="saleData.details?.length" class="items-table-wrap">
+              <VTable density="comfortable" class="items-table">
                 <thead>
                   <tr>
                     <th style="width: 50%;">
                       Descripción
                     </th>
-                    <th
-                      class="text-center"
-                      style="width: 10%;"
-                    >
+                    <th class="text-center" style="width: 10%;">
                       Cant.
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 13%;"
-                    >
+                    <th class="text-right" style="width: 13%;">
                       P. unit.
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 12%;"
-                    >
+                    <th class="text-right" style="width: 12%;">
                       Desc.
                     </th>
-                    <th
-                      class="text-right"
-                      style="width: 15%;"
-                    >
+                    <th class="text-right" style="width: 15%;">
                       Total
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="(item, index) in saleData.details"
-                    :key="item.id || index"
-                  >
+                  <tr v-for="(item, index) in saleData.details" :key="item.id || index">
                     <td class="font-weight-medium">
                       <div class="text-body-2 font-weight-medium">
                         {{ item.description }}
                       </div>
-                      <div
-                        v-if="item.product?.sku"
-                        class="mt-1"
-                      >
+                      <div v-if="item.product?.sku" class="mt-1">
                         <span class="sku-tag">COD.: {{ item.product.sku }}</span>
                       </div>
                     </td>
@@ -828,16 +598,8 @@ const generateSinglePDF = sale => {
               </VTable>
             </div>
 
-            <div
-              v-else
-              class="empty-hint pa-6 text-center"
-            >
-              <VIcon
-                icon="ri-shopping-bag-3-line"
-                size="40"
-                color="grey-lighten-1"
-                class="mb-2"
-              />
+            <div v-else class="empty-hint pa-6 text-center">
+              <VIcon icon="ri-shopping-bag-3-line" size="40" color="grey-lighten-1" class="mb-2" />
               <p class="text-body-2 text-medium-emphasis mb-0">
                 No hay productos o servicios registrados
               </p>
@@ -846,20 +608,10 @@ const generateSinglePDF = sale => {
 
           <!-- Totales y observaciones -->
           <VRow class="mt-4">
-            <VCol
-              cols="12"
-              md="7"
-            >
-              <div
-                v-if="saleData.observations"
-                class="section-panel observations-panel"
-              >
+            <VCol cols="12" md="7">
+              <div v-if="saleData.observations" class="section-panel observations-panel">
                 <div class="d-flex align-center gap-2 mb-2">
-                  <VIcon
-                    icon="ri-file-text-line"
-                    size="20"
-                    color="info"
-                  />
+                  <VIcon icon="ri-file-text-line" size="20" color="info" />
                   <span class="text-subtitle-2 font-weight-bold">Observaciones</span>
                 </div>
                 <p class="text-body-2 mb-0 observations-text">
@@ -868,19 +620,13 @@ const generateSinglePDF = sale => {
               </div>
             </VCol>
 
-            <VCol
-              cols="12"
-              md="5"
-            >
+            <VCol cols="12" md="5">
               <div class="totals-panel pa-4 rounded-lg">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">Subtotal</span>
                   <span class="text-body-1 font-weight-medium">{{ formatCurrency(displaySubtotal) }}</span>
                 </div>
-                <div
-                  v-if="displayTaxAmount > 0"
-                  class="d-flex justify-space-between align-center mb-2"
-                >
+                <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis">IVA (15%)</span>
                   <span class="text-body-1 font-weight-medium">{{ formatCurrency(displayTaxAmount) }}</span>
                 </div>
@@ -899,29 +645,15 @@ const generateSinglePDF = sale => {
 
       <VCardActions class="pa-4">
         <VSpacer />
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-close-line"
-          @click="closeDialog"
-        >
+        <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line" @click="closeDialog">
           Cerrar
         </VBtn>
-        <VBtn
-          color="info"
-          variant="tonal"
-          prepend-icon="ri-printer-line"
-          @click="printSale(props.saleData.id)"
-        >
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-printer-line" @click="printSale(props.saleData.id)">
           Imprimir
         </VBtn>
 
-        <VBtn
-          color="primary"
-          variant="tonal"
-          prepend-icon="ri-file-pdf-line"
-          @click="generateSinglePDF(props.saleData)"
-        >
+        <VBtn color="primary" variant="tonal" prepend-icon="ri-file-pdf-line"
+          @click="generateSinglePDF(props.saleData)">
           Ver PDF
         </VBtn>
       </VCardActions>

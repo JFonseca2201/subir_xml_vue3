@@ -322,14 +322,15 @@ onMounted(async () => {
       <div>
         <div class="d-flex align-center">
           <VAvatar
-            color="info-lighten-5"
+            color="primary"
+            variant="tonal"
             size="48"
             class="mr-3"
           >
             <VIcon
               icon="ri-file-list-3-line"
               size="32"
-              color="info"
+              color="primary"
             />
           </VAvatar>
           <h1 class="text-h4 font-weight-bold mb-1">
@@ -486,7 +487,7 @@ onMounted(async () => {
                   <VIcon
                     icon="ri-user-settings-line"
                     class="mr-2"
-                    color="info"
+                    color="primary"
                   />
                   Cliente y Vehículo
                 </h3>
@@ -527,7 +528,7 @@ onMounted(async () => {
                       <template #activator="{ props }">
                         <VBtn
                           icon="ri-add-line"
-                          color="info"
+                          color="primary"
                           variant="tonal"
                           v-bind="props"
                           class="mb-5"
@@ -589,7 +590,7 @@ onMounted(async () => {
                     </VSearch>
                     <VBtn
                       icon="ri-add-line"
-                      color="info"
+                      color="primary"
                       variant="tonal"
                       class="mb-5"
                       @click="isVehicleDialogVisible = true"
@@ -635,7 +636,7 @@ onMounted(async () => {
                     </div>
                     <div class="text-caption d-flex flex-column gap-1">
                       <div>
-                        <strong>Placa:</strong> <span class="text-uppercase font-weight-bold text-info">{{
+                        <strong>Placa:</strong> <span class="text-uppercase font-weight-bold text-primary">{{
                           selectedVehicle.license_plate }}</span>
                       </div>
                       <div><strong>Marca/Modelo:</strong> {{ selectedVehicle.displayTitle }}</div>
@@ -658,12 +659,12 @@ onMounted(async () => {
                   <VIcon
                     icon="ri-shopping-cart-line"
                     class="mr-2"
-                    color="info"
+                    color="primary"
                   />
                   Servicios y Repuestos
                 </h3>
                 <VBtn
-                  color="info"
+                  color="primary"
                   size="small"
                   variant="text"
                   prepend-icon="ri-add-line"
@@ -840,7 +841,7 @@ onMounted(async () => {
                 <VIcon
                   icon="ri-chat-1-line"
                   class="mr-2"
-                  color="info"
+                  color="primary"
                 />
                 Observaciones del Presupuesto
               </h3>
@@ -856,7 +857,7 @@ onMounted(async () => {
           </VCard>
 
           <!-- Resumen del Presupuesto -->
-          <VCard class="elevation-4 mb-6 border-info border-t-4">
+          <VCard class="elevation-4 mb-6 border-primary border-t-4">
             <VCardText class="pa-6">
               <h3 class="text-h6 font-weight-bold mb-4 text-grey-darken-4">
                 Resumen
@@ -889,7 +890,7 @@ onMounted(async () => {
 
               <div class="d-flex justify-space-between align-center mb-6">
                 <span class="text-h6 font-weight-bold text-grey-darken-4">TOTAL:</span>
-                <span class="text-h5 font-weight-black text-info">${{ total.toFixed(2) }}</span>
+                <span class="text-h5 font-weight-black text-primary">${{ total.toFixed(2) }}</span>
               </div>
 
               <VAlert
@@ -904,7 +905,7 @@ onMounted(async () => {
 
               <VBtn
                 type="submit"
-                color="info"
+                color="primary"
                 variant="elevated"
                 prepend-icon="ri-save-3-line"
                 :loading="isSubmitting"

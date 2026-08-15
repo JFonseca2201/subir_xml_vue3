@@ -37,7 +37,7 @@ const showNotification = (message, type = 'success') => {
 
 const confirmDelete = async () => {
   if (!props.unitSelected) return
-    
+
   loader.start()
   warning.value = null
   error_exist.value = null
@@ -50,16 +50,16 @@ const confirmDelete = async () => {
         showNotification('Error al eliminar unidad', 'error')
       },
     })
-        
+
     console.log(resp)
     showNotification('Unidad eliminada correctamente', 'success')
-        
+
     // Emitir evento para eliminar de la tabla
     emit('deleteUnit', props.unitSelected)
-        
+
     // Cerrar diálogo
     emit('update:isDialogVisible', false)
-        
+
     loader.stop()
   } catch (error) {
     console.error('Error al eliminar unidad:', error)
@@ -74,35 +74,24 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog
-    :width="$vuetify.display.smAndDown ? 'auto' : 500"
-    :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
-  >
-    <VCard class="pa-6 pa-sm-8 rounded-xl elevation-10">
-      <!-- Close -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="cancelDelete"
-      />
-
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <VIcon
-          icon="ri-delete-bin-6-line"
-          size="48"
-          color="error"
-          class="mb-4"
-        />
-        <h4 class="text-h4 font-weight-bold mb-2">
+  <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 500" :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition" @update:model-value="val => emit('update:isDialogVisible', val)">
+    <VCard class="custom-dialog-card pa-0 elevation-10">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="cancelDelete" />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-6-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Eliminar Unidad
-        </h4>
-        <p class="text-body-1 text-medium-emphasis mb-4">
-          ¿Estás seguro de que deseas eliminar esta unidad?
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá la unidad de medida del sistema
         </p>
+      </div>
+
+      <div class="pa-6 pa-sm-8 text-center">
         <div class="text-body-2 text-error font-weight-medium mb-2">
           <strong>{{ props.unitSelected?.name }}</strong>
         </div>
@@ -113,64 +102,32 @@ const cancelDelete = () => {
       </div>
 
       <!-- Alertas de Error -->
-      <VAlert
-        v-if="warning"
-        color="warning"
-        variant="tonal"
-        closable
-        class="mb-4"
-      >
+      <VAlert v-if="warning" color="warning" variant="tonal" closable class="mb-4">
         {{ warning }}
       </VAlert>
 
-      <VAlert
-        v-if="error_exist"
-        color="error"
-        variant="tonal"
-        closable
-        class="mb-4"
-      >
+      <VAlert v-if="error_exist" color="error" variant="tonal" closable class="mb-4">
         {{ error_exist }}
       </VAlert>
 
       <!-- Acciones -->
       <VCardActions class="pa-4 justify-center gap-3">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          class="text-none px-6"
-          :disabled="loader.loading"
-          @click="cancelDelete"
-        >
-          <VIcon
-            start
-            icon="ri-close-line"
-          />
+        <VBtn variant="outlined" color="secondary" class="text-none px-6" :disabled="loader.loading"
+          @click="cancelDelete">
+          <VIcon start icon="ri-close-line" />
           Cancelar
         </VBtn>
 
-        <VBtn
-          color="error"
-          variant="elevated"
-          class="text-none px-6"
-          :loading="loader.loading"
-          :disabled="loader.loading"
-          @click="confirmDelete"
-        >
-          <VIcon
-            start
-            icon="ri-delete-bin-6-line"
-          />
+        <VBtn color="error" variant="elevated" class="text-none px-6" :loading="loader.loading"
+          :disabled="loader.loading" @click="confirmDelete">
+          <VIcon start icon="ri-delete-bin-6-line" />
           Eliminar
         </VBtn>
       </VCardActions>
+
     </VCard>
   </VDialog>
 
   <!-- Notificación Toast -->
-  <NotificationToast
-    v-model:show="notificationShow"
-    :message="notificationMessage"
-    :type="notificationType"
-  />
+  <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

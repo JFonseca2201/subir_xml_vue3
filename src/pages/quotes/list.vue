@@ -468,7 +468,7 @@ onMounted(() => {
         <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
           <VIcon
             icon="ri-file-list-3-line"
-            color="info"
+            color="primary"
           />
           Cotizaciones
         </h1>
@@ -478,7 +478,7 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-3 flex-wrap justify-end">
         <VBtn
-          color="info"
+          color="primary"
           prepend-icon="ri-add-line"
           to="/quotes/add"
           class="text-none font-weight-medium px-4"
@@ -510,7 +510,7 @@ onMounted(() => {
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="info"
+                color="primary"
                 bg-color="white"
               />
             </VCol>
@@ -527,7 +527,7 @@ onMounted(() => {
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="info"
+                color="primary"
                 bg-color="white"
               />
             </VCol>
@@ -544,7 +544,7 @@ onMounted(() => {
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="info"
+                color="primary"
                 bg-color="white"
               />
             </VCol>
@@ -764,7 +764,7 @@ onMounted(() => {
                         variant="text"
                         icon
                         size="small"
-                        color="info"
+                        color="primary"
                         title="Ver Detalle"
                         @click="viewQuote(item)"
                       >
@@ -984,7 +984,7 @@ onMounted(() => {
                       <div class="d-flex gap-1">
                         <VBtn
                           variant="text"
-                          color="info"
+                          color="primary"
                           size="small"
                           class="text-none px-2"
                           @click="viewQuote(item)"
@@ -1083,7 +1083,7 @@ onMounted(() => {
             :length="totalPages"
             rounded="circle"
             :total-visible="7"
-            color="info"
+            color="primary"
             density="comfortable"
             show-first-last-page
           />
@@ -1316,37 +1316,29 @@ onMounted(() => {
       </VCard>
     </VDialog>
 
-    <!-- Mail Dialog -->
+    <!-- Mail Confirmation Dialog -->
     <VDialog
       v-model="isMailDialogVisible"
       max-width="480"
     >
-      <VCard
-        class="rounded-xl overflow-hidden elevation-10"
-        border="0"
-      >
-        <div
-          class="pa-6 text-center position-relative"
-          style="background: linear-gradient(135deg, rgba(var(--v-theme-info), 1) 0%, rgba(var(--v-theme-info), 0.85) 100%);"
-        >
-          <VAvatar
-            color="white"
-            size="64"
-            class="elevation-3 mb-4"
-          >
-            <VIcon
-              icon="ri-mail-send-line"
-              size="32"
-              color="info"
-            />
-          </VAvatar>
-          <h3 class="text-h5 text-white font-weight-bold mb-1">
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="isMailSending"
+            @click="isMailDialogVisible = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-mail-send-line" />
+          </div>
+          <h3 class="custom-dialog-title">
             Enviar Cotización
           </h3>
-          <p
-            class="text-white text-body-2 mb-0"
-            style="opacity: 0.85;"
-          >
+          <p class="custom-dialog-subtitle">
             Se enviará la cotización por correo electrónico
           </p>
         </div>
@@ -1374,20 +1366,20 @@ onMounted(() => {
 
           <VCard
             variant="tonal"
-            color="info"
+            color="primary"
             class="rounded-lg border-opacity-25"
           >
             <VCardText class="pa-4 d-flex justify-space-between align-center">
               <div class="d-flex flex-column">
                 <span
-                  class="text-caption font-weight-bold text-info text-uppercase mb-1"
+                  class="text-caption font-weight-bold text-primary text-uppercase mb-1"
                   style="letter-spacing: 0.5px;"
                 >Documento</span>
                 <div class="d-flex align-center gap-2">
                   <VIcon
                     icon="ri-file-text-line"
                     size="18"
-                    color="info"
+                    color="primary"
                   />
                   <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{
                     mailQuoteSelected?.document_number }}</span>
@@ -1395,7 +1387,7 @@ onMounted(() => {
               </div>
               <VChip
                 size="small"
-                color="info"
+                color="primary"
                 variant="elevated"
                 elevation="1"
                 class="font-weight-medium text-capitalize px-3"
@@ -1419,7 +1411,7 @@ onMounted(() => {
             Cancelar
           </VBtn>
           <VBtn
-            color="info"
+            color="primary"
             variant="elevated"
             elevation="2"
             class="text-none font-weight-bold rounded-lg px-6"

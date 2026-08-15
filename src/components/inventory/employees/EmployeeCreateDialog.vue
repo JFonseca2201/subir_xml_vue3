@@ -218,15 +218,26 @@ watch(() => props.modelValue, newValue => {
     max-width="800"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard>
-      <VCardTitle class="text-h5 pa-4">
-        <VIcon
-          icon="ri-user-add-line"
-          class="mr-2"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        Crear Nuevo Empleado
-      </VCardTitle>
-      <VDivider />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-add-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Crear Nuevo Empleado
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Gestión de empleados y personal del taller
+        </p>
+      </div>
             
       <VCardText class="pa-4">
         <VForm

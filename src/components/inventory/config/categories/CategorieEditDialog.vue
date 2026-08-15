@@ -138,31 +138,28 @@ onMounted(() => {
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <!-- 👉 Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="onFormReset"
-      />
-
-      <!-- 👉 Header -->
-      <VCardText class="text-center pb-6">
-        <VIcon
-          icon="ri-file-chart-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-folder-2-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Editar Categoría
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          {{ props.categorieSelected.title }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ props.categorieSelected.title || 'Modifica la categoría seleccionada' }}
         </p>
-      </VCardText>
+      </div>
 
-      <VDivider class="mb-6" />
+      <div class="pa-sm-8 pa-4">
 
       <!-- 👉 Form -->
       <VForm @submit.prevent="update">
@@ -300,6 +297,7 @@ onMounted(() => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

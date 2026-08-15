@@ -166,28 +166,28 @@ const closeDialog = () => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="pa-sm-8 pa-5 rounded-xl premium-card">
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <VCardText class="text-center pb-6">
-        <div class="header-icon-container mb-4 mx-auto">
-          <VIcon
-            icon="ri-file-excel-2-line"
-            size="48"
-            color="primary"
-          />
+    <VCard class="custom-dialog-card pa-0 premium-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-file-excel-2-line" />
         </div>
-        <h4 class="text-h4 font-weight-bold mb-1">
+        <h3 class="custom-dialog-title">
           Importación Masiva
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
+        </h3>
+        <p class="custom-dialog-subtitle">
           Sube tu archivo Excel o CSV para agilizar el registro
         </p>
-      </VCardText>
+      </div>
+
+      <div class="pa-sm-6 pa-4">
 
       <VTabs
         v-model="currentTab"
@@ -432,6 +432,7 @@ const closeDialog = () => {
           Procesar Importación
         </VBtn>
       </VCardActions>
+      </div>
     </VCard>
   </VDialog>
 </template>

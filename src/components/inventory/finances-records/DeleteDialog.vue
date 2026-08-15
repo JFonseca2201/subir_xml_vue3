@@ -53,25 +53,27 @@ watch(() => props.modelValue, newVal => {
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard>
-      <VCardTitle class="pa-4 pb-2">
-        <div class="d-flex align-center gap-3">
-          <VIcon
-            icon="ri-delete-bin-line"
-            color="error"
-            size="28"
-          />
-          <div>
-            <h3 class="text-h6 font-weight-bold mb-1">
-              Confirmar Eliminación
-            </h3>
-            <p class="text-medium-emphasis text-body-2 mb-0">
-              Esta acción no se puede deshacer
-            </p>
-          </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loading"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
-      </VCardTitle>
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          Confirmar Eliminación
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción no se puede deshacer
+        </p>
+      </div>
       <VCardText class="pa-4">
         <div class="text-center mb-4">
           <VIcon 

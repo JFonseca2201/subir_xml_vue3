@@ -218,35 +218,27 @@ onMounted(() => {
     max-width="500"
     persistent
   >
-    <VCard class="aporte-dialog">
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
-            <VIcon
-              :icon="isEditing ? 'ri-edit-line' : 'ri-add-circle-line'"
-              color="primary"
-              size="28"
-            />
-            <div>
-              <h3 class="text-h5 font-weight-bold">
-                {{ dialogTitle }}
-              </h3>
-              <span class="text-medium-emphasis text-body-2">
-                {{ isEditing ? 'Modificar aporte' : 'Completa los datos para crear un nuevo aporte' }}
-              </span>
-            </div>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            @click="closeDialog"
-          />
+    <VCard class="custom-dialog-card aporte-dialog">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loading"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon :icon="isEditing ? 'ri-edit-line' : 'ri-add-circle-line'" />
         </div>
-      </VCardTitle>
-
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          {{ dialogTitle }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ isEditing ? 'Modificar datos del aporte' : 'Completa los datos para registrar un nuevo aporte' }}
+        </p>
+      </div>
 
       <!-- Formulario -->
       <VCardText class="pa-6">

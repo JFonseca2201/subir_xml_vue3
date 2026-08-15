@@ -402,32 +402,29 @@ const onFormReset = () => {
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="user-dialog pa-6 pa-sm-10 rounded-xl elevation-10">
-      <!-- Close -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="onFormReset"
-      />
-
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <VIcon
-          icon="ri-user-add-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
-          Crear nuevo usuario
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-add-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Crear Nuevo Usuario
+        </h3>
+        <p class="custom-dialog-subtitle">
           Completa los datos del nuevo usuario para registrarlo en el sistema
         </p>
       </div>
 
-      <!-- Form -->
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- Form -->
       <VForm
         ref="formRef"
         @submit.prevent="store"
@@ -755,6 +752,7 @@ const onFormReset = () => {
           </VCol>
         </VRow>
       </VForm>
+      </VCardText>
     </VCard>
   </VDialog>
 </template>

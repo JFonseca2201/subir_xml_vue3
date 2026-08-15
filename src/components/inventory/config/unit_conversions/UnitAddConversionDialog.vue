@@ -230,21 +230,28 @@ const truncateText = (text, maxLength = 25) => {
     persistent
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <!-- 👉 Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="onFormReset"
-      />
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-git-repository-commits-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Agregar Conversión de Unidad
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Define el factor de equivalencia entre unidades de medida
+        </p>
+      </div>
 
-      <!-- 👉 Header -->
-      <VCardTitle class="d-flex align-center gap-2">
-        <VIcon icon="ri-git-repository-commits-line" />
-        <span>Agregar Conversión</span>
-      </VCardTitle>
-
-      <VDivider class="mb-6" />
+      <div class="pa-sm-8 pa-4">
 
       <!-- 👉 Form -->
       <VForm @submit.prevent="store">
@@ -425,6 +432,7 @@ const truncateText = (text, maxLength = 25) => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

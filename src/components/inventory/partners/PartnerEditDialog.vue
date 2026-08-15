@@ -225,27 +225,28 @@ const updatePartner = async () => {
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="pa-6 pa-sm-10 rounded-xl elevation-10">
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        class="position-absolute top-0 end-0 ma-4"
-        @click="onFormReset"
-      />
-      <div class="text-center mb-8">
-        <VIcon
-          icon="ri-user-follow-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card pa-0 elevation-10">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
-          Editar socio
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          Modifica los datos del socio seleccionado
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-follow-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Editar Socio
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Modifica la información registrada del socio
         </p>
       </div>
+
+      <div class="pa-6 pa-sm-8">
       <VForm
         ref="formRef"
         @submit.prevent="updatePartner"
@@ -391,6 +392,7 @@ const updatePartner = async () => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

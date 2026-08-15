@@ -1012,24 +1012,30 @@ onMounted(() => {
       max-width="500"
       scrollable
     >
-      <VCard class="rounded-xl">
-        <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-add-circle-line"
-              color="success"
-            />
-            <span class="text-h5 font-weight-bold">{{ isEditing ? 'Editar Ingreso' : 'Registrar Ingreso' }}</span>
-          </div>
-          <DialogCloseBtn
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
             variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isIncomeDialogOpen = false"
           />
-        </VCardTitle>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-add-circle-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            {{ isEditing ? 'Editar Ingreso' : 'Registrar Ingreso' }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Gestión de ingresos para la caja de negocio independiente
+          </p>
+        </div>
 
         <VCardText
           class="pa-5"
-          style="max-height: 60vh;"
+          style="max-height: 65vh;"
         >
           <VForm
             ref="incomeFormRef"
@@ -1152,20 +1158,26 @@ onMounted(() => {
       max-width="500"
       scrollable
     >
-      <VCard class="rounded-xl">
-        <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-indent-decrease"
-              color="error"
-            />
-            <span class="text-h5 font-weight-bold">{{ isEditing ? 'Editar Egreso' : 'Registrar Egreso' }}</span>
-          </div>
-          <DialogCloseBtn
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
             variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isExpenseDialogOpen = false"
           />
-        </VCardTitle>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-indent-decrease" />
+          </div>
+          <h3 class="custom-dialog-title">
+            {{ isEditing ? 'Editar Egreso' : 'Registrar Egreso' }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Gestión de egresos para la caja de negocio independiente
+          </p>
+        </div>
 
         <VCardText
           class="pa-5"
@@ -1318,21 +1330,26 @@ onMounted(() => {
       max-width="600"
       scrollable
     >
-      <VCard class="rounded-xl">
-        <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b bg-info text-white">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-calendar-check-line"
-              color="white"
-            />
-            <span class="text-h5 font-weight-bold">Resumen Consolidado del Día</span>
-          </div>
-          <DialogCloseBtn
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
             variant="text"
-            color="white"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isSummaryDialogOpen = false"
           />
-        </VCardTitle>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-calendar-check-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Resumen Consolidado del Día
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Desglose de balance y movimientos financieros del día
+          </p>
+        </div>
 
         <VCardText
           class="pa-5"
@@ -1506,20 +1523,26 @@ onMounted(() => {
       max-width="450"
       scrollable
     >
-      <VCard class="rounded-xl">
-        <VCardTitle class="d-flex align-center justify-space-between pa-5 border-b">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-file-pdf-line"
-              color="primary"
-            />
-            <span class="text-h5 font-weight-bold">Reporte PDF</span>
-          </div>
-          <DialogCloseBtn
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
             variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isPdfDialogOpen = false"
           />
-        </VCardTitle>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-file-pdf-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Reporte PDF
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Exporta el reporte detallado de operaciones
+          </p>
+        </div>
 
         <VCardText
           class="pa-5"

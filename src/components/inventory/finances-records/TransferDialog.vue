@@ -142,36 +142,27 @@ watch(() => show.value, newVal => {
     max-width="600"
     persistent
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
-            <VIcon
-              icon="ri-arrow-left-right-line"
-              color="primary"
-              size="28"
-            />
-            <div>
-              <h3 class="text-h5 font-weight-bold">
-                {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
-              </h3>
-              <span class="text-medium-emphasis text-body-2">
-                Mueve fondos de una cuenta a otra
-              </span>
-            </div>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            :disabled="loading"
-            @click="closeDialog"
-          />
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loading"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-arrow-left-right-line" />
         </div>
-      </VCardTitle>
-
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Mueve fondos de una cuenta a otra
+        </p>
+      </div>
 
       <!-- Formulario -->
       <VCardText class="pa-6">

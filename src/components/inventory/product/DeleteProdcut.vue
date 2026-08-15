@@ -105,16 +105,27 @@ const handleImageError = () => {
     persistent
     @update:model-value="emit('update:showDialog', $event)"
   >
-    <VCard>
-      <VCardTitle class="d-flex align-center gap-2">
-        <VIcon
-          icon="ri-delete-bin-line"
-          color="error"
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="isLoading"
+          @click="closeDialog"
         />
-        <span>Eliminar Producto</span>
-      </VCardTitle>
-
-      <VDivider />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Producto
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá el producto del catálogo de inventario
+        </p>
+      </div>
 
       <VCardText class="pa-4">
         <!-- Imagen del producto en cuadrado -->

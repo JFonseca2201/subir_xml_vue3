@@ -107,27 +107,27 @@ const cancelDelete = () => {
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="rounded-xl elevation-8">
-      <!-- Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-delete-bin-line"
-            color="error"
-          />
-          <span class="text-h6 font-weight-bold">Eliminar Vehículo</span>
-        </div>
+    <VCard class="custom-dialog-card elevation-8">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
-          icon
+          icon="ri-close-line"
           variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
-
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-car-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Vehículo
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá el vehículo del historial del taller
+        </p>
+      </div>
 
       <!-- Content -->
       <VCardText class="pa-4">

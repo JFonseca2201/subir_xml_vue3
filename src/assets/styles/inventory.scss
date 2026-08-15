@@ -4365,10 +4365,124 @@
   line-height: 1.25 !important;
 }
 
-.operations-page-subtitle {
-  font-size: 0.825rem !important;
-  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+// ============================================
+// STANDARDIZED VDIALOG HEADER STYLES (PRIMARY BANNER)
+// ============================================
+.v-dialog {
+  .v-overlay__content {
+    max-height: calc(100vh - 2rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 1rem !important;
+  }
 }
+
+.custom-dialog-card {
+  border-radius: 1.25rem !important; // 20px
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 2.5rem) !important;
+  max-height: calc(100dvh - 2.5rem) !important;
+  width: 100% !important;
+
+  .custom-dialog-header-primary,
+  .v-card-title,
+  .v-card-actions,
+  > .v-card-actions {
+    flex-shrink: 0 !important;
+  }
+
+  > div:not(.custom-dialog-header-primary):not(.v-card-actions):not(.v-card-title),
+  > .v-card-text,
+  > .v-form {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  // Scrollbar elegante y suave
+  &::-webkit-scrollbar,
+  div::-webkit-scrollbar,
+  .v-card-text::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track,
+  div::-webkit-scrollbar-track,
+  .v-card-text::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb,
+  div::-webkit-scrollbar-thumb,
+  .v-card-text::-webkit-scrollbar-thumb {
+    background: rgba(var(--v-global-theme-primary, 115, 103, 240), 0.4);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover,
+  div::-webkit-scrollbar-thumb:hover,
+  .v-card-text::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--v-global-theme-primary, 115, 103, 240), 0.7);
+  }
+}
+
+.custom-dialog-header-primary {
+  background-color: rgb(var(--v-global-theme-primary, 115, 103, 240)) !important;
+  background: rgb(var(--v-global-theme-primary, 115, 103, 240)) !important;
+  color: #ffffff !important;
+  padding: 1.75rem 1.5rem 1.5rem 1.5rem !important;
+  text-align: center !important;
+  position: relative !important;
+
+  .custom-dialog-close-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    color: #ffffff !important;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.15) !important;
+    }
+  }
+
+  .custom-dialog-avatar {
+    margin: 0 auto 0.75rem auto !important;
+    background-color: rgba(255, 255, 255, 0.22) !important;
+    border-radius: 1.125rem !important; // 18px
+    width: 64px !important;
+    height: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+
+    .v-icon {
+      color: #ffffff !important;
+      font-size: 2.125rem !important; // 34px
+    }
+  }
+
+  .custom-dialog-title {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.2px !important;
+  }
+
+  .custom-dialog-subtitle {
+    font-size: 0.875rem !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    margin-bottom: 0 !important;
+  }
+}
+
 
 
 

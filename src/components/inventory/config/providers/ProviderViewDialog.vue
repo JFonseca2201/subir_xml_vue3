@@ -23,30 +23,26 @@ const closeDialog = () => {
     max-width="600px"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="40"
-          >
-            <VIcon icon="ri-building-4-line" />
-          </VAvatar>
-          <span class="text-h6 font-weight-bold">Detalles del Proveedor</span>
-        </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
-          icon
+          icon="ri-close-line"
           variant="text"
-          color="secondary"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
-
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-building-4-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          {{ props.provider?.company_name || 'Ficha del Proveedor' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Información comercial y de contacto del proveedor
+        </p>
+      </div>
 
       <!-- Content -->
       <VCardText class="pa-5">

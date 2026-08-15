@@ -90,24 +90,28 @@ const dialogVisibleUpdate = val => {
     persistent
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <!-- 👉 Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <!-- 👉 Header -->
-      <VCardTitle class="d-flex align-center gap-2">
-        <VIcon
-          icon="ri-delete-bin-line"
-          color="error"
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        <span>Eliminar Conversión</span>
-      </VCardTitle>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Conversión
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá la equivalencia entre unidades
+        </p>
+      </div>
 
-      <VDivider class="mb-6" />
+      <div class="pa-sm-8 pa-4">
 
       <!-- 👉 Contenido -->
       <VCardText>
@@ -162,6 +166,7 @@ const dialogVisibleUpdate = val => {
           Eliminar
         </VBtn>
       </VCardActions>
+      </div>
     </VCard>
   </VDialog>
 

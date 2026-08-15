@@ -458,22 +458,26 @@ onMounted(() => {
       v-model="isViewDialogVisible"
       max-width="700"
     >
-      <VCard>
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-loop-right-line"
-              color="primary"
-            />
-            <span>Detalle de Devolución #{{ selectedReturn?.return_number }}</span>
-          </div>
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
           <VBtn
             icon="ri-close-line"
             variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isViewDialogVisible = false"
           />
-        </VCardTitle>
-        <VDivider />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-loop-right-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Detalle de Devolución #{{ selectedReturn?.return_number }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Información de la devolución e ítems reintegrados al inventario
+          </p>
+        </div>
         
         <VCardText class="pa-4">
           <div
@@ -664,11 +668,27 @@ onMounted(() => {
       v-model="showDeleteDialog"
       max-width="500"
     >
-      <VCard>
-        <VCardTitle class="text-h5 pa-4">
-          Confirmar Eliminación
-        </VCardTitle>
-        <VDivider />
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="deleteLoading"
+            @click="showDeleteDialog = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Confirmar Eliminación
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción revertirá los cambios de stock en el inventario
+          </p>
+        </div>
         <VCardText class="pa-4">
           <p class="text-body-1">
             ¿Estás seguro de eliminar la devolución <strong>#{{ returnToDelete?.return_number }}</strong>?

@@ -873,19 +873,26 @@ onMounted(() => {
       v-model="showDetailsDialog"
       max-width="800"
     >
-      <VCard v-if="selectedWorkOrder">
-        <VCardTitle class="d-flex align-center justify-space-between pa-4">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-file-list-3-line" />
-            <span>Detalles de Orden #{{ selectedWorkOrder.number }}</span>
-          </div>
+      <VCard v-if="selectedWorkOrder" class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
           <VBtn
             icon="ri-close-line"
             variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="showDetailsDialog = false"
           />
-        </VCardTitle>
-        <VDivider />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-file-list-3-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Detalles de Orden #{{ selectedWorkOrder.number }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Información completa de servicios, repuestos y montos
+          </p>
+        </div>
         <VCardText class="pa-4">
           <VRow>
             <VCol
@@ -1063,10 +1070,26 @@ onMounted(() => {
       v-model="showDeleteDialog"
       max-width="500"
     >
-      <VCard>
-        <VCardTitle class="text-h5">
-          Confirmar Eliminación
-        </VCardTitle>
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="showDeleteDialog = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Confirmar Eliminación
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción removerá la orden de trabajo del sistema
+          </p>
+        </div>
         <VCardText>
           <p class="text-body-1">
             ¿Estás seguro de eliminar la orden de trabajo <strong>#{{ workOrderToDelete?.number }}</strong>?

@@ -167,32 +167,28 @@ onMounted(() => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="pa-sm-8 pa-4 rounded-lg">
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <VCardText class="text-center pb-4">
-        <VAvatar
-          color="info"
-          variant="tonal"
-          size="64"
-          class="mb-3"
-        >
-          <VIcon
-            icon="ri-tools-line"
-            size="36"
-          />
-        </VAvatar>
-        <h4 class="text-h4 font-weight-bold mb-1">
+    <VCard class="custom-dialog-card pa-0">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-tools-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Registrar Servicio Express
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          Crea rápidamente un nuevo servicio para inyectar en el carrito de venta.
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Crea rápidamente un nuevo servicio para inyectar en la venta
         </p>
-      </VCardText>
+      </div>
+
+      <div class="pa-sm-6 pa-4">
 
       <VDivider class="mb-6" />
 
@@ -287,6 +283,7 @@ onMounted(() => {
           </VCol>
         </VRow>
       </VForm>
+      </div>
     </VCard>
   </VDialog>
 

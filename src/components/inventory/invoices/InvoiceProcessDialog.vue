@@ -212,7 +212,7 @@ onMounted(() => {
     max-width="700"
     persistent
   >
-    <VCard class="rounded-xl overflow-hidden elevation-24">
+    <VCard class="custom-dialog-card elevation-24">
       <VOverlay
         :model-value="loader.loading || isLoadingConfig || isLoadingInvoice"
         class="align-center justify-center"
@@ -226,43 +226,24 @@ onMounted(() => {
         />
       </VOverlay>
 
-      <!-- Header with Premium Gradient -->
-      <div class="gradient-header px-6 py-4 d-flex align-center justify-space-between text-white">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="rgba(255,255,255,0.15)"
-            size="38"
-          >
-            <VIcon
-              color="white"
-              size="22"
-            >
-              ri-checkbox-circle-line
-            </VIcon>
-          </VAvatar>
-          <div>
-            <div
-              class="text-h6 font-weight-bold leading-tight"
-              style="color: white !important;"
-            >
-              Procesar Factura
-            </div>
-            <div
-              class="text-caption text-white opacity-80"
-              style="color: white !important;"
-            >
-              Define la forma de pago y
-              procesa el stock
-            </div>
-          </div>
-        </div>
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
           variant="text"
-          color="white"
-          density="comfortable"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="onFormReset"
         />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-checkbox-circle-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Procesar Factura
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Define la forma de pago y procesa el stock
+        </p>
       </div>
 
       <VCardText

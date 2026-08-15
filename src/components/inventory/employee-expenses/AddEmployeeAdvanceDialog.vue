@@ -221,31 +221,26 @@ onMounted(() => {
     max-width="600"
     persistent
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <DialogCloseBtn
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
           variant="text"
-          size="default"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
         />
-        <div class="d-flex align-center gap-3">
-          <VIcon
-            icon="ri-add-circle-line"
-            color="info"
-            size="28"
-          />
-          <div>
-            <h3 class="text-h5 font-weight-bold">
-              Nuevo Adelanto
-            </h3>
-            <span class="text-medium-emphasis text-body-2">
-              Registra un nuevo adelanto para empleado
-            </span>
-          </div>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-hand-coin-line" />
         </div>
-      </VCardTitle>
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          Nuevo Adelanto de Sueldo
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Registra un nuevo adelanto financiero para empleado
+        </p>
+      </div>
       <VCardText class="pa-4">
         <VForm
           ref="formRef"

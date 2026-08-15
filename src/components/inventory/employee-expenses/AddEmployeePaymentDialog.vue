@@ -391,35 +391,26 @@ onMounted(() => {
     max-width="600"
     persistent
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
-            <VIcon
-              icon="ri-add-circle-line"
-              color="primary"
-              size="28"
-            />
-            <div>
-              <h3 class="text-h5 font-weight-bold">
-                Nuevo Pago
-              </h3>
-              <span class="text-medium-emphasis text-body-2">
-                Completa los datos para crear un nuevo pago
-              </span>
-            </div>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            @click="closeDialog"
-          />
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-money-dollar-circle-line" />
         </div>
-      </VCardTitle>
-
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          Nuevo Pago de Nómina
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Completa los datos para registrar un pago al personal
+        </p>
+      </div>
 
       <!-- Formulario -->
       <VCardText class="pa-6">

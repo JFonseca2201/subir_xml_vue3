@@ -99,27 +99,27 @@ const closeDialog = () => {
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="rounded-xl">
-      <VCardTitle class="d-flex align-center justify-space-between pa-4">
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            size="24"
-            color="success"
-          >
-            ri-file-excel-2-line
-          </VIcon>
-          <span class="text-h6 font-weight-bold">Importar Productos</span>
-        </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
-          icon
+          icon="ri-close-line"
           variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
           :disabled="loader.loading"
           @click="closeDialog"
-        >
-          <VIcon>ri-close-line</VIcon>
-        </VBtn>
-      </VCardTitle>
-      <VDivider />
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-file-excel-2-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Importación Masiva
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Sube tu archivo Excel o CSV para agilizar el registro
+        </p>
+      </div>
       <VCardText class="pt-6">
         <p class="text-body-2 mb-4">
           Selecciona un archivo Excel (.xlsx, .xls o .csv) con la lista de productos que deseas importar.

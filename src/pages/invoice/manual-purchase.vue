@@ -778,22 +778,26 @@ onMounted(() => {
       v-model="isManualProductDialogOpen"
       max-width="600"
     >
-      <VCard class="rounded-xl pa-2">
-        <VCardTitle class="d-flex align-center justify-space-between pa-4 border-b">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-add-box-line"
-              color="primary"
-            />
-            <span class="text-h6 font-weight-bold">Ingresar Producto Manual</span>
-          </div>
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
           <VBtn
             icon="ri-close-line"
             variant="text"
             size="small"
+            class="custom-dialog-close-btn"
             @click="isManualProductDialogOpen = false"
           />
-        </VCardTitle>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-add-box-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Ingresar Producto Manual
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Agrega un producto directamente a la compra
+          </p>
+        </div>
 
         <VCardText class="pa-4">
           <VRow dense>

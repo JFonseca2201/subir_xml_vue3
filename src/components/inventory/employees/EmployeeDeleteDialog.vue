@@ -61,15 +61,26 @@ const closeDialog = () => {
     max-width="400"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard>
-      <VCardTitle class="text-h5 d-flex align-center">
-        <VIcon
-          icon="ri-delete-bin-line"
-          class="mr-2"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        Confirmar Eliminación
-      </VCardTitle>
-      <VDivider />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Confirmar Eliminación
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción cambiará el estado del empleado
+        </p>
+      </div>
             
       <VCardText>
         ¿Está seguro que desea eliminar al empleado

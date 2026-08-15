@@ -1243,10 +1243,27 @@ onMounted(() => {
       v-model="isPaymentDialogVisible"
       max-width="450"
     >
-      <VCard class="rounded-lg">
-        <VCardTitle class="text-h6 font-weight-medium pa-4 border-b border-opacity-25">
-          Registrar Pago
-        </VCardTitle>
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="isPaymentDialogVisible = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-secure-payment-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Registrar Pago
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Selecciona el método de pago para la venta
+          </p>
+        </div>
+
         <VCardText class="pa-4">
           <div class="mb-4">
             <div class="d-flex justify-space-between align-center mb-1">
@@ -1307,33 +1324,23 @@ onMounted(() => {
       v-model="isMailDialogVisible"
       max-width="480"
     >
-      <VCard
-        class="rounded-xl overflow-hidden elevation-10"
-        border="0"
-      >
-        <!-- Header con gradiente suave y elegante -->
-        <div
-          class="pa-6 text-center position-relative"
-          style="background: linear-gradient(135deg, rgba(var(--v-theme-primary), 1) 0%, rgba(var(--v-theme-primary), 0.85) 100%);"
-        >
-          <VAvatar
-            color="white"
-            size="64"
-            class="elevation-3 mb-4"
-          >
-            <VIcon
-              icon="ri-mail-send-line"
-              size="32"
-              color="primary"
-            />
-          </VAvatar>
-          <h3 class="text-h5 text-white font-weight-bold mb-1">
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="isMailDialogVisible = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-mail-send-line" />
+          </div>
+          <h3 class="custom-dialog-title">
             Confirmar Envío
           </h3>
-          <p
-            class="text-white text-body-2 mb-0"
-            style="opacity: 0.85;"
-          >
+          <p class="custom-dialog-subtitle">
             Se enviará el documento por correo electrónico
           </p>
         </div>

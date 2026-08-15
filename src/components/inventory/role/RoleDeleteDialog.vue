@@ -81,42 +81,36 @@ const dialogVisibleUpdate = val => {
     persistent
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="pa-6">
-      <!-- Close -->
-      <DialogCloseBtn
-        variant="text"
-        size="small"
-        @click="onFormReset"
-      />
-
-      <!-- Header -->
-      <VCardText class="pb-4">
-        <div class="d-flex align-center gap-2 mb-1">
-          <VIcon
-            icon="ri-delete-bin-line"
-            size="20"
-            class="text-medium-emphasis"
-          />
-          <h4 class="text-h5 font-weight-medium">
-            Eliminar rol
-          </h4>
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="onFormReset"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
-
-        <p class="text-body-2 text-medium-emphasis">
-          Esta acción no se puede deshacer.
+        <h3 class="custom-dialog-title">
+          Eliminar Rol
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción removerá los accesos asignados al rol
         </p>
-      </VCardText>
+      </div>
 
       <!-- Body -->
-      <VCardText>
-        <p class="mb-4 d-flex align-center gap-2">
+      <VCardText class="pa-6">
+        <p class="mb-4 d-flex align-center gap-2 text-body-1">
           <VIcon
             icon="ri-alert-line"
-            size="18"
-            class="text-medium-emphasis"
+            size="20"
+            color="warning"
           />
-          ¿Deseas eliminar el rol
-          <strong>{{ props.roleSelected.name }}</strong>?
+          ¿Deseas eliminar el rol <strong>{{ props.roleSelected.name }}</strong>?
         </p>
 
         <!-- Alerts -->
@@ -147,35 +141,35 @@ const dialogVisibleUpdate = val => {
           />
           {{ error_exits }}
         </VAlert>
-
-        <!-- Actions -->
-        <div class="d-flex justify-end gap-3 mt-6">
-          <VBtn
-            variant="text"
-            :disabled="loader.loading"
-            @click="onFormReset"
-          >
-            <VIcon
-              start
-              icon="ri-close-line"
-            />
-            Cancelar
-          </VBtn>
-
-          <VBtn
-            color="error"
-            variant="outlined"
-            :loading="loader.loading"
-            @click="deleteRol"
-          >
-            <VIcon
-              start
-              icon="ri-delete-bin-line"
-            />
-            Eliminar
-          </VBtn>
-        </div>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          color="error"
+          variant="elevated"
+          class="text-none px-6"
+          :loading="loader.loading"
+          @click="deleteRol"
+        >
+          <VIcon
+            start
+            icon="ri-delete-bin-line"
+          />
+          Eliminar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 
