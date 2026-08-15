@@ -251,10 +251,12 @@ const truncateText = (text, maxLength = 25) => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
-
-      <!-- 👉 Form -->
-      <VForm @submit.prevent="store">
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- 👉 Form -->
+        <VForm
+          id="unitAddConversionForm"
+          @submit.prevent="store"
+        >
         <VRow dense>
           <!-- UNIDAD ORIGEN (solo si no hay unitSelected) -->
           <VCol
@@ -415,24 +417,25 @@ const truncateText = (text, maxLength = 25) => {
             </VCol>
           </VCol>
 
-          <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loader.loading"
-              @click="onFormReset"
-            >
-              Cerrar
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cerrar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

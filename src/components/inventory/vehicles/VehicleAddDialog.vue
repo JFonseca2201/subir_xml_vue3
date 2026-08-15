@@ -258,12 +258,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
-
-      <VForm
-        ref="formRef"
-        @submit.prevent="saveVehicle"
-      >
+      <VCardText class="pa-6 pa-sm-8">
+        <VForm
+          id="vehicleAddForm"
+          ref="formRef"
+          @submit.prevent="saveVehicle"
+        >
         <VRow>
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-3 text-primary">
@@ -430,29 +430,37 @@ onMounted(() => {
             </VAlert>
           </VCol>
 
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4 mt-6"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              :loading="loading"
-              prepend-icon="ri-save-3-line"
-            >
-              Guardar Vehículo
-            </VBtn>
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              @click="closeDialog"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loading"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="vehicleAddForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loading"
+          :disabled="loading"
+        >
+          Guardar Vehículo
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

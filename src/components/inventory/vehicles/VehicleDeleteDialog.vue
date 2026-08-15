@@ -234,32 +234,27 @@ const cancelDelete = () => {
       <VDivider />
 
       <!-- Actions -->
-      <VCardActions class="pa-4">
-        <VSpacer />
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
-          color="default"
           variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
         >
-          <VIcon
-            start
-            icon="ri-close-line"
-          />
           Cancelar
         </VBtn>
         <VBtn
           color="error"
           variant="elevated"
+          prepend-icon="ri-delete-bin-line"
+          class="text-none px-6"
           :loading="loader.loading"
           :disabled="loader.loading"
           @click="confirmDelete"
         >
-          <VIcon
-            start
-            icon="ri-delete-bin-line"
-          />
-          Eliminar
+          Eliminar Vehículo
         </VBtn>
       </VCardActions>
     </VCard>

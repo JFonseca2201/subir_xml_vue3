@@ -56,10 +56,10 @@ const loadEmployeeDetails = async () => {
 }
 
 const formatSalary = salary => {
-  return new Intl.NumberFormat('es-CO', {
+  return new Intl.NumberFormat('es-EC', {
     style: 'currency',
-    currency: 'COP',
-  }).format(salary)
+    currency: 'USD',
+  }).format(salary || 0)
 }
 
 const formatDate = dateString => {
@@ -68,7 +68,7 @@ const formatDate = dateString => {
   try {
     const date = new Date(dateString)
     
-    return date.toLocaleDateString('es-CO', {
+    return date.toLocaleDateString('es-EC', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -84,7 +84,7 @@ const formatDateTime = dateString => {
   try {
     const date = new Date(dateString)
     
-    return date.toLocaleString('es-CO', {
+    return date.toLocaleString('es-EC', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -125,7 +125,7 @@ watch(() => props.employee, () => {
 <template>
   <VDialog
     :model-value="modelValue"
-    max-width="700"
+    max-width="750"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <VCard class="custom-dialog-card elevation-24">
@@ -139,223 +139,271 @@ watch(() => props.employee, () => {
           @click="closeDialog"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-user-line" />
+          <VIcon icon="ri-user-search-line" />
         </div>
         <h3 class="custom-dialog-title">
-          Detalles del Empleado
+          Ficha del Empleado
         </h3>
         <p class="custom-dialog-subtitle">
-          Información general y laboral del personal
+          Información personal, contrato laboral y registros de auditoría
         </p>
       </div>
             
-      <VCardText class="pa-4">
+      <VCardText class="pa-6 pa-sm-8">
         <VProgressCircular
           v-if="loading"
           indeterminate
           color="primary"
-          class="d-block mx-auto my-4"
+          class="d-block mx-auto my-8"
         />
                 
         <div v-else>
-          <!-- Información Personal -->
+          <!-- HERO CARD: Avatar + Nombre + Cargo + Salario Highlight -->
+          <div class="bg-grey-lighten-4 rounded-xl pa-5 mb-6 border d-flex flex-column flex-sm-row align-center justify-space-between gap-4">
+            <div class="d-flex align-center gap-4 text-center text-sm-left flex-column flex-sm-row">
+              <VAvatar
+                size="68"
+                color="primary"
+                variant="tonal"
+                class="elevation-2"
+              >
+                <VIcon
+                  icon="ri-user-star-line"
+                  size="36"
+                />
+              </VAvatar>
+              <div>
+                <h2 class="text-h6 font-weight-bold text-high-emphasis mb-1">
+                  {{ employeeData.first_name || '' }} {{ employeeData.last_name || '' }}
+                </h2>
+                <div class="d-flex flex-wrap align-center justify-center justify-sm-start gap-2">
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="elevated"
+                    class="font-weight-bold"
+                  >
+                    {{ employeeData.position || 'EMPLEADO' }}
+                  </VChip>
+                  <VChip
+                    :color="getStatusColor(employeeData.deleted_at)"
+                    variant="tonal"
+                    size="small"
+                    class="font-weight-bold"
+                  >
+                    {{ getStatusText(employeeData.deleted_at) }}
+                  </VChip>
+                  <VChip
+                    v-if="employeeData.identification"
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                    class="font-weight-medium"
+                  >
+                    DNI: {{ employeeData.identification }}
+                  </VChip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bloque Destacado de Salario -->
+            <div class="bg-success-lighten-5 border border-success border-opacity-25 rounded-lg px-5 py-3 text-center w-100 w-sm-auto">
+              <div class="text-caption text-success font-weight-bold text-uppercase tracking-wide">
+                Salario Mensual
+              </div>
+              <div class="text-h5 font-weight-black text-success">
+                {{ formatSalary(employeeData.salary) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- SECCIÓN: Información Personal y Contacto -->
           <div class="mb-6">
-            <h3 class="text-h6 font-weight-medium mb-3 d-flex align-center">
+            <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center gap-2 border-b pb-2">
               <VIcon
                 icon="ri-user-line"
-                class="mr-2"
+                color="primary"
+                size="20"
               />
-              Información Personal
-            </h3>
-            <VRow>
+              Información Personal y Contacto
+            </h4>
+            <VRow dense>
               <VCol
                 cols="12"
-                md="6"
+                sm="6"
+                class="py-2"
               >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Cédula:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.identification || 'No disponible' }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Nombre Completo:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.first_name || '' }} {{ employeeData.last_name || '' }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Email:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.email || 'No disponible' }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Teléfono:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.phone || 'No disponible' }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Estado:</span>
+                <div class="bg-white rounded-lg pa-3 border d-flex align-center gap-3">
+                  <VAvatar
+                    color="primary"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                  >
+                    <VIcon icon="ri-mail-line" />
+                  </VAvatar>
                   <div>
-                    <VChip
-                      :color="getStatusColor(employeeData.deleted_at)"
-                      variant="tonal"
-                      size="small"
-                    >
-                      {{ getStatusText(employeeData.deleted_at) }}
-                    </VChip>
+                    <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis text-truncate" style="max-width: 220px;">
+                      {{ employeeData.email || 'No registrado' }}
+                    </div>
+                  </div>
+                </div>
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                class="py-2"
+              >
+                <div class="bg-white rounded-lg pa-3 border d-flex align-center gap-3">
+                  <VAvatar
+                    color="info"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                  >
+                    <VIcon icon="ri-phone-line" />
+                  </VAvatar>
+                  <div>
+                    <div class="text-caption text-medium-emphasis">Teléfono / Celular</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis">
+                      {{ employeeData.phone || 'No registrado' }}
+                    </div>
+                  </div>
+                </div>
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                class="py-2"
+              >
+                <div class="bg-white rounded-lg pa-3 border d-flex align-center gap-3">
+                  <VAvatar
+                    color="warning"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                  >
+                    <VIcon icon="ri-calendar-event-line" />
+                  </VAvatar>
+                  <div>
+                    <div class="text-caption text-medium-emphasis">Fecha de Contratación</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis">
+                      {{ formatDate(employeeData.hired_at) }}
+                    </div>
+                  </div>
+                </div>
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                class="py-2"
+              >
+                <div class="bg-white rounded-lg pa-3 border d-flex align-center gap-3">
+                  <VAvatar
+                    color="secondary"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                  >
+                    <VIcon icon="ri-id-card-line" />
+                  </VAvatar>
+                  <div>
+                    <div class="text-caption text-medium-emphasis">Cédula / RUC</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis">
+                      {{ employeeData.identification || 'Sin número' }}
+                    </div>
                   </div>
                 </div>
               </VCol>
             </VRow>
           </div>
 
-          <!-- Información Laboral -->
-          <div class="mb-6">
-            <h3 class="text-h6 font-weight-medium mb-3 d-flex align-center">
+          <!-- SECCIÓN: Registro del Sistema y Auditoría -->
+          <div>
+            <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-3 d-flex align-center gap-2 border-b pb-2">
               <VIcon
-                icon="ri-briefcase-line"
-                class="mr-2"
+                icon="ri-shield-user-line"
+                color="primary"
+                size="20"
               />
-              Información Laboral
-            </h3>
-            <VRow>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Cargo:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.position || 'No disponible' }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Salario:</span>
-                  <div class="font-weight-medium text-success">
-                    {{ formatSalary(employeeData.salary) }}
-                  </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Fecha de Contratación:</span>
-                  <div class="font-weight-medium">
-                    {{ formatDate(employeeData.hired_at) }}
-                  </div>
-                </div>
-              </VCol>
-            </VRow>
-          </div>
-
-          <!-- Información del Sistema -->
-          <div class="mb-6">
-            <h3 class="text-h6 font-weight-medium mb-3 d-flex align-center">
-              <VIcon
-                icon="ri-settings-line"
-                class="mr-2"
-              />
-              Información del Sistema
-            </h3>
-            <VRow>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
+              Información de Auditoría y Sistema
+            </h4>
+            <div class="bg-grey-lighten-5 rounded-lg pa-4 border">
+              <VRow dense>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="py-1"
+                >
                   <span class="text-caption text-medium-emphasis">ID de Empleado:</span>
-                  <div class="font-weight-medium">
-                    #{{ employeeData.id || 'No disponible' }}
+                  <div class="text-body-2 font-weight-bold text-primary">
+                    #{{ employeeData.id || 'N/A' }}
                   </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="py-1"
+                >
                   <span class="text-caption text-medium-emphasis">Registrado por:</span>
-                  <div class="font-weight-medium">
-                    {{ employeeData.creator?.name || 'No disponible' }}
+                  <div class="text-body-2 font-weight-medium text-high-emphasis">
+                    {{ employeeData.creator?.name || 'Super-Admin' }}
                   </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="py-1"
+                >
                   <span class="text-caption text-medium-emphasis">Fecha de Creación:</span>
-                  <div class="font-weight-medium">
+                  <div class="text-body-2 font-weight-medium text-medium-emphasis">
                     {{ formatDateTime(employeeData.created_at) }}
                   </div>
-                </div>
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
-                <div class="mb-3">
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="py-1"
+                >
                   <span class="text-caption text-medium-emphasis">Última Actualización:</span>
-                  <div class="font-weight-medium">
+                  <div class="text-body-2 font-weight-medium text-medium-emphasis">
                     {{ formatDateTime(employeeData.updated_at) }}
                   </div>
-                </div>
-              </VCol>
-              <VCol
-                v-if="employeeData.deleted_at"
-                cols="12"
-              >
-                <div class="mb-3">
-                  <span class="text-caption text-medium-emphasis">Fecha de Eliminación:</span>
-                  <div class="font-weight-medium text-error">
+                </VCol>
+
+                <VCol
+                  v-if="employeeData.deleted_at"
+                  cols="12"
+                  class="py-1 mt-2 border-t"
+                >
+                  <span class="text-caption text-error font-weight-bold">Fecha de Eliminación (Inactivo):</span>
+                  <div class="text-body-2 font-weight-bold text-error">
                     {{ formatDateTime(employeeData.deleted_at) }}
                   </div>
-                </div>
-              </VCol>
-            </VRow>
+                </VCol>
+              </VRow>
+            </div>
           </div>
         </div>
       </VCardText>
 
       <VDivider />
-      <VCardActions class="pa-4">
-        <VSpacer />
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
-          variant="text"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
           @click="closeDialog"
         >
-          Cerrar
+          Cerrar Ficha
         </VBtn>
       </VCardActions>
     </VCard>

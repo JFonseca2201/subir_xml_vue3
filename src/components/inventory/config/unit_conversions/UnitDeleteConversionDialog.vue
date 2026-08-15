@@ -111,45 +111,24 @@ const dialogVisibleUpdate = val => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
-
-      <!-- 👉 Contenido -->
-      <VCardText>
-        <!--
-          <div class="text-center mb-6">
-          <VIcon icon="ri-error-warning-line" color="warning" size="64" />
-          </div> 
-        -->
-
+      <VCardText class="pa-6 pa-sm-8 text-center">
         <h3 class="text-h6 text-center mb-4">
           ¿Estás seguro de eliminar esta conversión?
         </h3>
-
-        <!--
-          <div class="bg-grey-lighten-4 rounded-lg pa-4 mb-4">
-          <div class="d-flex align-center justify-space-between mb-2">
-          <span class="font-weight-medium">Desde:</span>
-          <span class="text-primary font-weight-bold">{{ props.unitSelected.name }}</span>
-          </div>
-          <div class="d-flex align-center justify-space-between">
-          <span class="font-weight-medium">Hacia:</span>
-          <span class="text-primary font-weight-bold">{{ getUnitToName(props.conversion) }}</span>
-          </div>
-          </div>
-        -->
-        <p class="text-body-2 text-medium-emphasis text-center">
+        <p class="text-body-2 text-medium-emphasis text-center mb-0">
           Esta acción no se puede deshacer. La conversión será eliminada permanentemente del sistema.
         </p>
       </VCardText>
 
-      <VDivider class="mb-6" />
+      <VDivider />
 
       <!-- 👉 Actions -->
-      <VCardActions class="d-flex justify-center gap-4">
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
+          class="text-none px-6"
           :disabled="loader.loading"
           @click="closeDialog"
         >
@@ -158,15 +137,16 @@ const dialogVisibleUpdate = val => {
 
         <VBtn
           color="error"
+          variant="elevated"
           prepend-icon="ri-delete-bin-line"
+          class="text-none px-6"
           :loading="loader.loading"
           :disabled="loader.loading"
           @click="deleteConversion"
         >
-          Eliminar
+          Eliminar Conversión
         </VBtn>
       </VCardActions>
-      </div>
     </VCard>
   </VDialog>
 

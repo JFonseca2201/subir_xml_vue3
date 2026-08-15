@@ -110,18 +110,31 @@ const cancelDelete = () => {
         {{ error_exist }}
       </VAlert>
 
+      <VDivider />
+
       <!-- Acciones -->
-      <VCardActions class="pa-4 justify-center gap-3">
-        <VBtn variant="outlined" color="secondary" class="text-none px-6" :disabled="loader.loading"
-          @click="cancelDelete">
-          <VIcon start icon="ri-close-line" />
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          class="text-none px-6"
+          prepend-icon="ri-close-line"
+          :disabled="loader.loading"
+          @click="cancelDelete"
+        >
           Cancelar
         </VBtn>
 
-        <VBtn color="error" variant="elevated" class="text-none px-6" :loading="loader.loading"
-          :disabled="loader.loading" @click="confirmDelete">
-          <VIcon start icon="ri-delete-bin-6-line" />
-          Eliminar
+        <VBtn
+          color="error"
+          variant="elevated"
+          class="text-none px-6"
+          prepend-icon="ri-delete-bin-line"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+          @click="confirmDelete"
+        >
+          Eliminar Unidad
         </VBtn>
       </VCardActions>
 

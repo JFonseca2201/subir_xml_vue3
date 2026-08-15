@@ -159,10 +159,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
-
-      <!-- 👉 Form -->
-      <VForm @submit.prevent="update">
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- 👉 Form -->
+        <VForm
+          id="categorieEditForm"
+          @submit.prevent="update"
+        >
         <VRow dense>
           <!-- 👉 Nombre -->
           <VCol cols="12">
@@ -268,36 +270,38 @@ onMounted(() => {
             />
           </VCol>
 
-          <VDivider class="my-6" />
-
-          <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-edit-line"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              Actualizar
-            </VBtn>
-
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loader.loading"
-              @click="onFormReset"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="categorieEditForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Actualizar Categoría
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

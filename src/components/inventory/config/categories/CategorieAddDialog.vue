@@ -152,126 +152,130 @@ const dialogVisibleUpdate = val => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- 👉 Form -->
+        <VForm
+          id="categorieAddForm"
+          @submit.prevent="store"
+        >
+          <VRow dense>
+            <!-- 👉 Nombre -->
+            <VCol cols="12">
+              <VTextField
+                v-model="name"
+                label="Nombre de la categoría"
+                placeholder="Ej: Repuestos"
+                prepend-inner-icon="ri-store-line"
+                clearable
+              />
+            </VCol>
 
-      <!-- 👉 Form -->
-      <VForm @submit.prevent="store">
-        <VRow dense>
-          <!-- 👉 Nombre -->
-          <VCol cols="12">
-            <VTextField
-              v-model="name"
-              label="Nombre de la categoría"
-              placeholder="Ej: Repuestos"
-              prepend-inner-icon="ri-store-line"
-              clearable
-            />
-          </VCol>
+            <!-- 👉 Imagen -->
+            <VCol
+              cols="12"
+              md="12"
+            >
+              <VRow align="center">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VFileInput
+                    label="Subir Imagen"
+                    prepend-icon="ri-image-add-line"
+                    accept="image/*"
+                    @change="selectImagen"
+                  />
+                </VCol>
 
-          <!-- 👉 Imagen -->
-          <VCol
-            cols="12"
-            md="12"
-          >
-            <VRow align="center">
-              <VCol
-                cols="12"
-                md="6"
+                <VCol
+                  cols="12"
+                  md="6"
+                  class="d-flex justify-center"
+                >
+                  <VImg
+                    v-if="PREVIZUALIZA_IMAGEN"
+                    :src="PREVIZUALIZA_IMAGEN"
+                    max-width="120"
+                    max-height="120"
+                    contain
+                    class="rounded-lg border"
+                  />
+                </VCol>
+              </VRow>
+            </VCol>
+
+            <!-- 👉 Alert Warning -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                type="warning"
+                variant="tonal"
+                closable
               >
-                <VFileInput
-                  label="Imagen de la categoría"
-                  prepend-inner-icon="ri-image-line"
-                  accept="image/*"
-                  clearable
-                  @change="loadFile($event)"
-                  @click:clear="clearImage"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-                class="d-flex justify-center"
+                {{ warning }}
+              </VAlert>
+            </VCol>
+
+            <VCol
+              v-if="error_exits"
+              cols="12"
+            >
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
               >
-                <VAvatar
-                  v-if="PREVIZUALIZA_IMAGEN"
-                  :image="PREVIZUALIZA_IMAGEN"
-                  size="80"
-                  class="elevation-3"
-                />
-              </VCol>
-            </VRow>
-          </VCol>
+                {{ error_exits }}
+              </VAlert>
+            </VCol>
 
-          <VDivider class="my-6" />
-
-          <!-- 👉 Alerts -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              type="warning"
-              variant="tonal"
-              closable
+            <VCol
+              v-if="success"
+              cols="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
+              <VAlert
+                type="success"
+                variant="tonal"
+                closable
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
 
-          <VCol
-            v-if="error_exits"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-            >
-              {{ error_exits }}
-            </VAlert>
-          </VCol>
+      <VDivider />
 
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              type="success"
-              variant="tonal"
-              closable
-            >
-              {{ success }}
-            </VAlert>
-          </VCol>
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
 
-          <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-save-3-line"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              Guardar
-            </VBtn>
-
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loader.loading"
-              @click="onFormReset"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-      </div>
+        <VBtn
+          type="submit"
+          form="categorieAddForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Guardar Categoría
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

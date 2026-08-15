@@ -131,109 +131,112 @@ const dialogVisibleUpdate = val => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- 👉 Form -->
+        <VForm
+          id="unitAddForm"
+          @submit.prevent="store"
+        >
+          <VRow dense>
+            <!-- Nombre -->
+            <VCol cols="12">
+              <VTextField
+                v-model="name"
+                label="Nombre de la unidad"
+                placeholder="ej. Kilogramos, Litros, Unidades"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-ruler-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
 
-      <!-- 👉 Form -->
-      <VForm @submit.prevent="store">
-        <VRow dense>
-          <!-- Nombre -->
-          <VCol cols="12">
-            <VTextField
-              v-model="name"
-              label="Nombre de la unidad"
-              placeholder="ej. Kilogramos, Litros, Unidades"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-ruler-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
+            <!-- Descripción -->
+            <VCol cols="12">
+              <VTextarea
+                v-model="description"
+                label="Descripción"
+                placeholder="ej. Unidad de medida para peso, volumen, etc."
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-file-text-line"
+                hide-details="auto"
+                rows="3"
+              />
+            </VCol>
 
-          <!-- Descripción -->
-          <VCol cols="12">
-            <VTextarea
-              v-model="description"
-              label="Descripción"
-              placeholder="ej. Unidad de medida para peso, volumen, etc."
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-file-text-line"
-              hide-details="auto"
-              rows="3"
-            />
-          </VCol>
-
-          <!-- Alertas -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+            <!-- Alertas -->
+            <VCol
+              v-if="warning"
+              cols="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
 
-          <VCol
-            v-if="error_exits"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
+            <VCol
+              v-if="error_exits"
+              cols="12"
             >
-              {{ error_exits }}
-            </VAlert>
-          </VCol>
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                {{ error_exits }}
+              </VAlert>
+            </VCol>
 
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              color="success"
-              variant="tonal"
-              closable
+            <VCol
+              v-if="success"
+              cols="12"
             >
-              {{ success }}
-            </VAlert>
-          </VCol>
+              <VAlert
+                color="success"
+                variant="tonal"
+                closable
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
 
-          <VDivider class="my-6" />
+      <VDivider />
 
-          <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-save-3-line"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              Guardar
-            </VBtn>
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
 
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loader.loading"
-              @click="onFormReset"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-      </div>
+        <VBtn
+          type="submit"
+          form="unitAddForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Guardar Unidad
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

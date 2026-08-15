@@ -4483,6 +4483,299 @@
   }
 }
 
+// ============================================
+// DASHBOARD STYLES
+// ============================================
+
+.dashboard-container {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -10%;
+    width: 60vw;
+    height: 60vh;
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.12), transparent 70%);
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float-mesh 12s ease-in-out infinite alternate;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -10%;
+    width: 50vw;
+    height: 50vh;
+    background: radial-gradient(circle, rgba(var(--v-theme-info), 0.1), transparent 70%);
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float-mesh 15s ease-in-out infinite alternate-reverse;
+  }
+}
+
+@keyframes float-mesh {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+}
+
+/* Entrance Animations for Cards */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mock-card {
+  border-radius: 28px !important;
+  background: rgba(var(--v-theme-surface), 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.06) !important;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03) !important;
+
+  /* Stagger setup */
+  opacity: 0;
+  animation: slide-up-fade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Stagger delays based on layout order */
+.v-row:nth-of-type(1) .v-col:nth-child(1) .mock-card {
+  animation-delay: 0.1s;
+}
+
+.v-row:nth-of-type(1) .v-col:nth-child(2) .mock-card {
+  animation-delay: 0.15s;
+}
+
+.v-row:nth-of-type(1) .v-col:nth-child(3) .mock-card {
+  animation-delay: 0.2s;
+}
+
+.v-row:nth-of-type(2) .v-col:nth-child(1) .mock-card {
+  animation-delay: 0.25s;
+}
+
+.v-row:nth-of-type(2) .v-col:nth-child(2) .mock-card {
+  animation-delay: 0.3s;
+}
+
+.v-row:nth-of-type(3) .v-col:nth-child(1) .mock-card {
+  animation-delay: 0.35s;
+}
+
+.v-row:nth-of-type(3) .v-col:nth-child(2) .mock-card {
+  animation-delay: 0.4s;
+}
+
+.v-row:nth-of-type(4) .v-col:nth-child(1) .mock-card {
+  animation-delay: 0.45s;
+}
+
+.v-row:nth-of-type(4) .v-col:nth-child(2) .mock-card {
+  animation-delay: 0.5s;
+}
+
+.v-row:nth-of-type(4) .v-col:nth-child(3) .mock-card {
+  animation-delay: 0.55s;
+}
+
+.mock-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(var(--v-theme-primary), 0.15) !important;
+  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+  z-index: 10;
+}
+
+/* Premium Gradient KPI Cards */
+.mock-card-gradient-1 {
+  background: linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(115, 103, 240, 0.3) !important;
+}
+
+.mock-card-gradient-2 {
+  background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(38, 208, 206, 0.3) !important;
+}
+
+.mock-card-gradient-3 {
+  background: linear-gradient(135deg, #FF9F43 0%, #FF5A5F 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(255, 159, 67, 0.3) !important;
+}
+
+.mock-card-gradient-4 {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+  color: white !important;
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 15px 30px rgba(17, 153, 142, 0.3) !important;
+}
+
+.mock-card-gradient-1::before,
+.mock-card-gradient-2::before,
+.mock-card-gradient-3::before,
+.mock-card-gradient-4::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  animation: rotate-bg 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate-bg {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Premium Typography */
+.gradient-title {
+  background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Search Field Premium Styling */
+.search-field {
+  .v-field {
+    background: rgba(var(--v-theme-surface), 0.4) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 30px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  }
+
+  .v-field--focused {
+    background: rgba(var(--v-theme-surface), 0.9) !important;
+    box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.15) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* Calendar Pro Styles */
+.calendar-widget {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.calendar-header-day {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  color: rgb(var(--v-theme-on-surface));
+
+  &:hover:not(.is-empty) {
+    background-color: rgba(var(--v-theme-primary), 0.1);
+    transform: scale(1.15) translateY(-2px);
+  }
+
+  &.is-today {
+    background-color: rgba(var(--v-theme-primary), 0.15);
+    color: rgb(var(--v-theme-primary));
+    font-weight: 800;
+    border: 1px solid rgba(var(--v-theme-primary), 0.3);
+  }
+
+  &.is-selected {
+    background: linear-gradient(135deg, #fc466b, #3f5efb);
+    color: white;
+    box-shadow: 0 6px 15px rgba(63, 94, 251, 0.4);
+    transform: scale(1.15);
+    border: none;
+    font-weight: bold;
+  }
+
+  &.is-empty {
+    cursor: default;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .calendar-day {
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .calendar-header-day {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .mock-card {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+}
+
 
 
 

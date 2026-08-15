@@ -167,133 +167,127 @@ const onFormReset = () => {
         </p>
       </div>
 
-      <div class="pa-6 pa-sm-8">
-
-      <!-- Form -->
-      <VForm
-        ref="formRef"
-        @submit.prevent="update"
-      >
-        <VRow>
-          <!-- Nombre -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="warehouseSelected.name"
-              :rules="nameRules"
-              label="Nombre"
-              placeholder="ej. Almacén Central"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-store-line"
-              hide-details="auto"
-              required
-              closable
-            />
-          </VCol>
-
-          <!-- Dirección -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="warehouseSelected.address"
-              :rules="addressRules"
-              label="Dirección"
-              placeholder="ej. Calle Ficticia 123"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <!-- Estado -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VSelect
-              v-model="props.warehouseSelected.state"
-              label="Estado"
-              prepend-inner-icon="ri-toggle-line"
-              variant="outlined"
-              density="comfortable"
-              :items="[
-                { title: 'Activo', value: 0 },
-                { title: 'Inactivo', value: 1 }
-              ]"
-              required
-            />
-          </VCol>
-
-          <!-- Alertas de Error/Éxito -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- Form -->
+        <VForm
+          id="warehouseEditForm"
+          ref="formRef"
+          @submit.prevent="update"
+        >
+          <VRow>
+            <!-- Nombre -->
+            <VCol
+              cols="12"
+              sm="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
-          <!-- Alertas de Error/Éxito -->
-          <VCol
-            v-if="error_exist"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
-            >
-              {{ error_exist }}
-            </VAlert>
-          </VCol>
-
-          <!-- Acciones -->
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              class="text-none px-6"
-              @click="onFormReset"
-            >
-              <VIcon
-                start
-                icon="ri-close-line"
+              <VTextField
+                v-model="warehouseSelected.name"
+                :rules="nameRules"
+                label="Nombre"
+                placeholder="ej. Almacén Central"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-store-line"
+                hide-details="auto"
+                required
+                closable
               />
-              Cancelar
-            </VBtn>
+            </VCol>
 
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              class="text-none px-6"
-              :loading="loader.loading"
-              :disabled="loader.loading"
+            <!-- Dirección -->
+            <VCol
+              cols="12"
+              sm="12"
             >
-              <VIcon
-                start
-                icon="ri-save-3-line"
+              <VTextField
+                v-model="warehouseSelected.address"
+                :rules="addressRules"
+                label="Dirección"
+                placeholder="ej. Calle Ficticia 123"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-map-pin-line"
+                hide-details="auto"
+                required
               />
-              Actualizar Almacén
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-      </div>
+            </VCol>
+
+            <!-- Estado -->
+            <VCol
+              cols="12"
+              sm="12"
+            >
+              <VSelect
+                v-model="props.warehouseSelected.state"
+                label="Estado"
+                prepend-inner-icon="ri-toggle-line"
+                variant="outlined"
+                density="comfortable"
+                :items="[
+                  { title: 'Activo', value: 0 },
+                  { title: 'Inactivo', value: 1 }
+                ]"
+                required
+              />
+            </VCol>
+
+            <!-- Alertas de Error/Éxito -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
+            <!-- Alertas de Error/Éxito -->
+            <VCol
+              v-if="error_exist"
+              cols="12"
+            >
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                {{ error_exist }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Acciones -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          class="text-none px-6"
+          prepend-icon="ri-close-line"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="warehouseEditForm"
+          color="primary"
+          variant="elevated"
+          class="text-none px-6"
+          prepend-icon="ri-save-3-line"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Actualizar Almacén
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

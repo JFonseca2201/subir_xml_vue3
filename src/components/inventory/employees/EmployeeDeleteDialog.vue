@@ -93,10 +93,12 @@ const closeDialog = () => {
       </VCardText>
 
       <VDivider />
-      <VCardActions class="pa-4">
-        <VSpacer />
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
-          variant="text"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
           @click="closeDialog"
         >
           Cancelar
@@ -105,9 +107,10 @@ const closeDialog = () => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
+          class="text-none px-6"
           @click="confirmDelete"
         >
-          Eliminar
+          Eliminar Empleado
         </VBtn>
       </VCardActions>
     </VCard>

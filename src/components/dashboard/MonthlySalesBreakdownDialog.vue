@@ -151,42 +151,26 @@ const getRankIcon = index => {
     scrollable
     transition="dialog-bottom-transition"
   >
-    <VCard class="rounded-xl overflow-hidden shadow-2xl border-light">
-      <!-- Header Superior -->
-      <VCardTitle class="pa-5 bg-primary text-white d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="white"
-            variant="flat"
-            rounded="lg"
-            size="42"
-          >
-            <VIcon
-              icon="ri-bar-chart-grouped-line"
-              color="primary"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="text-h6 font-weight-bold text-white mb-0 leading-tight">
-              Reporte de Ventas por Mes (Mayor a Menor)
-            </div>
-            <div class="text-caption text-white opacity-85">
-              Desglose detallado comparando Productos Físicos vs. Servicios del Taller
-            </div>
-          </div>
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="isVisible = false"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-bar-chart-grouped-fill" />
         </div>
-
-        <div class="d-flex align-center gap-2">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            color="white"
-            size="small"
-            @click="isVisible = false"
-          />
-        </div>
-      </VCardTitle>
+        <h3 class="custom-dialog-title">
+          Reporte de Ventas por Mes (Mayor a Menor)
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Desglose detallado comparando Productos Físicos vs. Servicios del Taller
+        </p>
+      </div>
 
       <!-- Barra de Filtros Rápidos -->
       <div class="pa-4 bg-grey-lighten-4 border-b d-flex align-center justify-space-between flex-wrap gap-4">
@@ -413,14 +397,22 @@ const getRankIcon = index => {
           <div v-if="activeTab === 'products'">
             <div
               v-if="filteredProducts.length === 0"
-              class="pa-8 text-center text-medium-emphasis"
+              class="pa-10 text-center text-medium-emphasis d-flex flex-column align-center justify-center"
             >
-              <VIcon
-                icon="ri-inbox-line"
-                size="48"
-                class="mb-2 opacity-50"
-              />
-              <div>No se registraron ventas de productos físicos en el período seleccionado.</div>
+              <VAvatar
+                color="primary"
+                variant="tonal"
+                size="64"
+                class="mb-3"
+              >
+                <VIcon
+                  icon="ri-dropbox-line"
+                  size="36"
+                />
+              </VAvatar>
+              <div class="text-body-1 font-weight-medium">
+                No se registraron ventas de productos físicos en el período seleccionado.
+              </div>
             </div>
 
             <VTable

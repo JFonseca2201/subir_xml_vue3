@@ -415,19 +415,25 @@ const openDialog = () => {
             </VAlert>
           </div>
           <VDivider />
-          <VCardActions class="pa-4 justify-end">
+          <VCardActions class="pa-4 justify-end bg-white">
             <VBtn
               variant="outlined"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              class="text-none px-6"
               @click="closeDialog"
             >
               Cancelar
             </VBtn>
             <VBtn
               color="error"
+              variant="elevated"
+              prepend-icon="ri-save-3-line"
+              class="text-none px-6"
               :disabled="totalToRegister <= 0"
               @click="saveExpense"
             >
-              {{ props.editingMovement ? 'Actualizar' : 'Guardar' }}
+              {{ props.editingMovement ? 'Actualizar Egreso' : 'Guardar Egreso' }}
             </VBtn>
           </VCardActions>
         </VForm>

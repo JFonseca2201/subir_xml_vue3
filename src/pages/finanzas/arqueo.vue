@@ -1412,21 +1412,46 @@ onMounted(() => {
         </VCol>
       </VRow>
       <!-- Confirmación de sellado -->
+      <!-- Confirmación de sellado -->
       <VDialog
         v-model="confirmSealDialog"
         persistent
         max-width="480"
       >
-        <VCard>
-          <VCardTitle class="text-h6">
-            Confirmar Sellado del Día
-          </VCardTitle>
-          <VCardText>
+        <VCard class="custom-dialog-card elevation-24">
+          <!-- Header Banner Primary -->
+          <div class="custom-dialog-header-primary">
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              class="custom-dialog-close-btn"
+              :disabled="sealing"
+              @click="confirmSealDialog = false"
+            />
+            <div class="custom-dialog-avatar">
+              <VIcon icon="ri-lock-password-line" />
+            </div>
+            <h3 class="custom-dialog-title">
+              Confirmar Sellado del Día
+            </h3>
+            <p class="custom-dialog-subtitle">
+              Esta acción cerrará permanentemente los registros de arqueo
+            </p>
+          </div>
+
+          <VCardText class="pa-6 text-center text-body-1">
             ¿Estás seguro de que deseas sellar el día seleccionado? Esta acción no podrá deshacerse.
           </VCardText>
-          <VCardActions class="pa-4">
+
+          <VDivider />
+
+          <VCardActions class="pa-4 justify-end bg-white">
             <VBtn
-              text
+              variant="outlined"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              class="text-none px-6"
               :disabled="sealing"
               @click="confirmSealDialog = false"
             >
@@ -1434,11 +1459,14 @@ onMounted(() => {
             </VBtn>
             <VBtn
               color="success"
+              variant="elevated"
+              prepend-icon="ri-check-line"
+              class="text-none px-6"
               :loading="sealing"
               :disabled="sealing"
               @click="confirmSeal"
             >
-              Confirmar
+              Confirmar Sellado
             </VBtn>
           </VCardActions>
         </VCard>
@@ -1449,28 +1477,30 @@ onMounted(() => {
         v-model="prevCountDetailsDialog"
         max-width="600"
       >
-        <VCard class="rounded-xl border-light border">
-          <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-            <template #title>
-              <div class="d-flex align-center gap-2">
-                <VIcon
-                  icon="ri-history-line"
-                  color="primary"
-                  size="24"
-                />
-                <span class="text-h6 font-weight-bold text-grey-darken-3">Desglose de Efectivo del Día Anterior</span>
-              </div>
-            </template>
-            <template #append>
-              <span class="text-caption text-grey-darken-1 font-weight-bold">
-                {{ initialBalances.origin_date || 'N/A' }}
-              </span>
-            </template>
-          </VCardItem>
+        <VCard class="custom-dialog-card elevation-24">
+          <!-- Header Banner Primary -->
+          <div class="custom-dialog-header-primary">
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              class="custom-dialog-close-btn"
+              @click="prevCountDetailsDialog = false"
+            />
+            <div class="custom-dialog-avatar">
+              <VIcon icon="ri-history-line" />
+            </div>
+            <h3 class="custom-dialog-title">
+              Desglose de Efectivo del Día Anterior
+            </h3>
+            <p class="custom-dialog-subtitle">
+              Fecha del cierre: {{ initialBalances.origin_date || 'N/A' }}
+            </p>
+          </div>
 
           <VCardText
             v-if="initialBalances.cash_details"
-            class="pa-4 bg-white"
+            class="pa-6 bg-white"
           >
             <VRow>
               <!-- Billetes -->
@@ -1609,11 +1639,12 @@ onMounted(() => {
           </VCardText>
 
           <VDivider />
-          <VCardActions class="pa-4 justify-end">
+          <VCardActions class="pa-4 justify-end bg-white">
             <VBtn
-              color="secondary"
               variant="outlined"
-              class="font-weight-bold text-none"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              class="text-none px-6"
               @click="prevCountDetailsDialog = false"
             >
               Cerrar

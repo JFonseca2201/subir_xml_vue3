@@ -102,8 +102,7 @@ const dialogVisibleUpdate = val => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4 text-center">
-
+      <VCardText class="pa-6 pa-sm-8 text-center">
         <!-- 👉 Imagen de la categoría -->
         <div class="text-center mb-6">
           <VAvatar
@@ -119,33 +118,20 @@ const dialogVisibleUpdate = val => {
             color="medium-emphasis"
             class="mb-3"
           />
+          <h4 class="text-h5 font-weight-bold text-high-emphasis">
+            {{ props.categorieSelected.title || props.categorieSelected.name }}
+          </h4>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            ¿Está seguro de que desea eliminar esta categoría?
+          </p>
         </div>
 
         <!-- 👉 Form -->
         <VForm
-          class="mt-4"
-          @submit.prevent="deleteCategorie"
+          id="categorieDeleteForm"
+          @submit.prevent="onFormSubmit"
         >
-          <VRow>
-            <!-- 👉 First Name -->
-            <VCol cols="12">
-              <p>
-                ¿Estas seguro de eliminar la categoria
-                {{ props.categorieSelected.title }}?
-              </p>
-            </VCol>
-            <VCol
-              v-if="warning"
-              cols="12"
-            >
-              <VAlert
-                closable
-                close-label="Close Alert"
-                color="warning"
-              >
-                {{ warning }}
-              </VAlert>
-            </VCol>
+          <VRow dense>
             <VCol
               v-if="error_exits"
               cols="12"
@@ -170,34 +156,38 @@ const dialogVisibleUpdate = val => {
                 {{ success }}
               </VAlert>
             </VCol>
-            <!-- 👉 Submit and Cancel -->
-            <VCol
-              cols="12"
-              class="d-flex flex-wrap justify-center gap-4"
-            >
-              <VBtn
-                type="submit"
-                color="error"
-                prepend-icon="ri-delete-bin-line"
-                :loading="loader.loading"
-                :disabled="loader.loading"
-              >
-                Eliminar
-              </VBtn>
-
-              <VBtn
-                color="secondary"
-                variant="outlined"
-                prepend-icon="ri-close-line"
-                :disabled="loader.loading"
-                @click="onFormReset"
-              >
-                Cancelar
-              </VBtn>
-            </VCol>
           </VRow>
         </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Fixed Actions Footer -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loader.loading"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="categorieDeleteForm"
+          color="error"
+          variant="elevated"
+          prepend-icon="ri-delete-bin-line"
+          class="text-none px-6"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Eliminar Categoría
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

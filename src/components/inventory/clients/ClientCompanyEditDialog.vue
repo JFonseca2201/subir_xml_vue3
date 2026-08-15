@@ -378,34 +378,34 @@ onMounted(() => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="pa-sm-10 pa-5">
-      <!-- Botón cerrar -->
-      <DialogCloseBtn
-        variant="text"
-        size="default"
-        @click="closeDialog"
-      />
-
-      <!-- Header -->
-      <VCardText class="text-center pb-6">
-        <VIcon
-          icon="ri-building-line"
-          size="42"
-          color="primary"
-          class="mb-3"
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
         />
-        <h4 class="text-h4 font-weight-bold mb-1">
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-building-line" />
+        </div>
+        <h3 class="custom-dialog-title">
           Editar Cliente Empresa
-        </h4>
-        <p class="text-body-2 text-medium-emphasis">
-          Modificación de datos del cliente jurídico o compañía
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Modifica la información registrada de la persona jurídica
         </p>
-      </VCardText>
+      </div>
+
+      <VCardText class="pa-6 pa-sm-8">
 
       <VDivider class="mb-6" />
 
       <!-- Form -->
       <VForm
+        id="clientCompanyEditForm"
         ref="formRef"
         @submit.prevent="updateClient"
       >
@@ -649,34 +649,37 @@ onMounted(() => {
               {{ success }}
             </VAlert>
           </VCol>
-
-          <!-- Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-save-3-line"
-              :loading="loading"
-              :disabled="loading"
-            >
-              Actualizar Empresa
-            </VBtn>
-
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loading"
-              @click="closeDialog"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
+      </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loading"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="clientCompanyEditForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loading"
+          :disabled="loading"
+        >
+          Actualizar Empresa
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

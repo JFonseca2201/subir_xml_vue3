@@ -145,101 +145,95 @@ const onFormReset = () => {
         </p>
       </div>
 
-      <div class="pa-6 pa-sm-8">
-
-      <!-- Form -->
-      <VForm
-        ref="formRef"
-        @submit.prevent="store"
-      >
-        <VRow>
-          <!-- Nombre -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="warehouse.name"
-              :rules="nameRules"
-              label="Nombre"
-              placeholder="ej. Almacén Central"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-store-line"
-              hide-details="auto"
-              required
-              closable
-            />
-          </VCol>
-
-          <!-- Dirección -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="warehouse.address"
-              :rules="addressRules"
-              label="Dirección"
-              placeholder="ej. Calle Ficticia 123"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <!-- Alertas de Error/Éxito -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- Form -->
+        <VForm
+          id="warehouseAddForm"
+          ref="formRef"
+          @submit.prevent="store"
+        >
+          <VRow>
+            <!-- Nombre -->
+            <VCol
+              cols="12"
+              sm="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
-
-          <!-- Acciones -->
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              class="text-none px-6"
-              @click="onFormReset"
-            >
-              <VIcon
-                start
-                icon="ri-close-line"
+              <VTextField
+                v-model="warehouse.name"
+                :rules="nameRules"
+                label="Nombre"
+                placeholder="ej. Almacén Central"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-store-line"
+                hide-details="auto"
+                required
+                closable
               />
-              Cancelar
-            </VBtn>
+            </VCol>
 
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              class="text-none px-6"
-              :loading="loader.loading"
-              :disabled="loader.loading"
+            <!-- Dirección -->
+            <VCol
+              cols="12"
+              sm="12"
             >
-              <VIcon
-                start
-                icon="ri-save-3-line"
+              <VTextField
+                v-model="warehouse.address"
+                :rules="addressRules"
+                label="Dirección"
+                placeholder="ej. Calle Ficticia 123"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-map-pin-line"
+                hide-details="auto"
+                required
               />
-              Guardar Almacén
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-      </div>
+            </VCol>
+
+            <!-- Alertas de Error/Éxito -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Acciones -->
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          class="text-none px-6"
+          prepend-icon="ri-close-line"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="warehouseAddForm"
+          color="primary"
+          variant="elevated"
+          class="text-none px-6"
+          prepend-icon="ri-save-3-line"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Guardar Almacén
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

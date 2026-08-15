@@ -512,18 +512,7 @@ const save = async () => {
 
       <!-- Bottom Sticky Actions -->
       <VDivider />
-      <VCardActions class="pa-4 d-flex justify-center gap-4">
-        <VBtn
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-line"
-          :loading="isSaving"
-          class="px-6 rounded-lg"
-          @click="save"
-        >
-          {{ props.requestSelected ? 'Actualizar Registro' : 'Guardar Registro' }}
-        </VBtn>
-
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
           variant="outlined"
           color="secondary"
@@ -533,6 +522,17 @@ const save = async () => {
           @click="closeDialog"
         >
           Cancelar
+        </VBtn>
+
+        <VBtn
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          :loading="isSaving"
+          class="px-6 rounded-lg"
+          @click="save"
+        >
+          {{ props.requestSelected ? 'Actualizar Registro' : 'Guardar Registro' }}
         </VBtn>
       </VCardActions>
     </VCard>

@@ -188,102 +188,105 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="pa-sm-6 pa-4">
+      <VCardText class="pa-6 pa-sm-8">
+        <VForm
+          id="addServiceForm"
+          ref="formRef"
+          @submit.prevent="saveService"
+        >
+          <VRow>
+            <VCol cols="12">
+              <VTextField
+                v-model="serviceForm.description"
+                label="Descripción del Servicio *"
+                placeholder="Ej. CAMBIO DE ACEITE Y FILTRO"
+                prepend-inner-icon="ri-tools-line"
+                :rules="rules.description"
+                variant="outlined"
+                density="comfortable"
+                required
+              />
+            </VCol>
 
-      <VDivider class="mb-6" />
-
-      <VForm
-        ref="formRef"
-        @submit.prevent="saveService"
-      >
-        <VRow>
-          <VCol cols="12">
-            <VTextField
-              v-model="serviceForm.description"
-              label="Descripción del Servicio *"
-              placeholder="Ej. CAMBIO DE ACEITE Y FILTRO"
-              prepend-inner-icon="ri-tools-line"
-              :rules="rules.description"
-              variant="outlined"
-              density="comfortable"
-              required
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="serviceForm.price_sale"
-              label="Precio de Venta *"
-              placeholder="0.00"
-              prefix="$"
-              prepend-inner-icon="ri-money-dollar-circle-line"
-              :rules="rules.price_sale"
-              variant="outlined"
-              density="comfortable"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-            class="d-flex align-center justify-space-between pl-sm-6"
-          >
-            <div class="d-flex flex-column">
-              <span class="text-subtitle-2 font-weight-bold">Grava IVA (15%)</span>
-              <span class="text-caption text-medium-emphasis">¿Aplica impuestos al servicio?</span>
-            </div>
-            <VSwitch
-              v-model="serviceForm.is_taxable"
-              color="primary"
-              hide-details
-            />
-          </VCol>
-
-          <VCol
-            v-if="error"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-              class="ma-0 text-caption"
+            <VCol
+              cols="12"
+              sm="6"
             >
-              {{ error }}
-            </VAlert>
-          </VCol>
+              <VTextField
+                v-model="serviceForm.price_sale"
+                label="Precio de Venta *"
+                placeholder="0.00"
+                prefix="$"
+                prepend-inner-icon="ri-money-dollar-circle-line"
+                :rules="rules.price_sale"
+                variant="outlined"
+                density="comfortable"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+              />
+            </VCol>
 
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              :disabled="loading"
-              @click="closeDialog"
+            <VCol
+              cols="12"
+              sm="6"
+              class="d-flex align-center justify-space-between pl-sm-6"
             >
-              Cancelar
-            </VBtn>
-            <VBtn
-              type="submit"
-              color="primary"
-              :loading="loading"
-              prepend-icon="ri-save-3-line"
+              <div class="d-flex flex-column">
+                <span class="text-subtitle-2 font-weight-bold">Grava IVA (15%)</span>
+                <span class="text-caption text-medium-emphasis">¿Aplica impuestos al servicio?</span>
+              </div>
+              <VSwitch
+                v-model="serviceForm.is_taxable"
+                color="primary"
+                hide-details
+              />
+            </VCol>
+
+            <VCol
+              v-if="error"
+              cols="12"
             >
-              Guardar Servicio
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VForm>
-      </div>
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
+                class="ma-0 text-caption"
+              >
+                {{ error }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 justify-end bg-white">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
+          :disabled="loading"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          type="submit"
+          form="addServiceForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="text-none px-6"
+          :loading="loading"
+          :disabled="loading"
+        >
+          Guardar Servicio
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

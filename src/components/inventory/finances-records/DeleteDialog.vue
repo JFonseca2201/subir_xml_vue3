@@ -131,22 +131,26 @@ watch(() => props.modelValue, newVal => {
         </VAlert>
       </VCardText>
       <VDivider />
-      <VCardActions class="pa-4">
+      <VCardActions class="pa-4 justify-end bg-white">
         <VBtn
           variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="text-none px-6"
           :disabled="loading"
           @click="closeDialog"
         >
           Cancelar
         </VBtn>
-        <VSpacer />
         <VBtn 
           color="error" 
-          :loading="loading" 
+          variant="elevated"
           prepend-icon="ri-delete-bin-line"
+          class="text-none px-6"
+          :loading="loading" 
           @click="confirmDelete"
         >
-          Eliminar
+          Eliminar Movimiento
         </VBtn>
       </VCardActions>
     </VCard>
