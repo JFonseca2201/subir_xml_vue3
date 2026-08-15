@@ -262,24 +262,24 @@ onMounted(() => {
     <OperationsHeaderNav active-tab="socios" />
 
     <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-4 pa-sm-5 elevation-1 sticky-header">
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-4">
+        <div class="d-flex align-center gap-3">
           <VAvatar
             color="primary"
             variant="tonal"
             rounded="lg"
-            size="56"
+            size="44"
             class="elevation-1"
           >
             <VIcon
               icon="ri-group-line"
-              size="32"
+              size="24"
             />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2">
-              <h1 class="text-h4 font-weight-bold text-high-emphasis mb-0">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                 Aportes de Capital
               </h1>
               <VChip
@@ -291,7 +291,7 @@ onMounted(() => {
                 {{ totalAportesCount }} {{ totalAportesCount === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
-            <p class="text-body-1 text-medium-emphasis mb-0 mt-1">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
               Gestión de aportes de socios y control de capital acumulado
             </p>
           </div>
@@ -303,13 +303,14 @@ onMounted(() => {
             variant="tonal"
             color="secondary"
             icon="ri-refresh-line"
+            size="small"
             :loading="loading"
             @click="loadAportes"
           />
           <VBtn
             color="primary"
             variant="elevated"
-            size="large"
+            size="small"
             prepend-icon="ri-add-circle-line"
             class="font-weight-semibold elevation-2"
             @click="openCreateDialog"
@@ -321,7 +322,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
-    <VRow class="mb-6">
+    <VRow class="mb-5">
       <!-- Aportes Hoy -->
       <VCol
         cols="12"
@@ -329,7 +330,7 @@ onMounted(() => {
         md="4"
       >
         <VCard
-          class="pa-5 rounded-xl tonal-card bg-primary-tonal border-primary"
+          class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card"
           elevation="0"
         >
           <div class="d-flex align-center justify-space-between">
@@ -337,7 +338,7 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
                 Aportes Hoy
               </span>
-              <div class="text-h4 font-weight-extrabold text-high-emphasis mt-1">
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(resumen.total_hoy) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -347,11 +348,11 @@ onMounted(() => {
             <VAvatar
               color="primary"
               variant="elevated"
-              size="52"
-              class="elevation-3"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
               <VIcon
-                size="28"
+                size="24"
                 icon="ri-calendar-check-line"
                 color="white"
               />
@@ -367,7 +368,7 @@ onMounted(() => {
         md="4"
       >
         <VCard
-          class="pa-5 rounded-xl tonal-card bg-success-tonal border-success"
+          class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card"
           elevation="0"
         >
           <div class="d-flex align-center justify-space-between">
@@ -375,7 +376,7 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
                 Aportes del Mes
               </span>
-              <div class="text-h4 font-weight-extrabold text-high-emphasis mt-1">
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(resumen.total_mes) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -385,11 +386,11 @@ onMounted(() => {
             <VAvatar
               color="success"
               variant="elevated"
-              size="52"
-              class="elevation-3"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
               <VIcon
-                size="28"
+                size="24"
                 icon="ri-calendar-event-fill"
                 color="white"
               />
@@ -405,7 +406,7 @@ onMounted(() => {
         md="4"
       >
         <VCard
-          class="pa-5 rounded-xl tonal-card bg-info-tonal border-info"
+          class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card"
           elevation="0"
         >
           <div class="d-flex align-center justify-space-between">
@@ -413,7 +414,7 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
                 Total General
               </span>
-              <div class="text-h4 font-weight-extrabold text-high-emphasis mt-1">
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(resumen.total_general) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -423,11 +424,11 @@ onMounted(() => {
             <VAvatar
               color="info"
               variant="elevated"
-              size="52"
-              class="elevation-3"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
               <VIcon
-                size="28"
+                size="24"
                 icon="ri-money-dollar-box-line"
                 color="white"
               />

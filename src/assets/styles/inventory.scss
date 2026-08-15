@@ -4329,3 +4329,47 @@
   }
 }
 
+// ============================================
+// OPERATIONS & FINANCES MODULE STYLES (COMPACT KPI CARDS)
+// ============================================
+.operations-kpi-card {
+  padding: 1rem !important;
+  border-radius: 1rem !important;
+  transition: all 0.2s ease-in-out;
+
+  .kpi-amount {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.3px;
+  }
+
+  .kpi-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+  }
+}
+
+.operations-header-action-btn {
+  height: 36px !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  font-weight: 600 !important;
+}
+
+// Typography scaling for Operations Navigation Header & Page Headers
+.operations-page-title {
+  font-size: 1.3rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.2px !important;
+  line-height: 1.25 !important;
+}
+
+.operations-page-subtitle {
+  font-size: 0.825rem !important;
+  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+}
+
+
+
+

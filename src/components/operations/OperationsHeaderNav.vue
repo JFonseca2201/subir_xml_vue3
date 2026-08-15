@@ -59,37 +59,22 @@ const navigateTo = itemRoute => {
 </script>
 
 <template>
-  <div class="operations-header-nav mb-5">
-    <!-- Encabezado Principal Compacto -->
-    <VCard
-      elevation="1"
-      class="mb-4 rounded-xl border-light pa-3 pa-sm-4 bg-white"
-    >
-      <div class="d-flex align-center justify-space-between flex-wrap gap-2">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="38"
-            class="elevation-0"
-          >
-            <VIcon
-              icon="ri-exchange-funds-line"
-              size="22"
-            />
-          </VAvatar>
-          <div>
-            <h2 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0 leading-tight">
-              Gestión de Operaciones
-            </h2>
-            <p class="text-caption text-medium-emphasis mb-0">
-              Control financiero integral para tu negocio
-            </p>
-          </div>
-        </div>
-      </div>
-    </VCard>
+  <div class="operations-header-nav mt-2 mt-sm-4 mb-5">
+    <!-- Encabezado Principal Sin Recuadro (Estilo Gestión de Cartera) -->
+    <div class="mb-6">
+      <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+        <VIcon
+          icon="ri-exchange-funds-line"
+          color="primary"
+          class="me-2"
+          size="28"
+        />
+        Gestión de Operaciones
+      </h1>
+      <p class="text-medium-emphasis mb-0">
+        Control financiero integral para tu negocio
+      </p>
+    </div>
 
     <!-- 4 Tarjetas de Acceso Rápido Compactas -->
     <VRow dense>
