@@ -249,7 +249,7 @@ const openDialog = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="props.modelValue"
     max-width="600"
     persistent
@@ -415,12 +415,13 @@ const openDialog = () => {
             </VAlert>
           </div>
           <VDivider />
-          <VCardActions class="pa-4 justify-end bg-white">
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
             <VBtn
               variant="outlined"
               color="secondary"
               prepend-icon="ri-close-line"
-              class="text-none px-6"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
               @click="closeDialog"
             >
               Cancelar
@@ -428,8 +429,9 @@ const openDialog = () => {
             <VBtn
               color="error"
               variant="elevated"
-              prepend-icon="ri-save-3-line"
-              class="text-none px-6"
+              :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
               :disabled="totalToRegister <= 0"
               @click="saveExpense"
             >

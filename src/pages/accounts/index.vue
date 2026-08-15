@@ -464,7 +464,7 @@ onMounted(() => {
     <AccountFormDialog v-model="showAccountDialog" :account-data="editingAccount" @account-created="onAccountCreated"
       @account-updated="onAccountUpdated" />
 
-    <VDialog v-model="showDeleteDialog" max-width="400">
+    <VDialog scrollable v-model="showDeleteDialog" max-width="400">
       <VCard class="pa-4 rounded-xl border-thin">
         <VCardTitle class="px-0 pt-0">
           <div class="d-flex align-center gap-2">
@@ -482,14 +482,27 @@ onMounted(() => {
           <span class="text-body-2 text-medium-emphasis">Esta acción no se puede deshacer.</span>
         </VCardText>
 
-        <VCardActions class="px-0 pb-0">
-          <VSpacer />
-          <VBtn variant="tonal" color="secondary" class="text-none" :disabled="loader.loading"
-            @click="closeDeleteDialog">
+        <VCardActions class="px-0 pb-0 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            :disabled="loader.loading"
+            @click="closeDeleteDialog"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="error" variant="elevated" class="text-none" :loading="loader.loading"
-            @click="confirmDeleteAccount">
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            :loading="loader.loading"
+            @click="confirmDeleteAccount"
+          >
             Eliminar
           </VBtn>
         </VCardActions>

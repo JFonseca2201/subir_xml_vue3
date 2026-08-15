@@ -213,7 +213,7 @@ watch(() => props.modelValue, newValue => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="modelValue"
     max-width="800"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -402,12 +402,13 @@ watch(() => props.modelValue, newValue => {
       </VCardText>
 
       <VDivider />
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="closeDialog"
         >
           Cancelar
@@ -416,7 +417,8 @@ watch(() => props.modelValue, newValue => {
           color="primary"
           variant="elevated"
           prepend-icon="ri-save-3-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="saveEmployee"
         >
           Crear Empleado

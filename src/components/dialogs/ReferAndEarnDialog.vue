@@ -32,7 +32,7 @@ const referAndEarnSteps = [
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="props.isDialogVisible"
     max-width="800"
     @update:model-value="dialogVisibleUpdate"

@@ -92,7 +92,7 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="props.isDialogVisible"
     max-width="600"
     persistent
@@ -143,26 +143,28 @@ const closeDialog = () => {
         </VAlert>
       </VCardText>
       <VDivider />
-      <VCardActions class="pa-4 justify-end gap-3">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
-          variant="tonal"
-          color="error"
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
           :disabled="loader.loading"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="closeDialog"
         >
-          <VIcon left>
-            ri-close-circle-line
-          </VIcon> &nbsp; Cancelar
+          Cancelar
         </VBtn>
         <VBtn
+          color="primary"
           variant="elevated"
-          color="success"
+          prepend-icon="ri-upload-cloud-2-line"
           :loading="loader.loading"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="importExcel"
         >
-          <VIcon left>
-            ri-file-excel-2-line
-          </VIcon> &nbsp; Importar Data
+          Importar Data
         </VBtn>
       </VCardActions>
     </VCard>

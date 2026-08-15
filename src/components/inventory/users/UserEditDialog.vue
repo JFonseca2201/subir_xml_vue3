@@ -310,7 +310,7 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -339,10 +339,11 @@ const onFormReset = () => {
 
       <VCardText class="pa-6 pa-sm-8">
         <!-- Form -->
-      <VForm
-        ref="formRef"
-        @submit.prevent="update"
-      >
+        <VForm
+          id="userEditForm"
+          ref="formRef"
+          @submit.prevent="update"
+        >
         <VRow>
           <!-- Nombre y Apellido -->
           <VCol
@@ -651,42 +652,39 @@ const onFormReset = () => {
               {{ error_exist }}
             </VAlert>
           </VCol>
-          <!-- Acciones -->
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              class="text-none px-6"
-              @click="onFormReset"
-            >
-              <VIcon
-                start
-                icon="ri-close-line"
-              />
-              Cancelar
-            </VBtn>
-
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              class="text-none px-6"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              <VIcon
-                start
-                icon="ri-save-3-line"
-              />
-              Actualizar Usuario
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <!-- Acciones Fijas -->
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="userEditForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Actualizar Usuario
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

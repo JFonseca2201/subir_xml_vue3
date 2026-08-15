@@ -194,7 +194,7 @@ const vehicleHeader = computed(() => {
 
       <!-- Sticky Close Button -->
       <VDivider />
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 justify-end bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"

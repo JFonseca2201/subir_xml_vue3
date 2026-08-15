@@ -454,7 +454,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Dialog de Detalles de Devolución -->
-    <VDialog
+    <VDialog scrollable
       v-model="isViewDialogVisible"
       max-width="700"
     >
@@ -650,11 +650,13 @@ onMounted(() => {
           </div>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4">
-          <VSpacer />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             color="secondary"
-            variant="text"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isViewDialogVisible = false"
           >
             Cerrar
@@ -664,7 +666,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Dialog de Confirmación de Eliminación -->
-    <VDialog
+    <VDialog scrollable
       v-model="showDeleteDialog"
       max-width="500"
     >
@@ -693,16 +695,18 @@ onMounted(() => {
           <p class="text-body-1">
             ¿Estás seguro de eliminar la devolución <strong>#{{ returnToDelete?.return_number }}</strong>?
           </p>
-          <p class="text-body-2 text-error font-weight-medium mt-2">
+          <p class="text-body-2 text-error font-weight-medium mt-2 mb-0">
             Esta acción no se puede deshacer y revertirá los cambios de stock en el inventario.
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4">
-          <VSpacer />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             color="secondary"
-            variant="text"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             :disabled="deleteLoading"
             @click="showDeleteDialog = false"
           >
@@ -710,6 +714,10 @@ onMounted(() => {
           </VBtn>
           <VBtn
             color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             :loading="deleteLoading"
             @click="confirmDeleteReturn"
           >

@@ -1586,7 +1586,13 @@ onMounted(async () => {
                           :title="item.raw.license_plate"
                         >
                           <VListItemSubtitle class="mt-1 text-grey">
-                            {{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}
+                            <span>{{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}</span>
+                            <span
+                              v-if="item.raw.client"
+                              class="text-primary font-weight-medium ms-2"
+                            >
+                              • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' + (item.raw.client.surname || '')) }}
+                            </span>
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
@@ -2269,21 +2275,30 @@ onMounted(async () => {
     />
 
     <!-- Diálogo de importación de orden de trabajo -->
-    <VDialog
+    <VDialog scrollable
       v-model="isWorkOrderImportDialogVisible"
       max-width="800px"
     >
-      <VCard>
-        <VCardTitle class="pa-4 d-flex align-center justify-space-between bg-primary text-white">
-          <span class="text-h6">Importar Orden de Trabajo</span>
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
           <VBtn
             icon="ri-close-line"
             variant="text"
-            color="white"
+            size="small"
+            class="custom-dialog-close-btn"
             @click="isWorkOrderImportDialogVisible = false"
           />
-        </VCardTitle>
-        <VDivider />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-file-download-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Importar Orden de Trabajo
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Selecciona una orden de trabajo finalizada para facturarla
+          </p>
+        </div>
         <VCardText class="pa-4">
           <div
             v-if="isLoadingWorkOrders"
@@ -2373,6 +2388,19 @@ onMounted(async () => {
             </div>
           </div>
         </VCardText>
+        <VDivider />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="isWorkOrderImportDialogVisible = false"
+          >
+            Cerrar
+          </VBtn>
+        </VCardActions>
       </VCard>
     </VDialog>
 

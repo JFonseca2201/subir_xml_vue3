@@ -643,18 +643,36 @@ const generateSinglePDF = sale => {
 
       <VDivider />
 
-      <VCardActions class="pa-4">
-        <VSpacer />
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line" @click="closeDialog">
-          Cerrar
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-file-pdf-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="generateSinglePDF(props.saleData)"
+        >
+          Ver PDF
         </VBtn>
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-printer-line" @click="printSale(props.saleData.id)">
+        <VBtn
+          color="info"
+          variant="tonal"
+          prepend-icon="ri-printer-line"
+          class="rounded-lg px-4 font-weight-medium"
+          height="40"
+          @click="printSale(props.saleData.id)"
+        >
           Imprimir
         </VBtn>
-
-        <VBtn color="primary" variant="tonal" prepend-icon="ri-file-pdf-line"
-          @click="generateSinglePDF(props.saleData)">
-          Ver PDF
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="closeDialog"
+        >
+          Cerrar
         </VBtn>
       </VCardActions>
     </VCard>

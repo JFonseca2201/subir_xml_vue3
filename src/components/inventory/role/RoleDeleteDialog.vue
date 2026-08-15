@@ -75,7 +75,7 @@ const dialogVisibleUpdate = val => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="props.isDialogVisible"
     max-width="520"
     persistent
@@ -145,11 +145,13 @@ const dialogVisibleUpdate = val => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
-          class="text-none px-6"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="onFormReset"
         >
@@ -159,14 +161,12 @@ const dialogVisibleUpdate = val => {
         <VBtn
           color="error"
           variant="elevated"
-          class="text-none px-6"
+          prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           @click="deleteRol"
         >
-          <VIcon
-            start
-            icon="ri-delete-bin-line"
-          />
           Eliminar
         </VBtn>
       </VCardActions>

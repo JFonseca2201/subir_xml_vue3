@@ -99,7 +99,7 @@ const handleImageError = () => {
 </script>
 
 <template>
-  <VDialog 
+  <VDialog scrollable 
     :model-value="showDialog" 
     max-width="400"
     persistent
@@ -173,12 +173,14 @@ const handleImageError = () => {
 
       <VDivider />
 
-      <VCardActions class="pa-4">
-        <VSpacer />
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn 
           variant="outlined" 
-          :disabled="isLoading"
+          color="secondary"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          :disabled="isLoading"
           @click="closeDialog"
         >
           Cancelar
@@ -186,9 +188,11 @@ const handleImageError = () => {
         <VBtn 
           color="error" 
           variant="elevated"
+          prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="isLoading || loader.loading"
           :disabled="isLoading || loader.loading"
-          prepend-icon="ri-delete-bin-line"
           @click="deleteProduct"
         >
           Eliminar

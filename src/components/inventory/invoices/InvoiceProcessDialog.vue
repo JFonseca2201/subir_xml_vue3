@@ -207,7 +207,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="props.isDialogVisible"
     max-width="700"
     persistent
@@ -499,12 +499,13 @@ onMounted(() => {
       <VDivider />
 
       <!-- Footer -->
-      <VCardActions class="justify-end px-6 pb-6 pt-3 bg-grey-lighten-4 border-t gap-2">
+      <VCardActions class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-3 bg-grey-lighten-4 border-t" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           color="secondary"
-          variant="tonal"
-          rounded="lg"
+          variant="outlined"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="onFormReset"
         >
@@ -513,9 +514,10 @@ onMounted(() => {
 
         <VBtn
           color="success"
-          variant="flat"
-          rounded="lg"
+          variant="elevated"
           prepend-icon="ri-check-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="hasMissingCategories || (paymentType === 'efectivo' && !isPaymentBalanced)"
           @click="processInvoice"

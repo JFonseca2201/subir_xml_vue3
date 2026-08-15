@@ -1100,39 +1100,32 @@ onMounted(() => {
     />
 
     <!-- Convert Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="isConvertDialogVisible"
       max-width="600"
       persistent
     >
-      <VCard>
-        <!-- Header -->
-        <VCardTitle class="pa-6 pb-4">
-          <div class="d-flex align-center justify-space-between">
-            <div class="d-flex align-center gap-3">
-              <VIcon
-                icon="ri-exchange-dollar-line"
-                color="primary"
-                size="28"
-              />
-              <div>
-                <h3 class="text-h5 font-weight-bold">
-                  Facturar / Convertir
-                </h3>
-                <span class="text-medium-emphasis text-body-2">Crea una nota de venta o factura de esta cotización</span>
-              </div>
-            </div>
-            <VBtn
-              icon="ri-close-line"
-              variant="text"
-              size="small"
-              :disabled="isConverting"
-              @click="isConvertDialogVisible = false"
-            />
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="isConverting"
+            @click="isConvertDialogVisible = false"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-exchange-dollar-line" />
           </div>
-        </VCardTitle>
-
-        <VDivider />
+          <h3 class="custom-dialog-title">
+            Facturar / Convertir
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Crea una nota de venta o factura de esta cotización
+          </p>
+        </div>
 
         <VCardText class="pa-6">
           <!-- Banner resumen -->
@@ -1239,12 +1232,13 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-6">
-          <VSpacer />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             color="secondary"
             variant="outlined"
-            class="text-none font-weight-medium mr-2"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             :disabled="isConverting"
             @click="isConvertDialogVisible = false"
           >
@@ -1253,16 +1247,12 @@ onMounted(() => {
           <VBtn
             color="primary"
             variant="elevated"
-            elevation="2"
-            class="text-none font-weight-bold"
+            prepend-icon="ri-arrow-right-up-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             :loading="isConverting"
             @click="confirmConvert"
           >
-            <VIcon
-              icon="ri-arrow-right-up-line"
-              class="mr-2"
-              size="18"
-            />
             Convertir
           </VBtn>
         </VCardActions>
@@ -1270,36 +1260,51 @@ onMounted(() => {
     </VDialog>
 
     <!-- Cancel Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="isCancelDialogVisible"
-      max-width="400"
+      max-width="450"
     >
-      <VCard>
-        <VCardTitle class="text-h5 d-flex align-center">
-          <VIcon
-            icon="ri-close-circle-line"
-            class="mr-2"
-            color="error"
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="isCancelDialogVisible = false"
           />
-          Anular Cotización
-        </VCardTitle>
-        <VDivider />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-close-circle-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Anular Cotización
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción cambiará el estado de la cotización
+          </p>
+        </div>
 
-        <VCardText class="py-4">
-          ¿Está seguro que desea anular la cotización <strong>{{ quoteToCancel?.document_number }}</strong>?
-          <br>
-          Esta acción no se puede revertir y la cotización pasará a estado Anulada.
-          <br><br>
-          <small class="text-medium-emphasis">
-            Cliente: {{ getClientName(quoteToCancel?.client) }}
-          </small>
+        <VCardText class="pa-6 text-center">
+          <p class="text-body-1 mb-2">
+            ¿Está seguro que desea anular la cotización <strong>{{ quoteToCancel?.document_number }}</strong>?
+          </p>
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            Esta acción no se puede revertir y la cotización pasará a estado Anulada.
+          </p>
+          <div v-if="quoteToCancel?.client" class="bg-grey-lighten-4 rounded-lg pa-3 text-caption text-medium-emphasis">
+            Cliente: <strong class="text-high-emphasis">{{ getClientName(quoteToCancel?.client) }}</strong>
+          </div>
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4">
-          <VSpacer />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            variant="text"
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isCancelDialogVisible = false"
           >
             Cancelar
@@ -1308,6 +1313,8 @@ onMounted(() => {
             color="error"
             variant="elevated"
             prepend-icon="ri-close-circle-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="confirmCancelQuote"
           >
             Anular
@@ -1317,7 +1324,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Mail Confirmation Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="isMailDialogVisible"
       max-width="480"
     >
@@ -1400,11 +1407,13 @@ onMounted(() => {
 
         <VDivider class="border-opacity-25" />
 
-        <VCardActions class="pa-4 px-6 justify-space-between bg-grey-lighten-5">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="grey-darken-2"
-            variant="text"
-            class="text-none font-weight-medium rounded-lg px-4"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             :disabled="isMailSending"
             @click="isMailDialogVisible = false"
           >
@@ -1413,18 +1422,14 @@ onMounted(() => {
           <VBtn
             color="primary"
             variant="elevated"
-            elevation="2"
-            class="text-none font-weight-bold rounded-lg px-6"
+            prepend-icon="ri-send-plane-fill"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             :loading="isMailSending"
             :disabled="!mailQuoteSelected?.client?.email"
             @click="confirmSendMail"
           >
-            <VIcon
-              icon="ri-send-plane-fill"
-              class="mr-2"
-              size="18"
-            />
-            Enviar Ahora
+            Enviar Correo
           </VBtn>
         </VCardActions>
       </VCard>

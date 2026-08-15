@@ -11,6 +11,10 @@ const loader = useLoaderStore()
 
 const headers = [
   {
+    title: "#",
+    key: "index",
+  },
+  {
     title: "Unidad Origen",
     key: "from_unit",
   },
@@ -185,6 +189,12 @@ definePage({ meta: { permission: "settings" } })
             <thead>
               <tr>
                 <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 60px;"
+                >
+                  #
+                </th>
+                <th
                   class="text-left font-weight-bold text-uppercase"
                   style="min-width: 200px;"
                 >
@@ -213,7 +223,7 @@ definePage({ meta: { permission: "settings" } })
             <tbody v-if="!list_conversions || list_conversions.length === 0">
               <tr>
                 <td
-                  colspan="4"
+                  colspan="5"
                   class="text-center pa-8 text-medium-emphasis"
                 >
                   <VIcon
@@ -234,10 +244,15 @@ definePage({ meta: { permission: "settings" } })
             </tbody>
             <tbody v-else>
               <tr
-                v-for="item in list_conversions"
+                v-for="(item, index) in list_conversions"
                 :key="item.id"
                 class="conversions-row align-middle"
               >
+                <td class="text-center py-3">
+                  <span class="font-weight-bold text-caption text-primary bg-primary-lighten-5 px-2 py-1 rounded">
+                    #{{ index + 1 }}
+                  </span>
+                </td>
                 <td class="text-left py-3">
                   <span class="font-weight-semibold text-body-1 text-grey-darken-4">
                     {{ item.from_unit?.name || 'Sin nombre' }}

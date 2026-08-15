@@ -224,14 +224,15 @@ const timelineSteps = computed(() => {
       </VCardText>
 
       <!-- PIE DEL MODAL -->
-      <VCardActions
-        class="pa-4 border-t border-gray-100 bg-white d-flex justify-end"
-        style="border-top-color: #f3f4f6;"
+      <VCardActions class="pa-4 border-t border-gray-100 bg-white d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2; border-top-color: #f3f4f6;"
       >
         <VBtn
-          color="grey-darken-2"
-          variant="tonal"
-          class="px-6 text-none font-weight-medium rounded-lg"
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="handleClose"
         >
           Cerrar

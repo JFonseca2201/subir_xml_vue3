@@ -1118,15 +1118,6 @@ onMounted(() => {
                       <div class="d-flex gap-1">
                         <VBtn
                           variant="text"
-                          color="info"
-                          size="small"
-                          class="text-none px-2"
-                          @click="viewSale(item)"
-                        >
-                          Ver
-                        </VBtn>
-                        <VBtn
-                          variant="text"
                           color="secondary"
                           size="small"
                           class="text-none px-2"
@@ -1191,6 +1182,15 @@ onMounted(() => {
                             </VList>
                           </VMenu>
                         </VBtn>
+                        <VBtn
+                          variant="text"
+                          color="info"
+                          size="small"
+                          class="text-none px-2"
+                          @click="viewSale(item)"
+                        >
+                          Ver
+                        </VBtn>
                       </div>
                     </VCardActions>
                   </VCard>
@@ -1239,7 +1239,7 @@ onMounted(() => {
 
 
     <!-- Payment Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="isPaymentDialogVisible"
       max-width="450"
     >
@@ -1298,19 +1298,23 @@ onMounted(() => {
             hide-details
           />
         </VCardText>
-        <VCardActions class="pa-4 pt-0 justify-end gap-2">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             color="secondary"
-            variant="text"
-            class="text-none font-weight-medium"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isPaymentDialogVisible = false"
           >
             Cancelar
           </VBtn>
           <VBtn
             color="primary"
-            variant="flat"
-            class="text-none font-weight-medium px-4"
+            variant="elevated"
+            prepend-icon="ri-check-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="registerPayment"
           >
             Confirmar Pago
@@ -1320,7 +1324,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Mail Confirmation Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="isMailDialogVisible"
       max-width="480"
     >
@@ -1404,11 +1408,13 @@ onMounted(() => {
 
         <VDivider class="border-opacity-25" />
 
-        <VCardActions class="pa-4 px-6 justify-space-between bg-grey-lighten-5">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn 
-            color="grey-darken-2" 
-            variant="text" 
-            class="text-none font-weight-medium rounded-lg px-4"
+            color="secondary" 
+            variant="outlined" 
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             :disabled="isMailSending"
             @click="isMailDialogVisible = false"
           >
@@ -1417,17 +1423,13 @@ onMounted(() => {
           <VBtn 
             color="primary" 
             variant="elevated" 
-            elevation="2"
-            class="text-none font-weight-bold rounded-lg px-6" 
+            prepend-icon="ri-send-plane-fill"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             :loading="isMailSending"
             :disabled="!mailSaleSelected?.client?.email"
             @click="confirmSendMail"
           >
-            <VIcon
-              icon="ri-send-plane-fill"
-              class="mr-2"
-              size="18"
-            />
             Enviar Ahora
           </VBtn>
         </VCardActions>

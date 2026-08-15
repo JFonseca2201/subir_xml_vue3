@@ -58,7 +58,7 @@ const addressTypes = [
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 900 "
     :model-value="props.isDialogVisible"
     @update:model-value="val => $emit('update:isDialogVisible', val)"
@@ -206,30 +206,36 @@ const addressTypes = [
             <VCol cols="12">
               <VSwitch label="Make this default shipping address" />
             </VCol>
-
-            <!-- 👉 Submit and Cancel button -->
-            <VCol
-              cols="12"
-              class="text-center"
-            >
-              <VBtn
-                type="submit"
-                class="me-3"
-              >
-                submit
-              </VBtn>
-
-              <VBtn
-                variant="outlined"
-                color="secondary"
-                @click="resetForm"
-              >
-                Cancel
-              </VBtn>
-            </VCol>
           </VRow>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="resetForm"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="onFormSubmit"
+        >
+          Guardar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

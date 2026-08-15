@@ -123,7 +123,7 @@ watch(() => props.employee, () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="modelValue"
     max-width="750"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -395,12 +395,13 @@ watch(() => props.employee, () => {
       </VCardText>
 
       <VDivider />
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="closeDialog"
         >
           Cerrar Ficha

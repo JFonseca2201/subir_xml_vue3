@@ -454,7 +454,7 @@ definePage({ meta: { permission: "settings" } })
     />
 
     <!-- Diálogo para ver imagen de categoría -->
-    <VDialog
+    <VDialog scrollable
       v-model="isCategorieImageDialogVisible"
       max-width="600px"
     >
@@ -509,11 +509,13 @@ definePage({ meta: { permission: "settings" } })
 
         <VDivider />
 
-        <VCardActions class="pa-4">
-          <VSpacer />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="primary"
-            variant="elevated"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isCategorieImageDialogVisible = false"
           >
             Cerrar

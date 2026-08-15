@@ -160,7 +160,7 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="props.isDialogVisible"
     max-width="650"
     persistent
@@ -409,13 +409,14 @@ const closeDialog = () => {
         </div>
       </VExpandTransition>
 
-      <VCardActions class="d-flex justify-center gap-4 mt-2 pa-0">
+      <VCardActions class="d-flex justify-end align-center gap-3 mt-4 pa-0" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           color="secondary"
           variant="outlined"
+          prepend-icon="ri-close-line"
           :disabled="isLoading"
-          class="rounded-lg px-6"
-          height="44"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="closeDialog"
         >
           Cancelar
@@ -425,8 +426,8 @@ const closeDialog = () => {
           variant="elevated"
           prepend-icon="ri-upload-cloud-2-line"
           :loading="isLoading"
-          class="rounded-lg px-8 font-weight-bold"
-          height="44"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="importFile"
         >
           Procesar Importación

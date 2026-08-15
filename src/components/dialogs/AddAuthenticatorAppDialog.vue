@@ -33,7 +33,7 @@ const resetAuthCode = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     max-width="900"
     :model-value="props.isDialogVisible"
     @update:model-value="(val) => $emit('update:isDialogVisible', val)"

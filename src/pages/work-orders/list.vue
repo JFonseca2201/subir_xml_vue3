@@ -751,7 +751,7 @@ onMounted(() => {
                   <VDivider />
 
                   <!-- Acciones -->
-                  <VCardActions class="pa-2 justify-end bg-grey-lighten-5 mt-auto">
+                  <VCardActions class="pa-2 justify-end bg-grey-lighten-5 mt-auto" style="position: sticky; bottom: 0; z-index: 2;">
                     <VBtn
                       v-if="workOrder.status !== 'draft'"
                       variant="text"
@@ -869,7 +869,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Details Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="showDetailsDialog"
       max-width="800"
     >
@@ -1024,49 +1024,56 @@ onMounted(() => {
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4">
-          <VSpacer />
+           <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3 flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="grey"
-            variant="text"
-            prepend-icon="ri-close-line"
-            @click="showDetailsDialog = false"
+            v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
+            color="success"
+            variant="elevated"
+            prepend-icon="ri-shopping-cart-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="goToSale(selectedWorkOrder.id)"
           >
-            Cerrar
+            Generar Venta
+          </VBtn>
+          <VBtn
+            v-if="selectedWorkOrder.status !== 'draft'"
+            color="primary"
+            variant="tonal"
+            prepend-icon="ri-file-pdf-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
+            @click="downloadPDF(selectedWorkOrder.id)"
+          >
+            Descargar PDF
           </VBtn>
           <VBtn
             v-if="selectedWorkOrder.status !== 'draft'"
             color="info"
             variant="tonal"
             prepend-icon="ri-printer-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
             @click="printPDF(selectedWorkOrder.id)"
           >
             Imprimir
           </VBtn>
-
           <VBtn
-            v-if="selectedWorkOrder.status !== 'draft'"
-            color="primary"
-            variant="tonal"
-            prepend-icon="ri-file-pdf-line"
-            @click="downloadPDF(selectedWorkOrder.id)"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="showDetailsDialog = false"
           >
-            Descargar PDF
-          </VBtn>
-          <VBtn
-            v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
-            color="success"
-            prepend-icon="ri-shopping-cart-line"
-            @click="goToSale(selectedWorkOrder.id)"
-          >
-            Generar Venta
+            Cerrar
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <VDialog
+    <VDialog scrollable
       v-model="showDeleteDialog"
       max-width="500"
     >
@@ -1090,25 +1097,32 @@ onMounted(() => {
             Esta acción removerá la orden de trabajo del sistema
           </p>
         </div>
-        <VCardText>
+        <VCardText class="pa-4">
           <p class="text-body-1">
             ¿Estás seguro de eliminar la orden de trabajo <strong>#{{ workOrderToDelete?.number }}</strong>?
           </p>
-          <p class="text-body-2 text-grey-darken-1 mt-2">
+          <p class="text-body-2 text-grey-darken-1 mt-2 mb-0">
             Esta acción no se puede deshacer.
           </p>
         </VCardText>
-        <VCardActions>
-          <VSpacer />
+        <VDivider />
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="grey"
-            variant="text"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="showDeleteDialog = false"
           >
             Cancelar
           </VBtn>
           <VBtn
             color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="confirmDeleteWorkOrder"
           >
             Eliminar

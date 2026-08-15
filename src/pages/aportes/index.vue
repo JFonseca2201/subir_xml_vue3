@@ -813,7 +813,7 @@ onMounted(() => {
   />
 
   <!-- Diálogo de Eliminar Aporte -->
-  <VDialog
+  <VDialog scrollable
     v-model="showDeleteDialog"
     max-width="440"
     persistent
@@ -859,11 +859,13 @@ onMounted(() => {
         </div>
       </VCardText>
 
-      <VCardActions class="pa-4 pt-0 d-flex justify-end gap-2">
+      <VCardActions class="pa-4 pt-0 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
-          variant="tonal"
+          variant="outlined"
           color="secondary"
-          class="font-weight-semibold"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loading"
           @click="closeDeleteDialog"
         >
@@ -872,9 +874,10 @@ onMounted(() => {
         <VBtn
           color="error"
           variant="elevated"
-          class="font-weight-semibold"
-          :loading="loading"
           prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loading"
           @click="confirmDeleteAporte"
         >
           Confirmar Eliminación

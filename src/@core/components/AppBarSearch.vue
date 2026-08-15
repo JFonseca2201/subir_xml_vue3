@@ -80,7 +80,7 @@ watch(() => props.isDialogVisible, () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     max-width="600"
     :model-value="props.isDialogVisible"
     :height="$vuetify.display.smAndUp ? '537' : '100%'"

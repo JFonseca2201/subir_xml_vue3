@@ -54,7 +54,7 @@ const dialogVisibleUpdate = val => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 900 "
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
@@ -195,34 +195,42 @@ const dialogVisibleUpdate = val => {
               />
             </VCol>
 
-            <!-- 👉 Switch -->
             <VCol cols="12">
               <VSwitch
                 density="compact"
                 label="Use as a billing address?"
               />
             </VCol>
-
-            <!-- 👉 Submit and Cancel -->
-            <VCol
-              cols="12"
-              class="d-flex flex-wrap justify-center gap-4"
-            >
-              <VBtn type="submit">
-                Submit
-              </VBtn>
-
-              <VBtn
-                color="secondary"
-                variant="outlined"
-                @click="onFormReset"
-              >
-                Cancel
-              </VBtn>
-            </VCol>
           </VRow>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="onFormSubmit"
+        >
+          Guardar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

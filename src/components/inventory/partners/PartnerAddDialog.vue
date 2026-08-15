@@ -219,7 +219,7 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -246,13 +246,13 @@ const onFormReset = () => {
         </p>
       </div>
 
-      <div class="pa-6 pa-sm-8">
-
-      <!-- Form -->
-      <VForm
-        ref="formRef"
-        @submit.prevent="store"
-      >
+      <VCardText class="pa-6 pa-sm-8">
+        <!-- Form -->
+        <VForm
+          id="partnerAddForm"
+          ref="formRef"
+          @submit.prevent="store"
+        >
         <VRow>
           <!-- Cédula o RUC -->
           <VCol
@@ -381,42 +381,39 @@ const onFormReset = () => {
             </VAlert>
           </VCol>
 
-          <!-- Acciones -->
-          <VCol
-            cols="12"
-            class="d-flex justify-end gap-3 mt-4"
-          >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              class="text-none px-6"
-              @click="onFormReset"
-            >
-              <VIcon
-                start
-                icon="ri-close-line"
-              />
-              Cancelar
-            </VBtn>
-
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              class="text-none px-6"
-              :loading="loader.loading"
-              :disabled="loader.loading"
-            >
-              <VIcon
-                start
-                icon="ri-save-3-line"
-              />
-              Guardar Socio
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- Acciones Fijas -->
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="onFormReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="partnerAddForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Guardar Socio
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

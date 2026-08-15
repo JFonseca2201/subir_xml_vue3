@@ -216,7 +216,7 @@ onMounted(() => {
 
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="show"
     max-width="600"
     persistent
@@ -368,20 +368,24 @@ onMounted(() => {
             </VRow>
           </VCardText>
           <VDivider />
-          <VCardActions class="pa-6 d-flex justify-end">
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
             <VBtn
-              color="default"
-              prepend-icon="ri-close-line"
+              color="secondary"
               variant="outlined"
+              prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
               @click="closeDialog"
             >
               Cancelar
             </VBtn>
             <VBtn
               color="primary"
+              variant="elevated"
               type="submit"
-              :style="{ '--color': 'var(--vscode-editor-foreground) !important' }"
               prepend-icon="ri-save-line"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
               :loading="loading"
               :disabled="loading"
             >

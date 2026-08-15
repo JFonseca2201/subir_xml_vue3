@@ -224,7 +224,7 @@ const truncateText = (text, maxLength = 25) => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     max-width="600"
     :model-value="props.isDialogVisible"
     persistent
@@ -377,16 +377,20 @@ const truncateText = (text, maxLength = 25) => {
               >
                 <thead>
                   <tr>
+                    <th style="width: 50px;" class="text-center">#</th>
                     <th>Unidad de medida</th>
                     <!-- <th>Factor</th> -->
-                    <th>Acción</th>
+                    <th style="width: 80px;" class="text-center">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr
-                    v-for="item in list_units_conversions"
+                    v-for="(item, index) in list_units_conversions"
                     :key="item.id"
                   >
+                    <td class="text-center">
+                      <span class="font-weight-bold text-caption text-primary">#{{ index + 1 }}</span>
+                    </td>
                     <td>{{ getUnitToName(item) }}</td>
                     <!-- <td>{{ props.unitSelected.name }}</td> -->
                     <td style=" display: flex; justify-content: center; align-items: center; padding: 0;">
@@ -424,12 +428,13 @@ const truncateText = (text, maxLength = 25) => {
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="onFormReset"
         >

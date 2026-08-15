@@ -293,7 +293,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="show"
     max-width="500"
     persistent
@@ -505,12 +505,14 @@ onMounted(() => {
       <VDivider />
 
       <!-- Footer -->
-      <VCardActions class="pa-6">
-        <VSpacer />
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
+          color="secondary"
           variant="outlined"
-          :disabled="loading"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          :disabled="loading"
           @click="closeDialog"
         >
           Cancelar
@@ -518,11 +520,13 @@ onMounted(() => {
         <VBtn
           color="primary"
           variant="elevated"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loading"
-          prepend-icon="ri-save-line"
           @click="handleSubmit"
         >
-          Guardar Cambios
+          Actualizar Aporte
         </VBtn>
       </VCardActions>
     </VCard>

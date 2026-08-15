@@ -359,31 +359,31 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="show"
     max-width="500"
     persistent
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <div class="d-flex align-center gap-3">
-          <VIcon
-            icon="ri-edit-line"
-            color="info"
-            size="28"
-          />
-          <div>
-            <h3 class="text-h5 font-weight-bold">
-              Editar Pago
-            </h3>
-            <span class="text-medium-emphasis text-body-2">
-              Modifica los datos del pago
-            </span>
-          </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-edit-line" />
         </div>
-      </VCardTitle>
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          Editar Pago
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Modifica los datos del pago registrado
+        </p>
+      </div>
       <VForm
         ref="formRef"
         @submit.prevent="handleSubmit"
@@ -512,11 +512,13 @@ onMounted(() => {
           </VRow>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="default"
+            color="secondary"
             variant="outlined"
             prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="closeDialog"
           >
             Cancelar
@@ -527,7 +529,9 @@ onMounted(() => {
             type="submit"
             :loading="loading"
             :disabled="loading"
-            prepend-icon="ri-edit-line"
+            prepend-icon="ri-refresh-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
           >
             Actualizar Pago
           </VBtn>

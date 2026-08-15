@@ -774,7 +774,7 @@ onMounted(() => {
     </VRow>
 
     <!-- Modal Dialog para Agregar Producto Manual -->
-    <VDialog
+    <VDialog scrollable
       v-model="isManualProductDialogOpen"
       max-width="600"
     >
@@ -913,10 +913,13 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end gap-2">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             variant="outlined"
             color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isManualProductDialogOpen = false"
           >
             Cancelar
@@ -925,6 +928,8 @@ onMounted(() => {
             color="primary"
             variant="elevated"
             prepend-icon="ri-add-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="addManualProduct"
           >
             Añadir a la Compra

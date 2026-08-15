@@ -122,32 +122,31 @@ const formatCurrency = value => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="show"
     max-width="500"
     persistent
   >
-    <VCard>
-      <!-- Header -->
-      <VCardTitle class="pa-6 pb-4">
-        <div class="d-flex align-center gap-3">
-          <VIcon
-            icon="ri-delete-bin-line"
-            color="error"
-            size="28"
-          />
-          <div>
-            <h3 class="text-h5 font-weight-bold">
-              Eliminar Pago
-            </h3>
-            <span class="text-medium-emphasis text-body-2">
-              Esta acción no se puede deshacer
-            </span>
-          </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
-      </VCardTitle>
-
-      <VDivider />
+        <h3 class="custom-dialog-title">
+          Eliminar Pago
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción no se puede deshacer
+        </p>
+      </div>
 
       <!-- Content -->
       <VCardText class="pa-6">
@@ -212,11 +211,13 @@ const formatCurrency = value => {
       <VDivider />
 
       <!-- Actions -->
-      <VCardActions class="pa-6">
-        <VSpacer />
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
+          color="secondary"
           variant="outlined"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loading"
           @click="closeDialog"
         >
@@ -226,6 +227,8 @@ const formatCurrency = value => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loading"
           @click="handleDelete"
         >

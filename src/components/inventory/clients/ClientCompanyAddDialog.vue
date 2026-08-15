@@ -554,7 +554,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     max-width="900"
     :model-value="props.isDialogVisible"
     persistent
@@ -581,15 +581,13 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="pa-sm-8 pa-4">
-
-      <VDivider class="mb-6" />
-
-      <!-- 👉 Form -->
-      <VForm
-        ref="formRef"
-        @submit.prevent="saveClient"
-      >
+      <VCardText class="pa-sm-8 pa-4">
+        <!-- 👉 Form -->
+        <VForm
+          id="clientCompanyAddForm"
+          ref="formRef"
+          @submit.prevent="saveClient"
+        >
         <VRow>
           <!-- 👉 Datos Personales -->
           <VCol cols="12">
@@ -858,34 +856,40 @@ onMounted(() => {
             </VAlert>
           </VCol>
 
-          <!-- 👉 Actions -->
-          <VCol
-            cols="12"
-            class="d-flex justify-center gap-4"
-          >
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-save-3-line"
-              :loading="loading"
-              :disabled="loading"
-            >
-              Guardar Empresa
-            </VBtn>
-
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              :disabled="loading"
-              @click="closeDialog"
-            >
-              Cancelar
-            </VBtn>
-          </VCol>
         </VRow>
       </VForm>
-      </div>
+      </VCardText>
+
+      <VDivider />
+
+      <!-- 👉 Fixed Bottom Actions -->
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          :disabled="loading"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          type="submit"
+          form="clientCompanyAddForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loading"
+          :disabled="loading"
+        >
+          Guardar Empresa
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 

@@ -172,7 +172,7 @@ watch(() => props.isDialogVisible, val => {
 </script>
 
 <template>
-  <VDialog 
+  <VDialog scrollable 
     :model-value="props.isDialogVisible" 
     max-width="600px"
     persistent
@@ -308,31 +308,28 @@ watch(() => props.isDialogVisible, val => {
       <VDivider />
 
       <!-- Actions -->
-      <VCardActions class="pa-4">
-        <VSpacer />
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
-          color="default"
+          color="secondary"
           variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
         >
-          <VIcon
-            start
-            icon="ri-close-line"
-          />
           Cancelar
         </VBtn>
         <VBtn
           color="primary"
           variant="elevated"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
           @click="update"
         >
-          <VIcon
-            start
-            icon="ri-save-line"
-          />
           Actualizar
         </VBtn>
       </VCardActions>

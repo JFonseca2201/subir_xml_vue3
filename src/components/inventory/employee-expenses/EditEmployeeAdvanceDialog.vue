@@ -275,30 +275,31 @@ watch(() => show.value, async newVal => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="show"
     max-width="500"
     persistent
   >
-    <VCard class="employee-dialog">
-      <!-- Header -->
-      <VCardTitle class="employee-dialog__header">
-        <div class="employee-dialog__title">
-          <VIcon
-            icon="ri-edit-line"
-            color="info"
-            size="28"
-          />
-          <div>
-            <h3 class="text-h5 font-weight-bold">
-              Editar Adelanto
-            </h3>
-            <span class="text-medium-emphasis text-body-2">
-              Modifica los datos del adelanto
-            </span>
-          </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-edit-line" />
         </div>
-      </VCardTitle>
+        <h3 class="custom-dialog-title">
+          Editar Adelanto
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Modifica los datos del adelanto registrado
+        </p>
+      </div>
 
       <VForm
         ref="formRef"
@@ -426,13 +427,13 @@ watch(() => show.value, async newVal => {
         </VCardText>
 
         <VDivider />
-        <VCardText class="pa-4" />
-        <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="default"
+            color="secondary"
             variant="outlined"
             prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="closeDialog"
           >
             Cancelar
@@ -443,7 +444,9 @@ watch(() => show.value, async newVal => {
             type="submit"
             :loading="loader.loading"
             :disabled="loader.loading"
-            prepend-icon="ri-edit-line"
+            prepend-icon="ri-refresh-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
           >
             Actualizar Adelanto
           </VBtn>

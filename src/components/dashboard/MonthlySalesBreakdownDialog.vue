@@ -709,18 +709,20 @@ const getRankIcon = index => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 bg-grey-lighten-5 justify-space-between align-center">
-        <div class="text-caption text-medium-emphasis">
-          Datos calculados directamente desde las ventas confirmadas en la base de datos
-        </div>
+      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           color="secondary"
           variant="outlined"
-          class="font-weight-bold text-none px-6"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="isVisible = false"
         >
           Cerrar
         </VBtn>
+        <span class="text-caption text-medium-emphasis ms-auto">
+          Datos calculados directamente desde las ventas confirmadas
+        </span>
       </VCardActions>
     </VCard>
   </VDialog>

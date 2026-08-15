@@ -158,7 +158,7 @@ const onReset = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 900"
     :model-value="props.isDialogVisible"
     @update:model-value="onReset"
@@ -251,23 +251,34 @@ const onReset = () => {
               </tr>
             </template>
           </VTable>
-
-          <!-- 👉 Actions button -->
-          <div class="d-flex align-center justify-center gap-3 mt-6">
-            <VBtn @click="onSubmit">
-              Submit
-            </VBtn>
-
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              @click="onReset"
-            >
-              Cancel
-            </VBtn>
-          </div>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="onReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="onSubmit"
+        >
+          Guardar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

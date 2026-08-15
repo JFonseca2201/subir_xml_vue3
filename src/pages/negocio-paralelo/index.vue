@@ -1132,21 +1132,26 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end gap-2">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             variant="outlined"
             color="secondary"
-            class="rounded-lg"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isIncomeDialogOpen = false"
           >
             Cancelar
           </VBtn>
           <VBtn
             color="success"
-            class="rounded-lg px-4"
+            variant="elevated"
+            prepend-icon="ri-save-3-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="saveIncome"
           >
-            Guardar Ingreso
+            {{ isEditing ? 'Actualizar Ingreso' : 'Guardar Ingreso' }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -1304,21 +1309,26 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end gap-2">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             variant="outlined"
             color="secondary"
-            class="rounded-lg"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isExpenseDialogOpen = false"
           >
             Cancelar
           </VBtn>
           <VBtn
             color="error"
-            class="rounded-lg px-4"
+            variant="elevated"
+            prepend-icon="ri-save-3-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="saveExpense"
           >
-            Guardar Egreso
+            {{ isEditing ? 'Actualizar Egreso' : 'Guardar Egreso' }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -1505,10 +1515,13 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
-            color="primary"
-            class="rounded-lg px-4"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isSummaryDialogOpen = false"
           >
             Cerrar
@@ -1611,19 +1624,23 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end gap-2">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             variant="outlined"
             color="secondary"
-            class="rounded-lg"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
             @click="isPdfDialogOpen = false"
           >
             Cancelar
           </VBtn>
           <VBtn
             color="primary"
-            class="rounded-lg px-4"
+            variant="elevated"
             prepend-icon="ri-download-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
             @click="generatePdfReport"
           >
             Generar Reporte

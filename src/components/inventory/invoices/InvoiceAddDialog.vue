@@ -1031,12 +1031,13 @@ onMounted(() => {
         </VAlert>
       </div>
       <!-- Footer -->
-      <VCardActions class="justify-end px-6 pb-6 pt-2 bg-grey-lighten-4 border-t gap-2">
+      <VCardActions class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-2 bg-grey-lighten-4 border-t" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           color="secondary"
-          variant="tonal"
-          rounded="lg"
+          variant="outlined"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onFormReset"
         >
           Cancelar
@@ -1044,9 +1045,10 @@ onMounted(() => {
 
         <VBtn
           color="primary"
-          variant="flat"
-          rounded="lg"
+          variant="elevated"
           prepend-icon="ri-upload-cloud-2-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="!selectedFile || !isMathValid"
           @click="storeXml"

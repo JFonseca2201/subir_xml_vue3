@@ -49,7 +49,7 @@ const login = async () => {
     console.log(resp)
     localStorage.setItem("token", resp.access_token)
     localStorage.setItem("user", JSON.stringify(resp.user))
-    success_login.value = "Bienvenido al sistema!"
+
     setTimeout(async () => {
       await nextTick(() => {
         router.replace(route.query.to ? String(route.query.to) : '/')

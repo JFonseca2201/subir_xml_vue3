@@ -213,9 +213,15 @@ const closeDialog = () => {
 
       <VDivider />
 
-      <VCardActions class="pa-4">
-        <VSpacer />
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line" @click="closeDialog">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="closeDialog"
+        >
           Cerrar
         </VBtn>
       </VCardActions>

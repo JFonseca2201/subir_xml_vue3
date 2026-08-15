@@ -14,6 +14,10 @@ const loader = useLoaderStore()
 
 const headers = [
   {
+    title: "#",
+    key: "index",
+  },
+  {
     title: "Unidad",
     key: "name",
   },
@@ -280,6 +284,12 @@ definePage({ meta: { permission: "settings" } })
             <thead>
               <tr>
                 <th
+                  class="text-center font-weight-bold text-uppercase"
+                  style="width: 60px;"
+                >
+                  #
+                </th>
+                <th
                   class="text-left font-weight-bold text-uppercase"
                   style="min-width: 200px;"
                 >
@@ -314,7 +324,7 @@ definePage({ meta: { permission: "settings" } })
             <tbody v-if="!list_units || list_units.length === 0">
               <tr>
                 <td
-                  colspan="5"
+                  colspan="6"
                   class="text-center pa-8 text-medium-emphasis"
                 >
                   <VIcon
@@ -335,10 +345,15 @@ definePage({ meta: { permission: "settings" } })
             </tbody>
             <tbody v-else>
               <tr
-                v-for="item in list_units"
+                v-for="(item, index) in list_units"
                 :key="item.id"
                 class="units-row align-middle"
               >
+                <td class="text-center py-3">
+                  <span class="font-weight-bold text-caption text-primary bg-primary-lighten-5 px-2 py-1 rounded">
+                    #{{ (currentPage - 1) * itemsPerPage + index + 1 }}
+                  </span>
+                </td>
                 <td class="text-left py-3">
                   <span class="font-weight-semibold text-body-1 text-grey-darken-4">
                     {{ item.name }}

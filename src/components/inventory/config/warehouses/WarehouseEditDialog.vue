@@ -140,7 +140,7 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -264,12 +264,13 @@ const onFormReset = () => {
       <VDivider />
 
       <!-- Acciones -->
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
-          class="text-none px-6"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onFormReset"
         >
           Cancelar
@@ -280,8 +281,9 @@ const onFormReset = () => {
           form="warehouseEditForm"
           color="primary"
           variant="elevated"
-          class="text-none px-6"
-          prepend-icon="ri-save-3-line"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
         >

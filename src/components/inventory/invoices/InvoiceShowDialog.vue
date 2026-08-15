@@ -231,7 +231,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     v-model="dialogVisible"
     max-width="1400"
     transition="dialog-bottom-transition"
@@ -782,11 +782,13 @@ onMounted(() => {
       <VDivider />
 
       <!-- 🔘 FOOTER -->
-      <VCardActions class="justify-end pa-4">
+      <VCardActions class="d-flex justify-end align-center gap-3 pa-4 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
-          color="primary"
-          variant="tonal"
-          prepend-icon="ri-close-circle-line"
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onFormReset"
         >
           Cerrar

@@ -34,7 +34,7 @@ watch(() => props, () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 600"
     :model-value="props.isDialogVisible"
     @update:model-value="onReset"
@@ -71,21 +71,44 @@ watch(() => props, () => {
           </VAlert>
 
           <!-- 👉 Role name -->
-          <div class="d-flex align-center gap-4 mb-4">
+          <div class="mb-4">
             <VTextField
               v-model="currentPermissionName"
-              density="compact"
-              placeholder="Enter Permission Name"
+              density="comfortable"
+              variant="outlined"
+              placeholder="Nombre del permiso"
             />
-
-            <VBtn @click="onSubmit">
-              Update
-            </VBtn>
           </div>
 
-          <VCheckbox label="Set as core permission" />
+          <VCheckbox label="Set as core permission" class="mb-4" />
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="onReset"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="onSubmit"
+        >
+          {{ props.permissionName ? 'Actualizar' : 'Guardar' }}
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

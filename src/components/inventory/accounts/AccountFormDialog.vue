@@ -176,7 +176,7 @@ const dialogTitle = computed(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :model-value="modelValue"
     max-width="600"
     persistent
@@ -355,10 +355,13 @@ const dialogTitle = computed(() => {
       <VDivider />
 
       <!-- Acciones -->
-      <VCardActions class="pa-6">
-        <VSpacer />
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="closeDialog"
         >
@@ -367,11 +370,13 @@ const dialogTitle = computed(() => {
         <VBtn
           color="primary"
           variant="elevated"
-          :loading="loader.loading"
           prepend-icon="ri-save-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loader.loading"
           @click="saveAccount"
         >
-          {{ isEditing ? 'Actualizar' : 'Crear' }}
+          {{ isEditing ? 'Actualizar' : 'Crear Cuenta' }}
         </VBtn>
       </VCardActions>
     </VCard>

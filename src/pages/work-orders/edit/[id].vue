@@ -677,7 +677,13 @@ onMounted(() => {
                         :title="item.raw.license_plate"
                       >
                         <VListItemSubtitle class="mt-1 text-grey">
-                          {{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}
+                          <span>{{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}</span>
+                          <span
+                            v-if="item.raw.client"
+                            class="text-primary font-weight-medium ms-2"
+                          >
+                            • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' + (item.raw.client.surname || '')) }}
+                          </span>
                         </VListItemSubtitle>
                       </VListItem>
                     </template>

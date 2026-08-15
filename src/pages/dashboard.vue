@@ -1068,8 +1068,15 @@ const tecnicosOptions = computed(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 justify-end bg-white">
-          <VBtn color="primary" variant="elevated" class="text-none px-6" @click="isStockDialogVisible = false">
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="isStockDialogVisible = false"
+          >
             Cerrar
           </VBtn>
         </VCardActions>

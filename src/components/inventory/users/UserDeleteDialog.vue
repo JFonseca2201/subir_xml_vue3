@@ -97,7 +97,7 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 450"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -166,31 +166,31 @@ const cancelDelete = () => {
       </VAlert>
 
       <!-- Acciones -->
-      <div class="d-flex justify-end gap-3">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          class="text-none px-6"
-          :disabled="loader.loading"
-          @click="cancelDelete"
-        >
-          Cancelar
-        </VBtn>
-
+      <div class="d-flex justify-end align-center gap-3">
         <VBtn
           color="error"
           variant="elevated"
-          class="text-none px-6"
+          prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading ||
             props.userSelected.id === 1"
           @click="confirmDelete"
         >
-          <VIcon
-            start
-            icon="ri-delete-bin-line"
-          />
           Eliminar
+        </VBtn>
+
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          :disabled="loader.loading"
+          @click="cancelDelete"
+        >
+          Cancelar
         </VBtn>
       </div>
       </VCardText>

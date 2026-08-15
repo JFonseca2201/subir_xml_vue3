@@ -53,7 +53,7 @@ const onCancel = () => {
 
 <template>
   <!-- 👉 Confirm Dialog -->
-  <VDialog
+  <VDialog scrollable
     max-width="500"
     :model-value="props.isDialogVisible"
     @update:model-value="updateModelValue"
@@ -75,27 +75,34 @@ const onCancel = () => {
         </h6>
       </VCardText>
 
-      <VCardText class="d-flex align-center justify-center gap-4">
+      <VCardText class="d-flex align-center justify-end gap-3 pa-4">
         <VBtn
+          color="primary"
           variant="elevated"
+          prepend-icon="ri-check-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="onConfirmation"
         >
-          Confirm
+          Confirmar
         </VBtn>
 
         <VBtn
           color="secondary"
           variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onCancel"
         >
-          Cancel
+          Cancelar
         </VBtn>
       </VCardText>
     </VCard>
   </VDialog>
 
   <!-- Unsubscribed -->
-  <VDialog
+  <VDialog scrollable
     v-model="unsubscribed"
     max-width="500"
   >
@@ -130,7 +137,7 @@ const onCancel = () => {
   </VDialog>
 
   <!-- Cancelled -->
-  <VDialog
+  <VDialog scrollable
     v-model="cancelled"
     max-width="500"
   >

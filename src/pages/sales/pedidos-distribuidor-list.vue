@@ -614,7 +614,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Dialogo de Detalle de Pedido -->
-    <VDialog v-model="isViewDialogVisible" max-width="800">
+    <VDialog scrollable v-model="isViewDialogVisible" max-width="800">
       <VCard v-if="selectedPedido" class="custom-dialog-card">
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
@@ -764,15 +764,35 @@ onMounted(() => {
           </div>
         </VCardText>
 
-        <VCardActions class="pa-6 border-top-light justify-end gap-2">
-          <VBtn color="info" prepend-icon="ri-printer-line" @click="printPedido(selectedPedido.id)">
-            Imprimir
-          </VBtn>
-
-          <VBtn color="success" prepend-icon="ri-file-pdf-line" @click="generateSinglePDF(selectedPedido)">
+        <VCardActions class="pa-4 border-top-light d-flex justify-end align-center gap-3 bg-white flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            color="success"
+            variant="elevated"
+            prepend-icon="ri-file-pdf-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="generateSinglePDF(selectedPedido)"
+          >
             Generar PDF
           </VBtn>
-          <VBtn color="secondary" variant="tonal" @click="isViewDialogVisible = false">
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-printer-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
+            @click="printPedido(selectedPedido.id)"
+          >
+            Imprimir
+          </VBtn>
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="isViewDialogVisible = false"
+          >
             Cerrar
           </VBtn>
         </VCardActions>
@@ -896,8 +916,15 @@ onMounted(() => {
           </div>
         </VCardText>
 
-        <VCardActions class="pa-5 bg-grey-lighten-4 border-top-light justify-end">
-          <VBtn color="secondary" variant="tonal" class="px-5" @click="isRepuestosDialogVisible = false">
+        <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3 border-t" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="isRepuestosDialogVisible = false"
+          >
             Cerrar
           </VBtn>
         </VCardActions>

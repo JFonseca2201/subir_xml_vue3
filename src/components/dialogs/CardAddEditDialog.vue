@@ -35,7 +35,7 @@ const formSubmit = () => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 600"
     :model-value="props.isDialogVisible"
     @update:model-value="val => $emit('update:isDialogVisible', val)"
@@ -114,30 +114,35 @@ const formSubmit = () => {
                 label="Save Card for future billing?"
               />
             </VCol>
-
-            <!-- 👉 Card actions -->
-            <VCol
-              cols="12"
-              class="text-center"
-            >
-              <VBtn
-                class="me-4"
-                type="submit"
-                @click="formSubmit"
-              >
-                Submit
-              </VBtn>
-              <VBtn
-                color="secondary"
-                variant="outlined"
-                @click="$emit('update:isDialogVisible', false)"
-              >
-                Cancel
-              </VBtn>
-            </VCol>
           </VRow>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          @click="$emit('update:isDialogVisible', false)"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          type="submit"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="formSubmit"
+        >
+          Guardar
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

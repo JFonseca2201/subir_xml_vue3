@@ -133,7 +133,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog
+  <VDialog scrollable
     max-width="650"
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
@@ -277,12 +277,13 @@ onMounted(() => {
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="onFormReset"
         >
@@ -294,8 +295,9 @@ onMounted(() => {
           form="categorieEditForm"
           color="primary"
           variant="elevated"
-          prepend-icon="ri-save-3-line"
-          class="text-none px-6"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
         >

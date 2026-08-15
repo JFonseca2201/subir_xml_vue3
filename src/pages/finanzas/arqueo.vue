@@ -1413,7 +1413,7 @@ onMounted(() => {
       </VRow>
       <!-- Confirmación de sellado -->
       <!-- Confirmación de sellado -->
-      <VDialog
+      <VDialog scrollable
         v-model="confirmSealDialog"
         persistent
         max-width="480"
@@ -1446,12 +1446,13 @@ onMounted(() => {
 
           <VDivider />
 
-          <VCardActions class="pa-4 justify-end bg-white">
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
             <VBtn
               variant="outlined"
               color="secondary"
               prepend-icon="ri-close-line"
-              class="text-none px-6"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
               :disabled="sealing"
               @click="confirmSealDialog = false"
             >
@@ -1461,7 +1462,8 @@ onMounted(() => {
               color="success"
               variant="elevated"
               prepend-icon="ri-check-line"
-              class="text-none px-6"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
               :loading="sealing"
               :disabled="sealing"
               @click="confirmSeal"
@@ -1473,7 +1475,7 @@ onMounted(() => {
       </VDialog>
 
       <!-- Diálogo para ver desglose del día anterior -->
-      <VDialog
+      <VDialog scrollable
         v-model="prevCountDetailsDialog"
         max-width="600"
       >
@@ -1639,12 +1641,13 @@ onMounted(() => {
           </VCardText>
 
           <VDivider />
-          <VCardActions class="pa-4 justify-end bg-white">
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
             <VBtn
               variant="outlined"
               color="secondary"
               prepend-icon="ri-close-line"
-              class="text-none px-6"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
               @click="prevCountDetailsDialog = false"
             >
               Cerrar

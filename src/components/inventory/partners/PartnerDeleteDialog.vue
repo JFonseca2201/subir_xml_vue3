@@ -26,7 +26,7 @@ const onDelete = () => {
 </script>
 
 <template>
-  <VDialog v-if="props.isDialogVisible && props.partnerSelected" :width="$vuetify.display.smAndDown ? 'auto' : 500"
+  <VDialog scrollable v-if="props.isDialogVisible && props.partnerSelected" :width="$vuetify.display.smAndDown ? 'auto' : 500"
     :model-value="props.isDialogVisible" transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="custom-dialog-card elevation-24">
@@ -137,12 +137,13 @@ const onDelete = () => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onClose"
         >
           Cancelar
@@ -152,7 +153,8 @@ const onDelete = () => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
-          class="text-none px-6"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="onDelete"
         >
           Eliminar Socio

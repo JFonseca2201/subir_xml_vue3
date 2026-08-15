@@ -76,7 +76,7 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog :width="$vuetify.display.smAndDown ? 'auto' : 500" :model-value="props.isDialogVisible"
+  <VDialog scrollable :width="$vuetify.display.smAndDown ? 'auto' : 500" :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition" @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="custom-dialog-card pa-0 elevation-10">
       <!-- Header Banner Primary -->
@@ -116,12 +116,13 @@ const cancelDelete = () => {
       <VDivider />
 
       <!-- Acciones -->
-      <VCardActions class="pa-4 justify-end bg-white">
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
         <VBtn
           variant="outlined"
           color="secondary"
-          class="text-none px-6"
           prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loader.loading"
           @click="cancelDelete"
         >
@@ -131,8 +132,9 @@ const cancelDelete = () => {
         <VBtn
           color="error"
           variant="elevated"
-          class="text-none px-6"
           prepend-icon="ri-delete-bin-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
           @click="confirmDelete"
