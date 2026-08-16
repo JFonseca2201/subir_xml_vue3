@@ -135,187 +135,173 @@ const showConfirmPassword = ref(false)
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="650"
+    max-width="680"
     scrollable
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard
-      class="overflow-hidden"
-      rounded="lg"
-    >
-      <VCardTitle class="d-flex align-center justify-space-between pa-4 bg-surface-light">
-        <div class="d-flex align-center gap-2">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            size="40"
-          >
-            <VIcon icon="ri-user-settings-line" />
-          </VAvatar>
-          <span class="text-h6 font-weight-bold">Mi Perfil</span>
-        </div>
+    <VCard class="custom-dialog-card elevation-24">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
-          icon
+          icon="ri-close-line"
           variant="text"
-          color="secondary"
+          size="small"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
-        >
-          <VIcon icon="ri-close-line" />
-        </VBtn>
-      </VCardTitle>
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-user-settings-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Mi Perfil de Usuario
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Información personal, datos de contacto y seguridad de la cuenta
+        </p>
+      </div>
 
-      <VDivider />
-
+      <!-- Pestañas de Navegación -->
       <VTabs
         v-model="activeTab"
         color="primary"
-        class="border-b"
+        align-tabs="center"
+        class="border-b bg-grey-lighten-5"
       >
-        <VTab value="general">
+        <VTab value="general" class="font-weight-bold">
           <VIcon
             start
             icon="ri-user-line"
+            size="18"
           />
-          General
+          Datos Personales
         </VTab>
-        <VTab value="security">
+        <VTab value="security" class="font-weight-bold">
           <VIcon
             start
-            icon="ri-lock-password-line"
+            icon="ri-shield-keyhole-line"
+            size="18"
           />
-          Seguridad
+          Seguridad & Contraseña
         </VTab>
       </VTabs>
 
-      <VCardText class="pa-5">
+      <VCardText class="pa-6">
         <VWindow v-model="activeTab">
           <!-- Pestaña General -->
           <VWindowItem value="general">
-            <div class="d-flex flex-column align-center mb-6">
-              <VAvatar
-                size="90"
-                class="elevation-2 mb-3 border-avatar"
-              >
-                <VImg :src="avatarUrl" />
-              </VAvatar>
-              <h3 class="text-h5 font-weight-bold">
-                {{ props.userData?.full_name || 'Usuario' }}
-              </h3>
-              <p class="text-medium-emphasis">
-                {{ props.userData?.role?.name || 'Rol' }}
-              </p>
+            <!-- HERO CARD DE USUARIO -->
+            <div class="bg-grey-lighten-4 rounded-xl pa-5 mb-6 border d-flex flex-column flex-sm-row align-center justify-space-between gap-4">
+              <div class="d-flex align-center gap-4 text-center text-sm-left flex-column flex-sm-row">
+                <VAvatar
+                  size="72"
+                  class="elevation-3 border-avatar"
+                >
+                  <VImg :src="avatarUrl" />
+                </VAvatar>
+                <div>
+                  <h3 class="text-h6 font-weight-bold text-high-emphasis mb-1">
+                    {{ props.userData?.full_name || `${props.userData?.name || ''} ${props.userData?.surname || ''}` || 'Usuario' }}
+                  </h3>
+                  <div class="d-flex flex-wrap align-center justify-center justify-sm-start gap-2">
+                    <VChip
+                      size="small"
+                      color="primary"
+                      variant="elevated"
+                      class="font-weight-bold text-uppercase"
+                    >
+                      <VIcon start icon="ri-shield-user-line" size="14" />
+                      {{ props.userData?.role?.name || 'Administrador' }}
+                    </VChip>
+                    <span class="text-caption text-medium-emphasis font-mono">
+                      {{ props.userData?.email }}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <VRow>
-              <VCol
-                cols="12"
-                md="6"
-              >
+            <!-- Formulario Datos Generales -->
+            <VRow dense>
+              <VCol cols="12" sm="6" class="mb-3">
+                <label class="custom-form-label">CORREO ELECTRÓNICO</label>
                 <VTextField
                   :model-value="props.userData?.email"
-                  label="Correo Electrónico"
                   variant="outlined"
                   density="comfortable"
                   readonly
                   prepend-inner-icon="ri-mail-line"
-                  class="bg-surface-light rounded"
-                  hint="No puedes cambiar tu correo principal"
-                  persistent-hint
+                  class="bg-grey-lighten-5"
                 />
               </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
+
+              <VCol cols="12" sm="6" class="mb-3">
+                <label class="custom-form-label">DOCUMENTO DE IDENTIDAD</label>
                 <VTextField
                   :model-value="props.userData?.identification || 'No registrado'"
-                  label="Documento de Identidad"
                   variant="outlined"
                   density="comfortable"
                   readonly
                   prepend-inner-icon="ri-id-card-line"
-                  class="bg-surface-light rounded"
+                  class="bg-grey-lighten-5"
                 />
               </VCol>
               
-              <VCol
-                cols="12"
-                md="6"
-              >
+              <VCol cols="12" sm="6" class="mb-3">
+                <label class="custom-form-label">NÚMERO DE TELÉFONO</label>
                 <VTextField
                   v-model="formData.phone"
-                  label="Teléfono"
+                  placeholder="Ej: 0987654321"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-phone-line"
-                  placeholder="Ej: 0987654321"
                 />
               </VCol>
-              <VCol
-                cols="12"
-                md="6"
-              >
+
+              <VCol cols="12" sm="6" class="mb-3">
+                <label class="custom-form-label">DIRECCIÓN DOMICILIARIA</label>
                 <VTextField
                   v-model="formData.address"
-                  label="Dirección"
+                  placeholder="Ciudad, Calle Principal"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-map-pin-line"
-                  placeholder="Ciudad, Calle Principal"
                 />
               </VCol>
             </VRow>
-
-            <div class="d-flex justify-end mt-6">
-              <VBtn
-                color="primary"
-                :loading="loader.loading"
-                @click="saveGeneralInfo"
-              >
-                <VIcon
-                  start
-                  icon="ri-save-3-line"
-                />
-                Guardar Cambios
-              </VBtn>
-            </div>
           </VWindowItem>
 
           <!-- Pestaña Seguridad -->
           <VWindowItem value="security">
             <VAlert
-              color="warning"
+              color="primary"
               variant="tonal"
-              icon="ri-error-warning-line"
-              class="mb-6"
+              icon="ri-shield-check-line"
+              class="mb-6 rounded-xl"
             >
-              Asegúrate de usar una contraseña fuerte, combinando letras, números y símbolos.
+              Para mayor seguridad, te recomendamos usar una contraseña de al menos 8 caracteres con letras y números.
             </VAlert>
 
             <VForm @submit.prevent="savePassword">
-              <VRow>
-                <VCol cols="12">
+              <VRow dense>
+                <VCol cols="12" class="mb-3">
+                  <label class="custom-form-label">CONTRASEÑA ACTUAL</label>
                   <VTextField
                     v-model="passwordData.current_password"
-                    label="Contraseña Actual"
+                    placeholder="Ingresa tu contraseña actual"
                     variant="outlined"
                     density="comfortable"
-                    prepend-inner-icon="ri-lock-unlock-line"
+                    prepend-inner-icon="ri-lock-line"
                     :type="showCurrentPassword ? 'text' : 'password'"
                     :append-inner-icon="showCurrentPassword ? 'ri-eye-off-line' : 'ri-eye-line'"
                     @click:append-inner="showCurrentPassword = !showCurrentPassword"
                   />
                 </VCol>
                 
-                <VDivider class="my-3 mx-3" />
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
+                <VCol cols="12" sm="6" class="mb-3">
+                  <label class="custom-form-label">NUEVA CONTRASEÑA</label>
                   <VTextField
                     v-model="passwordData.new_password"
-                    label="Nueva Contraseña"
+                    placeholder="Mínimo 6 caracteres"
                     variant="outlined"
                     density="comfortable"
                     prepend-inner-icon="ri-lock-password-line"
@@ -324,13 +310,12 @@ const showConfirmPassword = ref(false)
                     @click:append-inner="showNewPassword = !showNewPassword"
                   />
                 </VCol>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
+
+                <VCol cols="12" sm="6" class="mb-3">
+                  <label class="custom-form-label">CONFIRMAR NUEVA CONTRASEÑA</label>
                   <VTextField
                     v-model="passwordData.new_password_confirmation"
-                    label="Confirmar Contraseña"
+                    placeholder="Repite la nueva contraseña"
                     variant="outlined"
                     density="comfortable"
                     prepend-inner-icon="ri-lock-check-line"
@@ -340,30 +325,49 @@ const showConfirmPassword = ref(false)
                   />
                 </VCol>
               </VRow>
-
-              <div class="d-flex justify-end mt-6">
-                <VBtn
-                  color="primary"
-                  type="submit"
-                  :loading="loader.loading"
-                >
-                  <VIcon
-                    start
-                    icon="ri-shield-check-line"
-                  />
-                  Actualizar Contraseña
-                </VBtn>
-              </div>
             </VForm>
           </VWindowItem>
         </VWindow>
       </VCardText>
+
+      <VDivider />
+
+      <!-- Acciones Inferiores -->
+      <VCardActions class="pa-4 bg-grey-lighten-5 justify-end gap-2">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+
+        <VBtn
+          v-if="activeTab === 'general'"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold"
+          :loading="loader.loading"
+          @click="saveGeneralInfo"
+        >
+          Guardar Cambios
+        </VBtn>
+
+        <VBtn
+          v-else
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-shield-check-line"
+          class="rounded-lg px-6 font-weight-bold"
+          :loading="loader.loading"
+          @click="savePassword"
+        >
+          Actualizar Contraseña
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.border-avatar {
-  border: 3px solid rgb(var(--v-theme-surface));
-}
-</style>

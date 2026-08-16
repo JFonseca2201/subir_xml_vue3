@@ -5060,6 +5060,57 @@
   }
 }
 
+/* ==========================================================================
+   MENÚ DE PERFIL DE USUARIO (NAVBAR USER PROFILE)
+   ========================================================================== */
+
+.user-profile-badge {
+  &.v-badge--bordered.v-badge--dot .v-badge__badge::after {
+    color: rgb(var(--v-theme-background));
+  }
+}
+
+.hover-scale {
+  transition: transform 0.2s ease-in-out;
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.user-profile-header {
+  background: linear-gradient(145deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-primary), 0.02) 100%);
+}
+
+.border-avatar {
+  border: 3px solid rgb(var(--v-theme-surface));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.06) !important;
+    transform: translateX(4px);
+  }
+}
+
+.user-profile-menu-list {
+  background: #ffffff !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12) !important;
+}
+
+.custom-form-label {
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+
+
 
 
 
