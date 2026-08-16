@@ -147,7 +147,7 @@ const getRankIcon = index => {
 <template>
   <VDialog
     v-model="isVisible"
-    max-width="1100"
+    max-width="1200"
     scrollable
     transition="dialog-bottom-transition"
   >
@@ -172,11 +172,11 @@ const getRankIcon = index => {
         </p>
       </div>
 
-      <!-- Barra de Filtros Rápidos -->
-      <div class="pa-4 bg-grey-lighten-4 border-b d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center flex-wrap gap-3">
+      <!-- Barra de Filtros Rápidos Estructurada -->
+      <div class="custom-dialog-filters pa-4 bg-white border-b">
+        <VRow dense align="center" class="ma-0">
           <!-- Selector de Mes -->
-          <div style="min-width: 200px; width: 220px;">
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
             <VSelect
               v-model="selectedMonth"
               :items="data.available_months"
@@ -185,45 +185,48 @@ const getRankIcon = index => {
               density="compact"
               variant="outlined"
               hide-details
-              bg-color="white"
+              bg-color="grey-lighten-5"
               prepend-inner-icon="ri-calendar-event-line"
               label="Mes de Consulta"
+              class="filter-select"
             />
-          </div>
+          </VCol>
 
           <!-- Criterio de Ordenamiento -->
-          <div style="min-width: 220px; width: 240px;">
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
             <VSelect
               v-model="sortBy"
               :items="[
-                { title: 'Por Mayor Monto ($)', value: 'revenue' },
-                { title: 'Por Mayor Cantidad (U.)', value: 'quantity' },
+                { title: 'Mayor Monto ($)', value: 'revenue' },
+                { title: 'Mayor Cantidad (U.)', value: 'quantity' },
               ]"
               item-title="title"
               item-value="value"
               density="compact"
               variant="outlined"
               hide-details
-              bg-color="white"
+              bg-color="grey-lighten-5"
               prepend-inner-icon="ri-sort-desc"
               label="Criterio de Orden"
+              class="filter-select"
             />
-          </div>
-        </div>
+          </VCol>
 
-        <!-- Buscador Rápido -->
-        <div style="min-width: 250px; width: 280px;">
-          <VTextField
-            v-model="filterSearch"
-            density="compact"
-            placeholder="Filtrar por nombre o SKU..."
-            prepend-inner-icon="ri-search-line"
-            variant="outlined"
-            hide-details
-            bg-color="white"
-            clearable
-          />
-        </div>
+          <!-- Buscador Rápido -->
+          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+            <VTextField
+              v-model="filterSearch"
+              density="compact"
+              placeholder="Buscar por nombre o SKU..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              hide-details
+              bg-color="grey-lighten-5"
+              clearable
+              class="filter-input"
+            />
+          </VCol>
+        </VRow>
       </div>
 
       <VCardText class="pa-5" style="max-height: 70vh;">
@@ -729,6 +732,22 @@ const getRankIcon = index => {
 </template>
 
 <style scoped>
+.custom-dialog-filters {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.custom-dialog-filters :deep(.v-field) {
+  border-radius: 10px !important;
+}
+
+.custom-dialog-filters :deep(.v-field__input) {
+  text-transform: none !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+
 .sales-ranking-table th {
   letter-spacing: 0.5px;
   font-size: 0.75rem !important;

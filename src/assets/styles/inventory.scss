@@ -4389,6 +4389,7 @@
       border-radius: 1.25rem !important;
 
       > .custom-dialog-header-primary,
+      > .custom-dialog-filters,
       > .v-card-title,
       > .v-card-item {
         flex-shrink: 0 !important;
@@ -4396,7 +4397,7 @@
 
       > .v-card-text,
       > .v-form,
-      > div:not(.custom-dialog-header-primary):not(.v-card-actions):not(.v-card-title):not(.v-divider) {
+      > div:not(.custom-dialog-header-primary):not(.custom-dialog-filters):not(.v-card-actions):not(.v-card-title):not(.v-divider) {
         flex: 1 1 auto !important;
         overflow-y: auto !important;
         min-height: 0 !important;
@@ -4428,13 +4429,14 @@
   width: 100% !important;
 
   .custom-dialog-header-primary,
+  .custom-dialog-filters,
   .v-card-title,
   .v-card-actions,
   > .v-card-actions {
     flex-shrink: 0 !important;
   }
 
-  > div:not(.custom-dialog-header-primary):not(.v-card-actions):not(.v-card-title):not(.v-divider),
+  > div:not(.custom-dialog-header-primary):not(.custom-dialog-filters):not(.v-card-actions):not(.v-card-title):not(.v-divider),
   > .v-card-text,
   > .v-form {
     flex: 1 1 auto !important;

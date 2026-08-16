@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import { themeConfig, layoutConfig } from '@themeConfig'
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -172,6 +173,10 @@ const loadSucursal = async () => {
 
     if (resp.sucursal) {
       sucursal.value = resp.sucursal
+      const sName = resp.sucursal.name || resp.sucursal.trade_name || 'LUXURY EVYS'
+      localStorage.setItem('sucursal_name', sName)
+      if (themeConfig.app) themeConfig.app.title = sName
+      if (layoutConfig?.app) layoutConfig.app.title = sName
     }
 
     showNotification('Información cargada correctamente', 'success')
@@ -211,6 +216,11 @@ const saveSucursal = async () => {
         showNotification(response._data.error || 'Error al guardar cambios', 'error')
       },
     })
+
+    const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
+    localStorage.setItem('sucursal_name', sName)
+    if (themeConfig.app) themeConfig.app.title = sName
+    if (layoutConfig?.app) layoutConfig.app.title = sName
 
     showNotification('Información guardada correctamente', 'success')
     isEditing.value = false // Salir del modo edición

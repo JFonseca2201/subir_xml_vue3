@@ -306,12 +306,37 @@ const pdfPreviewTitle = ref('')
 const isPdfLoading = ref(false)
 const selectedPdfWorkOrderId = ref(null)
 
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
+}
+
+const getDirectPdfUrl = workOrderId => {
+  const token = localStorage.getItem('token') || ''
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+  return `${apiBaseUrl}/work-orders/${workOrderId}/pdf?token=${token}`
+}
+
 const openPdfPreview = async workOrder => {
   if (!workOrder) return
   try {
-    isPdfLoading.value = true
     selectedPdfWorkOrderId.value = workOrder.id
     pdfPreviewTitle.value = `Orden de Trabajo #${workOrder.number || workOrder.id}`
+
+    // En dispositivos móviles, abrir de forma directa e instantánea para evitar bloqueos del navegador
+    if (isMobileDevice()) {
+      const url = getDirectPdfUrl(workOrder.id)
+      const a = document.createElement('a')
+      a.href = url
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      return
+    }
+
+    isPdfLoading.value = true
     isPdfPreviewDialogVisible.value = true
 
     const token = localStorage.getItem('token')
@@ -350,13 +375,15 @@ const closePdfPreview = () => {
 }
 
 const openPdfInNewTab = () => {
-  if (pdfPreviewUrl.value) {
-    window.open(pdfPreviewUrl.value, '_blank')
-  } else if (selectedPdfWorkOrderId.value) {
-    const token = localStorage.getItem('token')
-    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
-    window.open(`${apiBaseUrl}/work-orders/${selectedPdfWorkOrderId.value}/pdf?token=${token}`, '_blank')
-  }
+  if (!selectedPdfWorkOrderId.value) return
+  const url = getDirectPdfUrl(selectedPdfWorkOrderId.value)
+  const a = document.createElement('a')
+  a.href = url
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
 }
 
 const downloadPDF = async workOrderId => {
@@ -815,18 +842,6 @@ onMounted(() => {
                     <VBtn
                       v-if="workOrder.status !== 'draft'"
                       variant="text"
-                      color="primary"
-                      prepend-icon="ri-file-pdf-line"
-                      size="small"
-                      class="text-none font-weight-bold action-btn"
-                      @click="openPdfPreview(workOrder)"
-                    >
-                      Ver PDF
-                    </VBtn>
-
-                    <VBtn
-                      v-if="workOrder.status !== 'draft'"
-                      variant="text"
                       color="info"
                       prepend-icon="ri-eye-line"
                       size="small"
@@ -865,7 +880,7 @@ onMounted(() => {
                       >
                         <VList
                           density="compact"
-                          class="py-1"
+                          class="py-1 rounded elevation-3 border"
                         >
                           <VListItem
                             prepend-icon="ri-file-pdf-line"
@@ -874,16 +889,16 @@ onMounted(() => {
                             @click="openPdfPreview(workOrder)"
                           />
                           <VListItem
-                            prepend-icon="ri-download-2-line"
-                            title="Descargar PDF"
-                            class="text-primary text-body-2"
-                            @click="downloadPDF(workOrder.id)"
-                          />
-                          <VListItem
                             prepend-icon="ri-printer-line"
                             title="Imprimir Orden"
                             class="text-info text-body-2"
                             @click="printPDF(workOrder.id)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-download-2-line"
+                            title="Descargar PDF"
+                            class="text-secondary text-body-2"
+                            @click="downloadPDF(workOrder.id)"
                           />
                           <VDivider class="my-1" />
                           <VListItem
@@ -1184,6 +1199,33 @@ onMounted(() => {
           </p>
         </div>
 
+        <!-- Banner para Móviles -->
+        <div
+          v-if="isMobileDevice()"
+          class="pa-3 bg-indigo-lighten-5 border-b d-flex align-center justify-space-between flex-wrap gap-2"
+        >
+          <div class="d-flex align-center gap-2">
+            <VIcon
+              icon="ri-smartphone-line"
+              color="primary"
+              size="20"
+            />
+            <span class="text-caption font-weight-medium text-grey-darken-3">
+              ¿Problemas para visualizar en tu teléfono?
+            </span>
+          </div>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            size="small"
+            prepend-icon="ri-external-link-line"
+            class="text-none font-weight-bold"
+            @click="openPdfInNewTab"
+          >
+            Abrir PDF en Pantalla Completa
+          </VBtn>
+        </div>
+
         <VCardText class="pa-0 d-flex flex-column align-center justify-center bg-grey-lighten-4" style="min-height: 550px; height: 75vh;">
           <div v-if="isPdfLoading" class="text-center pa-8">
             <VProgressCircular
@@ -1205,17 +1247,26 @@ onMounted(() => {
           <div v-else class="text-center pa-8 text-error">
             <VIcon icon="ri-error-warning-line" size="48" class="mb-2" />
             <p class="text-body-1">No se pudo cargar la vista previa del PDF.</p>
+            <VBtn
+              color="primary"
+              variant="tonal"
+              prepend-icon="ri-external-link-line"
+              class="mt-3"
+              @click="openPdfInNewTab"
+            >
+              Intentar abrir en nueva pestaña
+            </VBtn>
           </div>
         </VCardText>
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions class="pa-4 d-flex justify-end align-center flex-wrap gap-2 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             variant="outlined"
             color="secondary"
             prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
+            class="rounded-lg px-4 font-weight-medium"
             height="40"
             @click="closePdfPreview"
           >
@@ -1248,7 +1299,7 @@ onMounted(() => {
             color="primary"
             variant="elevated"
             prepend-icon="ri-download-2-line"
-            class="rounded-lg px-6 font-weight-bold"
+            class="rounded-lg px-5 font-weight-medium"
             height="40"
             @click="downloadPDF(selectedPdfWorkOrderId)"
           >

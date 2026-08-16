@@ -3,17 +3,21 @@ import { VIcon } from 'vuetify/components/VIcon'
 import { defineThemeConfig } from '@core'
 import { Skins } from '@core/enums'
 import VerticalNavHeaderArrow from '@images/svg/vertical-nav-header-arrow.svg'
-
-// ❗ Logo SVG must be imported with ?raw suffix
-import logo from '@images/logo.svg?raw'
+import logoPng from '@images/logo/logo.png'
 import { AppContentLayoutNav, ContentWidth, FooterType, NavbarType } from '@layouts/enums'
+
+const sucursalStoredName = typeof window !== 'undefined' ? localStorage.getItem('sucursal_name') : null
 
 export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
-    title: 'materialize',
+    title: sucursalStoredName || 'LUXURY EVYS',
 
-    // ❗ if you have SVG logo and want it to adapt according to theme color, you have to apply color as `color: rgb(var(--v-global-theme-primary))`
-    logo: h('div', { innerHTML: logo, style: 'line-height:0; color: rgb(var(--v-global-theme-primary))' }),
+    // Logo oficial de la compañía
+    logo: h('img', {
+      src: logoPng,
+      alt: 'Logo',
+      style: 'height: 38px; width: 38px; min-width: 38px; object-fit: contain; border-radius: 6px;',
+    }),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetifyV3.lg - 1, // 1 for matching with vuetify breakpoint. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/

@@ -475,7 +475,6 @@ onMounted(() => {
                   <div class="shimmer-button" />
                   <div class="shimmer-button" />
                   <div class="shimmer-button" />
-                  <div class="shimmer-button" />
                 </div>
               </td>
             </tr>
@@ -601,34 +600,65 @@ onMounted(() => {
                 </VChip>
               </td>
               <td class="text-center">
-                <div class="d-flex justify-center gap-1">
-                  <IconBtn
-                    class="action-btn text-info"
-                    title="Ver Historial"
-                    @click="showHistory(vehicle)"
-                  >
-                    <VIcon icon="ri-history-line" />
-                  </IconBtn>
+                <div class="d-flex justify-center align-center gap-1">
                   <IconBtn
                     class="action-btn text-info"
                     title="Ver Ficha"
+                    size="small"
                     @click="showVehicle(vehicle)"
                   >
-                    <VIcon icon="ri-eye-line" />
+                    <VIcon
+                      icon="ri-eye-line"
+                      size="18"
+                    />
                   </IconBtn>
                   <IconBtn
                     class="action-btn text-warning"
                     title="Editar Vehículo"
+                    size="small"
                     @click="editVehicle(vehicle)"
                   >
-                    <VIcon icon="ri-pencil-line" />
+                    <VIcon
+                      icon="ri-pencil-line"
+                      size="18"
+                    />
                   </IconBtn>
+
+                  <!-- Menú Más Opciones -->
                   <IconBtn
-                    class="action-btn text-error"
-                    title="Eliminar Vehículo"
-                    @click="deleteVehicle(vehicle)"
+                    class="action-btn text-secondary"
+                    title="Más Opciones"
+                    size="small"
                   >
-                    <VIcon icon="ri-delete-bin-6-line" />
+                    <VIcon
+                      icon="ri-more-2-line"
+                      size="18"
+                    />
+                    <VMenu
+                      activator="parent"
+                      transition="slide-y-transition"
+                      align="end"
+                      location="bottom end"
+                    >
+                      <VList
+                        density="compact"
+                        class="py-1 rounded elevation-3 border"
+                      >
+                        <VListItem
+                          prepend-icon="ri-history-line"
+                          title="Ver Historial"
+                          class="text-info text-body-2"
+                          @click="showHistory(vehicle)"
+                        />
+                        <VDivider class="my-1" />
+                        <VListItem
+                          prepend-icon="ri-delete-bin-6-line"
+                          title="Eliminar Vehículo"
+                          class="text-error text-body-2"
+                          @click="deleteVehicle(vehicle)"
+                        />
+                      </VList>
+                    </VMenu>
                   </IconBtn>
                 </div>
               </td>

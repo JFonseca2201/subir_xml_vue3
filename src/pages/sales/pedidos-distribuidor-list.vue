@@ -512,6 +512,7 @@ onMounted(() => {
                   <div class="d-flex justify-center gap-1">
                     <div class="shimmer-button" />
                     <div class="shimmer-button" />
+                    <div class="shimmer-button" />
                   </div>
                 </td>
               </tr>
@@ -579,18 +580,73 @@ onMounted(() => {
                 </td>
                 <td class="text-no-wrap text-center">
                   <div class="d-flex justify-center align-center gap-1">
-                    <VBtn class="action-btn" icon="ri-printer-line" variant="text" size="small" color="info"
-                      title="Imprimir" @click="printPedido(item.id)" />
+                    <IconBtn
+                      class="action-btn text-info"
+                      title="Ver Detalle"
+                      size="small"
+                      :loading="viewLoading && selectedPedido?.id === item.id"
+                      @click="viewPedidoDetails(item)"
+                    >
+                      <VIcon
+                        icon="ri-eye-line"
+                        size="18"
+                      />
+                    </IconBtn>
 
-                    <VBtn class="action-btn" icon="ri-file-pdf-line" variant="text" size="small" color="success"
-                      title="Ver PDF (Sin Precios)" @click="generateSinglePDF(item)" />
-                    <VBtn class="action-btn" icon="ri-eye-line" variant="text" size="small" color="info"
-                      title="Ver Detalle" :loading="viewLoading && selectedPedido?.id === item.id"
-                      @click="viewPedidoDetails(item)" />
-                    <VBtn class="action-btn" icon="ri-edit-line" variant="text" size="small" color="warning"
-                      title="Editar Pedido" @click="editPedido(item)" />
-                    <VBtn class="action-btn" icon="ri-delete-bin-line" variant="text" size="small" color="error"
-                      title="Eliminar Pedido" @click="deletePedido(item)" />
+                    <IconBtn
+                      class="action-btn text-warning"
+                      title="Editar Pedido"
+                      size="small"
+                      @click="editPedido(item)"
+                    >
+                      <VIcon
+                        icon="ri-pencil-line"
+                        size="18"
+                      />
+                    </IconBtn>
+
+                    <!-- Menú Más Opciones -->
+                    <IconBtn
+                      class="action-btn text-secondary"
+                      title="Más Opciones"
+                      size="small"
+                    >
+                      <VIcon
+                        icon="ri-more-2-line"
+                        size="18"
+                      />
+                      <VMenu
+                        activator="parent"
+                        transition="slide-y-transition"
+                        align="end"
+                        location="bottom end"
+                      >
+                        <VList
+                          density="compact"
+                          class="py-1 rounded elevation-3 border"
+                        >
+                          <VListItem
+                            prepend-icon="ri-printer-line"
+                            title="Imprimir Pedido"
+                            class="text-info text-body-2"
+                            @click="printPedido(item.id)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-file-pdf-line"
+                            title="Ver PDF (Sin Precios)"
+                            class="text-success text-body-2"
+                            @click="generateSinglePDF(item)"
+                          />
+                          <VDivider class="my-1" />
+                          <VListItem
+                            prepend-icon="ri-delete-bin-6-line"
+                            title="Eliminar Pedido"
+                            class="text-error text-body-2"
+                            @click="deletePedido(item)"
+                          />
+                        </VList>
+                      </VMenu>
+                    </IconBtn>
                   </div>
                 </td>
               </tr>

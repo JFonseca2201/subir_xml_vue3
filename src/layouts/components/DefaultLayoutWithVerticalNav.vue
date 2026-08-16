@@ -1,7 +1,9 @@
 <script setup>
+import { onMounted } from 'vue'
 import navItems from '@/navigation/vertical'
 import { useConfigStore } from '@core/stores/config'
-import { themeConfig } from '@themeConfig'
+import { themeConfig, layoutConfig } from '@themeConfig'
+import { $api } from '@/utils/api'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
@@ -12,6 +14,29 @@ import GlobalToast from '@/components/common/GlobalToast.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
+
+// Cargar dinámicamente nombre de la sucursal registrada
+const loadSucursalInfo = async () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  try {
+    const resp = await $api('sucursales/1', {
+      method: 'GET',
+    })
+    if (resp && resp.sucursal) {
+      const sucursalName = resp.sucursal.name || resp.sucursal.trade_name || 'LUXURY EVYS'
+      localStorage.setItem('sucursal_name', sucursalName)
+      if (themeConfig.app) themeConfig.app.title = sucursalName
+      if (layoutConfig?.app) layoutConfig.app.title = sucursalName
+    }
+  } catch (e) {
+    // Si falla o no hay conexión inmediata, mantiene el guardado en localStorage o LUXURY EVYS
+  }
+}
+
+onMounted(() => {
+  loadSucursalInfo()
+})
 
 // SECTION: Loading Indicator
 const isFallbackStateActive = ref(false)
