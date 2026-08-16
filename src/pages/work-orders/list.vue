@@ -299,6 +299,66 @@ const goToEdit = workOrderId => {
   router.push(`/work-orders/edit/${workOrderId}`)
 }
 
+// Estados para Vista Previa de PDF
+const isPdfPreviewDialogVisible = ref(false)
+const pdfPreviewUrl = ref('')
+const pdfPreviewTitle = ref('')
+const isPdfLoading = ref(false)
+const selectedPdfWorkOrderId = ref(null)
+
+const openPdfPreview = async workOrder => {
+  if (!workOrder) return
+  try {
+    isPdfLoading.value = true
+    selectedPdfWorkOrderId.value = workOrder.id
+    pdfPreviewTitle.value = `Orden de Trabajo #${workOrder.number || workOrder.id}`
+    isPdfPreviewDialogVisible.value = true
+
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+
+    const response = await fetch(`${apiBaseUrl}/work-orders/${workOrder.id}/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/pdf',
+      },
+    })
+
+    if (response.ok) {
+      const blob = await response.blob()
+      if (pdfPreviewUrl.value) {
+        window.URL.revokeObjectURL(pdfPreviewUrl.value)
+      }
+      pdfPreviewUrl.value = window.URL.createObjectURL(blob)
+    } else {
+      showNotification('Error al cargar la previsualización del PDF', 'error')
+    }
+  } catch (error) {
+    console.error('Error al cargar PDF:', error)
+    showNotification('Error al cargar la previsualización del PDF', 'error')
+  } finally {
+    isPdfLoading.value = false
+  }
+}
+
+const closePdfPreview = () => {
+  isPdfPreviewDialogVisible.value = false
+  if (pdfPreviewUrl.value) {
+    window.URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = ''
+  }
+}
+
+const openPdfInNewTab = () => {
+  if (pdfPreviewUrl.value) {
+    window.open(pdfPreviewUrl.value, '_blank')
+  } else if (selectedPdfWorkOrderId.value) {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+    window.open(`${apiBaseUrl}/work-orders/${selectedPdfWorkOrderId.value}/pdf?token=${token}`, '_blank')
+  }
+}
+
 const downloadPDF = async workOrderId => {
   try {
     const token = localStorage.getItem('token')
@@ -755,13 +815,25 @@ onMounted(() => {
                     <VBtn
                       v-if="workOrder.status !== 'draft'"
                       variant="text"
+                      color="primary"
+                      prepend-icon="ri-file-pdf-line"
+                      size="small"
+                      class="text-none font-weight-bold action-btn"
+                      @click="openPdfPreview(workOrder)"
+                    >
+                      Ver PDF
+                    </VBtn>
+
+                    <VBtn
+                      v-if="workOrder.status !== 'draft'"
+                      variant="text"
                       color="info"
                       prepend-icon="ri-eye-line"
                       size="small"
                       class="text-none font-weight-bold action-btn"
                       @click="viewDetails(workOrder)"
                     >
-                      Ver Detalle
+                      Detalle
                     </VBtn>
 
                     <VBtn
@@ -796,12 +868,30 @@ onMounted(() => {
                           class="py-1"
                         >
                           <VListItem
+                            prepend-icon="ri-file-pdf-line"
+                            title="Ver PDF"
+                            class="text-primary text-body-2"
+                            @click="openPdfPreview(workOrder)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-download-2-line"
+                            title="Descargar PDF"
+                            class="text-primary text-body-2"
+                            @click="downloadPDF(workOrder.id)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-printer-line"
+                            title="Imprimir Orden"
+                            class="text-info text-body-2"
+                            @click="printPDF(workOrder.id)"
+                          />
+                          <VDivider class="my-1" />
+                          <VListItem
                             prepend-icon="ri-time-line"
                             title="Ver Secuencia"
                             class="text-secondary text-body-2"
                             @click="openTimeline(workOrder)"
                           />
-                          <VDivider class="my-1" />
                           <VListItem
                             v-if="workOrder.status === 'ready' && !workOrder.sale"
                             prepend-icon="ri-shopping-cart-line"
@@ -815,21 +905,6 @@ onMounted(() => {
                             title="Marcar como Entregado"
                             class="text-success text-body-2"
                             @click="updateStatus(workOrder.id, 'delivered')"
-                          />
-                          <VListItem
-                            v-if="workOrder.status !== 'draft'"
-                            prepend-icon="ri-printer-line"
-                            title="Imprimir Orden"
-                            class="text-info text-body-2"
-                            @click="printPDF(workOrder.id)"
-                          />
-
-                          <VListItem
-                            v-if="workOrder.status !== 'draft'"
-                            prepend-icon="ri-file-pdf-line"
-                            title="Descargar PDF"
-                            class="text-primary text-body-2"
-                            @click="downloadPDF(workOrder.id)"
                           />
                           <VDivider class="my-1" />
                           <VListItem
@@ -1024,7 +1099,7 @@ onMounted(() => {
           </p>
         </VCardText>
         <VDivider />
-           <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3 flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3 flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
           <VBtn
             v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
             color="success"
@@ -1039,8 +1114,19 @@ onMounted(() => {
           <VBtn
             v-if="selectedWorkOrder.status !== 'draft'"
             color="primary"
-            variant="tonal"
+            variant="elevated"
             prepend-icon="ri-file-pdf-line"
+            class="rounded-lg px-5 font-weight-bold"
+            height="40"
+            @click="openPdfPreview(selectedWorkOrder)"
+          >
+            Ver PDF
+          </VBtn>
+          <VBtn
+            v-if="selectedWorkOrder.status !== 'draft'"
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-download-2-line"
             class="rounded-lg px-4 font-weight-medium"
             height="40"
             @click="downloadPDF(selectedWorkOrder.id)"
@@ -1067,6 +1153,106 @@ onMounted(() => {
             @click="showDetailsDialog = false"
           >
             Cerrar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- PDF Preview Dialog -->
+    <VDialog scrollable
+      v-model="isPdfPreviewDialogVisible"
+      max-width="950"
+    >
+      <VCard class="custom-dialog-card">
+        <!-- Header Banner Primary -->
+        <div class="custom-dialog-header-primary">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="closePdfPreview"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-file-pdf-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            {{ pdfPreviewTitle }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Previsualización del documento de la orden de trabajo
+          </p>
+        </div>
+
+        <VCardText class="pa-0 d-flex flex-column align-center justify-center bg-grey-lighten-4" style="min-height: 550px; height: 75vh;">
+          <div v-if="isPdfLoading" class="text-center pa-8">
+            <VProgressCircular
+              indeterminate
+              color="primary"
+              size="50"
+              class="mb-3"
+            />
+            <p class="text-body-1 font-weight-medium text-grey-darken-2">
+              Generando y cargando documento PDF...
+            </p>
+          </div>
+          <iframe
+            v-else-if="pdfPreviewUrl"
+            :src="pdfPreviewUrl"
+            class="w-100 h-100"
+            style="border: none; min-height: 550px;"
+          />
+          <div v-else class="text-center pa-8 text-error">
+            <VIcon icon="ri-error-warning-line" size="48" class="mb-2" />
+            <p class="text-body-1">No se pudo cargar la vista previa del PDF.</p>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="closePdfPreview"
+          >
+            Cerrar
+          </VBtn>
+
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-external-link-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
+            @click="openPdfInNewTab"
+          >
+            Abrir en Pestaña
+          </VBtn>
+
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-printer-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
+            @click="printPDF(selectedPdfWorkOrderId)"
+          >
+            Imprimir
+          </VBtn>
+
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-download-2-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="downloadPDF(selectedPdfWorkOrderId)"
+          >
+            Descargar PDF
           </VBtn>
         </VCardActions>
       </VCard>

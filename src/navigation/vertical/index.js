@@ -2,24 +2,24 @@ export default [
   {
     title: 'Pagina principal',
     to: { name: 'dashboard' },
-    icon: { icon: 'ri-pie-chart-box-line' },
+    icon: { icon: 'ri-dashboard-line' },
   },
 
   { heading: 'Comercial' },
   {
     title: 'Clientes',
-    icon: { icon: 'ri-p2p-line' },
+    icon: { icon: 'ri-user-shared-2-line' },
     to: 'clients-list',
   },
   {
     title: 'Vehículos',
-    icon: { icon: 'ri-roadster-line' },
+    icon: { icon: 'ri-car-line' },
     to: 'vehicles-list',
   },
   {
     title: 'Info Repuestos',
     to: 'inforepuestos',
-    icon: { icon: 'ri-file-list-3-line' },
+    icon: { icon: 'ri-file-search-line' },
   },
 
   { heading: 'Negocio Paralelo' },
@@ -28,7 +28,6 @@ export default [
     icon: { icon: 'ri-store-2-line' },
     to: 'negocio-paralelo',
   },
-
 
   { heading: 'Finanzas' },
   {
@@ -54,7 +53,6 @@ export default [
     ],
   },
 
-
   { heading: 'Servicios' },
 
   {
@@ -64,7 +62,7 @@ export default [
       {
         title: 'Registrar',
         to: 'work-orders-add',
-        icon: { icon: 'ri-file-list-3-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
@@ -75,49 +73,49 @@ export default [
   },
   {
     title: 'Ventas',
-    icon: { icon: 'ri-money-dollar-box-line' },
+    icon: { icon: 'ri-shopping-cart-2-line' },
     children: [
       {
         title: 'Registrar',
         to: 'sales-add',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
         to: 'sales-list',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
   {
     title: 'Cotizaciones',
-    icon: { icon: 'ri-file-list-3-line' },
+    icon: { icon: 'ri-file-text-line' },
     children: [
       {
         title: 'Registrar',
         to: 'quotes-add',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
         to: 'quotes-list',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
   {
     title: 'Pedidos',
-    icon: { icon: 'ri-box-3-line' },
+    icon: { icon: 'ri-truck-line' },
     children: [
       {
         title: 'Registrar',
         to: 'sales-pedidos-distribuidor',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
         to: 'sales-pedidos-distribuidor-list',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
@@ -128,12 +126,12 @@ export default [
       {
         title: 'Registrar',
         to: 'returns-add',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
         to: 'returns-list',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
@@ -141,28 +139,28 @@ export default [
   { heading: 'Inventario' },
   {
     title: 'Productos',
-    icon: { icon: 'ri-product-hunt-line' },
+    icon: { icon: 'ri-box-3-line' },
     children: [
       {
         title: 'Registrar',
         to: 'product-add',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
         to: 'product-list',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-file-list-3-line' },
       },
     ],
   },
   {
     title: 'Compras',
-    icon: { icon: 'ri-shopping-cart-2-line' },
+    icon: { icon: 'ri-shopping-bag-3-line' },
     children: [
       {
         title: 'Registrar',
         to: 'invoice-manual-purchase',
-        icon: { icon: 'ri-computer-line' },
+        icon: { icon: 'ri-file-add-line' },
       },
       {
         title: 'Listado',
@@ -171,8 +169,6 @@ export default [
       },
     ],
   },
-
-
 
   { heading: 'Administración' },
   {
@@ -187,7 +183,7 @@ export default [
       {
         title: 'Socios',
         to: { name: 'partners-list' },
-        icon: { icon: 'ri-group-3-line' },
+        icon: { icon: 'ri-shake-hands-line' },
       },
     ],
   },
@@ -198,7 +194,7 @@ export default [
       {
         title: 'Usuarios',
         to: { name: 'users' },
-        icon: { icon: 'ri-group-line' },
+        icon: { icon: 'ri-user-settings-line' },
       },
       {
         title: 'Roles y Permisos',
@@ -214,17 +210,17 @@ export default [
       {
         title: 'Establecimiento',
         to: { name: 'sucursales' },
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-building-line' },
       },
       {
         title: 'Almacenes',
         to: { name: 'sucursales-warehouses' },
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-store-3-line' },
       },
       {
         title: 'Categorias',
         to: 'configuration-categories',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-folder-shared-line' },
       },
       {
         title: 'Unidades',
@@ -234,12 +230,12 @@ export default [
       {
         title: 'Conversiones',
         to: 'configuration-unit-convertion',
-        icon: { icon: 'ri-file-ppt-2-line' },
+        icon: { icon: 'ri-scales-3-line' },
       },
       {
         title: 'Proveedores',
         to: 'configuration-providers',
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-truck-line' },
       },
     ],
   },
@@ -247,17 +243,17 @@ export default [
   { heading: 'Información' },
   {
     title: 'Kardex',
-    icon: { icon: 'ri-draft-line' },
+    icon: { icon: 'ri-file-chart-line' },
     children: [
       {
         title: 'Por Producto',
         to: { name: 'kardex-producto' },
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-box-3-line' },
       },
       {
         title: 'General',
         to: { name: 'kardex-index' },
-        icon: { icon: 'ri-radio-button-line' },
+        icon: { icon: 'ri-line-chart-line' },
       },
     ],
   },
