@@ -1,6 +1,5 @@
 <script setup>
 import { useGenerateImageVariant } from "@/@core/composable/useGenerateImageVariant"
-import AuthProvider from "@/views/pages/authentication/AuthProvider.vue"
 import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png"
 import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png"
 import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png"
@@ -86,36 +85,40 @@ const authV2LoginIllustration = useGenerateImageVariant(
 
 <template>
   <div class="auth-page-container">
-    <RouterLink to="/">
-      <div class="app-logo auth-logo">
+    <!-- Brand Logo Top Left Flotante -->
+    <RouterLink to="/" class="auth-brand-link">
+      <div class="auth-logo-badge">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
-        <h1 class="app-logo-title">
+        <span class="auth-brand-title">
           {{ themeConfig.app.title }}
-        </h1>
+        </span>
       </div>
     </RouterLink>
 
     <VRow no-gutters class="auth-wrapper">
-      <!-- Columna Izquierda con Ilustración y Fondo Tonal Primary -->
+      <!-- Columna Izquierda: Showcase Visual Minimalista y Limpio -->
       <VCol md="8" class="d-none d-md-flex align-center justify-center position-relative auth-illustration-wrapper">
-        <div class="d-flex align-center justify-center pa-10">
-          <img :src="authV2LoginIllustration" class="auth-illustration w-100" alt="auth-illustration">
+        <!-- Ambient Glow Orbs -->
+        <div class="auth-glow-orb auth-glow-1" />
+        <div class="auth-glow-orb auth-glow-2" />
+
+        <div class="d-flex align-center justify-center pa-10 z-index-1 w-100">
+          <img :src="authV2LoginIllustration" class="auth-illustration" alt="Luxury Evys Portal">
         </div>
+
         <VImg :src="authV2LoginMask" class="d-none d-md-flex auth-footer-mask" alt="auth-mask" />
       </VCol>
 
-      <!-- Columna Derecha: Tarjeta de Inicio de Sesión con Fondo Primary igual a la barra lateral -->
+      <!-- Columna Derecha: Tarjeta de Acceso -->
       <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar">
-        <VCard flat :max-width="480" class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-xl text-white">
-          <VCardText class="pb-2 text-white">
-            <div class="mb-2">
-
-              <h3 class="text-h4 font-weight-bold mb-1 text-white">
-                Bienvenido a
-                <span class="text-capitalize text-white">{{ themeConfig.app.title }}! 👋🏻</span>
+        <VCard flat :max-width="460" class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-2xl text-white w-100">
+          <VCardText class="pb-2 text-white text-center text-sm-start">
+            <div class="mb-4">
+              <h3 class="text-h4 font-weight-bold mb-1 text-white auth-welcome-heading">
+                ¡Bienvenido a <span class="auth-highlight-name">{{ themeConfig.app.title }}</span>! 👋🏻
               </h3>
               <p class="text-body-1 text-white opacity-85 mb-0">
-                Inicia sesión con tus credenciales para acceder al sistema
+                Ingresa tus credenciales para acceder al panel de control
               </p>
             </div>
           </VCardText>
@@ -125,68 +128,60 @@ const authV2LoginIllustration = useGenerateImageVariant(
               <VRow>
                 <!-- Email -->
                 <VCol cols="12">
-                  <label class="text-caption font-weight-bold text-white mb-1 d-block">CORREO ELECTRÓNICO</label>
-                  <VTextField v-model="form.email" autofocus placeholder="usuario@correo.com" bg-color="white"
-                    color="primary" variant="solo" density="comfortable" class="auth-input rounded-lg"
+                  <label class="auth-form-label">CORREO ELECTRÓNICO</label>
+                  <VTextField v-model="form.email" autofocus placeholder="ejemplo@luxuryevys.com" bg-color="white"
+                    color="primary" variant="solo" density="comfortable" class="auth-input"
                     prepend-inner-icon="ri-mail-line" />
                 </VCol>
 
                 <!-- Password -->
                 <VCol cols="12">
-                  <label class="text-caption font-weight-bold text-white mb-1 d-block">CONTRASEÑA</label>
+                  <label class="auth-form-label">CONTRASEÑA</label>
                   <VTextField v-model="form.password" placeholder="············" bg-color="white" color="primary"
-                    variant="solo" density="comfortable" class="auth-input rounded-lg" prepend-inner-icon="ri-lock-line"
+                    variant="solo" density="comfortable" class="auth-input" prepend-inner-icon="ri-lock-2-line"
                     :type="isPasswordVisible ? 'text' : 'password'"
                     :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                     @click:append-inner="isPasswordVisible = !isPasswordVisible" />
 
-                  <!-- Remember me checkbox & forgot password -->
-                  <div class="d-flex align-center justify-space-between flex-wrap my-4 gap-x-2">
-                    <VCheckbox v-model="form.remember" label="Recordarme" color="white"
+                  <!-- Remember me & Forgot Password -->
+                  <div class="d-flex align-center justify-space-between flex-wrap my-3 gap-x-2">
+                    <VCheckbox v-model="form.remember" label="Recordarme" color="white" true-icon="ri-checkbox-fill"
+                      false-icon="ri-checkbox-blank-line" hide-details density="compact"
                       class="text-white auth-checkbox" />
 
-                    <a class="text-white text-decoration-underline font-weight-medium text-body-2" href="#"> ¿Olvidaste
-                      tu contraseña? </a>
+                    <a class="auth-forgot-link" href="#">
+                      ¿Olvidaste tu contraseña?
+                    </a>
                   </div>
                 </VCol>
 
+                <!-- Alerts -->
                 <VCol v-if="success_login" cols="12">
-                  <VAlert type="success" color="success" closable="" variant="elevated">
+                  <VAlert type="success" color="success" closable variant="elevated" class="rounded-lg shadow-sm">
                     {{ success_login }}
                   </VAlert>
                 </VCol>
 
                 <VCol v-if="error_login" cols="12">
-                  <VAlert type="error" color="error" closable="" variant="elevated">
+                  <VAlert type="error" color="error" closable variant="elevated" class="rounded-lg shadow-sm">
                     {{ error_login }}
                   </VAlert>
                 </VCol>
 
-                <VCol cols="12">
-                  <!-- Botón de Ingreso Blanco con Texto Púrpura -->
+                <!-- Botón de Ingreso PRO -->
+                <VCol cols="12" class="pt-3">
                   <VBtn block size="large" type="submit" class="auth-submit-btn" :loading="loader.loading"
                     :disabled="loader.loading">
+                    <VIcon icon="ri-login-box-line" class="me-2" />
                     Iniciar Sesión
                   </VBtn>
                 </VCol>
 
-                <!-- Create account -->
-                <VCol cols="12" class="text-body-1 text-center mt-2 text-white">
-                  <span class="opacity-85"> ¿No tienes una cuenta? </span>
-                  <a class="text-white font-weight-bold ms-1 text-decoration-underline" href="#">
-                    Crear una cuenta
-                  </a>
-                </VCol>
-
-                <VCol cols="12" class="d-flex align-center my-2">
-                  <VDivider color="white" />
-                  <span class="mx-4 text-caption text-white opacity-85 text-uppercase">o continuar con</span>
-                  <VDivider color="white" />
-                </VCol>
-
-                <!-- Auth providers -->
-                <VCol cols="12" class="text-center auth-providers-container">
-                  <AuthProvider />
+                <!-- Footer Copyright Minimalista -->
+                <VCol cols="12" class="text-center mt-6">
+                  <div class="text-caption text-white opacity-75 font-weight-medium">
+                    © {{ new Date().getFullYear() }} {{ themeConfig.app.title }} • Todos los derechos reservados
+                  </div>
                 </VCol>
               </VRow>
             </VForm>
