@@ -81,23 +81,29 @@ const authV2LoginIllustration = useGenerateImageVariant(
   authV2LoginIllustrationBorderedDark,
   true,
 )
+
+const appBrandName = computed(() => {
+  const raw = themeConfig.app?.title || 'LUXURY EVYS'
+  if (raw.toUpperCase().includes('LUXURY EVYS')) return 'LUXURY EVYS'
+  return raw.length > 22 ? raw.substring(0, 20) + '...' : raw
+})
 </script>
 
 <template>
   <div class="auth-page-container">
-    <!-- Brand Logo Top Left Flotante -->
-    <RouterLink to="/" class="auth-brand-link">
+    <!-- Brand Logo Top Left Flotante (Solo en Desktop) -->
+    <RouterLink to="/" class="auth-brand-link d-none d-lg-flex">
       <div class="auth-logo-badge">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
         <span class="auth-brand-title">
-          {{ themeConfig.app.title }}
+          {{ appBrandName }}
         </span>
       </div>
     </RouterLink>
 
     <VRow no-gutters class="auth-wrapper">
       <!-- Columna Izquierda: Showcase Visual Minimalista y Limpio -->
-      <VCol md="8" class="d-none d-md-flex align-center justify-center position-relative auth-illustration-wrapper">
+      <VCol lg="8" class="d-none d-lg-flex align-center justify-center position-relative auth-illustration-wrapper">
         <!-- Ambient Glow Orbs -->
         <div class="auth-glow-orb auth-glow-1" />
         <div class="auth-glow-orb auth-glow-2" />
@@ -106,16 +112,16 @@ const authV2LoginIllustration = useGenerateImageVariant(
           <img :src="authV2LoginIllustration" class="auth-illustration" alt="Luxury Evys Portal">
         </div>
 
-        <VImg :src="authV2LoginMask" class="d-none d-md-flex auth-footer-mask" alt="auth-mask" />
+        <VImg :src="authV2LoginMask" class="d-none d-lg-flex auth-footer-mask" alt="auth-mask" />
       </VCol>
 
       <!-- Columna Derecha: Tarjeta de Acceso -->
-      <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar">
+      <VCol cols="12" lg="4" class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar">
         <VCard flat :max-width="460" class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-2xl text-white w-100">
           <VCardText class="pb-2 text-white text-center text-sm-start">
             <div class="mb-4">
               <h3 class="text-h4 font-weight-bold mb-1 text-white auth-welcome-heading">
-                ¡Bienvenido a <span class="auth-highlight-name">{{ themeConfig.app.title }}</span>! 👋🏻
+                ¡Bienvenido a <span class="auth-highlight-name">{{ appBrandName }}</span>! 👋🏻
               </h3>
               <p class="text-body-1 text-white opacity-85 mb-0">
                 Ingresa tus credenciales para acceder al panel de control
@@ -180,7 +186,7 @@ const authV2LoginIllustration = useGenerateImageVariant(
                 <!-- Footer Copyright Minimalista -->
                 <VCol cols="12" class="text-center mt-6">
                   <div class="text-caption text-white opacity-75 font-weight-medium">
-                    © {{ new Date().getFullYear() }} {{ themeConfig.app.title }} • Todos los derechos reservados
+                    © {{ new Date().getFullYear() }} {{ appBrandName }} • Todos los derechos reservados
                   </div>
                 </VCol>
               </VRow>

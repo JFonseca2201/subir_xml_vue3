@@ -11,6 +11,7 @@ import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import GlobalToast from '@/components/common/GlobalToast.vue'
+import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
@@ -73,14 +74,25 @@ watch([
   <VerticalNavLayout :nav-items="navItems">
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
-      <div class="d-flex h-100 align-center">
+      <div class="d-flex h-100 align-center w-100">
         <IconBtn
           id="vertical-nav-toggle-btn"
-          class="ms-n2 d-lg-none"
+          class="me-2 d-lg-none modern-hamburger-btn"
           @click="toggleVerticalOverlayNavActive(true)"
         >
-          <VIcon icon="ri-menu-line" />
+          <VIcon
+            icon="ri-menu-line"
+            size="24"
+          />
         </IconBtn>
+
+        <!-- Brand logo on mobile/tablet when sidebar is collapsed -->
+        <div class="d-flex align-center gap-x-2 d-lg-none">
+          <VNodeRenderer :nodes="themeConfig.app.logo" />
+          <span class="font-weight-bold text-white text-subtitle-1 tracking-wide d-none d-sm-inline">
+            {{ themeConfig.app.title }}
+          </span>
+        </div>
 
         <VSpacer />
 
@@ -137,6 +149,21 @@ watch([
 
   to {
     transform: rotate(0deg);
+  }
+}
+
+.modern-hamburger-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.28) !important;
+    transform: scale(1.05);
   }
 }
 

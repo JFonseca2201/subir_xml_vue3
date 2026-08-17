@@ -3,7 +3,7 @@ import { VIcon } from 'vuetify/components/VIcon'
 import { defineThemeConfig } from '@core'
 import { Skins } from '@core/enums'
 import VerticalNavHeaderArrow from '@images/svg/vertical-nav-header-arrow.svg'
-import logoPng from '@images/logo/logo_e.png'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { AppContentLayoutNav, ContentWidth, FooterType, NavbarType } from '@layouts/enums'
 
 const getCleanTitle = () => {
@@ -21,17 +21,8 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
     title: getCleanTitle(),
 
-    // Logo oficial de la compañía (Favicon en contenedor de alto contraste)
-    logo: h('div', {
-      class: 'app-logo-badge-container',
-      style: 'display: flex; align-items: center; justify-content: center; background: #ffffff; width: 44px; height: 44px; min-width: 44px; border-radius: 12px; padding: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); flex-shrink: 0;',
-    }, [
-      h('img', {
-        src: logoPng,
-        alt: 'Luxury Evys Favicon',
-        style: 'width: 100%; height: 100%; object-fit: contain; display: block;',
-      }),
-    ]),
+    // Logo oficial de la compañía (Componente reactivo para renderizado seguro)
+    logo: h(AppLogo),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetifyV3.lg - 1, // 1 for matching with vuetify breakpoint. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/

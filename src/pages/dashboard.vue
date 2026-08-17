@@ -529,7 +529,7 @@ const tecnicosOptions = computed(() => {
     <div class="dashboard-header-glow" />
 
     <!-- Header (Mockup Style layout using system colors) -->
-    <div class="d-flex flex-wrap justify-space-between align-center mb-6 position-relative border-b pb-4"
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 position-relative border-b pb-4 gap-4"
       style="z-index: 10; border-color: rgba(var(--v-theme-on-surface), 0.08) !important;">
       <div>
         <h1 class="text-h4 font-weight-bold text-high-emphasis mb-1" style="letter-spacing: 0.5px;">
@@ -542,8 +542,8 @@ const tecnicosOptions = computed(() => {
       </div>
 
       <!-- Search & quick action shortcuts -->
-      <div class="d-flex flex-wrap align-center gap-4 mt-4 mt-md-0">
-        <div style="width: 250px; position: relative;" class="d-none d-sm-block">
+      <div class="d-flex flex-wrap align-center gap-3 w-100 w-md-auto">
+        <div style="min-width: 220px; flex: 1 1 auto; position: relative;" class="d-none d-sm-block">
           <VTextField v-model="searchQuery" density="compact" placeholder="Buscar cliente, auto, SKU..."
             prepend-inner-icon="ri-search-line" variant="solo" hide-details class="rounded-xl search-field"
             style="box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;" @focus="isSearchFocused = true"
@@ -616,11 +616,11 @@ const tecnicosOptions = computed(() => {
           class="rounded-xl px-4 text-white font-weight-bold"
           style="background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%); box-shadow: 0 6px 15px rgba(115, 103, 240, 0.3) !important; letter-spacing: 0.3px;"
           @click="isMonthlySalesBreakdownOpen = true">
-          Ranking Ventas (Prod. vs Serv.)
+          Ranking Ventas
         </VBtn>
 
         <VBtn prepend-icon="ri-refresh-line" variant="elevated" :loading="loading"
-          class="rounded-xl px-5 text-white font-weight-bold"
+          class="rounded-xl px-4 text-white font-weight-bold"
           style="background: linear-gradient(135deg, #EA5455 0%, #FEB692 100%); box-shadow: 0 6px 15px rgba(234, 84, 85, 0.3) !important; letter-spacing: 0.5px;"
           @click="fetchDashboardData">
           Actualizar

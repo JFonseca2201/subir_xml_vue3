@@ -122,13 +122,14 @@ const logout = async () => {
         <VMenu
           v-model="isMenuOpen"
           activator="parent"
-          width="310"
+          min-width="280"
+          max-width="calc(100vw - 24px)"
           location="bottom end"
-          offset="18px"
+          offset="14px"
           transition="scale-transition"
           close-on-content-click
         >
-          <VList class="pa-0 rounded-2xl overflow-hidden elevation-8 border user-profile-menu-list">
+          <VList class="pa-0 rounded-2xl overflow-hidden elevation-8 border user-profile-menu-list" style="max-width: 320px; width: 100%;">
             <!-- Modern Profile Header -->
             <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
               <VAvatar

@@ -5109,6 +5109,122 @@
   display: block;
 }
 
+/* ==========================================================================
+   RESPONSIVE DESIGN RULES (MOBILE & TABLET OPTIMIZATIONS)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  // Hide left illustration column completely on tablet/mobile
+  .auth-illustration-wrapper {
+    display: none !important;
+  }
+
+  .auth-wrapper {
+    flex-direction: column !important;
+  }
+
+  // Hide top-left floating badge completely on mobile/tablet (matches Image 2)
+  .auth-brand-link {
+    display: none !important;
+  }
+
+  .auth-primary-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 3rem 1.5rem 1.5rem !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .auth-welcome-heading {
+      font-size: 1.85rem !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.5px !important;
+      line-height: 1.25 !important;
+      text-align: left !important;
+    }
+
+    .auth-login-card {
+      padding: 0 !important;
+      max-width: 440px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  // Global Dialogs & Modals on Mobile and Tablet
+  .v-dialog {
+    margin: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+
+    > .v-card,
+    > .v-overlay__content > .v-card {
+      border-radius: 16px !important;
+      max-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+
+      .v-card-text {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 1rem !important;
+      }
+    }
+  }
+
+  .partner-dialog__header,
+  .vehicle-dialog__header,
+  .account-form__header,
+  .employee-dialog__header,
+  .client-dialog__header,
+  .aporte-dialog__header,
+  .provider-dialog__header,
+  .invoice-dialog .v-card-title {
+    padding: 1rem !important;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .form-actions {
+    padding: 0.85rem 1rem !important;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+
+    .v-btn {
+      width: 100% !important;
+      margin: 0 !important;
+    }
+  }
+
+  .dialog-section {
+    padding: 1rem !important;
+  }
+
+  // Dashboard & Metrics Cards on Mobile
+  .dashboard-container {
+    padding: 12px !important;
+
+    .cards-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+  }
+
+  // Tables mobile horizontal scroll touch smoothness
+  .movement-table,
+  .data-table,
+  .v-table {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
 
 
 
