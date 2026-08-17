@@ -24,7 +24,7 @@ const loadSucursalInfo = async () => {
       method: 'GET',
     })
     if (resp && resp.sucursal) {
-      const sucursalName = resp.sucursal.name || resp.sucursal.trade_name || 'LUXURY EVYS'
+      const sucursalName = resp.sucursal.trade_name || (resp.sucursal.name && resp.sucursal.name.length <= 25 ? resp.sucursal.name : 'LUXURY EVYS')
       localStorage.setItem('sucursal_name', sucursalName)
       if (themeConfig.app) themeConfig.app.title = sucursalName
       if (layoutConfig?.app) layoutConfig.app.title = sucursalName

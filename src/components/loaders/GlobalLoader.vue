@@ -3,18 +3,25 @@
     :model-value="loading"
     class="align-center justify-center global-loader-overlay"
     persistent
-    scrim="#0c111d"
-    opacity="0.65"
+    scrim="#0b1329"
+    opacity="0.75"
     style="z-index: 99999;"
   >
     <div class="loader-container">
       <div class="spinner-container mb-4">
-        <!-- Modern clean gradient spinner -->
+        <!-- Spinner Ring -->
         <div class="custom-spinner" />
-        <div
-          class="center-logo"
-          v-html="logoHtml"
-        />
+        <!-- Glowing Ring Ambient -->
+        <div class="spinner-glow" />
+        
+        <!-- Center Logo with Clean Badge -->
+        <div class="center-logo">
+          <img
+            :src="logoPng"
+            alt="Luxury Evys"
+            class="loader-logo-img"
+          />
+        </div>
       </div>
       <h3 class="loader-title mb-1">
         Cargando
@@ -29,7 +36,7 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { useLoaderStore } from '@/stores/loader'
-import logoHtml from '@images/logo.svg?raw'
+import logoPng from '@images/logo/logo_e.png'
 
 const loaderStore = useLoaderStore()
 const { loading } = storeToRefs(loaderStore)
@@ -37,7 +44,7 @@ const { loading } = storeToRefs(loaderStore)
 
 <style scoped>
 .global-loader-overlay {
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(6px);
 }
 
 .loader-container {
@@ -47,52 +54,69 @@ const { loading } = storeToRefs(loaderStore)
   text-align: center;
 }
 
-/* Elegant minimalist spinner */
+/* Elegant Spinner Container */
 .spinner-container {
   position: relative;
-  width: 68px;
-  height: 68px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .custom-spinner {
+  position: absolute;
   width: 100%;
   height: 100%;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid var(--v-theme-primary, #6b46c1);
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top: 3px solid #4a5df8;
+  border-right: 3px solid #ff4d6d;
   border-radius: 50%;
   animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+.spinner-glow {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 93, 248, 0.25) 0%, rgba(255, 77, 109, 0.1) 60%, transparent 80%);
+  filter: blur(4px);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
 .center-logo {
   position: absolute;
-  color: var(--v-theme-primary, #6b46c1) !important;
-  animation: pulse-logo 2s infinite ease-in-out;
+  width: 46px;
+  height: 46px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  animation: pulse-logo 2.2s infinite ease-in-out;
+  z-index: 2;
 }
 
-/* Style the SVG to match primary color */
-.center-logo :deep(svg) {
+.loader-logo-img {
   width: 100%;
-  height: auto;
-  color: var(--v-theme-primary, #6b46c1);
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .loader-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #ffffff;
+  letter-spacing: 0.5px;
 }
 
 .loader-subtitle {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 400;
 }
 
@@ -102,8 +126,12 @@ const { loading } = storeToRefs(loaderStore)
 }
 
 @keyframes pulse-logo {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.15); opacity: 1; }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes pulse-glow {
+  0% { opacity: 0.4; transform: scale(0.9); }
+  100% { opacity: 0.9; transform: scale(1.1); }
 }
 </style>
-
