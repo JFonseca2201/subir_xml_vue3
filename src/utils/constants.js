@@ -179,7 +179,8 @@ export const PERMISOS = [
     name: 'Conversiones, Kardex y Reportes',
     permisos: [
       { name: 'Conversiones', permiso: 'conversions' },
-      { name: 'Kardex', permiso: 'kardex' },
+      { name: 'Kardex General', permiso: 'kardex' },
+      { name: 'Kardex Cliente/Vehículo', permiso: 'kardex' },
       { name: 'Importar XML', permiso: 'import_xml' },
       { name: 'Exportar Datos', permiso: 'export_data' },
       { name: 'Ver Reportes', permiso: 'view_reports' },

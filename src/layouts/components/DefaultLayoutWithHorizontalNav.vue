@@ -60,10 +60,9 @@ watch([
         @fallback="isFallbackStateActive = true"
         @resolve="isFallbackStateActive = false"
       >
-        <Component
-          :is="Component"
-          :key="route.fullPath"
-        />
+        <div :key="route.fullPath" class="app-suspense-wrapper w-100">
+          <Component :is="Component" />
+        </div>
         <template #fallback>
           <div class="d-flex align-center justify-center h-100 pa-10">
             <VProgressCircular

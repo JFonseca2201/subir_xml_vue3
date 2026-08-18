@@ -30,7 +30,9 @@ watch([
         @fallback="isFallbackStateActive = true"
         @resolve="isFallbackStateActive = false"
       >
-        <Component :is="Component" />
+        <div class="app-suspense-wrapper w-100 h-100">
+          <Component :is="Component" />
+        </div>
       </Suspense>
     </RouterView>
   </div>

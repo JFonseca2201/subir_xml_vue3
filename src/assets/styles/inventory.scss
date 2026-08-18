@@ -5224,6 +5224,128 @@
   }
 }
 
+// ============================================
+// KARDEX CLIENTE & VEHÍCULO MODULE STYLES
+// ============================================
+
+.kardex-plate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #111827;
+  border: 2px solid #1f2937;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-family: 'SF Mono', 'Roboto Mono', Menlo, monospace;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #eab308;
+  }
+
+  &--lg {
+    font-size: 1.25rem;
+    padding: 6px 14px;
+    letter-spacing: 2px;
+    border-width: 2.5px;
+    border-radius: 8px;
+  }
+
+  &--sm {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    border-width: 1.5px;
+  }
+}
+
+.kardex-stat-widget {
+  border-radius: 16px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  overflow: hidden;
+  background: rgb(var(--v-theme-surface));
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -10px rgba(var(--v-theme-primary), 0.15) !important;
+    border-color: rgba(var(--v-theme-primary), 0.35);
+  }
+}
+
+.kardex-profile-card {
+  border-radius: 20px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+  overflow: hidden;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+
+  .profile-header-banner {
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-primary), 0.02) 100%);
+    border-bottom: 1px solid rgba(var(--v-border-color), 0.5);
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+.kardex-tx-card {
+  border-radius: 16px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-surface));
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    border-color: rgba(var(--v-theme-primary), 0.4);
+    box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.06);
+  }
+
+  .tx-tag-col {
+    background: rgba(var(--v-theme-on-surface), 0.02);
+    border-right: 1px solid rgba(var(--v-border-color), 0.6);
+  }
+}
+
+.kardex-nested-table {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--v-border-color), 0.5);
+
+  thead th {
+    background: rgba(var(--v-theme-on-surface), 0.04) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    height: 38px !important;
+  }
+
+  tbody tr {
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(var(--v-theme-primary), 0.02) !important;
+    }
+
+    td {
+      font-size: 0.85rem !important;
+      padding: 8px 12px !important;
+    }
+  }
+}
+
 
 
 

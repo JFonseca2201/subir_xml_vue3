@@ -321,6 +321,12 @@ export default [
     permission: 'kardex',
     children: [
       {
+        title: 'Por Cliente / Vehículo',
+        to: { name: 'kardex-cliente' },
+        icon: { icon: 'ri-user-search-line' },
+        permission: 'kardex',
+      },
+      {
         title: 'Por Producto',
         to: { name: 'kardex-producto' },
         icon: { icon: 'ri-box-3-line' },
