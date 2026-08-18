@@ -87,8 +87,6 @@ const loadVehicles = async () => {
       params.year = searchForm.value.year
     }
 
-    console.log('🔍 Cargando vehículos con parámetros:', params)
-
     const resp = await $api("vehicles", {
       method: "GET",
       params: params,
@@ -97,70 +95,39 @@ const loadVehicles = async () => {
         'Content-Type': 'application/json',
       },
       onResponseError({ response }) {
-        console.error('❌ Error de respuesta del servidor:', response)
-        console.error('❌ Datos del error:', response._data)
-        console.error('❌ Status:', response.status)
-        console.error('❌ StatusText:', response.statusText)
+        console.error('Error de respuesta del servidor:', response)
       },
       onRequestError({ error }) {
-        console.error('❌ Error de solicitud:', error)
+        console.error('Error de solicitud:', error)
       },
     })
-
-    console.log('✅ Respuesta completa de la API:', resp)
-    console.log('✅ Estatus de la respuesta:', resp.status)
-    console.log('✅ Datos recibidos (resp.data):', resp.data)
-    console.log('✅ Datos recibidos (directo):', resp)
-    console.log('✅ ¿Es array (resp.data)?', Array.isArray(resp.data))
-    console.log('✅ ¿Es array (directo)?', Array.isArray(resp))
 
     // Manejar diferentes estructuras de respuesta
     let vehiclesData = []
 
-    // Los datos están en resp.vehicles según la respuesta del servidor
     if (resp && typeof resp === 'object') {
-      // Priorizar la propiedad 'vehicles' que es donde están los datos
       if (resp.vehicles && Array.isArray(resp.vehicles)) {
         vehiclesData = resp.vehicles
-        console.log('✅ Vehículos cargados (resp.vehicles):', vehiclesData.length)
       } else if (Array.isArray(resp.data)) {
         vehiclesData = resp.data
-        console.log('✅ Vehículos cargados (resp.data):', vehiclesData.length)
       } else if (resp.data && Array.isArray(resp.data.data)) {
         vehiclesData = resp.data.data
-        console.log('✅ Vehículos cargados (resp.data.data):', vehiclesData.length)
       } else if (Array.isArray(resp)) {
         vehiclesData = resp
-        console.log('✅ Vehículos cargados (resp directo):', vehiclesData.length)
       } else {
-        // Si no hay array, buscar una propiedad que contenga los vehículos
         const possibleDataProps = ['vehicles', 'data', 'items', 'results', 'list']
         for (const prop of possibleDataProps) {
           if (resp[prop] && Array.isArray(resp[prop])) {
             vehiclesData = resp[prop]
-            console.log(`✅ Vehículos cargados (resp.${prop}):`, vehiclesData.length)
             break
           }
         }
-
-        if (vehiclesData.length === 0) {
-          console.warn('⚠️ Estructura de respuesta no reconocida:', resp)
-          console.warn('⚠️ Propiedades disponibles:', Object.keys(resp))
-        }
       }
-    } else {
-      console.warn('⚠️ Respuesta no es un objeto válido:', resp)
     }
 
     vehicles.value = vehiclesData
-    totalPages.value = resp.last_page || resp.total_pages || resp.total_pages || 1
+    totalPages.value = resp.last_page || resp.total_pages || 1
     totalItems.value = resp.total || resp.total_items || resp.count || vehiclesData.length
-
-    console.log('📊 Totales:', {
-      vehicles: vehicles.value.length,
-      totalPages: totalPages.value,
-      totalItems: totalItems.value,
-    })
 
   } catch (error) {
     console.error('❌ Error general al cargar vehículos:', error)

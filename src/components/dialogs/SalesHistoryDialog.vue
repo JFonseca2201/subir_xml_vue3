@@ -18,11 +18,11 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: 'Historial',
+    default: 'Historial de Transacciones',
   },
   subtitle: {
     type: String,
-    default: 'Ventas y Facturas',
+    default: 'Ventas, Facturas y Documentos Emitidos',
   },
 })
 
@@ -35,10 +35,23 @@ const dialog = computed({
   set: val => emit('update:modelValue', val),
 })
 
+const closeDialog = () => {
+  dialog.value = false
+  emit('update:modelValue', false)
+}
+
 const loading = ref(false)
 const sales = ref([])
 const totalPages = ref(1)
 const currentPage = ref(1)
+
+const totalAmount = computed(() => {
+  return sales.value.reduce((acc, s) => acc + (Number(s.total) || 0), 0)
+})
+
+const paidCount = computed(() => {
+  return sales.value.filter(s => s.payment_status === 'paid').length
+})
 
 const loadHistory = async () => {
   if (!props.clientId && !props.vehicleId) return
@@ -66,6 +79,7 @@ const loadHistory = async () => {
     }
   } catch (error) {
     console.error('Error al cargar el historial:', error)
+    showNotification('No se pudo cargar el historial', 'error')
   } finally {
     loading.value = false
   }
@@ -105,7 +119,7 @@ const getStatusColor = status => {
   case 'paid': return 'success'
   case 'partial': return 'warning'
   case 'pending': return 'error'
-  default: return 'grey'
+  default: return 'secondary'
   }
 }
 
@@ -114,7 +128,7 @@ const getStatusText = status => {
   case 'paid': return 'Pagado'
   case 'partial': return 'Abonado'
   case 'pending': return 'Pendiente'
-  default: return status
+  default: return status || 'N/A'
   }
 }
 
@@ -122,7 +136,8 @@ const getDocumentType = type => {
   switch (type) {
   case 'invoice': return 'Factura'
   case 'sale_note': return 'Nota de Venta'
-  default: return type
+  case 'ticket': return 'Ticket'
+  default: return type ? type.toUpperCase() : 'DOCUMENTO'
   }
 }
 
@@ -145,46 +160,35 @@ const generateSinglePDF = sale => {
   <VDialog
     v-model="dialog"
     scrollable
-    max-width="850"
+    max-width="880"
+    transition="dialog-bottom-transition"
   >
     <VCard
-      class="rounded-lg d-flex flex-column"
-      height="80vh"
+      class="custom-dialog-card history-dialog-card pa-0 elevation-8"
+      style="overflow: hidden; max-height: 85vh; display: flex; flex-direction: column;"
     >
-      <VCardTitle
-        class="d-flex justify-space-between align-center pa-5 bg-grey-lighten-4 border-bottom-light"
-        style="flex-shrink: 0;"
-      >
-        <div class="d-flex align-center">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            class="me-3"
-            size="42"
-          >
-            <VIcon
-              icon="ri-history-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <h3 class="text-h6 font-weight-bold mb-0 text-grey-darken-3">
-              {{ props.title }}
-            </h3>
-            <p class="text-caption text-medium-emphasis mb-0">
-              {{ props.subtitle }}
-            </p>
-          </div>
+      <!-- Header Banner Primary (Estilo estándar de diálogos del sistema) -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-history-line" />
         </div>
-        <IconBtn
-          class="bg-white elevation-1"
-          @click="dialog = false"
-        >
-          <VIcon icon="ri-close-line" />
-        </IconBtn>
-      </VCardTitle>
+        <h3 class="custom-dialog-title">
+          {{ props.title }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ props.subtitle }}
+        </p>
+      </div>
 
-      <VCardText class="pa-0 position-relative d-flex flex-column flex-grow-1 overflow-hidden">
+      <!-- Content Area -->
+      <VCardText class="pa-0 position-relative d-flex flex-column flex-grow-1 overflow-hidden history-content-area">
         <VProgressLinear
           v-if="loading"
           indeterminate
@@ -194,122 +198,213 @@ const generateSinglePDF = sale => {
           height="3"
         />
 
-        <div class="pa-6 flex-grow-1 overflow-y-auto bg-grey-lighten-5">
+        <!-- Summary Stats Banner (When data exists) -->
+        <div
+          v-if="!loading && sales.length > 0"
+          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar"
+        >
+          <div class="d-flex align-center gap-2">
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+              class="font-weight-bold"
+            >
+              <VIcon
+                start
+                icon="ri-file-list-3-line"
+                size="14"
+              />
+              {{ sales.length }} {{ sales.length === 1 ? 'registro' : 'registros' }}
+            </VChip>
+            <VChip
+              v-if="paidCount > 0"
+              size="small"
+              color="success"
+              variant="tonal"
+              class="font-weight-bold"
+            >
+              <VIcon
+                start
+                icon="ri-checkbox-circle-line"
+                size="14"
+              />
+              {{ paidCount }} pagados
+            </VChip>
+          </div>
+
+          <div class="d-flex align-center gap-2">
+            <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total Acumulado:</span>
+            <span class="text-subtitle-1 font-weight-black text-primary">{{ formatCurrency(totalAmount) }}</span>
+          </div>
+        </div>
+
+        <!-- Main Scrollable List -->
+        <div class="pa-4 pa-sm-6 flex-grow-1 overflow-y-auto history-scroll-body">
+          <!-- Empty State -->
           <div
             v-if="!loading && sales.length === 0"
-            class="d-flex flex-column align-center justify-center py-10 text-center h-100"
+            class="d-flex flex-column align-center justify-center py-12 text-center h-100"
           >
-            <VIcon
-              icon="ri-inbox-line"
-              size="48"
-              color="grey-lighten-2"
-              class="mb-2"
-            />
-            <h3 class="text-h6 font-weight-bold text-grey-darken-2">
-              No hay registros
-            </h3>
-            <p class="text-body-2 text-grey">
-              Este {{ props.clientId ? 'cliente' : 'vehículo' }} no tiene ventas o facturas asociadas.
+            <VAvatar
+              size="72"
+              color="secondary"
+              variant="tonal"
+              class="mb-3 rounded-circle opacity-80"
+            >
+              <VIcon
+                icon="ri-inbox-2-line"
+                size="36"
+              />
+            </VAvatar>
+            <h4 class="text-h6 font-weight-bold text-high-emphasis mb-1">
+              Sin registros en el historial
+            </h4>
+            <p class="text-body-2 text-medium-emphasis mb-0" style="max-width: 380px;">
+              Este {{ props.clientId ? 'cliente' : 'vehículo' }} aún no cuenta con facturas, notas de venta o servicios registrados.
             </p>
           </div>
 
+          <!-- History Item Cards -->
           <div
             v-else
-            class="history-list"
+            class="d-flex flex-column gap-3"
           >
             <VCard
               v-for="sale in sales"
-              :key="sale.id" 
-              class="mb-3 rounded-lg border border-opacity-50 overflow-hidden cursor-pointer hover-effect" 
-              elevation="0" 
-              color="white"
+              :key="sale.id"
+              class="history-item-card rounded-xl border elevation-0 transition-swing"
               @click="generateSinglePDF(sale)"
             >
               <div class="d-flex flex-column flex-sm-row">
-                <!-- Sección izquierda: Fecha y Tipo -->
+                <!-- Left Tag / Type Column -->
                 <div
-                  class="d-flex flex-column justify-center pa-4 bg-grey-lighten-5 border-e border-opacity-50"
-                  style="min-width: 140px; text-align: center;"
+                  class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
+                  style="min-width: 150px;"
                 >
-                  <span class="text-caption font-weight-bold text-uppercase text-grey-darken-1 mb-1">{{ getDocumentType(sale.document_type) }}</span>
-                  <span class="text-subtitle-1 font-weight-bold text-primary mb-1">#{{ sale.document_number }}</span>
-                  <span class="text-caption font-weight-medium text-grey-darken-2 d-flex align-center justify-center">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-bold text-uppercase mb-1"
+                  >
+                    {{ getDocumentType(sale.document_type) }}
+                  </VChip>
+                  <span class="text-subtitle-2 font-weight-black text-high-emphasis font-mono">
+                    #{{ sale.document_number || sale.id }}
+                  </span>
+                  <span class="text-caption text-medium-emphasis d-flex align-center mt-1">
                     <VIcon
-                      icon="ri-calendar-event-line"
-                      size="14"
+                      icon="ri-calendar-line"
+                      size="13"
                       class="me-1"
                     />
-                    {{ formatDate(sale.service_date) }}
+                    {{ formatDate(sale.service_date || sale.created_at) }}
                   </span>
                 </div>
 
-                <!-- Sección central: Detalles -->
+                <!-- Middle Content Info -->
                 <div class="pa-4 flex-grow-1 d-flex flex-column justify-center">
-                  <div class="d-flex flex-wrap gap-4">
-                    <div v-if="props.vehicleId">
-                      <div class="text-caption text-grey text-uppercase font-weight-bold mb-1">
-                        Cliente
-                      </div>
-                      <div class="d-flex align-center">
-                        <VIcon
-                          icon="ri-user-line"
-                          size="16"
-                          class="me-1 text-primary"
-                        />
-                        <span class="font-weight-medium text-grey-darken-3 text-body-2">{{ sale.client?.full_name || sale.client?.name }}</span>
-                      </div>
-                    </div>
-                    
+                  <div class="d-flex flex-wrap gap-x-6 gap-y-2">
+                    <!-- Vehicle info when browsing by client -->
                     <div v-if="props.clientId">
-                      <div class="text-caption text-grey text-uppercase font-weight-bold mb-1">
+                      <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold">
                         Vehículo
                       </div>
                       <div
                         v-if="sale.vehicle"
-                        class="d-flex align-center"
+                        class="d-flex align-center gap-1 mt-0.5"
                       >
                         <VIcon
                           icon="ri-car-line"
                           size="16"
-                          class="me-1 text-info"
+                          color="info"
                         />
-                        <span class="font-weight-medium text-grey-darken-3 text-body-2 me-2">{{ sale.vehicle.license_plate }}</span>
-                        <span class="text-caption text-grey">{{ sale.vehicle.brand }} {{ sale.vehicle.model }}</span>
+                        <span class="font-weight-bold text-body-2 text-high-emphasis">{{ sale.vehicle.license_plate }}</span>
+                        <span class="text-caption text-medium-emphasis">({{ sale.vehicle.brand }} {{ sale.vehicle.model }})</span>
                       </div>
                       <span
                         v-else
-                        class="text-caption text-grey-lighten-1"
-                      >No asignado</span>
+                        class="text-caption text-disabled"
+                      >Venta directa / Sin vehículo</span>
+                    </div>
+
+                    <!-- Client info when browsing by vehicle -->
+                    <div v-if="props.vehicleId">
+                      <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold">
+                        Cliente / Propietario
+                      </div>
+                      <div class="d-flex align-center gap-1 mt-0.5">
+                        <VIcon
+                          icon="ri-user-3-line"
+                          size="16"
+                          color="primary"
+                        />
+                        <span class="font-weight-bold text-body-2 text-high-emphasis">
+                          {{ sale.client?.full_name || sale.client?.name || 'Consumidor Final' }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Sección derecha: Total y Estado -->
+                <!-- Right Side: Total Amount, Status Chip & Action -->
                 <div
-                  class="pa-4 d-flex flex-sm-column flex-row align-center justify-space-between justify-sm-center align-sm-end"
-                  style="min-width: 140px;"
+                  class="pa-4 d-flex flex-row flex-sm-column align-center justify-space-between justify-sm-center align-sm-end border-t border-sm-t-0 gap-2"
+                  style="min-width: 160px;"
                 >
-                  <div class="text-h6 font-weight-bold text-grey-darken-4 mb-sm-2">
-                    {{ formatCurrency(sale.total) }}
+                  <div class="text-right">
+                    <div class="text-h6 font-weight-black text-high-emphasis leading-tight">
+                      {{ formatCurrency(sale.total) }}
+                    </div>
                   </div>
-                  <VChip
-                    size="small"
-                    :color="getStatusColor(sale.payment_status)"
-                    variant="tonal"
-                    class="font-weight-medium text-uppercase px-2"
-                  >
-                    {{ getStatusText(sale.payment_status) }}
-                  </VChip>
+
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      size="small"
+                      :color="getStatusColor(sale.payment_status)"
+                      variant="tonal"
+                      class="font-weight-bold text-uppercase"
+                    >
+                      <VIcon
+                        start
+                        :icon="sale.payment_status === 'paid' ? 'ri-check-line' : 'ri-time-line'"
+                        size="13"
+                      />
+                      {{ getStatusText(sale.payment_status) }}
+                    </VChip>
+
+                    <VBtn
+                      icon
+                      size="x-small"
+                      color="error"
+                      variant="tonal"
+                      class="rounded-lg"
+                      @click.stop="generateSinglePDF(sale)"
+                    >
+                      <VIcon
+                        icon="ri-file-pdf-2-line"
+                        size="16"
+                      />
+                      <VTooltip
+                        activator="parent"
+                        location="top"
+                      >
+                        Ver y descargar PDF
+                      </VTooltip>
+                    </VBtn>
+                  </div>
                 </div>
               </div>
             </VCard>
           </div>
         </div>
 
+        <!-- Pagination Controls -->
         <div
           v-if="totalPages > 1"
-          class="d-flex justify-center align-center py-3 bg-white border-top-light"
-          style="flex-shrink: 0; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); z-index: 2;"
+          class="d-flex justify-center align-center py-3 bg-surface border-t"
+          style="flex-shrink: 0;"
         >
           <VPagination
             v-model="currentPage"
@@ -320,16 +415,25 @@ const generateSinglePDF = sale => {
           />
         </div>
       </VCardText>
+
       <VDivider />
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
+
+      <!-- Dialog Action Footer -->
+      <VCardActions class="pa-4 d-flex justify-space-between align-center bg-surface">
+        <div class="text-caption text-medium-emphasis d-none d-sm-block">
+          <VIcon
+            icon="ri-information-line"
+            size="14"
+            class="me-1"
+          />
+          Haz clic en cualquier tarjeta para abrir el documento PDF
+        </div>
+
         <VBtn
           color="secondary"
-          variant="outlined"
+          variant="tonal"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-6 font-weight-bold ms-auto"
           height="40"
           @click="closeDialog"
         >
@@ -340,14 +444,33 @@ const generateSinglePDF = sale => {
   </VDialog>
 </template>
 
-<style scoped>
-.hover-effect {
-  transition: all 0.2s ease-in-out;
+<style lang="scss" scoped>
+.history-dialog-card {
+  background-color: rgb(var(--v-theme-surface)) !important;
 }
-.hover-effect:hover {
-  background-color: #fcfcfc !important;
-  border-color: rgba(var(--v-theme-primary), 0.5) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px -4px rgba(0,0,0,0.1) !important;
+
+.history-stats-bar {
+  background-color: rgba(var(--v-theme-primary), 0.03);
+}
+
+.history-scroll-body {
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+
+.history-card-tag {
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+}
+
+.history-item-card {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border-color: rgba(var(--v-theme-on-surface), 0.1) !important;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba(var(--v-theme-primary), 0.4) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -4px rgba(var(--v-theme-primary), 0.15) !important;
+  }
 }
 </style>
