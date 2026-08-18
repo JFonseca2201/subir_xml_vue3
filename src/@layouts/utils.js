@@ -34,10 +34,24 @@ export const getComputedNavLinkToProp = computed(() => link => {
 export const resolveNavLinkRouteName = (link, router) => {
   if (!link.to)
     return null
-  if (typeof link.to === 'string')
+  if (typeof link.to === 'string') {
+    if (link.to.startsWith('/')) {
+      try {
+        const resolved = router.resolve(link.to)
+        return resolved?.name || link.to
+      } catch (e) {
+        return link.to
+      }
+    }
     return link.to
+  }
   
-  return router.resolve(link.to).name
+  try {
+    const resolved = router.resolve(link.to)
+    return resolved?.name || null
+  } catch (e) {
+    return null
+  }
 }
 
 /**

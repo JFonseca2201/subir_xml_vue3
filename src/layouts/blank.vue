@@ -25,15 +25,7 @@ watch([
 
   <div class="layout-wrapper layout-blank">
     <RouterView #="{Component}">
-      <Suspense
-        :timeout="0"
-        @fallback="isFallbackStateActive = true"
-        @resolve="isFallbackStateActive = false"
-      >
-        <div class="app-suspense-wrapper w-100 h-100">
-          <Component :is="Component" />
-        </div>
-      </Suspense>
+      <Component :is="Component" />
     </RouterView>
   </div>
 </template>

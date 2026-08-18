@@ -55,23 +55,10 @@ watch([
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component, route }">
-      <Suspense
-        :timeout="0"
-        @fallback="isFallbackStateActive = true"
-        @resolve="isFallbackStateActive = false"
-      >
-        <div :key="route.fullPath" class="app-suspense-wrapper w-100">
-          <Component :is="Component" />
-        </div>
-        <template #fallback>
-          <div class="d-flex align-center justify-center h-100 pa-10">
-            <VProgressCircular
-              indeterminate
-              color="primary"
-            />
-          </div>
-        </template>
-      </Suspense>
+      <Component
+        :is="Component"
+        :key="route.fullPath"
+      />
     </RouterView>
 
     <!-- 👉 Footer -->

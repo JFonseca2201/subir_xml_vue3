@@ -322,19 +322,19 @@ export default [
     children: [
       {
         title: 'Por Cliente / Vehículo',
-        to: { name: 'kardex-cliente' },
+        to: 'kardex-cliente',
         icon: { icon: 'ri-user-search-line' },
         permission: 'kardex',
       },
       {
         title: 'Por Producto',
-        to: { name: 'kardex-producto' },
+        to: 'kardex-producto',
         icon: { icon: 'ri-box-3-line' },
         permission: 'kardex',
       },
       {
         title: 'General',
-        to: { name: 'kardex-index' },
+        to: 'kardex',
         icon: { icon: 'ri-line-chart-line' },
         permission: 'kardex',
       },
