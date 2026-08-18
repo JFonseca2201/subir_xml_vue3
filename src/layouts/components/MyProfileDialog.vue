@@ -4,6 +4,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { $api } from '@/utils/api'
 import avatar1 from "@images/avatars/avatar-1.png"
+import { refreshPermissionsUser } from '@/composables/usePermissions'
 
 const props = defineProps({
   isDialogVisible: {
@@ -29,6 +30,7 @@ const formData = ref({
   surname: '',
   phone: '',
   address: '',
+  identification: '',
 })
 
 const passwordData = ref({
@@ -36,6 +38,27 @@ const passwordData = ref({
   new_password: '',
   new_password_confirmation: '',
 })
+
+const loadFreshProfile = async () => {
+  if (!props.userData?.id) return
+  try {
+    const resp = await $api(`users/${props.userData.id}`, { method: 'GET' })
+    if (resp && (resp.user || resp.data)) {
+      const u = resp.user || resp.data
+      formData.value.name = u.name || formData.value.name
+      formData.value.surname = u.surname || formData.value.surname
+      formData.value.phone = u.phone || formData.value.phone
+      formData.value.address = u.address || formData.value.address
+      formData.value.identification = u.identification || formData.value.identification
+
+      const updatedUser = { ...props.userData, ...u }
+      refreshPermissionsUser(updatedUser)
+      emit('profile-updated', updatedUser)
+    }
+  } catch (e) {
+    console.error('Error al obtener perfil fresco:', e)
+  }
+}
 
 // Initialize form when dialog opens
 watch(() => props.isDialogVisible, newVal => {
@@ -45,6 +68,7 @@ watch(() => props.isDialogVisible, newVal => {
       surname: props.userData.surname || '',
       phone: props.userData.phone || '',
       address: props.userData.address || '',
+      identification: props.userData.identification || '',
     }
     passwordData.value = {
       current_password: '',
@@ -52,6 +76,7 @@ watch(() => props.isDialogVisible, newVal => {
       new_password_confirmation: '',
     }
     activeTab.value = 'general'
+    loadFreshProfile()
   }
 })
 
@@ -303,6 +328,21 @@ const showConfirmPassword = ref(false)
                   sm="6"
                   class="mb-3"
                 >
+                  <label class="custom-form-label">DOCUMENTO DE IDENTIDAD (RUC / CÉDULA)</label>
+                  <VTextField
+                    v-model="formData.identification"
+                    placeholder="Ej. 1712345678"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-id-card-line"
+                  />
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
                   <label class="custom-form-label">TELÉFONO DE CONTACTO</label>
                   <VTextField
                     v-model="formData.phone"
@@ -315,10 +355,9 @@ const showConfirmPassword = ref(false)
 
                 <VCol
                   cols="12"
-                  sm="6"
                   class="mb-3"
                 >
-                  <label class="custom-form-label">CORREO ELECTRÓNICO (SOLO LECTURA)</label>
+                  <label class="custom-form-label">CORREO ELECTRÓNICO (CUENTA DE ACCESO)</label>
                   <VTextField
                     :model-value="props.userData.email"
                     readonly

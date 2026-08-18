@@ -76,22 +76,23 @@ const store = async () => {
       method: 'POST',
       body: data,
       onResponseError({ response }) {
-        error_exist.value = response._data.errors.name[0]
+        const errors = response?._data?.errors
+        if (errors?.name && errors.name.length) {
+          error_exist.value = errors.name[0]
+        } else {
+          error_exist.value = response?._data?.message || 'Error al crear el rol'
+        }
       },
     })
 
-    console.log(resp)
-    //showNotification(resp.message || 'Rol creado con éxito', 'success')
-    emit("addRole", resp.data)
-
-    // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
-    setTimeout(() => {
-      onFormReset()
-    }, 1500)
-
+    if (resp?.data) {
+      emit("addRole", resp.data)
+      setTimeout(() => {
+        onFormReset()
+      }, 1500)
+    }
   } catch (error) {
-    console.log(error)
-    //showNotification('Error al crear el rol', 'error')
+    console.error('Error al crear rol:', error)
   } finally {
     loader.stop()
   }

@@ -60,9 +60,18 @@ watch([
         @fallback="isFallbackStateActive = true"
         @resolve="isFallbackStateActive = false"
       >
-        <div :key="route.name || route.path" class="app-router-view">
-          <Component :is="Component" />
-        </div>
+        <Component
+          :is="Component"
+          :key="route.fullPath"
+        />
+        <template #fallback>
+          <div class="d-flex align-center justify-center h-100 pa-10">
+            <VProgressCircular
+              indeterminate
+              color="primary"
+            />
+          </div>
+        </template>
       </Suspense>
     </RouterView>
 

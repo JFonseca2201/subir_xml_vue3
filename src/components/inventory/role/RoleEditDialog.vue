@@ -81,22 +81,23 @@ const update = async () => {
       method: 'PATCH',
       body: data,
       onResponseError({ response }) {
-        error_exist.value = response._data.errors.name[0]
+        const errors = response?._data?.errors
+        if (errors?.name && errors.name.length) {
+          error_exist.value = errors.name[0]
+        } else {
+          error_exist.value = response?._data?.message || 'Error al actualizar el rol'
+        }
       },
     })
 
-    console.log(resp)
-    //showNotification(resp.message || 'Rol actualizado con éxito', 'success')
-    emit("editRole", resp.data)
-
-    // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
-    setTimeout(() => {
-      onFormReset()
-    }, 1500)
-
+    if (resp?.data) {
+      emit("editRole", resp.data)
+      setTimeout(() => {
+        onFormReset()
+      }, 1500)
+    }
   } catch (error) {
-    console.log(error)
-    //showNotification('Error al actualizar el rol', 'error')
+    console.error('Error al actualizar rol:', error)
   } finally {
     loader.stop()
   }

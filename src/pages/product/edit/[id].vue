@@ -102,7 +102,7 @@ const maxValueRule = max => v => !v || parseFloat(v) <= max || `Máximo ${max}`
 const maxDecimalRule = decimals => v => !v || (v.toString().split('.')[1]?.length || 0) <= decimals || `Máximo ${decimals} decimales`
 const maxPercentageRule = v => !v || parseFloat(v) <= 100 || 'Máximo 100%'
 
-const descriptionRules = [requiredRule, minLengthRule(3), maxLengthRule(200)]
+const descriptionRules = [requiredRule, minLengthRule(3), maxLengthRule(400)]
 const skuRules = [requiredRule, minLengthRule(2), maxLengthRule(50)]
 const codeAuxRules = [maxLengthRule(50)]
 const brandRules = [maxLengthRule(250)]
