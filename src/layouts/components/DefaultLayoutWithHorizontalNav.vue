@@ -54,13 +54,15 @@ watch([
     <AppLoadingIndicator ref="refLoadingIndicator" />
 
     <!-- 👉 Pages -->
-    <RouterView v-slot="{ Component }">
+    <RouterView v-slot="{ Component, route }">
       <Suspense
         :timeout="0"
         @fallback="isFallbackStateActive = true"
         @resolve="isFallbackStateActive = false"
       >
-        <Component :is="Component" />
+        <div :key="route.name || route.path" class="app-router-view">
+          <Component :is="Component" />
+        </div>
       </Suspense>
     </RouterView>
 

@@ -118,8 +118,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="props.isDialogVisible"
+    scrollable
     max-width="700"
   >
     <VCard class="custom-dialog-card elevation-15 position-relative">
@@ -259,7 +260,10 @@ onMounted(() => {
         </VCol>
       </VCardText>
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

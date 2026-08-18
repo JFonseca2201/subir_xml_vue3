@@ -224,7 +224,8 @@ const timelineSteps = computed(() => {
       </VCardText>
 
       <!-- PIE DEL MODAL -->
-      <VCardActions class="pa-4 border-t border-gray-100 bg-white d-flex justify-end align-center gap-3"
+      <VCardActions
+        class="pa-4 border-t border-gray-100 bg-white d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2; border-top-color: #f3f4f6;"
       >
         <VBtn

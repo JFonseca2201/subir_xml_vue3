@@ -3,8 +3,10 @@ import { ref, computed, onMounted, watch } from 'vue'
 import Swal from 'sweetalert2'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { usePermissions } from '@/composables/usePermissions'
 
 const { showNotification } = useGlobalToast()
+const { can } = usePermissions()
 
 // Data State
 const transactions = ref([])
@@ -90,6 +92,7 @@ const rules = {
 const loadTransactions = async () => {
   loading.value = true
   try {    const resp = await $api('parallel-transactions')
+
     transactions.value = resp || []
   } catch (err) {
     console.error('Error al cargar transacciones:', err)
@@ -119,6 +122,7 @@ const filteredTransactions = computed(() => {
     if (accountFilter.value !== 'ALL' && t.account.toUpperCase() !== accountFilter.value.toUpperCase()) {
       return false
     }
+    
     return true
   })
 })
@@ -718,6 +722,7 @@ onMounted(() => {
               </div>
               <div class="d-flex align-center gap-2">
                 <VBtn
+                  v-if="can('register_transaction')"
                   color="success"
                   size="small"
                   variant="flat"
@@ -1132,7 +1137,10 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1309,7 +1317,10 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1515,7 +1526,10 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"
@@ -1624,7 +1638,10 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"

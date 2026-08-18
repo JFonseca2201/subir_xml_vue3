@@ -133,7 +133,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="650"
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
@@ -165,119 +166,121 @@ onMounted(() => {
           id="categorieEditForm"
           @submit.prevent="update"
         >
-        <VRow dense>
-          <!-- 👉 Nombre -->
-          <VCol cols="12">
-            <VTextField
-              v-model="name"
-              label="Nombre de la categoría"
-              placeholder="Ej: Repuestos, Accesorios"
-              prepend-inner-icon="ri-store-line"
-              clearable
-            />
-          </VCol>
+          <VRow dense>
+            <!-- 👉 Nombre -->
+            <VCol cols="12">
+              <VTextField
+                v-model="name"
+                label="Nombre de la categoría"
+                placeholder="Ej: Repuestos, Accesorios"
+                prepend-inner-icon="ri-store-line"
+                clearable
+              />
+            </VCol>
 
-          <!-- 👉 Alerts -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              type="warning"
-              variant="tonal"
-              closable
+            <!-- 👉 Alerts -->
+            <VCol
+              v-if="warning"
+              cols="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
-
-          <VCol
-            v-if="error_exits"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-            >
-              {{ error_exits }}
-            </VAlert>
-          </VCol>
-
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              type="success"
-              variant="tonal"
-              closable
-            >
-              {{ success }}
-            </VAlert>
-          </VCol>
-
-          <!-- 👉 Imagen -->
-          <VCol
-            cols="12"
-            md="12"
-          >
-            <VRow align="center">
-              <VCol
-                cols="12"
-                md="6"
+              <VAlert
+                type="warning"
+                variant="tonal"
+                closable
               >
-                <VFileInput
-                  label="Imagen de la categoría"
-                  prepend-inner-icon="ri-image-line"
-                  accept="image/*"
-                  clearable
-                  @change="loadFile($event)"
-                  @click:clear="clearImage"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                md="6"
-                class="d-flex justify-center"
+                {{ warning }}
+              </VAlert>
+            </VCol>
+
+            <VCol
+              v-if="error_exits"
+              cols="12"
+            >
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
               >
-                <VAvatar
-                  v-if="PREVIZUALIZA_IMAGEN"
-                  :image="PREVIZUALIZA_IMAGEN"
-                  size="80"
-                  class="elevation-3"
-                />
-              </VCol>
-            </VRow>
-          </VCol>
+                {{ error_exits }}
+              </VAlert>
+            </VCol>
 
-          <!-- 👉 Estado -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VSelect
-              v-model="state"
-              label="Estado"
-              prepend-inner-icon="ri-toggle-line"
-              :items="[
-                { name: 'Activo', id: 1 },
-                { name: 'Inactivo', id: 2 },
-              ]"
-              item-title="name"
-              item-value="id"
-              eager
-            />
-          </VCol>
+            <VCol
+              v-if="success"
+              cols="12"
+            >
+              <VAlert
+                type="success"
+                variant="tonal"
+                closable
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
 
-        </VRow>
-      </VForm>
+            <!-- 👉 Imagen -->
+            <VCol
+              cols="12"
+              md="12"
+            >
+              <VRow align="center">
+                <VCol
+                  cols="12"
+                  md="6"
+                >
+                  <VFileInput
+                    label="Imagen de la categoría"
+                    prepend-inner-icon="ri-image-line"
+                    accept="image/*"
+                    clearable
+                    @change="loadFile($event)"
+                    @click:clear="clearImage"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  md="6"
+                  class="d-flex justify-center"
+                >
+                  <VAvatar
+                    v-if="PREVIZUALIZA_IMAGEN"
+                    :image="PREVIZUALIZA_IMAGEN"
+                    size="80"
+                    class="elevation-3"
+                  />
+                </VCol>
+              </VRow>
+            </VCol>
+
+            <!-- 👉 Estado -->
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VSelect
+                v-model="state"
+                label="Estado"
+                prepend-inner-icon="ri-toggle-line"
+                :items="[
+                  { name: 'Activo', id: 1 },
+                  { name: 'Inactivo', id: 2 },
+                ]"
+                item-title="name"
+                item-value="id"
+                eager
+              />
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

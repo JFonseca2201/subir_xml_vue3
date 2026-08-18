@@ -160,7 +160,8 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :model-value="props.isDialogVisible"
     max-width="650"
     persistent
@@ -188,251 +189,253 @@ const closeDialog = () => {
       </div>
 
       <div class="pa-sm-6 pa-4">
-
-      <VTabs
-        v-model="currentTab"
-        align-tabs="center"
-        color="primary"
-        class="mb-6 border-b tabs-premium"
-      >
-        <VTab
-          value="clients"
-          class="text-button font-weight-medium"
-        >
-          <VIcon
-            start
-            icon="ri-user-add-line"
-          />
-          Clientes
-        </VTab>
-        <VTab
-          value="vehicles"
-          class="text-button font-weight-medium"
-        >
-          <VIcon
-            start
-            icon="ri-roadster-line"
-          />
-          Vehículos
-        </VTab>
-      </VTabs>
-
-      <VWindow
-        v-model="currentTab"
-        class="mb-6"
-      >
-        <!-- Tab: Clientes -->
-        <VWindowItem value="clients">
-          <div class="mt-2 text-right">
-            <VBtn
-              variant="text"
-              color="primary"
-              size="small"
-              prepend-icon="ri-download-line"
-              @click="downloadTemplate"
-            >
-              Descargar Plantilla
-            </VBtn>
-          </div>
-        </VWindowItem>
-
-        <!-- Tab: Vehículos -->
-        <VWindowItem value="vehicles">
-          <div class="mt-2 text-right">
-            <VBtn
-              variant="text"
-              color="primary"
-              size="small"
-              prepend-icon="ri-download-line"
-              @click="downloadTemplate"
-            >
-              Descargar Plantilla
-            </VBtn>
-          </div>
-        </VWindowItem>
-      </VWindow>
-
-      <!-- Zona Drag & Drop -->
-      <input
-        id="hiddenFileInput"
-        type="file"
-        class="d-none"
-        accept=".xlsx, .xls, .csv"
-        @change="handleFileInput"
-      >
-
-      <div
-        v-if="!file"
-        class="drag-drop-zone rounded-xl d-flex flex-column align-center justify-center cursor-pointer mb-6"
-        :class="{ 'is-dragging': isDragging }"
-        @dragover="onDragOver"
-        @dragleave="onDragLeave"
-        @drop="onDrop"
-        @click="triggerFileInput"
-      >
-        <div class="icon-circle mb-4">
-          <VIcon
-            icon="ri-upload-cloud-2-line"
-            size="48"
-            color="primary"
-          />
-        </div>
-        <h5 class="text-h6 font-weight-bold mb-1">
-          Arrastra y suelta tu archivo aquí
-        </h5>
-        <p class="text-body-2 text-medium-emphasis mb-0">
-          o haz clic para buscar en tus carpetas
-        </p>
-        <div class="mt-5 d-flex gap-2">
-          <VChip
-            size="small"
-            color="primary"
-            variant="tonal"
-          >
-            .xlsx
-          </VChip>
-          <VChip
-            size="small"
-            color="primary"
-            variant="tonal"
-          >
-            .xls
-          </VChip>
-          <VChip
-            size="small"
-            color="primary"
-            variant="tonal"
-          >
-            .csv
-          </VChip>
-        </div>
-      </div>
-
-      <!-- Tarjeta de Archivo Seleccionado -->
-      <VExpandTransition>
-        <div
-          v-if="file"
-          class="file-preview-card rounded-xl pa-5 mb-6 d-flex align-center justify-space-between"
-        >
-          <div class="d-flex align-center gap-4">
-            <div class="file-icon rounded-lg pa-3 d-flex align-center justify-center">
-              <VIcon
-                icon="ri-file-excel-2-fill"
-                color="success"
-                size="36"
-              />
-            </div>
-            <div>
-              <h6
-                class="text-subtitle-1 font-weight-bold mb-0 text-truncate"
-                style="max-width: 320px;"
-              >
-                {{ file.name }}
-              </h6>
-              <span class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-1">
-                <VIcon
-                  icon="ri-hard-drive-2-line"
-                  size="14"
-                />
-                {{ formatFileSize(file.size) }}
-              </span>
-            </div>
-          </div>
-          <VBtn
-            icon="ri-delete-bin-line"
-            variant="tonal"
-            color="error"
-            size="small"
-            class="rounded-lg"
-            @click="removeFile"
-          />
-        </div>
-      </VExpandTransition>
-
-      <!-- Errores -->
-      <VExpandTransition>
-        <div
-          v-if="error"
-          class="mb-4"
-        >
-          <VAlert
-            type="error"
-            variant="tonal"
-            border="start"
-            prominent
-            class="rounded-lg"
-          >
-            <div class="d-flex flex-column">
-              <span class="text-subtitle-1 font-weight-bold mb-1">Error de Importación</span>
-              <span style="white-space: pre-wrap; font-size: 0.85rem;">{{ error }}</span>
-            </div>
-          </VAlert>
-        </div>
-      </VExpandTransition>
-
-      <!-- Éxito -->
-      <VExpandTransition>
-        <div v-if="result && result.success">
-          <VAlert
-            type="success"
-            variant="tonal"
-            class="mb-4 rounded-lg"
-          >
-            <div class="d-flex flex-column">
-              <span class="text-subtitle-1 font-weight-bold mb-1">¡Importación Exitosa!</span>
-              <span>{{ result.message }}</span>
-            </div>
-            <template v-if="result.data && result.data.errors && result.data.errors.length > 0">
-              <div class="mt-3 text-caption error-list-container pa-3 rounded-lg bg-surface">
-                <strong class="text-error d-flex align-center gap-1 mb-2">
-                  <VIcon
-                    icon="ri-error-warning-line"
-                    size="16"
-                  />
-                  Algunas filas no pudieron ser procesadas y fueron omitidas:
-                </strong>
-                <ul
-                  class="ml-4 mt-1 text-medium-emphasis"
-                  style="max-height: 120px; overflow-y: auto;"
-                >
-                  <li
-                    v-for="(err, idx) in result.data.errors"
-                    :key="idx"
-                    class="mb-1"
-                  >
-                    {{ err }}
-                  </li>
-                </ul>
-              </div>
-            </template>
-          </VAlert>
-        </div>
-      </VExpandTransition>
-
-      <VCardActions class="d-flex justify-end align-center gap-3 mt-4 pa-0" style="position: sticky; bottom: 0; z-index: 2;">
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-close-line"
-          :disabled="isLoading"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          @click="closeDialog"
-        >
-          Cancelar
-        </VBtn>
-        <VBtn
+        <VTabs
+          v-model="currentTab"
+          align-tabs="center"
           color="primary"
-          variant="elevated"
-          prepend-icon="ri-upload-cloud-2-line"
-          :loading="isLoading"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          @click="importFile"
+          class="mb-6 border-b tabs-premium"
         >
-          Procesar Importación
-        </VBtn>
-      </VCardActions>
+          <VTab
+            value="clients"
+            class="text-button font-weight-medium"
+          >
+            <VIcon
+              start
+              icon="ri-user-add-line"
+            />
+            Clientes
+          </VTab>
+          <VTab
+            value="vehicles"
+            class="text-button font-weight-medium"
+          >
+            <VIcon
+              start
+              icon="ri-roadster-line"
+            />
+            Vehículos
+          </VTab>
+        </VTabs>
+
+        <VWindow
+          v-model="currentTab"
+          class="mb-6"
+        >
+          <!-- Tab: Clientes -->
+          <VWindowItem value="clients">
+            <div class="mt-2 text-right">
+              <VBtn
+                variant="text"
+                color="primary"
+                size="small"
+                prepend-icon="ri-download-line"
+                @click="downloadTemplate"
+              >
+                Descargar Plantilla
+              </VBtn>
+            </div>
+          </VWindowItem>
+
+          <!-- Tab: Vehículos -->
+          <VWindowItem value="vehicles">
+            <div class="mt-2 text-right">
+              <VBtn
+                variant="text"
+                color="primary"
+                size="small"
+                prepend-icon="ri-download-line"
+                @click="downloadTemplate"
+              >
+                Descargar Plantilla
+              </VBtn>
+            </div>
+          </VWindowItem>
+        </VWindow>
+
+        <!-- Zona Drag & Drop -->
+        <input
+          id="hiddenFileInput"
+          type="file"
+          class="d-none"
+          accept=".xlsx, .xls, .csv"
+          @change="handleFileInput"
+        >
+
+        <div
+          v-if="!file"
+          class="drag-drop-zone rounded-xl d-flex flex-column align-center justify-center cursor-pointer mb-6"
+          :class="{ 'is-dragging': isDragging }"
+          @dragover="onDragOver"
+          @dragleave="onDragLeave"
+          @drop="onDrop"
+          @click="triggerFileInput"
+        >
+          <div class="icon-circle mb-4">
+            <VIcon
+              icon="ri-upload-cloud-2-line"
+              size="48"
+              color="primary"
+            />
+          </div>
+          <h5 class="text-h6 font-weight-bold mb-1">
+            Arrastra y suelta tu archivo aquí
+          </h5>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            o haz clic para buscar en tus carpetas
+          </p>
+          <div class="mt-5 d-flex gap-2">
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+            >
+              .xlsx
+            </VChip>
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+            >
+              .xls
+            </VChip>
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+            >
+              .csv
+            </VChip>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Archivo Seleccionado -->
+        <VExpandTransition>
+          <div
+            v-if="file"
+            class="file-preview-card rounded-xl pa-5 mb-6 d-flex align-center justify-space-between"
+          >
+            <div class="d-flex align-center gap-4">
+              <div class="file-icon rounded-lg pa-3 d-flex align-center justify-center">
+                <VIcon
+                  icon="ri-file-excel-2-fill"
+                  color="success"
+                  size="36"
+                />
+              </div>
+              <div>
+                <h6
+                  class="text-subtitle-1 font-weight-bold mb-0 text-truncate"
+                  style="max-width: 320px;"
+                >
+                  {{ file.name }}
+                </h6>
+                <span class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-1">
+                  <VIcon
+                    icon="ri-hard-drive-2-line"
+                    size="14"
+                  />
+                  {{ formatFileSize(file.size) }}
+                </span>
+              </div>
+            </div>
+            <VBtn
+              icon="ri-delete-bin-line"
+              variant="tonal"
+              color="error"
+              size="small"
+              class="rounded-lg"
+              @click="removeFile"
+            />
+          </div>
+        </VExpandTransition>
+
+        <!-- Errores -->
+        <VExpandTransition>
+          <div
+            v-if="error"
+            class="mb-4"
+          >
+            <VAlert
+              type="error"
+              variant="tonal"
+              border="start"
+              prominent
+              class="rounded-lg"
+            >
+              <div class="d-flex flex-column">
+                <span class="text-subtitle-1 font-weight-bold mb-1">Error de Importación</span>
+                <span style="white-space: pre-wrap; font-size: 0.85rem;">{{ error }}</span>
+              </div>
+            </VAlert>
+          </div>
+        </VExpandTransition>
+
+        <!-- Éxito -->
+        <VExpandTransition>
+          <div v-if="result && result.success">
+            <VAlert
+              type="success"
+              variant="tonal"
+              class="mb-4 rounded-lg"
+            >
+              <div class="d-flex flex-column">
+                <span class="text-subtitle-1 font-weight-bold mb-1">¡Importación Exitosa!</span>
+                <span>{{ result.message }}</span>
+              </div>
+              <template v-if="result.data && result.data.errors && result.data.errors.length > 0">
+                <div class="mt-3 text-caption error-list-container pa-3 rounded-lg bg-surface">
+                  <strong class="text-error d-flex align-center gap-1 mb-2">
+                    <VIcon
+                      icon="ri-error-warning-line"
+                      size="16"
+                    />
+                    Algunas filas no pudieron ser procesadas y fueron omitidas:
+                  </strong>
+                  <ul
+                    class="ml-4 mt-1 text-medium-emphasis"
+                    style="max-height: 120px; overflow-y: auto;"
+                  >
+                    <li
+                      v-for="(err, idx) in result.data.errors"
+                      :key="idx"
+                      class="mb-1"
+                    >
+                      {{ err }}
+                    </li>
+                  </ul>
+                </div>
+              </template>
+            </VAlert>
+          </div>
+        </VExpandTransition>
+
+        <VCardActions
+          class="d-flex justify-end align-center gap-3 mt-4 pa-0"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            :disabled="isLoading"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="closeDialog"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-upload-cloud-2-line"
+            :loading="isLoading"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="importFile"
+          >
+            Procesar Importación
+          </VBtn>
+        </VCardActions>
       </div>
     </VCard>
   </VDialog>

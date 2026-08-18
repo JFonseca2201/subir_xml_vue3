@@ -396,7 +396,8 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -430,302 +431,305 @@ const onFormReset = () => {
           ref="formRef"
           @submit.prevent="store"
         >
-        <VRow>
-          <!-- Nombre y Apellido -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.name"
-              :rules="nameRules"
-              label="Nombre"
-              placeholder="Ej. Juan"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.surname"
-              :rules="nameRules"
-              label="Apellido"
-              placeholder="Ej. Pérez"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <!-- Correo y Teléfono -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.email"
-              :rules="emailRules"
-              label="Correo Electrónico"
-              placeholder="ejemplo@dominio.com"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-mail-line"
-              hide-details="auto"
-              type="email"
-              required
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.phone"
-              :rules="phoneRules"
-              label="Teléfono"
-              placeholder="Ej. 0991234567"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-phone-line"
-              hide-details="auto"
-              type="tel"
-              required
-              maxlength="10"
-              @input="e => { newUser.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
-            />
-          </VCol>
-
-          <!-- Tipo de Documento y Número de Documento -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VSelect
-              v-model="newUser.type_document"
-              :items="[
-                { title: 'Cédula', value: 'CI' },
-                { title: 'RUC', value: 'RUC' },
-                { title: 'Pasaporte', value: 'PASS' }
-              ]"
-              label="Tipo de Documento"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-file-list-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.identification"
-              :rules="identificationRules"
-              label="Número de Documento"
-              placeholder="Ej. 1700000001"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-              maxlength="13"
-              @input="e => { newUser.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
-            />
-          </VCol>
-
-          <!-- Dirección (toda la fila) -->
-          <VCol cols="12">
-            <VTextField
-              v-model="newUser.address"
-              label="Dirección"
-              placeholder="Ej. Calle Abc 123"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-            />
-          </VCol>
-
-          <!-- Género y Rol -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VSelect
-              v-model="newUser.gender"
-              :items="[
-                { title: 'Masculino', value: 'M' },
-                { title: 'Femenino', value: 'F' },
-                { title: 'Otro', value: 'O' }
-              ]"
-              label="Género"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-men-women-line"
-              hide-details="auto"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VSelect
-              v-model="newUser.role_id"
-              :items="props.roles"
-              item-title="name"
-              item-value="id"
-              density="comfortable"
-              variant="outlined"
-              label="Rol de usuario"
-              placeholder="Selecciona"
-              prepend-inner-icon="ri-shield-user-line"
-              eager
-              outlined
-              dense
-              required
-            />
-          </VCol>
-
-          <!-- Avatar y Previsualización -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VFileInput
-              v-model="newUser.avatar"
-              label="Avatar"
-              accept="image/*"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-image-line"
-              hide-details="auto"
-              show-size
-              @change="handleAvatarChange"
-              @update:model-value="handleAvatarClear"
-            />
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <!-- Previsualización siempre en el mismo espacio -->
-            <div
-              v-if="avatarPreview"
-              class="text-center d-flex flex-column align-center mt-3"
+          <VRow>
+            <!-- Nombre y Apellido -->
+            <VCol
+              cols="12"
+              sm="6"
             >
-              <VAvatar
-                :image="avatarPreview"
-                size="50"
-                class="elevation-3 mb-1"
+              <VTextField
+                v-model="newUser.name"
+                :rules="nameRules"
+                label="Nombre"
+                placeholder="Ej. Juan"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
               />
-              <div class="text-caption text-medium-emphasis">
-                {{ newUser.name }}
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newUser.surname"
+                :rules="nameRules"
+                label="Apellido"
+                placeholder="Ej. Pérez"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
+
+            <!-- Correo y Teléfono -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newUser.email"
+                :rules="emailRules"
+                label="Correo Electrónico"
+                placeholder="ejemplo@dominio.com"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-line"
+                hide-details="auto"
+                type="email"
+                required
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newUser.phone"
+                :rules="phoneRules"
+                label="Teléfono"
+                placeholder="Ej. 0991234567"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-phone-line"
+                hide-details="auto"
+                type="tel"
+                required
+                maxlength="10"
+                @input="e => { newUser.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
+              />
+            </VCol>
+
+            <!-- Tipo de Documento y Número de Documento -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VSelect
+                v-model="newUser.type_document"
+                :items="[
+                  { title: 'Cédula', value: 'CI' },
+                  { title: 'RUC', value: 'RUC' },
+                  { title: 'Pasaporte', value: 'PASS' }
+                ]"
+                label="Tipo de Documento"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-file-list-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newUser.identification"
+                :rules="identificationRules"
+                label="Número de Documento"
+                placeholder="Ej. 1700000001"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+                maxlength="13"
+                @input="e => { newUser.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
+              />
+            </VCol>
+
+            <!-- Dirección (toda la fila) -->
+            <VCol cols="12">
+              <VTextField
+                v-model="newUser.address"
+                label="Dirección"
+                placeholder="Ej. Calle Abc 123"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-map-pin-line"
+                hide-details="auto"
+              />
+            </VCol>
+
+            <!-- Género y Rol -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VSelect
+                v-model="newUser.gender"
+                :items="[
+                  { title: 'Masculino', value: 'M' },
+                  { title: 'Femenino', value: 'F' },
+                  { title: 'Otro', value: 'O' }
+                ]"
+                label="Género"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-men-women-line"
+                hide-details="auto"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VSelect
+                v-model="newUser.role_id"
+                :items="props.roles"
+                item-title="name"
+                item-value="id"
+                density="comfortable"
+                variant="outlined"
+                label="Rol de usuario"
+                placeholder="Selecciona"
+                prepend-inner-icon="ri-shield-user-line"
+                eager
+                outlined
+                dense
+                required
+              />
+            </VCol>
+
+            <!-- Avatar y Previsualización -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VFileInput
+                v-model="newUser.avatar"
+                label="Avatar"
+                accept="image/*"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-image-line"
+                hide-details="auto"
+                show-size
+                @change="handleAvatarChange"
+                @update:model-value="handleAvatarClear"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <!-- Previsualización siempre en el mismo espacio -->
+              <div
+                v-if="avatarPreview"
+                class="text-center d-flex flex-column align-center mt-3"
+              >
+                <VAvatar
+                  :image="avatarPreview"
+                  size="50"
+                  class="elevation-3 mb-1"
+                />
+                <div class="text-caption text-medium-emphasis">
+                  {{ newUser.name }}
+                </div>
               </div>
-            </div>
-          </VCol>
-        </VRow>
-        <VRow>
-          <!-- Validación de avatar -->
-          <VCol
-            v-if="newUser.avatar && !newUser.avatar.type?.startsWith('image/')"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
+            </VCol>
+          </VRow>
+          <VRow>
+            <!-- Validación de avatar -->
+            <VCol
+              v-if="newUser.avatar && !newUser.avatar.type?.startsWith('image/')"
+              cols="12"
             >
-              El archivo seleccionado no es una imagen válida. Por favor selecciona un archivo de imagen
-              (JPG, PNG, GIF, etc.).
-            </VAlert>
-          </VCol>
-        </VRow>
-        <VRow>
-          <!-- Contraseña y Confirmar Contraseña (siempre en la misma posición) -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.password"
-              :rules="passwordRules"
-              label="Contraseña"
-              placeholder="Mínimo 6 caracteres"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-lock-line"
-              hide-details="auto"
-              type="password"
-              required
-            />
-          </VCol>
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                El archivo seleccionado no es una imagen válida. Por favor selecciona un archivo de imagen
+                (JPG, PNG, GIF, etc.).
+              </VAlert>
+            </VCol>
+          </VRow>
+          <VRow>
+            <!-- Contraseña y Confirmar Contraseña (siempre en la misma posición) -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newUser.password"
+                :rules="passwordRules"
+                label="Contraseña"
+                placeholder="Mínimo 6 caracteres"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-lock-line"
+                hide-details="auto"
+                type="password"
+                required
+              />
+            </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newUser.confirmPassword"
-              :rules="confirmPasswordRules"
-              label="Confirmar Contraseña"
-              placeholder="Repite la contraseña"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-lock-line"
-              hide-details="auto"
-              type="password"
-              required
-            />
-          </VCol>
-        </VRow>
-        <VRow>
-          <!-- Alertas de Error/Éxito -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+            <VCol
+              cols="12"
+              sm="6"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
+              <VTextField
+                v-model="newUser.confirmPassword"
+                :rules="confirmPasswordRules"
+                label="Confirmar Contraseña"
+                placeholder="Repite la contraseña"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-lock-line"
+                hide-details="auto"
+                type="password"
+                required
+              />
+            </VCol>
+          </VRow>
+          <VRow>
+            <!-- Alertas de Error/Éxito -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
 
-          <VCol
-            v-if="error_exist"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
+            <VCol
+              v-if="error_exist"
+              cols="12"
             >
-              {{ error_exist }}
-            </VAlert>
-          </VCol>
-        </VRow>
-      </VForm>
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                {{ error_exist }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- Acciones Fijas -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import navItems from '@/navigation/vertical'
 import { useConfigStore } from '@core/stores/config'
 import { themeConfig, layoutConfig } from '@themeConfig'
 import { $api } from '@/utils/api'
+import { usePermissions } from '@/composables/usePermissions'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
@@ -24,8 +25,10 @@ const loadSucursalInfo = async () => {
     const resp = await $api('sucursales/1', {
       method: 'GET',
     })
+
     if (resp && resp.sucursal) {
       const sucursalName = resp.sucursal.trade_name || (resp.sucursal.name && resp.sucursal.name.length <= 25 ? resp.sucursal.name : 'LUXURY EVYS')
+
       localStorage.setItem('sucursal_name', sucursalName)
       if (themeConfig.app) themeConfig.app.title = sucursalName
       if (layoutConfig?.app) layoutConfig.app.title = sucursalName
@@ -35,8 +38,23 @@ const loadSucursalInfo = async () => {
   }
 }
 
+// Cargar dinámicamente datos actualizados del usuario autenticado
+const loadUserInfo = async () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+  try {
+    const meUser = await $api('auth/me', { method: 'POST' })
+    if (meUser && meUser.id) {
+      refreshPermissionsUser(meUser)
+    }
+  } catch (e) {
+    //
+  }
+}
+
 onMounted(() => {
   loadSucursalInfo()
+  loadUserInfo()
 })
 
 // SECTION: Loading Indicator
@@ -53,7 +71,6 @@ watch([
     refLoadingIndicator.value.resolveHandle()
 }, { immediate: true })
 
-// !SECTION
 const configStore = useConfigStore()
 
 // ℹ️ Provide animation name for vertical nav collapse icon.
@@ -68,10 +85,73 @@ watch([
   else
     verticalNavHeaderActionAnimationName.value = val[0] ? 'rotate-180' : 'rotate-back-180'
 }, { immediate: true })
+
+const { can, canAny } = usePermissions()
+
+// Filtrar ítems del menú lateral según los permisos del usuario
+const filteredNavItems = computed(() => {
+  // 1. Filtrar elementos individuales y grupos según permisos del usuario
+  const cleanItems = navItems
+    .map(item => {
+      if (item.heading) {
+        if (item.permissions && Array.isArray(item.permissions)) {
+          if (!canAny(item.permissions)) return null
+        } else if (item.permission && !can(item.permission)) {
+          return null
+        }
+        
+        return { ...item }
+      }
+
+      // Si es un grupo con subelementos
+      if (item.children && Array.isArray(item.children)) {
+        const visibleChildren = item.children.filter(child => {
+          return !child.permission || can(child.permission)
+        })
+
+        if (visibleChildren.length === 0) {
+          return null
+        }
+
+        return {
+          ...item,
+          children: visibleChildren,
+        }
+      }
+
+      // Si es un ítem individual
+      if (item.permission && !can(item.permission)) {
+        return null
+      }
+
+      return { ...item }
+    })
+    .filter(Boolean)
+
+  // 2. Filtrar encabezados (headings) para ocultar los que no tengan elementos visibles debajo
+  const result = []
+  for (let i = 0; i < cleanItems.length; i++) {
+    const item = cleanItems[i]
+    if (item.heading) {
+      let hasVisibleItemBelow = false
+      for (let j = i + 1; j < cleanItems.length; j++) {
+        if (cleanItems[j].heading) break
+        hasVisibleItemBelow = true
+      }
+      if (hasVisibleItemBelow) {
+        result.push(item)
+      }
+    } else {
+      result.push(item)
+    }
+  }
+
+  return result
+})
 </script>
 
 <template>
-  <VerticalNavLayout :nav-items="navItems">
+  <VerticalNavLayout :nav-items="filteredNavItems">
     <!-- 👉 navbar -->
     <template #navbar="{ toggleVerticalOverlayNavActive }">
       <div class="d-flex h-100 align-center w-100">
@@ -108,13 +188,15 @@ watch([
     <AppLoadingIndicator ref="refLoadingIndicator" />
 
     <!-- 👉 Pages -->
-    <RouterView v-slot="{ Component }">
+    <RouterView v-slot="{ Component, route }">
       <Suspense
         :timeout="0"
         @fallback="isFallbackStateActive = true"
         @resolve="isFallbackStateActive = false"
       >
-        <Component :is="Component" />
+        <div :key="route.name || route.path" class="app-router-view">
+          <Component :is="Component" />
+        </div>
       </Suspense>
     </RouterView>
 
@@ -178,5 +260,3 @@ watch([
   }
 }
 </style>
- 
- 

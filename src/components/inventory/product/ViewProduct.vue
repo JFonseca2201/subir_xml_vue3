@@ -1,5 +1,6 @@
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :model-value="dialog"
     max-width="900px"
     persistent
@@ -401,7 +402,10 @@
       </VCardText>
       <VDivider />
 
-      <VCardActions class="pa-4 bg-grey-lighten-4 border-t d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 bg-grey-lighten-4 border-t d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"
@@ -417,8 +421,9 @@
   </VDialog>
 
   <!-- Diálogo de Imagen con Zoom -->
-  <VDialog scrollable
+  <VDialog
     v-model="imageDialog"
+    scrollable
     max-width="700"
     persistent
     content-class="image-dialog"

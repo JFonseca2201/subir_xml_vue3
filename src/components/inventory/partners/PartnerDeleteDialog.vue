@@ -26,9 +26,14 @@ const onDelete = () => {
 </script>
 
 <template>
-  <VDialog scrollable v-if="props.isDialogVisible && props.partnerSelected" :width="$vuetify.display.smAndDown ? 'auto' : 500"
-    :model-value="props.isDialogVisible" transition="dialog-bottom-transition"
-    @update:model-value="val => emit('update:isDialogVisible', val)">
+  <VDialog
+    v-if="props.isDialogVisible && props.partnerSelected"
+    scrollable
+    :width="$vuetify.display.smAndDown ? 'auto' : 500"
+    :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition"
+    @update:model-value="val => emit('update:isDialogVisible', val)"
+  >
     <VCard class="custom-dialog-card elevation-24">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
@@ -90,7 +95,10 @@ const onDelete = () => {
               />
               Correo:
             </span>
-            <span class="text-body-2 font-weight-medium text-high-emphasis text-truncate" style="max-width: 230px;">
+            <span
+              class="text-body-2 font-weight-medium text-high-emphasis text-truncate"
+              style="max-width: 230px;"
+            >
               {{ props.partnerSelected.email || 'N/A' }}
             </span>
           </div>
@@ -116,7 +124,10 @@ const onDelete = () => {
               />
               Dirección:
             </span>
-            <span class="text-body-2 font-weight-medium text-high-emphasis text-truncate" style="max-width: 230px;">
+            <span
+              class="text-body-2 font-weight-medium text-high-emphasis text-truncate"
+              style="max-width: 230px;"
+            >
               {{ props.partnerSelected.address || 'N/A' }}
             </span>
           </div>
@@ -137,7 +148,10 @@ const onDelete = () => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

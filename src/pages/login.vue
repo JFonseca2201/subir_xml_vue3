@@ -1,4 +1,6 @@
 <script setup>
+import { ref, computed, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useGenerateImageVariant } from "@/@core/composable/useGenerateImageVariant"
 import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png"
 import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png"
@@ -9,10 +11,13 @@ import authV2LoginMaskLight from "@images/pages/auth-v2-login-mask-light.png"
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer"
 import { themeConfig } from "@themeConfig"
 import { useLoaderStore } from '@/stores/loader'
+import { refreshPermissionsUser } from '@/composables/usePermissions'
+import { $api } from '@/utils/api'
+
+definePage({ meta: { layout: "blank", unauthenticatedOnly: true } })
 
 const route = useRoute()
 const router = useRouter()
-const isLoading = ref(false)
 
 const form = ref({
   email: "laravest@gmail.com",
@@ -25,6 +30,8 @@ const success_login = ref(null)
 const warning_login = ref(null)
 const error_login = ref(null)
 
+const isPasswordVisible = ref(false)
+
 const login = async () => {
   loader.start()
 
@@ -32,7 +39,6 @@ const login = async () => {
   warning_login.value = null
   error_login.value = null
   try {
-
     const resp = await $api("auth/login", {
       method: 'POST',
       body: {
@@ -45,9 +51,8 @@ const login = async () => {
       },
     })
 
-    console.log(resp)
     localStorage.setItem("token", resp.access_token)
-    localStorage.setItem("user", JSON.stringify(resp.user))
+    refreshPermissionsUser(resp.user)
 
     setTimeout(async () => {
       await nextTick(() => {
@@ -65,10 +70,6 @@ const login = async () => {
   }
 }
 
-definePage({ meta: { layout: "blank", unauthenticatedOnly: true } })
-
-const isPasswordVisible = ref(false)
-
 const authV2LoginMask = useGenerateImageVariant(
   authV2LoginMaskLight,
   authV2LoginMaskDark,
@@ -85,6 +86,7 @@ const authV2LoginIllustration = useGenerateImageVariant(
 const appBrandName = computed(() => {
   const raw = themeConfig.app?.title || 'LUXURY EVYS'
   if (raw.toUpperCase().includes('LUXURY EVYS')) return 'LUXURY EVYS'
+  
   return raw.length > 22 ? raw.substring(0, 20) + '...' : raw
 })
 </script>
@@ -92,7 +94,10 @@ const appBrandName = computed(() => {
 <template>
   <div class="auth-page-container">
     <!-- Brand Logo Top Left Flotante (Solo en Desktop) -->
-    <RouterLink to="/" class="auth-brand-link d-none d-lg-flex">
+    <RouterLink
+      to="/"
+      class="auth-brand-link d-none d-lg-flex"
+    >
       <div class="auth-logo-badge">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
         <span class="auth-brand-title">
@@ -101,23 +106,45 @@ const appBrandName = computed(() => {
       </div>
     </RouterLink>
 
-    <VRow no-gutters class="auth-wrapper">
+    <VRow
+      no-gutters
+      class="auth-wrapper"
+    >
       <!-- Columna Izquierda: Showcase Visual Minimalista y Limpio -->
-      <VCol lg="8" class="d-none d-lg-flex align-center justify-center position-relative auth-illustration-wrapper">
+      <VCol
+        lg="8"
+        class="d-none d-lg-flex align-center justify-center position-relative auth-illustration-wrapper"
+      >
         <!-- Ambient Glow Orbs -->
         <div class="auth-glow-orb auth-glow-1" />
         <div class="auth-glow-orb auth-glow-2" />
 
         <div class="d-flex align-center justify-center pa-10 z-index-1 w-100">
-          <img :src="authV2LoginIllustration" class="auth-illustration" alt="Luxury Evys Portal">
+          <img
+            :src="authV2LoginIllustration"
+            class="auth-illustration"
+            alt="Luxury Evys Portal"
+          >
         </div>
 
-        <VImg :src="authV2LoginMask" class="d-none d-lg-flex auth-footer-mask" alt="auth-mask" />
+        <VImg
+          :src="authV2LoginMask"
+          class="d-none d-lg-flex auth-footer-mask"
+          alt="auth-mask"
+        />
       </VCol>
 
       <!-- Columna Derecha: Tarjeta de Acceso -->
-      <VCol cols="12" lg="4" class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar">
-        <VCard flat :max-width="460" class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-2xl text-white w-100">
+      <VCol
+        cols="12"
+        lg="4"
+        class="auth-card-v2 d-flex align-center justify-center auth-primary-sidebar"
+      >
+        <VCard
+          flat
+          :max-width="460"
+          class="mt-12 mt-sm-0 pa-6 pa-lg-8 auth-login-card rounded-2xl text-white w-100"
+        >
           <VCardText class="pb-2 text-white text-center text-sm-start">
             <div class="mb-4">
               <h3 class="text-h4 font-weight-bold mb-1 text-white auth-welcome-heading">
@@ -135,56 +162,115 @@ const appBrandName = computed(() => {
                 <!-- Email -->
                 <VCol cols="12">
                   <label class="auth-form-label">CORREO ELECTRÓNICO</label>
-                  <VTextField v-model="form.email" autofocus placeholder="ejemplo@luxuryevys.com" bg-color="white"
-                    color="primary" variant="solo" density="comfortable" class="auth-input"
-                    prepend-inner-icon="ri-mail-line" />
+                  <VTextField
+                    v-model="form.email"
+                    autofocus
+                    placeholder="ejemplo@luxuryevys.com"
+                    bg-color="white"
+                    color="primary"
+                    variant="solo"
+                    density="comfortable"
+                    class="auth-input"
+                    prepend-inner-icon="ri-mail-line"
+                  />
                 </VCol>
 
                 <!-- Password -->
                 <VCol cols="12">
                   <label class="auth-form-label">CONTRASEÑA</label>
-                  <VTextField v-model="form.password" placeholder="············" bg-color="white" color="primary"
-                    variant="solo" density="comfortable" class="auth-input" prepend-inner-icon="ri-lock-2-line"
+                  <VTextField
+                    v-model="form.password"
+                    placeholder="············"
+                    bg-color="white"
+                    color="primary"
+                    variant="solo"
+                    density="comfortable"
+                    class="auth-input"
+                    prepend-inner-icon="ri-lock-2-line"
                     :type="isPasswordVisible ? 'text' : 'password'"
                     :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                    @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                    @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                  />
 
                   <!-- Remember me & Forgot Password -->
                   <div class="d-flex align-center justify-space-between flex-wrap my-3 gap-x-2">
-                    <VCheckbox v-model="form.remember" label="Recordarme" color="white" true-icon="ri-checkbox-fill"
-                      false-icon="ri-checkbox-blank-line" hide-details density="compact"
-                      class="text-white auth-checkbox" />
+                    <VCheckbox
+                      v-model="form.remember"
+                      label="Recordarme"
+                      color="white"
+                      true-icon="ri-checkbox-fill"
+                      false-icon="ri-checkbox-blank-line"
+                      hide-details
+                      density="compact"
+                      class="text-white auth-checkbox"
+                    />
 
-                    <a class="auth-forgot-link" href="#">
+                    <a
+                      class="auth-forgot-link"
+                      href="#"
+                    >
                       ¿Olvidaste tu contraseña?
                     </a>
                   </div>
                 </VCol>
 
                 <!-- Alerts -->
-                <VCol v-if="success_login" cols="12">
-                  <VAlert type="success" color="success" closable variant="elevated" class="rounded-lg shadow-sm">
+                <VCol
+                  v-if="success_login"
+                  cols="12"
+                >
+                  <VAlert
+                    type="success"
+                    color="success"
+                    closable
+                    variant="elevated"
+                    class="rounded-lg shadow-sm"
+                  >
                     {{ success_login }}
                   </VAlert>
                 </VCol>
 
-                <VCol v-if="error_login" cols="12">
-                  <VAlert type="error" color="error" closable variant="elevated" class="rounded-lg shadow-sm">
+                <VCol
+                  v-if="error_login"
+                  cols="12"
+                >
+                  <VAlert
+                    type="error"
+                    color="error"
+                    closable
+                    variant="elevated"
+                    class="rounded-lg shadow-sm"
+                  >
                     {{ error_login }}
                   </VAlert>
                 </VCol>
 
                 <!-- Botón de Ingreso PRO -->
-                <VCol cols="12" class="pt-3">
-                  <VBtn block size="large" type="submit" class="auth-submit-btn" :loading="loader.loading"
-                    :disabled="loader.loading">
-                    <VIcon icon="ri-login-box-line" class="me-2" />
+                <VCol
+                  cols="12"
+                  class="pt-3"
+                >
+                  <VBtn
+                    block
+                    size="large"
+                    type="submit"
+                    class="auth-submit-btn"
+                    :loading="loader.loading"
+                    :disabled="loader.loading"
+                  >
+                    <VIcon
+                      icon="ri-login-box-line"
+                      class="me-2"
+                    />
                     Iniciar Sesión
                   </VBtn>
                 </VCol>
 
                 <!-- Footer Copyright Minimalista -->
-                <VCol cols="12" class="text-center mt-6">
+                <VCol
+                  cols="12"
+                  class="text-center mt-6"
+                >
                   <div class="text-caption text-white opacity-75 font-weight-medium">
                     © {{ new Date().getFullYear() }} {{ appBrandName }} • Todos los derechos reservados
                   </div>

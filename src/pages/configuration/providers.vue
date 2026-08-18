@@ -9,6 +9,9 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 
 const loader = useLoaderStore()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 
 const headers = [
 
@@ -271,6 +274,7 @@ definePage({ meta: { permission: "settings" } })
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('register_supplier')"
           color="primary"
           prepend-icon="ri-add-line"
           @click="isProviderAddDialogVisible = !isProviderAddDialogVisible"
@@ -467,6 +471,7 @@ definePage({ meta: { permission: "settings" } })
                       />
                     </VBtn>
                     <VBtn
+                      v-if="can('edit_supplier')"
                       class="action-btn"
                       variant="text"
                       icon
@@ -481,6 +486,7 @@ definePage({ meta: { permission: "settings" } })
                       />
                     </VBtn>
                     <VBtn
+                      v-if="can('delete_supplier')"
                       class="action-btn"
                       variant="text"
                       icon

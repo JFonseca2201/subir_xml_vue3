@@ -11,6 +11,9 @@ const { showNotification } = useGlobalToast()
 import { useLoaderStore } from '@/stores/loader'
 
 const loader = useLoaderStore()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 
 const showTimelineDialog = ref(false)
 const selectedTimelineOrder = ref(null)
@@ -308,12 +311,14 @@ const selectedPdfWorkOrderId = ref(null)
 
 const isMobileDevice = () => {
   if (typeof window === 'undefined') return false
+  
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768
 }
 
 const getDirectPdfUrl = workOrderId => {
   const token = localStorage.getItem('token') || ''
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+  
   return `${apiBaseUrl}/work-orders/${workOrderId}/pdf?token=${token}`
 }
 
@@ -327,12 +332,14 @@ const openPdfPreview = async workOrder => {
     if (isMobileDevice()) {
       const url = getDirectPdfUrl(workOrder.id)
       const a = document.createElement('a')
+
       a.href = url
       a.target = '_blank'
       a.rel = 'noopener noreferrer'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
+      
       return
     }
 
@@ -378,6 +385,7 @@ const openPdfInNewTab = () => {
   if (!selectedPdfWorkOrderId.value) return
   const url = getDirectPdfUrl(selectedPdfWorkOrderId.value)
   const a = document.createElement('a')
+
   a.href = url
   a.target = '_blank'
   a.rel = 'noopener noreferrer'
@@ -498,6 +506,7 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('register_sale')"
           color="primary"
           prepend-icon="ri-add-line"
           to="/work-orders/add"
@@ -838,7 +847,10 @@ onMounted(() => {
                   <VDivider />
 
                   <!-- Acciones -->
-                  <VCardActions class="pa-2 justify-end bg-grey-lighten-5 mt-auto" style="position: sticky; bottom: 0; z-index: 2;">
+                  <VCardActions
+                    class="pa-2 justify-end bg-grey-lighten-5 mt-auto"
+                    style="position: sticky; bottom: 0; z-index: 2;"
+                  >
                     <VBtn
                       v-if="workOrder.status !== 'draft'"
                       variant="text"
@@ -852,6 +864,7 @@ onMounted(() => {
                     </VBtn>
 
                     <VBtn
+                      v-if="can('edit_sale')"
                       variant="text"
                       color="warning"
                       prepend-icon="ri-edit-line"
@@ -921,8 +934,12 @@ onMounted(() => {
                             class="text-success text-body-2"
                             @click="updateStatus(workOrder.id, 'delivered')"
                           />
-                          <VDivider class="my-1" />
+                          <VDivider
+                            v-if="can('delete_sale')"
+                            class="my-1"
+                          />
                           <VListItem
+                            v-if="can('delete_sale')"
                             prepend-icon="ri-delete-bin-line"
                             title="Eliminar Orden"
                             class="text-error text-body-2"
@@ -959,11 +976,15 @@ onMounted(() => {
     </VCard>
 
     <!-- Details Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="showDetailsDialog"
+      scrollable
       max-width="800"
     >
-      <VCard v-if="selectedWorkOrder" class="custom-dialog-card">
+      <VCard
+        v-if="selectedWorkOrder"
+        class="custom-dialog-card"
+      >
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
           <VBtn
@@ -1114,7 +1135,10 @@ onMounted(() => {
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3 flex-wrap" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 bg-white d-flex justify-end align-center gap-3 flex-wrap"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
             color="success"
@@ -1174,8 +1198,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- PDF Preview Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isPdfPreviewDialogVisible"
+      scrollable
       max-width="950"
     >
       <VCard class="custom-dialog-card">
@@ -1226,8 +1251,14 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VCardText class="pa-0 d-flex flex-column align-center justify-center bg-grey-lighten-4" style="min-height: 550px; height: 75vh;">
-          <div v-if="isPdfLoading" class="text-center pa-8">
+        <VCardText
+          class="pa-0 d-flex flex-column align-center justify-center bg-grey-lighten-4"
+          style="min-height: 550px; height: 75vh;"
+        >
+          <div
+            v-if="isPdfLoading"
+            class="text-center pa-8"
+          >
             <VProgressCircular
               indeterminate
               color="primary"
@@ -1244,9 +1275,18 @@ onMounted(() => {
             class="w-100 h-100"
             style="border: none; min-height: 550px;"
           />
-          <div v-else class="text-center pa-8 text-error">
-            <VIcon icon="ri-error-warning-line" size="48" class="mb-2" />
-            <p class="text-body-1">No se pudo cargar la vista previa del PDF.</p>
+          <div
+            v-else
+            class="text-center pa-8 text-error"
+          >
+            <VIcon
+              icon="ri-error-warning-line"
+              size="48"
+              class="mb-2"
+            />
+            <p class="text-body-1">
+              No se pudo cargar la vista previa del PDF.
+            </p>
             <VBtn
               color="primary"
               variant="tonal"
@@ -1261,7 +1301,10 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center flex-wrap gap-2 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center flex-wrap gap-2 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1310,8 +1353,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- Delete Confirmation Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="showDeleteDialog"
+      scrollable
       max-width="500"
     >
       <VCard class="custom-dialog-card">
@@ -1343,7 +1387,10 @@ onMounted(() => {
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"

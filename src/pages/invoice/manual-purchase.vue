@@ -42,6 +42,7 @@ const searchProduct = ref(null)
 
 // Manual Product Entry State
 const isManualProductDialogOpen = ref(false)
+
 const manualItem = ref({
   description: '',
   code: '',
@@ -103,9 +104,10 @@ const addManualProduct = () => {
   isManualProductDialogOpen.value = false
 }
 
-const getCategoryName = (catId) => {
+const getCategoryName = catId => {
   if (!catId) return ''
   const cat = categories.value.find(c => c.id === catId)
+  
   return cat ? (cat.title || cat.name || '') : ''
 }
 
@@ -539,22 +541,40 @@ onMounted(() => {
             <VTable class="manual-purchase-table border rounded-xl overflow-hidden">
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th class="text-left font-weight-bold py-3" style="min-width: 240px;">
+                  <th
+                    class="text-left font-weight-bold py-3"
+                    style="min-width: 240px;"
+                  >
                     PRODUCTO
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 110px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 110px;"
+                  >
                     CANT.
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 135px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 135px;"
+                  >
                     P.U. (COSTO)
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 125px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 125px;"
+                  >
                     DCTO.
                   </th>
-                  <th class="text-right font-weight-bold py-3 pr-4" style="width: 130px;">
+                  <th
+                    class="text-right font-weight-bold py-3 pr-4"
+                    style="width: 130px;"
+                  >
                     SUBTOTAL
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 80px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 80px;"
+                  >
                     ACCIÓN
                   </th>
                 </tr>
@@ -565,9 +585,17 @@ onMounted(() => {
                     colspan="6"
                     class="text-center py-10 text-medium-emphasis"
                   >
-                    <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
-                    <div class="text-body-1 font-weight-medium">No hay productos agregados a la compra</div>
-                    <p class="text-caption text-medium-emphasis mb-0">Busca en el catálogo o ingresa productos manualmente</p>
+                    <VIcon
+                      icon="ri-shopping-bag-3-line"
+                      size="40"
+                      class="mb-2 text-grey-lighten-1"
+                    />
+                    <div class="text-body-1 font-weight-medium">
+                      No hay productos agregados a la compra
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Busca en el catálogo o ingresa productos manualmente
+                    </p>
                   </td>
                 </tr>
                 <tr
@@ -590,7 +618,10 @@ onMounted(() => {
                     </div>
                     <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-3 flex-wrap">
                       <span>SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
-                      <span v-if="getCategoryName(item.product_categorie_id)" class="text-primary font-weight-medium">• {{ getCategoryName(item.product_categorie_id) }}</span>
+                      <span
+                        v-if="getCategoryName(item.product_categorie_id)"
+                        class="text-primary font-weight-medium"
+                      >• {{ getCategoryName(item.product_categorie_id) }}</span>
                     </div>
                   </td>
                   <td class="text-center py-4">
@@ -774,8 +805,9 @@ onMounted(() => {
     </VRow>
 
     <!-- Modal Dialog para Agregar Producto Manual -->
-    <VDialog scrollable
+    <VDialog
       v-model="isManualProductDialogOpen"
+      scrollable
       max-width="600"
     >
       <VCard class="custom-dialog-card">
@@ -913,7 +945,10 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"

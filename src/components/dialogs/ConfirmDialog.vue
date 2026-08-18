@@ -53,7 +53,8 @@ const onCancel = () => {
 
 <template>
   <!-- 👉 Confirm Dialog -->
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="500"
     :model-value="props.isDialogVisible"
     @update:model-value="updateModelValue"
@@ -102,8 +103,9 @@ const onCancel = () => {
   </VDialog>
 
   <!-- Unsubscribed -->
-  <VDialog scrollable
+  <VDialog
     v-model="unsubscribed"
+    scrollable
     max-width="500"
   >
     <VCard>
@@ -137,8 +139,9 @@ const onCancel = () => {
   </VDialog>
 
   <!-- Cancelled -->
-  <VDialog scrollable
+  <VDialog
     v-model="cancelled"
+    scrollable
     max-width="500"
   >
     <VCard>

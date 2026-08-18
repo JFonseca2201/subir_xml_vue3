@@ -54,7 +54,8 @@ const dialogVisibleUpdate = val => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 900 "
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
@@ -207,7 +208,10 @@ const dialogVisibleUpdate = val => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

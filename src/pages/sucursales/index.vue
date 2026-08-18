@@ -147,15 +147,13 @@ const rules = {
   },
 }
 
-// Verificar si el usuario tiene rol 1 o 2 para mostrar botones
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
+
+// Verificar si el usuario tiene permisos para modificar la configuración del establecimiento
 const canEditSucursal = computed(() => {
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
-
-  console.log(user.role.id)
-
-  const userRole = user?.role.id
-  
-  return userRole === 1 || userRole === 2
+  return can('settings') || can('manage_settings')
 })
 
 // Cargar información de la sucursal
@@ -173,7 +171,9 @@ const loadSucursal = async () => {
 
     if (resp.sucursal) {
       sucursal.value = resp.sucursal
+
       const sName = resp.sucursal.name || resp.sucursal.trade_name || 'LUXURY EVYS'
+
       localStorage.setItem('sucursal_name', sName)
       if (themeConfig.app) themeConfig.app.title = sName
       if (layoutConfig?.app) layoutConfig.app.title = sName
@@ -218,6 +218,7 @@ const saveSucursal = async () => {
     })
 
     const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
+
     localStorage.setItem('sucursal_name', sName)
     if (themeConfig.app) themeConfig.app.title = sName
     if (layoutConfig?.app) layoutConfig.app.title = sName

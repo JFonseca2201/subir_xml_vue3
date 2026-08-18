@@ -13,9 +13,12 @@ import ClientDeleteDialog from '@/components/inventory/clients/ClientDeleteDialo
 import ImportData from '@/components/inventory/import/ImportData.vue'
 import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 
+import { usePermissions } from '@/composables/usePermissions'
+
 // Router
 const router = useRouter()
 const loader = useLoaderStore()
+const { can } = usePermissions()
 
 // Estado
 const loading = ref(false)
@@ -270,6 +273,7 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('import_xml') || can('register_client')"
           color="secondary"
           variant="tonal"
           prepend-icon="ri-upload-cloud-2-line"
@@ -278,6 +282,7 @@ onMounted(() => {
           Importar
         </VBtn>
         <VBtn
+          v-if="can('register_client')"
           color="primary"
           variant="outlined"
           prepend-icon="ri-user-add-line"
@@ -286,6 +291,7 @@ onMounted(() => {
           Cliente Final
         </VBtn>
         <VBtn
+          v-if="can('register_client')"
           color="primary"
           prepend-icon="ri-building-line"
           @click="addClient"
@@ -562,6 +568,7 @@ onMounted(() => {
                     />
                   </IconBtn>
                   <IconBtn
+                    v-if="can('edit_client')"
                     class="action-btn text-warning"
                     title="Editar Cliente"
                     size="small"
@@ -599,8 +606,12 @@ onMounted(() => {
                           class="text-info text-body-2"
                           @click="showHistory(client)"
                         />
-                        <VDivider class="my-1" />
+                        <VDivider
+                          v-if="can('delete_client')"
+                          class="my-1"
+                        />
                         <VListItem
+                          v-if="can('delete_client')"
                           prepend-icon="ri-delete-bin-6-line"
                           title="Eliminar Cliente"
                           class="text-error text-body-2"

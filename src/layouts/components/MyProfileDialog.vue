@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { $api } from '@/utils/api'
 import avatar1 from "@images/avatars/avatar-1.png"
 
 const props = defineProps({
@@ -24,6 +25,8 @@ const activeTab = ref('general')
 
 // Form data
 const formData = ref({
+  name: '',
+  surname: '',
   phone: '',
   address: '',
 })
@@ -38,6 +41,8 @@ const passwordData = ref({
 watch(() => props.isDialogVisible, newVal => {
   if (newVal && props.userData) {
     formData.value = {
+      name: props.userData.name || '',
+      surname: props.userData.surname || '',
       phone: props.userData.phone || '',
       address: props.userData.address || '',
     }
@@ -54,63 +59,89 @@ const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
 
+const passwordsMatch = computed(() => {
+  return passwordData.value.new_password &&
+         passwordData.value.new_password_confirmation &&
+         passwordData.value.new_password === passwordData.value.new_password_confirmation
+})
+
+const passwordsMismatch = computed(() => {
+  return passwordData.value.new_password &&
+         passwordData.value.new_password_confirmation &&
+         passwordData.value.new_password !== passwordData.value.new_password_confirmation
+})
+
 const saveGeneralInfo = async () => {
   loader.start()
   try {
-    // Aquí iría tu llamada a la API para actualizar el perfil
-    // const resp = await $api(`users/${props.userData.id}/profile`, {
-    //   method: 'PUT',
-    //   body: formData.value
-    // })
+    const resp = await $api(`users/${props.userData.id}/profile`, {
+      method: 'PUT',
+      body: formData.value,
+    })
 
-    // Simulación de guardado
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    // Actualizar localStorage simulado
-    const updatedUser = { ...props.userData, ...formData.value }
-
+    const updatedUser = resp.user || { ...props.userData, ...formData.value }
     localStorage.setItem('user', JSON.stringify(updatedUser))
 
-    showNotification('Perfil actualizado correctamente', 'success')
+    showNotification(resp.message || 'Perfil actualizado correctamente', 'success')
     emit('profile-updated', updatedUser)
     closeDialog()
   } catch (error) {
+    const backendMessage = error.response?._data?.message || error.response?.data?.message || 'Error al actualizar el perfil'
+    showNotification(backendMessage, 'error')
     console.error(error)
-    showNotification('Error al actualizar el perfil', 'error')
   } finally {
     loader.stop()
   }
 }
 
 const savePassword = async () => {
-  if (passwordData.value.new_password !== passwordData.value.new_password_confirmation) {
-    showNotification('Las contraseñas nuevas no coinciden', 'error')
-    
+  if (!passwordData.value.current_password) {
+    showNotification('Debe ingresar su contraseña actual', 'error')
     return
   }
-  
+
+  if (!passwordData.value.new_password) {
+    showNotification('Debe ingresar la nueva contraseña', 'error')
+    return
+  }
+
+  if (!passwordData.value.new_password_confirmation) {
+    showNotification('Debe confirmar la nueva contraseña', 'error')
+    return
+  }
+
+  if (passwordData.value.new_password !== passwordData.value.new_password_confirmation) {
+    showNotification('La nueva contraseña y su confirmación no coinciden', 'error')
+    return
+  }
+
   if (passwordData.value.new_password.length < 6) {
-    showNotification('La contraseña debe tener al menos 6 caracteres', 'error')
-    
+    showNotification('La nueva contraseña debe tener al menos 6 caracteres', 'error')
     return
   }
 
   loader.start()
   try {
-    // Aquí iría tu llamada a la API para cambiar contraseña
-    // const resp = await $api(`users/${props.userData.id}/password`, {
-    //   method: 'PUT',
-    //   body: passwordData.value
-    // })
+    const resp = await $api(`users/${props.userData.id}/password`, {
+      method: 'PUT',
+      body: {
+        current_password: passwordData.value.current_password,
+        new_password: passwordData.value.new_password,
+        new_password_confirmation: passwordData.value.new_password_confirmation,
+      },
+    })
 
-    // Simulación
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    showNotification('Contraseña cambiada exitosamente', 'success')
+    showNotification(resp.message || 'Contraseña actualizada exitosamente', 'success')
+    passwordData.value = {
+      current_password: '',
+      new_password: '',
+      new_password_confirmation: '',
+    }
     closeDialog()
   } catch (error) {
-    console.error(error)
-    showNotification('Error al cambiar la contraseña', 'error')
+    const backendMessage = error.data?.message || error.response?._data?.message || error.response?.data?.message || error.message || 'Error al cambiar la contraseña'
+    showNotification(backendMessage, 'error')
+    console.error('Error al cambiar contraseña:', error)
   } finally {
     loader.stop()
   }
@@ -124,6 +155,13 @@ const avatarUrl = computed(() => {
   const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
   
   return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+})
+
+const userRoleName = computed(() => {
+  const role = props.userData?.role
+  if (!role) return 'Usuario'
+  if (typeof role === 'object') return role.name || 'Usuario'
+  return role
 })
 
 // Toggle password visibility
@@ -153,138 +191,172 @@ const showConfirmPassword = ref(false)
           <VIcon icon="ri-user-settings-line" />
         </div>
         <h3 class="custom-dialog-title">
-          Mi Perfil de Usuario
+          Mi Perfil & Configuración de Seguridad
         </h3>
         <p class="custom-dialog-subtitle">
-          Información personal, datos de contacto y seguridad de la cuenta
+          Actualiza tus datos personales y credenciales de acceso al sistema
         </p>
       </div>
 
-      <!-- Pestañas de Navegación -->
+      <!-- User Summary Info Card -->
+      <div class="pa-4 bg-grey-lighten-4 border-bottom d-flex align-center gap-4 flex-wrap">
+        <VAvatar
+          size="60"
+          class="elevation-2 border-avatar"
+        >
+          <VImg :src="avatarUrl" />
+        </VAvatar>
+        <div class="flex-grow-1">
+          <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+            {{ props.userData.full_name || `${props.userData.name} ${props.userData.surname || ''}` }}
+          </h4>
+          <span class="text-body-2 text-medium-emphasis d-block font-mono">
+            {{ props.userData.email }}
+          </span>
+          <div class="d-flex align-center gap-2 mt-1">
+            <VChip
+              size="x-small"
+              color="primary"
+              variant="flat"
+              class="font-weight-bold text-uppercase"
+            >
+              <VIcon
+                start
+                icon="ri-shield-star-line"
+                size="12"
+              />
+              {{ userRoleName }}
+            </VChip>
+            <VChip
+              v-if="props.userData.identification"
+              size="x-small"
+              color="secondary"
+              variant="tonal"
+              class="font-mono"
+            >
+              RUC/CI: {{ props.userData.identification }}
+            </VChip>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
       <VTabs
         v-model="activeTab"
         color="primary"
-        align-tabs="center"
-        class="border-b bg-grey-lighten-5"
+        grow
+        class="border-bottom"
       >
-        <VTab value="general" class="font-weight-bold">
+        <VTab value="general">
           <VIcon
             start
             icon="ri-user-line"
-            size="18"
           />
-          Datos Personales
+          Información General
         </VTab>
-        <VTab value="security" class="font-weight-bold">
+        <VTab value="security">
           <VIcon
             start
-            icon="ri-shield-keyhole-line"
-            size="18"
+            icon="ri-lock-password-line"
           />
-          Seguridad & Contraseña
+          Cambiar Contraseña
         </VTab>
       </VTabs>
 
-      <VCardText class="pa-6">
+      <VCardText class="pa-5">
         <VWindow v-model="activeTab">
-          <!-- Pestaña General -->
+          <!-- TAB 1: Información General -->
           <VWindowItem value="general">
-            <!-- HERO CARD DE USUARIO -->
-            <div class="bg-grey-lighten-4 rounded-xl pa-5 mb-6 border d-flex flex-column flex-sm-row align-center justify-space-between gap-4">
-              <div class="d-flex align-center gap-4 text-center text-sm-left flex-column flex-sm-row">
-                <VAvatar
-                  size="72"
-                  class="elevation-3 border-avatar"
+            <VForm @submit.prevent="saveGeneralInfo">
+              <VRow dense>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
                 >
-                  <VImg :src="avatarUrl" />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h6 font-weight-bold text-high-emphasis mb-1">
-                    {{ props.userData?.full_name || `${props.userData?.name || ''} ${props.userData?.surname || ''}` || 'Usuario' }}
-                  </h3>
-                  <div class="d-flex flex-wrap align-center justify-center justify-sm-start gap-2">
-                    <VChip
-                      size="small"
-                      color="primary"
-                      variant="elevated"
-                      class="font-weight-bold text-uppercase"
-                    >
-                      <VIcon start icon="ri-shield-user-line" size="14" />
-                      {{ props.userData?.role?.name || 'Administrador' }}
-                    </VChip>
-                    <span class="text-caption text-medium-emphasis font-mono">
-                      {{ props.userData?.email }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  <label class="custom-form-label">NOMBRES</label>
+                  <VTextField
+                    v-model="formData.name"
+                    placeholder="Tus nombres"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-user-line"
+                  />
+                </VCol>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">APELLIDOS</label>
+                  <VTextField
+                    v-model="formData.surname"
+                    placeholder="Tus apellidos"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-user-line"
+                  />
+                </VCol>
 
-            <!-- Formulario Datos Generales -->
-            <VRow dense>
-              <VCol cols="12" sm="6" class="mb-3">
-                <label class="custom-form-label">CORREO ELECTRÓNICO</label>
-                <VTextField
-                  :model-value="props.userData?.email"
-                  variant="outlined"
-                  density="comfortable"
-                  readonly
-                  prepend-inner-icon="ri-mail-line"
-                  class="bg-grey-lighten-5"
-                />
-              </VCol>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">TELÉFONO DE CONTACTO</label>
+                  <VTextField
+                    v-model="formData.phone"
+                    placeholder="Ej. 0991234567"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-phone-line"
+                  />
+                </VCol>
 
-              <VCol cols="12" sm="6" class="mb-3">
-                <label class="custom-form-label">DOCUMENTO DE IDENTIDAD</label>
-                <VTextField
-                  :model-value="props.userData?.identification || 'No registrado'"
-                  variant="outlined"
-                  density="comfortable"
-                  readonly
-                  prepend-inner-icon="ri-id-card-line"
-                  class="bg-grey-lighten-5"
-                />
-              </VCol>
-              
-              <VCol cols="12" sm="6" class="mb-3">
-                <label class="custom-form-label">NÚMERO DE TELÉFONO</label>
-                <VTextField
-                  v-model="formData.phone"
-                  placeholder="Ej: 0987654321"
-                  variant="outlined"
-                  density="comfortable"
-                  prepend-inner-icon="ri-phone-line"
-                />
-              </VCol>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">CORREO ELECTRÓNICO (SOLO LECTURA)</label>
+                  <VTextField
+                    :model-value="props.userData.email"
+                    readonly
+                    disabled
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-mail-line"
+                    class="bg-grey-lighten-4"
+                  />
+                </VCol>
 
-              <VCol cols="12" sm="6" class="mb-3">
-                <label class="custom-form-label">DIRECCIÓN DOMICILIARIA</label>
-                <VTextField
-                  v-model="formData.address"
-                  placeholder="Ciudad, Calle Principal"
-                  variant="outlined"
-                  density="comfortable"
-                  prepend-inner-icon="ri-map-pin-line"
-                />
-              </VCol>
-            </VRow>
+                <VCol
+                  cols="12"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">DIRECCIÓN DOMICILIARIA</label>
+                  <VTextarea
+                    v-model="formData.address"
+                    placeholder="Ej. Av. 10 de Agosto y Colón"
+                    variant="outlined"
+                    rows="2"
+                    density="comfortable"
+                    prepend-inner-icon="ri-map-pin-line"
+                  />
+                </VCol>
+              </VRow>
+            </VForm>
           </VWindowItem>
 
-          <!-- Pestaña Seguridad -->
+          <!-- TAB 2: Cambiar Contraseña -->
           <VWindowItem value="security">
-            <VAlert
-              color="primary"
-              variant="tonal"
-              icon="ri-shield-check-line"
-              class="mb-6 rounded-xl"
-            >
-              Para mayor seguridad, te recomendamos usar una contraseña de al menos 8 caracteres con letras y números.
-            </VAlert>
-
             <VForm @submit.prevent="savePassword">
               <VRow dense>
-                <VCol cols="12" class="mb-3">
-                  <label class="custom-form-label">CONTRASEÑA ACTUAL</label>
+                <VCol
+                  cols="12"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">CONTRASEÑA ACTUAL <span class="text-error">*</span></label>
                   <VTextField
                     v-model="passwordData.current_password"
                     placeholder="Ingresa tu contraseña actual"
@@ -297,8 +369,12 @@ const showConfirmPassword = ref(false)
                   />
                 </VCol>
                 
-                <VCol cols="12" sm="6" class="mb-3">
-                  <label class="custom-form-label">NUEVA CONTRASEÑA</label>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">NUEVA CONTRASEÑA <span class="text-error">*</span></label>
                   <VTextField
                     v-model="passwordData.new_password"
                     placeholder="Mínimo 6 caracteres"
@@ -311,8 +387,12 @@ const showConfirmPassword = ref(false)
                   />
                 </VCol>
 
-                <VCol cols="12" sm="6" class="mb-3">
-                  <label class="custom-form-label">CONFIRMAR NUEVA CONTRASEÑA</label>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="mb-3"
+                >
+                  <label class="custom-form-label">CONFIRMAR NUEVA CONTRASEÑA <span class="text-error">*</span></label>
                   <VTextField
                     v-model="passwordData.new_password_confirmation"
                     placeholder="Repite la nueva contraseña"
@@ -323,6 +403,34 @@ const showConfirmPassword = ref(false)
                     :append-inner-icon="showConfirmPassword ? 'ri-eye-off-line' : 'ri-eye-line'"
                     @click:append-inner="showConfirmPassword = !showConfirmPassword"
                   />
+                </VCol>
+
+                <!-- Feedback Visual de Coincidencia de Contraseñas -->
+                <VCol
+                  v-if="passwordData.new_password || passwordData.new_password_confirmation"
+                  cols="12"
+                  class="mb-2"
+                >
+                  <VAlert
+                    v-if="passwordsMatch"
+                    color="success"
+                    variant="tonal"
+                    density="compact"
+                    icon="ri-checkbox-circle-line"
+                    class="rounded-lg"
+                  >
+                    Las contraseñas coinciden correctamente.
+                  </VAlert>
+                  <VAlert
+                    v-else-if="passwordsMismatch"
+                    color="error"
+                    variant="tonal"
+                    density="compact"
+                    icon="ri-close-circle-line"
+                    class="rounded-lg"
+                  >
+                    Las contraseñas no coinciden. Por favor verifica los caracteres.
+                  </VAlert>
                 </VCol>
               </VRow>
             </VForm>
@@ -339,6 +447,7 @@ const showConfirmPassword = ref(false)
           variant="outlined"
           prepend-icon="ri-close-line"
           class="rounded-lg px-5 font-weight-medium"
+          :disabled="loader.loading"
           @click="closeDialog"
         >
           Cancelar
@@ -351,18 +460,20 @@ const showConfirmPassword = ref(false)
           prepend-icon="ri-save-3-line"
           class="rounded-lg px-6 font-weight-bold"
           :loading="loader.loading"
+          :disabled="loader.loading"
           @click="saveGeneralInfo"
         >
           Guardar Cambios
         </VBtn>
 
         <VBtn
-          v-else
+          v-if="activeTab === 'security'"
           color="primary"
           variant="elevated"
-          prepend-icon="ri-shield-check-line"
+          prepend-icon="ri-key-2-line"
           class="rounded-lg px-6 font-weight-bold"
           :loading="loader.loading"
+          :disabled="loader.loading || passwordsMismatch"
           @click="savePassword"
         >
           Actualizar Contraseña
@@ -371,3 +482,9 @@ const showConfirmPassword = ref(false)
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.border-avatar {
+  border: 3px solid rgba(var(--v-theme-primary), 0.2);
+}
+</style>

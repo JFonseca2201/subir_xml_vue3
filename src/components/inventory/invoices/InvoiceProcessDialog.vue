@@ -207,8 +207,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="props.isDialogVisible"
+    scrollable
     max-width="700"
     persistent
   >
@@ -499,7 +500,10 @@ onMounted(() => {
       <VDivider />
 
       <!-- Footer -->
-      <VCardActions class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-3 bg-grey-lighten-4 border-t" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-3 bg-grey-lighten-4 border-t"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

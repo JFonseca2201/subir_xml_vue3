@@ -7,24 +7,17 @@ import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
+import { usePermissions } from '@/composables/usePermissions'
+
 // Router y dependencias globales
 const router = useRouter()
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+const { can } = usePermissions()
 
-// Obtener usuario actual del localStorage
-const currentUser = computed(() => {
-  const userStr = localStorage.getItem('user')
-
-  return userStr ? JSON.parse(userStr) : null
-})
-
-// Validación de seguridad - solo rol_id === 1 puede acceder
+// Validación de seguridad vía permisos
 const canAccessTransfers = computed(() => {
-  const user = currentUser.value
-  const roleId = user?.role?.id
-
-  return user && roleId === 1
+  return can('list_transfer')
 })
 
 // Estado del componente
@@ -357,6 +350,7 @@ onMounted(() => {
             @click="loadTransfers"
           />
           <VBtn
+            v-if="can('register_transfer')"
             color="primary"
             variant="elevated"
             size="small"
@@ -791,6 +785,7 @@ onMounted(() => {
               <td class="py-3 text-center">
                 <div class="d-flex justify-center gap-1">
                   <VBtn
+                    v-if="can('edit_transfer')"
                     title="Editar registro"
                     size="small"
                     variant="tonal"
@@ -800,6 +795,7 @@ onMounted(() => {
                     @click="openEditDialog(transfer)"
                   />
                   <VBtn
+                    v-if="can('delete_transfer')"
                     title="Eliminar registro"
                     size="small"
                     variant="tonal"
@@ -825,8 +821,9 @@ onMounted(() => {
   />
 
   <!-- Modal Confirmar Eliminación -->
-  <VDialog scrollable
+  <VDialog
     v-model="showDeleteDialog"
+    scrollable
     max-width="440"
   >
     <VCard class="rounded-xl pa-2">
@@ -870,7 +867,10 @@ onMounted(() => {
           Esta acción revertirá los fondos a sus cuentas de origen y destino originales.
         </div>
       </VCardText>
-      <VCardActions class="pa-4 pt-0 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 pt-0 d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

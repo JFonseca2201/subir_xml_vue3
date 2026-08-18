@@ -97,7 +97,8 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 450"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -129,70 +130,70 @@ const cancelDelete = () => {
           ¿Estás seguro que deseas eliminar a <strong>{{ props.userSelected.name + ' ' + props.userSelected.surname || 'este usuario' }}</strong>?
         </p>
 
-      <!-- Alerta especial para Super-Admin -->
-      <VAlert
-        v-if="props.userSelected.id === 1"
-        color="error"
-        variant="tonal"
-        class="mb-6"
-      >
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-shield-cross-line"
-            size="20"
-          />
-          <span>
-            <strong>Usuario Protegido:</strong> El Super-Admin no puede ser eliminado
-          </span>
-        </div>
-      </VAlert>
-
-      <!-- Alerta general -->
-      <VAlert
-        v-else
-        color="warning"
-        variant="tonal"
-        class="mb-6"
-      >
-        <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-error-warning-line"
-            size="20"
-          />
-          <span>
-            Esta acción es permanente y no se puede deshacer
-          </span>
-        </div>
-      </VAlert>
-
-      <!-- Acciones -->
-      <div class="d-flex justify-end align-center gap-3">
-        <VBtn
+        <!-- Alerta especial para Super-Admin -->
+        <VAlert
+          v-if="props.userSelected.id === 1"
           color="error"
-          variant="elevated"
-          prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loader.loading"
-          :disabled="loader.loading ||
-            props.userSelected.id === 1"
-          @click="confirmDelete"
+          variant="tonal"
+          class="mb-6"
         >
-          Eliminar
-        </VBtn>
+          <div class="d-flex align-center gap-2">
+            <VIcon
+              icon="ri-shield-cross-line"
+              size="20"
+            />
+            <span>
+              <strong>Usuario Protegido:</strong> El Super-Admin no puede ser eliminado
+            </span>
+          </div>
+        </VAlert>
 
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loader.loading"
-          @click="cancelDelete"
+        <!-- Alerta general -->
+        <VAlert
+          v-else
+          color="warning"
+          variant="tonal"
+          class="mb-6"
         >
-          Cancelar
-        </VBtn>
-      </div>
+          <div class="d-flex align-center gap-2">
+            <VIcon
+              icon="ri-error-warning-line"
+              size="20"
+            />
+            <span>
+              Esta acción es permanente y no se puede deshacer
+            </span>
+          </div>
+        </VAlert>
+
+        <!-- Acciones -->
+        <div class="d-flex justify-end align-center gap-3">
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            :loading="loader.loading"
+            :disabled="loader.loading ||
+              props.userSelected.id === 1"
+            @click="confirmDelete"
+          >
+            Eliminar
+          </VBtn>
+
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            :disabled="loader.loading"
+            @click="cancelDelete"
+          >
+            Cancelar
+          </VBtn>
+        </div>
       </VCardText>
     </VCard>
   </VDialog>

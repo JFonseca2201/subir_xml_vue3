@@ -13,10 +13,13 @@ import { getVehicleTypeOptions, getVehicleTypeNameById, getVehicleTypeColor } fr
 import ImportData from '@/components/inventory/import/ImportData.vue'
 import SalesHistoryDialog from '@/components/dialogs/SalesHistoryDialog.vue'
 
+import { usePermissions } from '@/composables/usePermissions'
+
 // Router y notificaciones
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+const { can } = usePermissions()
 
 // Estado
 const loading = ref(false)
@@ -282,6 +285,7 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('import_xml') || can('register_car')"
           color="secondary"
           variant="tonal"
           prepend-icon="ri-upload-cloud-2-line"
@@ -290,6 +294,7 @@ onMounted(() => {
           Importar
         </VBtn>
         <VBtn
+          v-if="can('register_car')"
           color="primary"
           prepend-icon="ri-add-line"
           @click="addVehicle"
@@ -613,6 +618,7 @@ onMounted(() => {
                     />
                   </IconBtn>
                   <IconBtn
+                    v-if="can('edit_car')"
                     class="action-btn text-warning"
                     title="Editar Vehículo"
                     size="small"
@@ -650,8 +656,12 @@ onMounted(() => {
                           class="text-info text-body-2"
                           @click="showHistory(vehicle)"
                         />
-                        <VDivider class="my-1" />
+                        <VDivider
+                          v-if="can('delete_car')"
+                          class="my-1"
+                        />
                         <VListItem
+                          v-if="can('delete_car')"
                           prepend-icon="ri-delete-bin-6-line"
                           title="Eliminar Vehículo"
                           class="text-error text-body-2"

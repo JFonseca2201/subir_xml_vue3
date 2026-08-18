@@ -47,7 +47,8 @@ watch(() => props.modelValue, newVal => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :model-value="props.modelValue"
     max-width="400" 
     persistent
@@ -131,7 +132,10 @@ watch(() => props.modelValue, newVal => {
         </VAlert>
       </VCardText>
       <VDivider />
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

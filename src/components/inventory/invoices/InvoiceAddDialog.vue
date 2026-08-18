@@ -434,9 +434,7 @@ onMounted(() => {
     persistent
     transition="dialog-bottom-transition"
   >
-    <VCard
-      class="custom-dialog-card elevation-24"
-    >
+    <VCard class="custom-dialog-card elevation-24">
       <VOverlay
         :model-value="loader.loading"
         class="align-center justify-center"
@@ -1031,7 +1029,10 @@ onMounted(() => {
         </VAlert>
       </div>
       <!-- Footer -->
-      <VCardActions class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-2 bg-grey-lighten-4 border-t" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="d-flex justify-end align-center gap-3 px-6 pb-6 pt-2 bg-grey-lighten-4 border-t"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

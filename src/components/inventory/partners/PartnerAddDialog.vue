@@ -219,7 +219,8 @@ const onFormReset = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -253,142 +254,144 @@ const onFormReset = () => {
           ref="formRef"
           @submit.prevent="store"
         >
-        <VRow>
-          <!-- Cédula o RUC -->
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="newMember.identification"
-              :rules="identificationRules"
-              label="Cédula o RUC"
-              placeholder="Ej. 1700000001"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-              maxlength="13"
-              closable
-              @input="e => { newMember.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
-            />
-          </VCol>
-          <!-- Nombre -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newMember.firstName"
-              :rules="firstNameRules"
-              label="Nombre"
-              placeholder="Ej. Juan"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-              closable
-            />
-          </VCol>
-
-          <!-- Apellido -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newMember.lastName"
-              :rules="lastNameRules"
-              label="Apellido"
-              placeholder="Ej. Pérez"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-              closable
-            />
-          </VCol>
-
-          <!-- Correo Electrónico -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newMember.email"
-              :rules="emailRules"
-              label="Correo Electrónico"
-              placeholder="ejemplo@dominio.com"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-mail-line"
-              hide-details="auto"
-              type="email"
-              required
-            />
-          </VCol>
-
-          <!-- Teléfono -->
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="newMember.phone"
-              :rules="phoneRules"
-              label="Teléfono"
-              placeholder="Ej. 0991234567"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-phone-line"
-              hide-details="auto"
-              type="tel"
-              required
-              maxlength="10"
-              @input="e => { newMember.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
-            />
-          </VCol>
-
-          <!-- Dirección -->
-          <VCol cols="12">
-            <VTextField
-              v-model="newMember.address"
-              :rules="addressRules"
-              label="Dirección"
-              placeholder="Ej. Calle Ficticia 123"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-
-          <!-- Alertas de Error/Éxito -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+          <VRow>
+            <!-- Cédula o RUC -->
+            <VCol
+              cols="12"
+              sm="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
+              <VTextField
+                v-model="newMember.identification"
+                :rules="identificationRules"
+                label="Cédula o RUC"
+                placeholder="Ej. 1700000001"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+                maxlength="13"
+                closable
+                @input="e => { newMember.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
+              />
+            </VCol>
+            <!-- Nombre -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newMember.firstName"
+                :rules="firstNameRules"
+                label="Nombre"
+                placeholder="Ej. Juan"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+                closable
+              />
+            </VCol>
 
-        </VRow>
-      </VForm>
+            <!-- Apellido -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newMember.lastName"
+                :rules="lastNameRules"
+                label="Apellido"
+                placeholder="Ej. Pérez"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+                closable
+              />
+            </VCol>
+
+            <!-- Correo Electrónico -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newMember.email"
+                :rules="emailRules"
+                label="Correo Electrónico"
+                placeholder="ejemplo@dominio.com"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-line"
+                hide-details="auto"
+                type="email"
+                required
+              />
+            </VCol>
+
+            <!-- Teléfono -->
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="newMember.phone"
+                :rules="phoneRules"
+                label="Teléfono"
+                placeholder="Ej. 0991234567"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-phone-line"
+                hide-details="auto"
+                type="tel"
+                required
+                maxlength="10"
+                @input="e => { newMember.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
+              />
+            </VCol>
+
+            <!-- Dirección -->
+            <VCol cols="12">
+              <VTextField
+                v-model="newMember.address"
+                :rules="addressRules"
+                label="Dirección"
+                placeholder="Ej. Calle Ficticia 123"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-map-pin-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
+
+            <!-- Alertas de Error/Éxito -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- Acciones Fijas -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

@@ -224,7 +224,8 @@ const truncateText = (text, maxLength = 25) => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="600"
     :model-value="props.isDialogVisible"
     persistent
@@ -257,178 +258,190 @@ const truncateText = (text, maxLength = 25) => {
           id="unitAddConversionForm"
           @submit.prevent="store"
         >
-        <VRow dense>
-          <!-- UNIDAD ORIGEN (solo si no hay unitSelected) -->
-          <VCol
-            v-if="!props.unitSelected"
-            cols="12"
-          >
-            <VSelect
-              v-model="unit_from_id"
-              :items="list_units"
-              item-title="name"
-              item-value="id"
-              label="Unidad Origen"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-ruler-line"
-              hide-details="auto"
-              required
-              placeholder="Selecciona la unidad de origen"
-            />
-          </VCol>
-
-          <!-- UNITS TO -->
-          <VCol cols="10">
-            <VSelect
-              v-model="unit_to_id"
-              :items="filteredUnits"
-              item-title="name"
-              item-value="id"
-              label="Unidad Destino"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-ruler-line"
-              hide-details="auto"
-              required
-              placeholder="Selecciona una unidad para convertir"
-            />
-
-            <div
-              v-if="props.unitSelected"
-              class="mt-2 text-caption text-medium-emphasis"
+          <VRow dense>
+            <!-- UNIDAD ORIGEN (solo si no hay unitSelected) -->
+            <VCol
+              v-if="!props.unitSelected"
+              cols="12"
             >
-              <strong>Unidad actual:</strong>
-              <h2>{{ props.unitSelected.name }}</h2>
-            </div>
-          </VCol>
-          <VCol cols="2">
-            <!-- 👉 Botón Agregar -->
-            <VBtn
-              type="submit"
-              color="primary"
-              prepend-icon="ri-add-line"
-              :loading="loader.loading"
-            />
-          </VCol>
-          <!-- Alertas -->
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
-            >
-              {{ warning }}
-            </VAlert>
-          </VCol>
+              <VSelect
+                v-model="unit_from_id"
+                :items="list_units"
+                item-title="name"
+                item-value="id"
+                label="Unidad Origen"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-ruler-line"
+                hide-details="auto"
+                required
+                placeholder="Selecciona la unidad de origen"
+              />
+            </VCol>
 
-          <VCol
-            v-if="error_exits"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
-            >
-              {{ error_exits }}
-            </VAlert>
-          </VCol>
+            <!-- UNITS TO -->
+            <VCol cols="10">
+              <VSelect
+                v-model="unit_to_id"
+                :items="filteredUnits"
+                item-title="name"
+                item-value="id"
+                label="Unidad Destino"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-ruler-line"
+                hide-details="auto"
+                required
+                placeholder="Selecciona una unidad para convertir"
+              />
 
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              color="success"
-              variant="tonal"
-              closable
-            >
-              {{ success }}
-            </VAlert>
-          </VCol>
-
-          <VDivider class="my-6" />
-          <VCol cols="12">
-            <VCol cols="12">
-              <!-- Loader para conversiones -->
-              <VCard
-                v-if="isLoadingConversions"
-                class="pa-4 text-center"
-              >
-                <VProgressCircular
-                  indeterminate
-                  size="32"
-                  width="3"
-                  color="primary"
-                />
-                <div class="mt-2 text-body-2 text-medium-emphasis">
-                  Cargando conversiones...
-                </div>
-              </VCard>
-
-              <!-- Tabla de conversiones -->
-              <VTable
-                v-else-if="list_units_conversions.length > 0"
-                class="table"
-              >
-                <thead>
-                  <tr>
-                    <th style="width: 50px;" class="text-center">#</th>
-                    <th>Unidad de medida</th>
-                    <!-- <th>Factor</th> -->
-                    <th style="width: 80px;" class="text-center">Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(item, index) in list_units_conversions"
-                    :key="item.id"
-                  >
-                    <td class="text-center">
-                      <span class="font-weight-bold text-caption text-primary">#{{ index + 1 }}</span>
-                    </td>
-                    <td>{{ getUnitToName(item) }}</td>
-                    <!-- <td>{{ props.unitSelected.name }}</td> -->
-                    <td style=" display: flex; justify-content: center; align-items: center; padding: 0;">
-                      <VBtn
-                        icon
-                        variant="text"
-                        color="error"
-                        size="small"
-                        @click="deleteConversion(item)"
-                      >
-                        <VIcon icon="ri-delete-bin-line" />
-                      </VBtn>
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
               <div
-                v-else
-                class="text-center text-medium-emphasis pa-4"
+                v-if="props.unitSelected"
+                class="mt-2 text-caption text-medium-emphasis"
               >
-                <VIcon
-                  icon="ri-information-line"
-                  size="32"
-                  class="mb-2"
-                />
-                <p>No hay conversiones registradas para esta unidad</p>
+                <strong>Unidad actual:</strong>
+                <h2>{{ props.unitSelected.name }}</h2>
               </div>
             </VCol>
-          </VCol>
+            <VCol cols="2">
+              <!-- 👉 Botón Agregar -->
+              <VBtn
+                type="submit"
+                color="primary"
+                prepend-icon="ri-add-line"
+                :loading="loader.loading"
+              />
+            </VCol>
+            <!-- Alertas -->
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
 
-        </VRow>
-      </VForm>
+            <VCol
+              v-if="error_exits"
+              cols="12"
+            >
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                {{ error_exits }}
+              </VAlert>
+            </VCol>
+
+            <VCol
+              v-if="success"
+              cols="12"
+            >
+              <VAlert
+                color="success"
+                variant="tonal"
+                closable
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
+
+            <VDivider class="my-6" />
+            <VCol cols="12">
+              <VCol cols="12">
+                <!-- Loader para conversiones -->
+                <VCard
+                  v-if="isLoadingConversions"
+                  class="pa-4 text-center"
+                >
+                  <VProgressCircular
+                    indeterminate
+                    size="32"
+                    width="3"
+                    color="primary"
+                  />
+                  <div class="mt-2 text-body-2 text-medium-emphasis">
+                    Cargando conversiones...
+                  </div>
+                </VCard>
+
+                <!-- Tabla de conversiones -->
+                <VTable
+                  v-else-if="list_units_conversions.length > 0"
+                  class="table"
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        style="width: 50px;"
+                        class="text-center"
+                      >
+                        #
+                      </th>
+                      <th>Unidad de medida</th>
+                      <!-- <th>Factor</th> -->
+                      <th
+                        style="width: 80px;"
+                        class="text-center"
+                      >
+                        Acción
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(item, index) in list_units_conversions"
+                      :key="item.id"
+                    >
+                      <td class="text-center">
+                        <span class="font-weight-bold text-caption text-primary">#{{ index + 1 }}</span>
+                      </td>
+                      <td>{{ getUnitToName(item) }}</td>
+                      <!-- <td>{{ props.unitSelected.name }}</td> -->
+                      <td style=" display: flex; justify-content: center; align-items: center; padding: 0;">
+                        <VBtn
+                          icon
+                          variant="text"
+                          color="error"
+                          size="small"
+                          @click="deleteConversion(item)"
+                        >
+                          <VIcon icon="ri-delete-bin-line" />
+                        </VBtn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </VTable>
+                <div
+                  v-else
+                  class="text-center text-medium-emphasis pa-4"
+                >
+                  <VIcon
+                    icon="ri-information-line"
+                    size="32"
+                    class="mb-2"
+                  />
+                  <p>No hay conversiones registradas para esta unidad</p>
+                </div>
+              </VCol>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

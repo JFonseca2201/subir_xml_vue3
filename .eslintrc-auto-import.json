@@ -370,6 +370,8 @@
     "preventInvalidPlateChars": true,
     "validateEcuadorianPlate": true,
     "showNotification": true,
-    "getApiBaseUrl": true
+    "getApiBaseUrl": true,
+    "usePermissions": true,
+    "refreshPermissionsUser": true
   }
 }

@@ -813,8 +813,9 @@ onMounted(() => {
   />
 
   <!-- Diálogo de Eliminar Aporte -->
-  <VDialog scrollable
+  <VDialog
     v-model="showDeleteDialog"
+    scrollable
     max-width="440"
     persistent
   >
@@ -859,7 +860,10 @@ onMounted(() => {
         </div>
       </VCardText>
 
-      <VCardActions class="pa-4 pt-0 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 pt-0 d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

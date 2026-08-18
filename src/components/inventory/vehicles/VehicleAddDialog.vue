@@ -231,7 +231,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="800"
     :model-value="props.isDialogVisible"
     persistent
@@ -264,179 +265,181 @@ onMounted(() => {
           ref="formRef"
           @submit.prevent="saveVehicle"
         >
-        <VRow>
-          <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-              Datos Principales
-            </h5>
-          </VCol>
+          <VRow>
+            <VCol cols="12">
+              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
+                Datos Principales
+              </h5>
+            </VCol>
 
-          <VCol
-            cols="12"
-            class="mb-3"
-          >
-            <VSearch
-              v-model="initialClient"
-              :return-object="true"
-              endpoint="clients/search"
-              item-title="full_name"
-              label="Propietario / Cliente *"
-              placeholder="Buscar cliente por nombre o documento..."
-              icon="ri-user-line"
-              :rules="rules.client_id"
-              :initial-item="initialClient"
+            <VCol
+              cols="12"
+              class="mb-3"
             >
-              <template #item="{ props: itemProps, item }">
-                <VListItem
-                  v-bind="itemProps"
-                  :title="undefined"
-                >
-                  <VListItemTitle
-                    style="white-space: normal !important; line-height: 1.4;"
-                    class="font-weight-medium"
+              <VSearch
+                v-model="initialClient"
+                :return-object="true"
+                endpoint="clients/search"
+                item-title="full_name"
+                label="Propietario / Cliente *"
+                placeholder="Buscar cliente por nombre o documento..."
+                icon="ri-user-line"
+                :rules="rules.client_id"
+                :initial-item="initialClient"
+              >
+                <template #item="{ props: itemProps, item }">
+                  <VListItem
+                    v-bind="itemProps"
+                    :title="undefined"
                   >
-                    {{ item.raw.full_name }}
-                  </VListItemTitle>
-                  <VListItemSubtitle class="mt-1 text-grey">
-                    DNI/RUC: {{ item.raw.n_document || 'N/A' }} | Tel: {{ item.raw.phone || 'N/A' }}
-                  </VListItemSubtitle>
-                </VListItem>
-              </template>
-            </VSearch>
-            <div
-              v-if="selectedClient"
-              class="text-caption text-grey mt-1 ms-1"
+                    <VListItemTitle
+                      style="white-space: normal !important; line-height: 1.4;"
+                      class="font-weight-medium"
+                    >
+                      {{ item.raw.full_name }}
+                    </VListItemTitle>
+                    <VListItemSubtitle class="mt-1 text-grey">
+                      DNI/RUC: {{ item.raw.n_document || 'N/A' }} | Tel: {{ item.raw.phone || 'N/A' }}
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+              </VSearch>
+              <div
+                v-if="selectedClient"
+                class="text-caption text-grey mt-1 ms-1"
+              >
+                <VIcon
+                  icon="ri-file-list-3-line"
+                  size="14"
+                  class="me-1"
+                />
+                Documento (Cédula/RUC): <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
+              </div>
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              <VIcon
-                icon="ri-file-list-3-line"
-                size="14"
-                class="me-1"
+              <VTextField
+                v-model="vehicleForm.license_plate"
+                label="Placa *"
+                placeholder="ABC-1234"
+                prepend-inner-icon="ri-id-card-line"
+                :rules="rules.license_plate"
+                variant="outlined"
+                maxlength="9"
+                hint="Formato automático"
+                persistent-hint
               />
-              Documento (Cédula/RUC): <span class="font-weight-semibold">{{ selectedClient.n_document || 'N/A' }}</span>
-            </div>
-          </VCol>
+            </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="vehicleForm.license_plate"
-              label="Placa *"
-              placeholder="ABC-1234"
-              prepend-inner-icon="ri-id-card-line"
-              :rules="rules.license_plate"
-              variant="outlined"
-              maxlength="9"
-              hint="Formato automático"
-              persistent-hint
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="vehicleForm.vehicle_type"
-              :items="vehicleTypeOptions"
-              label="Tipo de Vehículo *"
-              prepend-inner-icon="ri-car-line"
-              :rules="rules.vehicle_type"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VAutocomplete
-              v-model="vehicleForm.brand"
-              :items="brandOptions"
-              label="Marca *"
-              prepend-inner-icon="ri-building-line"
-              :rules="rules.brand"
-              :filter="filterBrands"
-              no-data-text="No se encontraron marcas"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="vehicleForm.model"
-              label="Modelo *"
-              prepend-inner-icon="ri-car-line"
-              :rules="rules.model"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="vehicleForm.year"
-              :items="yearOptions"
-              label="Año *"
-              prepend-inner-icon="ri-calendar-line"
-              :rules="rules.year"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="vehicleForm.color"
-              :items="colorOptions"
-              label="Color *"
-              prepend-inner-icon="ri-palette-line"
-              :rules="rules.color"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            class="mb-3"
-          >
-            <VTextarea
-              v-model="vehicleForm.description"
-              label="Descripción (opcional)"
-              prepend-inner-icon="ri-file-text-line"
-              rows="3"
-            />
-          </VCol>
-
-          <VCol
-            v-if="error"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              {{ error }}
-            </VAlert>
-          </VCol>
+              <VSelect
+                v-model="vehicleForm.vehicle_type"
+                :items="vehicleTypeOptions"
+                label="Tipo de Vehículo *"
+                prepend-inner-icon="ri-car-line"
+                :rules="rules.vehicle_type"
+              />
+            </VCol>
 
-        </VRow>
-      </VForm>
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VAutocomplete
+                v-model="vehicleForm.brand"
+                :items="brandOptions"
+                label="Marca *"
+                prepend-inner-icon="ri-building-line"
+                :rules="rules.brand"
+                :filter="filterBrands"
+                no-data-text="No se encontraron marcas"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VTextField
+                v-model="vehicleForm.model"
+                label="Modelo *"
+                prepend-inner-icon="ri-car-line"
+                :rules="rules.model"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="vehicleForm.year"
+                :items="yearOptions"
+                label="Año *"
+                prepend-inner-icon="ri-calendar-line"
+                :rules="rules.year"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="vehicleForm.color"
+                :items="colorOptions"
+                label="Color *"
+                prepend-inner-icon="ri-palette-line"
+                :rules="rules.color"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              class="mb-3"
+            >
+              <VTextarea
+                v-model="vehicleForm.description"
+                label="Descripción (opcional)"
+                prepend-inner-icon="ri-file-text-line"
+                rows="3"
+              />
+            </VCol>
+
+            <VCol
+              v-if="error"
+              cols="12"
+            >
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
+              >
+                {{ error }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

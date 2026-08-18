@@ -8,6 +8,9 @@ import UserDeleteDialog from '@/components/inventory/users/UserDeleteDialog.vue'
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 const roles = ref([])
 
 const headers = [
@@ -238,6 +241,7 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('register_user')"
           color="primary"
           prepend-icon="ri-add-line"
           @click="isUserAddDialogVisible = !isUserAddDialogVisible"
@@ -477,7 +481,7 @@ onMounted(() => {
                       />
                     </VBtn>
                     <VBtn
-                      v-if="item.id !== 1"
+                      v-if="item.id !== 1 && can('edit_user')"
                       class="action-btn"
                       variant="text"
                       icon
@@ -492,7 +496,7 @@ onMounted(() => {
                       />
                     </VBtn>
                     <VBtn
-                      v-if="item.id !== 1"
+                      v-if="item.id !== 1 && can('delete_user')"
                       class="action-btn"
                       variant="text"
                       icon

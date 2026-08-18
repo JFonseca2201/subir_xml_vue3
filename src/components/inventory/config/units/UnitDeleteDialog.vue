@@ -74,12 +74,23 @@ const cancelDelete = () => {
 </script>
 
 <template>
-  <VDialog scrollable :width="$vuetify.display.smAndDown ? 'auto' : 500" :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition" @update:model-value="val => emit('update:isDialogVisible', val)">
+  <VDialog
+    scrollable
+    :width="$vuetify.display.smAndDown ? 'auto' : 500"
+    :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition"
+    @update:model-value="val => emit('update:isDialogVisible', val)"
+  >
     <VCard class="custom-dialog-card pa-0 elevation-10">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="cancelDelete" />
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="cancelDelete"
+        />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-delete-bin-6-line" />
         </div>
@@ -102,18 +113,33 @@ const cancelDelete = () => {
       </div>
 
       <!-- Alertas de Error -->
-      <VAlert v-if="warning" color="warning" variant="tonal" closable class="mb-4">
+      <VAlert
+        v-if="warning"
+        color="warning"
+        variant="tonal"
+        closable
+        class="mb-4"
+      >
         {{ warning }}
       </VAlert>
 
-      <VAlert v-if="error_exist" color="error" variant="tonal" closable class="mb-4">
+      <VAlert
+        v-if="error_exist"
+        color="error"
+        variant="tonal"
+        closable
+        class="mb-4"
+      >
         {{ error_exist }}
       </VAlert>
 
       <VDivider />
 
       <!-- Acciones -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"
@@ -139,10 +165,13 @@ const cancelDelete = () => {
           Eliminar Unidad
         </VBtn>
       </VCardActions>
-
     </VCard>
   </VDialog>
 
   <!-- Notificación Toast -->
-  <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
+  <NotificationToast
+    v-model:show="notificationShow"
+    :message="notificationMessage"
+    :type="notificationType"
+  />
 </template>

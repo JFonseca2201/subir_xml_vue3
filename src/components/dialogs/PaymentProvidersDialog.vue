@@ -104,7 +104,8 @@ const paymentProvidersData = [
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :model-value="props.isDialogVisible"
     max-width="900"
     @update:model-value="dialogVisibleUpdate"

@@ -123,7 +123,8 @@ watch(() => props.employee, () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :model-value="modelValue"
     max-width="750"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -243,8 +244,13 @@ watch(() => props.employee, () => {
                     <VIcon icon="ri-mail-line" />
                   </VAvatar>
                   <div>
-                    <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
-                    <div class="text-body-2 font-weight-medium text-high-emphasis text-truncate" style="max-width: 220px;">
+                    <div class="text-caption text-medium-emphasis">
+                      Correo Electrónico
+                    </div>
+                    <div
+                      class="text-body-2 font-weight-medium text-high-emphasis text-truncate"
+                      style="max-width: 220px;"
+                    >
                       {{ employeeData.email || 'No registrado' }}
                     </div>
                   </div>
@@ -266,7 +272,9 @@ watch(() => props.employee, () => {
                     <VIcon icon="ri-phone-line" />
                   </VAvatar>
                   <div>
-                    <div class="text-caption text-medium-emphasis">Teléfono / Celular</div>
+                    <div class="text-caption text-medium-emphasis">
+                      Teléfono / Celular
+                    </div>
                     <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ employeeData.phone || 'No registrado' }}
                     </div>
@@ -289,7 +297,9 @@ watch(() => props.employee, () => {
                     <VIcon icon="ri-calendar-event-line" />
                   </VAvatar>
                   <div>
-                    <div class="text-caption text-medium-emphasis">Fecha de Contratación</div>
+                    <div class="text-caption text-medium-emphasis">
+                      Fecha de Contratación
+                    </div>
                     <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ formatDate(employeeData.hired_at) }}
                     </div>
@@ -312,7 +322,9 @@ watch(() => props.employee, () => {
                     <VIcon icon="ri-id-card-line" />
                   </VAvatar>
                   <div>
-                    <div class="text-caption text-medium-emphasis">Cédula / RUC</div>
+                    <div class="text-caption text-medium-emphasis">
+                      Cédula / RUC
+                    </div>
                     <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ employeeData.identification || 'Sin número' }}
                     </div>
@@ -395,7 +407,10 @@ watch(() => props.employee, () => {
       </VCardText>
 
       <VDivider />
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

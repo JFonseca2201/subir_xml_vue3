@@ -13,6 +13,9 @@ import { getBrandNameById } from '@/data/vehicleBrands'
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 
 // Estado general
 const loading = ref(false)
@@ -492,16 +495,18 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-3 flex-wrap justify-end">
         <VBtn
+          v-if="can('export_data') || can('list_sale')"
+          variant="tonal"
           color="secondary"
-          variant="outlined"
           prepend-icon="ri-file-pdf-line"
+          class="text-none font-weight-medium px-4"
           :loading="pdfLoading"
-          class="text-none font-weight-medium px-4 bg-white"
           @click="generatePDF"
         >
           Exportar PDF
         </VBtn>
         <VBtn
+          v-if="can('register_sale')"
           color="primary"
           prepend-icon="ri-add-line"
           to="/sales/add"
@@ -936,8 +941,12 @@ onMounted(() => {
                               class="text-secondary text-body-2"
                               @click="openMailDialog(item)"
                             />
-                            <VDivider class="my-1" />
+                            <VDivider
+                              v-if="can('delete_sale')"
+                              class="my-1"
+                            />
                             <VListItem
+                              v-if="can('delete_sale')"
                               :disabled="item.status === 'canceled'"
                               prepend-icon="ri-close-circle-line"
                               title="Anular Documento"
@@ -1239,8 +1248,9 @@ onMounted(() => {
 
 
     <!-- Payment Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isPaymentDialogVisible"
+      scrollable
       max-width="450"
     >
       <VCard class="custom-dialog-card">
@@ -1298,7 +1308,10 @@ onMounted(() => {
             hide-details
           />
         </VCardText>
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"
@@ -1324,8 +1337,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- Mail Confirmation Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isMailDialogVisible"
+      scrollable
       max-width="480"
     >
       <VCard class="custom-dialog-card">
@@ -1408,7 +1422,10 @@ onMounted(() => {
 
         <VDivider class="border-opacity-25" />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn 
             color="secondary" 
             variant="outlined" 

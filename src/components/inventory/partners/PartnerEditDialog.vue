@@ -219,7 +219,8 @@ const updatePartner = async () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
@@ -252,122 +253,125 @@ const updatePartner = async () => {
           ref="formRef"
           @submit.prevent="updatePartner"
         >
-        <VRow>
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="editMember.identification"
-              :rules="identificationRules"
-              label="Cédula o RUC"
-              placeholder="Ej. 1700000001"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-              maxlength="13"
-              @input="e => { editMember.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
-            />
-          </VCol>
-          <VCol
-            cols="12"
-            sm="12"
-          >
-            <VTextField
-              v-model="editMember.fullName"
-              :rules="fullNameRules"
-              label="Nombres y Apellidos"
-              placeholder="Ej. Juan Pérez"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-user-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="editMember.email"
-              :rules="emailRules"
-              label="Correo Electrónico"
-              placeholder="ejemplo@dominio.com"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-mail-line"
-              hide-details="auto"
-              type="email"
-              required
-            />
-          </VCol>
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VTextField
-              v-model="editMember.phone"
-              :rules="phoneRules"
-              label="Teléfono"
-              placeholder="Ej. 0991234567"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-phone-line"
-              hide-details="auto"
-              type="tel"
-              required
-              maxlength="10"
-              @input="e => { editMember.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
-            />
-          </VCol>
-          <VCol cols="12">
-            <VTextField
-              v-model="editMember.address"
-              :rules="addressRules"
-              label="Dirección"
-              placeholder="Ej. Calle Ficticia 123"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-map-pin-line"
-              hide-details="auto"
-              required
-            />
-          </VCol>
-          <VCol
-            v-if="warning"
-            cols="12"
-          >
-            <VAlert
-              color="warning"
-              variant="tonal"
-              closable
+          <VRow>
+            <VCol
+              cols="12"
+              sm="12"
             >
-              {{ warning }}
-            </VAlert>
-          </VCol>
-          <VCol
-            v-if="error_exist"
-            cols="12"
-          >
-            <VAlert
-              color="error"
-              variant="tonal"
-              closable
+              <VTextField
+                v-model="editMember.identification"
+                :rules="identificationRules"
+                label="Cédula o RUC"
+                placeholder="Ej. 1700000001"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+                maxlength="13"
+                @input="e => { editMember.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="12"
             >
-              {{ error_exist }}
-            </VAlert>
-          </VCol>
-        </VRow>
-      </VForm>
+              <VTextField
+                v-model="editMember.fullName"
+                :rules="fullNameRules"
+                label="Nombres y Apellidos"
+                placeholder="Ej. Juan Pérez"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-user-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="editMember.email"
+                :rules="emailRules"
+                label="Correo Electrónico"
+                placeholder="ejemplo@dominio.com"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-mail-line"
+                hide-details="auto"
+                type="email"
+                required
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VTextField
+                v-model="editMember.phone"
+                :rules="phoneRules"
+                label="Teléfono"
+                placeholder="Ej. 0991234567"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-phone-line"
+                hide-details="auto"
+                type="tel"
+                required
+                maxlength="10"
+                @input="e => { editMember.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VTextField
+                v-model="editMember.address"
+                :rules="addressRules"
+                label="Dirección"
+                placeholder="Ej. Calle Ficticia 123"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-map-pin-line"
+                hide-details="auto"
+                required
+              />
+            </VCol>
+            <VCol
+              v-if="warning"
+              cols="12"
+            >
+              <VAlert
+                color="warning"
+                variant="tonal"
+                closable
+              >
+                {{ warning }}
+              </VAlert>
+            </VCol>
+            <VCol
+              v-if="error_exist"
+              cols="12"
+            >
+              <VAlert
+                color="error"
+                variant="tonal"
+                closable
+              >
+                {{ error_exist }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- Acciones Fijas -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

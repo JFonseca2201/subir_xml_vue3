@@ -4,7 +4,7 @@
       :src="logoPng"
       alt="Luxury Evys"
       class="app-logo-img"
-    />
+    >
   </div>
 </template>
 

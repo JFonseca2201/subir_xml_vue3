@@ -454,8 +454,9 @@ onMounted(() => {
     </VCard>
 
     <!-- Dialog de Detalles de Devolución -->
-    <VDialog scrollable
+    <VDialog
       v-model="isViewDialogVisible"
+      scrollable
       max-width="700"
     >
       <VCard class="custom-dialog-card">
@@ -650,7 +651,10 @@ onMounted(() => {
           </div>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"
@@ -666,8 +670,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- Dialog de Confirmación de Eliminación -->
-    <VDialog scrollable
+    <VDialog
       v-model="showDeleteDialog"
+      scrollable
       max-width="500"
     >
       <VCard class="custom-dialog-card">
@@ -700,7 +705,10 @@ onMounted(() => {
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"

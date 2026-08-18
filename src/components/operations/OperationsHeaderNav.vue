@@ -110,7 +110,10 @@ const navigateTo = itemRoute => {
             <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
               {{ item.title }}
             </div>
-            <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem !important; line-height: 1.2;">
+            <div
+              class="text-caption text-medium-emphasis"
+              style="font-size: 0.75rem !important; line-height: 1.2;"
+            >
               {{ item.description }}
             </div>
           </VCardText>

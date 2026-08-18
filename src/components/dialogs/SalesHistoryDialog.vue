@@ -142,8 +142,9 @@ const generateSinglePDF = sale => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="dialog"
+    scrollable
     max-width="850"
   >
     <VCard
@@ -320,7 +321,10 @@ const generateSinglePDF = sale => {
         </div>
       </VCardText>
       <VDivider />
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

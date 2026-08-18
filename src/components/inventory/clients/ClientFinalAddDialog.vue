@@ -593,7 +593,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="800"
     :model-value="props.isDialogVisible"
     persistent
@@ -627,307 +628,309 @@ onMounted(() => {
           ref="formRef"
           @submit.prevent="saveClient"
         >
-        <VRow>
-          <!-- 👉 Datos Personales -->
-          <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-              Datos Personales
-            </h5>
-          </VCol>
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="clientForm.type_document"
-              :items="typeDocumentOptions"
-              item-title="title"
-              item-value="value"
-              label="Tipo de Documento *"
-              prepend-inner-icon="ri-file-text-line"
-              required
-              clearable
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.n_document"
-              label="Número de Documento *"
-              placeholder="Ingrese número de documento"
-              prepend-inner-icon="ri-numbers-line"
-              :rules="rules.n_document"
-              required
-              clearable
-              :maxlength="documentMaxLength"
-              :loading="loading"
-              @keypress="filterDocumentKey"
-              @blur="checkDocument"
-              @keyup.enter="checkDocument"
-            />
-            <div
-              v-if="!isDocumentChecked"
-              class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1"
+          <VRow>
+            <!-- 👉 Datos Personales -->
+            <VCol cols="12">
+              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
+                Datos Personales
+              </h5>
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              <VIcon
-                icon="ri-error-warning-line"
-                size="14"
+              <VSelect
+                v-model="clientForm.type_document"
+                :items="typeDocumentOptions"
+                item-title="title"
+                item-value="value"
+                label="Tipo de Documento *"
+                prepend-inner-icon="ri-file-text-line"
+                required
+                clearable
               />
-              Digite el documento completo para habilitar el formulario.
-            </div>
-            <div
-              v-else-if="isClientExisting"
-              class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1"
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              <VIcon
-                icon="ri-checkbox-circle-line"
-                size="14"
+              <VTextField
+                v-model="clientForm.n_document"
+                label="Número de Documento *"
+                placeholder="Ingrese número de documento"
+                prepend-inner-icon="ri-numbers-line"
+                :rules="rules.n_document"
+                required
+                clearable
+                :maxlength="documentMaxLength"
+                :loading="loading"
+                @keypress="filterDocumentKey"
+                @blur="checkDocument"
+                @keyup.enter="checkDocument"
               />
-              Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
-            </div>
-          </VCol>
+              <div
+                v-if="!isDocumentChecked"
+                class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1"
+              >
+                <VIcon
+                  icon="ri-error-warning-line"
+                  size="14"
+                />
+                Digite el documento completo para habilitar el formulario.
+              </div>
+              <div
+                v-else-if="isClientExisting"
+                class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1"
+              >
+                <VIcon
+                  icon="ri-checkbox-circle-line"
+                  size="14"
+                />
+                Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
+              </div>
+            </VCol>
 
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.name"
-              label="Nombres *"
-              placeholder="Ingrese nombres"
-              prepend-inner-icon="ri-user-3-line"
-              :rules="rules.name"
-              required
-              clearable
-              maxlength="100"
-              :disabled="fieldsDisabled"
-              :loading="loading"
-              @input="generateFullName"
-              @keypress="filterTextKey"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.surname"
-              label="Apellidos *"
-              placeholder="Ingrese apellidos"
-              prepend-inner-icon="ri-user-3-line"
-              :rules="rules.surname"
-              required
-              clearable
-              maxlength="100"
-              :disabled="fieldsDisabled"
-              :loading="loading"
-              @input="generateFullName"
-              @keypress="filterTextKey"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.phone"
-              label="Teléfono"
-              placeholder="Ingrese teléfono"
-              prepend-inner-icon="ri-phone-line"
-              :rules="rules.phone"
-              clearable
-              maxlength="20"
-              :disabled="fieldsDisabled"
-              :loading="loading"
-              @keypress="filterPhoneKey"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.email"
-              label="Email"
-              placeholder="Ingrese email"
-              prepend-inner-icon="ri-mail-line"
-              :rules="rules.email"
-              clearable
-              maxlength="100"
-              :disabled="fieldsDisabled"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="clientForm.gender"
-              :items="genderOptions"
-              item-title="title"
-              item-value="value"
-              label="Género"
-              prepend-inner-icon="ri-user-settings-line"
-              placeholder="Seleccione género"
-              clearable
-              :disabled="fieldsDisabled"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="6"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.birth_date"
-              label="Fecha de Nacimiento"
-              type="date"
-              prepend-inner-icon="ri-calendar-event-line"
-              clearable
-              :disabled="fieldsDisabled"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VDivider class="my-6" />
-
-          <!-- 👉 Ubicación -->
-          <VCol cols="12">
-            <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-              Ubicación
-            </h5>
-          </VCol>
-
-          <VCol
-            cols="12"
-            class="mb-3"
-          >
-            <VTextField
-              v-model="clientForm.address"
-              label="Dirección"
-              placeholder="Ingrese dirección completa"
-              prepend-inner-icon="ri-map-pin-line"
-              clearable
-              :disabled="fieldsDisabled"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="4"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="clientForm.ubigeo_region"
-              :items="regions"
-              item-title="name"
-              item-value="id"
-              label="Región"
-              placeholder="Seleccione Región"
-              prepend-inner-icon="ri-map-2-line"
-              clearable
-              :disabled="fieldsDisabled"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="4"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="clientForm.ubigeo_provincia"
-              :items="provinces"
-              item-title="name"
-              item-value="id"
-              label="Provincia"
-              placeholder="Seleccione Provincia"
-              prepend-inner-icon="ri-map-2-line"
-              clearable
-              :disabled="fieldsDisabled || !clientForm.ubigeo_region"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="4"
-            class="mb-3"
-          >
-            <VSelect
-              v-model="clientForm.ubigeo_distrito"
-              :items="districts"
-              item-title="name"
-              item-value="id"
-              label="Cantón / Ciudad"
-              placeholder="Seleccione Cantón / Ciudad"
-              prepend-inner-icon="ri-map-2-line"
-              clearable
-              :disabled="fieldsDisabled || !clientForm.ubigeo_provincia"
-              :loading="loading"
-            />
-          </VCol>
-
-          <VDivider class="my-4" />
-
-
-
-          <!-- 👉 Alerts -->
-          <VCol
-            v-if="error"
-            cols="12"
-          >
-            <VAlert
-              type="error"
-              variant="tonal"
-              closable
-              @click:close="error = ''"
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              {{ error }}
-            </VAlert>
-          </VCol>
+              <VTextField
+                v-model="clientForm.name"
+                label="Nombres *"
+                placeholder="Ingrese nombres"
+                prepend-inner-icon="ri-user-3-line"
+                :rules="rules.name"
+                required
+                clearable
+                maxlength="100"
+                :disabled="fieldsDisabled"
+                :loading="loading"
+                @input="generateFullName"
+                @keypress="filterTextKey"
+              />
+            </VCol>
 
-          <VCol
-            v-if="success"
-            cols="12"
-          >
-            <VAlert
-              type="success"
-              variant="tonal"
-              closable
-              @click:close="success = ''"
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
             >
-              {{ success }}
-            </VAlert>
-          </VCol>
+              <VTextField
+                v-model="clientForm.surname"
+                label="Apellidos *"
+                placeholder="Ingrese apellidos"
+                prepend-inner-icon="ri-user-3-line"
+                :rules="rules.surname"
+                required
+                clearable
+                maxlength="100"
+                :disabled="fieldsDisabled"
+                :loading="loading"
+                @input="generateFullName"
+                @keypress="filterTextKey"
+              />
+            </VCol>
 
-        </VRow>
-      </VForm>
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VTextField
+                v-model="clientForm.phone"
+                label="Teléfono"
+                placeholder="Ingrese teléfono"
+                prepend-inner-icon="ri-phone-line"
+                :rules="rules.phone"
+                clearable
+                maxlength="20"
+                :disabled="fieldsDisabled"
+                :loading="loading"
+                @keypress="filterPhoneKey"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VTextField
+                v-model="clientForm.email"
+                label="Email"
+                placeholder="Ingrese email"
+                prepend-inner-icon="ri-mail-line"
+                :rules="rules.email"
+                clearable
+                maxlength="100"
+                :disabled="fieldsDisabled"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="clientForm.gender"
+                :items="genderOptions"
+                item-title="title"
+                item-value="value"
+                label="Género"
+                prepend-inner-icon="ri-user-settings-line"
+                placeholder="Seleccione género"
+                clearable
+                :disabled="fieldsDisabled"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VTextField
+                v-model="clientForm.birth_date"
+                label="Fecha de Nacimiento"
+                type="date"
+                prepend-inner-icon="ri-calendar-event-line"
+                clearable
+                :disabled="fieldsDisabled"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VDivider class="my-6" />
+
+            <!-- 👉 Ubicación -->
+            <VCol cols="12">
+              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
+                Ubicación
+              </h5>
+            </VCol>
+
+            <VCol
+              cols="12"
+              class="mb-3"
+            >
+              <VTextField
+                v-model="clientForm.address"
+                label="Dirección"
+                placeholder="Ingrese dirección completa"
+                prepend-inner-icon="ri-map-pin-line"
+                clearable
+                :disabled="fieldsDisabled"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="clientForm.ubigeo_region"
+                :items="regions"
+                item-title="name"
+                item-value="id"
+                label="Región"
+                placeholder="Seleccione Región"
+                prepend-inner-icon="ri-map-2-line"
+                clearable
+                :disabled="fieldsDisabled"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="clientForm.ubigeo_provincia"
+                :items="provinces"
+                item-title="name"
+                item-value="id"
+                label="Provincia"
+                placeholder="Seleccione Provincia"
+                prepend-inner-icon="ri-map-2-line"
+                clearable
+                :disabled="fieldsDisabled || !clientForm.ubigeo_region"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="clientForm.ubigeo_distrito"
+                :items="districts"
+                item-title="name"
+                item-value="id"
+                label="Cantón / Ciudad"
+                placeholder="Seleccione Cantón / Ciudad"
+                prepend-inner-icon="ri-map-2-line"
+                clearable
+                :disabled="fieldsDisabled || !clientForm.ubigeo_provincia"
+                :loading="loading"
+              />
+            </VCol>
+
+            <VDivider class="my-4" />
+
+
+
+            <!-- 👉 Alerts -->
+            <VCol
+              v-if="error"
+              cols="12"
+            >
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
+                @click:close="error = ''"
+              >
+                {{ error }}
+              </VAlert>
+            </VCol>
+
+            <VCol
+              v-if="success"
+              cols="12"
+            >
+              <VAlert
+                type="success"
+                variant="tonal"
+                closable
+                @click:close="success = ''"
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VForm>
       </VCardText>
 
       <VDivider />
 
       <!-- 👉 Fixed Bottom Actions -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

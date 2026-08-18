@@ -1,5 +1,6 @@
 <script setup>
 import { useLoaderStore } from '@/stores/loader'
+import { PERMISOS } from '@/utils/constants'
 
 const props = defineProps({
   isDialogVisible: {
@@ -53,7 +54,7 @@ const store = async () => {
       warning.value = "Se debe ingresar un nombre de rol"
     }, 50)
     loader.stop()
-    
+
     return
   }
   if (permissions.value.length == 0) {
@@ -61,7 +62,7 @@ const store = async () => {
       warning.value = "Seleccione uno o más permisos."
     }, 50)
     loader.stop()
-    
+
     return
   }
 
@@ -80,7 +81,7 @@ const store = async () => {
     })
 
     console.log(resp)
-    showNotification(resp.message || 'Rol creado con éxito', 'success')
+    //showNotification(resp.message || 'Rol creado con éxito', 'success')
     emit("addRole", resp.data)
 
     // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
@@ -90,7 +91,7 @@ const store = async () => {
 
   } catch (error) {
     console.log(error)
-    showNotification('Error al crear el rol', 'error')
+    //showNotification('Error al crear el rol', 'error')
   } finally {
     loader.stop()
   }
@@ -126,22 +127,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 720"
-    :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition"
-    @update:model-value="dialogVisibleUpdate"
-  >
+  <VDialog scrollable :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition" @update:model-value="dialogVisibleUpdate">
     <VCard class="custom-dialog-card elevation-24">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="onFormReset"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="onFormReset" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-shield-user-line" />
         </div>
@@ -155,22 +146,12 @@ onMounted(() => {
 
       <!-- Form Body Scrollable -->
       <VCardText class="pa-6">
-        <VForm
-          id="roleAddForm"
-          @submit.prevent="store"
-        >
+        <VForm id="roleAddForm" @submit.prevent="store">
           <VRow>
             <!-- Nombre -->
             <VCol cols="12">
-              <VTextField
-                v-model="name"
-                label="Nombre del rol"
-                placeholder="Ej. Administrador"
-                variant="outlined"
-                density="comfortable"
-                prepend-inner-icon="ri-user-settings-line"
-                hide-details
-              />
+              <VTextField v-model="name" label="Nombre del rol" placeholder="Ej. Administrador" variant="outlined"
+                density="comfortable" prepend-inner-icon="ri-user-settings-line" hide-details />
             </VCol>
             <!-- Roles y permisos -->
             <VCol cols="12">
@@ -187,11 +168,9 @@ onMounted(() => {
                 </thead>
 
                 <tbody>
-                  <tr
-                    v-for="(item, index) in PERMISOS"
+                  <tr v-for="(item, index) in PERMISOS"
                     :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                    class="permissions-row"
-                  >
+                    class="permissions-row">
                     <!-- MÓDULO -->
                     <td class="px-6 py-6 align-top module-cell">
                       <div class="module-name font-weight-bold">
@@ -205,15 +184,12 @@ onMounted(() => {
                     <!-- PERMISOS -->
                     <td class="px-6 py-6">
                       <div class="permissions-wrap d-flex flex-wrap gap-2">
-                        <VChip
-                          v-for="(permiso, index2) in item.permisos"
-                          :key="index2"
+                        <VChip v-for="(permiso, index2) in item.permisos" :key="index2"
                           :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
                           :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
                           class="cursor-pointer font-weight-medium"
                           :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
-                          @click="AddEditPermissionDialog(permiso.permiso)"
-                        >
+                          @click="AddEditPermissionDialog(permiso.permiso)">
                           {{ permiso.name }}
                         </VChip>
                       </div>
@@ -223,16 +199,8 @@ onMounted(() => {
               </VTable>
             </VCol>
 
-            <VCol
-              v-if="warning"
-              cols="12"
-            >
-              <VAlert
-                color="warning"
-                variant="tonal"
-                closable
-                class="mb-2"
-              >
+            <VCol v-if="warning" cols="12">
+              <VAlert color="warning" variant="tonal" closable class="mb-2">
                 <template #prepend>
                   <VIcon icon="ri-alert-line" />
                 </template>
@@ -246,29 +214,15 @@ onMounted(() => {
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          @click="onFormReset"
-        >
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" @click="onFormReset">
           Cancelar
         </VBtn>
 
-        <VBtn
-          type="submit"
-          form="roleAddForm"
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-3-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loader.loading"
-          :disabled="loader.loading"
-        >
+        <VBtn type="submit" form="roleAddForm" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold" height="40" :loading="loader.loading" :disabled="loader.loading">
           Guardar Rol
         </VBtn>
       </VCardActions>
@@ -276,9 +230,5 @@ onMounted(() => {
   </VDialog>
 
   <!-- Notificación Toast -->
-  <NotificationToast
-    v-model:show="notificationShow"
-    :message="notificationMessage"
-    :type="notificationType"
-  />
+  <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>

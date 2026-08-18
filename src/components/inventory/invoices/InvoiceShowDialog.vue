@@ -231,8 +231,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="dialogVisible"
+    scrollable
     max-width="1400"
     transition="dialog-bottom-transition"
   >
@@ -264,7 +265,11 @@ onMounted(() => {
           @click="onFormReset"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-file-text-line" size="32" class="text-white" />
+          <VIcon
+            icon="ri-file-text-line"
+            size="32"
+            class="text-white"
+          />
         </div>
         <h3 class="custom-dialog-title">
           Detalle de Factura
@@ -275,18 +280,39 @@ onMounted(() => {
 
         <!-- Metadata Pills en la Cabecera -->
         <div class="d-flex flex-wrap justify-center gap-3 mt-2 mb-3">
-          <div class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium" style="background: rgba(255, 255, 255, 0.18); color: #ffffff;">
-            <VIcon icon="ri-store-2-line" size="14" class="me-1" />
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
+          >
+            <VIcon
+              icon="ri-store-2-line"
+              size="14"
+              class="me-1"
+            />
             <span><strong>Proveedor:</strong> {{ invoice?.supplier?.name || invoice?.supplier?.trade_name || '-' }}</span>
           </div>
 
-          <div class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium" style="background: rgba(255, 255, 255, 0.18); color: #ffffff;">
-            <VIcon icon="ri-file-text-line" size="14" class="me-1" />
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
+          >
+            <VIcon
+              icon="ri-file-text-line"
+              size="14"
+              class="me-1"
+            />
             <span><strong>N° Factura:</strong> {{ invoice?.invoice_number || '-' }}</span>
           </div>
 
-          <div class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium" style="background: rgba(255, 255, 255, 0.18); color: #ffffff;">
-            <VIcon icon="ri-calendar-line" size="14" class="me-1" />
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
+          >
+            <VIcon
+              icon="ri-calendar-line"
+              size="14"
+              class="me-1"
+            />
             <span><strong>Fecha:</strong> {{ invoice?.issue_date ? new Date(invoice.issue_date).toISOString().slice(0, 10) : '-' }}</span>
           </div>
         </div>
@@ -297,7 +323,10 @@ onMounted(() => {
             class="rounded-xl pa-3 shadow-md border"
             style="background-color: #ffffff !important; color: #1e1b4b !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);"
           >
-            <VRow align="center" dense>
+            <VRow
+              align="center"
+              dense
+            >
               <!-- Campo de búsqueda -->
               <VCol
                 cols="12"
@@ -330,7 +359,11 @@ onMounted(() => {
                   variant="flat"
                   class="font-weight-bold px-3 text-no-wrap"
                 >
-                  <VIcon icon="ri-checkbox-multiple-line" size="14" class="me-1" />
+                  <VIcon
+                    icon="ri-checkbox-multiple-line"
+                    size="14"
+                    class="me-1"
+                  />
                   {{ selectedItems.length }} SELECCIONADOS
                 </VChip>
 
@@ -579,7 +612,10 @@ onMounted(() => {
       <!-- 🔢 TOTALES -->
       <VCardText class="pt-6">
         <!-- 💳 PANEL DE RESUMEN Y PAGO -->
-        <VCard variant="flat" class="bg-grey-lighten-5 border rounded-xl pa-5 mt-6">
+        <VCard
+          variant="flat"
+          class="bg-grey-lighten-5 border rounded-xl pa-5 mt-6"
+        >
           <VRow>
             <!-- 💳 INFORMACIÓN DE PAGO -->
             <VCol
@@ -589,7 +625,10 @@ onMounted(() => {
             >
               <div class="pe-md-4">
                 <h4 class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-                  <VIcon size="20" icon="ri-bank-card-line" />
+                  <VIcon
+                    size="20"
+                    icon="ri-bank-card-line"
+                  />
                   Información de Pago
                 </h4>
 
@@ -656,10 +695,16 @@ onMounted(() => {
                             {{ dist.payment_method === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
                           </VIcon>
                           <div>
-                            <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                            <div
+                              class="text-body-2 font-weight-bold text-none"
+                              style="text-transform: none;"
+                            >
                               {{ dist.account?.name || 'Cuenta del sistema' }}
                             </div>
-                            <div class="text-caption text-grey text-none" style="text-transform: none;">
+                            <div
+                              class="text-caption text-grey text-none"
+                              style="text-transform: none;"
+                            >
                               {{ dist.payment_method === 'cash' ? 'Efectivo' : 'Transferencia' }}
                             </div>
                           </div>
@@ -674,14 +719,23 @@ onMounted(() => {
                       class="d-flex align-center justify-space-between py-2 text-none"
                     >
                       <div class="d-flex align-center gap-2">
-                        <VIcon size="18" color="success">
+                        <VIcon
+                          size="18"
+                          color="success"
+                        >
                           ri-money-dollar-circle-line
                         </VIcon>
                         <div>
-                          <div class="text-body-2 font-weight-bold text-none" style="text-transform: none;">
+                          <div
+                            class="text-body-2 font-weight-bold text-none"
+                            style="text-transform: none;"
+                          >
                             {{ record.account_label || 'Caja Chica' }}
                           </div>
-                          <div class="text-caption text-grey text-none" style="text-transform: none;">
+                          <div
+                            class="text-caption text-grey text-none"
+                            style="text-transform: none;"
+                          >
                             {{ record.payment_method_label || 'Efectivo' }}
                           </div>
                         </div>
@@ -732,9 +786,17 @@ onMounted(() => {
               cols="12"
               md="5"
             >
-              <VCard variant="flat" color="purple-lighten-5" class="pa-4 rounded-lg border border-purple-lighten-4">
+              <VCard
+                variant="flat"
+                color="purple-lighten-5"
+                class="pa-4 rounded-lg border border-purple-lighten-4"
+              >
                 <div class="text-subtitle-2 font-weight-bold text-grey-darken-3 mb-3 d-flex align-center gap-2">
-                  <VIcon icon="ri-calculator-line" size="18" color="primary" />
+                  <VIcon
+                    icon="ri-calculator-line"
+                    size="18"
+                    color="primary"
+                  />
                   <span>Resumen Financiero</span>
                 </div>
 
@@ -782,7 +844,10 @@ onMounted(() => {
       <VDivider />
 
       <!-- 🔘 FOOTER -->
-      <VCardActions class="d-flex justify-end align-center gap-3 pa-4 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="d-flex justify-end align-center gap-3 pa-4 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

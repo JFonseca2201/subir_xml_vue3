@@ -54,8 +54,9 @@ const deleteInvoice = async () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="props.isDialogVisible"
+    scrollable
     max-width="550"
     persistent
   >
@@ -125,7 +126,10 @@ const deleteInvoice = async () => {
         </VAlert>
       </VCardText>
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

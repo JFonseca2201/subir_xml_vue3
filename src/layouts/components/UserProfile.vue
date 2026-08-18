@@ -1,18 +1,27 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter } from "vue-router"
 import { useLoaderStore } from '@/stores/loader'
 import MyProfileDialog from './MyProfileDialog.vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
 const loader = useLoaderStore()
-const user = ref(localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null)
+const { can, currentUser, refreshPermissionsUser } = usePermissions()
+
+const user = computed(() => currentUser.value)
 
 const isMenuOpen = ref(false)
 const isProfileDialogVisible = ref(false)
 const isShortcutsDialogVisible = ref(false)
+
+watch(isMenuOpen, val => {
+  if (val) {
+    refreshPermissionsUser()
+  }
+})
 
 const userProfileList = [
   {
@@ -30,6 +39,7 @@ const userProfileList = [
     subtitle: "Razón social y sucursal",
     to: "/sucursales",
     color: "info",
+    permission: "settings",
   },
   {
     type: "navItem",
@@ -38,6 +48,7 @@ const userProfileList = [
     subtitle: "Cuadre y cierre de caja",
     to: "/finanzas/arqueo",
     color: "success",
+    permission: "list_arqueo",
   },
   { type: "divider" },
   {
@@ -47,6 +58,7 @@ const userProfileList = [
     subtitle: "Facturas y documentos",
     to: "/sales/list",
     color: "warning",
+    permission: "list_sale",
   },
   {
     type: "navItem",
@@ -55,6 +67,7 @@ const userProfileList = [
     subtitle: "Taller automotriz",
     to: "/work-orders/list",
     color: "purple",
+    permission: "list_work_order",
   },
   {
     type: "navItem",
@@ -63,6 +76,7 @@ const userProfileList = [
     subtitle: "Accesos del sistema",
     to: "/roles-permisos",
     color: "indigo",
+    permission: "list_role",
   },
   { type: "divider" },
   {
@@ -74,6 +88,22 @@ const userProfileList = [
     color: "cyan",
   },
 ]
+
+const filteredUserProfileList = computed(() => {
+  const clean = userProfileList.filter(item => {
+    if (item.type === 'divider') return true
+    if (!item.permission) return true
+    return can(item.permission)
+  })
+
+  return clean.filter((item, index, arr) => {
+    if (item.type === 'divider') {
+      if (index === 0 || index === arr.length - 1) return false
+      if (arr[index - 1]?.type === 'divider') return false
+    }
+    return true
+  })
+})
 
 const handleItemClick = item => {
   isMenuOpen.value = false
@@ -129,7 +159,10 @@ const logout = async () => {
           transition="scale-transition"
           close-on-content-click
         >
-          <VList class="pa-0 rounded-2xl overflow-hidden elevation-8 border user-profile-menu-list" style="max-width: 320px; width: 100%;">
+          <VList
+            class="pa-0 rounded-2xl overflow-hidden elevation-8 border user-profile-menu-list"
+            style="max-width: 320px; width: 100%;"
+          >
             <!-- Modern Profile Header -->
             <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
               <VAvatar
@@ -156,7 +189,7 @@ const logout = async () => {
                     icon="ri-shield-star-line"
                     size="14"
                   />
-                  {{ user.role?.name || 'Administrador' }}
+                  {{ typeof user.role === 'object' ? user.role?.name : (user.role || 'Usuario') }}
                 </VChip>
               </div>
               <div v-else>
@@ -180,7 +213,7 @@ const logout = async () => {
                 class="pa-0"
               >
                 <template
-                  v-for="item in userProfileList"
+                  v-for="item in filteredUserProfileList"
                   :key="item.title"
                 >
                   <VListItem
@@ -295,34 +328,66 @@ const logout = async () => {
             </div>
 
             <VRow dense>
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <div class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Nueva Venta / Factura</span>
-                  <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="elevated"
+                    class="font-weight-black font-mono"
+                  >
                     F2
                   </VChip>
                 </div>
               </VCol>
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <div class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Buscador de Productos</span>
-                  <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="elevated"
+                    class="font-weight-black font-mono"
+                  >
                     F4
                   </VChip>
                 </div>
               </VCol>
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <div class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Imprimir Documento</span>
-                  <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="elevated"
+                    class="font-weight-black font-mono"
+                  >
                     Ctrl + P
                   </VChip>
                 </div>
               </VCol>
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <div class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Cerrar Ventanas</span>
-                  <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
+                  <VChip
+                    size="x-small"
+                    color="primary"
+                    variant="elevated"
+                    class="font-weight-black font-mono"
+                  >
                     ESC
                   </VChip>
                 </div>
@@ -360,7 +425,11 @@ const logout = async () => {
                 size="small"
                 class="font-weight-bold"
               >
-                <VIcon start icon="ri-checkbox-circle-fill" size="14" />
+                <VIcon
+                  start
+                  icon="ri-checkbox-circle-fill"
+                  size="14"
+                />
                 Operativo
               </VChip>
             </div>

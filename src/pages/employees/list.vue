@@ -11,6 +11,9 @@ import EmployeeDeleteDialog from '@/components/inventory/employees/EmployeeDelet
 // Loader y notificaciones
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 
 // Estado
 const loading = ref(false)
@@ -236,11 +239,12 @@ onMounted(() => {
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('register_employee')"
           color="primary"
           prepend-icon="ri-add-line"
           @click="addEmployee"
         >
-          Agregar Empleado
+          Nuevo Empleado
         </VBtn>
       </div>
     </div>
@@ -433,6 +437,7 @@ onMounted(() => {
 
                     <!-- Editar -->
                     <VBtn
+                      v-if="can('edit_employee')"
                       class="action-btn"
                       variant="text"
                       icon
@@ -449,7 +454,7 @@ onMounted(() => {
 
                     <!-- Eliminar o Restaurar -->
                     <VBtn
-                      v-if="searchForm.status === 'active'"
+                      v-if="searchForm.status === 'active' && can('delete_employee')"
                       class="action-btn"
                       variant="text"
                       icon

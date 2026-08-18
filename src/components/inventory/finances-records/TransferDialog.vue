@@ -137,8 +137,9 @@ watch(() => show.value, newVal => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
     v-model="show"
+    scrollable
     max-width="600"
     persistent
   >
@@ -263,7 +264,10 @@ watch(() => show.value, newVal => {
       <VDivider />
 
       <!-- Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

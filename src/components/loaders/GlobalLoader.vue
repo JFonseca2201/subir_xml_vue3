@@ -20,7 +20,7 @@
             :src="logoPng"
             alt="Luxury Evys"
             class="loader-logo-img"
-          />
+          >
         </div>
       </div>
       <h3 class="loader-title mb-1">

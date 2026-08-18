@@ -7,22 +7,16 @@ import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
+import { usePermissions } from '@/composables/usePermissions'
+
 // --- Router y Seguridad ---
 const router = useRouter()
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
-
-const currentUser = computed(() => {
-  const userStr = localStorage.getItem('user')
-
-  return userStr ? JSON.parse(userStr) : null
-})
+const { can } = usePermissions()
 
 const canAccessOperations = computed(() => {
-  const user = currentUser.value
-  const roleId = user?.role?.id
-
-  return user && roleId === 1
+  return can('list_transaction')
 })
 
 // --- Estado del Componente ---

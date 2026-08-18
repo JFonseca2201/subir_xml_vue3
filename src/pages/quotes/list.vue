@@ -1100,8 +1100,9 @@ onMounted(() => {
     />
 
     <!-- Convert Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isConvertDialogVisible"
+      scrollable
       max-width="600"
       persistent
     >
@@ -1232,7 +1233,10 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"
@@ -1260,8 +1264,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- Cancel Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isCancelDialogVisible"
+      scrollable
       max-width="450"
     >
       <VCard class="custom-dialog-card">
@@ -1292,13 +1297,19 @@ onMounted(() => {
           <p class="text-body-2 text-medium-emphasis mb-3">
             Esta acción no se puede revertir y la cotización pasará a estado Anulada.
           </p>
-          <div v-if="quoteToCancel?.client" class="bg-grey-lighten-4 rounded-lg pa-3 text-caption text-medium-emphasis">
+          <div
+            v-if="quoteToCancel?.client"
+            class="bg-grey-lighten-4 rounded-lg pa-3 text-caption text-medium-emphasis"
+          >
             Cliente: <strong class="text-high-emphasis">{{ getClientName(quoteToCancel?.client) }}</strong>
           </div>
         </VCardText>
 
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1324,8 +1335,9 @@ onMounted(() => {
     </VDialog>
 
     <!-- Mail Confirmation Dialog -->
-    <VDialog scrollable
+    <VDialog
       v-model="isMailDialogVisible"
+      scrollable
       max-width="480"
     >
       <VCard class="custom-dialog-card">
@@ -1407,7 +1419,10 @@ onMounted(() => {
 
         <VDivider class="border-opacity-25" />
 
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             color="secondary"
             variant="outlined"

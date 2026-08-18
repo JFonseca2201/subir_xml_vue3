@@ -10,6 +10,9 @@ import ImportProductsDialog from '@/components/inventory/product/ImportProductsD
 // Router
 const router = useRouter()
 const loader = useLoaderStore()
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
 
 // Estado
 const loading = ref(false)
@@ -288,6 +291,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
         <VBtn
+          v-if="can('import_xml') || can('register_product')"
           color="error"
           variant="tonal"
           prepend-icon="ri-download-2-fill"
@@ -296,6 +300,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           Importar
         </VBtn>
         <VBtn
+          v-if="can('export_data') || can('list_product')"
           color="success"
           variant="tonal"
           prepend-icon="ri-file-excel-2-line"
@@ -304,6 +309,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           Exportar
         </VBtn>
         <VBtn
+          v-if="can('register_product')"
           color="primary"
           prepend-icon="ri-add-line"
           to="/product/add"
@@ -653,6 +659,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                     <!-- Editar -->
                     <VBtn
+                      v-if="can('edit_product')"
                       class="action-btn"
                       variant="text"
                       icon
@@ -669,6 +676,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                     <!-- Eliminar -->
                     <VBtn
+                      v-if="can('delete_product')"
                       class="action-btn"
                       variant="text"
                       icon

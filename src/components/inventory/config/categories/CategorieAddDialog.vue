@@ -125,7 +125,8 @@ const dialogVisibleUpdate = val => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="650"
     :model-value="props.isDialogVisible"
     persistent
@@ -251,7 +252,10 @@ const dialogVisibleUpdate = val => {
       <VDivider />
 
       <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"

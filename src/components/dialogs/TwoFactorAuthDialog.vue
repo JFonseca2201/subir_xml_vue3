@@ -53,7 +53,8 @@ const openSelectedMethodDialog = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="800"
     :model-value="props.isDialogVisible"
     @update:model-value="(val) => $emit('update:isDialogVisible', val)"

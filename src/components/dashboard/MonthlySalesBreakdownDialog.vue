@@ -54,6 +54,7 @@ const loadData = async () => {
     const params = {
       sort_by: sortBy.value,
     }
+
     if (selectedMonth.value) {
       params.month = selectedMonth.value
     }
@@ -133,6 +134,7 @@ const getRankColor = index => {
   if (index === 0) return '#FFD700' // Oro
   if (index === 1) return '#C0C0C0' // Plata
   if (index === 2) return '#CD7F32' // Bronce
+  
   return 'secondary'
 }
 
@@ -140,6 +142,7 @@ const getRankIcon = index => {
   if (index === 0) return 'ri-medal-fill text-amber'
   if (index === 1) return 'ri-medal-fill text-blue-grey'
   if (index === 2) return 'ri-medal-fill text-orange-darken-2'
+  
   return 'ri-hashtag'
 }
 </script>
@@ -174,9 +177,18 @@ const getRankIcon = index => {
 
       <!-- Barra de Filtros Rápidos Estructurada -->
       <div class="custom-dialog-filters pa-4 bg-white border-b">
-        <VRow dense align="center" class="ma-0">
+        <VRow
+          dense
+          align="center"
+          class="ma-0"
+        >
           <!-- Selector de Mes -->
-          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+          <VCol
+            cols="12"
+            sm="4"
+            md="4"
+            class="px-2 py-1"
+          >
             <VSelect
               v-model="selectedMonth"
               :items="data.available_months"
@@ -193,7 +205,12 @@ const getRankIcon = index => {
           </VCol>
 
           <!-- Criterio de Ordenamiento -->
-          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+          <VCol
+            cols="12"
+            sm="4"
+            md="4"
+            class="px-2 py-1"
+          >
             <VSelect
               v-model="sortBy"
               :items="[
@@ -213,7 +230,12 @@ const getRankIcon = index => {
           </VCol>
 
           <!-- Buscador Rápido -->
-          <VCol cols="12" sm="4" md="4" class="px-2 py-1">
+          <VCol
+            cols="12"
+            sm="4"
+            md="4"
+            class="px-2 py-1"
+          >
             <VTextField
               v-model="filterSearch"
               density="compact"
@@ -229,7 +251,10 @@ const getRankIcon = index => {
         </VRow>
       </div>
 
-      <VCardText class="pa-5" style="max-height: 70vh;">
+      <VCardText
+        class="pa-5"
+        style="max-height: 70vh;"
+      >
         <!-- Indicador de Carga -->
         <div
           v-if="loading"
@@ -248,7 +273,10 @@ const getRankIcon = index => {
 
         <div v-else>
           <!-- Tarjetas KPI Resumen del Mes -->
-          <VRow class="mb-5" dense>
+          <VRow
+            class="mb-5"
+            dense
+          >
             <!-- Gran Total -->
             <VCol
               cols="12"
@@ -426,22 +454,37 @@ const getRankIcon = index => {
             >
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 70px;"
+                  >
                     RANK
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     PRODUCTO / REPUESTO
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 130px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 130px;"
+                  >
                     CANTIDAD
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 140px;"
+                  >
                     PRECIO PROM.
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 160px;"
+                  >
                     TOTAL FACTURADO
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 140px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 140px;"
+                  >
                     % DE PRODUCTOS
                   </th>
                 </tr>
@@ -503,7 +546,10 @@ const getRankIcon = index => {
                         rounded
                         style="width: 60px;"
                       />
-                      <span class="text-caption font-weight-bold text-medium-emphasis" style="min-width: 35px;">
+                      <span
+                        class="text-caption font-weight-bold text-medium-emphasis"
+                        style="min-width: 35px;"
+                      >
                         {{ data.summary.products_revenue > 0 ? Math.round((item.revenue / data.summary.products_revenue) * 100) : 0 }}%
                       </span>
                     </div>
@@ -535,22 +581,37 @@ const getRankIcon = index => {
             >
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 70px;"
+                  >
                     RANK
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     SERVICIO / MANO DE OBRA
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 130px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 130px;"
+                  >
                     VECES REALIZADO
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 140px;"
+                  >
                     PRECIO PROM.
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 160px;"
+                  >
                     TOTAL FACTURADO
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 140px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 140px;"
+                  >
                     % DE SERVICIOS
                   </th>
                 </tr>
@@ -612,7 +673,10 @@ const getRankIcon = index => {
                         rounded
                         style="width: 60px;"
                       />
-                      <span class="text-caption font-weight-bold text-medium-emphasis" style="min-width: 35px;">
+                      <span
+                        class="text-caption font-weight-bold text-medium-emphasis"
+                        style="min-width: 35px;"
+                      >
                         {{ data.summary.services_revenue > 0 ? Math.round((item.revenue / data.summary.services_revenue) * 100) : 0 }}%
                       </span>
                     </div>
@@ -644,22 +708,37 @@ const getRankIcon = index => {
             >
               <thead>
                 <tr class="bg-grey-lighten-4">
-                  <th class="text-center font-weight-bold py-3" style="width: 70px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 70px;"
+                  >
                     POS.
                   </th>
                   <th class="text-left font-weight-bold py-3">
                     ÍTEM / DESCRIPCIÓN
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 120px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 120px;"
+                  >
                     TIPO
                   </th>
-                  <th class="text-center font-weight-bold py-3" style="width: 120px;">
+                  <th
+                    class="text-center font-weight-bold py-3"
+                    style="width: 120px;"
+                  >
                     CANTIDAD
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 140px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 140px;"
+                  >
                     PRECIO PROM.
                   </th>
-                  <th class="text-right font-weight-bold py-3" style="width: 160px;">
+                  <th
+                    class="text-right font-weight-bold py-3"
+                    style="width: 160px;"
+                  >
                     TOTAL FACTURADO
                   </th>
                 </tr>
@@ -712,7 +791,10 @@ const getRankIcon = index => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

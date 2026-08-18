@@ -118,7 +118,8 @@ const closeDialog = () => {
 </script>
 
 <template>
-  <VDialog scrollable
+  <VDialog
+    scrollable
     max-width="680"
     :model-value="props.isDialogVisible"
     persistent
@@ -384,7 +385,10 @@ const closeDialog = () => {
 
       <!-- Footer con botones -->
       <VDivider />
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"

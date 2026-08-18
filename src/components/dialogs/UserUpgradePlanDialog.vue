@@ -38,7 +38,8 @@ const isConfirmDialogVisible = ref(false)
 
 <template>
   <!-- 👉 upgrade plan -->
-  <VDialog scrollable
+  <VDialog
+    scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 650"
     :model-value="props.isDialogVisible"
     @update:model-value="val => $emit('update:isDialogVisible', val)"

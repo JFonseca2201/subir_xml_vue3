@@ -151,9 +151,9 @@ watch(() => props.initialItem, newVal => {
     :variant="variant"
     :density="density"
     :hide-details="hideDetails"
-    @update:model-value="onModelValueUpdate"
     :hide-no-data="hideNoData"
     :no-filter="true"
+    @update:model-value="onModelValueUpdate"
     @update:search="onSearchInput"
   >
     <template #prepend-inner>

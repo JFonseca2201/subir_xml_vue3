@@ -41,6 +41,11 @@ const systemBalances = ref({
   guayaquil: 0,
 })
 
+import { usePermissions } from '@/composables/usePermissions'
+
+const { can } = usePermissions()
+const canAccessArqueo = computed(() => can('list_arqueo'))
+
 // Main reactive payload
 const getLocalDateString = () => {
   const tzOffset = (new Date()).getTimezoneOffset() * 60000
@@ -63,20 +68,6 @@ const payload = ref({
   observations: '',
 })
 
-// Current User check for role restriction
-const currentUser = computed(() => {
-  const userStr = localStorage.getItem('user')
-  
-  return userStr ? JSON.parse(userStr) : null
-})
-
-const canAccessArqueo = computed(() => {
-  const roleId = currentUser.value?.role?.id
-  
-  return currentUser.value && [1, 2].includes(roleId) // Admin/Gerente
-})
-
-// Computations for totals
 const totalBills = computed(() => {
   return billsList.reduce((sum, val) => {
     const qty = parseInt(payload.value.cash_details.bills[val]) || 0
@@ -149,6 +140,7 @@ const formatSpanishDate = dateStr => {
   try {
     const [y, m, d] = dateStr.split('-').map(Number)
     const dt = new Date(y, m - 1, d)
+
     const formatted = new Intl.DateTimeFormat('es-EC', {
       weekday: 'long',
       day: 'numeric',
@@ -1413,8 +1405,9 @@ onMounted(() => {
       </VRow>
       <!-- Confirmación de sellado -->
       <!-- Confirmación de sellado -->
-      <VDialog scrollable
+      <VDialog
         v-model="confirmSealDialog"
+        scrollable
         persistent
         max-width="480"
       >
@@ -1446,7 +1439,10 @@ onMounted(() => {
 
           <VDivider />
 
-          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
+          >
             <VBtn
               variant="outlined"
               color="secondary"
@@ -1475,8 +1471,9 @@ onMounted(() => {
       </VDialog>
 
       <!-- Diálogo para ver desglose del día anterior -->
-      <VDialog scrollable
+      <VDialog
         v-model="prevCountDetailsDialog"
+        scrollable
         max-width="600"
       >
         <VCard class="custom-dialog-card elevation-24">
@@ -1641,7 +1638,10 @@ onMounted(() => {
           </VCardText>
 
           <VDivider />
-          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
+          >
             <VBtn
               variant="outlined"
               color="secondary"

@@ -12,8 +12,10 @@ const getCleanTitle = () => {
   if (!stored) return 'LUXURY EVYS'
   if (stored.length > 20) {
     if (stored.toUpperCase().includes('LUXURY EVYS')) return 'LUXURY EVYS'
+    
     return stored.substring(0, 18)
   }
+  
   return stored
 }
 
