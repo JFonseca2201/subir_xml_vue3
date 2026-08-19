@@ -26,20 +26,27 @@ const viewLoading = ref(false)
 const isConvertDialogVisible = ref(false)
 
 const convertForm = ref({
-  document_type: 'sale_note',
+  document_type: 'work_order',
   payment_method: 'Efectivo',
   payment_status: 'paid',
   is_credited: false,
   account_id: null,
+  mileage: null,
+  fuel_level: '1/2',
+  observations: '',
+  date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
 })
 
 const isConverting = ref(false)
 const accounts = ref([])
 
 const convertDocTypeOptions = [
+  { title: 'Orden de Trabajo (OT)', value: 'work_order' },
   { title: 'Nota de Venta', value: 'sale_note' },
   { title: 'Factura', value: 'invoice' },
 ]
+
+const fuelLevelOptions = ['Vacío', '1/4', '1/2', '3/4', 'Lleno']
 
 const paymentMethodOptions = [
   { title: 'Efectivo', value: 'Efectivo' },
@@ -173,14 +180,25 @@ const getClientName = client => {
   return client.full_name || client.name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Cliente Desconocido'
 }
 
-const getStatusInfo = status => {
+const getStatusInfo = (status, quote = null) => {
+  if (quote) {
+    if (quote.status === 'canceled') {
+      return { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' }
+    }
+    if (quote.converted_work_order_id || quote.converted_work_order) {
+      const otNum = quote.converted_work_order?.number ? ` #${quote.converted_work_order.number}` : ''
+      return { color: 'primary', text: `Convertida a OT${otNum}`, icon: 'ri-tools-line' }
+    }
+    if (quote.converted_sale_id || quote.converted_sale) {
+      return { color: 'success', text: 'Convertida a Venta', icon: 'ri-check-line' }
+    }
+  }
   const map = {
     pending: { color: 'info', text: 'Activa', icon: 'ri-time-line' },
     completed: { color: 'success', text: 'Convertida', icon: 'ri-check-line' },
     canceled: { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' },
   }
 
-  
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
@@ -212,7 +230,7 @@ const editQuote = quote => {
     
     return
   }
-  if (quote.converted_sale_id) {
+  if (quote.converted_sale_id || quote.converted_work_order_id) {
     showNotification('Esta cotización ya fue convertida y no puede editarse', 'warning')
     
     return
@@ -260,12 +278,20 @@ const downloadSinglePDF = async quote => {
 
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
-    const clientName = getClientName(quote.client).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_')
-    const docNumber = quote.document_number || 'Cotizacion'
+    const rawClient = quote.client?.full_name || getClientName(quote.client) || 'Cliente'
+    const clientName = rawClient
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase()
+    const plate = (quote.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+    const docNumber = (quote.document_number || 'Cotizacion').replace(/[^a-zA-Z0-9\-_]/g, '')
+    const parts = ['Cotizacion', docNumber, clientName]
+    if (plate) parts.push(plate)
+    const fileName = parts.join('_') + '.pdf'
+
     const a = document.createElement('a')
 
     a.href = url
-    a.download = `${docNumber}_${clientName}.pdf`
+    a.download = fileName
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -344,7 +370,7 @@ const showAccountSelect = computed(() => {
 
 // Conversión de cotización
 const openConvertDialog = quote => {
-  if (quote.converted_sale_id) {
+  if (quote.converted_sale_id || quote.converted_work_order_id) {
     showNotification('Esta cotización ya fue convertida', 'warning')
     
     return
@@ -364,53 +390,37 @@ const openConvertDialog = quote => {
   }
 
   convertForm.value = {
-    document_type: 'sale_note',
+    document_type: 'work_order',
     payment_method: 'Efectivo',
     payment_status: 'paid',
     is_credited: false,
     account_id: defaultAccountId,
+    mileage: quote.mileage || null,
+    fuel_level: '1/2',
+    observations: quote.observations || '',
+    date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   }
   isConvertDialogVisible.value = true
 }
 
-const confirmConvert = async () => {
+const confirmConvert = () => {
   if (!selectedQuote.value) return
-  isConverting.value = true
-  try {
-    const payload = {
-      document_type: convertForm.value.document_type,
-      payment_method: convertForm.value.payment_method,
-      payment_status: convertForm.value.payment_status,
-      is_credited: convertForm.value.is_credited,
-    }
+  const quote = selectedQuote.value
+  isConvertDialogVisible.value = false
 
-    if (convertForm.value.payment_status === 'paid' && convertForm.value.account_id) {
-      payload.payment_distributions = [
-        {
-          account_id: convertForm.value.account_id,
-          amount: parseFloat(selectedQuote.value.total),
-          payment_method: convertForm.value.payment_method,
-        },
-      ]
-    }
-
-    const response = await $api(`quotes/${selectedQuote.value.id}/convert`, {
-      method: 'POST',
-      body: payload,
+  if (convertForm.value.document_type === 'work_order') {
+    router.push({
+      path: '/work-orders/add',
+      query: { quote_id: quote.id },
     })
-
-    if (response?.success) {
-      showNotification(response.message || 'Cotización convertida exitosamente', 'success')
-      isConvertDialogVisible.value = false
-      loadQuotes()
-    } else {
-      showNotification(response?.message || 'Error al convertir la cotización', 'error')
-    }
-  } catch (error) {
-    console.error('Error al convertir cotización:', error)
-    showNotification('Error al convertir la cotización', 'error')
-  } finally {
-    isConverting.value = false
+  } else {
+    router.push({
+      path: '/sales/add',
+      query: {
+        quote_id: quote.id,
+        doc_type: convertForm.value.document_type,
+      },
+    })
   }
 }
 
@@ -741,15 +751,15 @@ onMounted(() => {
                       <!-- Estado de la cotización -->
                       <div class="d-flex align-center gap-1">
                         <VIcon
-                          :icon="getStatusInfo(item.status)?.icon"
-                          :color="getStatusInfo(item.status)?.color"
+                          :icon="getStatusInfo(item.status, item)?.icon"
+                          :color="getStatusInfo(item.status, item)?.color"
                           size="14"
                         />
                         <span
                           class="text-caption font-weight-medium"
-                          :class="`text-${getStatusInfo(item.status)?.color}`"
+                          :class="`text-${getStatusInfo(item.status, item)?.color}`"
                         >
-                          {{ getStatusInfo(item.status)?.text }}
+                          {{ getStatusInfo(item.status, item)?.text }}
                         </span>
                       </div>
                     </div>
@@ -775,12 +785,12 @@ onMounted(() => {
                       </VBtn>
 
                       <VBtn
-                        v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                        v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'canceled'"
                         variant="text"
                         icon
                         size="small"
                         color="success"
-                        title="Convertir a Venta/Factura"
+                        title="Convertir a OT o Facturar"
                         @click="openConvertDialog(item)"
                       >
                         <VIcon
@@ -835,7 +845,7 @@ onMounted(() => {
                               @click="openMailDialog(item)"
                             />
                             <VListItem
-                              v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                              v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'canceled'"
                               prepend-icon="ri-edit-line"
                               title="Editar Cotización"
                               class="text-warning text-body-2"
@@ -843,7 +853,7 @@ onMounted(() => {
                             />
                             <VDivider class="my-1" />
                             <VListItem
-                              :disabled="item.status === 'canceled' || !!item.converted_sale_id"
+                              :disabled="item.status === 'canceled' || !!item.converted_sale_id || !!item.converted_work_order_id"
                               prepend-icon="ri-close-circle-line"
                               title="Anular Cotización"
                               class="text-error text-body-2"
@@ -919,15 +929,16 @@ onMounted(() => {
                         <div class="text-right">
                           <div class="d-flex align-center gap-1 justify-end">
                             <VIcon
-                              :icon="getStatusInfo(item.status)?.icon"
-                              :color="getStatusInfo(item.status)?.color"
+                              :icon="getStatusInfo(item.status, item)?.icon"
+                              :color="getStatusInfo(item.status, item)?.color"
                               size="14"
+                              class="mr-1"
                             />
                             <span
                               class="text-caption font-weight-medium"
-                              :class="`text-${getStatusInfo(item.status)?.color}`"
+                              :class="`text-${getStatusInfo(item.status, item)?.color}`"
                             >
-                              {{ getStatusInfo(item.status)?.text }}
+                              {{ getStatusInfo(item.status, item)?.text }}
                             </span>
                           </div>
                         </div>
@@ -992,7 +1003,7 @@ onMounted(() => {
                           Ver
                         </VBtn>
                         <VBtn
-                          v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                          v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'canceled'"
                           variant="text"
                           color="success"
                           size="small"
@@ -1043,7 +1054,7 @@ onMounted(() => {
                                 @click="openMailDialog(item)"
                               />
                               <VListItem
-                                v-if="!item.converted_sale_id && item.status !== 'canceled'"
+                                v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'canceled'"
                                 prepend-icon="ri-edit-line"
                                 title="Editar"
                                 class="text-warning text-body-2"
@@ -1051,7 +1062,7 @@ onMounted(() => {
                               />
                               <VDivider class="my-1" />
                               <VListItem
-                                :disabled="item.status === 'canceled' || !!item.converted_sale_id"
+                                :disabled="item.status === 'canceled' || !!item.converted_sale_id || !!item.converted_work_order_id"
                                 prepend-icon="ri-close-circle-line"
                                 title="Anular"
                                 class="text-error text-body-2"
@@ -1166,67 +1177,34 @@ onMounted(() => {
 
           <!-- Campos Formulario -->
           <VRow>
-            <!-- Columna izquierda -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
+            <!-- Tipo de Documento Destino -->
+            <VCol cols="12">
               <VSelect
                 v-model="convertForm.document_type"
                 :items="convertDocTypeOptions"
                 item-title="title"
                 item-value="value"
-                label="Convertir a *"
+                label="Seleccionar destino *"
                 variant="outlined"
                 density="comfortable"
                 color="primary"
                 prepend-inner-icon="ri-file-list-3-line"
-                class="mb-3"
-              />
-
-              <VSelect
-                v-model="convertForm.payment_status"
-                :items="[{ title: 'Pagado', value: 'paid' }, { title: 'Pendiente', value: 'pending' }]"
-                item-title="title"
-                item-value="value"
-                label="Estado de Pago *"
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-hand-coin-line"
               />
             </VCol>
 
-            <!-- Columna derecha -->
-            <VCol
-              cols="12"
-              sm="6"
-            >
-              <VSelect
-                v-model="convertForm.payment_method"
-                :items="paymentMethodOptions"
-                item-title="title"
-                item-value="value"
-                label="Método de Pago *"
-                variant="outlined"
+            <VCol cols="12">
+              <VAlert
+                type="info"
+                variant="tonal"
                 density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-wallet-3-line"
-                class="mb-3"
-              />
-
-              <VSelect
-                v-if="showAccountSelect"
-                v-model="convertForm.account_id"
-                :items="accounts"
-                item-title="name"
-                item-value="id"
-                label="Cuenta de Destino *"
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-bank-card-line"
-              />
+                class="rounded-lg"
+              >
+                <div class="font-weight-medium">
+                  {{ convertForm.document_type === 'work_order' 
+                    ? 'Se abrirá la interfaz de creación de Orden de Trabajo con todos los datos y repuestos precargados para su revisión final.' 
+                    : 'Se abrirá la interfaz de Facturación con todos los datos, repuestos y servicios precargados para registrar pagos y emitir el documento.' }}
+                </div>
+              </VAlert>
             </VCol>
           </VRow>
         </VCardText>
@@ -1243,7 +1221,6 @@ onMounted(() => {
             prepend-icon="ri-close-line"
             class="rounded-lg px-6 font-weight-medium"
             height="40"
-            :disabled="isConverting"
             @click="isConvertDialogVisible = false"
           >
             Cancelar
@@ -1251,13 +1228,12 @@ onMounted(() => {
           <VBtn
             color="primary"
             variant="elevated"
-            prepend-icon="ri-arrow-right-up-line"
+            prepend-icon="ri-arrow-right-line"
             class="rounded-lg px-6 font-weight-bold"
             height="40"
-            :loading="isConverting"
             @click="confirmConvert"
           >
-            Convertir
+            {{ convertForm.document_type === 'work_order' ? 'Continuar a Crear OT' : 'Continuar a Facturar Venta' }}
           </VBtn>
         </VCardActions>
       </VCard>

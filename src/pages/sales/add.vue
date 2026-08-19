@@ -69,6 +69,8 @@ const sale = ref({
   document_number: '',
   client_id: null,
   vehicle_id: null,
+  quote_id: null,
+  quote_number: null,
   work_order_id: null,
   work_order_number: null,
   mileage: null,
@@ -365,7 +367,7 @@ const loadInitialData = async () => {
     const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
       Promise.resolve([]),
       Promise.resolve([]),
-      Promise.resolve([]),
+      $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 100 } }),
       $api('sales', { params: { per_page: 1 } }), // Reducido ya que no calculamos la secuencia manualmente
       $api('work-orders', { params: { per_page: 1 } }),
@@ -456,10 +458,42 @@ const addTemporaryProduct = () => {
   })
 }
 
-const getProductStock = productId => {
-  const product = products.value.find(p => p.id === productId)
+const isServiceItem = item => {
+  if (!item) return false
+  if (item.type === 'service') return true
+  if (item.item_type === 2) return true
+  if (item.product?.item_type === 2) return true
+  const itemSku = item.sku || item.product?.sku || ''
+  const product = products.value.find(p => 
+    (item.product_id && p.id === item.product_id) || 
+    (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
+  )
+  if (product && (product.item_type === 2 || product.type === 'service')) return true
+  if (itemSku && String(itemSku).toUpperCase().startsWith('SRV-')) return true
+  if (!item.product_id && !itemSku) return true
+  return false
+}
 
-  return product ? product.stock : 0
+const getProductStock = (productId, item = null) => {
+  const itemSku = item?.sku || item?.product?.sku || ''
+  const product = products.value.find(p => 
+    (productId && p.id === productId) || 
+    (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
+  )
+
+  if (product && product.stock !== undefined && product.stock !== null) {
+    return Number(product.stock)
+  }
+
+  if (item && item.stock !== undefined && item.stock !== null) {
+    return Number(item.stock)
+  }
+
+  if (item && item.product && item.product.stock !== undefined && item.product.stock !== null) {
+    return Number(item.product.stock)
+  }
+
+  return 0
 }
 
 const getProductSku = productId => {
@@ -1111,9 +1145,101 @@ onMounted(async () => {
     }
   }
 
+  // Verificar si hay un quote_id en el query parameter
+  const quoteId = route.query.quote_id
+  if (quoteId && !workOrderId) {
+    try {
+      const quoteRes = await $api(`quotes/${quoteId}`)
+      const quote = quoteRes.data || quoteRes
+
+      if (quote) {
+        sale.value.quote_id = quote.id
+        sale.value.quote_number = quote.document_number
+        sale.value.client_id = quote.client_id
+        sale.value.vehicle_id = quote.vehicle_id
+        sale.value.mileage = quote.mileage
+        sale.value.service_date = quote.date ? quote.date.split(' ')[0] : sale.value.service_date
+        sale.value.observations = quote.observations || ''
+
+        if (route.query.doc_type) {
+          sale.value.document_type = route.query.doc_type
+          await onDocumentTypeChange()
+        }
+
+        if (quote.technicians && Array.isArray(quote.technicians)) {
+          sale.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
+        }
+
+        if (quote.client) {
+          selectedClient.value = quote.client
+        } else if (quote.client_id) {
+          try {
+            const clientRes = await $api(`clients/${quote.client_id}`)
+            selectedClient.value = clientRes.client || clientRes.data || clientRes
+          } catch (e) {
+            console.error('Error al cargar cliente de la cotización:', e)
+          }
+        }
+
+        if (quote.vehicle) {
+          selectedVehicle.value = quote.vehicle
+        } else if (quote.vehicle_id) {
+          try {
+            const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
+            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+          } catch (e) {
+            console.error('Error al cargar vehículo de la cotización:', e)
+          }
+        }
+
+        // Importar items de la cotización
+        if (quote.details && quote.details.length > 0) {
+          sale.value.items = quote.details.map(item => {
+            if (item.product) {
+              const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+              if (existingIdx >= 0) {
+                products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+              } else {
+                products.value.push(item.product)
+              }
+            }
+
+            const isService = item.type === 'service' || 
+              item.item_type === 2 || 
+              item.product?.item_type === 2 || 
+              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) || 
+              (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
+              (!item.product_id && !item.sku)
+
+            return {
+              product_id: item.product_id,
+              description: item.description,
+              quantity: item.quantity,
+              price: item.price || item.unit_price || 0,
+              discount: item.discount || 0,
+              subtotal: item.subtotal,
+              type: isService ? 'service' : 'product',
+              sku: item.product?.sku || item.product?.code || item.sku || '',
+              stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
+              product: item.product || null,
+              unit_id: item.unit_id || item.product?.unit_id || null,
+              unit: item.unit || item.product?.unit || null,
+            }
+          })
+          initializePaymentDistribution()
+        }
+
+        showNotification(`Cotización #${quote.document_number} cargada para facturar`, 'success')
+      }
+    } catch (e) {
+      console.error('Error al cargar cotización para venta:', e)
+      showNotification('Error al cargar la cotización seleccionada', 'error')
+    }
+  }
+
   // Si viene con ?type=quote, preseleccionar cotización
   const typeParam = route.query.type
-  if (typeParam === 'quote' && !workOrderId) {
+  if (typeParam === 'quote' && !workOrderId && !quoteId) {
     sale.value.document_type = 'quote'
     sale.value.payment_status = 'pending'
   }
@@ -1799,21 +1925,22 @@ onMounted(async () => {
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span
                                 class="text-uppercase font-weight-bold"
+                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
                                 style="font-size: 0.65rem;"
                               >
-                                {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
+                                {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
                               <span
-                                v-if="item.type === 'product' && sale.document_type !== 'quote'"
+                                v-if="!isServiceItem(item) && sale.document_type !== 'quote'"
                                 class="stock-tag"
-                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
                               >
                                 <VIcon
                                   icon="ri-stack-line"
                                   size="12"
                                   class="mr-1"
                                 />
-                                {{ getProductStock(item.product_id) }} en stock
+                                {{ getProductStock(item.product_id, item) }} en stock
                               </span>
                               <span
                                 v-if="getProductSku(item.product_id) || item.sku"

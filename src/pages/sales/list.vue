@@ -365,14 +365,22 @@ const downloadSinglePDF = async sale => {
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
 
-    // Formatear el nombre del cliente (quitando caracteres especiales y reemplazando espacios por guiones bajos)
-    const clientName = getClientName(sale.client).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_')
-    const docNumber = sale.document_number || 'Documento'
+    // Formatear el nombre del cliente y placa
+    const typeLabel = sale.document_type === 'invoice' ? 'Factura' : (sale.document_type === 'quote' ? 'Cotizacion' : 'Nota_Venta')
+    const rawClient = sale.client?.full_name || getClientName(sale.client) || 'Cliente'
+    const clientName = rawClient
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase()
+    const plate = (sale.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+    const docNumber = (sale.document_number || 'Documento').replace(/[^a-zA-Z0-9\-_]/g, '')
+    const parts = [typeLabel, docNumber, clientName]
+    if (plate) parts.push(plate)
+    const fileName = parts.join('_') + '.pdf'
 
     const a = document.createElement('a')
 
     a.href = url
-    a.download = `${docNumber}_${clientName}.pdf`
+    a.download = fileName
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)

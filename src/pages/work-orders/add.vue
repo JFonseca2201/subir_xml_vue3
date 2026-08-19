@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
@@ -13,6 +13,7 @@ import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vu
 import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 const userId = ref(null)
@@ -40,6 +41,8 @@ const workOrder = ref({
   date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   client_id: null,
   vehicle_id: null,
+  quote_id: null,
+  quote_number: null,
   user_id: userId.value,
   mileage: null,
   fuel_level: '',
@@ -68,14 +71,24 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [employeesRes, workOrdersRes, nextNumberRes] = await Promise.all([
+    const [employeesRes, productsRes, workOrdersRes, nextNumberRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }),
+      $api('products', { params: { per_page: 1000 } }),
       $api('work-orders'),
       $api('work-orders/next-number'),
     ])
 
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
+
+    const rawProducts = Array.isArray(productsRes.products) ? productsRes.products :
+      (Array.isArray(productsRes.data) ? productsRes.data : (Array.isArray(productsRes) ? productsRes : []))
+
+    products.value = rawProducts.map(p => ({
+      ...p,
+      searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
+      displayTitle: p.description || p.name || '',
+    }))
 
     // Usamos el número que entrega el backend directamente
     workOrder.value.number = nextNumberRes?.data || '000000000'
@@ -293,10 +306,42 @@ const getProductPrice = productId => {
   return product ? parseFloat(product.price) : 0
 }
 
-const getProductStock = productId => {
-  const product = products.value.find(p => p.id === productId)
+const isServiceItem = item => {
+  if (!item) return false
+  if (item.type === 'service') return true
+  if (item.item_type === 2) return true
+  if (item.product?.item_type === 2) return true
+  const itemSku = item.sku || item.product?.sku || ''
+  const product = products.value.find(p => 
+    (item.product_id && p.id === item.product_id) || 
+    (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
+  )
+  if (product && (product.item_type === 2 || product.type === 'service')) return true
+  if (itemSku && String(itemSku).toUpperCase().startsWith('SRV-')) return true
+  if (!item.product_id && !itemSku) return true
+  return false
+}
 
-  return product ? product.stock : 0
+const getProductStock = (productId, item = null) => {
+  const itemSku = item?.sku || item?.product?.sku || ''
+  const product = products.value.find(p => 
+    (productId && p.id === productId) || 
+    (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
+  )
+
+  if (product && product.stock !== undefined && product.stock !== null) {
+    return Number(product.stock)
+  }
+
+  if (item && item.stock !== undefined && item.stock !== null) {
+    return Number(item.stock)
+  }
+
+  if (item && item.product && item.product.stock !== undefined && item.product.stock !== null) {
+    return Number(item.product.stock)
+  }
+
+  return 0
 }
 
 const getProductSku = productId => {
@@ -355,8 +400,95 @@ watch(() => workOrder.value.vehicle_id, newVal => {
   }
 })
 
-onMounted(() => {
-  loadInitialData()
+onMounted(async () => {
+  await loadInitialData()
+
+  const quoteId = route.query.quote_id
+  if (quoteId) {
+    try {
+      isLoading.value = true
+      const quoteRes = await $api(`quotes/${quoteId}`)
+      const quote = quoteRes.data || quoteRes
+
+      if (quote) {
+        workOrder.value.quote_id = quote.id
+        workOrder.value.quote_number = quote.document_number
+        workOrder.value.client_id = quote.client_id
+        workOrder.value.vehicle_id = quote.vehicle_id
+        workOrder.value.user_id = quote.user_id || userId.value
+        workOrder.value.mileage = quote.mileage
+        workOrder.value.fuel_level = quote.fuel_level || '1/2'
+        workOrder.value.observations = quote.observations || ''
+        workOrder.value.date = quote.date ? quote.date.split(' ')[0] : workOrder.value.date
+
+        if (quote.technicians && Array.isArray(quote.technicians)) {
+          workOrder.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
+        }
+
+        if (quote.client) {
+          selectedClient.value = quote.client
+        } else if (quote.client_id) {
+          try {
+            const clientRes = await $api(`clients/${quote.client_id}`)
+            selectedClient.value = clientRes.client || clientRes.data || clientRes
+          } catch (e) {
+            console.error('Error al cargar cliente:', e)
+          }
+        }
+
+        if (quote.vehicle) {
+          selectedVehicle.value = quote.vehicle
+        } else if (quote.vehicle_id) {
+          try {
+            const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
+            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+          } catch (e) {
+            console.error('Error al cargar vehículo:', e)
+          }
+        }
+
+        if (quote.details && quote.details.length > 0) {
+          workOrder.value.items = quote.details.map(item => {
+            if (item.product) {
+              const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+              if (existingIdx >= 0) {
+                products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+              } else {
+                products.value.push(item.product)
+              }
+            }
+
+            const isService = item.type === 'service' || 
+              item.item_type === 2 || 
+              item.product?.item_type === 2 || 
+              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) || 
+              (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
+              (!item.product_id && !item.sku)
+
+            return {
+              product_id: item.product_id,
+              description: item.description,
+              quantity: item.quantity,
+              unit_price: item.price || item.unit_price || 0,
+              discount: item.discount || 0,
+              subtotal: item.subtotal,
+              type: isService ? 'service' : 'product',
+              sku: item.product?.sku || item.product?.code || item.sku || '',
+              stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
+              product: item.product || null,
+            }
+          })
+        }
+
+        showNotification(`Cotización #${quote.document_number} cargada para crear Orden de Trabajo`, 'success')
+      }
+    } catch (e) {
+      console.error('Error al cargar cotización para OT:', e)
+      showNotification('Error al cargar la cotización seleccionada', 'error')
+    } finally {
+      isLoading.value = false
+    }
+  }
 })
 </script>
 
@@ -888,21 +1020,22 @@ onMounted(() => {
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span
                                 class="text-uppercase font-weight-bold"
+                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
                                 style="font-size: 0.65rem;"
                               >
-                                {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
+                                {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
                               <span
-                                v-if="item.type === 'product'"
+                                v-if="!isServiceItem(item)"
                                 class="stock-tag"
-                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
                               >
                                 <VIcon
                                   icon="ri-stack-line"
                                   size="12"
                                   class="mr-1"
                                 />
-                                {{ getProductStock(item.product_id) }} en stock
+                                {{ getProductStock(item.product_id, item) }} en stock
                               </span>
                               <span
                                 v-if="getProductSku(item.product_id) || item.sku"

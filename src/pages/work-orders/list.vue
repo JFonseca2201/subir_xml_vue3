@@ -394,8 +394,11 @@ const openPdfInNewTab = () => {
   document.body.removeChild(a)
 }
 
-const downloadPDF = async workOrderId => {
+const downloadPDF = async workOrderParam => {
   try {
+    const workOrder = typeof workOrderParam === 'object' ? workOrderParam : workOrders.value.find(w => w.id === workOrderParam)
+    const workOrderId = typeof workOrderParam === 'object' ? workOrderParam.id : workOrderParam
+
     const token = localStorage.getItem('token')
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
 
@@ -409,10 +412,21 @@ const downloadPDF = async workOrderId => {
     if (response.ok) {
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
+
+      const rawClient = workOrder?.client?.full_name || getClientName(workOrder?.client) || 'Cliente'
+      const clientName = rawClient
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase()
+      const plate = (workOrder?.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+      const docNumber = (workOrder?.number || workOrderId || 'OT').toString().replace(/[^a-zA-Z0-9\-_]/g, '')
+      const parts = ['Orden_Trabajo', docNumber, clientName]
+      if (plate) parts.push(plate)
+      const fileName = parts.join('_') + '.pdf'
+
       const a = document.createElement('a')
 
       a.href = url
-      a.download = `orden-trabajo-${workOrderId}.pdf`
+      a.download = fileName
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)

@@ -212,10 +212,29 @@ const removeItem = async index => {
   }
 }
 
-const getProductStock = productId => {
+const isServiceItem = item => {
+  if (!item) return false
+  if (item.type === 'service') return true
+  if (item.item_type === 2) return true
+  if (item.product?.item_type === 2) return true
+  const product = products.value.find(p => p.id === item.product_id)
+  if (product && (product.item_type === 2 || product.type === 'service')) return true
+  const sku = item.sku || item.product?.sku || product?.sku || ''
+  if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
+  if (!item.product_id && !item.sku) return true
+  return false
+}
+
+const getProductStock = (productId, item = null) => {
+  if (item && item.stock !== undefined && item.stock !== null) {
+    return Number(item.stock)
+  }
+  if (item && item.product && item.product.stock !== undefined && item.product.stock !== null) {
+    return Number(item.product.stock)
+  }
   const product = products.value.find(p => p.id === productId)
 
-  return product ? product.stock : 0
+  return product && product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0
 }
 
 const getProductSku = productId => {
@@ -333,7 +352,6 @@ const handleServiceAdded = async newService => {
   }
 }
 
-
 // Cálculos
 const TAX_RATE = 0.15
 
@@ -421,7 +439,7 @@ const loadSaleData = async () => {
       $api(`sales/${route.params.id}`),
       Promise.resolve([]),
       Promise.resolve([]),
-      Promise.resolve([]),
+      $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 1000 } }),
       $api('employees', { params: { per_page: 1000 } }),
     ])
@@ -1443,21 +1461,22 @@ onMounted(() => {
                             <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                               <span
                                 class="text-uppercase font-weight-bold"
+                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
                                 style="font-size: 0.65rem;"
                               >
-                                {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
+                                {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
                               <span
-                                v-if="item.type === 'product' && sale.document_type !== 'quote'"
+                                v-if="!isServiceItem(item) && sale.document_type !== 'quote'"
                                 class="stock-tag"
-                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id) }"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
                               >
                                 <VIcon
                                   icon="ri-stack-line"
                                   size="12"
                                   class="mr-1"
                                 />
-                                {{ getProductStock(item.product_id) }} en stock
+                                {{ getProductStock(item.product_id, item) }} en stock
                               </span>
                               <span
                                 v-if="getProductSku(item.product_id) || item.sku"

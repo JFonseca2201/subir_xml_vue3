@@ -68,13 +68,23 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [employeesRes, workOrdersRes] = await Promise.all([
+    const [employeesRes, productsRes, workOrdersRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }),
+      $api('products', { params: { per_page: 1000 } }),
       $api('work-orders'),
     ])
 
     employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
       Array.isArray(employeesRes.data) ? employeesRes.data : []
+
+    const rawProducts = Array.isArray(productsRes.products) ? productsRes.products :
+      (Array.isArray(productsRes.data) ? productsRes.data : (Array.isArray(productsRes) ? productsRes : []))
+
+    products.value = rawProducts.map(p => ({
+      ...p,
+      searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
+      displayTitle: p.description || p.name || '',
+    }))
 
     const workOrdersList = Array.isArray(workOrdersRes.data) ? workOrdersRes.data :
       (Array.isArray(workOrdersRes) ? workOrdersRes : [])
@@ -357,10 +367,29 @@ const getProductPrice = productId => {
   return product ? parseFloat(product.price) : 0
 }
 
-const getProductStock = productId => {
+const isServiceItem = item => {
+  if (!item) return false
+  if (item.type === 'service') return true
+  if (item.item_type === 2) return true
+  if (item.product?.item_type === 2) return true
+  const product = products.value.find(p => p.id === item.product_id)
+  if (product && (product.item_type === 2 || product.type === 'service')) return true
+  const sku = item.sku || item.product?.sku || product?.sku || ''
+  if (sku && String(sku).toUpperCase().startsWith('SRV-')) return true
+  if (!item.product_id && !item.sku) return true
+  return false
+}
+
+const getProductStock = (productId, item = null) => {
+  if (item && item.stock !== undefined && item.stock !== null) {
+    return Number(item.stock)
+  }
+  if (item && item.product && item.product.stock !== undefined && item.product.stock !== null) {
+    return Number(item.product.stock)
+  }
   const product = products.value.find(p => p.id === productId)
 
-  return product ? product.stock : 0
+  return product && product.stock !== undefined && product.stock !== null ? Number(product.stock) : 0
 }
 
 const getProductSku = productId => {
@@ -948,21 +977,22 @@ onMounted(() => {
                           <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
                             <span
                               class="text-uppercase font-weight-bold"
+                              :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
                               style="font-size: 0.65rem;"
                             >
-                              {{ item.type === 'product' ? 'Producto' : 'Servicio' }}
+                              {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                             </span>
                             <span
-                              v-if="item.type === 'product'"
+                              v-if="!isServiceItem(item)"
                               class="stock-tag"
-                              :class="{'stock-low': item.quantity > getProductStock(item.product_id)}"
+                              :class="{'stock-low': item.quantity > getProductStock(item.product_id, item)}"
                             >
                               <VIcon
                                 icon="ri-stack-line"
                                 size="12"
                                 class="mr-1"
                               />
-                              {{ getProductStock(item.product_id) }} en stock
+                              {{ getProductStock(item.product_id, item) }} en stock
                             </span>
                             <span
                               v-if="getProductSku(item.product_id) || item.sku"

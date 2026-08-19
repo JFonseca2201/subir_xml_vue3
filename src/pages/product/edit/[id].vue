@@ -88,6 +88,28 @@ const categories = ref([])
 const warehouses = ref([])
 const units = ref([])
 const suppliers = ref([])
+const brandOptions = ref([])
+
+const loadBrandsByCategory = async categoryId => {
+  try {
+    const url = categoryId ? `products/brands?categorie_id=${categoryId}` : 'products/brands'
+    const resp = await $api(url, { method: 'GET' })
+    if (resp?.data && resp.data.length > 0) {
+      const catBrands = resp.data
+      const currentList = brandOptions.value || []
+      const combined = [...new Set([...catBrands, ...currentList])]
+      brandOptions.value = combined
+    }
+  } catch (error) {
+    // Si falla, mantiene las marcas cargadas en config
+  }
+}
+
+watch(() => product.value.product_categorie_id, newCatId => {
+  if (newCatId) {
+    loadBrandsByCategory(newCatId)
+  }
+})
 
 const itemTypes = ref([
   { label: 'Producto', value: 1 },
@@ -224,6 +246,7 @@ const loadInitialData = async () => {
     warehouses.value = resp.data.warehouses || []
     units.value = resp.data.units || []
     suppliers.value = resp.data.suppliers || []
+    brandOptions.value = resp.data.brands || []
   } catch (error) {
     showNotification('Error al cargar configuración de productos', 'error')
   } finally {
@@ -529,15 +552,17 @@ onMounted(() => {
                 cols="12"
                 md="4"
               >
-                <VTextField
+                <VCombobox
                   v-model="product.brand"
+                  :items="brandOptions"
                   :rules="brandRules"
                   label="Marca"
-                  placeholder="Ej. Dell"
+                  placeholder="Selecciona o escribe una marca (Ej. MONROE)"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-building-line"
                   hide-details="auto"
+                  clearable
                 />
               </VCol>
               <VCol
