@@ -56,3 +56,23 @@ export const getVehicleTypeColor = id => {
   
   return colors[numericId] || 'grey'
 }
+
+export const vehicleUsageTypes = [
+  { value: 'particular', title: 'Particular (~35 km/día)', icon: 'ri-car-line', color: 'primary' },
+  { value: 'taxi', title: 'Taxi / Transporte (~130 km/día)', icon: 'ri-taxi-line', color: 'warning' },
+  { value: 'comercial', title: 'Comercial / Flota (~80 km/día)', icon: 'ri-truck-line', color: 'info' },
+  { value: 'pesado', title: 'Transporte Pesado (~160 km/día)', icon: 'ri-truck-fill', color: 'error' },
+]
+
+export const getVehicleUsageTypeOptions = () => {
+  return vehicleUsageTypes.map(u => ({
+    title: u.title,
+    value: u.value,
+  }))
+}
+
+export const getVehicleUsageTypeLabel = value => {
+  const usage = vehicleUsageTypes.find(u => u.value === value)
+  return usage ? usage.title : (value ? String(value).toUpperCase() : 'Particular')
+}
+

@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { getBrandOptions, getBrandNameById, getBrandSearchOptions, filterBrands } from '@/data/vehicleBrands.js'
 import { formatEcuadorianPlate, plateValidationRule } from '@/utils/ecuadorianPlateValidator.js'
-import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
+import { getVehicleTypeOptions, getVehicleUsageTypeOptions } from '@/data/vehicleTypes.js'
 import VSearch from '@/components/common/VSearch.vue'
 
 const props = defineProps({
@@ -75,6 +75,7 @@ const vehicleForm = ref({
   year: new Date().getFullYear(),
   color: '',
   vehicle_type: '',
+  usage_type: 'particular',
   description: '',
   status: 1, // 1 = Activo, 2 = Inactivo
   user_id: null, // ID del usuario que crea/edita el vehículo
@@ -83,6 +84,7 @@ const vehicleForm = ref({
 
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
+const vehicleUsageTypeOptions = getVehicleUsageTypeOptions()
 
 const colorOptions = [
   { title: 'Rojo', value: 'rojo' },
@@ -220,6 +222,7 @@ const loadVehicleData = () => {
       brand: brandValue,
       status: statusValue, // Asegurar que el status sea correcto
       vehicle_type: vehicleTypeValue, // Asignar el tipo de vehículo formateado
+      usage_type: props.vehicleData.usage_type || 'particular',
       user_id: getCurrentUserId(), // Asignar el ID del usuario actual
       client_id: props.vehicleData.client_id || null,
     }
@@ -251,6 +254,7 @@ const updateVehicle = async () => {
       year: vehicleForm.value.year,
       color: vehicleForm.value.color,
       vehicle_type: vehicleForm.value.vehicle_type,
+      usage_type: vehicleForm.value.usage_type || 'particular',
       description: vehicleForm.value.description,
       status: vehicleForm.value.status,
       user_id: vehicleForm.value.user_id,
@@ -408,6 +412,19 @@ onMounted(() => {
                 label="Tipo de Vehículo *"
                 prepend-inner-icon="ri-car-line"
                 :rules="rules.vehicle_type"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="vehicleForm.usage_type"
+                :items="vehicleUsageTypeOptions"
+                label="Uso / Frecuencia Estimada"
+                prepend-inner-icon="ri-dashboard-3-line"
               />
             </VCol>
 

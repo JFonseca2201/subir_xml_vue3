@@ -245,6 +245,36 @@ onMounted(() => {
               />
             </VCol>
 
+            <!-- Desglose Informativo Con IVA y Sin IVA -->
+            <VCol
+              v-if="parseFloat(serviceForm.price_sale) > 0"
+              cols="12"
+            >
+              <div
+                class="pa-3 rounded-lg d-flex justify-space-between align-center"
+                style="background-color: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);"
+              >
+                <div class="d-flex flex-column">
+                  <span class="text-caption text-medium-emphasis">Valor Base (Sin IVA):</span>
+                  <span class="text-body-2 font-weight-bold">
+                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) / 1.15) : parseFloat(serviceForm.price_sale)).toFixed(2) }}
+                  </span>
+                </div>
+                <div class="d-flex flex-column text-center">
+                  <span class="text-caption text-medium-emphasis">IVA ({{ serviceForm.is_taxable ? '15%' : '0%' }}):</span>
+                  <span class="text-body-2 font-weight-bold text-primary">
+                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) - (parseFloat(serviceForm.price_sale) / 1.15)) : 0).toFixed(2) }}
+                  </span>
+                </div>
+                <div class="d-flex flex-column text-right">
+                  <span class="text-caption text-medium-emphasis">PVP Final (Con IVA):</span>
+                  <span class="text-body-2 font-weight-bold text-success">
+                    ${{ parseFloat(serviceForm.price_sale).toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+            </VCol>
+
             <VCol
               v-if="error"
               cols="12"

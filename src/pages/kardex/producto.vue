@@ -458,8 +458,25 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- Descripción / Nombre del Producto -->
                   <td class="text-left py-3">
-                    <div class="text-body-2 text-slate-700 font-medium">
+                    <div class="text-body-2 text-slate-800 font-weight-bold">
                       {{ item.description }}
+                    </div>
+                    <div class="d-flex align-center gap-2 mt-1">
+                      <VChip
+                        v-if="item.sku"
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        class="font-weight-bold"
+                      >
+                        SKU: {{ item.sku }}
+                      </VChip>
+                      <span
+                        v-if="item.code_aux"
+                        class="text-caption text-medium-emphasis"
+                      >
+                        Cód. Aux: {{ item.code_aux }}
+                      </span>
                     </div>
                   </td>
 

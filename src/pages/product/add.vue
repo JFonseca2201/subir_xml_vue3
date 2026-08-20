@@ -154,9 +154,31 @@ const calculatePriceByUnit = () => {
   }
 }
 
+const purchasePriceWithIva = ref(0)
 const priceSaleWithIva = ref(0)
 
-// Sincronización bidireccional entre precio base (sin IVA) y precio con IVA
+// Sincronización bidireccional para Precio de Compra (Costo con y sin IVA)
+watch(() => product.value.purchase_price, newVal => {
+  const base = parseFloat(newVal) || 0
+  const tax = parseFloat(product.value.tax_rate) || 0
+  const calculated = parseFloat((base * (1 + tax / 100)).toFixed(2))
+  if (purchasePriceWithIva.value === null || parseFloat(purchasePriceWithIva.value) !== calculated) {
+    purchasePriceWithIva.value = calculated
+  }
+  calculateMaxDiscount()
+}, { immediate: true })
+
+watch(() => purchasePriceWithIva.value, newVal => {
+  const finalVal = parseFloat(newVal) || 0
+  const tax = parseFloat(product.value.tax_rate) || 0
+  const calculatedBase = parseFloat((finalVal / (1 + tax / 100)).toFixed(2))
+  if (parseFloat(product.value.purchase_price) !== calculatedBase) {
+    product.value.purchase_price = calculatedBase
+  }
+  calculateMaxDiscount()
+})
+
+// Sincronización bidireccional entre precio base (sin IVA) y precio con IVA (PVP)
 watch(() => product.value.price_sale, newVal => {
   const base = parseFloat(newVal) || 0
   const tax = parseFloat(product.value.tax_rate) || 0
@@ -174,10 +196,6 @@ watch(() => priceSaleWithIva.value, newVal => {
   if (parseFloat(product.value.price_sale) !== calculatedBase) {
     product.value.price_sale = calculatedBase
   }
-  calculateMaxDiscount()
-})
-
-watch(() => product.value.purchase_price, () => {
   calculateMaxDiscount()
 })
 
@@ -793,29 +811,59 @@ const loadInitialData = async () => {
                   variant="outlined"
                   class="pa-4 h-100 rounded-lg"
                 >
-                  <div class="text-subtitle-1 font-weight-bold mb-4">
-                    Configuración de Precio
+                  <div class="text-subtitle-1 font-weight-bold mb-4 d-flex align-center justify-space-between">
+                    <span>Configuración de Precios e IVA</span>
+                    <VChip
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      class="font-weight-bold"
+                    >
+                      IVA {{ product.tax_rate || 15 }}%
+                    </VChip>
                   </div>
                   <VRow>
-                    <VCol
-                      v-if="product.item_type !== '2'"
-                      cols="12"
-                      sm="6"
-                    >
-                      <VTextField
-                        v-model="product.purchase_price"
-                        :rules="product.item_type === '2' ? [] : priceRules"
-                        label="Precio de Compra"
-                        placeholder="0.00"
-                        variant="outlined"
-                        density="comfortable"
-                        prepend-inner-icon="ri-shopping-cart-line"
-                        hide-details="auto"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                      />
-                    </VCol>
+                    <!-- Precios de Compra / Costo (Solo productos físicos) -->
+                    <template v-if="product.item_type !== '2'">
+                      <VCol
+                        cols="12"
+                        sm="6"
+                      >
+                        <VTextField
+                          v-model="purchasePriceWithIva"
+                          :rules="priceRules"
+                          label="Precio Compra (Con IVA)"
+                          placeholder="0.00"
+                          variant="outlined"
+                          density="comfortable"
+                          prepend-inner-icon="ri-shopping-cart-fill"
+                          hide-details="auto"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                        />
+                      </VCol>
+                      <VCol
+                        cols="12"
+                        sm="6"
+                      >
+                        <VTextField
+                          v-model="product.purchase_price"
+                          :rules="priceRules"
+                          label="Precio Compra Base (Sin IVA)"
+                          placeholder="0.00"
+                          variant="outlined"
+                          density="comfortable"
+                          prepend-inner-icon="ri-shopping-cart-line"
+                          hide-details="auto"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                        />
+                      </VCol>
+                    </template>
+
+                    <!-- Precios de Venta / PVP -->
                     <VCol
                       cols="12"
                       :sm="product.item_type === '2' ? '12' : '6'"
@@ -854,6 +902,43 @@ const loadInitialData = async () => {
                         min="0"
                         required
                       />
+                    </VCol>
+
+                    <!-- Desglose Informativo de Precios (Sin IVA vs Con IVA) -->
+                    <VCol cols="12">
+                      <div
+                        class="pa-3 rounded-lg d-flex flex-wrap justify-space-between align-center gap-2"
+                        style="background-color: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);"
+                      >
+                        <div
+                          v-if="product.item_type !== '2'"
+                          class="d-flex flex-column"
+                        >
+                          <span class="text-caption text-medium-emphasis font-weight-medium">Costo de Compra:</span>
+                          <span class="text-body-2 font-weight-bold">
+                            Sin IVA: ${{ (Number(product.purchase_price) || 0).toFixed(2) }}
+                            <span class="text-medium-emphasis mx-1">|</span>
+                            <span class="text-primary font-weight-black">Con IVA: ${{ (Number(purchasePriceWithIva) || 0).toFixed(2) }}</span>
+                          </span>
+                        </div>
+                        <div class="d-flex flex-column">
+                          <span class="text-caption text-medium-emphasis font-weight-medium">PVP de Venta:</span>
+                          <span class="text-body-2 font-weight-bold">
+                            Sin IVA: ${{ (Number(product.price_sale) || 0).toFixed(2) }}
+                            <span class="text-medium-emphasis mx-1">|</span>
+                            <span class="text-success font-weight-black">Con IVA: ${{ (Number(priceSaleWithIva) || 0).toFixed(2) }}</span>
+                          </span>
+                        </div>
+                        <div
+                          v-if="product.item_type !== '2' && Number(product.price_sale) > 0 && Number(product.purchase_price) > 0"
+                          class="d-flex flex-column text-right"
+                        >
+                          <span class="text-caption text-medium-emphasis font-weight-medium">Margen Estimado:</span>
+                          <span class="text-body-2 font-weight-bold text-info">
+                            ${{ (Number(product.price_sale) - Number(product.purchase_price)).toFixed(2) }} ({{ (((Number(product.price_sale) - Number(product.purchase_price)) / Number(product.purchase_price)) * 100).toFixed(1) }}%)
+                          </span>
+                        </div>
+                      </div>
                     </VCol>
                     <VCol
                       cols="12"

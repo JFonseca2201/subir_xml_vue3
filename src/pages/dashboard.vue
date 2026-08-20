@@ -104,8 +104,12 @@ const selectedDay = ref(todayDateObj.getDate())
 const selectedMonth = ref(todayDateObj.getMonth())
 const selectedYear = ref(todayDateObj.getFullYear())
 
-// Dynamic mockup events linked to calendar dates (anchored on today's relative date)
-const mockEvents = {}
+// Maintenance Events from Backend
+const maintenanceEvents = ref([])
+const isLoadingEvents = ref(false)
+const selectedReminder = ref(null)
+const isReminderDetailsOpen = ref(false)
+const isSendingAction = ref(false)
 
 const prevMonth = () => {
   calendarDate.value = new Date(calendarDate.value.getFullYear(), calendarDate.value.getMonth() - 1, 1)
@@ -121,6 +125,24 @@ const currentMonthName = computed(() => {
   return months[calendarDate.value.getMonth()] + ' ' + calendarDate.value.getFullYear()
 })
 
+const fetchCalendarEvents = async () => {
+  try {
+    isLoadingEvents.value = true
+    const month = calendarDate.value.getMonth() + 1
+    const year = calendarDate.value.getFullYear()
+
+    const res = await $api('/maintenance-reminders/calendar', {
+      params: { month, year },
+    })
+
+    maintenanceEvents.value = res.data || []
+  } catch (err) {
+    console.error('Error al cargar recordatorios de mantenimiento:', err)
+  } finally {
+    isLoadingEvents.value = false
+  }
+}
+
 const calendarDays = computed(() => {
   const year = calendarDate.value.getFullYear()
   const month = calendarDate.value.getMonth()
@@ -133,7 +155,7 @@ const calendarDays = computed(() => {
 
   // Padding for previous month days
   for (let i = 0; i < firstDayIndex; i++) {
-    days.push({ day: '', isToday: false, isSelected: false })
+    days.push({ day: '', isToday: false, isSelected: false, hasEvents: false, events: [] })
   }
 
   // Current month days
@@ -146,7 +168,16 @@ const calendarDays = computed(() => {
       selectedMonth.value === month &&
       selectedYear.value === year
 
-    days.push({ day: i, isToday, isSelected })
+    const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
+    const dayEvents = maintenanceEvents.value.filter(evt => evt.scheduled_date === formattedDate)
+
+    days.push({
+      day: i,
+      isToday,
+      isSelected,
+      hasEvents: dayEvents.length > 0,
+      events: dayEvents,
+    })
   }
 
   return days
@@ -158,9 +189,8 @@ const selectDayObj = dayObj => {
   selectedMonth.value = calendarDate.value.getMonth()
   selectedYear.value = calendarDate.value.getFullYear()
 
-  const count = mockEvents[dayObj.day]?.length || 0
-  if (count > 0) {
-    showNotification(`Mostrando ${count} actividades programadas para el ${dayObj.day} de este mes`, 'info')
+  if (dayObj.events && dayObj.events.length > 0) {
+    showNotification(`Mostrando ${dayObj.events.length} mantenimientos estimados para el ${dayObj.day} de este mes`, 'info')
   }
 }
 
@@ -169,13 +199,87 @@ const activeEvents = computed(() => {
     return []
   }
 
-  return mockEvents[selectedDay.value] || []
+  const formattedDate = `${selectedYear.value}-${String(selectedMonth.value + 1).padStart(2, '0')}-${String(selectedDay.value).padStart(2, '0')}`
+  return maintenanceEvents.value.filter(evt => evt.scheduled_date === formattedDate)
 })
 
 const formattedSelectedDate = computed(() => {
   const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
   return `${selectedDay.value} de ${months[selectedMonth.value]}`
+})
+
+// Trigger WhatsApp Direct Notification
+const sendWhatsAppNotification = async reminder => {
+  if (!reminder) return
+  if (reminder.whatsapp_url) {
+    window.open(reminder.whatsapp_url, '_blank')
+    try {
+      await $api(`/maintenance-reminders/${reminder.id}/notify`, {
+        method: 'POST',
+        body: { channel: 'whatsapp' },
+      })
+      showNotification('WhatsApp abierto y notificación registrada', 'success')
+      fetchCalendarEvents()
+    } catch (e) {
+      console.error('Error al registrar notificación de WhatsApp:', e)
+    }
+  } else {
+    showNotification('El cliente no posee un número de teléfono registrado', 'warning')
+  }
+}
+
+// Trigger Email Notification
+const sendEmailNotification = async reminder => {
+  if (!reminder) return
+  if (!reminder.client?.email) {
+    showNotification('El cliente no posee un correo electrónico registrado', 'warning')
+    return
+  }
+
+  try {
+    isSendingAction.value = true
+    await $api(`/maintenance-reminders/${reminder.id}/notify`, {
+      method: 'POST',
+      body: { channel: 'email' },
+    })
+    showNotification(`Correo electrónico de recordatorio enviado a ${reminder.client.email}`, 'success')
+    fetchCalendarEvents()
+  } catch (e) {
+    console.error('Error al enviar correo de recordatorio:', e)
+    showNotification('No se pudo enviar el correo de recordatorio', 'error')
+  } finally {
+    isSendingAction.value = false
+  }
+}
+
+// Open Details Modal
+const openReminderDetails = reminder => {
+  selectedReminder.value = reminder
+  isReminderDetailsOpen.value = true
+}
+
+// Update Reminder Status
+const updateReminderStatus = async (reminder, newStatus) => {
+  try {
+    isSendingAction.value = true
+    await $api(`/maintenance-reminders/${reminder.id}/status`, {
+      method: 'PATCH',
+      body: { status: newStatus },
+    })
+    showNotification(`Estado actualizado a: ${newStatus}`, 'success')
+    isReminderDetailsOpen.value = false
+    fetchCalendarEvents()
+  } catch (e) {
+    console.error('Error al actualizar estado:', e)
+    showNotification('Error al actualizar estado del recordatorio', 'error')
+  } finally {
+    isSendingAction.value = false
+  }
+}
+
+watch(calendarDate, () => {
+  fetchCalendarEvents()
 })
 
 // Progress Meters Calculations
@@ -239,6 +343,7 @@ const fetchDashboardData = async () => {
 
 onMounted(() => {
   fetchDashboardData()
+  fetchCalendarEvents()
 })
 
 // Formatting Helpers
@@ -886,14 +991,23 @@ const tecnicosOptions = computed(() => {
         >
           <VCard
             elevation="0"
-            class="pa-4 mock-card h-100"
+            class="pa-4 mock-card h-100 d-flex flex-column"
           >
             <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
+              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center justify-space-between"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
             >
-              <VIcon icon="ri-calendar-todo-line" />
-              <span>Calendario de Trabajo</span>
+              <div class="d-flex align-center gap-2">
+                <VIcon icon="ri-calendar-todo-line" />
+                <span>Mantenimiento Preventivo</span>
+              </div>
+              <VProgressCircular
+                v-if="isLoadingEvents"
+                indeterminate
+                size="16"
+                width="2"
+                color="primary"
+              />
             </div>
 
             <div class="calendar-widget">
@@ -921,7 +1035,7 @@ const tecnicosOptions = computed(() => {
                 <div
                   v-for="(dayObj, idx) in calendarDays"
                   :key="idx"
-                  class="calendar-day"
+                  class="calendar-day position-relative"
                   :class="{
                     'is-today': dayObj.isToday,
                     'is-selected': dayObj.isSelected && !dayObj.isToday,
@@ -929,72 +1043,119 @@ const tecnicosOptions = computed(() => {
                   }"
                   @click="selectDayObj(dayObj)"
                 >
-                  {{ dayObj.day }}
+                  <span>{{ dayObj.day }}</span>
+                  <!-- Indicadores de eventos de mantenimiento -->
+                  <div
+                    v-if="dayObj.hasEvents"
+                    class="d-flex justify-center gap-1 position-absolute"
+                    style="bottom: 2px; left: 0; right: 0;"
+                  >
+                    <span
+                      v-for="(evt, eIdx) in dayObj.events.slice(0, 3)"
+                      :key="eIdx"
+                      class="rounded-circle"
+                      :style="{
+                        width: '5px',
+                        height: '5px',
+                        backgroundColor: evt.category_color === 'error' ? '#EA5455' :
+                          (evt.category_color === 'warning' ? '#FF9F43' :
+                          (evt.category_color === 'success' ? '#28C76F' :
+                          (evt.category_color === 'info' ? '#00CFE8' :
+                          (evt.category_color === 'deep-purple' ? '#7367F0' : '#7367F0'))))
+                      }"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Calendar Agenda Timeline Feed -->
             <div
-              class="mt-4 pt-3 border-t"
+              class="mt-4 pt-3 border-t flex-grow-1"
               style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
             >
               <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate
-                }}</span>
+                <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate }}</span>
                 <VChip
                   v-if="activeEvents.length > 0"
                   size="x-small"
                   color="primary"
                   class="font-weight-black"
                 >
-                  {{ activeEvents.length }} event.
+                  {{ activeEvents.length }} servicio{{ activeEvents.length > 1 ? 's' : '' }}
                 </VChip>
               </div>
 
               <div
                 v-if="activeEvents.length === 0"
-                class="text-caption text-medium-emphasis text-center py-2"
+                class="text-caption text-medium-emphasis text-center py-4 d-flex flex-column align-center justify-center"
               >
-                Sin órdenes de trabajo programadas
+                <VIcon icon="ri-calendar-check-line" size="28" color="grey" class="mb-1" />
+                <span>Sin servicios proyectados para este día</span>
               </div>
               <div
                 v-else
                 class="d-flex flex-column gap-2"
+                style="max-height: 230px; overflow-y: auto;"
               >
                 <div
-                  v-for="(evt, idx) in activeEvents"
-                  :key="idx"
-                  class="d-flex justify-space-between align-center pa-2 rounded-lg"
-                  style="background-color: rgba(var(--v-theme-on-surface), 0.03); border: 1px solid rgba(var(--v-theme-on-surface), 0.05);"
+                  v-for="evt in activeEvents"
+                  :key="evt.id"
+                  class="d-flex justify-space-between align-center pa-2 rounded-lg elevation-1"
+                  style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
+                  :style="{ borderLeftColor: evt.category_color === 'error' ? '#EA5455' : (evt.category_color === 'warning' ? '#FF9F43' : (evt.category_color === 'success' ? '#28C76F' : (evt.category_color === 'deep-purple' ? '#7367F0' : '#7367F0'))) }"
                 >
                   <div
-                    class="overflow-hidden"
-                    style="max-width: 70%;"
+                    class="overflow-hidden cursor-pointer"
+                    style="max-width: 60%;"
+                    @click="openReminderDetails(evt)"
                   >
                     <div class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
-                      <span
-                        style="font-size: 0.75rem;"
-                        class="text-primary font-weight-black"
-                      >{{ evt.time }}</span>
-                      <span>-</span>
-                      <span class="text-truncate">{{ evt.title }}</span>
+                      <VIcon :icon="evt.category_icon" size="14" :color="evt.category_color" />
+                      <span class="text-truncate">{{ evt.vehicle?.license_plate || 'Vehículo' }} • {{ evt.vehicle?.model || '' }}</span>
                     </div>
                     <div
-                      class="text-medium-emphasis text-truncate"
+                      class="text-medium-emphasis text-truncate d-flex align-center gap-1"
                       style="font-size: 0.68rem;"
                     >
-                      {{ evt.subtitle }}
+                      <span class="font-weight-bold text-primary">{{ Number(evt.target_mileage).toLocaleString() }} KM</span>
+                      <span>-</span>
+                      <span class="text-truncate">{{ evt.client?.full_name || 'Cliente' }}</span>
                     </div>
                   </div>
-                  <VChip
-                    :color="evt.color"
-                    size="x-small"
-                    variant="tonal"
-                    class="font-weight-bold"
-                  >
-                    {{ evt.status }}
-                  </VChip>
+
+                  <div class="d-flex align-center gap-1">
+                    <!-- Botón WhatsApp -->
+                    <VBtn
+                      icon="ri-whatsapp-line"
+                      size="x-small"
+                      color="success"
+                      variant="tonal"
+                      title="Enviar recordatorio por WhatsApp"
+                      @click.stop="sendWhatsAppNotification(evt)"
+                    />
+
+                    <!-- Botón Correo -->
+                    <VBtn
+                      icon="ri-mail-send-line"
+                      size="x-small"
+                      color="primary"
+                      variant="tonal"
+                      :loading="isSendingAction"
+                      title="Enviar recordatorio por Correo"
+                      @click.stop="sendEmailNotification(evt)"
+                    />
+
+                    <!-- Botón Ver Detalles -->
+                    <VBtn
+                      icon="ri-eye-line"
+                      size="x-small"
+                      color="secondary"
+                      variant="text"
+                      title="Ver detalles"
+                      @click.stop="openReminderDetails(evt)"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1490,6 +1651,192 @@ const tecnicosOptions = computed(() => {
 
     <!-- Monthly Sales Breakdown (Mayor a Menor / Productos vs Servicios) Dialog -->
     <MonthlySalesBreakdownDialog v-model="isMonthlySalesBreakdownOpen" />
+
+    <!-- Dialog Detalle de Mantenimiento Preventivo -->
+    <VDialog
+      v-model="isReminderDetailsOpen"
+      max-width="520"
+    >
+      <VCard
+        v-if="selectedReminder"
+        class="rounded-xl overflow-hidden"
+      >
+        <div
+          class="pa-4 d-flex justify-space-between align-center text-white"
+          style="background: linear-gradient(135deg, #7367F0 0%, #4834D4 100%);"
+        >
+          <div class="d-flex align-center gap-3">
+            <VAvatar
+              color="white"
+              variant="tonal"
+              size="40"
+            >
+              <VIcon
+                :icon="selectedReminder.category_icon"
+                size="22"
+                color="white"
+              />
+            </VAvatar>
+            <div>
+              <h3 class="text-subtitle-1 font-weight-bold text-white mb-0">
+                Recordatorio Preventivo
+              </h3>
+              <p
+                class="text-caption text-white opacity-80 mb-0 text-truncate"
+                style="max-width: 320px;"
+              >
+                {{ selectedReminder.title }}
+              </p>
+            </div>
+          </div>
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            color="white"
+            size="small"
+            @click="isReminderDetailsOpen = false"
+          />
+        </div>
+
+        <VCardText class="pa-4 pt-4">
+          <VRow>
+            <VCol
+              cols="12"
+              class="mb-2"
+            >
+              <div
+                class="pa-3 rounded-lg d-flex justify-space-between align-center"
+                style="background-color: rgba(var(--v-theme-primary), 0.08); border: 1px dashed rgba(var(--v-theme-primary), 0.3);"
+              >
+                <div>
+                  <span class="text-caption text-medium-emphasis">Fecha Estimada</span>
+                  <div class="font-weight-bold text-primary text-body-1">
+                    {{ selectedReminder.scheduled_date }}
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-caption text-medium-emphasis">Kilometraje Objetivo</span>
+                  <div class="font-weight-bold text-h6 text-success">
+                    {{ Number(selectedReminder.target_mileage).toLocaleString() }} KM
+                  </div>
+                </div>
+              </div>
+            </VCol>
+
+            <VCol cols="6">
+              <span class="text-caption text-medium-emphasis">Vehículo / Placa</span>
+              <div class="font-weight-bold text-body-2">
+                {{ selectedReminder.vehicle?.license_plate }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ selectedReminder.vehicle?.brand }} {{ selectedReminder.vehicle?.model }} ({{ selectedReminder.vehicle?.usage_type ? String(selectedReminder.vehicle.usage_type).toUpperCase() : 'PARTICULAR' }})
+              </div>
+            </VCol>
+
+            <VCol cols="6">
+              <span class="text-caption text-medium-emphasis">Cliente</span>
+              <div class="font-weight-bold text-body-2 text-truncate">
+                {{ selectedReminder.client?.full_name }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Telf: {{ selectedReminder.client?.phone || 'Sin teléfono' }}
+              </div>
+            </VCol>
+
+            <VCol cols="6">
+              <span class="text-caption text-medium-emphasis">Último Servicio Realizado</span>
+              <div class="font-weight-medium text-body-2">
+                {{ Number(selectedReminder.last_service_mileage).toLocaleString() }} KM
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ selectedReminder.last_service_date }}
+              </div>
+            </VCol>
+
+            <VCol cols="6">
+              <span class="text-caption text-medium-emphasis">Tasa de Uso Estimada</span>
+              <div class="font-weight-bold text-info text-body-2">
+                {{ selectedReminder.avg_daily_km }} KM / día
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Intervalo: +{{ Number(selectedReminder.interval_km || 10000).toLocaleString() }} KM
+              </div>
+            </VCol>
+
+            <VCol
+              v-if="selectedReminder.description"
+              cols="12"
+            >
+              <span class="text-caption text-medium-emphasis">Descripción / Notas</span>
+              <div class="text-body-2 pa-2 rounded bg-light">
+                {{ selectedReminder.description }}
+              </div>
+            </VCol>
+
+            <VCol
+              v-if="selectedReminder.notified_at"
+              cols="12"
+            >
+              <VAlert
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="text-caption mb-0"
+              >
+                Notificado el {{ selectedReminder.notified_at }} vía {{ selectedReminder.notification_channel || 'WhatsApp' }}
+              </VAlert>
+            </VCol>
+          </VRow>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex flex-wrap justify-space-between align-center gap-2">
+          <div class="d-flex gap-2">
+            <VBtn
+              color="success"
+              variant="elevated"
+              size="small"
+              prepend-icon="ri-whatsapp-line"
+              @click="sendWhatsAppNotification(selectedReminder)"
+            >
+              WhatsApp
+            </VBtn>
+            <VBtn
+              color="primary"
+              variant="elevated"
+              size="small"
+              prepend-icon="ri-mail-send-line"
+              :loading="isSendingAction"
+              @click="sendEmailNotification(selectedReminder)"
+            >
+              Correo
+            </VBtn>
+          </div>
+
+          <div class="d-flex gap-2">
+            <VBtn
+              v-if="selectedReminder.status !== 'scheduled'"
+              color="info"
+              variant="tonal"
+              size="small"
+              @click="updateReminderStatus(selectedReminder, 'scheduled')"
+            >
+              Marcar Agendado
+            </VBtn>
+            <VBtn
+              v-if="selectedReminder.status !== 'completed'"
+              color="success"
+              variant="tonal"
+              size="small"
+              @click="updateReminderStatus(selectedReminder, 'completed')"
+            >
+              Completado
+            </VBtn>
+          </div>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </VContainer>
 </template>
 

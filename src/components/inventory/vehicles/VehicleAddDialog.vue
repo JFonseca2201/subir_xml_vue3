@@ -6,7 +6,7 @@ import {
   formatEcuadorianPlate,
   plateValidationRule,
 } from '@/utils/ecuadorianPlateValidator.js'
-import { getVehicleTypeOptions } from '@/data/vehicleTypes.js'
+import { getVehicleTypeOptions, getVehicleUsageTypeOptions } from '@/data/vehicleTypes.js'
 import VSearch from '@/components/common/VSearch.vue'
 
 const props = defineProps({
@@ -83,6 +83,7 @@ const vehicleForm = ref({
   year: new Date().getFullYear(),
   color: '',
   vehicle_type: '',
+  usage_type: 'particular',
   description: '',
   user_id: null, // ID del usuario que crea el vehículo
   client_id: null,
@@ -134,6 +135,7 @@ watch(() => initialClient.value, newVal => {
 
 // --- OPCIONES ---
 const vehicleTypeOptions = getVehicleTypeOptions()
+const vehicleUsageTypeOptions = getVehicleUsageTypeOptions()
 
 const colorOptions = [
   { title: 'Rojo', value: 'rojo' },
@@ -346,6 +348,19 @@ onMounted(() => {
                 label="Tipo de Vehículo *"
                 prepend-inner-icon="ri-car-line"
                 :rules="rules.vehicle_type"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+              class="mb-3"
+            >
+              <VSelect
+                v-model="vehicleForm.usage_type"
+                :items="vehicleUsageTypeOptions"
+                label="Uso / Frecuencia Estimada"
+                prepend-inner-icon="ri-dashboard-3-line"
               />
             </VCol>
 
