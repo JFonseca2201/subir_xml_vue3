@@ -32,7 +32,7 @@ watch(search, () => {
 })
 
 const list = async () => {
-  loader.start()
+  isLoading.value = true
 
   try {
     const resp = await $api("warehouses?search=" + (search.value ? search.value : ""), {
@@ -42,22 +42,14 @@ const list = async () => {
       },
     })
 
-    list_warehouses.value = resp.warehouses
-    console.log(list_warehouses.value)
-
-    // Manejar diferentes estructuras de respuesta
-    if (resp.warehouses) {
-      list_warehouses.value = resp.warehouses
-    } else {
-      list_warehouses.value = []
-    }
+    list_warehouses.value = resp.warehouses || []
 
     showNotification('Lista de almacenes cargada correctamente', 'success')
   } catch (error) {
     console.error(error)
     showNotification('Error al cargar la lista de almacenes', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
   }
 }
 
@@ -132,54 +124,59 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 warehouses-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-store-2-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-store-2-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Almacenes
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Administración y control de almacenes
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Almacenes
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Administración y control de almacenes
-        </p>
+            prepend-icon="ri-add-circle-line"
+            @click="isWarehouseAddDialogVisible = !isWarehouseAddDialogVisible"
+          >
+            Nuevo Almacén
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-circle-line"
-          @click="isWarehouseAddDialogVisible = !isWarehouseAddDialogVisible"
-        >
-          Nuevo Almacén
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol cols="12">
+              <VTextField
+                v-model="search"
+                label="Buscar almacén"
+                placeholder="Nombre, dirección..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol cols="12">
-            <VTextField
-              v-model="search"
-              label="Buscar almacén"
-              placeholder="Nombre, dirección..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Almacenes -->
       <div class="position-relative">
         <div class="overflow-x-auto">
@@ -227,7 +224,41 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!list_warehouses || list_warehouses.length === 0">
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75 mb-1" />
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-chip" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="!list_warehouses || list_warehouses.length === 0">
               <tr>
                 <td
                   colspan="6"

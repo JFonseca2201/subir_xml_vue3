@@ -128,171 +128,130 @@ onMounted(() => {
 </script>
 
 <template>
-  <VContainer
-    fluid
-    class="inforepuestos-container pa-6"
-  >
-    <div class="header-glow" />
-
-    <!-- Título y botón superior -->
-    <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-6 relative-header">
-      <div class="d-flex align-center gap-3">
-        <VAvatar
-          color="primary"
-          variant="tonal"
-          size="50"
-          class="elevation-2"
-        >
-          <VIcon
-            icon="ri-file-list-3-line"
-            size="28"
-          />
-        </VAvatar>
+  <div class="pa-4 pa-sm-6 inforepuestos-page">
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Título y botón superior -->
+      <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-4 relative-header">
         <div>
-          <h3 class="text-h4 font-weight-bold text-high-emphasis mb-1">
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon icon="ri-file-list-3-line" color="primary" class="me-2" size="28" />
             Gestión y Búsqueda de Repuestos por Vehículo
-          </h3>
-          <p class="text-subtitle-2 text-medium-emphasis mb-0">
+          </h1>
+          <p class="text-medium-emphasis mb-0">
             Administra el historial de repuestos y compatibilidades por marca, modelo y año.
           </p>
         </div>
+
+        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" class="elevation-2"
+          @click="openCreate">
+          Registrar Búsqueda
+        </VBtn>
       </div>
-      <VBtn
-        v-if="can('register_product')"
-        color="primary"
-        prepend-icon="ri-add-line"
-        class="elevation-2"
-        @click="openCreate"
-      >
-        Registrar Búsqueda
-      </VBtn>
-    </div>
 
-    <!-- Filtros de Búsqueda -->
-    <VCard
-      class="mb-6 elevation-3 search-card"
-      variant="outlined"
-      color="rgba(var(--v-border-color), 0.12)"
-    >
-      <VCardText class="pa-5">
-        <VRow dense>
-          <!-- Búsqueda General -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="searchQuery"
-              label="Búsqueda por Palabra Clave"
-              placeholder="Ej: Chevrolet, Vitara, Amortiguador, Frenos..."
-              clearable
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              prepend-inner-icon="ri-search-2-line"
-            />
-          </VCol>
+      <!-- Filtros de Búsqueda -->
+      <VCard class="mb-4 elevation-0 border-light border rounded-lg sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow dense class="gap-y-2">
+            <!-- Búsqueda General -->
+            <VCol cols="12" md="6">
+              <VTextField v-model="searchQuery" label="Búsqueda por Palabra Clave"
+                placeholder="Ej: Chevrolet, Vitara, Amortiguador, Frenos..." clearable variant="outlined"
+                density="comfortable" hide-details="auto" prepend-inner-icon="ri-search-2-line" />
+            </VCol>
 
-          <!-- Tracción / Suspensión -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VSelect
-              v-model="tractionFilter"
-              label="Tracción / Suspensión"
-              :items="[
+            <!-- Tracción / Suspensión -->
+            <VCol cols="12" sm="6" md="3">
+              <VSelect v-model="tractionFilter" label="Tracción / Suspensión" :items="[
                 { title: 'Todos', value: 'ALL' },
                 { title: '4x4', value: '4X4' },
                 { title: '4x2', value: '4X2' },
                 { title: 'AWD', value: 'AWD' },
                 { title: 'FWD', value: 'FWD' },
                 { title: 'RWD', value: 'RWD' }
-              ]"
-              item-title="title"
-              item-value="value"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-            />
-          </VCol>
+              ]" item-title="title" item-value="value" variant="outlined" density="comfortable" hide-details="auto" />
+            </VCol>
 
-          <!-- Año -->
-          <VCol
-            cols="12"
-            sm="6"
-            md="3"
-          >
-            <VTextField
-              v-model.number="yearFilter"
-              label="Año del Vehículo"
-              type="number"
-              placeholder="Ej: 2007"
-              clearable
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              prepend-inner-icon="ri-calendar-line"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-    </VCard>
+            <!-- Año -->
+            <VCol cols="12" sm="6" md="3">
+              <VTextField v-model.number="yearFilter" label="Año del Vehículo" type="number" placeholder="Ej: 2007"
+                clearable variant="outlined" density="comfortable" hide-details="auto"
+                prepend-inner-icon="ri-calendar-line" />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </div>
 
     <!-- Listado principal -->
-    <VCard
-      class="elevation-3"
-      variant="outlined"
-      color="rgba(var(--v-border-color), 0.12)"
-    >
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <VCardText class="pa-0">
         <VTable class="custom-catalog-table">
           <thead>
             <tr>
-              <th
-                class="text-left font-weight-bold"
-                style="width: 35%;"
-              >
+              <th class="text-left font-weight-bold" style="width: 35%;">
                 Información de Vehículo
               </th>
               <th class="text-left font-weight-bold">
                 Repuestos Compatibles Registrados
               </th>
-              <th
-                class="text-center font-weight-bold"
-                style="width: 150px;"
-              >
+              <th class="text-center font-weight-bold" style="width: 150px;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
             <!-- Skeleton Loader -->
-            <tr
-              v-for="i in 5"
-              v-if="loading"
-              :key="'skeleton-' + i"
-            >
-              <td
-                colspan="3"
-                class="py-4"
-              >
-                <VSkeletonLoader type="text" />
+            <tr v-for="i in 5" v-if="loading" :key="'skeleton-' + i" class="skeleton-row align-middle">
+              <!-- Columna Vehículo -->
+              <td class="py-4">
+                <div class="vehicle-info-cell">
+                  <div class="shimmer-line w-75 mb-2" style="height: 16px;" />
+                  <div class="d-flex align-center gap-1 mt-1">
+                    <div class="shimmer-chip" style="width: 42px; height: 18px;" />
+                    <div class="shimmer-chip" style="width: 48px; height: 18px;" />
+                    <div class="shimmer-chip" style="width: 56px; height: 18px;" />
+                  </div>
+                  <div class="d-flex align-center gap-1 mt-2">
+                    <div class="shimmer-line w-40" style="height: 10px;" />
+                  </div>
+                </div>
+              </td>
+
+              <!-- Columna Repuestos Compatibles -->
+              <td class="py-3">
+                <div class="spare-part-list-wrapper">
+                  <div v-for="j in 2" :key="j" class="spare-part-row-item">
+                    <div class="shimmer-circle" style="width: 18px; height: 18px; min-width: 18px;" />
+                    <div class="item-info">
+                      <div class="shimmer-line w-75 mb-1" style="height: 12px;" />
+                      <div class="shimmer-line w-40" style="height: 10px;" />
+                    </div>
+                    <div class="item-category">
+                      <div class="shimmer-chip" style="width: 60px; height: 18px;" />
+                    </div>
+                    <div class="item-pricing">
+                      <div class="shimmer-line w-75 mb-1" style="height: 12px;" />
+                      <div class="shimmer-line w-50" style="height: 10px;" />
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Columna Acciones -->
+              <td class="py-4 text-center">
+                <div class="d-flex justify-center gap-1">
+                  <div class="shimmer-button rounded" />
+                  <div class="shimmer-button rounded" />
+                  <div class="shimmer-button rounded" />
+                </div>
               </td>
             </tr>
 
             <!-- No Data -->
             <tr v-else-if="requests.length === 0">
-              <td
-                colspan="3"
-                class="text-center py-8"
-              >
-                <VIcon
-                  icon="ri-inbox-line"
-                  size="48"
-                  class="text-grey-lighten-1 mb-2"
-                />
+              <td colspan="3" class="text-center py-8">
+                <VIcon icon="ri-inbox-line" size="48" class="text-grey-lighten-1 mb-2" />
                 <h4 class="text-h6 font-weight-bold">
                   No se encontraron registros
                 </h4>
@@ -303,63 +262,35 @@ onMounted(() => {
             </tr>
 
             <!-- Table Rows -->
-            <tr
-              v-for="item in requests"
-              v-else
-              :key="item.id"
-              class="catalog-row"
-            >
+            <tr v-for="item in requests" v-else :key="item.id" class="catalog-row">
               <td>
                 <div class="vehicle-info-cell">
                   <div class="vehicle-title text-uppercase font-weight-bold">
                     {{ item.brand }} {{ item.model }}
                   </div>
                   <div class="vehicle-meta-chips d-flex align-center gap-1 mt-1">
-                    <VChip
-                      size="x-small"
-                      color="secondary"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
+                    <VChip size="x-small" color="secondary" variant="tonal" class="font-weight-bold">
                       {{ item.year }}
                     </VChip>
-                    <VChip
-                      v-if="item.traction"
-                      size="x-small"
-                      color="info"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
+                    <VChip v-if="item.traction" size="x-small" color="info" variant="tonal" class="font-weight-bold">
                       {{ item.traction }}
                     </VChip>
-                    <VChip
-                      v-if="item.origin_country"
-                      size="x-small"
-                      color="warning"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
+                    <VChip v-if="item.origin_country" size="x-small" color="warning" variant="tonal"
+                      class="font-weight-bold">
                       {{ item.origin_country }}
                     </VChip>
                   </div>
                   <div class="vehicle-user text-caption text-disabled mt-2 d-flex align-center gap-1">
-                    <VIcon
-                      icon="ri-user-smile-line"
-                      size="12"
-                    />
+                    <VIcon icon="ri-user-smile-line" size="12" />
                     <span>Por: {{ item.user ? (item.user.name + ' ' + (item.user.surname || '')) : 'Sistema' }}</span>
                   </div>
                 </div>
               </td>
               <td>
                 <div class="spare-part-list-wrapper">
-                  <div
-                    v-for="(subItem, idx) in (item.items || [])"
-                    :key="idx"
-                    class="spare-part-row-item"
-                  >
+                  <div v-for="(subItem, idx) in (item.items || [])" :key="idx" class="spare-part-row-item">
                     <!-- Icon or Index Badge -->
-                    <div class="item-badge">
+                    <div style="font-size: 10px;">
                       #{{ idx + 1 }}
                     </div>
 
@@ -375,14 +306,9 @@ onMounted(() => {
 
                     <!-- Category -->
                     <div class="item-category">
-                      <VChip
-                        size="x-small"
-                        color="primary"
-                        variant="tonal"
-                        class="font-weight-bold"
-                      >
+                      <span style="font-size: 10px;">
                         {{ subItem.category }}
-                      </VChip>
+                      </span>
                     </div>
 
                     <!-- Pricing -->
@@ -398,31 +324,13 @@ onMounted(() => {
               <td class="text-center">
                 <div class="d-flex justify-center gap-1">
                   <!-- Ver Detalle -->
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="text"
-                    icon="ri-eye-line"
-                    @click="openDetail(item)"
-                  />
+                  <VBtn size="small" color="info" variant="text" icon="ri-eye-line" @click="openDetail(item)" />
                   <!-- Editar -->
-                  <VBtn
-                    v-if="can('edit_product')"
-                    size="small"
-                    color="warning"
-                    variant="text"
-                    icon="ri-edit-line"
-                    @click="openEdit(item)"
-                  />
+                  <VBtn v-if="can('edit_product')" size="small" color="warning" variant="text" icon="ri-edit-line"
+                    @click="openEdit(item)" />
                   <!-- Eliminar -->
-                  <VBtn
-                    v-if="can('delete_product')"
-                    size="small"
-                    color="error"
-                    variant="text"
-                    icon="ri-delete-bin-line"
-                    @click="deleteRequest(item)"
-                  />
+                  <VBtn v-if="can('delete_product')" size="small" color="error" variant="text" icon="ri-delete-bin-line"
+                    @click="deleteRequest(item)" />
                 </div>
               </td>
             </tr>
@@ -430,36 +338,26 @@ onMounted(() => {
         </VTable>
       </VCardText>
 
+      <VDivider />
+
       <!-- Paginación -->
-      <VDivider v-if="totalPages > 1" />
-      <VCardText
-        v-if="totalPages > 1"
-        class="d-flex align-center justify-space-between flex-wrap gap-4 py-4 px-6"
-      >
-        <span class="text-subtitle-2 text-medium-emphasis">
-          Mostrando {{ requests.length }} de {{ totalItems }} registros
-        </span>
-        <VPagination
-          :model-value="page"
-          :length="totalPages"
-          :total-visible="5"
-          size="small"
-          @update:model-value="handlePageChange"
-        />
-      </VCardText>
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ requests.length }}</span> de <span class="font-weight-bold">{{
+              totalItems }}</span> registros
+          </div>
+          <VPagination v-model="page" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="handlePageChange" />
+        </div>
+      </VCardActions>
     </VCard>
 
     <!-- Formulario modal de Creación/Edición -->
-    <InfoRepuestoFormDialog
-      v-model:isDialogVisible="isFormDialogOpen"
-      :request-selected="requestSelected"
-      @save-success="handleSaveSuccess"
-    />
+    <InfoRepuestoFormDialog v-model:isDialogVisible="isFormDialogOpen" :request-selected="requestSelected"
+      @save-success="handleSaveSuccess" />
 
     <!-- Detalle modal -->
-    <InfoRepuestoDetailDialog
-      v-model:isDialogVisible="isDetailDialogOpen"
-      :request-selected="requestSelected"
-    />
-  </VContainer>
+    <InfoRepuestoDetailDialog v-model:isDialogVisible="isDetailDialogOpen" :request-selected="requestSelected" />
+  </div>
 </template>

@@ -255,193 +255,102 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 client-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-user-3-line"
-            color="primary"
-            class="me-2"
-            size="28"
-          />
-          Gestión de Clientes
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Registra, administra e importa la información de los clientes del taller
-        </p>
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon icon="ri-user-3-line" color="primary" class="me-2" size="28" />
+            Gestión de Clientes
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Registra, administra e importa la información de los clientes del taller
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn v-if="can('import_xml') || can('register_client')" color="secondary" variant="tonal"
+            prepend-icon="ri-upload-cloud-2-line" @click="isImportDialogVisible = true">
+            Importar
+          </VBtn>
+          <VBtn v-if="can('register_client')" color="primary" variant="outlined" prepend-icon="ri-user-add-line"
+            @click="addNewClientFinal">
+            Cliente Final
+          </VBtn>
+          <VBtn v-if="can('register_client')" color="primary" prepend-icon="ri-building-line" @click="addClient">
+            Cliente Empresa
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('import_xml') || can('register_client')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-upload-cloud-2-line"
-          @click="isImportDialogVisible = true"
-        >
-          Importar
-        </VBtn>
-        <VBtn
-          v-if="can('register_client')"
-          color="primary"
-          variant="outlined"
-          prepend-icon="ri-user-add-line"
-          @click="addNewClientFinal"
-        >
-          Cliente Final
-        </VBtn>
-        <VBtn
-          v-if="can('register_client')"
-          color="primary"
-          prepend-icon="ri-building-line"
-          @click="addClient"
-        >
-          Cliente Empresa
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VForm ref="searchFormRef">
+            <VRow class="gap-y-3">
+              <VCol cols="12" md="6">
+                <VTextField v-model="searchForm.search" label="Buscar cliente"
+                  placeholder="Nombre, email, RUC o cédula..." prepend-inner-icon="ri-search-line" clearable hide-details
+                  variant="outlined" density="comfortable" color="primary" />
+              </VCol>
+              <VCol cols="12" sm="6" md="3">
+                <VSelect v-model="searchForm.type_client" :items="typeClientOptions" item-title="title" item-value="value"
+                  label="Tipo de Cliente" placeholder="Todos" clearable hide-details variant="outlined"
+                  density="comfortable" color="primary" />
+              </VCol>
+              <VCol cols="12" sm="6" md="3">
+                <VSelect v-model="searchForm.state" :items="stateOptions" item-title="title" item-value="value"
+                  label="Estado" placeholder="Todos" clearable hide-details variant="outlined" density="comfortable"
+                  color="primary" />
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VForm ref="searchFormRef">
-          <VRow class="gap-y-3">
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Buscar cliente"
-                placeholder="Nombre, email, RUC o cédula..."
-                prepend-inner-icon="ri-search-line"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.type_client"
-                :items="typeClientOptions"
-                item-title="title"
-                item-value="value"
-                label="Tipo de Cliente"
-                placeholder="Todos"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-              />
-            </VCol>
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VSelect
-                v-model="searchForm.state"
-                :items="stateOptions"
-                item-title="title"
-                item-value="value"
-                label="Estado"
-                placeholder="Todos"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-              />
-            </VCol>
-          </VRow>
-        </VForm>
-      </VCardText>
-
       <!-- Tabla de clientes -->
       <div class="position-relative">
-        <VTable
-          hover
-          class="client-table overflow-x-auto"
-        >
+        <VTable hover class="client-table overflow-x-auto">
           <thead>
             <tr>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 80px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase" style="width: 70px;">
                 ID
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="min-width: 200px;"
-              >
-                Nombre Completo
+              <th class="text-left font-weight-bold text-uppercase" style="width: 160px;">
+                Cédula / RUC
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 120px;"
-              >
-                Tipo
+              <th class="text-left font-weight-bold text-uppercase" style="min-width: 250px;">
+                Cliente / Razón Social
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 160px;"
-              >
-                Documento
-              </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 140px;"
-              >
-                Teléfono
-              </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 180px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase" style="width: 250px;">
                 Email
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 130px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase" style="width: 140px;">
+                Teléfono
+              </th>
+              <th class="text-left font-weight-bold text-uppercase" style="width: 110px;">
                 Estado
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase"
-                style="width: 140px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
                 Acciones
               </th>
             </tr>
           </thead>
           <!-- Cargando (Skeleton Rows) -->
           <tbody v-if="loading">
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
+            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
               <td class="py-4">
                 <div class="shimmer-line w-40" />
               </td>
               <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td class="py-4">
                 <div class="shimmer-line w-75 mb-2" />
                 <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-chip" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
               </td>
               <td class="py-4">
                 <div class="shimmer-line w-60" />
@@ -465,20 +374,9 @@ onMounted(() => {
           <!-- Sin resultados -->
           <tbody v-else-if="!clients.length">
             <tr>
-              <td
-                colspan="8"
-                class="text-center text-medium-emphasis py-12"
-              >
-                <VAvatar
-                  size="64"
-                  color="grey-lighten-4"
-                  class="mb-3"
-                >
-                  <VIcon
-                    size="32"
-                    color="grey"
-                    icon="ri-user-line"
-                  />
+              <td colspan="7" class="text-center text-medium-emphasis py-12">
+                <VAvatar size="64" color="grey-lighten-4" class="mb-3">
+                  <VIcon size="32" color="grey" icon="ri-user-line" />
                 </VAvatar>
                 <div class="text-h6 font-weight-semibold text-grey-darken-1">
                   No se encontraron clientes
@@ -492,131 +390,74 @@ onMounted(() => {
 
           <!-- Datos Reales -->
           <tbody v-else>
-            <tr
-              v-for="client in clients"
-              :key="client.id"
-              class="client-row transition"
-            >
+            <tr v-for="client in clients" :key="client.id" class="client-row transition">
               <td class="font-weight-medium text-grey-darken-1">
                 #{{ client.id }}
               </td>
+
+              <!-- Documento (Cédula / RUC) -->
               <td>
-                <div
-                  class="text-grey-darken-3 text-uppercase text-wrap"
-                  style="max-width: 250px;"
-                >
+                <div class="text-caption text-grey text-uppercase font-weight-bold">
+                  {{ client.type_document === '1' || client.type_document === 1 ? 'Cédula' : client.type_document ===
+                    '2' || client.type_document === 2 ? 'RUC' : (client.type_document === '3' || client.type_document ===
+                      3 ? 'Pasaporte' : 'Identificación') }}
+                </div>
+                <div class="font-weight-bold text-grey-darken-3 font-mono">
+                  {{ client.n_document || 'Sin documento' }}
+                </div>
+              </td>
+
+              <!-- Nombre Completo / Razón Social -->
+              <td>
+                <div class="font-weight-bold text-grey-darken-4 text-uppercase">
                   {{ client.full_name || `${client.name} ${client.surname}` }}
                 </div>
-                <div
-                  v-if="client.address"
-                  class="text-caption text-grey text-uppercase text-wrap"
-                  style="max-width: 250px; line-height: 1.2;"
-                >
+                <div v-if="client.address" class="text-caption text-grey text-uppercase mt-0.5"
+                  style="line-height: 1.2;">
                   {{ client.address }}
                 </div>
               </td>
-              <td>
-                <VChip
-                  :color="client.type_client === '1' || client.type_client === 1 ? 'primary' : 'secondary'"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-semibold text-uppercase"
-                >
-                  {{ client.type_client === '1' || client.type_client === 1 ? 'Natural' : 'Jurídico' }}
-                </VChip>
+              <!-- Email -->
+              <td class="text-lowercase text-grey-darken-2 text-truncate" style="max-width: 250px;"
+                :title="client.email">
+                {{ client.email || '-' }}
               </td>
-              <td>
-                <div class="text-caption text-grey text-uppercase font-weight-semibold">
-                  {{ client.type_document === '1' || client.type_document === 1 ? 'Cédula' : client.type_document ===
-                    '2' || client.type_document === 2 ? 'RUC' : 'Pasaporte' }}
-                </div>
-                <div class="font-weight-semibold text-grey-darken-2">
-                  {{ client.n_document }}
-                </div>
-              </td>
+              <!-- Teléfono -->
               <td class="text-grey-darken-1 font-weight-medium">
                 {{ client.phone || '-' }}
               </td>
-              <td
-                class="text-lowercase text-grey-darken-2 text-truncate"
-                style="max-width: 180px;"
-                :title="client.email"
-              >
-                {{ client.email || '-' }}
-              </td>
+
+
+
+              <!-- Estado -->
               <td>
-                <VChip
-                  :color="parseInt(client.state) === 1 ? 'success' : 'error'"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-semibold"
-                >
+                <VChip :color="parseInt(client.state) === 1 ? 'success' : 'error'" variant="tonal" size="small"
+                  class="font-weight-semibold">
                   {{ parseInt(client.state) === 1 ? 'ACTIVO' : 'INACTIVO' }}
                 </VChip>
               </td>
+
+              <!-- Acciones -->
               <td class="text-center">
                 <div class="d-flex justify-center align-center gap-1">
-                  <IconBtn
-                    class="action-btn text-info"
-                    title="Ver Ficha"
-                    size="small"
-                    @click="showClient(client)"
-                  >
-                    <VIcon
-                      icon="ri-eye-line"
-                      size="18"
-                    />
+                  <IconBtn class="action-btn text-info" title="Ver Ficha" size="small" @click="showClient(client)">
+                    <VIcon icon="ri-eye-line" size="18" />
                   </IconBtn>
-                  <IconBtn
-                    v-if="can('edit_client')"
-                    class="action-btn text-warning"
-                    title="Editar Cliente"
-                    size="small"
-                    @click="editClient(client)"
-                  >
-                    <VIcon
-                      icon="ri-pencil-line"
-                      size="18"
-                    />
+                  <IconBtn v-if="can('edit_client')" class="action-btn text-warning" title="Editar Cliente" size="small"
+                    @click="editClient(client)">
+                    <VIcon icon="ri-pencil-line" size="18" />
                   </IconBtn>
 
                   <!-- Menú Más Opciones -->
-                  <IconBtn
-                    class="action-btn text-secondary"
-                    title="Más Opciones"
-                    size="small"
-                  >
-                    <VIcon
-                      icon="ri-more-2-line"
-                      size="18"
-                    />
-                    <VMenu
-                      activator="parent"
-                      transition="slide-y-transition"
-                      align="end"
-                      location="bottom end"
-                    >
-                      <VList
-                        density="compact"
-                        class="py-1 rounded elevation-3 border"
-                      >
-                        <VListItem
-                          prepend-icon="ri-history-line"
-                          title="Ver Historial"
-                          class="text-info text-body-2"
-                          @click="showHistory(client)"
-                        />
-                        <VDivider
-                          v-if="can('delete_client')"
-                          class="my-1"
-                        />
-                        <VListItem
-                          v-if="can('delete_client')"
-                          prepend-icon="ri-delete-bin-6-line"
-                          title="Eliminar Cliente"
-                          class="text-error text-body-2"
-                          @click="deleteClient(client)"
-                        />
+                  <IconBtn class="action-btn text-secondary" title="Más Opciones" size="small">
+                    <VIcon icon="ri-more-2-line" size="18" />
+                    <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                      <VList density="compact" class="py-1 rounded elevation-3 border">
+                        <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2"
+                          @click="showHistory(client)" />
+                        <VDivider v-if="can('delete_client')" class="my-1" />
+                        <VListItem v-if="can('delete_client')" prepend-icon="ri-delete-bin-6-line"
+                          title="Eliminar Cliente" class="text-error text-body-2" @click="deleteClient(client)" />
                       </VList>
                     </VMenu>
                   </IconBtn>
@@ -636,113 +477,35 @@ onMounted(() => {
             Mostrando <span class="font-weight-bold">{{ clients.length }}</span> de <span class="font-weight-bold">{{
               totalItems }}</span> clientes
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="loadClients"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="loadClients" />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Diálogos -->
-    <ClientFinalAddDialog
-      v-if="isClientFinalAddDialogVisible"
-      v-model:isDialogVisible="isClientFinalAddDialogVisible"
-      @add-client-final="handleClientFinalAdded"
-    />
+    <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible" v-model:isDialogVisible="isClientFinalAddDialogVisible"
+      @add-client-final="handleClientFinalAdded" />
 
-    <ClientCompanyAddDialog
-      v-if="isClientCompanyAddDialogVisible"
-      v-model:isDialogVisible="isClientCompanyAddDialogVisible"
-      @add-client-company="handleClientCompanyAdded"
-    />
+    <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
+      v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientCompanyAdded" />
 
-    <ClientFinalEditDialog
-      v-if="isClientFinalEditDialogVisible"
-      v-model:isDialogVisible="isClientFinalEditDialogVisible"
-      :client-data="clientToEdit"
-      @client-updated="handleClientFinalUpdated"
-    />
+    <ClientFinalEditDialog v-if="isClientFinalEditDialogVisible"
+      v-model:isDialogVisible="isClientFinalEditDialogVisible" :client-data="clientToEdit"
+      @client-updated="handleClientFinalUpdated" />
 
-    <ClientCompanyEditDialog
-      v-if="isClientCompanyEditDialogVisible"
-      v-model:isDialogVisible="isClientCompanyEditDialogVisible"
-      :client-data="companyToEdit"
-      @client-updated="handleClientCompanyUpdated"
-    />
+    <ClientCompanyEditDialog v-if="isClientCompanyEditDialogVisible"
+      v-model:isDialogVisible="isClientCompanyEditDialogVisible" :client-data="companyToEdit"
+      @client-updated="handleClientCompanyUpdated" />
 
-    <ClientShowDialog
-      v-if="isClientShowDialogVisible"
-      v-model:isDialogVisible="isClientShowDialogVisible"
-      :client-data="clientToShow"
-    />
+    <ClientShowDialog v-if="isClientShowDialogVisible" v-model:isDialogVisible="isClientShowDialogVisible"
+      :client-data="clientToShow" />
 
-    <ClientDeleteDialog
-      v-if="deleteDialog"
-      v-model:isDialogVisible="deleteDialog"
-      :client-selected="clientToDelete"
-      @delete-client="handleClientDeleted"
-    />
+    <ClientDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :client-selected="clientToDelete"
+      @delete-client="handleClientDeleted" />
 
-    <SalesHistoryDialog
-      v-model="isHistoryDialogVisible"
-      :client-id="historyClientId"
-    />
+    <SalesHistoryDialog v-model="isHistoryDialogVisible" :client-id="historyClientId" />
 
-    <ImportData
-      v-model:is-dialog-visible="isImportDialogVisible"
-      default-tab="clients"
-      @import-success="loadClients"
-    />
+    <ImportData v-model:is-dialog-visible="isImportDialogVisible" default-tab="clients" @import-success="loadClients" />
   </div>
 </template>
-
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

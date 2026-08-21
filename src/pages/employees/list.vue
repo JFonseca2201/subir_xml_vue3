@@ -96,7 +96,7 @@ const onEmployeeUpdated = updatedEmployee => {
 }
 
 const searchEmployees = async () => {
-  loader.start()
+  loading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -130,7 +130,7 @@ const searchEmployees = async () => {
     console.error('Error al buscar empleados:', error)
     showNotification('Error al cargar empleados', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
   }
 }
 
@@ -221,78 +221,83 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 employees-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-user-settings-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-user-settings-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Empleados
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Gestión de empleados y personal del taller
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
+            v-if="can('register_employee')"
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Empleados
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Gestión de empleados y personal del taller
-        </p>
+            prepend-icon="ri-add-line"
+            @click="addEmployee"
+          >
+            Nuevo Empleado
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('register_employee')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="addEmployee"
-        >
-          Nuevo Empleado
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol
+              cols="12"
+              md="8"
+            >
+              <VTextField
+                v-model="searchForm.search"
+                label="Búsqueda General"
+                placeholder="Identificación, nombre, email, cargo..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <VSelect
+                v-model="searchForm.status"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                label="Estado"
+                placeholder="Todos"
+                prepend-inner-icon="ri-filter-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol
-            cols="12"
-            md="8"
-          >
-            <VTextField
-              v-model="searchForm.search"
-              label="Búsqueda General"
-              placeholder="Identificación, nombre, email, cargo..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VSelect
-              v-model="searchForm.status"
-              :items="statusOptions"
-              item-title="label"
-              item-value="value"
-              label="Estado"
-              placeholder="Todos"
-              prepend-inner-icon="ri-filter-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Empleados -->
       <div class="position-relative">
         <div class="overflow-x-auto">
@@ -346,7 +351,43 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!employees || employees.length === 0">
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-90" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-70" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="!employees || employees.length === 0">
               <tr>
                 <td
                   colspan="7"

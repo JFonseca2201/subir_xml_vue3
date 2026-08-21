@@ -146,38 +146,43 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 roles-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-shield-keyhole-line" color="primary" class="me-2" size="28" />
-          Roles y Permisos
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Administración de accesos del sistema
-        </p>
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon icon="ri-shield-keyhole-line" color="primary" class="me-2" size="28" />
+            Roles y Permisos
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Administración de accesos del sistema
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn v-if="can('register_role')" color="primary" prepend-icon="ri-add-line"
+            @click="isRoleAddDialogVisible = !isRoleAddDialogVisible">
+            Nuevo Rol
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn v-if="can('register_role')" color="primary" prepend-icon="ri-add-line"
-          @click="isRoleAddDialogVisible = !isRoleAddDialogVisible">
-          Nuevo Rol
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol cols="12">
+              <VTextField v-model="seachQuery" label="Buscar rol" placeholder="Ej: Administrador, Cajero..."
+                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
+                color="primary" />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol cols="12">
-            <VTextField v-model="seachQuery" label="Buscar rol" placeholder="Ej: Administrador, Cajero..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-              color="primary" />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Roles -->
       <div class="position-relative">
         <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"

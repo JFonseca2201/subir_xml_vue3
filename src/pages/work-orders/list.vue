@@ -502,97 +502,102 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-draft-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-draft-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Órdenes de Trabajo
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Gestiona y da seguimiento a las órdenes de trabajo del taller
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
+            v-if="can('register_sale')"
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Órdenes de Trabajo
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Gestiona y da seguimiento a las órdenes de trabajo del taller
-        </p>
+            prepend-icon="ri-add-line"
+            to="/work-orders/add"
+          >
+            Nueva Orden
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('register_sale')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/work-orders/add"
-        >
-          Nueva Orden
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VForm @submit.prevent="loadWorkOrders">
+            <VRow class="align-center">
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="searchQuery"
+                  label="Buscar orden"
+                  placeholder="Número, cliente o placa del vehículo..."
+                  prepend-inner-icon="ri-search-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="3"
+              >
+                <VSelect
+                  v-model="statusFilter"
+                  :items="statusOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Estado"
+                  placeholder="Todos"
+                  prepend-inner-icon="ri-filter-3-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="3"
+              >
+                <VBtn
+                  color="primary"
+                  variant="tonal"
+                  prepend-icon="ri-refresh-line"
+                  block
+                  @click="loadWorkOrders"
+                >
+                  Actualizar
+                </VBtn>
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla/Tarjetas) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VForm @submit.prevent="loadWorkOrders">
-          <VRow class="align-center">
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="searchQuery"
-                label="Buscar orden"
-                placeholder="Número, cliente o placa del vehículo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VSelect
-                v-model="statusFilter"
-                :items="statusOptions"
-                item-title="title"
-                item-value="value"
-                label="Estado"
-                placeholder="Todos"
-                prepend-inner-icon="ri-filter-3-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VBtn
-                color="primary"
-                variant="tonal"
-                prepend-icon="ri-refresh-line"
-                block
-                @click="loadWorkOrders"
-              >
-                Actualizar
-              </VBtn>
-            </VCol>
-          </VRow>
-        </VForm>
-      </VCardText>
-
       <!-- Listado de Órdenes de Trabajo (Tarjetas Agrupadas por Día) -->
       <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
         <VProgressLinear
@@ -1440,49 +1445,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

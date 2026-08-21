@@ -469,99 +469,101 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 quotes-management-page bg-grey-lighten-4 min-vh-100">
-    <!-- Encabezado de la página -->
-    <div
-      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4"
-      style="width: 100%;"
-    >
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
-          <VIcon
-            icon="ri-file-list-3-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div
+        class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4"
+        style="width: 100%;"
+      >
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
+            <VIcon
+              icon="ri-file-list-3-line"
+              color="primary"
+            />
+            Cotizaciones
+          </h1>
+          <p class="text-medium-emphasis mb-0 text-body-1">
+            Gestión de presupuestos y cotizaciones del taller
+          </p>
+        </div>
+        <div class="d-flex gap-3 flex-wrap justify-end">
+          <VBtn
             color="primary"
-          />
-          Cotizaciones
-        </h1>
-        <p class="text-medium-emphasis mb-0 text-body-1">
-          Gestión de presupuestos y cotizaciones del taller
-        </p>
+            prepend-icon="ri-add-line"
+            to="/quotes/add"
+            class="text-none font-weight-medium px-4"
+            elevation="1"
+          >
+            Nueva Cotización
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-3 flex-wrap justify-end">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/quotes/add"
-          class="text-none font-weight-medium px-4"
-          elevation="1"
-        >
-          Nueva Cotización
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VForm @submit.prevent="() => { currentPage = 1; loadQuotes() }">
+            <VRow
+              class="align-center"
+              dense
+            >
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="searchForm.search"
+                  label="Buscar cotización"
+                  placeholder="Nombre, cédula o placa del vehículo..."
+                  prepend-inner-icon="ri-search-line"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  color="primary"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="3"
+              >
+                <VTextField
+                  v-model="searchForm.start_date"
+                  type="date"
+                  label="Desde"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  color="primary"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="3"
+              >
+                <VTextField
+                  v-model="searchForm.end_date"
+                  type="date"
+                  label="Hasta"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  color="primary"
+                />
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
-    <VCard class="border border-opacity-25 overflow-hidden elevation-1 mb-6 rounded-lg">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-white border-b border-opacity-25">
-        <VForm @submit.prevent="() => { currentPage = 1; loadQuotes() }">
-          <VRow
-            class="align-center"
-            dense
-          >
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Buscar cotización"
-                placeholder="Nombre, cédula o placa del vehículo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                color="primary"
-                bg-color="white"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VTextField
-                v-model="searchForm.start_date"
-                type="date"
-                label="Desde"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                color="primary"
-                bg-color="white"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="3"
-            >
-              <VTextField
-                v-model="searchForm.end_date"
-                type="date"
-                label="Hasta"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                color="primary"
-                bg-color="white"
-              />
-            </VCol>
-          </VRow>
-        </VForm>
-      </VCardText>
-
+    <!-- Contenedor Principal (Tarjetas de Cotizaciones) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Listado de Cotizaciones -->
       <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
         <VProgressLinear
@@ -1081,13 +1083,13 @@ onMounted(() => {
         </div>
       </div>
 
-      <VDivider class="border-opacity-25" />
+      <VDivider />
 
       <!-- Paginación -->
-      <VCardActions class="justify-center pa-6 bg-white border-t border-opacity-25">
-        <div class="d-flex flex-column align-center gap-3">
-          <div class="text-subtitle-2 text-medium-emphasis font-weight-regular">
-            Mostrando <span class="font-weight-bold text-high-emphasis">{{ quotes.length }}</span> de <span class="font-weight-bold text-high-emphasis">{{ totalItems }}</span> cotizaciones
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ quotes.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> cotizaciones
           </div>
           <VPagination
             v-model="currentPage"
@@ -1095,8 +1097,7 @@ onMounted(() => {
             rounded="circle"
             :total-visible="7"
             color="primary"
-            density="comfortable"
-            show-first-last-page
+            @update:model-value="loadQuotes"
           />
         </div>
       </VCardActions>

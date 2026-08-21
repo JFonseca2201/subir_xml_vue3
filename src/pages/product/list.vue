@@ -273,148 +273,153 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
 <template>
   <div class="pa-4 pa-sm-6 products-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-box-3-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-box-3-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Productos
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Gestión de inventario de productos y servicios
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
+            v-if="can('import_xml') || can('register_product')"
+            color="error"
+            variant="tonal"
+            prepend-icon="ri-download-2-fill"
+            @click="importProducts"
+          >
+            Importar
+          </VBtn>
+          <VBtn
+            v-if="can('export_data') || can('list_product')"
+            color="success"
+            variant="tonal"
+            prepend-icon="ri-file-excel-2-line"
+            @click="downloadExcel"
+          >
+            Exportar
+          </VBtn>
+          <VBtn
+            v-if="can('register_product')"
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Productos
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Gestión de inventario de productos y servicios
-        </p>
+            prepend-icon="ri-add-line"
+            to="/product/add"
+          >
+            Agregar Producto
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('import_xml') || can('register_product')"
-          color="error"
-          variant="tonal"
-          prepend-icon="ri-download-2-fill"
-          @click="importProducts"
-        >
-          Importar
-        </VBtn>
-        <VBtn
-          v-if="can('export_data') || can('list_product')"
-          color="success"
-          variant="tonal"
-          prepend-icon="ri-file-excel-2-line"
-          @click="downloadExcel"
-        >
-          Exportar
-        </VBtn>
-        <VBtn
-          v-if="can('register_product')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/product/add"
-        >
-          Agregar Producto
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VForm
+            ref="searchFormRef"
+            @submit.prevent="searchProducts"
+          >
+            <VRow class="align-center">
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="searchForm.search"
+                  label="Búsqueda General"
+                  placeholder="Descripción, SKU, código..."
+                  prepend-inner-icon="ri-search-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  :loading="loading"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="2"
+              >
+                <VSelect
+                  v-model="searchForm.categorie_id"
+                  :items="categories"
+                  item-title="title"
+                  item-value="id"
+                  label="Categoría"
+                  placeholder="Todos"
+                  prepend-inner-icon="ri-folder-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  :loading="loading"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="2"
+              >
+                <VSelect
+                  v-model="searchForm.warehouse_id"
+                  :items="warehouses"
+                  item-title="name"
+                  item-value="id"
+                  label="Almacén"
+                  placeholder="Todos"
+                  prepend-inner-icon="ri-store-2-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  :loading="loading"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="2"
+              >
+                <VSelect
+                  v-model="searchForm.unit_id"
+                  :items="units"
+                  item-title="name"
+                  item-value="id"
+                  label="Unidad"
+                  placeholder="Todos"
+                  prepend-inner-icon="ri-ruler-line"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                  :loading="loading"
+                />
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VForm
-          ref="searchFormRef"
-          @submit.prevent="searchProducts"
-        >
-          <VRow class="align-center">
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Búsqueda General"
-                placeholder="Descripción, SKU, código..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="2"
-            >
-              <VSelect
-                v-model="searchForm.categorie_id"
-                :items="categories"
-                item-title="title"
-                item-value="id"
-                label="Categoría"
-                placeholder="Todos"
-                prepend-inner-icon="ri-folder-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="2"
-            >
-              <VSelect
-                v-model="searchForm.warehouse_id"
-                :items="warehouses"
-                item-title="name"
-                item-value="id"
-                label="Almacén"
-                placeholder="Todos"
-                prepend-inner-icon="ri-store-2-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              sm="6"
-              md="2"
-            >
-              <VSelect
-                v-model="searchForm.unit_id"
-                :items="units"
-                item-title="name"
-                item-value="id"
-                label="Unidad"
-                placeholder="Todos"
-                prepend-inner-icon="ri-ruler-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-          </VRow>
-        </VForm>
-      </VCardText>
-
       <!-- Tabla de Productos -->
       <div class="position-relative">
         <div class="overflow-x-auto">

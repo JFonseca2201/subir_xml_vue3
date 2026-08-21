@@ -169,102 +169,107 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 invoices-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-file-list-3-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-file-list-3-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Compras
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Gestión de facturas de compras y proveedores
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
+            color="secondary"
+            variant="tonal"
+            prepend-icon="ri-file-upload-line"
+            @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible"
+          >
+            Subir XML
+          </VBtn>
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Compras
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Gestión de facturas de compras y proveedores
-        </p>
+            prepend-icon="ri-add-circle-line"
+            to="/invoice/manual-purchase"
+          >
+            Compra Manual
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-file-upload-line"
-          @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible"
-        >
-          Subir XML
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-circle-line"
-          to="/invoice/manual-purchase"
-        >
-          Compra Manual
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <VTextField
+                v-model="search"
+                label="Buscar factura"
+                placeholder="Número, proveedor, RUC..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <VAutocomplete
+                v-model="supplier_id"
+                label="Proveedores"
+                placeholder="Todos"
+                :items="providers"
+                item-title="name"
+                item-value="id"
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                color="primary"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <AppDateTimePicker
+                v-model="range_date"
+                label="Rango de fecha"
+                placeholder="Seleccionar rango de fechas"
+                :config="{ mode: 'range' }"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar factura"
-              placeholder="Número, proveedor, RUC..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VAutocomplete
-              v-model="supplier_id"
-              label="Proveedores"
-              placeholder="Todos"
-              :items="providers"
-              item-title="name"
-              item-value="id"
-              clearable
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              color="primary"
-            />
-          </VCol>
-
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <AppDateTimePicker
-              v-model="range_date"
-              label="Rango de fecha"
-              placeholder="Seleccionar rango de fechas"
-              :config="{ mode: 'range' }"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              color="primary"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Facturas -->
       <div class="position-relative">
         <VProgressLinear

@@ -201,24 +201,24 @@ const getDocumentTypeInfo = type => {
 
 const getPaymentStatusInfo = status => {
   const map = {
-    paid: { color: 'success', text: 'Pagado' },
-    partial: { color: 'warning', text: 'Parcial' },
-    pending: { color: 'error', text: 'Pendiente' },
+    paid: { color: 'success', text: 'Pagado', icon: 'ri-checkbox-circle-line' },
+    partial: { color: 'warning', text: 'Parcial', icon: 'ri-time-line' },
+    pending: { color: 'error', text: 'Pendiente', icon: 'ri-error-warning-line' },
   }
 
-
-  return map[status] || { color: 'grey', text: status }
+  return map[status] || { color: 'grey', text: status || 'Pendiente', icon: 'ri-question-line' }
 }
 
-const getStatusInfo = status => {
-  const map = {
-    completed: { color: 'success', text: 'Completada', icon: 'ri-check-line' },
-    pending: { color: 'warning', text: 'Pendiente', icon: 'ri-time-line' },
-    canceled: { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' },
+const getStatusInfo = item => {
+  if (!item) return { color: 'grey', text: '-', icon: 'ri-question-line' }
+  if (item.status === 'canceled') {
+    return { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' }
+  }
+  if (item.document_type === 'quote') {
+    return { color: 'info', text: 'Cotización', icon: 'ri-file-list-3-line' }
   }
 
-
-  return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
+  return getPaymentStatusInfo(item.payment_status)
 }
 
 const getPaidAmount = item => {
@@ -484,95 +484,94 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 sales-management-page bg-grey-lighten-4 min-vh-100">
-    <!-- Encabezado de la página -->
-    <div
-      class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4"
-      style="width: 100%;"
-    >
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
-          <VIcon
-            icon="ri-price-tag-3-line"
-            color="primary"
-          />
-          Ventas y Facturas
-        </h1>
-        <p class="text-medium-emphasis mb-0 text-body-1">
-          Historial de transacciones y servicios del taller
-        </p>
-      </div>
-      <div class="d-flex gap-3 flex-wrap justify-end">
-        <VBtn
-          v-if="can('export_data') || can('list_sale')"
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-file-pdf-line"
-          class="text-none font-weight-medium px-4"
-          :loading="pdfLoading"
-          @click="generatePDF"
-        >
-          Exportar PDF
-        </VBtn>
-        <VBtn
-          v-if="can('register_sale')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/sales/add"
-          class="text-none font-weight-medium px-4"
-          elevation="1"
-        >
-          Nueva Venta
-        </VBtn>
-      </div>
-    </div>
-
-    <!-- Contenedor Principal (Filtros y Tabla) -->
-    <VCard class="border border-opacity-25 overflow-hidden elevation-1 mb-6 rounded-lg">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-white border-b border-opacity-25">
-        <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
-          <VRow
-            class="align-center"
-            dense
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div
+        class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4"
+        style="width: 100%;"
+      >
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 text-grey-darken-4 d-flex align-center gap-2">
+            <VIcon
+              icon="ri-price-tag-3-line"
+              color="primary"
+            />
+            Ventas y Facturas
+          </h1>
+          <p class="text-medium-emphasis mb-0 text-body-1">
+            Historial de transacciones y servicios del taller
+          </p>
+        </div>
+        <div class="d-flex gap-3 flex-wrap justify-end">
+          <VBtn
+            v-if="can('export_data') || can('list_sale')"
+            variant="tonal"
+            color="secondary"
+            prepend-icon="ri-file-pdf-line"
+            class="text-none font-weight-medium px-4"
+            :loading="pdfLoading"
+            @click="generatePDF"
           >
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Buscar venta"
-                placeholder="Nombre, cédula o placa del vehículo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                clearable
-                color="primary"
-                bg-color="white"
-              />
-            </VCol>
+            Exportar PDF
+          </VBtn>
+          <VBtn
+            v-if="can('register_sale')"
+            color="primary"
+            prepend-icon="ri-add-line"
+            to="/sales/add"
+            class="text-none font-weight-medium px-4"
+            elevation="1"
+          >
+            Nueva Venta
+          </VBtn>
+        </div>
+      </div>
 
-            <VCol
-              cols="12"
-              sm="6"
-              md="2"
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VForm @submit.prevent="() => { currentPage = 1; loadSales() }">
+            <VRow
+              class="align-center"
+              dense
             >
-              <VSelect
-                v-model="searchForm.document_type"
-                :items="documentTypeOptions"
-                item-title="title"
-                item-value="value"
-                label="Tipo de Doc."
-                placeholder="Todos"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                clearable
-                color="primary"
-                bg-color="white"
-              />
-            </VCol>
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VTextField
+                  v-model="searchForm.search"
+                  label="Buscar venta"
+                  placeholder="Nombre, cédula o placa del vehículo..."
+                  prepend-inner-icon="ri-search-line"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                sm="6"
+                md="2"
+              >
+                <VSelect
+                  v-model="searchForm.document_type"
+                  :items="documentTypeOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Tipo de Doc."
+                  placeholder="Todos"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                  clearable
+                  color="primary"
+                />
+              </VCol>
 
             <VCol
               cols="12"
@@ -633,7 +632,11 @@ onMounted(() => {
           </VRow>
         </VForm>
       </VCardText>
+    </VCard>
+  </div>
 
+    <!-- Contenedor Principal (Tarjetas de Ventas) -->
+    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Listado de Ventas -->
       <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
         <VProgressLinear
@@ -839,28 +842,21 @@ onMounted(() => {
                   <td class="text-center py-3 px-4">
                     <div
                       v-if="item"
-                      class="d-flex flex-column align-center gap-1"
+                      class="d-flex justify-center align-center"
                     >
                       <div class="d-flex align-center gap-1">
                         <VIcon
-                          :icon="getStatusInfo(item.status)?.icon"
-                          :color="getStatusInfo(item.status)?.color"
-                          size="14"
+                          :icon="getStatusInfo(item)?.icon"
+                          :color="getStatusInfo(item)?.color"
+                          size="15"
                         />
                         <span
-                          class="text-caption font-weight-medium"
-                          :class="`text-${getStatusInfo(item.status)?.color}`"
+                          class="text-caption font-weight-bold"
+                          :class="`text-${getStatusInfo(item)?.color}`"
                         >
-                          {{ getStatusInfo(item.status)?.text }}
+                          {{ getStatusInfo(item)?.text }}
                         </span>
                       </div>
-                      <span
-                        v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
-                        class="text-caption"
-                        :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`"
-                      >
-                        {{ getPaymentStatusInfo(item.payment_status)?.text }}
-                      </span>
                     </div>
                   </td>
 
@@ -1050,15 +1046,15 @@ onMounted(() => {
                         <div class="text-right">
                           <div class="d-flex align-center gap-1 justify-end">
                             <VIcon
-                              :icon="getStatusInfo(item.status)?.icon"
-                              :color="getStatusInfo(item.status)?.color"
+                              :icon="getStatusInfo(item)?.icon"
+                              :color="getStatusInfo(item)?.color"
                               size="14"
                             />
                             <span
-                              class="text-caption font-weight-medium"
-                              :class="`text-${getStatusInfo(item.status)?.color}`"
+                              class="text-caption font-weight-bold"
+                              :class="`text-${getStatusInfo(item)?.color}`"
                             >
-                              {{ getStatusInfo(item.status)?.text }}
+                              {{ getStatusInfo(item)?.text }}
                             </span>
                           </div>
                         </div>
@@ -1122,13 +1118,6 @@ onMounted(() => {
                           :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'"
                         >
                           {{ formatCurrency(getPaidAmount(item)) }}
-                        </span>
-                        <span
-                          v-if="item.status !== 'canceled' && item.document_type !== 'quote'"
-                          class="text-caption"
-                          :class="`text-${getPaymentStatusInfo(item.payment_status)?.color}`"
-                        >
-                          {{ getPaymentStatusInfo(item.payment_status)?.text }}
                         </span>
                       </div>
 
@@ -1218,13 +1207,13 @@ onMounted(() => {
         </div>
       </div>
 
-      <VDivider class="border-opacity-25" />
+      <VDivider />
 
       <!-- Paginación -->
-      <VCardActions class="justify-center pa-6 bg-white border-t border-opacity-25">
-        <div class="d-flex flex-column align-center gap-3">
-          <div class="text-subtitle-2 text-medium-emphasis font-weight-regular">
-            Mostrando <span class="font-weight-bold text-high-emphasis">{{ sales.length }}</span> de <span class="font-weight-bold text-high-emphasis">{{ totalItems }}</span> registros
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ sales.length }}</span> de <span class="font-weight-bold">{{ totalItems }}</span> registros
           </div>
           <VPagination
             v-model="currentPage"
@@ -1232,8 +1221,7 @@ onMounted(() => {
             rounded="circle"
             :total-visible="7"
             color="primary"
-            density="comfortable"
-            show-first-last-page
+            @update:model-value="loadSales"
           />
         </div>
       </VCardActions>

@@ -43,7 +43,7 @@ const conversion_selected_delete = ref(null)
 const isLoading = ref(false)
 
 const list = async () => {
-  loader.start()
+  isLoading.value = true
   try {
     const [conversionsResp, unitsResp] = await Promise.all([
       $api("unit-conversions", {
@@ -63,7 +63,6 @@ const list = async () => {
       }),
     ])
 
-    console.log(conversionsResp)
     list_conversions.value = conversionsResp.conversions || []
     list_units.value = unitsResp.units || []
     showNotification('Lista de conversiones cargada correctamente', 'success')
@@ -71,7 +70,7 @@ const list = async () => {
     console.log(error)
     showNotification('Error al cargar la lista de conversiones', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
   }
 }
 
@@ -150,34 +149,37 @@ definePage({ meta: { permission: "settings" } })
 
 <template>
   <div class="pa-4 pa-sm-6 unit-conversions-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-file-ppt-2-line"
+    <!-- Header Fijo (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-file-ppt-2-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Conversiones de Unidades
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Administración de conversiones entre unidades de medida
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Conversiones de Unidades
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Administración de conversiones entre unidades de medida
-        </p>
-      </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible"
-        >
-          Nueva Conversión
-        </VBtn>
+            prepend-icon="ri-add-line"
+            @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible"
+          >
+            Nueva Conversión
+          </VBtn>
+        </div>
       </div>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Tabla de Conversiones -->
       <div class="position-relative">
@@ -220,7 +222,36 @@ definePage({ meta: { permission: "settings" } })
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!list_conversions || list_conversions.length === 0">
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-chip" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="!list_conversions || list_conversions.length === 0">
               <tr>
                 <td
                   colspan="5"
@@ -321,6 +352,16 @@ definePage({ meta: { permission: "settings" } })
           </VTable>
         </div>
       </div>
+
+      <VDivider />
+
+      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
+        <div class="d-flex flex-column align-center gap-3 w-100">
+          <div class="text-caption text-grey-darken-1">
+            Mostrando <span class="font-weight-bold">{{ list_conversions.length }}</span> registros
+          </div>
+        </div>
+      </VCardActions>
     </VCard>
 
     <!-- DIALOGS -->

@@ -52,9 +52,10 @@ const getPaymentStatusLabel = computed(() => {
 })
 
 const getStatusLabel = computed(() => {
-  const option = statusOptions.find(opt => opt.value === props.saleData?.status)
+  if (props.saleData?.status === 'canceled') return 'Anulada'
+  if (props.saleData?.document_type === 'quote') return 'Cotización'
 
-  return option?.title || 'No especificado'
+  return getPaymentStatusLabel.value
 })
 
 const getDocumentTypeColor = computed(() => ({
@@ -69,11 +70,12 @@ const getPaymentStatusColor = computed(() => ({
   pending: 'error',
 }[props.saleData?.payment_status] || 'grey'))
 
-const getStatusColor = computed(() => ({
-  completed: 'success',
-  pending: 'warning',
-  canceled: 'error',
-}[props.saleData?.status] || 'grey'))
+const getStatusColor = computed(() => {
+  if (props.saleData?.status === 'canceled') return 'error'
+  if (props.saleData?.document_type === 'quote') return 'info'
+
+  return getPaymentStatusColor.value
+})
 
 const documentTypeIcon = computed(() => ({
   quote: 'ri-file-list-3-line',
@@ -81,11 +83,14 @@ const documentTypeIcon = computed(() => ({
   invoice: 'ri-bill-line',
 }[props.saleData?.document_type] || 'ri-file-text-line'))
 
-const statusIcon = computed(() => ({
-  completed: 'ri-checkbox-circle-line',
-  pending: 'ri-time-line',
-  canceled: 'ri-close-circle-line',
-}[props.saleData?.status] || 'ri-question-line'))
+const statusIcon = computed(() => {
+  if (props.saleData?.status === 'canceled') return 'ri-close-circle-line'
+  if (props.saleData?.document_type === 'quote') return 'ri-file-list-3-line'
+  if (props.saleData?.payment_status === 'paid') return 'ri-checkbox-circle-line'
+  if (props.saleData?.payment_status === 'partial') return 'ri-time-line'
+
+  return 'ri-error-warning-line'
+})
 
 const getClientName = computed(() => {
   const client = props.saleData?.client
@@ -161,8 +166,16 @@ const hasVehicle = computed(() => !!props.saleData?.vehicle || !!getVehicleLicen
 const displayPaymentMethod = computed(() => {
   const dists = getPaymentDistributions.value
   if (dists.length > 0) {
-    const methods = [...new Set(dists.map(d => d.payment_method).filter(Boolean))]
-    if (methods.length) return methods.join(', ')
+    const methods = dists.map(d => {
+      const bName = d.account?.bank_name || (d.account?.type === 'bank' ? d.account?.name : '')
+      if (bName && d.payment_method?.toLowerCase() === 'transferencia') {
+        return `${d.payment_method} - ${bName}`
+      }
+
+      return d.payment_method
+    }).filter(Boolean)
+    const uniqueMethods = [...new Set(methods)]
+    if (uniqueMethods.length) return uniqueMethods.join(', ')
   }
 
   return props.saleData?.payment_method || '—'

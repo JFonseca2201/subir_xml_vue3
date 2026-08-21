@@ -159,7 +159,6 @@ const canEditSucursal = computed(() => {
 // Cargar información de la sucursal
 const loadSucursal = async () => {
   isLoading.value = true
-  loader.start()
   try {
     const resp = await $api('sucursales/1', {
       method: 'GET',
@@ -185,7 +184,6 @@ const loadSucursal = async () => {
     showNotification('Error al cargar información de la sucursal', 'error')
   } finally {
     isLoading.value = false
-    loader.stop()
   }
 }
 
@@ -206,7 +204,6 @@ const saveSucursal = async () => {
   if (!valid) return
 
   isLoading.value = true
-  loader.start()
   try {
     const resp = await $api('sucursales/1', {
       method: 'PUT',
@@ -230,7 +227,6 @@ const saveSucursal = async () => {
     showNotification('Error al guardar cambios', 'error')
   } finally {
     isLoading.value = false
-    loader.stop()
   }
 }
 
@@ -264,8 +260,37 @@ onMounted(() => {
         </p>
       </div>
 
+      <!-- Skeleton Loader al cargar inicialmente -->
+      <div
+        v-if="isLoading && !sucursal.name"
+        class="pa-4"
+      >
+        <VRow>
+          <VCol
+            cols="12"
+            class="mb-3"
+          >
+            <div class="shimmer-line w-40 mb-2" />
+          </VCol>
+          <VCol
+            v-for="n in 6"
+            :key="n"
+            cols="12"
+            md="6"
+            class="mb-3"
+          >
+            <div class="shimmer-line w-30 mb-2" />
+            <div
+              class="shimmer-line w-100"
+              style="height: 44px; border-radius: 8px;"
+            />
+          </VCol>
+        </VRow>
+      </div>
+
       <!-- Formulario -->
       <VForm
+        v-else
         ref="formRef"
         @submit.prevent="saveSucursal"
       >

@@ -56,7 +56,7 @@ const totalPage = ref(1)
 const itemsPerPage = 10
 
 const list = async () => {
-  loader.start() // Activar loader
+  isLoading.value = true
   try {
     const params = {
       page: currentPage.value,
@@ -73,7 +73,6 @@ const list = async () => {
       },
     })
 
-    console.log(resp)
     list_units.value = resp.units || []
 
     // Manejar diferentes estructuras de respuesta de paginación
@@ -94,7 +93,7 @@ const list = async () => {
     console.log(error)
     showNotification('Error al cargar la lista de unidades', 'error')
   } finally {
-    loader.stop() // Ocultar overlay
+    isLoading.value = false
   }
 }
 
@@ -226,54 +225,59 @@ definePage({ meta: { permission: "settings" } })
 
 <template>
   <div class="pa-4 pa-sm-6 units-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-ruler-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-ruler-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Unidades
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Administración de unidades de medida
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Unidades
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Administración de unidades de medida
-        </p>
+            prepend-icon="ri-add-line"
+            @click="isUnitAddDialogVisible = !isUnitAddDialogVisible"
+          >
+            Nueva Unidad
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="isUnitAddDialogVisible = !isUnitAddDialogVisible"
-        >
-          Nueva Unidad
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol cols="12">
+              <VTextField
+                v-model="searchQuery"
+                label="Buscar unidad"
+                placeholder="Nombre, descripción..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol cols="12">
-            <VTextField
-              v-model="searchQuery"
-              label="Buscar unidad"
-              placeholder="Nombre, descripción..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Unidades -->
       <div class="position-relative">
         <div class="overflow-x-auto">
@@ -321,7 +325,40 @@ definePage({ meta: { permission: "settings" } })
                 </th>
               </tr>
             </thead>
-            <tbody v-if="!list_units || list_units.length === 0">
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-chip" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+            <tbody v-else-if="!list_units || list_units.length === 0">
               <tr>
                 <td
                   colspan="6"

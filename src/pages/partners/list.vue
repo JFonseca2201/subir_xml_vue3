@@ -30,10 +30,9 @@ watch(search, () => {
 })
 
 const list = async () => {
-  loader.start()
+  isLoading.value = true
 
   try {
-
     let data = {
       search: search.value || '',
     }
@@ -46,8 +45,7 @@ const list = async () => {
       },
     })
 
-    console.log(resp)
-    list_partners.value = resp.partners.data
+    list_partners.value = resp.partners.data || []
     totalPage.value = resp.total_page
     if (currentPage.value > totalPage.value && totalPage.value > 0) {
       currentPage.value = 1
@@ -57,7 +55,7 @@ const list = async () => {
     console.error(error)
     showNotification('Error al cargar la lista de socios', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
   }
 }
 
@@ -151,64 +149,61 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 partners-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-group-3-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-group-3-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Socios
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Gestión de socios del taller
+          </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Socios
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Gestión de socios del taller
-        </p>
+            prepend-icon="ri-add-circle-line"
+            @click="isPartnerAddDialogVisible = !isPartnerAddDialogVisible"
+          >
+            Nuevo Socio
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-circle-line"
-          @click="isPartnerAddDialogVisible = !isPartnerAddDialogVisible"
-        >
-          Nuevo Socio
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow class="align-center">
+            <VCol cols="12">
+              <VTextField
+                v-model="search"
+                label="Buscar socio"
+                placeholder="Nombre, cédula, email..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow class="align-center">
-          <VCol cols="12">
-            <VTextField
-              v-model="search"
-              label="Buscar socio"
-              placeholder="Nombre, cédula, email..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Socios -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="loader.loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
 
         <div class="overflow-x-auto">
           <VTable
@@ -261,23 +256,42 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loader.loading">
-              <tr>
-                <td
-                  colspan="7"
-                  class="text-center pa-6"
-                >
-                  <VProgressCircular
-                    indeterminate
-                    color="primary"
-                    size="40"
-                  />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
+
+            <!-- Cargando (Skeleton Rows) -->
+            <tbody v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-70" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
+                    <div class="shimmer-button rounded" />
                   </div>
                 </td>
               </tr>
             </tbody>
+
             <tbody v-else-if="!list_partners || list_partners.length === 0">
               <tr>
                 <td

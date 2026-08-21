@@ -420,67 +420,72 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 pedidos-management-page">
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-truck-line"
+    <!-- Header y Filtros Fijos (Sticky Top) -->
+    <div class="sticky-page-header-wrapper">
+      <!-- Encabezado de la página -->
+      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
+        <div>
+          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+            <VIcon
+              icon="ri-truck-line"
+              color="primary"
+              class="me-2"
+              size="28"
+            />
+            Pedidos a Distribuidor
+          </h1>
+          <p class="text-medium-emphasis mb-0">
+            Historial y estado de los pedidos solicitados a distribuidores
+          </p>
+        </div>
+        <div class="d-flex gap-2 align-self-md-center align-self-end">
+          <VBtn
+            color="info"
+            variant="outlined"
+            prepend-icon="ri-history-line"
+            @click="openRepuestosDialog"
+          >
+            Historial Repuestos
+          </VBtn>
+          <VBtn
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Pedidos a Distribuidor
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Historial y estado de los pedidos solicitados a distribuidores
-        </p>
+            prepend-icon="ri-add-line"
+            to="/sales/pedidos-distribuidor"
+          >
+            Nuevo Pedido
+          </VBtn>
+        </div>
       </div>
-      <div class="d-flex gap-2 align-self-md-center align-self-end">
-        <VBtn
-          color="info"
-          variant="outlined"
-          prepend-icon="ri-history-line"
-          @click="openRepuestosDialog"
-        >
-          Historial Repuestos
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/sales/pedidos-distribuidor"
-        >
-          Nuevo Pedido
-        </VBtn>
-      </div>
+
+      <!-- Filtros y Búsqueda -->
+      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
+        <VCardText class="pa-4 bg-grey-lighten-5">
+          <VRow>
+            <VCol
+              cols="12"
+              sm="6"
+              md="4"
+            >
+              <VTextField
+                v-model="search"
+                label="Buscar pedidos"
+                placeholder="Buscar por distribuidor, RUC o ID..."
+                prepend-inner-icon="ri-search-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                clearable
+                color="primary"
+                @click:clear="clearSearch"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
     </div>
 
-    <!-- Contenedor Principal (Filtros y Tabla) -->
+    <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Filtros y Búsqueda -->
-      <VCardText class="pa-5 bg-grey-lighten-5 border-bottom-light">
-        <VRow>
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar pedidos"
-              placeholder="Buscar por distribuidor, RUC o ID..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              @click:clear="clearSearch"
-            />
-          </VCol>
-        </VRow>
-      </VCardText>
-
       <!-- Tabla de Pedidos -->
       <div class="position-relative bg-white rounded-xl border-light overflow-hidden">
         <VProgressLinear
