@@ -189,10 +189,32 @@ const formatDate = dateString => {
 const formatCurrency = value => {
   if (value === null || value === undefined) return '$0.00'
 
-  return new Intl.NumberFormat('es-MX', {
+  return new Intl.NumberFormat('es-EC', {
     style: 'currency',
-    currency: 'MXN',
+    currency: 'USD',
   }).format(value)
+}
+
+// Determina si un movimiento físico representa una entrada de stock (+) o salida (-)
+const isStockEntry = mov => {
+  if (
+    mov.concepto_tipo === 'compra_inventario' ||
+    mov.concepto_tipo === 'ingreso_inventario' ||
+    mov.concepto_tipo === 'devolucion_venta' ||
+    mov.concepto_tipo === 'ajuste_positivo'
+  ) {
+    return true
+  }
+  if (
+    mov.concepto_tipo === 'venta_producto' ||
+    mov.concepto_tipo === 'salida_inventario' ||
+    mov.concepto_tipo === 'devolucion_compra' ||
+    mov.concepto_tipo === 'ajuste_negativo'
+  ) {
+    return false
+  }
+
+  return mov.movimiento_tipo === 'salida'
 }
 
 // Obtener color según tipo de movimiento
@@ -412,11 +434,50 @@ definePage({ meta: { permission: 'kardex' } })
       </VCardText>
     </VCard>
 
-    <!-- Tabla de Kardex Agrupada por Producto -->
-    <div v-if="isLoading" class="text-center pa-8">
-      <VProgressCircular indeterminate color="primary" size="48" />
-      <div class="mt-3 text-body-2 text-medium-emphasis">
-        Cargando movimientos...
+    <!-- Skeleton Loader para Kardex -->
+    <div v-if="isLoading" class="kardex-container">
+      <div v-for="n in 2" :key="n" class="mb-6">
+        <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
+          <VCardText class="pa-4">
+            <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-4">
+              <div>
+                <div class="shimmer-line w-60 mb-2" style="height: 20px;" />
+                <div class="shimmer-line w-40" />
+              </div>
+              <div class="d-flex gap-4 flex-wrap">
+                <div v-for="k in 4" :key="k" class="text-center">
+                  <div class="shimmer-line w-60 mx-auto mb-1" />
+                  <div class="shimmer-line w-80 mx-auto" style="height: 18px;" />
+                </div>
+              </div>
+            </div>
+          </VCardText>
+        </VCard>
+
+        <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+          <VTable class="kardex-table">
+            <thead>
+              <tr>
+                <th class="text-left font-weight-bold">FECHA</th>
+                <th class="text-left font-weight-bold">CONCEPTO</th>
+                <th class="text-left font-weight-bold">DETALLES</th>
+                <th class="text-center font-weight-bold">CANTIDAD</th>
+                <th class="text-right font-weight-bold">ENTRADA (+)</th>
+                <th class="text-right font-weight-bold">SALIDA (-)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in 3" :key="row" class="skeleton-row align-middle">
+                <td class="py-3"><div class="shimmer-line w-60" /></td>
+                <td class="py-3"><div class="shimmer-line w-75" /></td>
+                <td class="py-3"><div class="shimmer-line w-90 mb-1" /><div class="shimmer-line w-50" /></td>
+                <td class="text-center py-3"><div class="shimmer-chip mx-auto" /></td>
+                <td class="text-right py-3"><div class="shimmer-line w-50 ms-auto" /></td>
+                <td class="text-right py-3"><div class="shimmer-line w-50 ms-auto" /></td>
+              </tr>
+            </tbody>
+          </VTable>
+        </VCard>
       </div>
     </div>
 
@@ -545,11 +606,14 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- CANTIDAD FÍSICA -->
                   <td v-if="group.isProduct" class="text-center">
-                    <VChip v-if="movimiento.cantidad_movida" size="small"
-                      :color="movimiento.concepto_tipo === 'compra_inventario' ? 'success' : (movimiento.concepto_tipo === 'venta_producto' ? 'error' : 'default')"
-                      variant="tonal">
-                      {{ movimiento.concepto_tipo === 'compra_inventario' ? '+' : '-' }}{{
-                        formatQuantity(movimiento.cantidad_movida) }}
+                    <VChip
+                      v-if="movimiento.cantidad_movida"
+                      size="small"
+                      :color="isStockEntry(movimiento) ? 'success' : 'error'"
+                      variant="tonal"
+                      class="font-weight-bold"
+                    >
+                      {{ isStockEntry(movimiento) ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }}
                     </VChip>
                     <span v-else class="text-grey">-</span>
                   </td>

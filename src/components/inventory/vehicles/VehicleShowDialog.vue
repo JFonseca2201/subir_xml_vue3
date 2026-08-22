@@ -144,15 +144,41 @@ const closeDialog = () => {
         <h3 class="custom-dialog-title">
           Ficha del Vehículo
         </h3>
-        <p class="custom-dialog-subtitle">
+        <p class="custom-dialog-subtitle mb-1">
           {{ getBrandName }} {{ vehicleData.model || '' }} ({{ vehicleData.year || 'N/A' }})
         </p>
+        <div
+          v-if="vehicleData.license_plate"
+          class="header-plate-pill"
+        >
+          <VIcon
+            icon="ri-roadster-line"
+            size="13"
+            class="me-1"
+          />
+          <span>{{ vehicleData.license_plate.toUpperCase() }}</span>
+        </div>
       </div>
 
       <!-- Contenido principal -->
       <VCardText class="pa-6">
-        <!-- Grid de Especificaciones Rápidas (Brochure Style sin redundancia de Modelo/Año) -->
-        <div class="specs-container mb-6">
+        <!-- Grid de Especificaciones Rápidas con Placa -->
+        <div class="vehicle-specs-container mb-6">
+          <div class="spec-badge-card highlight-plate">
+            <span class="spec-label">Placa</span>
+            <span class="spec-value text-uppercase font-weight-bold">
+              <span
+                v-if="vehicleData.license_plate"
+                class="plate-code"
+              >
+                {{ vehicleData.license_plate.toUpperCase() }}
+              </span>
+              <span
+                v-else
+                class="text-medium-emphasis"
+              >Sin Placa</span>
+            </span>
+          </div>
           <div class="spec-badge-card">
             <span class="spec-label">Marca</span>
             <span class="spec-value text-uppercase font-weight-bold">{{ getBrandName }}</span>
@@ -217,6 +243,15 @@ const closeDialog = () => {
                   </div>
                   <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ vehicleData.model || 'No especificado' }}
+                  </div>
+                </VCol>
+
+                <VCol cols="6">
+                  <div class="text-caption text-medium-emphasis">
+                    Placa / Matrícula
+                  </div>
+                  <div class="text-body-2 font-weight-bold text-primary text-uppercase mt-0.5">
+                    {{ vehicleData.license_plate ? vehicleData.license_plate.toUpperCase() : 'Sin placa' }}
                   </div>
                 </VCol>
 
@@ -405,6 +440,41 @@ const closeDialog = () => {
 </template>
 
 <style scoped>
+.vehicle-specs-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .vehicle-specs-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.header-plate-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.highlight-plate {
+  border-color: rgba(var(--v-theme-primary), 0.3) !important;
+  background: rgba(var(--v-theme-primary), 0.04) !important;
+}
+
+.plate-code {
+  color: rgb(var(--v-theme-primary));
+  letter-spacing: 0.5px;
+}
+
 .ecuadorian-plate {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border: 2px solid #0f172a;
