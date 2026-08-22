@@ -8,9 +8,11 @@ import DeleteEmployeeAdvanceDialog from '@/components/inventory/employee-expense
 import AddEmployeePaymentDialog from '@/components/inventory/employee-expenses/AddEmployeePaymentDialog.vue'
 import EditEmployeePaymentDialog from '@/components/inventory/employee-expenses/EditEmployeePaymentDialog.vue'
 import DeleteEmployeePaymentDialog from '@/components/inventory/employee-expenses/DeleteEmployeePaymentDialog.vue'
+import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
+import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
+import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 // Router
 const router = useRouter()
@@ -41,6 +43,40 @@ const showEditAdvanceDialog = ref(false)
 const showDeleteAdvanceDialog = ref(false)
 const selectedAdvance = ref(null)
 const selectedPayment = ref(null)
+
+const isNoteDialogVisible = ref(false)
+const selectedItemForNote = ref(null)
+const isReceiptsDialogVisible = ref(false)
+const selectedItemForReceipts = ref(null)
+
+const openEmployeeNoteDialog = item => {
+  const isPayment = item.type === 'payment'
+  const docCode = isPayment ? `PAGO-EMP-${String(item.id).padStart(5, '0')}` : `ADEL-EMP-${String(item.id).padStart(5, '0')}`
+  selectedItemForNote.value = {
+    ...item,
+    id: item.id,
+    type: 'expense',
+    amount: item.amount,
+    entry_date: item.raw_date || item.date,
+    description: `${isPayment ? 'Pago de Nómina' : 'Adelanto de Sueldo'} — ${item.employee_name}${item.description ? ': ' + item.description : ''}`,
+    payment_method: item.payment_method || 'TRANSFERENCIA',
+    account: { name: item.account_name },
+    invoice_number: docCode,
+    metadata: {
+      document_number: docCode,
+      employee_name: item.employee_name,
+      user_name: item.created_by,
+      payment_method: item.payment_method,
+    },
+    resolved_attachments: item.attachments || [],
+  }
+  isNoteDialogVisible.value = true
+}
+
+const openAttachDialog = item => {
+  selectedItemForReceipts.value = item
+  isReceiptsDialogVisible.value = true
+}
 
 // Authorization
 const currentUser = computed(() => {
@@ -598,6 +634,26 @@ onMounted(() => {
 
         <template #item.actions="{ item }">
           <div class="d-flex gap-1 justify-center">
+            <!-- Botón de Ver Nota y Comprobantes (VDialog) -->
+            <VBtn
+              title="Ver Nota y Comprobantes"
+              icon="ri-file-list-3-line"
+              variant="tonal"
+              size="small"
+              color="primary"
+              class="action-btn"
+              @click="openEmployeeNoteDialog(item)"
+            />
+            <!-- Botón de Adjuntar / Gestionar Comprobantes -->
+            <VBtn
+              title="Gestionar Comprobantes"
+              icon="ri-attachment-2"
+              variant="tonal"
+              size="small"
+              color="secondary"
+              class="action-btn"
+              @click="openAttachDialog(item)"
+            />
             <VBtn
               title="Descargar PDF"
               icon="ri-file-pdf-line"
@@ -612,7 +668,7 @@ onMounted(() => {
               icon="ri-edit-line"
               variant="tonal"
               size="small"
-              color="primary"
+              color="warning"
               class="action-btn"
               :disabled="item.type === 'advance' && item.is_deducted"
               @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
@@ -691,6 +747,27 @@ onMounted(() => {
       v-model="showDeletePaymentDialog"
       :payment="selectedPayment"
       @deleted="handlePaymentDeleted"
+    />
+
+    <!-- Diálogo de Nota de Pago / Adelanto y Comprobantes (VDialog) -->
+    <MovementReceiptNoteDialog
+      v-if="selectedItemForNote"
+      v-model="isNoteDialogVisible"
+      :movement="selectedItemForNote"
+      @updated="loadExpenses"
+    />
+
+    <!-- Diálogo de Gestión de Comprobantes Adjuntos (VDialog) -->
+    <AttachReceiptsDialog
+      v-if="selectedItemForReceipts"
+      :is-dialog-visible="isReceiptsDialogVisible"
+      :attachable-type="selectedItemForReceipts.type === 'payment' ? 'employee_payment' : 'employee_advance'"
+      :attachable-id="selectedItemForReceipts.id"
+      :title="`Comprobantes de ${selectedItemForReceipts.type === 'payment' ? 'Pago' : 'Adelanto'} — ${selectedItemForReceipts.employee_name}`"
+      :identifier="selectedItemForReceipts.type === 'payment' ? `PAGO-EMP-${String(selectedItemForReceipts.id).padStart(5, '0')}` : `ADEL-EMP-${String(selectedItemForReceipts.id).padStart(5, '0')}`"
+      :party-name="selectedItemForReceipts.employee_name"
+      @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedItemForReceipts = null; }"
+      @updated="loadExpenses"
     />
   </div>
 </template>

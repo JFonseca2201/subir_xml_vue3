@@ -5,6 +5,7 @@ import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
 import WorkOrderTimelineDialog from '@/components/dialogs/WorkOrderTimelineDialog.vue'
+import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -14,6 +15,15 @@ const loader = useLoaderStore()
 import { usePermissions } from '@/composables/usePermissions'
 
 const { can } = usePermissions()
+
+// Comprobantes / Adjuntos
+const isReceiptsDialogVisible = ref(false)
+const selectedReceiptsOrder = ref(null)
+
+const openReceiptsDialog = workOrder => {
+  selectedReceiptsOrder.value = workOrder
+  isReceiptsDialogVisible.value = true
+}
 
 const showTimelineDialog = ref(false)
 const selectedTimelineOrder = ref(null)
@@ -932,6 +942,12 @@ onMounted(() => {
                             class="text-secondary text-body-2"
                             @click="downloadPDF(workOrder.id)"
                           />
+                          <VListItem
+                            prepend-icon="ri-attachment-2"
+                            title="Comprobantes / Soportes"
+                            class="text-primary text-body-2 font-weight-medium"
+                            @click="openReceiptsDialog(workOrder)"
+                          />
                           <VDivider class="my-1" />
                           <VListItem
                             prepend-icon="ri-time-line"
@@ -1442,6 +1458,18 @@ onMounted(() => {
       @close="showTimelineDialog = false"
       @change-status="(newStatus) => updateStatus(selectedTimelineOrder?.id, newStatus)"
       @generate-sale="() => goToSale(selectedTimelineOrder?.id)"
+    />
+
+    <!-- Modal Universal de Comprobantes y Soportes -->
+    <AttachReceiptsDialog
+      v-if="selectedReceiptsOrder"
+      v-model:isDialogVisible="isReceiptsDialogVisible"
+      attachable-type="work_order"
+      :attachable-id="selectedReceiptsOrder.id"
+      :identifier="selectedReceiptsOrder.number"
+      :party-name="selectedReceiptsOrder.client?.full_name || selectedReceiptsOrder.client?.name || ''"
+      title="Comprobantes de Pago / Soportes de Orden de Trabajo"
+      @updated="loadWorkOrders"
     />
   </div>
 </template>

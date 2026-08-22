@@ -7,6 +7,8 @@ import { useRouter } from 'vue-router'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 import AporteEditDialog from '@/components/inventory/aportes/AporteEditDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
+import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
+import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 
 // Router y seguridad
 const router = useRouter()
@@ -86,6 +88,11 @@ const loadAportes = async () => {
   }
 }
 
+const isNoteDialogVisible = ref(false)
+const selectedAporteForNote = ref(null)
+const isReceiptsDialogVisible = ref(false)
+const selectedAporteForReceipts = ref(null)
+
 const openCreateDialog = () => {
   showCreateDialog.value = true
 }
@@ -93,6 +100,33 @@ const openCreateDialog = () => {
 const openEditDialog = aporte => {
   editingAporte.value = aporte
   showEditDialog.value = true
+}
+
+const openAporteNoteDialog = aporte => {
+  selectedAporteForNote.value = {
+    ...aporte,
+    id: aporte.id,
+    type: 'income',
+    amount: aporte.monto,
+    entry_date: aporte.fecha_aporte,
+    description: `Aporte de Capital: ${aporte.partner_nombre}${aporte.descripcion ? ' — ' + aporte.descripcion : ''}`,
+    payment_method: aporte.metodo_pago,
+    account: { name: aporte.cuenta },
+    invoice_number: `APORTE-${String(aporte.id).padStart(5, '0')}`,
+    metadata: {
+      document_number: `APORTE-${String(aporte.id).padStart(5, '0')}`,
+      partner_name: aporte.partner_nombre,
+      user_name: aporte.user_nombre,
+      metodo: aporte.metodo_pago,
+    },
+    resolved_attachments: aporte.attachments || [],
+  }
+  isNoteDialogVisible.value = true
+}
+
+const openAttachDialog = aporte => {
+  selectedAporteForReceipts.value = aporte
+  isReceiptsDialogVisible.value = true
 }
 
 const closeCreateDialog = () => {
@@ -573,7 +607,7 @@ onMounted(() => {
             </th>
             <th
               class="text-center py-3"
-              style="width: 120px;"
+              style="width: 160px;"
             >
               ACCIONES
             </th>
@@ -764,11 +798,45 @@ onMounted(() => {
               <!-- Acciones -->
               <td class="py-3 text-center">
                 <div class="d-flex justify-center gap-1">
+                  <!-- Botón de Ver Nota y Comprobantes (VDialog) -->
                   <VBtn
                     icon
-                    variant="text"
+                    variant="tonal"
+                    color="primary"
                     size="small"
-                    class="action-btn text-warning"
+                    class="action-btn"
+                    title="Ver Nota y Comprobantes"
+                    @click="openAporteNoteDialog(aporte)"
+                  >
+                    <VIcon
+                      icon="ri-file-list-3-line"
+                      size="18"
+                    />
+                  </VBtn>
+
+                  <!-- Botón de Adjuntar / Gestionar Comprobantes -->
+                  <VBtn
+                    icon
+                    variant="tonal"
+                    color="secondary"
+                    size="small"
+                    class="action-btn"
+                    title="Adjuntar / Gestionar Comprobantes"
+                    @click="openAttachDialog(aporte)"
+                  >
+                    <VIcon
+                      icon="ri-attachment-2"
+                      size="18"
+                    />
+                  </VBtn>
+
+                  <!-- Botón de Editar -->
+                  <VBtn
+                    icon
+                    variant="tonal"
+                    color="warning"
+                    size="small"
+                    class="action-btn"
                     title="Editar Aporte"
                     @click="openEditDialog(aporte)"
                   >
@@ -777,11 +845,14 @@ onMounted(() => {
                       size="18"
                     />
                   </VBtn>
+
+                  <!-- Botón de Eliminar -->
                   <VBtn
                     icon
-                    variant="text"
+                    variant="tonal"
+                    color="error"
                     size="small"
-                    class="action-btn text-error"
+                    class="action-btn"
                     title="Eliminar Aporte"
                     @click="deleteAporte(aporte)"
                   >
@@ -810,6 +881,27 @@ onMounted(() => {
     v-model="showEditDialog"
     :aporte="editingAporte"
     @updated="onAporteUpdated"
+  />
+
+  <!-- Diálogo de Nota de Aporte y Comprobantes (VDialog) -->
+  <MovementReceiptNoteDialog
+    v-if="selectedAporteForNote"
+    v-model="isNoteDialogVisible"
+    :movement="selectedAporteForNote"
+    @updated="loadAportes"
+  />
+
+  <!-- Diálogo de Gestión de Comprobantes Adjuntos (VDialog) -->
+  <AttachReceiptsDialog
+    v-if="selectedAporteForReceipts"
+    :is-dialog-visible="isReceiptsDialogVisible"
+    attachable-type="aporte"
+    :attachable-id="selectedAporteForReceipts.id"
+    :title="`Comprobantes de Aporte #${selectedAporteForReceipts.id} — ${selectedAporteForReceipts.partner_nombre}`"
+    :identifier="`APORTE-${String(selectedAporteForReceipts.id).padStart(5, '0')}`"
+    :party-name="selectedAporteForReceipts.partner_nombre"
+    @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedAporteForReceipts = null; }"
+    @updated="loadAportes"
   />
 
   <!-- Diálogo de Eliminar Aporte -->

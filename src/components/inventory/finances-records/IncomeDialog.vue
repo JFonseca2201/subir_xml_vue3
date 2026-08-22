@@ -3,6 +3,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 const props = defineProps({
   modelValue: {
@@ -13,12 +14,18 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  isSaving: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
+
+const receiptFiles = ref([])
 
 // Form data
 const form = ref({
@@ -48,7 +55,6 @@ const loadAccounts = async () => {
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
 
-      
       return {
         title: account.bank_name ? `${account.bank_name} (${cleaned})` : cleaned,
         value: account.id,
@@ -67,76 +73,18 @@ onMounted(() => {
 // Mapping para rastrear IDs originales de distribuciones
 const paymentIdMap = ref(new Map())
 
-// Watch for editing movement
-watch(() => props.editingMovement, newVal => {
-  console.log('IncomeDialog - editingMovement:', JSON.stringify(newVal, null, 2))
-  if (newVal) {
-    let payments = []
-    paymentIdMap.value.clear() // Limpiar mapa anterior
-
-    console.log('IncomeDialog - payment_distributions length:', newVal.payment_distributions?.length || 0)
-    console.log('IncomeDialog - payment_distributions:', JSON.stringify(newVal.payment_distributions, null, 2))
-
-    if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
-      console.log('IncomeDialog - Using payment_distributions')
-      payments = newVal.payment_distributions.map((dist, index) => {
-        // Guardar el ID original en el mapa usando el índice como clave
-        paymentIdMap.value.set(index, dist.id)
-        
-        return {
-          account_id: dist.account_id,
-          amount: dist.amount.toString(),
-        }
-      })
-      console.log('Payment ID Map:', Array.from(paymentIdMap.value.entries()))
-    } else if (newVal.payments && newVal.payments.length > 0) {
-      console.log('IncomeDialog - Using old payments system')
-      payments = newVal.payments.map(payment => ({
-        account_id: payment.account_id,
-        amount: payment.amount.toString(),
-      }))
-    } else {
-      payments = [{ account_id: newVal.account_id || null, amount: (newVal.amount || 0).toString() }]
-    }
-
-    console.log('IncomeDialog - final payments:', JSON.stringify(payments, null, 2))
-
-    form.value = {
-      type: 0,
-      work_order_number: newVal.work_order_number || '',
-      invoice_number: newVal.invoice_number || '',
-      description: newVal.description || '',
-      entry_date: new Date(newVal.entry_date).toISOString().split('T')[0],
-      payments: payments,
-    }
-
-    console.log('IncomeDialog - final form:', JSON.stringify(form.value, null, 2))
-  } else {
-    resetForm()
-    paymentIdMap.value.clear()
-  }
-})
-
-watch(() => props.modelValue, isVisible => {
-  if (isVisible && !props.editingMovement) {
-    resetForm()
-    paymentIdMap.value.clear()
-  }
-})
-
 const generateAutoCode = dateStr => {
-  if (!dateStr) return ''
   const cleanDate = dateStr.replace(/-/g, '')
   const randomSuffix = Math.floor(1000 + Math.random() * 9000)
-  
   return `ING-${cleanDate}-${randomSuffix}`
 }
 
 const resetForm = () => {
   const currentDate = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
 
+  receiptFiles.value = []
   form.value = {
-    type: 0, // TYPE_INCOME
+    type: 0,
     account_id: null,
     work_order_number: generateAutoCode(currentDate),
     invoice_number: '',
@@ -147,6 +95,42 @@ const resetForm = () => {
     ],
   }
 }
+
+// Watch for editing movement
+watch(() => props.editingMovement, newVal => {
+  if (newVal) {
+    let payments = []
+    paymentIdMap.value.clear()
+
+    if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
+      payments = newVal.payment_distributions.map((dist, index) => {
+        paymentIdMap.value.set(index, dist.id)
+        return {
+          account_id: dist.account_id,
+          amount: dist.amount.toString(),
+        }
+      })
+    } else if (newVal.payments && newVal.payments.length > 0) {
+      payments = newVal.payments.map(payment => ({
+        account_id: payment.account_id,
+        amount: payment.amount.toString(),
+      }))
+    } else {
+      payments = [{ account_id: newVal.account_id || null, amount: (newVal.amount || 0).toString() }]
+    }
+
+    form.value = {
+      type: 0,
+      work_order_number: newVal.work_order_number || '',
+      invoice_number: newVal.invoice_number || '',
+      description: newVal.description || '',
+      entry_date: newVal.entry_date || new Date().toISOString().split('T')[0],
+      payments: payments,
+    }
+  } else {
+    resetForm()
+  }
+}, { immediate: true })
 
 watch(() => form.value.entry_date, newDate => {
   if (!props.editingMovement && form.value) {
@@ -168,49 +152,45 @@ const closeDialog = () => {
 // Computed properties
 const totalToRegister = computed(() => {
   if (!form.value.payments || form.value.payments.length === 0) return 0
-  
   return form.value.payments.reduce((total, payment) => total + parseFloat(payment.amount || 0), 0)
 })
 
 const canAddMorePayments = computed(() => {
   if (!form.value.payments || form.value.payments.length === 0) return false
-  
   return form.value.payments[form.value.payments.length - 1].amount > 0
 })
 
-
 const saveIncome = async () => {
   try {
-    // Validar que el total sea mayor a 0
     if (totalToRegister.value <= 0) {
       showNotification('El total a registrar debe ser mayor a 0', 'error')
-      
       return
     }
 
-    // Validar que todos los pagos tengan cuenta seleccionada
     const hasInvalidPayments = form.value.payments.some(p => !p.account_id)
     if (hasInvalidPayments) {
       showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
-      
       return
     }
 
-    const payload = { ...form.value }
+    if (!props.editingMovement && (!receiptFiles.value || receiptFiles.value.length === 0)) {
+      showNotification('Es obligatorio adjuntar la foto o comprobante de respaldo del ingreso', 'warning')
+      return
+    }
 
-    // No enviar work_order_number si está vacío
+    const payload = { 
+      ...form.value,
+      receipts: receiptFiles.value,
+    }
+
     if (!payload.work_order_number || payload.work_order_number.trim() === '') {
       delete payload.work_order_number
     }
 
     emit('saved', payload)
-    closeDialog()
-    resetForm() // Limpiar formulario después de guardar
-
-    showNotification('Ingreso guardado exitosamente', 'success')
   } catch (error) {
-    console.error('Error al guardar ingreso:', error)
-    showNotification('Error al guardar ingreso', 'error')
+    console.error('Error al preparar ingreso:', error)
+    showNotification('Error al preparar ingreso', 'error')
   }
 }
 
@@ -222,50 +202,29 @@ const addPayment = () => {
 }
 
 const removePayment = async index => {
-  console.log('removePayment called with index:', index)
-  console.log('form.payments:', JSON.stringify(form.value.payments, null, 2))
-  console.log('Payment ID Map:', Array.from(paymentIdMap.value.entries()))
-
   if (form.value.payments.length <= 1) {
     showNotification('Debe haber al menos un método de pago', 'error')
-    
     return
   }
 
-  // Obtener el ID original del mapa
   const originalPaymentId = paymentIdMap.value.get(index)
 
-  console.log('Original payment ID for index', index, ':', originalPaymentId)
-
-  // Si es un movimiento existente y tenemos el ID original, eliminar de la base de datos
   if (props.editingMovement && originalPaymentId) {
-    loader.start()
-    console.log('Attempting to delete payment distribution with ID:', originalPaymentId)
     try {
-      const response = await $api(`payment-distributions/${originalPaymentId}`, {
+      await $api(`payment-distributions/${originalPaymentId}`, {
         method: 'DELETE',
       })
-
-      console.log('Delete response:', response)
       showNotification('Método de pago eliminado correctamente', 'success')
     } catch (error) {
       console.error('Error al eliminar método de pago:', error)
       showNotification('Error al eliminar método de pago', 'error')
-      
       return
-    } finally {
-      loader.stop()
     }
-  } else {
-    console.log('No payment ID found or not editing, just removing from form')
   }
 
-  // Eliminar del formulario
   form.value.payments.splice(index, 1)
 
-  // Actualizar el mapa de IDs - reindexar después del splice
   const newMap = new Map()
-
   paymentIdMap.value.forEach((id, mapIndex) => {
     if (mapIndex < index) {
       newMap.set(mapIndex, id)
@@ -274,9 +233,6 @@ const removePayment = async index => {
     }
   })
   paymentIdMap.value = newMap
-
-  console.log('Payment removed from form, new payments:', JSON.stringify(form.value.payments, null, 2))
-  console.log('Updated Payment ID Map:', Array.from(paymentIdMap.value.entries()))
 }
 
 const formatCurrency = value => {
@@ -291,75 +247,100 @@ const formatCurrency = value => {
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="600"
+    max-width="680"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard class="custom-dialog-card income-dialog">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+    <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
+      <!-- Header Banner Fijo -->
+      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
+        <div class="d-flex align-center gap-3">
+          <VAvatar
+            color="white"
+            variant="tonal"
+            size="38"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-add-circle-line"
+              color="white"
+              size="22"
+            />
+          </VAvatar>
+          <div>
+            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
+              {{ props.editingMovement ? 'Editar Ingreso' : 'Nuevo Ingreso' }}
+            </div>
+            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
+              Registra o modifica un ingreso financiero en el sistema
+            </div>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn"
+          color="white"
           @click="closeDialog"
         />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-add-circle-line" />
-        </div>
-        <h3 class="custom-dialog-title">
-          {{ props.editingMovement ? 'Editar Ingreso' : 'Nuevo Ingreso' }}
-        </h3>
-        <p class="custom-dialog-subtitle">
-          Registra o modifica un ingreso financiero en el sistema
-        </p>
-      </div>
-      <VCardText class="pa-4">
+      </VCardTitle>
+
+      <!-- Cuerpo del Formulario con Scroll Interno -->
+      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
         <VForm @submit.prevent="saveIncome">
-          <VRow>
-            <VCol cols="12">
+          <VRow dense>
+            <VCol cols="12" md="6">
               <VTextField
                 v-model="form.work_order_number"
-                label="Número de Orden de Trabajo"
-                placeholder="OT-001"
+                label="Código / Orden de Trabajo"
+                placeholder="ING-001"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-hashtag"
               />
             </VCol>
 
-
-            <VCol cols="12">
+            <VCol cols="12" md="6">
               <VTextField
                 v-model="form.entry_date"
-                label="Fecha"
+                label="Fecha *"
                 type="date"
                 required
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-calendar-line"
               />
             </VCol>
+
             <VCol cols="12">
               <VTextField
                 v-model="form.description"
-                label="Descripción"
-                placeholder="Describe el ingreso..."
+                label="Descripción *"
+                placeholder="Describe el motivo del ingreso..."
                 required
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-file-text-line"
               />
             </VCol>
           </VRow>
 
-          <!-- Métodos de Pago -->
-          <VDivider class="my-4" />
-          <div class="pa-4">
-            <div class="d-flex justify-space-between align-center mb-3">
-              <span class="text-h6 font-weight-medium">Métodos de Pago</span>
+          <!-- Sección Métodos de Pago -->
+          <div class="mt-4">
+            <div class="d-flex justify-space-between align-center mb-2">
+              <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                <VIcon icon="ri-bank-card-line" size="18" color="success" />
+                Métodos de Pago / Cuentas Destino
+              </span>
               <VBtn
-                size="small"
-                color="primary"
+                size="x-small"
+                variant="tonal"
+                color="success"
+                prepend-icon="ri-add-line"
                 :disabled="!canAddMorePayments"
                 @click="addPayment"
               >
-                <VIcon start>
-                  ri-add-line
-                </VIcon>
-                Agregar Método
+                Agregar Cuenta
               </VBtn>
             </div>
 
@@ -367,123 +348,114 @@ const formatCurrency = value => {
             <div
               v-for="(payment, index) in (form.payments || [])"
               :key="index"
-              class="mb-3"
+              class="mb-2"
             >
               <VCard
                 variant="outlined"
-                class="pa-3"
+                class="pa-3 rounded-lg bg-grey-lighten-5 border"
               >
-                <VCardText class="pa-0">
-                  <VRow>
-                    <VCol
-                      cols="12"
-                      md="5"
-                    >
-                      <VSelect
-                        v-model="payment.account_id"
-                        :items="accountOptions"
-                        item-title="title"
-                        item-value="value"
-                        label="Cuenta"
-                        required
-                      />
-                    </VCol>
-                    <VCol
-                      cols="12"
-                      md="5"
-                    >
-                      <VTextField
-                        v-model="payment.amount"
-                        label="Monto"
-                        type="number"
-                        prefix="$"
-                        placeholder="0.00"
-                        required
-                      />
-                    </VCol>
-                    <VCol
-                      cols="12"
-                      md="2"
-                    >
-                      <VBtn
-                        color="error"
-                        variant="outlined"
-                        :disabled="form.payments.length <= 1"
-                        @click="removePayment(index)"
-                      >
-                        <VIcon start>
-                          ri-delete-bin-line
-                        </VIcon>
-                      </VBtn>
-                    </VCol>
-                  </VRow>
-                </VCardText>
+                <VRow dense class="align-center">
+                  <VCol cols="12" sm="6">
+                    <VSelect
+                      v-model="payment.account_id"
+                      :items="accountOptions"
+                      item-title="title"
+                      item-value="value"
+                      label="Cuenta Destino *"
+                      placeholder="Seleccionar cuenta..."
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="10" sm="5">
+                    <VTextField
+                      v-model="payment.amount"
+                      label="Monto *"
+                      type="number"
+                      prefix="$"
+                      placeholder="0.00"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="2" sm="1" class="text-center">
+                    <VBtn
+                      icon="ri-delete-bin-line"
+                      size="x-small"
+                      variant="text"
+                      color="error"
+                      :disabled="form.payments.length <= 1"
+                      @click="removePayment(index)"
+                    />
+                  </VCol>
+                </VRow>
               </VCard>
             </div>
-
-            <!-- Resumen de Métodos de Pago -->
-            <!--
-              <div v-if="(form.payments && form.payments.length > 1)" class="mt-2 mb-2">
-              <VAlert type="info" variant="tonal">
-              <div class="d-flex align-center gap-2">
-              <VIcon>ri-bank-card-line</VIcon>
-              <span>
-              <strong>Resumen:</strong>
-              <span v-for="(payment, idx) in form.payments" :key="idx">
-              {{(accountOptions || []).find(a => a.value === payment.account_id)?.title
-              || payment.account_id}}: {{ formatCurrency(payment.amount) }}<span
-              v-if="idx < form.payments.length - 1">,&nbsp;</span>
-              </span>
-              </span>
-              </div>
-              </VAlert>
-              </div> 
-            -->
-
-            <!-- Total a Registrar -->
-            <VAlert
-              type="info"
-              variant="tonal"
-              class="mt-3"
-            >
-              <div class="d-flex align-center gap-2">
-                <VIcon>ri-calculator-line</VIcon>
-                <span>
-                  <strong>Total:</strong>
-                  {{ formatCurrency(totalToRegister) }}
-                </span>
-              </div>
-            </VAlert>
           </div>
-          <VDivider />
-          <VCardActions
-            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-            style="position: sticky; bottom: 0; z-index: 2;"
+
+          <!-- Total a Registrar Alert -->
+          <VAlert
+            type="info"
+            variant="tonal"
+            class="mt-3 py-2 px-3 rounded-lg"
           >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              class="rounded-lg px-6 font-weight-medium"
-              height="40"
-              @click="closeDialog"
-            >
-              Cancelar
-            </VBtn>
-            <VBtn
-              color="success"
-              variant="elevated"
-              :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
-              class="rounded-lg px-6 font-weight-bold"
-              height="40"
-              :disabled="totalToRegister <= 0"
-              @click="saveIncome"
-            >
-              {{ props.editingMovement ? 'Actualizar Ingreso' : 'Guardar Ingreso' }}
-            </VBtn>
-          </VCardActions>
+            <div class="d-flex align-center justify-space-between">
+              <span class="d-flex align-center gap-1 font-weight-medium">
+                <VIcon icon="ri-calculator-line" size="18" />
+                Total a Registrar:
+              </span>
+              <span class="text-h6 font-weight-extrabold text-primary">
+                {{ formatCurrency(totalToRegister) }}
+              </span>
+            </div>
+          </VAlert>
+
+          <!-- Foto / Comprobante de Respaldo -->
+          <div class="mt-4">
+            <ReceiptUploader
+              v-model="receiptFiles"
+              label="Foto / Comprobante de Respaldo del Ingreso"
+              hint="Adjunta foto del efectivo, comprobante de depósito o transferencia (Obligatorio)"
+              required
+              :max-files="5"
+              @error="msg => showNotification(msg, 'error')"
+            />
+          </div>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <!-- Footer Fijo de Acciones -->
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-grey-lighten-5 flex-none">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium"
+          height="38"
+          :disabled="props.isSaving"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          color="primary"
+          variant="elevated"
+          :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
+          class="rounded-lg px-6 font-weight-bold"
+          height="38"
+          :loading="props.isSaving"
+          :disabled="props.isSaving || totalToRegister <= 0 || (!props.editingMovement && receiptFiles.length === 0)"
+          @click="saveIncome"
+        >
+          {{ props.editingMovement ? 'Actualizar Ingreso' : 'Guardar Ingreso' }}
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

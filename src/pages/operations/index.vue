@@ -5,6 +5,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
+import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 import { usePermissions } from '@/composables/usePermissions'
@@ -26,6 +27,7 @@ const rawTransfersList = ref([]) // Datos planos de transferencias
 const accounts = ref([]) // Cuentas bancarias del sistema
 const loading = ref(true)
 const isTransferDialogVisible = ref(false)
+const isAporteDialogVisible = ref(false)
 const pdfLoading = ref(false)
 
 const financialSummary = ref({
@@ -41,7 +43,7 @@ const mainCards = [
     title: 'Socios',
     description: 'Aportes de capital',
     icon: 'ri-group-line',
-    color: 'success',
+    color: 'primary',
     buttonText: 'Registrar aporte',
     action: 'register-contribution',
   },
@@ -57,7 +59,7 @@ const mainCards = [
     title: 'Ingresos y Gastos',
     description: 'Registro de ingresos y egresos',
     icon: 'ri-exchange-dollar-line',
-    color: 'warning',
+    color: 'primary',
     buttonText: 'Nuevo movimiento',
     action: 'movements-index',
   },
@@ -65,7 +67,7 @@ const mainCards = [
     title: 'Transferencias internas',
     description: 'Transferencias entre cuentas',
     icon: 'ri-arrow-left-right-line',
-    color: 'info',
+    color: 'primary',
     buttonText: 'Nueva transferencia',
     action: 'transfer',
   },
@@ -256,9 +258,9 @@ const dashboardOptions = async () => {
 const handleCardAction = action => {
   switch (action) {
   case 'employee-expenses': router.push('/finanzas/employee-expenses'); break
-  case 'register-contribution': router.push({ name: 'aportes-index' }); break
+  case 'register-contribution': isAporteDialogVisible.value = true; break
   case 'movements-index': router.push({ name: 'movements-index' }); break
-  case 'transfer': router.push('/transfers'); break
+  case 'transfer': isTransferDialogVisible.value = true; break
   }
 }
 
@@ -655,6 +657,7 @@ onMounted(() => {
       </VRow>
 
       <TransferDialog v-model="isTransferDialogVisible" />
+      <AporteCreateDialog v-model="isAporteDialogVisible" />
     </div>
   </div>
 </template>

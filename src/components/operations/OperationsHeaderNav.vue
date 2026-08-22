@@ -17,7 +17,7 @@ const navItems = [
     title: 'Socios',
     description: 'Aportes de capital',
     icon: 'ri-group-line',
-    color: 'success',
+    color: 'primary',
     route: '/aportes',
   },
   {
@@ -33,7 +33,7 @@ const navItems = [
     title: 'Ingresos y Gastos',
     description: 'Registro de ingresos y egresos',
     icon: 'ri-exchange-dollar-line',
-    color: 'warning',
+    color: 'primary',
     route: '/movements',
   },
   {
@@ -41,7 +41,7 @@ const navItems = [
     title: 'Transferencias internas',
     description: 'Transferencias entre cuentas',
     icon: 'ri-arrow-left-right-line',
-    color: 'info',
+    color: 'primary',
     route: '/transfers',
   },
 ]

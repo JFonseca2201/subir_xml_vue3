@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -13,7 +13,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'created'])
 
 // Stores y composables
-const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
 
 // Estado reactivo profesional
@@ -27,6 +26,7 @@ const form = ref({
   hora_aporte: '',
 })
 
+const receiptFiles = ref([])
 const formRef = ref()
 const loading = ref(false)
 const partners = ref([])
@@ -49,7 +49,7 @@ const today = computed(() => {
 })
 
 // Computed para el título del diálogo
-const isEditing = computed(() => !!props.aporte)
+const isEditing = computed(() => !props.aporte)
 
 const dialogTitle = computed(() => {
   return isEditing.value ? 'Editar Aporte de Capital' : 'Registrar Aporte de Capital'
@@ -66,6 +66,7 @@ const resetForm = () => {
     fecha_aporte: '',
     hora_aporte: '',
   }
+  receiptFiles.value = []
 
   if (formRef.value) {
     formRef.value.resetValidation()
@@ -81,8 +82,6 @@ const closeDialog = () => {
 
 const loadPartners = async () => {
   try {
-    console.log('🚀 Cargando socios...')
-
     const response = await $api('partners')
 
     let partnersData = []
@@ -93,7 +92,6 @@ const loadPartners = async () => {
     }
 
     partners.value = partnersData
-    console.log('✅ Socios cargados:', partnersData.length)
   } catch (error) {
     console.error('Error al cargar socios:', error)
     showNotification('Error al cargar socios', 'error')
@@ -102,8 +100,6 @@ const loadPartners = async () => {
 
 const loadAccounts = async () => {
   try {
-    console.log('🚀 Cargando cuentas...')
-
     const response = await $api('accounts')
 
     let accountsData = []
@@ -120,13 +116,11 @@ const loadAccounts = async () => {
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
 
-      
       return {
         ...acc,
         name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
       }
     })
-    console.log('✅ Cuentas cargadas:', accountsData.length)
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
     showNotification('Error al cargar cuentas', 'error')
@@ -134,35 +128,34 @@ const loadAccounts = async () => {
 }
 
 const handleSubmit = async () => {
-  console.log('🚀 Iniciando registro de aporte...')
-  console.log('📋 Datos del formulario:', { ...form.value })
-
   const { valid } = await formRef.value.validate()
 
   if (!valid) {
-    console.warn('⚠️ Formulario inválido')
     showNotification('Por favor, completa todos los campos requeridos', 'warning')
-    
     return
   }
 
   loading.value = true
-  loader.start()
 
   try {
-    const formData = {
-      ...form.value,
-      monto: parseFloat(form.value.monto) || 0,
-    }
+    const formData = new FormData()
+    formData.append('partner_id', form.value.partner_id)
+    formData.append('monto', form.value.monto)
+    formData.append('descripcion', form.value.descripcion || 'Aporte de capital')
+    formData.append('cuenta_id', form.value.cuenta_id)
+    formData.append('metodo_pago', form.value.metodo_pago)
+    formData.append('fecha_aporte', form.value.fecha_aporte)
+    formData.append('hora_aporte', form.value.hora_aporte || '12:00')
 
-    console.log('📤 Enviando datos:', formData)
+    receiptFiles.value.forEach(f => {
+      formData.append('receipts[]', f)
+    })
 
     const response = await $api('aportes', {
       method: 'POST',
       body: formData,
     })
 
-    console.log('✅ Aporte registrado:', response)
     showNotification('Aporte registrado exitosamente', 'success')
     emit('created', response.aporte)
     closeDialog()
@@ -172,27 +165,19 @@ const handleSubmit = async () => {
     showNotification(error.response?.data?.message || 'Error al registrar aporte', 'error')
   } finally {
     loading.value = false
-    loader.stop()
   }
 }
 
 // Watchers profesionales
 watch(show, newVal => {
-  console.log('👀 Cambio en show:', newVal)
-
   if (newVal) {
-    // Cargar datos primero
     Promise.all([loadPartners(), loadAccounts()])
       .then(() => {
-        console.log('📦 Datos cargados, formulario listo para crear')
-
-        // Establecer fecha y hora por defecto
         if (!form.value.fecha_aporte) {
           form.value.fecha_aporte = today.value
         }
         if (!form.value.hora_aporte) {
           const now = new Date()
-
           form.value.hora_aporte = now.toTimeString().slice(0, 5)
         }
       })
@@ -200,14 +185,12 @@ watch(show, newVal => {
         console.error('❌ Error cargando datos:', error)
       })
   } else {
-    // Al cerrar, limpiar formulario
     resetForm()
   }
 })
 
 // Lifecycle
 onMounted(() => {
-  console.log('🚀 AporteCreateDialog montado')
   resetForm()
 })
 </script>
@@ -216,7 +199,7 @@ onMounted(() => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="500"
+    max-width="560"
     persistent
   >
     <VCard class="custom-dialog-card aporte-dialog">
@@ -405,7 +388,7 @@ onMounted(() => {
                 v-model="form.descripcion"
                 label="Descripción"
                 placeholder="Describe el aporte de capital..."
-                rows="3"
+                rows="2"
                 variant="outlined"
                 density="comfortable"
                 no-resize
@@ -419,6 +402,17 @@ onMounted(() => {
                   </VIcon>
                 </template>
               </VTextarea>
+            </VCol>
+
+            <!-- Comprobante / Recibo Adjunto -->
+            <VCol cols="12">
+              <ReceiptUploader
+                v-model="receiptFiles"
+                label="Comprobante(s) de Aporte (Foto / PDF)"
+                hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
+                :max-files="5"
+                @error="msg => showNotification(msg, 'error')"
+              />
             </VCol>
           </VRow>
         </VForm>

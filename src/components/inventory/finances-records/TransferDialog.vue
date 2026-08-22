@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 const props = defineProps({
   modelValue: {
@@ -21,6 +22,7 @@ const formRef = ref(null)
 const loading = ref(false)
 const accounts = ref([])
 const { showNotification } = useGlobalToast()
+const receiptFiles = ref([])
 
 const form = ref({
   from_account_id: null,
@@ -69,6 +71,7 @@ const loadAccounts = async () => {
 }
 
 const resetForm = () => {
+  receiptFiles.value = []
   form.value = {
     from_account_id: null,
     to_account_id: null,
@@ -89,19 +92,43 @@ const handleSubmit = async () => {
 
   if (form.value.from_account_id === form.value.to_account_id) {
     showNotification('La cuenta de origen y destino no pueden ser la misma', 'warning')
-    
+    return
+  }
+
+  if (!isEditing.value && receiptFiles.value.length === 0) {
+    showNotification('Es obligatorio adjuntar la foto o comprobante de la transferencia', 'warning')
     return
   }
 
   loading.value = true
 
   try {
-    const method = isEditing.value ? 'PUT' : 'POST'
+    let method = isEditing.value ? 'PUT' : 'POST'
     const endpoint = isEditing.value ? `transfers/${props.transferData.id}` : 'transfers'
+
+    let requestBody
+    if (receiptFiles.value.length > 0) {
+      const formData = new FormData()
+      formData.append('from_account_id', form.value.from_account_id)
+      formData.append('to_account_id', form.value.to_account_id)
+      formData.append('amount', form.value.amount)
+      if (form.value.description) formData.append('description', form.value.description)
+      if (form.value.transfer_date) formData.append('transfer_date', form.value.transfer_date)
+      if (isEditing.value) {
+        formData.append('_method', 'PUT')
+        method = 'POST'
+      }
+      receiptFiles.value.forEach(file => {
+        formData.append('receipts[]', file)
+      })
+      requestBody = formData
+    } else {
+      requestBody = form.value
+    }
 
     const response = await $api(endpoint, {
       method: method,
-      body: form.value,
+      body: requestBody,
     })
 
     showNotification(`Transferencia ${isEditing.value ? 'actualizada' : 'realizada'} exitosamente`, 'success')
@@ -109,7 +136,8 @@ const handleSubmit = async () => {
     closeDialog()
   } catch (error) {
     console.error('Error al realizar transferencia:', error)
-    showNotification(error?.data?.message || 'Error al procesar la transferencia', 'error')
+    const errMessage = error?.data?.message || (error?.data?.errors ? Object.values(error.data.errors).flat().join(', ') : 'Error al procesar la transferencia')
+    showNotification(errMessage, 'error')
   } finally {
     loading.value = false
   }
@@ -140,38 +168,51 @@ watch(() => show.value, newVal => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="600"
+    max-width="650"
     persistent
   >
-    <VCard class="custom-dialog-card">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+    <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
+      <!-- Header Banner Fijo -->
+      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
+        <div class="d-flex align-center gap-3">
+          <VAvatar
+            color="white"
+            variant="tonal"
+            size="38"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-arrow-left-right-line"
+              color="white"
+              size="22"
+            />
+          </VAvatar>
+          <div>
+            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
+              {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
+            </div>
+            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
+              Mueve fondos entre cuentas del sistema
+            </div>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn"
+          color="white"
           :disabled="loading"
           @click="closeDialog"
         />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-arrow-left-right-line" />
-        </div>
-        <h3 class="custom-dialog-title">
-          {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
-        </h3>
-        <p class="custom-dialog-subtitle">
-          Mueve fondos de una cuenta a otra
-        </p>
-      </div>
+      </VCardTitle>
 
-      <!-- Formulario -->
-      <VCardText class="pa-6">
+      <!-- Formulario con Scroll Interno -->
+      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
         <VForm
           ref="formRef"
           @submit.prevent="handleSubmit"
         >
-          <VRow>
+          <VRow dense>
             <VCol
               cols="12"
               md="6"
@@ -241,7 +282,7 @@ watch(() => show.value, newVal => {
                 v-model="form.description"
                 label="Motivo / Descripción *"
                 placeholder="Ej. Reposición de caja chica..."
-                rows="3"
+                rows="2"
                 variant="outlined"
                 density="comfortable"
                 no-resize
@@ -257,23 +298,34 @@ watch(() => show.value, newVal => {
                 </template>
               </VTextarea>
             </VCol>
+
+            <!-- Foto / Comprobante de la Transferencia -->
+            <VCol cols="12" class="mt-1">
+              <ReceiptUploader
+                v-model="receiptFiles"
+                label="Foto / Comprobante de la Transferencia"
+                hint="Adjunta foto del comprobante o captura de la transferencia entre cuentas (Obligatorio)"
+                required
+                :max-files="5"
+                @error="msg => showNotification(msg, 'error')"
+              />
+            </VCol>
           </VRow>
         </VForm>
       </VCardText>
 
       <VDivider />
 
-      <!-- Footer -->
+      <!-- Footer Fijo de Acciones -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-grey-lighten-5 flex-none"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
+          class="rounded-lg px-5 font-weight-medium"
+          height="38"
           :disabled="loading"
           @click="closeDialog"
         >
@@ -285,11 +337,12 @@ watch(() => show.value, newVal => {
           variant="elevated"
           prepend-icon="ri-check-line"
           class="rounded-lg px-6 font-weight-bold"
-          height="40"
+          height="38"
           :loading="loading"
+          :disabled="loading || (!isEditing && receiptFiles.length === 0)"
           @click="handleSubmit"
         >
-          {{ isEditing ? 'Actualizar Transferencia' : 'Confirmar Transferencia' }}
+          {{ isEditing ? 'Actualizar Transferencia' : 'Realizar Transferencia' }}
         </VBtn>
       </VCardActions>
     </VCard>

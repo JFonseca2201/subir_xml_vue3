@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -22,6 +23,7 @@ const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
 const loading = ref(false)
+const receiptFiles = ref([])
 
 const paymentMethods = [
   { text: 'Efectivo', value: 'EFECTIVO' },
@@ -73,6 +75,7 @@ const resetForm = () => {
     employee_name: '',
     account_name: '',
   }
+  receiptFiles.value = []
   formRef.value?.reset()
 }
 
@@ -159,36 +162,29 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    // Preparar el payload para la API
-    const payload = {
-      employee_id: form.value.employee_id,
-      account_id: form.value.account_id,
-      amount: parseFloat(form.value.amount),
-      description: form.value.description,
-      advance_date: form.value.advance_date,
-      payment_date: form.value.payment_date,
-      payment_method: form.value.payment_method,
-      type: 'advance',
-    }
+    const formData = new FormData()
+    formData.append('employee_id', form.value.employee_id)
+    formData.append('account_id', form.value.account_id)
+    formData.append('amount', parseFloat(form.value.amount))
+    formData.append('description', form.value.description || '')
+    formData.append('advance_date', form.value.advance_date)
+    formData.append('payment_date', form.value.payment_date || form.value.advance_date)
+    formData.append('payment_method', form.value.payment_method)
+    formData.append('type', 'advance')
 
-    // Hacer la llamada real a la API
-    const response = await $api('employee-expenses/advance', {
-      method: 'POST',
-      body: payload,
+    receiptFiles.value.forEach(f => {
+      formData.append('receipts[]', f)
     })
 
-    console.log('Adelanto creado:', response)
+    const response = await $api('employee-expenses/advance', {
+      method: 'POST',
+      body: formData,
+    })
 
-    // Emitir el evento con la respuesta
     emit('created', response)
     closeDialog()
   } catch (error) {
     console.error('Error al crear adelanto:', error)
-
-    // Mostrar mensaje de error al usuario
-    const errorMessage = error?.data?.message || error?.message || 'Error al crear el adelanto'
-
-    console.error('Detalle del error:', errorMessage)
   } finally {
     loading.value = false
   }
@@ -364,6 +360,16 @@ onMounted(() => {
                   type="date"
                   :rules="[v => !!v]"
                   required
+                />
+              </VCol>
+
+              <!-- Comprobante / Recibo Adjunto -->
+              <VCol cols="12">
+                <ReceiptUploader
+                  v-model="receiptFiles"
+                  label="Comprobante(s) de Adelanto (Foto / PDF)"
+                  hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
+                  :max-files="5"
                 />
               </VCol>
             </VRow>

@@ -7,6 +7,9 @@ import IncomeDialog from '@/components/inventory/finances-records/IncomeDialog.v
 import ExpenseDialog from '@/components/inventory/finances-records/ExpenseDialog.vue'
 import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
+import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
+import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
+import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 
 // Composable instances
 const loader = useLoaderStore()
@@ -15,6 +18,9 @@ const { showNotification } = useGlobalToast()
 // Estado del diálogo
 const showIncomeDialog = ref(false)
 const showExpenseDialog = ref(false)
+const showAporteDialog = ref(false)
+const isSavingIncome = ref(false)
+const isSavingExpense = ref(false)
 
 // Datos reactivos
 const movements = ref([])
@@ -328,9 +334,18 @@ const openExpenseDialog = () => {
 const getFinanceRecordId = movement => {
   if (!movement) return null
 
+  let metadata = movement.metadata
+  if (typeof metadata === 'string') {
+    try {
+      metadata = JSON.parse(metadata)
+    } catch (e) {
+      metadata = {}
+    }
+  }
+
   // 1. Validar en metadata
-  if (movement.metadata?.finance_record_id) {
-    return movement.metadata.finance_record_id
+  if (metadata?.finance_record_id) {
+    return metadata.finance_record_id
   }
 
   // 2. Validar en el objeto de la distribución / movable
@@ -413,55 +428,105 @@ const closeDeleteDialog = () => {
   movementToDelete.value = null
 }
 
+const prepareFinanceRecordPayload = data => {
+  if (data && data.receipts && data.receipts.length > 0) {
+    const formData = new FormData()
+    Object.keys(data).forEach(key => {
+      if (key === 'receipts') {
+        data.receipts.forEach(file => {
+          formData.append('receipts[]', file)
+        })
+      } else if (key === 'payments' && Array.isArray(data.payments)) {
+        data.payments.forEach((p, idx) => {
+          if (p.account_id) formData.append(`payments[${idx}][account_id]`, p.account_id)
+          formData.append(`payments[${idx}][amount]`, p.amount || 0)
+        })
+      } else if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key])
+      }
+    })
+    return formData
+  }
+  return data
+}
+
 const saveIncome = async data => {
+  isSavingIncome.value = true
   try {
+    const payload = prepareFinanceRecordPayload(data)
+
     if (editingMovement.value) {
       const recordId = getFinanceRecordId(editingMovement.value)
 
-      await $api(`finance-records/${recordId}`, {
-        method: 'PUT',
-        body: data,
-      })
+      if (payload instanceof FormData) {
+        payload.append('_method', 'PUT')
+        await $api(`finance-records/${recordId}`, {
+          method: 'POST',
+          body: payload,
+        })
+      } else {
+        await $api(`finance-records/${recordId}`, {
+          method: 'PUT',
+          body: payload,
+        })
+      }
       showNotification('Ingreso actualizado exitosamente', 'success')
     } else {
       await $api('finance-records', {
         method: 'POST',
-        body: data,
+        body: payload,
       })
       showNotification('Ingreso creado exitosamente', 'success')
     }
 
-    await loadMovements(false)
     closeIncomeDialog()
+    await loadMovements(false)
   } catch (error) {
     console.error('Error al guardar ingreso:', error)
-    showNotification('Error al guardar ingreso', 'error')
+    const errMessage = error?.data?.message || (error?.data?.errors ? Object.values(error.data.errors).flat().join(', ') : 'Error al guardar ingreso')
+    showNotification(errMessage, 'error')
+  } finally {
+    isSavingIncome.value = false
   }
 }
 
 const saveExpense = async data => {
+  isSavingExpense.value = true
   try {
+    const payload = prepareFinanceRecordPayload(data)
+
     if (editingMovement.value) {
       const recordId = getFinanceRecordId(editingMovement.value)
 
-      await $api(`finance-records/${recordId}`, {
-        method: 'PUT',
-        body: data,
-      })
+      if (payload instanceof FormData) {
+        payload.append('_method', 'PUT')
+        await $api(`finance-records/${recordId}`, {
+          method: 'POST',
+          body: payload,
+        })
+      } else {
+        await $api(`finance-records/${recordId}`, {
+          method: 'PUT',
+          body: payload,
+        })
+      }
       showNotification('Egreso actualizado exitosamente', 'success')
     } else {
       await $api('finance-records', {
         method: 'POST',
-        body: data,
+        body: payload,
       })
       showNotification('Egreso creado exitosamente', 'success')
     }
 
-    await loadMovements(false)
     closeExpenseDialog()
+    await loadMovements(false)
   } catch (error) {
     console.error('Error al guardar egreso:', error)
-    showNotification('Error al guardar egreso', 'error')
+    const errMessage = error?.data?.message || (error?.data?.errors ? Object.values(error.data.errors).flat().join(', ') : 'Error al guardar egreso')
+    showNotification(errMessage, 'error')
+  } finally {
+    isSavingExpense.value = false
   }
 }
 
@@ -625,6 +690,133 @@ const getMovementDocNumber = movement => {
   return '-'
 }
 
+// --- NOTA DE MOVIMIENTO Y COMPROBANTES ---
+const isMovementNoteDialogVisible = ref(false)
+const selectedMovementForNote = ref(null)
+
+const openMovementNoteDialog = movement => {
+  selectedMovementForNote.value = movement
+  isMovementNoteDialogVisible.value = true
+}
+
+// --- FOTOS, COMPROBANTES Y DESCARGAS ---
+const isReceiptsDialogVisible = ref(false)
+const selectedMovementReceipt = ref(null)
+
+const isPhotoViewerVisible = ref(false)
+const currentPhotoList = ref([])
+const currentPhotoIndex = ref(0)
+const currentPhotoMovement = ref(null)
+
+const getAttachmentUrl = att => {
+  if (!att) return ''
+  if (att.url) return att.url
+  if (att.file_path) {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
+    const base = isLocal
+      ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
+      : `http://${hostname}:8000`
+    
+    const cleanPath = att.file_path.replace(/^\/?storage\/?/, '')
+    return `${base}/storage/${cleanPath}`
+  }
+  return ''
+}
+
+const hasImageAttachment = movement => {
+  const atts = movement?.resolved_attachments || movement?.attachments || []
+  return atts.some(att => att.is_image || (att.mime_type && att.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(att.file_name || att.file_path || ''))
+}
+
+const getFirstImageUrl = movement => {
+  const atts = movement?.resolved_attachments || movement?.attachments || []
+  const imgAtt = atts.find(att => att.is_image || (att.mime_type && att.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(att.file_name || att.file_path || ''))
+  return imgAtt ? getAttachmentUrl(imgAtt) : ''
+}
+
+const getMovementAttachableType = movement => {
+  if (!movement) return 'expense'
+  if (movement.type === 'transfer') return 'internal_transfer'
+  return (movement.type === 0 || movement.type === 'income') ? 'finance_record' : 'expense'
+}
+
+const getMovementAttachableId = movement => {
+  if (!movement) return null
+  return getFinanceRecordId(movement) || movement.id
+}
+
+const openAttachDialog = movement => {
+  selectedMovementReceipt.value = movement
+  isReceiptsDialogVisible.value = true
+}
+
+const previewMovementPhoto = (movement, index = 0) => {
+  const atts = movement?.resolved_attachments || movement?.attachments || []
+  if (!atts || atts.length === 0) {
+    openAttachDialog(movement)
+    return
+  }
+  currentPhotoMovement.value = movement
+  currentPhotoList.value = atts
+  currentPhotoIndex.value = index >= 0 && index < atts.length ? index : 0
+  isPhotoViewerVisible.value = true
+}
+
+const currentActivePhoto = computed(() => {
+  if (!currentPhotoList.value || currentPhotoList.value.length === 0) return null
+  return currentPhotoList.value[currentPhotoIndex.value] || currentPhotoList.value[0]
+})
+
+const isCurrentPhotoAnImage = computed(() => {
+  const photo = currentActivePhoto.value
+  if (!photo) return false
+  return photo.is_image || (photo.mime_type && photo.mime_type.startsWith('image/')) || /\.(jpg|jpeg|png|webp|gif)$/i.test(photo.file_name || photo.file_path || '')
+})
+
+const isDownloading = ref(false)
+
+const downloadAttachment = async att => {
+  if (!att) return
+  isDownloading.value = true
+  try {
+    const url = getAttachmentUrl(att)
+    const fileName = att.file_name || att.original_name || 'comprobante'
+
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Error al descargar archivo')
+    const blob = await response.blob()
+    const blobUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(blobUrl)
+    showNotification('Descarga completada', 'success')
+  } catch (error) {
+    const a = document.createElement('a')
+    a.href = getAttachmentUrl(att)
+    a.download = att.file_name || 'comprobante'
+    a.target = '_blank'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  } finally {
+    isDownloading.value = false
+  }
+}
+
+const downloadFirstAttachment = movement => {
+  const atts = movement?.resolved_attachments || movement?.attachments || []
+  if (atts && atts.length > 0) {
+    downloadAttachment(atts[0])
+  } else {
+    openAttachDialog(movement)
+  }
+}
+
 onMounted(() => {
   loadAccounts()
   loadMovements()
@@ -684,6 +876,16 @@ onMounted(() => {
             @click="generatePDF"
           >
             Exportar PDF
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="tonal"
+            size="small"
+            prepend-icon="ri-group-line"
+            class="font-weight-semibold"
+            @click="showAporteDialog = true"
+          >
+            Aporte Socio
           </VBtn>
           <VBtn
             color="success"
@@ -978,6 +1180,7 @@ onMounted(() => {
         class="position-absolute"
         style="top: 0; left: 0; right: 0; z-index: 10;"
       />
+
       <VTable
         hover
         class="transfer-table"
@@ -986,31 +1189,37 @@ onMounted(() => {
           <tr>
             <th
               class="text-left py-3"
-              style="width: 15%; min-width: 100px;"
+              style="width: 14%; min-width: 100px;"
             >
               OT / FACTURA
             </th>
             <th
               class="text-left py-3"
-              style="width: 15%; min-width: 120px;"
+              style="width: 12%; min-width: 110px;"
             >
               TIPO
             </th>
             <th
               class="text-left py-3"
-              style="width: 30%; min-width: 200px;"
+              style="width: 26%; min-width: 180px;"
             >
               DESCRIPCIÓN & FECHA
             </th>
             <th
+              class="text-center py-3"
+              style="width: 12%; min-width: 110px;"
+            >
+              COMPROBANTE
+            </th>
+            <th
               class="text-left py-3"
-              style="width: 20%; min-width: 160px;"
+              style="width: 16%; min-width: 140px;"
             >
               CUENTA & MÉTODO
             </th>
             <th
               class="text-right py-3"
-              style="width: 10%; min-width: 100px;"
+              style="width: 10%; min-width: 90px;"
             >
               MONTO
             </th>
@@ -1040,6 +1249,9 @@ onMounted(() => {
               <div class="shimmer-line w-75 mb-2" />
               <div class="shimmer-line w-40" />
             </td>
+            <td class="py-4 text-center">
+              <div class="shimmer-chip mx-auto" style="width: 40px; height: 40px; border-radius: 8px;" />
+            </td>
             <td class="py-4">
               <div class="shimmer-line w-60" />
             </td>
@@ -1060,7 +1272,7 @@ onMounted(() => {
         <tbody v-else-if="groupedMovements.length === 0">
           <tr>
             <td
-              colspan="6"
+              colspan="7"
               class="text-center py-12 text-medium-emphasis"
             >
               <VAvatar
@@ -1093,7 +1305,7 @@ onMounted(() => {
           >
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
-              <td colspan="6">
+              <td colspan="7">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-3">
                     <VAvatar
@@ -1145,7 +1357,11 @@ onMounted(() => {
             >
               <!-- OT / Factura -->
               <td class="py-3">
-                <span class="text-body-2 font-weight-bold text-high-emphasis">
+                <span
+                  class="text-body-2 font-weight-bold text-high-emphasis cursor-pointer"
+                  title="Clic para ver nota completa y comprobantes"
+                  @click="openMovementNoteDialog(movement)"
+                >
                   {{ getMovementDocNumber(movement) }}
                 </span>
               </td>
@@ -1180,12 +1396,91 @@ onMounted(() => {
 
               <!-- Descripción & Fecha -->
               <td class="py-3">
-                <div class="d-flex flex-column">
+                <div
+                  class="d-flex flex-column cursor-pointer"
+                  title="Clic para ver nota completa y comprobantes"
+                  @click="openMovementNoteDialog(movement)"
+                >
                   <span class="text-body-2 font-weight-medium text-high-emphasis">
                     {{ movement.description || 'Sin descripción' }}
                   </span>
                   <span class="text-caption text-medium-emphasis">
                     {{ formatDate(movement.entry_date) }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Comprobante / Foto -->
+              <td class="py-3 text-center">
+                <div
+                  v-if="movement.resolved_attachments && movement.resolved_attachments.length > 0"
+                  class="d-flex align-center justify-center gap-1"
+                >
+                  <!-- Miniatura interactiva de foto -->
+                  <div
+                    v-if="hasImageAttachment(movement)"
+                    class="position-relative cursor-pointer attachment-thumb-wrapper"
+                    title="Clic para ver foto en tamaño completo"
+                    @click="previewMovementPhoto(movement)"
+                  >
+                    <VAvatar
+                      size="38"
+                      rounded="lg"
+                      class="border elevation-1 attachment-thumbnail"
+                    >
+                      <VImg
+                        :src="getFirstImageUrl(movement)"
+                        cover
+                      />
+                    </VAvatar>
+                    <span
+                      v-if="movement.resolved_attachments.length > 1"
+                      class="attachment-count-badge"
+                    >
+                      +{{ movement.resolved_attachments.length - 1 }}
+                    </span>
+                  </div>
+
+                  <!-- Icono si solo es PDF o documento -->
+                  <VBtn
+                    v-else
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    icon="ri-file-text-line"
+                    title="Ver documento adjunto"
+                    @click="previewMovementPhoto(movement)"
+                  />
+
+                  <!-- Botón rápido de descarga directa -->
+                  <VBtn
+                    title="Descargar Foto / Comprobante"
+                    size="x-small"
+                    variant="text"
+                    color="secondary"
+                    icon="ri-download-2-line"
+                    @click.stop="downloadFirstAttachment(movement)"
+                  />
+                </div>
+
+                <!-- Si no tiene comprobante aún -->
+                <div v-else>
+                  <VBtn
+                    v-if="movement.type !== 'transfer'"
+                    size="x-small"
+                    variant="tonal"
+                    color="secondary"
+                    prepend-icon="ri-attachment-line"
+                    class="text-caption text-none"
+                    @click="openAttachDialog(movement)"
+                  >
+                    Adjuntar
+                  </VBtn>
+                  <span
+                    v-else
+                    class="text-caption text-disabled"
+                  >
+                    —
                   </span>
                 </div>
               </td>
@@ -1227,6 +1522,16 @@ onMounted(() => {
               <!-- Acciones -->
               <td class="py-3 text-center">
                 <div class="d-flex justify-center gap-1">
+                  <!-- Ver Nota y Comprobantes (Principal) -->
+                  <VBtn
+                    title="Ver Nota y Comprobantes"
+                    size="small"
+                    variant="tonal"
+                    color="primary"
+                    icon="ri-file-list-3-line"
+                    class="action-btn"
+                    @click="openMovementNoteDialog(movement)"
+                  />
                   <VBtn
                     v-if="movement.type !== 'transfer'"
                     title="Comprobante PDF"
@@ -1240,10 +1545,20 @@ onMounted(() => {
                   />
                   <VBtn
                     v-if="movement.type !== 'transfer'"
+                    title="Gestionar Comprobantes"
+                    size="small"
+                    variant="tonal"
+                    color="secondary"
+                    icon="ri-attachment-2"
+                    class="action-btn"
+                    @click="openAttachDialog(movement)"
+                  />
+                  <VBtn
+                    v-if="movement.type !== 'transfer'"
                     title="Editar"
                     size="small"
                     variant="tonal"
-                    color="primary"
+                    color="warning"
                     icon="ri-edit-line"
                     class="action-btn"
                     @click="editMovement(movement)"
@@ -1270,11 +1585,13 @@ onMounted(() => {
     <IncomeDialog
       v-model="showIncomeDialog"
       :editing-movement="editingMovement"
+      :is-saving="isSavingIncome"
       @saved="saveIncome"
     />
     <ExpenseDialog
       v-model="showExpenseDialog"
       :editing-movement="editingMovement"
+      :is-saving="isSavingExpense"
       @saved="saveExpense"
     />
     <DeleteDialog
@@ -1282,6 +1599,195 @@ onMounted(() => {
       :movement="movementToDelete"
       @confirm="confirmDelete"
     />
+
+    <!-- Diálogo de Aporte de Socio (VDialog) -->
+    <AporteCreateDialog
+      v-model="showAporteDialog"
+      @created="() => loadMovements(false)"
+    />
+
+    <!-- Diálogo de Nota de Movimiento y Comprobantes -->
+    <MovementReceiptNoteDialog
+      v-if="selectedMovementForNote"
+      v-model="isMovementNoteDialogVisible"
+      :movement="selectedMovementForNote"
+      :accounts="accounts"
+      @updated="() => loadMovements(false)"
+    />
+
+    <!-- Diálogo de Gestión de Comprobantes Adjuntos -->
+    <AttachReceiptsDialog
+      v-if="selectedMovementReceipt"
+      :is-dialog-visible="isReceiptsDialogVisible"
+      :attachable-type="getMovementAttachableType(selectedMovementReceipt)"
+      :attachable-id="getMovementAttachableId(selectedMovementReceipt)"
+      :title="`Comprobantes de ${selectedMovementReceipt.description || getMovementDocNumber(selectedMovementReceipt)}`"
+      :identifier="getMovementDocNumber(selectedMovementReceipt)"
+      :party-name="selectedMovementReceipt.description"
+      @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedMovementReceipt = null; }"
+      @updated="() => loadMovements(false)"
+    />
+
+    <!-- Lightbox / Visor de Fotos en Pantalla Completa con Descarga -->
+    <VDialog
+      v-model="isPhotoViewerVisible"
+      max-width="850"
+      scrollable
+    >
+      <VCard class="rounded-xl overflow-hidden elevation-12">
+        <!-- Header del Visor -->
+        <VCardTitle class="d-flex align-center justify-space-between bg-grey-900 text-white pa-4">
+          <div class="d-flex align-center gap-3">
+            <VAvatar
+              color="primary"
+              size="36"
+              rounded="lg"
+            >
+              <VIcon
+                icon="ri-image-line"
+                color="white"
+                size="20"
+              />
+            </VAvatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold text-white">
+                {{ currentActivePhoto?.file_name || 'Comprobante de Pago' }}
+              </div>
+              <div class="text-caption text-grey-400">
+                Archivo {{ currentPhotoIndex + 1 }} de {{ currentPhotoList.length }}
+                <span v-if="currentPhotoMovement"> • {{ getMovementDocNumber(currentPhotoMovement) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-center gap-2">
+            <!-- Botón de Descarga Principal -->
+            <VBtn
+              color="success"
+              variant="elevated"
+              prepend-icon="ri-download-2-line"
+              size="small"
+              class="font-weight-bold rounded-lg"
+              :loading="isDownloading"
+              @click="downloadAttachment(currentActivePhoto)"
+            >
+              Descargar Foto
+            </VBtn>
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              color="white"
+              density="compact"
+              @click="isPhotoViewerVisible = false"
+            />
+          </div>
+        </VCardTitle>
+
+        <!-- Cuerpo del Visor -->
+        <VCardText class="pa-0 bg-grey-950 d-flex align-center justify-center position-relative" style="min-height: 420px; max-height: 75vh; overflow: auto;">
+          <!-- Navegación Anterior -->
+          <VBtn
+            v-if="currentPhotoList.length > 1"
+            icon="ri-arrow-left-s-line"
+            variant="tonal"
+            color="white"
+            class="position-absolute"
+            style="left: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            :disabled="currentPhotoIndex === 0"
+            @click="currentPhotoIndex--"
+          />
+
+          <!-- Visualización de Imagen -->
+          <div v-if="isCurrentPhotoAnImage" class="d-flex align-center justify-center w-100 h-100 pa-4">
+            <img
+              :src="getAttachmentUrl(currentActivePhoto)"
+              :alt="currentActivePhoto?.file_name || 'Comprobante'"
+              class="img-fluid rounded-lg shadow-lg"
+              style="max-width: 100%; max-height: 68vh; object-fit: contain;"
+            />
+          </div>
+
+          <!-- Visualización si es PDF -->
+          <div v-else class="d-flex flex-column align-center justify-center pa-8 text-center text-white">
+            <VAvatar
+              color="error"
+              size="72"
+              variant="tonal"
+              class="mb-4"
+            >
+              <VIcon
+                icon="ri-file-pdf-2-line"
+                size="40"
+              />
+            </VAvatar>
+            <div class="text-h6 font-weight-bold mb-2">
+              Documento PDF
+            </div>
+            <div class="text-body-2 text-grey-400 mb-4">
+              {{ currentActivePhoto?.file_name }}
+            </div>
+            <div class="d-flex gap-3">
+              <VBtn
+                color="primary"
+                variant="elevated"
+                prepend-icon="ri-external-link-line"
+                target="_blank"
+                :href="getAttachmentUrl(currentActivePhoto)"
+              >
+                Abrir PDF en pestaña
+              </VBtn>
+              <VBtn
+                color="success"
+                variant="tonal"
+                prepend-icon="ri-download-2-line"
+                @click="downloadAttachment(currentActivePhoto)"
+              >
+                Descargar PDF
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Navegación Siguiente -->
+          <VBtn
+            v-if="currentPhotoList.length > 1"
+            icon="ri-arrow-right-s-line"
+            variant="tonal"
+            color="white"
+            class="position-absolute"
+            style="right: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            :disabled="currentPhotoIndex === currentPhotoList.length - 1"
+            @click="currentPhotoIndex++"
+          />
+        </VCardText>
+
+        <!-- Footer del Visor -->
+        <VCardActions class="pa-4 bg-grey-900 d-flex justify-space-between align-center">
+          <div class="text-caption text-grey-400">
+            <span v-if="currentActivePhoto?.file_size">
+              Tamaño: {{ (currentActivePhoto.file_size / 1024).toFixed(1) }} KB
+            </span>
+          </div>
+          <div class="d-flex gap-2">
+            <VBtn
+              variant="tonal"
+              color="primary"
+              size="small"
+              prepend-icon="ri-attachment-2"
+              @click="() => { isPhotoViewerVisible = false; openAttachDialog(currentPhotoMovement); }"
+            >
+              Gestionar Adjuntos
+            </VBtn>
+            <VBtn
+              variant="outlined"
+              color="white"
+              size="small"
+              @click="isPhotoViewerVisible = false"
+            >
+              Cerrar
+            </VBtn>
+          </div>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -1372,6 +1878,39 @@ onMounted(() => {
   100% {
     background-position: -200% 0;
   }
+}
+
+.attachment-thumb-wrapper {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+}
+
+.attachment-thumb-wrapper:hover {
+  transform: scale(1.1);
+}
+
+.attachment-thumbnail {
+  border: 1.5px solid rgba(var(--v-border-color), 0.25) !important;
+  transition: all 0.2s ease;
+}
+
+.attachment-thumb-wrapper:hover .attachment-thumbnail {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2) !important;
+}
+
+.attachment-count-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: rgb(var(--v-theme-primary));
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1.5px solid white;
+  line-height: 1;
 }
 </style>
 

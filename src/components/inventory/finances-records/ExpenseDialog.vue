@@ -3,6 +3,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 const props = defineProps({
   modelValue: {
@@ -13,12 +14,18 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  isSaving: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+
+const receiptFiles = ref([])
 
 // Form data
 const form = ref({
@@ -47,7 +54,6 @@ const loadAccounts = async () => {
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
 
-      
       return {
         title: account.bank_name ? `${account.bank_name} (${cleaned})` : cleaned,
         value: account.id,
@@ -63,11 +69,34 @@ onMounted(() => {
   loadAccounts()
 })
 
+const generateAutoCode = dateStr => {
+  const cleanDate = dateStr.replace(/-/g, '')
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000)
+  
+  return `EGR-${cleanDate}-${randomSuffix}`
+}
+
+const resetForm = () => {
+  const currentDate = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+
+  receiptFiles.value = []
+  form.value = {
+    type: 1,
+    work_order_number: '',
+    invoice_number: generateAutoCode(currentDate),
+    description: '',
+    entry_date: currentDate,
+    payments: [
+      { account_id: null, amount: 0 },
+    ],
+  }
+}
+
 // Watch for editing movement
 watch(() => props.editingMovement, newVal => {
+  console.log('ExpenseDialog - editingMovement:', newVal)
   if (newVal) {
     let payments = []
-
     if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
       payments = newVal.payment_distributions.map(dist => ({
         account_id: dist.account_id,
@@ -83,46 +112,17 @@ watch(() => props.editingMovement, newVal => {
     }
 
     form.value = {
-      type: 1,
+      type: 1, // TYPE_EXPENSE
       work_order_number: newVal.work_order_number || '',
       invoice_number: newVal.invoice_number || '',
       description: newVal.description || '',
-      entry_date: new Date(newVal.entry_date).toISOString().split('T')[0],
+      entry_date: newVal.entry_date || new Date().toISOString().split('T')[0],
       payments: payments,
     }
   } else {
     resetForm()
   }
-})
-
-watch(() => props.modelValue, isVisible => {
-  if (isVisible && !props.editingMovement) {
-    resetForm()
-  }
-})
-
-const generateAutoCode = dateStr => {
-  if (!dateStr) return ''
-  const cleanDate = dateStr.replace(/-/g, '')
-  const randomSuffix = Math.floor(1000 + Math.random() * 9000)
-  
-  return `EGR-${cleanDate}-${randomSuffix}`
-}
-
-const resetForm = () => {
-  const currentDate = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
-
-  form.value = {
-    type: 1,
-    work_order_number: '',
-    invoice_number: generateAutoCode(currentDate),
-    description: '',
-    entry_date: currentDate,
-    payments: [
-      { account_id: null, amount: 0 },
-    ],
-  }
-}
+}, { immediate: true })
 
 watch(() => form.value.entry_date, newDate => {
   if (!props.editingMovement && form.value) {
@@ -154,47 +154,42 @@ const canAddMorePayments = computed(() => {
   return form.value.payments[form.value.payments.length - 1].amount > 0
 })
 
-
 const saveExpense = async () => {
   try {
-    // Validar que el total sea mayor a 0
     if (totalToRegister.value <= 0) {
       showNotification('El total a registrar debe ser mayor a 0', 'error')
-      
       return
     }
 
-    const payload = { ...form.value }
+    const payload = { 
+      ...form.value,
+      receipts: receiptFiles.value,
+    }
 
-    // No enviar work_order_number si está vacío
     if (!payload.work_order_number || payload.work_order_number.trim() === '') {
       delete payload.work_order_number
     }
 
-    // Asegurar que payments sea un array válido
     if (!payload.payments || payload.payments.length === 0) {
       showNotification('Debes agregar al menos un método de pago', 'error')
-      
       return
     }
 
-    // Validar que todos los pagos tengan cuenta seleccionada
     const hasInvalidPayments = payload.payments.some(p => !p.account_id)
     if (hasInvalidPayments) {
       showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
-      
       return
     }
 
-    console.log('Payload to send:', payload)
-    emit('saved', payload)
-    closeDialog()
-    resetForm() // Limpiar formulario después de guardar
+    if (!props.editingMovement && (!receiptFiles.value || receiptFiles.value.length === 0)) {
+      showNotification('Es obligatorio adjuntar la foto o comprobante de respaldo del egreso', 'warning')
+      return
+    }
 
-    showNotification('Egreso guardado exitosamente', 'success')
+    emit('saved', payload)
   } catch (error) {
-    console.error('Error al guardar egreso:', error)
-    showNotification('Error al guardar egreso', 'error')
+    console.error('Error al preparar egreso:', error)
+    showNotification('Error al preparar egreso', 'error')
   }
 }
 
@@ -208,31 +203,9 @@ const addPayment = () => {
 const removePayment = async index => {
   if (form.value.payments.length <= 1) {
     showNotification('Debe haber al menos un método de pago', 'error')
-    
     return
   }
 
-  const payment = form.value.payments[index]
-
-  // Si es un movimiento existente con payment_distributions, eliminar de la base de datos
-  if (props.editingMovement && payment.id) {
-    loader.start()
-    try {
-      await $api(`payment-distributions/${payment.id}`, {
-        method: 'DELETE',
-      })
-      showNotification('Método de pago eliminado correctamente', 'success')
-    } catch (error) {
-      console.error('Error al eliminar método de pago:', error)
-      showNotification('Error al eliminar método de pago', 'error')
-      
-      return
-    } finally {
-      loader.stop()
-    }
-  }
-
-  // Eliminar del formulario
   form.value.payments.splice(index, 1)
 }
 
@@ -242,84 +215,106 @@ const formatCurrency = value => {
     currency: 'USD',
   }).format(value)
 }
-
-const openDialog = () => {
-  emit('update:modelValue', true)
-}
 </script>
 
 <template>
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="600"
+    max-width="680"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard class="custom-dialog-card expense-dialog">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+    <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
+      <!-- Header Banner Fijo -->
+      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
+        <div class="d-flex align-center gap-3">
+          <VAvatar
+            color="white"
+            variant="tonal"
+            size="38"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-indeterminate-circle-line"
+              color="white"
+              size="22"
+            />
+          </VAvatar>
+          <div>
+            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
+              {{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}
+            </div>
+            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
+              Registra o modifica un egreso financiero en el sistema
+            </div>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn"
+          color="white"
           @click="closeDialog"
         />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-indeterminate-circle-line" />
-        </div>
-        <h3 class="custom-dialog-title">
-          {{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}
-        </h3>
-        <p class="custom-dialog-subtitle">
-          Registra o modifica un egreso financiero en el sistema
-        </p>
-      </div>
-      <VCardText class="pa-4">
+      </VCardTitle>
+
+      <!-- Cuerpo del Formulario con Scroll Interno -->
+      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
         <VForm @submit.prevent="saveExpense">
-          <VRow>
-            <VCol cols="12">
+          <VRow dense>
+            <VCol cols="12" md="6">
               <VTextField
                 v-model="form.invoice_number"
-                label="Número de Factura"
-                placeholder="FAC-001"
+                label="Número de Factura / Código"
+                placeholder="EGR-001"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-hashtag"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.entry_date"
+                label="Fecha *"
+                type="date"
+                required
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-calendar-line"
               />
             </VCol>
 
             <VCol cols="12">
               <VTextField
-                v-model="form.entry_date"
-                label="Fecha"
-                type="date"
-                required
-              />
-            </VCol>
-            <VCol cols="12">
-              <VTextField
                 v-model="form.description"
-                label="Descripción"
-                placeholder="Describe el egreso..."
+                label="Descripción *"
+                placeholder="Describe el motivo del egreso..."
                 required
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-file-text-line"
               />
             </VCol>
           </VRow>
 
-          <!-- Métodos de Pago -->
-          <VDivider class="my-4" />
-          <div class="pa-4">
-            <div class="d-flex justify-space-between align-center mb-3">
-              <span class="text-h6 font-weight-medium">Métodos de Pago</span>
+          <!-- Sección Métodos de Pago -->
+          <div class="mt-4">
+            <div class="d-flex justify-space-between align-center mb-2">
+              <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                <VIcon icon="ri-bank-card-line" size="18" color="primary" />
+                Métodos de Pago / Cuentas Origen
+              </span>
               <VBtn
-                size="small"
+                size="x-small"
+                variant="tonal"
                 color="primary"
+                prepend-icon="ri-add-line"
                 :disabled="!canAddMorePayments"
                 @click="addPayment"
               >
-                <VIcon start>
-                  ri-add-line
-                </VIcon>
-                Agregar Método
+                Agregar Cuenta
               </VBtn>
             </div>
 
@@ -327,123 +322,114 @@ const openDialog = () => {
             <div
               v-for="(payment, index) in form.payments"
               :key="index"
-              class="mb-3"
+              class="mb-2"
             >
               <VCard
                 variant="outlined"
-                class="pa-3"
+                class="pa-3 rounded-lg bg-grey-lighten-5 border"
               >
-                <VCardText class="pa-0">
-                  <VRow>
-                    <VCol
-                      cols="12"
-                      md="5"
-                    >
-                      <VSelect
-                        v-model="payment.account_id"
-                        :items="accountOptions"
-                        item-title="title"
-                        item-value="value"
-                        label="Cuenta"
-                        required
-                      />
-                    </VCol>
-                    <VCol
-                      cols="12"
-                      md="5"
-                    >
-                      <VTextField
-                        v-model="payment.amount"
-                        label="Monto"
-                        type="number"
-                        prefix="$"
-                        placeholder="0.00"
-                        required
-                      />
-                    </VCol>
-                    <VCol
-                      cols="12"
-                      md="2"
-                    >
-                      <VBtn
-                        color="error"
-                        variant="outlined"
-                        :disabled="form.payments.length <= 1"
-                        @click="removePayment(index)"
-                      >
-                        <VIcon start>
-                          ri-delete-bin-line
-                        </VIcon>
-                      </VBtn>
-                    </VCol>
-                  </VRow>
-                </VCardText>
+                <VRow dense class="align-center">
+                  <VCol cols="12" sm="6">
+                    <VSelect
+                      v-model="payment.account_id"
+                      :items="accountOptions"
+                      item-title="title"
+                      item-value="value"
+                      label="Cuenta Origen *"
+                      placeholder="Seleccionar cuenta..."
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="10" sm="5">
+                    <VTextField
+                      v-model="payment.amount"
+                      label="Monto *"
+                      type="number"
+                      prefix="$"
+                      placeholder="0.00"
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      required
+                    />
+                  </VCol>
+                  <VCol cols="2" sm="1" class="text-center">
+                    <VBtn
+                      icon="ri-delete-bin-line"
+                      size="x-small"
+                      variant="text"
+                      color="error"
+                      :disabled="form.payments.length <= 1"
+                      @click="removePayment(index)"
+                    />
+                  </VCol>
+                </VRow>
               </VCard>
             </div>
-
-            <!-- Resumen de Métodos de Pago -->
-            <!--
-              <div v-if="form.payments.length > 1" class="mt-2 mb-2">
-              <VAlert type="info" variant="tonal">
-              <div class="d-flex align-center gap-2">
-              <VIcon>ri-bank-card-line</VIcon>
-              <span>
-              <strong>Resumen:</strong>
-              <span v-for="(payment, idx) in form.payments" :key="idx">
-              {{accountOptions.find(a => a.value === payment.account_id)?.title ||
-              payment.account_id}}: {{ formatCurrency(payment.amount) }}<span
-              v-if="idx < form.payments.length - 1">,&nbsp;</span>
-              </span>
-              </span>
-              </div>
-              </VAlert>
-              </div> 
-            -->
-
-            <!-- Total a Registrar -->
-            <VAlert
-              type="info"
-              variant="tonal"
-              class="mt-3"
-            >
-              <div class="d-flex align-center gap-2">
-                <VIcon>ri-calculator-line</VIcon>
-                <span>
-                  <strong>Total a Registrar:</strong>
-                  {{ formatCurrency(totalToRegister) }}
-                </span>
-              </div>
-            </VAlert>
           </div>
-          <VDivider />
-          <VCardActions
-            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-            style="position: sticky; bottom: 0; z-index: 2;"
+
+          <!-- Total a Registrar Alert -->
+          <VAlert
+            type="info"
+            variant="tonal"
+            class="mt-3 py-2 px-3 rounded-lg"
           >
-            <VBtn
-              variant="outlined"
-              color="secondary"
-              prepend-icon="ri-close-line"
-              class="rounded-lg px-6 font-weight-medium"
-              height="40"
-              @click="closeDialog"
-            >
-              Cancelar
-            </VBtn>
-            <VBtn
-              color="error"
-              variant="elevated"
-              :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
-              class="rounded-lg px-6 font-weight-bold"
-              height="40"
-              :disabled="totalToRegister <= 0"
-              @click="saveExpense"
-            >
-              {{ props.editingMovement ? 'Actualizar Egreso' : 'Guardar Egreso' }}
-            </VBtn>
-          </VCardActions>
+            <div class="d-flex align-center justify-space-between">
+              <span class="d-flex align-center gap-1 font-weight-medium">
+                <VIcon icon="ri-calculator-line" size="18" />
+                Total a Registrar:
+              </span>
+              <span class="text-h6 font-weight-extrabold text-primary">
+                {{ formatCurrency(totalToRegister) }}
+              </span>
+            </div>
+          </VAlert>
+
+          <!-- Foto / Comprobante de Respaldo -->
+          <div class="mt-4">
+            <ReceiptUploader
+              v-model="receiptFiles"
+              label="Foto / Comprobante de Respaldo del Egreso"
+              hint="Adjunta foto del dinero entregado, factura física, nota de venta o comprobante (Obligatorio)"
+              required
+              :max-files="5"
+              @error="msg => showNotification(msg, 'error')"
+            />
+          </div>
         </VForm>
       </VCardText>
+
+      <VDivider />
+
+      <!-- Footer Fijo de Acciones -->
+      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-grey-lighten-5 flex-none">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium"
+          height="38"
+          :disabled="props.isSaving"
+          @click="closeDialog"
+        >
+          Cancelar
+        </VBtn>
+        <VBtn
+          color="primary"
+          variant="elevated"
+          :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
+          class="rounded-lg px-6 font-weight-bold"
+          height="38"
+          :loading="props.isSaving"
+          :disabled="props.isSaving || totalToRegister <= 0 || (!props.editingMovement && receiptFiles.length === 0)"
+          @click="saveExpense"
+        >
+          {{ props.editingMovement ? 'Actualizar Egreso' : 'Guardar Egreso' }}
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

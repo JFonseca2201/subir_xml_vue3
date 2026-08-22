@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { now } from '@vueuse/core'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -26,6 +27,7 @@ const loading = ref(false)
 const pendingAdvances = ref([])
 const totalPendingAdvances = ref(0)
 const loadingAdvances = ref(false)
+const receiptFiles = ref([])
 
 const form = ref({
   employee_id: null,
@@ -218,6 +220,7 @@ const resetForm = () => {
     payment_method: 'TRANSFERENCIA',
     reference: '',
   }
+  receiptFiles.value = []
   formRef.value?.reset()
 }
 
@@ -235,16 +238,23 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const payload = {
-      ...form.value,
-      type: 'payment',
-    }
-    
+    const formData = new FormData()
+    formData.append('employee_id', form.value.employee_id)
+    formData.append('account_id', form.value.account_id)
+    formData.append('amount', form.value.amount)
+    formData.append('description', form.value.description || '')
+    formData.append('payment_date', form.value.payment_date)
+    formData.append('payment_method', form.value.payment_method)
+    formData.append('reference', form.value.reference || '')
+    formData.append('type', 'payment')
 
+    receiptFiles.value.forEach(f => {
+      formData.append('receipts[]', f)
+    })
 
     const response = await $api('employee-expenses', {
       method: 'POST',
-      body: payload,
+      body: formData,
     })
 
     // Mostrar mensaje con información de descuentos
@@ -254,9 +264,7 @@ const handleSubmit = async () => {
       showToast('Pago procesado correctamente', 'success')
     }
 
-    emit('created', payload)
-    console.log('Respuesta del servidor:', response)
-
+    emit('created', response)
     closeDialog()
   } catch (error) {
     console.error('Error al guardar pago:', error)
@@ -709,6 +717,17 @@ onMounted(() => {
                   </VIcon>
                 </template>
               </VTextField>
+            </VCol>
+
+            <!-- Comprobante / Recibo Adjunto -->
+            <VCol cols="12">
+              <ReceiptUploader
+                v-model="receiptFiles"
+                label="Comprobante(s) de Pago (Foto / PDF)"
+                hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
+                :max-files="5"
+                @error="msg => showToast(msg, 'error')"
+              />
             </VCol>
           </VRow>
         </VForm>
