@@ -221,7 +221,7 @@ const updatePartner = async () => {
 <template>
   <VDialog
     scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 720"
+    max-width="640"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"

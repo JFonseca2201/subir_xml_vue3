@@ -56,14 +56,6 @@ const mainCards = [
     action: 'employee-expenses',
   },
   {
-    title: 'Ingresos y Gastos',
-    description: 'Registro de ingresos y egresos',
-    icon: 'ri-exchange-dollar-line',
-    color: 'primary',
-    buttonText: 'Nuevo movimiento',
-    action: 'movements-index',
-  },
-  {
     title: 'Transferencias internas',
     description: 'Transferencias entre cuentas',
     icon: 'ri-arrow-left-right-line',

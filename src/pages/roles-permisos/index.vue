@@ -173,8 +173,8 @@ onMounted(() => {
           <VRow class="align-center">
             <VCol cols="12">
               <VTextField v-model="seachQuery" label="Buscar rol" placeholder="Ej: Administrador, Cajero..."
-                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto" clearable
-                color="primary" />
+                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" />
             </VCol>
           </VRow>
         </VCardText>

@@ -400,7 +400,10 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
                 Total Pagos
               </span>
-              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+              <div v-if="loading" class="mt-1">
+                <VSkeletonLoader type="text" width="110" height="28" />
+              </div>
+              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(summary.total_payments) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -438,7 +441,10 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
                 Total Adelantos
               </span>
-              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+              <div v-if="loading" class="mt-1">
+                <VSkeletonLoader type="text" width="110" height="28" />
+              </div>
+              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(summary.total_advances) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -476,7 +482,10 @@ onMounted(() => {
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
                 Total General
               </span>
-              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
+              <div v-if="loading" class="mt-1">
+                <VSkeletonLoader type="text" width="110" height="28" />
+              </div>
+              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(summary.total_general) }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
@@ -569,14 +578,33 @@ onMounted(() => {
         class="transfer-table text-no-wrap"
         hover
       >
-        <template #loader>
-          <VProgressLinear
-            indeterminate
-            color="primary"
-            height="3"
-            class="position-absolute"
-            style="top: 0; left: 0; right: 0; z-index: 10;"
-          />
+        <template #loading>
+          <div class="pa-4">
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="d-flex align-center gap-4 py-3 border-b"
+            >
+              <div style="width: 130px;">
+                <VSkeletonLoader type="chip" height="26" />
+              </div>
+              <div class="flex-grow-1">
+                <VSkeletonLoader type="text" height="22" />
+              </div>
+              <div class="flex-grow-1">
+                <VSkeletonLoader type="text" height="22" />
+              </div>
+              <div style="width: 120px;">
+                <VSkeletonLoader type="text" height="22" />
+              </div>
+              <div style="width: 120px;">
+                <VSkeletonLoader type="text" height="22" />
+              </div>
+              <div style="width: 90px;" class="d-flex justify-center">
+                <VSkeletonLoader type="button" height="32" width="32" class="rounded-lg" />
+              </div>
+            </div>
+          </div>
         </template>
         <template #item.type="{ item }">
           <VChip
@@ -633,56 +661,107 @@ onMounted(() => {
         </template>
 
         <template #item.actions="{ item }">
-          <div class="d-flex gap-1 justify-center">
-            <!-- Botón de Ver Nota y Comprobantes (VDialog) -->
+          <div class="d-flex align-center justify-center gap-1">
+            <!-- Botón Principal: Ver Nota y Comprobantes -->
             <VBtn
               title="Ver Nota y Comprobantes"
-              icon="ri-file-list-3-line"
+              icon="ri-eye-line"
               variant="tonal"
               size="small"
               color="primary"
               class="action-btn"
               @click="openEmployeeNoteDialog(item)"
             />
-            <!-- Botón de Adjuntar / Gestionar Comprobantes -->
-            <VBtn
-              title="Gestionar Comprobantes"
-              icon="ri-attachment-2"
-              variant="tonal"
-              size="small"
-              color="secondary"
-              class="action-btn"
-              @click="openAttachDialog(item)"
-            />
-            <VBtn
-              title="Descargar PDF"
-              icon="ri-file-pdf-line"
-              variant="tonal"
-              size="small"
-              color="info"
-              class="action-btn"
-              @click="generatePDF(item)"
-            />
-            <VBtn
-              title="Editar"
-              icon="ri-edit-line"
-              variant="tonal"
-              size="small"
-              color="warning"
-              class="action-btn"
-              :disabled="item.type === 'advance' && item.is_deducted"
-              @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
-            />
-            <VBtn
-              title="Eliminar"
-              icon="ri-delete-bin-line"
-              variant="tonal"
-              size="small"
-              color="error"
-              class="action-btn"
-              :disabled="item.type === 'advance' && item.is_deducted"
-              @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
-            />
+
+            <!-- Menú Pro de Acciones Secundarias -->
+            <VMenu
+              location="bottom end"
+              transition="scale-transition"
+            >
+              <template #activator="{ props: menuProps }">
+                <VBtn
+                  v-bind="menuProps"
+                  size="small"
+                  variant="text"
+                  color="secondary"
+                  icon="ri-more-2-fill"
+                  class="action-btn"
+                  title="Más opciones"
+                />
+              </template>
+
+              <VList
+                density="compact"
+                elevation="6"
+                class="py-1 rounded-lg"
+                min-width="200"
+              >
+                <VListItem @click="generatePDF(item)">
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-file-pdf-line"
+                      color="info"
+                      size="18"
+                      class="me-2"
+                    />
+                  </template>
+                  <VListItemTitle class="font-weight-medium text-body-2">
+                    Descargar PDF
+                  </VListItemTitle>
+                </VListItem>
+
+                <VListItem @click="openAttachDialog(item)">
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-attachment-2"
+                      color="secondary"
+                      size="18"
+                      class="me-2"
+                    />
+                  </template>
+                  <VListItemTitle class="font-weight-medium text-body-2">
+                    Adjuntar Comprobante
+                  </VListItemTitle>
+                </VListItem>
+
+                <VListItem
+                  :disabled="item.type === 'advance' && item.is_deducted"
+                  @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-edit-line"
+                      color="warning"
+                      size="18"
+                      class="me-2"
+                    />
+                  </template>
+                  <VListItemTitle class="font-weight-medium text-body-2">
+                    Editar Registro
+                  </VListItemTitle>
+                </VListItem>
+
+                <VDivider class="my-1" />
+
+                <VListItem
+                  class="text-error"
+                  :disabled="item.type === 'advance' && item.is_deducted"
+                  @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      icon="ri-delete-bin-line"
+                      color="error"
+                      size="18"
+                      class="me-2"
+                    />
+                  </template>
+                  <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                    Eliminar Registro
+                  </VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
           </div>
         </template>
 

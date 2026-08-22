@@ -359,54 +359,75 @@ onMounted(() => {
                 </td>
 
                 <td class="text-no-wrap text-center py-3">
-                  <div class="d-flex justify-center align-center">
-                    <!-- Ver Detalle -->
+                  <div class="d-flex justify-center align-center gap-1">
+                    <!-- Botón Principal: Ver Detalle -->
                     <VBtn
                       class="action-btn"
-                      variant="text"
-                      icon
+                      variant="tonal"
                       size="small"
-                      color="info"
-                      title="Ver Detalle"
+                      color="primary"
+                      icon="ri-eye-line"
+                      title="Ver Detalle del Socio"
                       @click="showItem(partner)"
-                    >
-                      <VIcon
-                        icon="ri-eye-line"
-                        size="20"
-                      />
-                    </VBtn>
+                    />
 
-                    <!-- Editar -->
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="warning"
-                      title="Editar"
-                      @click="editPartner(partner)"
+                    <!-- Menú Pro de Acciones Secundarias -->
+                    <VMenu
+                      location="bottom end"
+                      transition="scale-transition"
                     >
-                      <VIcon
-                        icon="ri-pencil-line"
-                        size="20"
-                      />
-                    </VBtn>
+                      <template #activator="{ props: menuProps }">
+                        <VBtn
+                          v-bind="menuProps"
+                          size="small"
+                          variant="text"
+                          color="secondary"
+                          icon="ri-more-2-fill"
+                          class="action-btn"
+                          title="Más opciones"
+                        />
+                      </template>
 
-                    <!-- Eliminar -->
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="error"
-                      title="Eliminar"
-                      @click="deletePartner(partner)"
-                    >
-                      <VIcon
-                        icon="ri-delete-bin-6-line"
-                        size="20"
-                      />
-                    </VBtn>
+                      <VList
+                        density="compact"
+                        elevation="6"
+                        class="py-1 rounded-lg"
+                        min-width="180"
+                      >
+                        <VListItem @click="editPartner(partner)">
+                          <template #prepend>
+                            <VIcon
+                              icon="ri-pencil-line"
+                              color="warning"
+                              size="18"
+                              class="me-2"
+                            />
+                          </template>
+                          <VListItemTitle class="font-weight-medium text-body-2">
+                            Editar Socio
+                          </VListItemTitle>
+                        </VListItem>
+
+                        <VDivider class="my-1" />
+
+                        <VListItem
+                          class="text-error"
+                          @click="deletePartner(partner)"
+                        >
+                          <template #prepend>
+                            <VIcon
+                              icon="ri-delete-bin-6-line"
+                              color="error"
+                              size="18"
+                              class="me-2"
+                            />
+                          </template>
+                          <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                            Eliminar Socio
+                          </VListItemTitle>
+                        </VListItem>
+                      </VList>
+                    </VMenu>
                   </div>
                 </td>
               </tr>

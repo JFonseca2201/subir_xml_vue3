@@ -376,19 +376,17 @@ watch(() => form.value.payment_method, method => {
 })
 
 // Lifecycle
-onMounted(() => {
-  loadEmployees()
-
-  // Cargar cuentas al montar el componente
-  if (props.accounts && props.accounts.length > 0) {
-    accounts.value = transformAccounts(props.accounts)
-  } else {
-    loadAccounts().then(response => {
-      accounts.value = response
-      console.log('Cuentas cargadas en onMounted:', accounts.value)
-    }).catch(error => {
-      console.error('Error al cargar cuentas en onMounted:', error)
-    })
+onMounted(async () => {
+  isLoadingData.value = true
+  try {
+    await loadEmployees()
+    if (props.accounts && props.accounts.length > 0) {
+      accounts.value = transformAccounts(props.accounts)
+    } else {
+      accounts.value = await loadAccounts()
+    }
+  } finally {
+    isLoadingData.value = false
   }
 })
 </script>
@@ -397,7 +395,7 @@ onMounted(() => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="600"
+    max-width="920"
     persistent
   >
     <VCard class="custom-dialog-card">
@@ -423,7 +421,20 @@ onMounted(() => {
 
       <!-- Formulario -->
       <VCardText class="pa-6">
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
+          <VRow>
+            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
         <VForm
+          v-else
           ref="formRef"
           @submit.prevent="handleSubmit"
         >

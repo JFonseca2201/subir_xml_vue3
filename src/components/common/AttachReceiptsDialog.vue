@@ -175,7 +175,7 @@ const openAttachment = att => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="700"
+    max-width="920"
     scrollable
     persistent
     @update:model-value="closeDialog"
@@ -230,16 +230,12 @@ const openAttachment = att => {
 
           <div
             v-if="isLoading"
-            class="text-center py-6"
+            class="py-3"
           >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-              size="32"
-            />
-            <div class="text-caption text-medium-emphasis mt-2">
-              Cargando comprobantes...
-            </div>
+            <VRow dense>
+              <VCol cols="6"><VSkeletonLoader type="card" height="120" class="rounded-lg" /></VCol>
+              <VCol cols="6"><VSkeletonLoader type="card" height="120" class="rounded-lg" /></VCol>
+            </VRow>
           </div>
 
           <div

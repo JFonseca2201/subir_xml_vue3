@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -35,6 +36,43 @@ const formRef = ref()
 const loading = ref(false)
 const partners = ref([])
 const accounts = ref([])
+const receiptFiles = ref([])
+const existingAttachments = ref([])
+const showUploadBox = ref(false)
+const isLoadingData = ref(false)
+
+// Diálogo de previsualización de imagen en grande
+const isImageModalOpen = ref(false)
+const selectedImageUrl = ref('')
+
+const openImageModal = url => {
+  selectedImageUrl.value = url
+  isImageModalOpen.value = true
+}
+
+const getAttachmentUrl = att => {
+  if (!att) return ''
+  let rawUrl = att.url || att.file_path || ''
+  if (!rawUrl) return ''
+  
+  if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('blob:')) {
+    return rawUrl.replace(/([^:]\/)\/+/g, '$1')
+  }
+  const apiBase = import.meta.env.VITE_API_BASE_URL || window.location.origin
+  const base = apiBase.replace(/\/api\/?$/, '')
+  const combined = `${base}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`
+  
+  return combined.replace(/([^:]\/)\/+/g, '$1')
+}
+
+const isImageFile = att => {
+  if (!att) return false
+  if (att.is_image) return true
+  const mime = att.mime_type || ''
+  const name = att.file_name || att.file_path || ''
+  
+  return mime.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(name)
+}
 
 // Datos estáticos
 const metodosPago = [
@@ -48,7 +86,6 @@ const show = computed({
   set: value => emit('update:modelValue', value),
 })
 
-// Computed para el título del diálogo
 const isEditing = computed(() => !!props.aporte)
 
 const dialogTitle = computed(() => {
@@ -66,6 +103,9 @@ const resetForm = () => {
     fecha_aporte: '',
     hora_aporte: '',
   }
+  receiptFiles.value = []
+  existingAttachments.value = []
+  showUploadBox.value = false
 
   if (formRef.value) {
     formRef.value.resetValidation()
@@ -83,92 +123,75 @@ const formatDate = fecha => {
   return fecha ? fecha.split('T')[0] : ''
 }
 
-const loadAporteData = () => {
-  console.log('🔧 Cargando datos del aporte para editar:', props.aporte)
-
-  if (!props.aporte) {
-    console.warn('⚠️ No hay aporte para editar')
-    
-    return
+const deleteExistingAttachment = async attId => {
+  if (!confirm('¿Estás seguro de eliminar este comprobante?')) return
+  try {
+    const res = await $api(`attachments/${attId}`, { method: 'DELETE' })
+    if (res && (res.status === 'success' || res.message)) {
+      existingAttachments.value = existingAttachments.value.filter(a => a.id !== attId)
+      if (existingAttachments.value.length === 0) {
+        showUploadBox.value = true
+      }
+      showNotification('Comprobante eliminado exitosamente', 'success')
+    }
+  } catch (e) {
+    console.error('Error al eliminar comprobante:', e)
+    showNotification('Error al eliminar el comprobante', 'error')
   }
+}
 
-  // Función helper para extraer datos de objeto Proxy
-  const extractData = obj => {
-    if (!obj) return null
+const loadAporteData = async () => {
+  if (!props.aporte) return
 
-    console.log('🔍 Analizando objeto aporte:', obj)
-
-    // El aporte viene con partner_nombre y cuenta (nombres directos, no objetos)
-    const partnerId = obj.partner?.id || obj.partner_id || null
-    const cuentaId = obj.cuenta?.id || obj.cuenta_id || null
-    const partnerName = obj.partner?.name || obj.partner_nombre || ''
-    const cuentaName = obj.cuenta?.name || obj.cuenta || ''
-
-    console.log('📋 Datos extraídos:', {
-      partnerId,
-      cuentaId,
-      partnerName,
-      cuentaName,
-      partner_nombre: obj.partner_nombre,
-      cuenta: obj.cuenta,
-    })
-
-    return {
-      partner_id: partnerId,
-      cuenta_id: cuentaId,
-      monto: obj.monto || null,
-      descripcion: obj.descripcion || '',
-      metodo_pago: obj.metodo_pago || '',
-      fecha_aporte: formatDate(obj.fecha_aporte) || '',
-      hora_aporte: obj.hora_aporte || '',
-      partner_name: partnerName,
-      cuenta_name: cuentaName,
+  if (Array.isArray(props.aporte.attachments) && props.aporte.attachments.length > 0) {
+    existingAttachments.value = [...props.aporte.attachments]
+  } else {
+    try {
+      const attRes = await $api(`attachments?attachable_type=aporte&attachable_id=${props.aporte.id}`)
+      if (attRes && attRes.data && Array.isArray(attRes.data)) {
+        existingAttachments.value = attRes.data
+      } else {
+        existingAttachments.value = []
+      }
+    } catch (err) {
+      console.warn('No se pudieron cargar adjuntos para aporte:', err)
+      existingAttachments.value = []
     }
   }
 
-  const datos = extractData(props.aporte)
+  showUploadBox.value = existingAttachments.value.length === 0
 
-  console.log('📋 Datos que se van a cargar:', datos)
+  const obj = props.aporte
+  const partnerId = obj.partner?.id || obj.partner_id || null
+  const cuentaId = obj.cuenta?.id || obj.cuenta_id || null
 
-  // Asignación directa y reactiva
-  form.value.partner_id = datos.partner_id
-  form.value.monto = datos.monto
-  form.value.descripcion = datos.descripcion
-  form.value.cuenta_id = datos.cuenta_id
-  form.value.metodo_pago = datos.metodo_pago
-  form.value.fecha_aporte = datos.fecha_aporte
-  form.value.hora_aporte = datos.hora_aporte
-
-  console.log('✅ Formulario cargado correctamente:', { ...form.value })
+  form.value.partner_id = partnerId
+  form.value.monto = obj.monto || null
+  form.value.descripcion = obj.descripcion || ''
+  form.value.cuenta_id = cuentaId
+  form.value.metodo_pago = obj.metodo_pago || ''
+  form.value.fecha_aporte = formatDate(obj.fecha_aporte) || ''
+  form.value.hora_aporte = obj.hora_aporte || ''
 }
 
 const loadPartners = async () => {
   try {
-    console.log('🚀 Cargando socios...')
-
     const response = await $api('partners')
-
     let partnersData = []
     if (response && response.partners && response.partners.data && Array.isArray(response.partners.data)) {
       partnersData = response.partners.data
     } else if (Array.isArray(response)) {
       partnersData = response
     }
-
     partners.value = partnersData
-    console.log('✅ Socios cargados:', partnersData.length)
   } catch (error) {
     console.error('Error al cargar socios:', error)
-    showNotification('Error al cargar socios', 'error')
   }
 }
 
 const loadAccounts = async () => {
   try {
-    console.log('🚀 Cargando cuentas...')
-
     const response = await $api('accounts')
-
     let accountsData = []
     if (response && response.data && Array.isArray(response.data)) {
       accountsData = response.data
@@ -182,30 +205,22 @@ const loadAccounts = async () => {
         .replace(/\(TRANSFERENCIA\)/gi, '')
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
-
       
       return {
         ...acc,
         name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
       }
     })
-    console.log('✅ Cuentas cargadas:', accountsData.length)
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
-    showNotification('Error al cargar cuentas', 'error')
   }
 }
 
 const handleSubmit = async () => {
-  console.log('🚀 Iniciando actualización de aporte...')
-  console.log('📋 Datos del formulario:', { ...form.value })
-
   const { valid } = await formRef.value.validate()
 
   if (!valid) {
-    console.warn('⚠️ Formulario inválido')
     showNotification('Por favor, completa todos los campos requeridos', 'warning')
-    
     return
   }
 
@@ -213,19 +228,37 @@ const handleSubmit = async () => {
   loader.start()
 
   try {
-    const formData = {
-      ...form.value,
-      monto: parseFloat(form.value.monto) || 0,
+    let response
+
+    if (receiptFiles.value.length > 0) {
+      const fd = new FormData()
+      fd.append('_method', 'PUT')
+      fd.append('partner_id', form.value.partner_id)
+      fd.append('monto', form.value.monto)
+      fd.append('descripcion', form.value.descripcion || '')
+      fd.append('cuenta_id', form.value.cuenta_id)
+      fd.append('metodo_pago', form.value.metodo_pago)
+      fd.append('fecha_aporte', form.value.fecha_aporte)
+      fd.append('hora_aporte', form.value.hora_aporte || '12:00')
+
+      receiptFiles.value.forEach(f => {
+        fd.append('receipts[]', f)
+      })
+
+      response = await $api(`aportes/${props.aporte.id}`, {
+        method: 'POST',
+        body: fd,
+      })
+    } else {
+      response = await $api(`aportes/${props.aporte.id}`, {
+        method: 'PUT',
+        body: {
+          ...form.value,
+          monto: parseFloat(form.value.monto) || 0,
+        },
+      })
     }
 
-    console.log('📤 Enviando datos:', formData)
-
-    const response = await $api(`aportes/${props.aporte.id}`, {
-      method: 'PUT',
-      body: formData,
-    })
-
-    console.log('✅ Aporte actualizado:', response)
     showNotification('Aporte actualizado exitosamente', 'success')
     emit('updated', response.aporte)
     closeDialog()
@@ -239,54 +272,38 @@ const handleSubmit = async () => {
   }
 }
 
-// Watchers profesionales
 watch(show, newVal => {
-  console.log('👀 Cambio en show:', newVal)
-
   if (newVal) {
-    // Cargar datos primero
+    isLoadingData.value = true
     Promise.all([loadPartners(), loadAccounts()])
-      .then(() => {
-        console.log('📦 Datos cargados, procesando edición...')
-
-        // Después de cargar socios y cuentas, cargar datos del aporte si estamos editando
+      .then(async () => {
         if (props.aporte) {
-          console.log('📝 Modo edición detectado, cargando datos...')
-          loadAporteData()
+          await loadAporteData()
         } else {
-          console.log('🆕 Modo creación, reseteando formulario...')
           resetForm()
         }
       })
       .catch(error => {
         console.error('❌ Error cargando datos:', error)
       })
+      .finally(() => {
+        isLoadingData.value = false
+      })
   } else {
-    // Al cerrar, limpiar formulario
     resetForm()
   }
 })
 
-// Watcher específico para aporte - optimizado
-watch(() => props.aporte, (newVal, oldVal) => {
-  console.log('👀 Cambio en aporte:', { newVal, oldVal })
-
+watch(() => props.aporte, (newVal) => {
   if (newVal && show.value) {
-    // Solo cargar si hay datos, el diálogo está abierto y estamos en modo edición
-    console.log('🔄 Recargando datos del aporte...')
     loadAporteData()
   }
 }, { immediate: true, deep: true })
 
-// Lifecycle
 onMounted(() => {
-  console.log("APORTE DE CAPITAL: " + props.aporte)
   loadPartners()
   loadAccounts()
-
-  // Si hay un aporte para editar, cargar sus datos
   if (props.aporte) {
-    console.log('🔄 Cargando datos del aporte al montar...')
     loadAporteData()
   }
 })
@@ -296,7 +313,7 @@ onMounted(() => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="500"
+    max-width="920"
     persistent
   >
     <VCard class="custom-dialog-card aporte-dialog">
@@ -323,7 +340,21 @@ onMounted(() => {
 
       <!-- Formulario -->
       <VCardText class="pa-6">
+        <!-- Skeleton Loader mientras se cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
+          <VRow>
+            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
         <VForm
+          v-else
           ref="formRef"
           @submit.prevent="handleSubmit"
         >
@@ -499,6 +530,133 @@ onMounted(() => {
                 </template>
               </VTextarea>
             </VCol>
+
+            <!-- Comprobantes Registrados con Previsualización de Imagen -->
+            <VCol
+              v-if="existingAttachments.length > 0"
+              cols="12"
+              class="mb-3"
+            >
+              <label class="custom-form-label font-weight-bold text-subtitle-2 mb-2 d-flex align-center justify-space-between">
+                <span>Comprobantes Registrados ({{ existingAttachments.length }})</span>
+                <VBtn
+                  v-if="!showUploadBox"
+                  variant="tonal"
+                  color="primary"
+                  size="small"
+                  prepend-icon="ri-add-circle-line"
+                  class="px-3 text-none font-weight-medium rounded-lg"
+                  @click="showUploadBox = true"
+                >
+                  Agregar más comprobantes
+                </VBtn>
+              </label>
+              
+              <VRow dense>
+                <VCol
+                  v-for="att in existingAttachments"
+                  :key="att.id"
+                  cols="12"
+                  sm="6"
+                >
+                  <VCard
+                    variant="outlined"
+                    class="rounded-xl overflow-hidden position-relative bg-grey-lighten-4 elevation-1"
+                  >
+                    <!-- Imagen / Vista Previa -->
+                    <div
+                      style="height: 140px;"
+                      class="d-flex align-center justify-center bg-grey-lighten-3 overflow-hidden position-relative"
+                    >
+                      <VImg
+                        v-if="att.is_image || isImageFile(att)"
+                        :src="getAttachmentUrl(att)"
+                        cover
+                        height="140"
+                        class="w-100 cursor-pointer"
+                        @click="openImageModal(getAttachmentUrl(att))"
+                      />
+                      <div
+                        v-else
+                        class="text-center pa-4 cursor-pointer"
+                        @click="window.open(getAttachmentUrl(att), '_blank')"
+                      >
+                        <VIcon
+                          icon="ri-file-pdf-fill"
+                          color="error"
+                          size="48"
+                          class="mb-1"
+                        />
+                        <div
+                          class="text-caption font-weight-bold text-truncate"
+                          style="max-width: 180px;"
+                        >
+                          {{ att.file_name || 'Documento PDF' }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Footer con Nombre y Acciones -->
+                    <div class="pa-2 d-flex align-center justify-space-between bg-white border-top">
+                      <span
+                        class="text-caption font-weight-semibold text-truncate me-2"
+                        style="max-width: 140px;"
+                        :title="att.file_name"
+                      >
+                        {{ att.file_name || 'Comprobante' }}
+                      </span>
+                      <div class="d-flex align-center gap-1">
+                        <VBtn
+                          v-if="att.is_image || isImageFile(att)"
+                          icon="ri-eye-line"
+                          size="x-small"
+                          color="primary"
+                          variant="tonal"
+                          title="Ver imagen grande"
+                          @click="openImageModal(getAttachmentUrl(att))"
+                        />
+                        <VBtn
+                          icon="ri-delete-bin-line"
+                          size="x-small"
+                          color="error"
+                          variant="tonal"
+                          title="Eliminar comprobante"
+                          @click="deleteExistingAttachment(att.id)"
+                        />
+                      </div>
+                    </div>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </VCol>
+
+            <!-- Agregar Nuevos Comprobantes (Foto / PDF) -->
+            <VCol
+              v-if="showUploadBox || existingAttachments.length === 0"
+              cols="12"
+            >
+              <div
+                v-if="existingAttachments.length > 0"
+                class="d-flex justify-space-between align-center mb-1"
+              >
+                <span class="text-caption font-weight-bold text-primary">Agregar nuevos comprobantes</span>
+                <VBtn
+                  size="x-small"
+                  variant="text"
+                  color="secondary"
+                  icon="ri-close-line"
+                  title="Ocultar cargador"
+                  @click="showUploadBox = false"
+                />
+              </div>
+              <ReceiptUploader
+                v-model="receiptFiles"
+                label="Comprobantes Adicionales (Foto / PDF)"
+                hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
+                :max-files="5"
+                @error="msg => showNotification(msg, 'error')"
+              />
+            </VCol>
           </VRow>
         </VForm>
       </VCardText>
@@ -534,5 +692,29 @@ onMounted(() => {
         </VBtn>
       </VCardActions>
     </VCard>
+
+    <!-- Modal para ver imagen completa -->
+    <VDialog
+      v-model="isImageModalOpen"
+      max-width="800"
+    >
+      <VCard class="pa-2 rounded-2xl overflow-hidden">
+        <div class="d-flex justify-end pa-1">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            @click="isImageModalOpen = false"
+          />
+        </div>
+        <div class="d-flex justify-center pa-2">
+          <img
+            :src="selectedImageUrl"
+            style="max-width: 100%; max-height: 80vh; object-fit: contain;"
+            class="rounded-xl"
+          >
+        </div>
+      </VCard>
+    </VDialog>
   </VDialog>
 </template>

@@ -42,8 +42,11 @@ const form = ref({
 // Account options
 const accountOptions = ref([])
 
+const isLoadingData = ref(false)
+
 // Load accounts from API
 const loadAccounts = async () => {
+  isLoadingData.value = true
   try {
     const response = await $api('accounts')
 
@@ -62,12 +65,29 @@ const loadAccounts = async () => {
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
     showNotification('Error al cargar cuentas', 'error')
+  } finally {
+    isLoadingData.value = false
   }
 }
+
+watch(() => props.modelValue, async newVal => {
+  if (newVal) {
+    isLoadingData.value = true
+    try {
+      await loadAccounts()
+      await nextTick()
+    } finally {
+      isLoadingData.value = false
+    }
+  }
+})
 
 onMounted(() => {
   loadAccounts()
 })
+
+// Mapping para rastrear IDs originales de distribuciones
+const paymentIdMap = ref(new Map())
 
 const generateAutoCode = dateStr => {
   const cleanDate = dateStr.replace(/-/g, '')
@@ -96,12 +116,16 @@ const resetForm = () => {
 watch(() => props.editingMovement, newVal => {
   console.log('ExpenseDialog - editingMovement:', newVal)
   if (newVal) {
+    paymentIdMap.value.clear()
     let payments = []
     if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
-      payments = newVal.payment_distributions.map(dist => ({
-        account_id: dist.account_id,
-        amount: dist.amount.toString(),
-      }))
+      payments = newVal.payment_distributions.map((dist, index) => {
+        paymentIdMap.value.set(index, dist.id)
+        return {
+          account_id: dist.account_id,
+          amount: dist.amount.toString(),
+        }
+      })
     } else if (newVal.payments && newVal.payments.length > 0) {
       payments = newVal.payments.map(payment => ({
         account_id: payment.account_id,
@@ -161,21 +185,7 @@ const saveExpense = async () => {
       return
     }
 
-    const payload = { 
-      ...form.value,
-      receipts: receiptFiles.value,
-    }
-
-    if (!payload.work_order_number || payload.work_order_number.trim() === '') {
-      delete payload.work_order_number
-    }
-
-    if (!payload.payments || payload.payments.length === 0) {
-      showNotification('Debes agregar al menos un método de pago', 'error')
-      return
-    }
-
-    const hasInvalidPayments = payload.payments.some(p => !p.account_id)
+    const hasInvalidPayments = form.value.payments.some(p => !p.account_id)
     if (hasInvalidPayments) {
       showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
       return
@@ -184,6 +194,15 @@ const saveExpense = async () => {
     if (!props.editingMovement && (!receiptFiles.value || receiptFiles.value.length === 0)) {
       showNotification('Es obligatorio adjuntar la foto o comprobante de respaldo del egreso', 'warning')
       return
+    }
+
+    const payload = { 
+      ...form.value,
+      receipts: receiptFiles.value,
+    }
+
+    if (!payload.invoice_number || payload.invoice_number.trim() === '') {
+      delete payload.invoice_number
     }
 
     emit('saved', payload)
@@ -206,7 +225,32 @@ const removePayment = async index => {
     return
   }
 
+  const originalPaymentId = paymentIdMap.value.get(index)
+
+  if (props.editingMovement && originalPaymentId) {
+    try {
+      await $api(`payment-distributions/${originalPaymentId}`, {
+        method: 'DELETE',
+      })
+      showNotification('Método de pago eliminado correctamente', 'success')
+    } catch (error) {
+      console.error('Error al eliminar método de pago:', error)
+      showNotification('Error al eliminar método de pago', 'error')
+      return
+    }
+  }
+
   form.value.payments.splice(index, 1)
+
+  const newMap = new Map()
+  paymentIdMap.value.forEach((id, mapIndex) => {
+    if (mapIndex < index) {
+      newMap.set(mapIndex, id)
+    } else if (mapIndex > index) {
+      newMap.set(mapIndex - 1, id)
+    }
+  })
+  paymentIdMap.value = newMap
 }
 
 const formatCurrency = value => {
@@ -221,7 +265,7 @@ const formatCurrency = value => {
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="680"
+    max-width="920"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -261,7 +305,18 @@ const formatCurrency = value => {
 
       <!-- Cuerpo del Formulario con Scroll Interno -->
       <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
-        <VForm @submit.prevent="saveExpense">
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
+          <VRow>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
+        <VForm v-else @submit.prevent="saveExpense">
           <VRow dense>
             <VCol cols="12" md="6">
               <VTextField

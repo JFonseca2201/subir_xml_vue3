@@ -6,7 +6,6 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import IncomeDialog from '@/components/inventory/finances-records/IncomeDialog.vue'
 import ExpenseDialog from '@/components/inventory/finances-records/ExpenseDialog.vue'
 import DeleteDialog from '@/components/inventory/finances-records/DeleteDialog.vue'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
@@ -826,8 +825,18 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 movements-page">
-    <!-- Encabezado de Navegación de Operaciones -->
-    <OperationsHeaderNav active-tab="movimientos" />
+    <!-- Header de la Página -->
+    <div class="d-flex align-center justify-space-between mb-6">
+      <div>
+        <h2 class="text-h4 font-weight-bold text-high-emphasis mb-1 d-flex align-center gap-2">
+          <VIcon icon="ri-exchange-dollar-line" color="primary" class="me-1" />
+          Ingresos y Gastos
+        </h2>
+        <p class="text-subtitle-1 text-medium-emphasis mb-0">
+          Control financiero integral de movimientos de caja y cuentas
+        </p>
+      </div>
+    </div>
 
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
@@ -1521,58 +1530,107 @@ onMounted(() => {
 
               <!-- Acciones -->
               <td class="py-3 text-center">
-                <div class="d-flex justify-center gap-1">
-                  <!-- Ver Nota y Comprobantes (Principal) -->
+                <div class="d-flex align-center justify-center gap-1">
+                  <!-- Botón Principal: Ver Nota y Comprobantes -->
                   <VBtn
                     title="Ver Nota y Comprobantes"
                     size="small"
                     variant="tonal"
                     color="primary"
-                    icon="ri-file-list-3-line"
+                    icon="ri-eye-line"
                     class="action-btn"
                     @click="openMovementNoteDialog(movement)"
                   />
-                  <VBtn
+
+                  <!-- Menú Pro de Acciones Secundarias -->
+                  <VMenu
                     v-if="movement.type !== 'transfer'"
-                    title="Comprobante PDF"
-                    size="small"
-                    variant="tonal"
-                    color="info"
-                    icon="ri-file-pdf-line"
-                    class="action-btn"
-                    :loading="generatingSingleId === movement.id"
-                    @click="generateSinglePDF(movement)"
-                  />
-                  <VBtn
-                    v-if="movement.type !== 'transfer'"
-                    title="Gestionar Comprobantes"
-                    size="small"
-                    variant="tonal"
-                    color="secondary"
-                    icon="ri-attachment-2"
-                    class="action-btn"
-                    @click="openAttachDialog(movement)"
-                  />
-                  <VBtn
-                    v-if="movement.type !== 'transfer'"
-                    title="Editar"
-                    size="small"
-                    variant="tonal"
-                    color="warning"
-                    icon="ri-edit-line"
-                    class="action-btn"
-                    @click="editMovement(movement)"
-                  />
-                  <VBtn
-                    v-if="movement.type !== 'transfer'"
-                    title="Eliminar"
-                    size="small"
-                    variant="tonal"
-                    color="error"
-                    icon="ri-delete-bin-line"
-                    class="action-btn"
-                    @click="deleteMovement(movement)"
-                  />
+                    location="bottom end"
+                    transition="scale-transition"
+                  >
+                    <template #activator="{ props: menuProps }">
+                      <VBtn
+                        v-bind="menuProps"
+                        size="small"
+                        variant="text"
+                        color="secondary"
+                        icon="ri-more-2-fill"
+                        class="action-btn"
+                        title="Más opciones"
+                      />
+                    </template>
+
+                    <VList
+                      density="compact"
+                      elevation="6"
+                      class="py-1 rounded-lg"
+                      min-width="200"
+                    >
+                      <VListItem
+                        :disabled="generatingSingleId === movement.id"
+                        @click="generateSinglePDF(movement)"
+                      >
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-file-pdf-line"
+                            color="info"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Descargar PDF
+                        </VListItemTitle>
+                      </VListItem>
+
+                      <VListItem @click="openAttachDialog(movement)">
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-attachment-2"
+                            color="secondary"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Adjuntar Comprobante
+                        </VListItemTitle>
+                      </VListItem>
+
+                      <VListItem @click="editMovement(movement)">
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-edit-line"
+                            color="warning"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Editar Registro
+                        </VListItemTitle>
+                      </VListItem>
+
+                      <VDivider class="my-1" />
+
+                      <VListItem
+                        class="text-error"
+                        @click="deleteMovement(movement)"
+                      >
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-delete-bin-line"
+                            color="error"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                          Eliminar Registro
+                        </VListItemTitle>
+                      </VListItem>
+                    </VList>
+                  </VMenu>
                 </div>
               </td>
             </tr>
@@ -1631,29 +1689,30 @@ onMounted(() => {
     <!-- Lightbox / Visor de Fotos en Pantalla Completa con Descarga -->
     <VDialog
       v-model="isPhotoViewerVisible"
-      max-width="850"
+      max-width="920"
       scrollable
     >
-      <VCard class="rounded-xl overflow-hidden elevation-12">
-        <!-- Header del Visor -->
-        <VCardTitle class="d-flex align-center justify-space-between bg-grey-900 text-white pa-4">
+      <VCard class="rounded-xl overflow-hidden elevation-10">
+        <!-- Header del Visor Primary -->
+        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4 flex-none">
           <div class="d-flex align-center gap-3">
             <VAvatar
-              color="primary"
-              size="36"
+              color="white"
+              variant="tonal"
+              size="38"
               rounded="lg"
             >
               <VIcon
                 icon="ri-image-line"
                 color="white"
-                size="20"
+                size="22"
               />
             </VAvatar>
             <div>
-              <div class="text-subtitle-1 font-weight-bold text-white">
+              <div class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate" style="max-width: 450px;">
                 {{ currentActivePhoto?.file_name || 'Comprobante de Pago' }}
               </div>
-              <div class="text-caption text-grey-400">
+              <div class="text-caption text-white opacity-80">
                 Archivo {{ currentPhotoIndex + 1 }} de {{ currentPhotoList.length }}
                 <span v-if="currentPhotoMovement"> • {{ getMovementDocNumber(currentPhotoMovement) }}</span>
               </div>
@@ -1662,52 +1721,52 @@ onMounted(() => {
           <div class="d-flex align-center gap-2">
             <!-- Botón de Descarga Principal -->
             <VBtn
-              color="success"
-              variant="elevated"
+              color="white"
+              variant="tonal"
               prepend-icon="ri-download-2-line"
               size="small"
-              class="font-weight-bold rounded-lg"
+              class="font-weight-medium text-white me-1"
               :loading="isDownloading"
               @click="downloadAttachment(currentActivePhoto)"
             >
-              Descargar Foto
+              Descargar
             </VBtn>
             <VBtn
               icon="ri-close-line"
               variant="text"
               color="white"
-              density="compact"
+              size="small"
               @click="isPhotoViewerVisible = false"
             />
           </div>
         </VCardTitle>
 
         <!-- Cuerpo del Visor -->
-        <VCardText class="pa-0 bg-grey-950 d-flex align-center justify-center position-relative" style="min-height: 420px; max-height: 75vh; overflow: auto;">
+        <VCardText class="pa-4 bg-grey-lighten-4 d-flex align-center justify-center position-relative" style="min-height: 440px; max-height: 75vh; overflow: auto;">
           <!-- Navegación Anterior -->
           <VBtn
             v-if="currentPhotoList.length > 1"
             icon="ri-arrow-left-s-line"
-            variant="tonal"
-            color="white"
-            class="position-absolute"
-            style="left: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            variant="elevated"
+            color="primary"
+            class="position-absolute elevation-4"
+            style="left: 16px; z-index: 10;"
             :disabled="currentPhotoIndex === 0"
             @click="currentPhotoIndex--"
           />
 
           <!-- Visualización de Imagen -->
-          <div v-if="isCurrentPhotoAnImage" class="d-flex align-center justify-center w-100 h-100 pa-4">
+          <div v-if="isCurrentPhotoAnImage" class="d-flex align-center justify-center w-100 h-100 pa-2">
             <img
               :src="getAttachmentUrl(currentActivePhoto)"
               :alt="currentActivePhoto?.file_name || 'Comprobante'"
-              class="img-fluid rounded-lg shadow-lg"
-              style="max-width: 100%; max-height: 68vh; object-fit: contain;"
+              class="img-fluid rounded-xl elevation-4 border"
+              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: white;"
             />
           </div>
 
           <!-- Visualización si es PDF -->
-          <div v-else class="d-flex flex-column align-center justify-center pa-8 text-center text-white">
+          <div v-else class="d-flex flex-column align-center justify-center pa-8 text-center">
             <VAvatar
               color="error"
               size="72"
@@ -1719,10 +1778,10 @@ onMounted(() => {
                 size="40"
               />
             </VAvatar>
-            <div class="text-h6 font-weight-bold mb-2">
+            <div class="text-h6 font-weight-bold mb-1 text-high-emphasis">
               Documento PDF
             </div>
-            <div class="text-body-2 text-grey-400 mb-4">
+            <div class="text-body-2 text-medium-emphasis mb-4">
               {{ currentActivePhoto?.file_name }}
             </div>
             <div class="d-flex gap-3">
@@ -1750,18 +1809,18 @@ onMounted(() => {
           <VBtn
             v-if="currentPhotoList.length > 1"
             icon="ri-arrow-right-s-line"
-            variant="tonal"
-            color="white"
-            class="position-absolute"
-            style="right: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            variant="elevated"
+            color="primary"
+            class="position-absolute elevation-4"
+            style="right: 16px; z-index: 10;"
             :disabled="currentPhotoIndex === currentPhotoList.length - 1"
             @click="currentPhotoIndex++"
           />
         </VCardText>
 
         <!-- Footer del Visor -->
-        <VCardActions class="pa-4 bg-grey-900 d-flex justify-space-between align-center">
-          <div class="text-caption text-grey-400">
+        <VCardActions class="pa-4 bg-white border-t d-flex justify-space-between align-center flex-none">
+          <div class="text-caption text-medium-emphasis font-weight-medium">
             <span v-if="currentActivePhoto?.file_size">
               Tamaño: {{ (currentActivePhoto.file_size / 1024).toFixed(1) }} KB
             </span>
@@ -1772,14 +1831,16 @@ onMounted(() => {
               color="primary"
               size="small"
               prepend-icon="ri-attachment-2"
+              class="font-weight-medium"
               @click="() => { isPhotoViewerVisible = false; openAttachDialog(currentPhotoMovement); }"
             >
               Gestionar Adjuntos
             </VBtn>
             <VBtn
-              variant="outlined"
-              color="white"
+              variant="tonal"
+              color="secondary"
               size="small"
+              class="font-weight-medium px-4"
               @click="isPhotoViewerVisible = false"
             >
               Cerrar

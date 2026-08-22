@@ -29,14 +29,6 @@ const navItems = [
     route: '/finanzas/employee-expenses',
   },
   {
-    id: 'movimientos',
-    title: 'Ingresos y Gastos',
-    description: 'Registro de ingresos y egresos',
-    icon: 'ri-exchange-dollar-line',
-    color: 'primary',
-    route: '/movements',
-  },
-  {
     id: 'transferencias',
     title: 'Transferencias internas',
     description: 'Transferencias entre cuentas',

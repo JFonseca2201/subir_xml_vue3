@@ -143,8 +143,11 @@ const handleSubmit = async () => {
   }
 }
 
+const isLoadingData = ref(false)
+
 watch(() => show.value, newVal => {
   if (newVal) {
+    isLoadingData.value = true
     loadAccounts().then(() => {
       if (props.transferData) {
         form.value = {
@@ -159,6 +162,8 @@ watch(() => show.value, newVal => {
       } else {
         resetForm()
       }
+    }).finally(() => {
+      isLoadingData.value = false
     })
   }
 })
@@ -168,7 +173,7 @@ watch(() => show.value, newVal => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="650"
+    max-width="920"
     persistent
   >
     <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
@@ -208,7 +213,19 @@ watch(() => show.value, newVal => {
 
       <!-- Formulario con Scroll Interno -->
       <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
+          <VRow>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
         <VForm
+          v-else
           ref="formRef"
           @submit.prevent="handleSubmit"
         >

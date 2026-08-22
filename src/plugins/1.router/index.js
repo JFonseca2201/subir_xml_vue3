@@ -62,7 +62,6 @@ const router = createRouter({
           path: "/finanzas/movimientos",
           name: "movements-index",
           component: () => import("@/pages/movements/index.vue"),
-          meta: { navActiveLink: 'operations-index' },
         },
         {
           path: "/work-orders",
@@ -77,8 +76,8 @@ const router = createRouter({
       ],
     ].map(route => {
       // Forzar navActiveLink para subpáginas de operaciones
-      const opsPaths = ['/finanzas/employee-expenses', '/finanzas/aportes', '/finanzas/movimientos', '/transfers']
-      const opsNames = ['finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index', 'movements-index']
+      const opsPaths = ['/finanzas/employee-expenses', '/finanzas/aportes', '/transfers']
+      const opsNames = ['finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index']
 
       if (opsNames.includes(route.name) || opsPaths.includes(route.path)) {
         route.meta = { ...route.meta, navActiveLink: 'operations-index' }

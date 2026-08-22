@@ -23,6 +23,7 @@ const emit = defineEmits(['update:modelValue', 'updated'])
 const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
+const isLoadingData = ref(false)
 
 const paymentMethods = [
   { text: 'Efectivo', value: 'EFECTIVO' },
@@ -123,14 +124,14 @@ const handleSubmit = async () => {
       if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
         // Mostrar mensaje amigable de saldo insuficiente
         showNotification('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + errorData.saldo_disponible + '\nMonto solicitado: $' + errorData.monto_solicitado, 'error')
-        
+
         return
       }
 
       // Manejar otros errores de validación
       if (errorData.message) {
         showNotification(errorData.message, 'error')
-        
+
         return
       }
     }
@@ -246,51 +247,43 @@ onMounted(async () => {
 
 watch(() => show.value, async newVal => {
   if (newVal) {
-    // Cargar empleados y cuentas cuando se abre el diálogo
-    await loadEmployees()
-    await loadAccounts()
+    isLoadingData.value = true
+    try {
+      await loadEmployees()
+      await loadAccounts()
+    } finally {
+      isLoadingData.value = false
+    }
+  }
+})
 
-    // Cargar datos del adelanto cuando se abre para editar
-    console.log('Cargando datos del adelanto al abrir diálogo:', props.expense)
-    console.log('employee_id:', props.expense.employee_id, 'Tipo:', typeof props.expense.employee_id)
-    console.log('account_id:', props.expense.account_id, 'Tipo:', typeof props.expense.account_id)
-    console.log('Empleados disponibles:', employees.value)
-    console.log('Cuentas disponibles:', accounts.value)
+watch(() => props.expense, async (newVal) => {
+  if (newVal) {
+    isLoadingData.value = true
+    try {
+      await loadEmployees()
+      await loadAccounts()
+      await nextTick()
 
-    // Usar nextTick para asegurar que los datos se carguen después de que empleados y cuentas estén disponibles
-    await nextTick()
-
-    form.value.employee_id = props.expense.employee_id
-    form.value.account_id = props.expense.account_id
-    form.value.amount = props.expense.amount
-    form.value.description = props.expense.description
-    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
-    form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
-
-    console.log('Formulario cargado:', form.value)
-    console.log('Empleado encontrado:', employees.value.find(emp => emp.id === props.expense.employee_id))
-    console.log('Cuenta encontrada:', accounts.value.find(acc => acc.id === props.expense.account_id))
+      form.value.employee_id = props.expense.employee_id
+      form.value.account_id = props.expense.account_id
+      form.value.amount = props.expense.amount
+      form.value.description = props.expense.description
+      form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
+      form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
+    } finally {
+      isLoadingData.value = false
+    }
   }
 })
 </script>
 
 <template>
-  <VDialog
-    v-model="show"
-    scrollable
-    max-width="500"
-    persistent
-  >
+  <VDialog v-model="show" scrollable max-width="920" persistent>
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-edit-line" />
         </div>
@@ -302,160 +295,112 @@ watch(() => show.value, async newVal => {
         </p>
       </div>
 
-      <VForm
-        ref="formRef"
-        @submit.prevent="handleSubmit"
-      >
-        <VCardText class="pa-4">
+      <VCardText class="pa-4">
+        <!-- Skeleton loader mientras cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
           <VRow>
             <VCol cols="12">
-              <VSelect
-                v-model="form.employee_id"
-                :items="employees"
-                item-title="name"
-                item-value="id"
-                label="Empleado"
-                placeholder="Seleccionar empleado"
-                :rules="[v => !!v]"
-                required
-              />
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12">
+              <VSkeletonLoader type="article" class="rounded-lg" />
             </VCol>
           </VRow>
+        </div>
 
+        <VForm v-else ref="formRef" @submit.prevent="handleSubmit">
           <VRow>
             <VCol cols="12">
-              <VSelect
-                v-model="form.payment_method"
-                :items="paymentMethods"
-                item-title="text"
-                item-value="value"
-                label="Método de Pago"
-                :rules="[v => !!v]"
-                required
-              />
-            </VCol>
-          </VRow>
+                <VSelect v-model="form.employee_id" :items="employees" item-title="name" item-value="id" label="Empleado"
+                  placeholder="Seleccionar empleado" :rules="[v => !!v]" required />
+              </VCol>
+            </VRow>
 
-          <VRow>
-            <VCol cols="12">
-              <VSelect
-                v-model="form.account_id"
-                :items="filteredAccounts"
-                item-title="name"
-                item-value="id"
-                label="Cuenta"
-                placeholder="Seleccionar cuenta"
-                :rules="[v => !!v]"
-                required
-              >
-                <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
-                  </VIcon>
-                </template>
-                <template #item="{ props, item }">
-                  <VListItem
-                    v-bind="props"
-                    :title="undefined"
-                  >
-                    <template #prepend>
-                      <VAvatar
-                        size="30"
-                        :color="item.raw.type === 'cash' ? 'success' : 'primary'"
-                        variant="tonal"
-                        class="me-2"
-                      >
-                        <VIcon
-                          :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                          size="18"
-                        />
-                      </VAvatar>
-                    </template>
-                    <VListItemTitle class="font-weight-medium">
-                      {{ item.raw.name }}
-                    </VListItemTitle>
-                    <VListItemSubtitle class="text-caption mt-1">
-                      Saldo: <span
-                        class="font-weight-bold"
-                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
-                      >${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
-                    </VListItemSubtitle>
-                  </VListItem>
-                </template>
-              </VSelect>
-            </VCol>
-          </VRow>
+            <VRow>
+              <VCol cols="12">
+                <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text" item-value="value"
+                  label="Método de Pago" :rules="[v => !!v]" required />
+              </VCol>
+            </VRow>
 
-          <VRow>
-            <VCol cols="12">
-              <VTextField
-                v-model="form.amount"
-                label="Monto"
-                type="number"
-                prefix="$"
-                placeholder="0.00"
-                :rules="[v => !!v && v > 0]"
-                required
-              />
-            </VCol>
-          </VRow>
+            <VRow>
+              <VCol cols="12">
+                <VSelect v-model="form.account_id" :items="filteredAccounts" item-title="name" item-value="id"
+                  label="Cuenta" placeholder="Seleccionar cuenta" :rules="[v => !!v]" required>
+                  <template #prepend-inner>
+                    <VIcon color="primary" size="20">
+                      {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
+                    </VIcon>
+                  </template>
+                  <template #item="{ props, item }">
+                    <VListItem v-bind="props" :title="undefined">
+                      <template #prepend>
+                        <VAvatar size="30" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal"
+                          class="me-2">
+                          <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                            size="18" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle class="font-weight-medium">
+                        {{ item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle class="text-caption mt-1">
+                        Saldo: <span class="font-weight-bold"
+                          :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">${{
+                            parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
+                      </VListItemSubtitle>
+                    </VListItem>
+                  </template>
+                </VSelect>
+              </VCol>
+            </VRow>
 
-          <VRow>
-            <VCol cols="12">
-              <VTextField
-                v-model="form.description"
-                label="Descripción"
-                placeholder="Descripción del adelanto"
-                :rules="[v => !!v]"
-              />
-            </VCol>
-          </VRow>
+            <VRow>
+              <VCol cols="12">
+                <VTextField v-model="form.amount" label="Monto" type="number" prefix="$" placeholder="0.00"
+                  :rules="[v => !!v && v > 0]" required />
+              </VCol>
+            </VRow>
 
-          <VRow>
-            <VCol cols="12">
-              <VTextField
-                v-model="form.advance_date"
-                label="Fecha"
-                type="date"
-                :rules="[v => !!v]"
-                required
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
+            <VRow>
+              <VCol cols="12">
+                <VTextField v-model="form.description" label="Descripción" placeholder="Descripción del adelanto"
+                  :rules="[v => !!v]" />
+              </VCol>
+            </VRow>
 
-        <VDivider />
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            @click="closeDialog"
-          >
-            Cancelar
-          </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            type="submit"
-            :loading="loader.loading"
-            :disabled="loader.loading"
-            prepend-icon="ri-refresh-line"
-            class="rounded-lg px-6 font-weight-bold"
-            height="40"
-          >
-            Actualizar Adelanto
-          </VBtn>
-        </VCardActions>
-      </VForm>
+            <VRow>
+              <VCol cols="12">
+                <VTextField v-model="form.advance_date" label="Fecha" type="date" :rules="[v => !!v]" required />
+              </VCol>
+            </VRow>
+
+            <VDivider class="mt-4" />
+          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;">
+            <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium" height="40" @click="closeDialog">
+              Cancelar
+            </VBtn>
+            <VBtn color="primary" variant="elevated" type="submit" :loading="loader.loading" :disabled="loader.loading"
+              prepend-icon="ri-refresh-line" class="rounded-lg px-6 font-weight-bold" height="40">
+              Actualizar Adelanto
+            </VBtn>
+          </VCardActions>
+        </VForm>
+      </VCardText>
     </VCard>
   </VDialog>
 </template>

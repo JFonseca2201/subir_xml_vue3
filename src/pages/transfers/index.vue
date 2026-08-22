@@ -5,6 +5,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
+import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 import { usePermissions } from '@/composables/usePermissions'
@@ -34,6 +35,28 @@ const showTransferDialog = ref(false)
 const editingTransfer = ref(null)
 const showDeleteDialog = ref(false)
 const transferToDelete = ref(null)
+const showNoteDialog = ref(false)
+const selectedTransferForNote = ref(null)
+
+const openNoteDialog = transfer => {
+  const fromAcc = transfer.source_account || accounts.value.find(a => String(a.id) === String(transfer.from_account_id || transfer.source_account_id))
+  const toAcc = transfer.destination_account || accounts.value.find(a => String(a.id) === String(transfer.to_account_id || transfer.destination_account_id))
+
+  selectedTransferForNote.value = {
+    ...transfer,
+    type: 'transfer',
+    transfer_date: transfer.transfer_date || transfer.created_at,
+    amount: transfer.amount,
+    description: transfer.description,
+    from_account: fromAcc,
+    to_account: toAcc,
+    from_account_id: fromAcc?.id || transfer.from_account_id || transfer.source_account_id,
+    to_account_id: toAcc?.id || transfer.to_account_id || transfer.destination_account_id,
+    from_account_name: fromAcc?.bank_name || fromAcc?.name,
+    to_account_name: toAcc?.bank_name || toAcc?.name,
+  }
+  showNoteDialog.value = true
+}
 
 // Filtros y búsqueda
 const searchQuery = ref('')
@@ -783,27 +806,83 @@ onMounted(() => {
 
               <!-- Acciones -->
               <td class="py-3 text-center">
-                <div class="d-flex justify-center gap-1">
+                <div class="d-flex align-center justify-center gap-1">
+                  <!-- Botón Principal: Ver Nota de Transferencia -->
                   <VBtn
-                    v-if="can('edit_transfer')"
-                    title="Editar registro"
+                    title="Ver nota de transferencia y comprobantes"
                     size="small"
                     variant="tonal"
                     color="primary"
-                    icon="ri-edit-line"
+                    icon="ri-eye-line"
                     class="action-btn"
-                    @click="openEditDialog(transfer)"
+                    @click="openNoteDialog(transfer)"
                   />
-                  <VBtn
-                    v-if="can('delete_transfer')"
-                    title="Eliminar registro"
-                    size="small"
-                    variant="tonal"
-                    color="error"
-                    icon="ri-delete-bin-line"
-                    class="action-btn"
-                    @click="deleteTransfer(transfer)"
-                  />
+
+                  <!-- Menú Pro de Acciones Secundarias -->
+                  <VMenu
+                    v-if="can('edit_transfer') || can('delete_transfer')"
+                    location="bottom end"
+                    transition="scale-transition"
+                  >
+                    <template #activator="{ props: menuProps }">
+                      <VBtn
+                        v-bind="menuProps"
+                        size="small"
+                        variant="text"
+                        color="secondary"
+                        icon="ri-more-2-fill"
+                        class="action-btn"
+                        title="Más opciones"
+                      />
+                    </template>
+
+                    <VList
+                      density="compact"
+                      elevation="6"
+                      class="py-1 rounded-lg"
+                      min-width="180"
+                    >
+                      <VListItem
+                        v-if="can('edit_transfer')"
+                        @click="openEditDialog(transfer)"
+                      >
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-edit-line"
+                            color="warning"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Editar Registro
+                        </VListItemTitle>
+                      </VListItem>
+
+                      <VDivider
+                        v-if="can('edit_transfer') && can('delete_transfer')"
+                        class="my-1"
+                      />
+
+                      <VListItem
+                        v-if="can('delete_transfer')"
+                        class="text-error"
+                        @click="deleteTransfer(transfer)"
+                      >
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-delete-bin-line"
+                            color="error"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                          Eliminar Registro
+                        </VListItemTitle>
+                      </VListItem>
+                    </VList>
+                  </VMenu>
                 </div>
               </td>
             </tr>
@@ -812,6 +891,14 @@ onMounted(() => {
       </VTable>
     </VCard>
   </div>
+
+  <!-- Modal Ver Nota de Transferencia -->
+  <MovementReceiptNoteDialog
+    v-model="showNoteDialog"
+    :movement="selectedTransferForNote"
+    :accounts="accounts"
+    @updated="loadTransfers"
+  />
 
   <!-- Modal de transferencias -->
   <TransferDialog

@@ -168,9 +168,12 @@ const handleSubmit = async () => {
   }
 }
 
+const loadingData = ref(false)
+
 // Watchers profesionales
 watch(show, newVal => {
   if (newVal) {
+    loadingData.value = true
     Promise.all([loadPartners(), loadAccounts()])
       .then(() => {
         if (!form.value.fecha_aporte) {
@@ -183,6 +186,9 @@ watch(show, newVal => {
       })
       .catch(error => {
         console.error('❌ Error cargando datos:', error)
+      })
+      .finally(() => {
+        loadingData.value = false
       })
   } else {
     resetForm()
@@ -199,7 +205,7 @@ onMounted(() => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="560"
+    max-width="920"
     persistent
   >
     <VCard class="custom-dialog-card aporte-dialog">
@@ -226,7 +232,21 @@ onMounted(() => {
 
       <!-- Formulario -->
       <VCardText class="pa-6">
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div v-if="loadingData" class="py-2">
+          <VRow>
+            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
         <VForm
+          v-else
           ref="formRef"
           @submit.prevent="handleSubmit"
         >

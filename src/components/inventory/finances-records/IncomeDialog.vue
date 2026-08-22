@@ -43,8 +43,11 @@ const form = ref({
 // Account options
 const accountOptions = ref([])
 
+const isLoadingData = ref(false)
+
 // Load accounts from API
 const loadAccounts = async () => {
+  isLoadingData.value = true
   try {
     const response = await $api('accounts')
 
@@ -63,8 +66,22 @@ const loadAccounts = async () => {
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
     showNotification('Error al cargar cuentas', 'error')
+  } finally {
+    isLoadingData.value = false
   }
 }
+
+watch(() => props.modelValue, async newVal => {
+  if (newVal) {
+    isLoadingData.value = true
+    try {
+      await loadAccounts()
+      await nextTick()
+    } finally {
+      isLoadingData.value = false
+    }
+  }
+})
 
 onMounted(() => {
   loadAccounts()
@@ -247,7 +264,7 @@ const formatCurrency = value => {
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="680"
+    max-width="920"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
@@ -287,7 +304,18 @@ const formatCurrency = value => {
 
       <!-- Cuerpo del Formulario con Scroll Interno -->
       <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
-        <VForm @submit.prevent="saveIncome">
+        <!-- Skeleton Loader mientras cargan datos -->
+        <div v-if="isLoadingData" class="py-2">
+          <VRow>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          </VRow>
+        </div>
+
+        <VForm v-else @submit.prevent="saveIncome">
           <VRow dense>
             <VCol cols="12" md="6">
               <VTextField

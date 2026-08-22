@@ -797,70 +797,89 @@ onMounted(() => {
 
               <!-- Acciones -->
               <td class="py-3 text-center">
-                <div class="d-flex justify-center gap-1">
-                  <!-- Botón de Ver Nota y Comprobantes (VDialog) -->
+                <div class="d-flex align-center justify-center gap-1">
+                  <!-- Botón Principal: Ver Nota y Comprobantes -->
                   <VBtn
-                    icon
+                    icon="ri-eye-line"
                     variant="tonal"
                     color="primary"
                     size="small"
                     class="action-btn"
                     title="Ver Nota y Comprobantes"
                     @click="openAporteNoteDialog(aporte)"
-                  >
-                    <VIcon
-                      icon="ri-file-list-3-line"
-                      size="18"
-                    />
-                  </VBtn>
+                  />
 
-                  <!-- Botón de Adjuntar / Gestionar Comprobantes -->
-                  <VBtn
-                    icon
-                    variant="tonal"
-                    color="secondary"
-                    size="small"
-                    class="action-btn"
-                    title="Adjuntar / Gestionar Comprobantes"
-                    @click="openAttachDialog(aporte)"
+                  <!-- Menú Pro de Acciones Secundarias -->
+                  <VMenu
+                    location="bottom end"
+                    transition="scale-transition"
                   >
-                    <VIcon
-                      icon="ri-attachment-2"
-                      size="18"
-                    />
-                  </VBtn>
+                    <template #activator="{ props: menuProps }">
+                      <VBtn
+                        v-bind="menuProps"
+                        size="small"
+                        variant="text"
+                        color="secondary"
+                        icon="ri-more-2-fill"
+                        class="action-btn"
+                        title="Más opciones"
+                      />
+                    </template>
 
-                  <!-- Botón de Editar -->
-                  <VBtn
-                    icon
-                    variant="tonal"
-                    color="warning"
-                    size="small"
-                    class="action-btn"
-                    title="Editar Aporte"
-                    @click="openEditDialog(aporte)"
-                  >
-                    <VIcon
-                      icon="ri-pencil-line"
-                      size="18"
-                    />
-                  </VBtn>
+                    <VList
+                      density="compact"
+                      elevation="6"
+                      class="py-1 rounded-lg"
+                      min-width="200"
+                    >
+                      <VListItem @click="openAttachDialog(aporte)">
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-attachment-2"
+                            color="secondary"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Adjuntar Comprobante
+                        </VListItemTitle>
+                      </VListItem>
 
-                  <!-- Botón de Eliminar -->
-                  <VBtn
-                    icon
-                    variant="tonal"
-                    color="error"
-                    size="small"
-                    class="action-btn"
-                    title="Eliminar Aporte"
-                    @click="deleteAporte(aporte)"
-                  >
-                    <VIcon
-                      icon="ri-delete-bin-line"
-                      size="18"
-                    />
-                  </VBtn>
+                      <VListItem @click="openEditDialog(aporte)">
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-pencil-line"
+                            color="warning"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2">
+                          Editar Aporte
+                        </VListItemTitle>
+                      </VListItem>
+
+                      <VDivider class="my-1" />
+
+                      <VListItem
+                        class="text-error"
+                        @click="deleteAporte(aporte)"
+                      >
+                        <template #prepend>
+                          <VIcon
+                            icon="ri-delete-bin-line"
+                            color="error"
+                            size="18"
+                            class="me-2"
+                          />
+                        </template>
+                        <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                          Eliminar Aporte
+                        </VListItemTitle>
+                      </VListItem>
+                    </VList>
+                  </VMenu>
                 </div>
               </td>
             </tr>

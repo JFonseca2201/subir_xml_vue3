@@ -169,6 +169,45 @@ const formattedDate = computed(() => {
   return rawDate
 })
 
+// Cargar catálogo de cuentas para resolver bank_name
+const fetchedAccounts = ref([])
+const loadAccounts = async () => {
+  if (fetchedAccounts.value.length === 0) {
+    try {
+      const response = await $api('accounts')
+      fetchedAccounts.value = response || []
+    } catch (e) {
+      console.warn('Error al cargar cuentas en MovementReceiptNoteDialog:', e)
+    }
+  }
+}
+
+const allAccounts = computed(() => {
+  const merged = [...(props.accounts || []), ...(fetchedAccounts.value || [])]
+  const map = new Map()
+  merged.forEach(a => { if (a && a.id) map.set(String(a.id), a) })
+  return Array.from(map.values())
+})
+
+const getCleanAccountName = (accObj, accId, fallbackStr) => {
+  if (accObj) {
+    if (typeof accObj === 'object') {
+      const bName = accObj.bank_name || accObj.name || accObj.account_name
+      if (bName) return bName.replace(/\(EFECTIVO\)/gi, '').replace(/\(TRANSFERENCIA\)/gi, '').trim()
+    } else if (typeof accObj === 'string' && accObj !== 'Origen' && accObj !== 'Destino') {
+      return accObj
+    }
+  }
+  if (accId) {
+    const found = allAccounts.value.find(a => String(a.id) === String(accId))
+    if (found) {
+      const bName = found.bank_name || found.name || found.account_name
+      if (bName) return bName.replace(/\(EFECTIVO\)/gi, '').replace(/\(TRANSFERENCIA\)/gi, '').trim()
+    }
+  }
+  return fallbackStr
+}
+
 // Nombre de la cuenta origen / destino
 const accountInfo = computed(() => {
   if (!props.movement) return { from: 'N/A', to: 'N/A', single: 'N/A' }
@@ -180,8 +219,15 @@ const accountInfo = computed(() => {
   }
 
   if (movementType.value === 'transfer') {
-    const fromName = meta?.from_account_name || props.accounts.find(a => a.id === meta?.from_account)?.name || 'Origen'
-    const toName = meta?.to_account_name || props.accounts.find(a => a.id === meta?.to_account)?.name || 'Destino'
+    const fromId = m.from_account_id || m.source_account_id || meta?.from_account || (typeof m.source_account === 'object' ? m.source_account.id : (typeof m.source_account === 'number' || typeof m.source_account === 'string' ? m.source_account : null))
+    const toId = m.to_account_id || m.destination_account_id || meta?.to_account || (typeof m.destination_account === 'object' ? m.destination_account.id : (typeof m.destination_account === 'number' || typeof m.destination_account === 'string' ? m.destination_account : null))
+
+    const fromObj = m.from_account || m.source_account || meta?.from_account_name || m.from_account_name || m.source_account_name
+    const toObj = m.to_account || m.destination_account || meta?.to_account_name || m.to_account_name || m.destination_account_name
+
+    const fromName = getCleanAccountName(fromObj, fromId, 'Cuenta Origen')
+    const toName = getCleanAccountName(toObj, toId, 'Cuenta Destino')
+
     return {
       from: fromName,
       to: toName,
@@ -189,16 +235,8 @@ const accountInfo = computed(() => {
     }
   }
 
-  if (m.account?.name) {
-    return { single: m.account.name }
-  }
-
-  if (m.account_id) {
-    const acc = props.accounts.find(a => a.id === m.account_id)
-    if (acc) return { single: acc.name }
-  }
-
-  return { single: 'Caja / Cuenta Principal' }
+  const singleName = getCleanAccountName(m.account, m.account_id, 'Caja / Cuenta Principal')
+  return { single: singleName }
 })
 
 // Método de pago
@@ -331,17 +369,22 @@ const downloadMovementPdf = async () => {
 
   isDownloadingPdf.value = true
   try {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || window.location.origin
-    const base = apiBase.replace(/\/api\/?$/, '')
-    const downloadUrl = `${base}/api/financial-movements/${props.movement.id}/pdf`
+    const response = await $api(`financial-movements/${props.movement.id}/pdf`, {
+      method: 'GET',
+      responseType: 'blob',
+    })
 
+    const blob = new Blob([response], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = downloadUrl
+
+    link.href = url
     link.download = `comprobante_${movementType.value}_${docNumber.value}.pdf`
-    link.target = '_blank'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    showNotification('Comprobante PDF descargado exitosamente', 'success')
   } catch (e) {
     console.error('Error al descargar PDF del movimiento:', e)
     showNotification('Error al descargar el comprobante en PDF', 'error')
@@ -389,6 +432,7 @@ watch(
     if (visible && mov) {
       newReceiptFiles.value = []
       showUploader.value = false
+      loadAccounts()
       loadAttachments()
     }
   },
@@ -399,7 +443,7 @@ watch(
 <template>
   <VDialog
     :model-value="props.modelValue"
-    max-width="780"
+    max-width="920"
     scrollable
     persistent
     @update:model-value="closeDialog"
@@ -641,16 +685,16 @@ watch(
           <!-- Estado Cargando Adjuntos -->
           <div
             v-if="isLoadingAttachments"
-            class="text-center py-6"
+            class="py-3"
           >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-              size="32"
-            />
-            <div class="text-caption text-medium-emphasis mt-2">
-              Cargando comprobantes...
-            </div>
+            <VRow dense>
+              <VCol cols="6" sm="4">
+                <VSkeletonLoader type="card" height="130" class="rounded-xl" />
+              </VCol>
+              <VCol cols="6" sm="4">
+                <VSkeletonLoader type="card" height="130" class="rounded-xl" />
+              </VCol>
+            </VRow>
           </div>
 
           <!-- Estado Sin Adjuntos -->
@@ -818,27 +862,41 @@ watch(
     <!-- Lightbox / Modal de Foto en Pantalla Completa -->
     <VDialog
       v-model="isLightboxOpen"
-      max-width="850"
+      max-width="920"
       scrollable
     >
-      <VCard class="rounded-xl overflow-hidden elevation-12">
-        <VCardTitle class="d-flex align-center justify-space-between bg-grey-900 text-white pa-4">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              icon="ri-image-line"
+      <VCard class="rounded-xl overflow-hidden elevation-10">
+        <!-- Header Banner Fijo Primary -->
+        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4 flex-none">
+          <div class="d-flex align-center gap-3">
+            <VAvatar
               color="white"
-            />
-            <div class="text-subtitle-1 font-weight-bold text-white text-truncate" style="max-width: 400px;">
-              {{ attachments[activePhotoIndex]?.file_name || 'Comprobante' }}
+              variant="tonal"
+              size="38"
+              rounded="lg"
+            >
+              <VIcon
+                icon="ri-image-line"
+                color="white"
+                size="22"
+              />
+            </VAvatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate" style="max-width: 450px;">
+                {{ attachments[activePhotoIndex]?.file_name || 'Comprobante' }}
+              </div>
+              <div class="text-caption text-white opacity-80">
+                Archivo {{ activePhotoIndex + 1 }} de {{ attachments.length }}
+              </div>
             </div>
           </div>
           <div class="d-flex align-center gap-2">
             <VBtn
-              color="success"
-              variant="elevated"
+              color="white"
+              variant="tonal"
               prepend-icon="ri-download-2-line"
               size="small"
-              class="font-weight-bold rounded-lg"
+              class="font-weight-medium text-white me-1"
               @click="downloadSingleAttachment(attachments[activePhotoIndex])"
             >
               Descargar
@@ -854,17 +912,17 @@ watch(
         </VCardTitle>
 
         <VCardText
-          class="pa-0 bg-grey-950 d-flex align-center justify-center position-relative"
-          style="min-height: 420px; max-height: 75vh; overflow: auto;"
+          class="pa-4 bg-grey-lighten-4 d-flex align-center justify-center position-relative"
+          style="min-height: 440px; max-height: 75vh; overflow: auto;"
         >
           <!-- Flecha Anterior -->
           <VBtn
             v-if="attachments.length > 1"
             icon="ri-arrow-left-s-line"
-            variant="tonal"
-            color="white"
-            class="position-absolute"
-            style="left: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            variant="elevated"
+            color="primary"
+            class="position-absolute elevation-4"
+            style="left: 16px; z-index: 10;"
             :disabled="activePhotoIndex === 0"
             @click="activePhotoIndex--"
           />
@@ -872,20 +930,20 @@ watch(
           <!-- Visualizador de Imagen -->
           <div
             v-if="attachments[activePhotoIndex] && isImageFile(attachments[activePhotoIndex])"
-            class="d-flex align-center justify-center w-100 h-100 pa-4"
+            class="d-flex align-center justify-center w-100 h-100 pa-2"
           >
             <img
               :src="getFullUrl(attachments[activePhotoIndex].file_path || attachments[activePhotoIndex].url)"
               :alt="attachments[activePhotoIndex].file_name"
-              class="img-fluid rounded-lg shadow-lg"
-              style="max-width: 100%; max-height: 68vh; object-fit: contain;"
+              class="img-fluid rounded-xl elevation-4 border"
+              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: white;"
             />
           </div>
 
           <!-- Visualizador para PDF -->
           <div
             v-else-if="attachments[activePhotoIndex]"
-            class="d-flex flex-column align-center justify-center pa-8 text-center text-white"
+            class="d-flex flex-column align-center justify-center pa-8 text-center"
           >
             <VAvatar
               color="error"
@@ -898,10 +956,10 @@ watch(
                 size="40"
               />
             </VAvatar>
-            <div class="text-h6 font-weight-bold mb-2">
+            <div class="text-h6 font-weight-bold mb-1 text-high-emphasis">
               Documento PDF
             </div>
-            <div class="text-body-2 text-grey-400 mb-4">
+            <div class="text-body-2 text-medium-emphasis mb-4">
               {{ attachments[activePhotoIndex].file_name }}
             </div>
             <div class="d-flex gap-3">
@@ -929,23 +987,23 @@ watch(
           <VBtn
             v-if="attachments.length > 1"
             icon="ri-arrow-right-s-line"
-            variant="tonal"
-            color="white"
-            class="position-absolute"
-            style="right: 16px; z-index: 10; background: rgba(0,0,0,0.5);"
+            variant="elevated"
+            color="primary"
+            class="position-absolute elevation-4"
+            style="right: 16px; z-index: 10;"
             :disabled="activePhotoIndex === attachments.length - 1"
             @click="activePhotoIndex++"
           />
         </VCardText>
 
-        <VCardActions class="pa-3 bg-grey-900 d-flex justify-space-between align-center">
-          <span class="text-caption text-grey-400">
-            Archivo {{ activePhotoIndex + 1 }} de {{ attachments.length }}
+        <VCardActions class="pa-4 bg-white border-t d-flex justify-space-between align-center flex-none">
+          <span class="text-caption text-medium-emphasis font-weight-medium">
+            Comprobante {{ activePhotoIndex + 1 }} de {{ attachments.length }}
           </span>
           <VBtn
-            variant="outlined"
-            color="white"
-            size="small"
+            variant="tonal"
+            color="secondary"
+            class="font-weight-medium px-6"
             @click="isLightboxOpen = false"
           >
             Cerrar
