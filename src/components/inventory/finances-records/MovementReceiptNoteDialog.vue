@@ -634,53 +634,7 @@ watch(
                 {{ attachments.length }} archivo(s)
               </VChip>
             </div>
-
-            <VBtn
-              size="small"
-              variant="tonal"
-              color="primary"
-              :prepend-icon="showUploader ? 'ri-arrow-up-s-line' : 'ri-add-line'"
-              @click="showUploader = !showUploader"
-            >
-              {{ showUploader ? 'Ocultar Subida' : 'Adjuntar Comprobante' }}
-            </VBtn>
           </div>
-
-          <!-- Uploader desplegable -->
-          <VExpandTransition>
-            <div v-if="showUploader" class="mb-4 pa-4 rounded-xl border bg-grey-lighten-5">
-              <div class="text-subtitle-2 font-weight-bold mb-2">
-                Subir Nuevo Comprobante / Foto
-              </div>
-              <ReceiptUploader
-                v-model="newReceiptFiles"
-                label="Seleccionar o Tomar Foto del Comprobante"
-                hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
-                :max-files="5"
-                @error="msg => showNotification(msg, 'error')"
-              />
-              <div class="d-flex justify-end gap-2 mt-3">
-                <VBtn
-                  variant="text"
-                  size="small"
-                  @click="showUploader = false"
-                >
-                  Cancelar
-                </VBtn>
-                <VBtn
-                  color="primary"
-                  size="small"
-                  variant="elevated"
-                  prepend-icon="ri-upload-cloud-line"
-                  :loading="isUploading"
-                  :disabled="newReceiptFiles.length === 0 || isUploading"
-                  @click="handleUploadNewReceipts"
-                >
-                  Guardar en Servidor
-                </VBtn>
-              </div>
-            </div>
-          </VExpandTransition>
 
           <!-- Estado Cargando Adjuntos -->
           <div
@@ -705,29 +659,17 @@ watch(
             <VAvatar
               color="secondary"
               variant="tonal"
-              size="48"
+              size="44"
               class="mb-2"
             >
               <VIcon
                 icon="ri-file-cloud-line"
-                size="26"
+                size="24"
               />
             </VAvatar>
             <div class="text-subtitle-2 font-weight-medium">
-              No hay comprobantes adjuntos todavía
+              No hay comprobantes adjuntos para este registro
             </div>
-            <div class="text-caption text-disabled mb-3">
-              Puedes adjuntar una foto del recibo o factura con el botón superior.
-            </div>
-            <VBtn
-              size="small"
-              variant="outlined"
-              color="primary"
-              prepend-icon="ri-upload-2-line"
-              @click="showUploader = true"
-            >
-              Adjuntar Foto Ahora
-            </VBtn>
           </div>
 
           <!-- Galería de Comprobantes Adjuntos -->
@@ -782,7 +724,7 @@ watch(
                 </span>
               </div>
 
-              <!-- Info & Acciones del Card -->
+              <!-- Info & Acciones del Card (Solo Ver y Descargar) -->
               <div class="pa-2.5 bg-surface">
                 <div
                   class="text-caption font-weight-bold text-truncate"
@@ -805,24 +747,14 @@ watch(
                   >
                     Ver
                   </VBtn>
-                  <div class="d-flex gap-1">
-                    <VBtn
-                      size="x-small"
-                      variant="text"
-                      color="secondary"
-                      icon="ri-download-2-line"
-                      title="Descargar archivo"
-                      @click.stop="downloadSingleAttachment(att)"
-                    />
-                    <VBtn
-                      size="x-small"
-                      variant="text"
-                      color="error"
-                      icon="ri-delete-bin-line"
-                      title="Eliminar archivo"
-                      @click.stop="deleteAttachment(att)"
-                    />
-                  </div>
+                  <VBtn
+                    size="x-small"
+                    variant="text"
+                    color="secondary"
+                    icon="ri-download-2-line"
+                    title="Descargar archivo"
+                    @click.stop="downloadSingleAttachment(att)"
+                  />
                 </div>
               </div>
             </VCard>

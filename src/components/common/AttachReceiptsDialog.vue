@@ -29,6 +29,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  readOnly: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['update:isDialogVisible', 'updated'])
@@ -329,6 +333,7 @@ const openAttachment = att => {
                       @click.stop="openAttachment(att)"
                     />
                     <VBtn
+                      v-if="!props.readOnly"
                       icon="ri-delete-bin-line"
                       size="x-small"
                       variant="text"
@@ -343,16 +348,17 @@ const openAttachment = att => {
           </div>
         </div>
 
-        <VDivider class="my-4" />
-
-        <!-- Sección 2: Subir Nuevos Comprobantes -->
-        <ReceiptUploader
-          v-model="newFiles"
-          label="Adjuntar Nuevos Comprobantes"
-          hint="Arrastra o toma foto del comprobante de transferencia / depósito"
-          :disabled="isSaving"
-          @error="msg => showNotification(msg, 'error')"
-        />
+        <!-- Sección 2: Subir Nuevos Comprobantes (Solo si no es modo lectura) -->
+        <template v-if="!props.readOnly">
+          <VDivider class="my-4" />
+          <ReceiptUploader
+            v-model="newFiles"
+            label="Adjuntar Nuevos Comprobantes"
+            hint="Arrastra o toma foto del comprobante de transferencia / depósito"
+            :disabled="isSaving"
+            @error="msg => showNotification(msg, 'error')"
+          />
+        </template>
       </VCardText>
 
       <VDivider />
@@ -367,7 +373,7 @@ const openAttachment = att => {
         </VBtn>
 
         <VBtn
-          v-if="newFiles.length > 0"
+          v-if="!props.readOnly && newFiles.length > 0"
           color="primary"
           variant="elevated"
           prepend-icon="ri-save-3-line"
