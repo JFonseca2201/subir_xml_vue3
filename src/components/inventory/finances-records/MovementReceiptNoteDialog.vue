@@ -259,7 +259,7 @@ const paymentMethod = computed(() => {
 
 // ID para adjuntos
 const attachableData = computed(() => {
-  if (!props.movement) return { type: 'expense', id: 0 }
+  if (!props.movement) return { type: 'financial_movement', id: 0 }
   const m = props.movement
 
   let meta = m.metadata
@@ -267,8 +267,37 @@ const attachableData = computed(() => {
     try { meta = JSON.parse(meta) } catch (e) { meta = {} }
   }
 
+  // 1. Si es Aporte de Capital
+  if (m.partner_id || m.partner_nombre || m.type === 'aporte') {
+    return {
+      type: 'aporte',
+      id: m.id,
+      identifier: `APORTE-${String(m.id).padStart(5, '0')}`,
+    }
+  }
+
+  // 2. Si es Pago / Adelanto de Empleado
+  if (m.employee_id || m.employee_name) {
+    const isPayment = m.type === 'payment' || m.referencia === 'employee_payment' || String(m.type).toLowerCase() === 'pago'
+    return {
+      type: isPayment ? 'employee_payment' : 'employee_advance',
+      id: m.id,
+      identifier: docNumber.value,
+    }
+  }
+
+  // 3. Si es Transferencia Interna
+  if (movementType.value === 'transfer') {
+    return {
+      type: 'internal_transfer',
+      id: m.id,
+      identifier: docNumber.value,
+    }
+  }
+
+  // 4. Movimientos Financieros Estándar (Ingreso / Egreso)
   const finRecordId = meta?.finance_record_id || m.movable?.finance_record_id || m.movable?.finance_record?.id || m.id
-  const type = movementType.value === 'transfer' ? 'internal_transfer' : (movementType.value === 'income' ? 'finance_record' : 'expense')
+  const type = movementType.value === 'income' ? 'finance_record' : 'financial_movement'
 
   return {
     type,
@@ -279,7 +308,17 @@ const attachableData = computed(() => {
 
 // Cargar archivos adjuntos del movimiento
 const loadAttachments = async () => {
-  if (!props.movement) return
+  if (!props.movement) {
+    attachments.value = []
+    return
+  }
+
+  // 1. Inicializar inmediatamente con los adjuntos directos del movimiento
+  const initialAtts = (props.movement.resolved_attachments && Array.isArray(props.movement.resolved_attachments))
+    ? props.movement.resolved_attachments
+    : ((props.movement.attachments && Array.isArray(props.movement.attachments)) ? props.movement.attachments : [])
+
+  attachments.value = [...initialAtts]
 
   isLoadingAttachments.value = true
   try {
@@ -296,15 +335,26 @@ const loadAttachments = async () => {
       params,
     })
 
-    if (res && res.status === 'success') {
-      attachments.value = res.data || []
-    } else if (props.movement.resolved_attachments) {
-      attachments.value = props.movement.resolved_attachments
+    let fetchedList = []
+    if (Array.isArray(res)) {
+      fetchedList = res
+    } else if (res && Array.isArray(res.data)) {
+      fetchedList = res.data
+    } else if (res && Array.isArray(res.attachments)) {
+      fetchedList = res.attachments
+    }
+
+    if (fetchedList.length > 0) {
+      attachments.value = fetchedList
+    } else if (initialAtts.length > 0) {
+      attachments.value = initialAtts
+    } else {
+      attachments.value = []
     }
   } catch (error) {
     console.error('Error al cargar comprobantes en diálogo:', error)
-    if (props.movement.resolved_attachments) {
-      attachments.value = props.movement.resolved_attachments
+    if (initialAtts.length > 0) {
+      attachments.value = initialAtts
     }
   } finally {
     isLoadingAttachments.value = false

@@ -31,7 +31,7 @@ const props = defineProps({
   },
   readOnly: {
     type: Boolean,
-    default: true,
+    default: false,
   },
 })
 
@@ -211,9 +211,23 @@ const openAttachment = att => {
       </VCardTitle>
 
       <VCardText class="pa-5">
-        <!-- Sección 1: Comprobantes Ya Guardados en el Servidor -->
-        <div class="mb-5">
-          <div class="d-flex align-center justify-space-between mb-2">
+        <!-- Sección 1: Subir Nuevos Comprobantes (Modo Edición / Adjuntar) -->
+        <template v-if="!props.readOnly">
+          <div class="mb-5">
+            <ReceiptUploader
+              v-model="newFiles"
+              label="Adjuntar Nuevos Comprobantes"
+              hint="Arrastra o toma foto del comprobante de transferencia / depósito"
+              :disabled="isSaving"
+              @error="msg => showNotification(msg, 'error')"
+            />
+          </div>
+          <VDivider class="my-5" />
+        </template>
+
+        <!-- Sección 2: Comprobantes Ya Guardados en el Servidor -->
+        <div>
+          <div class="d-flex align-center justify-space-between mb-3">
             <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
               <VIcon
                 icon="ri-check-double-line"
@@ -347,18 +361,6 @@ const openAttachment = att => {
             </div>
           </div>
         </div>
-
-        <!-- Sección 2: Subir Nuevos Comprobantes (Solo si no es modo lectura) -->
-        <template v-if="!props.readOnly">
-          <VDivider class="my-4" />
-          <ReceiptUploader
-            v-model="newFiles"
-            label="Adjuntar Nuevos Comprobantes"
-            hint="Arrastra o toma foto del comprobante de transferencia / depósito"
-            :disabled="isSaving"
-            @error="msg => showNotification(msg, 'error')"
-          />
-        </template>
       </VCardText>
 
       <VDivider />

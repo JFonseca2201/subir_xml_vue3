@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { $api } from '@/utils/api'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -23,9 +24,13 @@ const emit = defineEmits(['update:modelValue', 'updated'])
 
 // Estado
 const loading = ref(false)
+const isLoadingData = ref(false)
 const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
+const newReceiptFiles = ref([])
+const existingAttachments = ref([])
+const isLoadingAttachments = ref(false)
 
 // Métodos de pago
 const paymentMethods = [
@@ -93,21 +98,26 @@ const show = computed({
   set: value => emit('update:modelValue', value),
 })
 
-const isEditing = computed(() => !!props.expense)
-
 const dialogTitle = computed(() => isEditing.value ? 'Editar Pago' : 'Nuevo Pago')
 
 const filteredAccounts = computed(() => {
   const method = form.value.payment_method
-  if (!method) return accounts.value
-
+  let result = accounts.value
   if (method === 'EFECTIVO') {
-    return accounts.value.filter(acc => acc.type === 'cash')
+    result = accounts.value.filter(acc => acc.type === 'cash')
   } else if (method === 'TRANSFERENCIA') {
-    return accounts.value.filter(acc => acc.type === 'bank')
+    result = accounts.value.filter(acc => acc.type === 'bank')
   }
 
-  return accounts.value
+  // Asegurar que si hay una cuenta asignada, siempre esté en el listado para VSelect
+  if (form.value.account_id) {
+    const selectedAcc = accounts.value.find(acc => Number(acc.id) === Number(form.value.account_id))
+    if (selectedAcc && !result.some(acc => Number(acc.id) === Number(selectedAcc.id))) {
+      result = [selectedAcc, ...result]
+    }
+  }
+
+  return result
 })
 
 // Formulario reactivo
@@ -117,6 +127,7 @@ const form = ref({
   amount: null,
   description: '',
   payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
+  payment_method: 'TRANSFERENCIA',
 })
 
 // Funciones
@@ -154,8 +165,6 @@ const handleSubmit = async () => {
       ...form.value,
       type: 'payment',
     }
-    
-
 
     console.log('🔍 EditPayment - Enviando actualización:', payload)
 
@@ -164,6 +173,26 @@ const handleSubmit = async () => {
       body: payload,
     })
 
+    // Subir nuevos comprobantes si fueron seleccionados
+    if (newReceiptFiles.value.length > 0) {
+      const formData = new FormData()
+      formData.append('attachable_type', 'employee_payment')
+      formData.append('attachable_id', props.expense.id)
+      formData.append('identifier', `PAGO-EMP-${String(props.expense.id).padStart(5, '0')}`)
+      if (props.expense.employee_name) {
+        formData.append('party_name', props.expense.employee_name)
+      }
+
+      newReceiptFiles.value.forEach((fileObj) => {
+        const rawFile = fileObj.file || fileObj
+        formData.append('receipts[]', rawFile)
+      })
+      await $api('attachments/upload', {
+        method: 'POST',
+        body: formData,
+      })
+    }
+
     console.log('🔍 EditPayment - Respuesta de actualización:', response)
     showNotification('Pago actualizado exitosamente', 'success')
     emit('updated', response)
@@ -171,7 +200,6 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error('Error al actualizar pago:', error)
 
-    // Manejar errores específicos
     if (error.status === 422 && error.data?.message) {
       showNotification(error.data.message, 'error')
     } else if (error.status === 404) {
@@ -184,21 +212,94 @@ const handleSubmit = async () => {
   }
 }
 
+const fetchExistingAttachments = async paymentId => {
+  // 1. Cargar inmediatamente desde props.expense o resetear
+  existingAttachments.value = (props.expense?.attachments && Array.isArray(props.expense.attachments))
+    ? [...props.expense.attachments]
+    : []
+
+  const id = paymentId || props.expense?.id
+  if (!id) return
+
+  isLoadingAttachments.value = true
+  try {
+    const res = await $api('attachments', {
+      params: {
+        attachable_type: 'employee_payment',
+        attachable_id: id,
+      },
+    })
+
+    let attList = []
+    if (Array.isArray(res)) {
+      attList = res
+    } else if (res && Array.isArray(res.data)) {
+      attList = res.data
+    } else if (res && Array.isArray(res.attachments)) {
+      attList = res.attachments
+    }
+
+    existingAttachments.value = attList
+  } catch (e) {
+    console.error('Error al cargar comprobantes:', e)
+  } finally {
+    isLoadingAttachments.value = false
+  }
+}
+
+const deleteAttachment = async id => {
+  try {
+    await $api(`attachments/${id}`, { method: 'DELETE' })
+    showNotification('Comprobante eliminado', 'success')
+    existingAttachments.value = existingAttachments.value.filter(a => a.id !== id)
+  } catch (e) {
+    showNotification('Error al eliminar comprobante', 'error')
+  }
+}
+
+const isImageFile = att => {
+  if (!att) return false
+  if (att.is_image) return true
+  const path = att.file_path || att.url || att.file_name || ''
+  return /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(path)
+}
+
+const isPdfFile = att => {
+  if (!att) return false
+  if (att.is_pdf) return true
+  const path = att.file_path || att.url || att.file_name || ''
+  return /\.pdf$/i.test(path)
+}
+
+const getFullUrl = path => {
+  if (!path) return ''
+  if (typeof path === 'object' && path.url) return path.url
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
+  const base = isLocal
+    ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
+    : `http://${hostname}:8000`
+
+  const cleanPath = path.replace(/^\/?storage\/?/, '')
+
+  return `${base}/storage/${cleanPath}`
+}
+
+const openAttachment = att => {
+  const url = att.download_url || getFullUrl(att.file_path || att.url)
+  window.open(url, '_blank')
+}
+
 const loadEmployees = async () => {
   try {
-    console.log('Cargando empleados...')
-
     const response = await $api('employees')
-
-    console.log('Respuesta completa:', response)
-    console.log('Empleados:', response.employees)
-
-    // Transform employee data to include a computed name field
-    employees.value = response.employees?.map(emp => ({
+    employees.value = (response.employees || []).map(emp => ({
       ...emp,
-      name: `${emp.first_name} ${emp.last_name}`.trim(),
-    })) || []
-    console.log('Empleados cargados:', employees.value)
+      id: Number(emp.id),
+      name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim(),
+    }))
   } catch (error) {
     console.error('Error al cargar empleados:', error)
   }
@@ -206,148 +307,94 @@ const loadEmployees = async () => {
 
 const loadAccounts = async () => {
   try {
-    console.log('Cargando cuentas...')
-
     const response = await $api('accounts')
+    accounts.value = (response || []).map(account => {
+      const rawName = account.name || account.account_name || account.description || `Cuenta ${account.id}`
+      const cleanedName = rawName
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim()
 
-    const transformAccounts = accounts => {
-      return (accounts || []).map(account => {
-        const cleanedName = (account.name || '')
-          .replace(/\(EFECTIVO\)/gi, '')
-          .replace(/\(TRANSFERENCIA\)/gi, '')
-          .trim()
-
-        return {
-          ...account,
-          display_name: `${account.bank_name} (${cleanedName})`,
-        }
-      })
-    }
-
-    accounts.value = transformAccounts(response)
-    console.log('Cuentas cargadas:', accounts.value)
+      return {
+        ...account,
+        id: Number(account.id),
+        display_name: account.bank_name ? `${account.bank_name} (${cleanedName})` : cleanedName,
+      }
+    })
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
   }
 }
 
-// Watchers
-watch(() => props.expense, newVal => {
-  console.log('🔍 EditPayment - Props expense changed:', newVal)
-  if (newVal) {
-    console.log('🔍 EditPayment - Cargando datos del pago:', newVal)
-
-    // Esperar un ciclo para asegurar que el formulario esté listo
-    nextTick(() => {
-      // Cargar todos los datos del pago
-      form.value.amount = newVal.amount || null
-      form.value.description = newVal.description || ''
-
-
-      // Convertir fecha a formato yyyy-MM-dd para input date
-      const dateValue = newVal.payment_date || newVal.date || new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
-      if (dateValue && typeof dateValue === 'string') {
-        // Si está en formato dd/MM/yyyy, convertirlo
-        if (dateValue.includes('/')) {
-          const [day, month, year] = dateValue.split('/')
-
-          form.value.payment_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-        } else {
-          form.value.payment_date = dateValue
-        }
-      } else {
-        form.value.payment_date = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
-      }
-      form.value.payment_method = newVal.payment_method || 'TRANSFERENCIA'
-
-      console.log('🔍 EditPayment - amount asignado:', form.value.amount)
-      console.log('🔍 EditPayment - description asignado:', form.value.description)
-      console.log('🔍 EditPayment - payment_date asignado:', form.value.payment_date)
-      console.log('🔍 EditPayment - payment_method asignado:', form.value.payment_method)
-
-      // Si ya tenemos empleados y cuentas cargados, asignar los IDs
-      if (employees.value.length > 0 && accounts.value.length > 0) {
-        assignEmployeeAndAccountIds(newVal)
-      } else {
-        // Si no, guardar los datos para asignar después de cargar
-        console.log('🔍 EditPayment - Empleados/Cuentas no cargados, esperando...')
-        setTimeout(() => assignEmployeeAndAccountIds(newVal), 100)
-      }
-
-      console.log('🔍 EditPayment - Formulario actualizado:', form.value)
-    })
-  }
-}, { immediate: true })
-
 // Función para asignar IDs de empleado y cuenta
 const assignEmployeeAndAccountIds = paymentData => {
-  console.log('🔍 EditPayment - Asignando IDs, empleados:', employees.value.length, 'cuentas:', accounts.value.length)
+  if (!paymentData) return
+  console.log('🔍 EditPayment - Asignando datos de pago:', paymentData)
 
-  // Buscar employee_id a partir de employee_name
-  if (paymentData.employee_name && employees.value.length > 0) {
-    const employee = employees.value.find(emp =>
-      emp.name === paymentData.employee_name ||
-            `${emp.first_name} ${emp.last_name}` === paymentData.employee_name,
+  // 1. Asignar Empleado (por ID o por nombre)
+  let empId = paymentData.employee_id || paymentData.employee?.id
+  if (!empId && paymentData.employee_name && employees.value.length > 0) {
+    const cleanSearchName = paymentData.employee_name.trim().toLowerCase()
+    const emp = employees.value.find(e =>
+      (e.name && e.name.toLowerCase() === cleanSearchName) ||
+      `${e.first_name || ''} ${e.last_name || ''}`.trim().toLowerCase() === cleanSearchName ||
+      cleanSearchName.includes((e.name || '').toLowerCase())
     )
-
-    if (employee) {
-      form.value.employee_id = employee.id
-      console.log('🔍 EditPayment - employee_id encontrado:', employee.id, 'para', paymentData.employee_name)
-    } else {
-      console.log('🔍 EditPayment - empleado no encontrado:', paymentData.employee_name)
-      console.log('🔍 EditPayment - Empleados disponibles:', employees.value.map(e => e.name))
-    }
-  } else if (paymentData.employee_id) {
-    form.value.employee_id = paymentData.employee_id
-    console.log('🔍 EditPayment - employee_id directo:', paymentData.employee_id)
+    if (emp) empId = emp.id
+  }
+  if (empId) {
+    form.value.employee_id = Number(empId)
   }
 
-  // Buscar account_id a partir de account_name
-  if (paymentData.account_name && accounts.value.length > 0) {
-    const account = accounts.value.find(acc =>
-      acc.name === paymentData.account_name ||
-            acc.display_name === paymentData.account_name,
-    )
+  // 2. Asignar Cuenta (por ID o por nombre)
+  let accId = paymentData.account_id || paymentData.account?.id
+  if (!accId && paymentData.account_name && accounts.value.length > 0) {
+    const cleanAccName = paymentData.account_name
+      .replace(/\(EFECTIVO\)|\(TRANSFERENCIA\)|\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+      .trim()
+      .toLowerCase()
 
-    if (account) {
-      form.value.account_id = account.id
-      console.log('🔍 EditPayment - account_id encontrado:', account.id, 'para', paymentData.account_name)
-    } else {
-      console.log('🔍 EditPayment - cuenta no encontrada:', paymentData.account_name)
-      console.log('🔍 EditPayment - Cuentas disponibles:', accounts.value.map(a => a.display_name))
-    }
-  } else if (paymentData.account_id) {
-    form.value.account_id = paymentData.account_id
-    console.log('🔍 EditPayment - account_id directo:', paymentData.account_id)
+    const acc = accounts.value.find(a => {
+      const name = (a.name || '').toLowerCase()
+      const bank = (a.bank_name || '').toLowerCase()
+      const display = (a.display_name || '').toLowerCase()
+      return name.includes(cleanAccName) || display.includes(cleanAccName) || cleanAccName.includes(name) || (bank && cleanAccName.includes(bank))
+    })
+    if (acc) accId = acc.id
+  }
+  if (accId) {
+    form.value.account_id = Number(accId)
   }
 
-  // Asignar payment_method si existe
+  // 3. Asignar Método de Pago
   if (paymentData.payment_method) {
     form.value.payment_method = paymentData.payment_method
-    console.log('🔍 EditPayment - payment_method asignado:', paymentData.payment_method)
+  } else if (form.value.account_id && accounts.value.length > 0) {
+    const selectedAcc = accounts.value.find(a => Number(a.id) === Number(form.value.account_id))
+    if (selectedAcc) {
+      form.value.payment_method = selectedAcc.type === 'cash' ? 'EFECTIVO' : 'TRANSFERENCIA'
+    }
   }
 
-  console.log('🔍 EditPayment - IDs asignados - employee_id:', form.value.employee_id, 'account_id:', form.value.account_id, 'payment_method:', form.value.payment_method)
+  // 4. Asignar campos básicos
+  form.value.amount = paymentData.amount || null
+  form.value.description = paymentData.description || ''
+
+  const dateValue = paymentData.payment_date || paymentData.date || new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  if (dateValue && typeof dateValue === 'string' && dateValue.includes('/')) {
+    const [day, month, year] = dateValue.split('/')
+    form.value.payment_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  } else if (dateValue) {
+    form.value.payment_date = dateValue
+  }
 }
 
-watch(() => show.value, newVal => {
-  console.log('🔍 EditPayment - Dialog show changed:', newVal)
+watch(() => props.expense, async newVal => {
   if (newVal) {
-    console.log('🔍 EditPayment - Cargando empleados y cuentas...')
-    loadEmployees()
-    loadAccounts()
-  }
-})
-
-watch(() => form.value.payment_method, method => {
-  form.value.account_id = null
-})
-
-// Watcher para reasignar IDs cuando se carguen empleados y cuentas
-watch([employees, accounts], () => {
-  if (props.expense && employees.value.length > 0 && accounts.value.length > 0) {
-    console.log('🔍 EditPayment - Empleados/Cuentas cargados, reasignando IDs...')
-    assignEmployeeAndAccountIds(props.expense)
+    await nextTick()
+    assignEmployeeAndAccountIds(newVal)
+    fetchExistingAttachments(newVal.id)
   }
 }, { immediate: true })
 
@@ -355,11 +402,11 @@ watch(() => show.value, async newVal => {
   if (newVal) {
     isLoadingData.value = true
     try {
-      await loadEmployees()
-      await loadAccounts()
+      await Promise.all([loadEmployees(), loadAccounts()])
       await nextTick()
       if (props.expense) {
         assignEmployeeAndAccountIds(props.expense)
+        fetchExistingAttachments(props.expense.id)
       }
     } finally {
       isLoadingData.value = false
@@ -371,8 +418,11 @@ watch(() => show.value, async newVal => {
 onMounted(async () => {
   isLoadingData.value = true
   try {
-    await loadEmployees()
-    await loadAccounts()
+    await Promise.all([loadEmployees(), loadAccounts()])
+    if (props.expense) {
+      assignEmployeeAndAccountIds(props.expense)
+      fetchExistingAttachments(props.expense.id)
+    }
   } finally {
     isLoadingData.value = false
   }
@@ -545,6 +595,71 @@ onMounted(async () => {
               />
             </VCol>
           </VRow>
+
+          <!-- Sección de Comprobantes Adjuntos con Previsualización Grid -->
+          <VRow class="mt-2">
+            <VCol cols="12">
+              <VDivider class="my-3" />
+              <div class="d-flex align-center justify-space-between mb-3">
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                  <VIcon icon="ri-attachment-2" color="primary" size="18" />
+                  Comprobante(s) de Pago (Previsualización)
+                </span>
+                <VChip v-if="existingAttachments.length > 0" size="x-small" color="success" variant="tonal" class="font-weight-bold">
+                  {{ existingAttachments.length }} guardado(s)
+                </VChip>
+              </div>
+
+              <!-- Grid de Comprobantes Guardados -->
+              <div v-if="existingAttachments.length > 0" class="mb-4">
+                <div class="existing-grid">
+                  <div v-for="att in existingAttachments" :key="att.id" class="existing-card elevation-1">
+                    <!-- Imagen Thumbnail Previsualización -->
+                    <div v-if="isImageFile(att)" class="existing-media" @click="openAttachment(att)">
+                      <img :src="getFullUrl(att.file_path || att.url)" :alt="att.file_name" class="existing-img" />
+                      <div class="existing-overlay">
+                        <VIcon icon="ri-external-link-line" color="white" size="18" />
+                      </div>
+                    </div>
+
+                    <!-- PDF Thumbnail Previsualización -->
+                    <div v-else-if="isPdfFile(att)" class="existing-media pdf-media" @click="openAttachment(att)">
+                      <VIcon icon="ri-file-pdf-2-fill" size="36" color="error" />
+                      <span class="pdf-tag">PDF</span>
+                    </div>
+
+                    <!-- General Media -->
+                    <div v-else class="existing-media" @click="openAttachment(att)">
+                      <VIcon icon="ri-file-3-line" size="32" color="primary" />
+                    </div>
+
+                    <!-- Info & Acciones -->
+                    <div class="existing-info pa-2">
+                      <div class="text-caption font-weight-medium text-truncate text-high-emphasis" :title="att.file_name">
+                        {{ att.file_name || 'Comprobante' }}
+                      </div>
+                      <div class="d-flex align-center justify-space-between text-caption text-disabled mt-1">
+                        <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : 'Archivo' }}</span>
+                        <div class="d-flex gap-1">
+                          <VBtn icon="ri-download-2-line" size="x-small" variant="text" color="primary" title="Descargar" @click.stop="openAttachment(att)" />
+                          <VBtn icon="ri-delete-bin-line" size="x-small" variant="text" color="error" title="Eliminar" @click.stop="deleteAttachment(att.id)" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Subir Nuevos Comprobantes -->
+              <ReceiptUploader
+                v-model="newReceiptFiles"
+                label="Adjuntar Nuevos Comprobantes (Foto / PDF)"
+                hint="Puedes agregar o reemplazar fotos del comprobante de pago"
+                :max-files="5"
+                @error="msg => showNotification(msg, 'error')"
+              />
+            </VCol>
+          </VRow>
         </div>
         </VCardText>
         <VDivider />
@@ -579,3 +694,76 @@ onMounted(async () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.existing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.existing-card {
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.existing-media {
+  height: 95px;
+  width: 100%;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.existing-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.existing-media:hover .existing-img {
+  transform: scale(1.06);
+}
+
+.existing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.existing-media:hover .existing-overlay {
+  opacity: 1;
+}
+
+.pdf-media {
+  background: #fef2f2;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdf-tag {
+  font-size: 9px;
+  font-weight: 800;
+  color: #dc2626;
+  letter-spacing: 0.5px;
+}
+
+.existing-info {
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+</style>

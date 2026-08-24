@@ -23,6 +23,7 @@ const canAccessTransfers = computed(() => {
 
 // Estado del componente
 const transfers = ref([])
+const accounts = ref([])
 
 const resumen = ref({
   total_hoy: 0,
@@ -45,6 +46,8 @@ const openNoteDialog = transfer => {
   selectedTransferForNote.value = {
     ...transfer,
     type: 'transfer',
+    attachable_type: 'internal_transfer',
+    referencia: 'internal_transfer',
     transfer_date: transfer.transfer_date || transfer.created_at,
     amount: transfer.amount,
     description: transfer.description,
@@ -54,6 +57,7 @@ const openNoteDialog = transfer => {
     to_account_id: toAcc?.id || transfer.to_account_id || transfer.destination_account_id,
     from_account_name: fromAcc?.bank_name || fromAcc?.name,
     to_account_name: toAcc?.bank_name || toAcc?.name,
+    resolved_attachments: transfer.attachments || transfer.resolved_attachments || [],
   }
   showNoteDialog.value = true
 }
@@ -66,8 +70,13 @@ const loadTransfers = async () => {
   loading.value = true
 
   try {
-    const response = await $api('transfers')
+    const [response, accountsRes] = await Promise.all([
+      $api('transfers'),
+      $api('accounts').catch(() => []),
+    ])
 
+    accounts.value = accountsRes || []
+    
     let dataArray = []
 
     if (response.data) {

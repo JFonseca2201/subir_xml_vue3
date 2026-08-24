@@ -51,6 +51,14 @@ const previewList = ref([])
 const isPreviewOpen = ref(false)
 const previewItem = ref(null)
 
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
 // Generar previews reactivas de los archivos
 const updatePreviews = files => {
   // Liberar URLs anteriores de memoria
@@ -60,17 +68,29 @@ const updatePreviews = files => {
     }
   })
 
-  previewList.value = (files || []).map((file, index) => {
-    const isImage = file.type.startsWith('image/')
-    const isPdf = file.type === 'application/pdf'
-    const url = isImage || isPdf ? URL.createObjectURL(file) : null
-    const extension = file.name.split('.').pop().toUpperCase()
+  previewList.value = (files || []).map((item, index) => {
+    const fileObj = item?.file || item
+    const rawName = fileObj?.name || item?.name || 'Archivo'
+    const rawSize = fileObj?.size || item?.size || 0
+    const mimeType = fileObj?.type || item?.mime_type || ''
+
+    const isImage = mimeType.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(rawName)
+    const isPdf = mimeType === 'application/pdf' || /\.pdf$/i.test(rawName)
+
+    let url = null
+    if (fileObj instanceof File || fileObj instanceof Blob) {
+      url = URL.createObjectURL(fileObj)
+    } else if (item?.url || item?.file_path) {
+      url = item.url || item.file_path
+    }
+
+    const extension = rawName.split('.').pop().toUpperCase()
 
     return {
-      id: `${file.name}-${file.size}-${index}`,
-      file,
-      name: file.name,
-      size: formatFileSize(file.size),
+      id: `${rawName}-${rawSize}-${index}`,
+      file: fileObj,
+      name: rawName,
+      size: typeof rawSize === 'number' ? formatFileSize(rawSize) : rawSize,
       isImage,
       isPdf,
       url,
@@ -95,14 +115,6 @@ onUnmounted(() => {
     }
   })
 })
-
-const formatFileSize = bytes => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
 
 const handleFileSelection = rawFiles => {
   if (props.disabled) return

@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
 const props = defineProps({
@@ -24,6 +25,9 @@ const formRef = ref(null)
 const employees = ref([])
 const accounts = ref([])
 const isLoadingData = ref(false)
+const newReceiptFiles = ref([])
+const existingAttachments = ref([])
+const isLoadingAttachments = ref(false)
 
 const paymentMethods = [
   { text: 'Efectivo', value: 'EFECTIVO' },
@@ -45,15 +49,21 @@ const dialogTitle = computed(() => isEditing.value ? 'Editar Adelanto' : 'Nuevo 
 
 const filteredAccounts = computed(() => {
   const method = form.value.payment_method
-  if (!method) return accounts.value
-
+  let result = accounts.value
   if (method === 'EFECTIVO') {
-    return accounts.value.filter(acc => acc.type === 'cash')
+    result = accounts.value.filter(acc => acc.type === 'cash')
   } else if (method === 'TRANSFERENCIA') {
-    return accounts.value.filter(acc => acc.type === 'bank')
+    result = accounts.value.filter(acc => acc.type === 'bank')
   }
 
-  return accounts.value
+  if (form.value.account_id) {
+    const selectedAcc = accounts.value.find(acc => Number(acc.id) === Number(form.value.account_id))
+    if (selectedAcc && !result.some(acc => Number(acc.id) === Number(selectedAcc.id))) {
+      result = [selectedAcc, ...result]
+    }
+  }
+
+  return result
 })
 
 // Formulario reactivo
@@ -80,6 +90,7 @@ const resetForm = () => {
     advance_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
   }
+  newReceiptFiles.value = []
   formRef.value?.reset()
 }
 
@@ -112,50 +123,134 @@ const handleSubmit = async () => {
       body: payload,
     })
 
+    // Subir nuevos comprobantes si fueron seleccionados
+    if (newReceiptFiles.value.length > 0 && props.expense?.id) {
+      const formData = new FormData()
+      formData.append('attachable_type', 'employee_advance')
+      formData.append('attachable_id', props.expense.id)
+      formData.append('identifier', `ADEL-EMP-${String(props.expense.id).padStart(5, '0')}`)
+      if (props.expense.employee_name) {
+        formData.append('party_name', props.expense.employee_name)
+      }
+
+      newReceiptFiles.value.forEach((fileObj) => {
+        const rawFile = fileObj.file || fileObj
+        formData.append('receipts[]', rawFile)
+      })
+      await $api('attachments/upload', {
+        method: 'POST',
+        body: formData,
+      })
+    }
+
     showNotification('Adelanto actualizado exitosamente', 'success')
     emit('updated', response)
     closeDialog()
   } catch (error) {
     console.error('Error al guardar adelanto:', error)
 
-    // Manejar errores de validación específicos
-    if (error.status === 422) {
-      const errorData = error.data
-      if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
-        // Mostrar mensaje amigable de saldo insuficiente
-        showNotification('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + errorData.saldo_disponible + '\nMonto solicitado: $' + errorData.monto_solicitado, 'error')
-
+    if (error.status === 422 && error.data?.message) {
+      if (error.data.message.includes('Saldo insuficiente')) {
+        showNotification('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + error.data.saldo_disponible + '\nMonto solicitado: $' + error.data.monto_solicitado, 'error')
         return
       }
-
-      // Manejar otros errores de validación
-      if (errorData.message) {
-        showNotification(errorData.message, 'error')
-
-        return
-      }
+      showNotification(error.data.message, 'error')
+      return
     }
 
-    // Error genérico
     showNotification('Error al guardar el adelanto. Por favor, intente nuevamente.', 'error')
   } finally {
     loader.stop()
   }
 }
 
+const fetchExistingAttachments = async advanceId => {
+  // 1. Cargar inmediatamente desde props.expense o resetear
+  existingAttachments.value = (props.expense?.attachments && Array.isArray(props.expense.attachments))
+    ? [...props.expense.attachments]
+    : []
+
+  const id = advanceId || props.expense?.id
+  if (!id) return
+
+  isLoadingAttachments.value = true
+  try {
+    const res = await $api('attachments', {
+      params: {
+        attachable_type: 'employee_advance',
+        attachable_id: id,
+      },
+    })
+
+    let attList = []
+    if (Array.isArray(res)) {
+      attList = res
+    } else if (res && Array.isArray(res.data)) {
+      attList = res.data
+    } else if (res && Array.isArray(res.attachments)) {
+      attList = res.attachments
+    }
+
+    existingAttachments.value = attList
+  } catch (e) {
+    console.error('Error al cargar comprobantes:', e)
+  } finally {
+    isLoadingAttachments.value = false
+  }
+}
+
+const deleteAttachment = async id => {
+  try {
+    await $api(`attachments/${id}`, { method: 'DELETE' })
+    showNotification('Comprobante eliminado', 'success')
+    existingAttachments.value = existingAttachments.value.filter(a => a.id !== id)
+  } catch (e) {
+    showNotification('Error al eliminar comprobante', 'error')
+  }
+}
+
+const isImageFile = att => {
+  if (!att) return false
+  if (att.is_image) return true
+  const path = att.file_path || att.url || att.file_name || ''
+  return /\.(jpeg|jpg|png|webp|gif|svg)$/i.test(path)
+}
+
+const isPdfFile = att => {
+  if (!att) return false
+  if (att.is_pdf) return true
+  const path = att.file_path || att.url || att.file_name || ''
+  return /\.pdf$/i.test(path)
+}
+
+const getFullUrl = path => {
+  if (!path) return ''
+  if (typeof path === 'object' && path.url) return path.url
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
+  const base = isLocal
+    ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
+    : `http://${hostname}:8000`
+
+  const cleanPath = path.replace(/^\/?storage\/?/, '')
+
+  return `${base}/storage/${cleanPath}`
+}
+
+const openAttachment = att => {
+  const url = att.download_url || getFullUrl(att.file_path || att.url)
+  window.open(url, '_blank')
+}
+
 const loadEmployees = async () => {
   try {
-    console.log('Cargando empleados...')
-
     const response = await $api('employees')
-
-    console.log('Respuesta completa:', response)
-    console.log('Empleados:', response.employees)
-
-    // Transformar empleados para agregar propiedad 'name' combinada
     employees.value = (response.employees || []).map(emp => ({
       ...emp,
-      name: `${emp.first_name} ${emp.last_name}`,
+      id: Number(emp.id),
+      name: `${emp.first_name || ''} ${emp.last_name || ''}`.trim(),
     }))
   } catch (error) {
     console.error('Error al cargar empleados:', error)
@@ -164,24 +259,18 @@ const loadEmployees = async () => {
 
 const loadAccounts = async () => {
   try {
-    console.log('Cargando cuentas...')
-
     const response = await $api('accounts')
-
-    console.log('Respuesta completa:', response)
-    console.log('Cuentas:', response)
-
-    // Asegurar que las cuentas tengan propiedad 'name' limpia e incluyan el banco
     accounts.value = (response || []).map(account => {
       const rawName = account.name || account.account_name || account.description || `Cuenta ${account.id}`
-
       const cleanedName = rawName
         .replace(/\(EFECTIVO\)/gi, '')
         .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
 
       return {
         ...account,
+        id: Number(account.id),
         name: account.bank_name ? `${account.bank_name} (${cleanedName})` : cleanedName,
       }
     })
@@ -190,67 +279,77 @@ const loadAccounts = async () => {
   }
 }
 
-// Watchers
-watch(() => show.value, newVal => {
-  if (newVal) {
-    loadEmployees()
+const assignAdvanceData = advanceData => {
+  if (!advanceData) return
+  console.log('🔍 EditAdvance - Asignando datos:', advanceData)
+
+  // 1. Asignar Empleado (por ID o por nombre)
+  let empId = advanceData.employee_id || advanceData.employee?.id
+  if (!empId && advanceData.employee_name && employees.value.length > 0) {
+    const cleanSearchName = advanceData.employee_name.trim().toLowerCase()
+    const emp = employees.value.find(e =>
+      (e.name && e.name.toLowerCase() === cleanSearchName) ||
+      `${e.first_name || ''} ${e.last_name || ''}`.trim().toLowerCase() === cleanSearchName ||
+      cleanSearchName.includes((e.name || '').toLowerCase())
+    )
+    if (emp) empId = emp.id
   }
-  loadAccounts()
-})
+  if (empId) {
+    form.value.employee_id = Number(empId)
+  }
 
-watch(() => form.value.employee_id, async employeeId => {
-  if (employeeId) {
-    // Encontrar el empleado seleccionado para obtener su nombre
-    const selectedEmployee = employees.value.find(emp => emp.id === employeeId)
+  // 2. Asignar Cuenta (por ID o por nombre)
+  let accId = advanceData.account_id || advanceData.account?.id
+  if (!accId && advanceData.account_name && accounts.value.length > 0) {
+    const cleanAccName = advanceData.account_name
+      .replace(/\(EFECTIVO\)|\(TRANSFERENCIA\)|\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+      .trim()
+      .toLowerCase()
 
-    // Actualizar el nombre del empleado en el formulario
-    if (selectedEmployee) {
-      form.value.employee_name = selectedEmployee.name
+    const acc = accounts.value.find(a => {
+      const name = (a.name || '').toLowerCase()
+      const bank = (a.bank_name || '').toLowerCase()
+      return name.includes(cleanAccName) || cleanAccName.includes(name) || (bank && cleanAccName.includes(bank))
+    })
+    if (acc) accId = acc.id
+  }
+  if (accId) {
+    form.value.account_id = Number(accId)
+  }
+
+  // 3. Asignar Método de Pago
+  if (advanceData.payment_method) {
+    form.value.payment_method = advanceData.payment_method
+  } else if (form.value.account_id && accounts.value.length > 0) {
+    const selectedAcc = accounts.value.find(a => Number(a.id) === Number(form.value.account_id))
+    if (selectedAcc) {
+      form.value.payment_method = selectedAcc.type === 'cash' ? 'EFECTIVO' : 'TRANSFERENCIA'
     }
   }
-})
 
-watch(() => form.value.account_id, accountId => {
-  if (accountId) {
-    // Encontrar la cuenta seleccionada para obtener su nombre
-    const selectedAccount = accounts.value.find(acc => acc.id === accountId)
+  // 4. Asignar campos básicos
+  form.value.amount = advanceData.amount || null
+  form.value.description = advanceData.description || ''
 
-    // Actualizar el nombre de la cuenta en el formulario
-    if (selectedAccount) {
-      form.value.account_name = selectedAccount.name
-    }
+  const dateValue = advanceData.advance_date || advanceData.date || new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  if (dateValue && typeof dateValue === 'string' && dateValue.includes('/')) {
+    const [day, month, year] = dateValue.split('/')
+    form.value.advance_date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  } else if (dateValue) {
+    form.value.advance_date = dateValue
   }
-})
-
-watch(() => form.value.payment_method, method => {
-  form.value.account_id = null
-})
-
-// Lifecycle
-onMounted(async () => {
-  // Cargar empleados primero
-  await loadEmployees()
-
-  if (props.expense) {
-    // Load expense data when editing
-    console.log('Cargando datos del adelanto:', props.expense)
-    form.value.employee_id = props.expense.employee_id
-    form.value.account_id = props.expense.account_id
-    form.value.amount = props.expense.amount
-    form.value.description = props.expense.description
-    form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
-    form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
-
-    console.log('Formulario cargado:', form.value)
-  }
-})
+}
 
 watch(() => show.value, async newVal => {
   if (newVal) {
     isLoadingData.value = true
     try {
-      await loadEmployees()
-      await loadAccounts()
+      await Promise.all([loadEmployees(), loadAccounts()])
+      await nextTick()
+      if (props.expense) {
+        assignAdvanceData(props.expense)
+        fetchExistingAttachments(props.expense.id)
+      }
     } finally {
       isLoadingData.value = false
     }
@@ -259,21 +358,22 @@ watch(() => show.value, async newVal => {
 
 watch(() => props.expense, async (newVal) => {
   if (newVal) {
-    isLoadingData.value = true
-    try {
-      await loadEmployees()
-      await loadAccounts()
-      await nextTick()
+    await nextTick()
+    assignAdvanceData(newVal)
+    fetchExistingAttachments(newVal.id)
+  }
+}, { immediate: true })
 
-      form.value.employee_id = props.expense.employee_id
-      form.value.account_id = props.expense.account_id
-      form.value.amount = props.expense.amount
-      form.value.description = props.expense.description
-      form.value.advance_date = props.expense.date ? props.expense.date.split('/').reverse().join('-') : (props.expense.advance_date ? props.expense.advance_date.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0])
-      form.value.payment_method = props.expense.payment_method || 'TRANSFERENCIA'
-    } finally {
-      isLoadingData.value = false
+onMounted(async () => {
+  isLoadingData.value = true
+  try {
+    await Promise.all([loadEmployees(), loadAccounts()])
+    if (props.expense) {
+      assignAdvanceData(props.expense)
+      fetchExistingAttachments(props.expense.id)
     }
+  } finally {
+    isLoadingData.value = false
   }
 })
 </script>
@@ -387,6 +487,71 @@ watch(() => props.expense, async (newVal) => {
               </VCol>
             </VRow>
 
+            <!-- Sección de Comprobantes Adjuntos con Previsualización Grid -->
+            <VRow class="mt-2">
+              <VCol cols="12">
+                <VDivider class="my-3" />
+                <div class="d-flex align-center justify-space-between mb-3">
+                  <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
+                    <VIcon icon="ri-attachment-2" color="primary" size="18" />
+                    Comprobante(s) de Adelanto (Previsualización)
+                  </span>
+                  <VChip v-if="existingAttachments.length > 0" size="x-small" color="success" variant="tonal" class="font-weight-bold">
+                    {{ existingAttachments.length }} guardado(s)
+                  </VChip>
+                </div>
+
+                <!-- Grid de Comprobantes Guardados -->
+                <div v-if="existingAttachments.length > 0" class="mb-4">
+                  <div class="existing-grid">
+                    <div v-for="att in existingAttachments" :key="att.id" class="existing-card elevation-1">
+                      <!-- Imagen Thumbnail Previsualización -->
+                      <div v-if="isImageFile(att)" class="existing-media" @click="openAttachment(att)">
+                        <img :src="getFullUrl(att.file_path || att.url)" :alt="att.file_name" class="existing-img" />
+                        <div class="existing-overlay">
+                          <VIcon icon="ri-external-link-line" color="white" size="18" />
+                        </div>
+                      </div>
+
+                      <!-- PDF Thumbnail Previsualización -->
+                      <div v-else-if="isPdfFile(att)" class="existing-media pdf-media" @click="openAttachment(att)">
+                        <VIcon icon="ri-file-pdf-2-fill" size="36" color="error" />
+                        <span class="pdf-tag">PDF</span>
+                      </div>
+
+                      <!-- General Media -->
+                      <div v-else class="existing-media" @click="openAttachment(att)">
+                        <VIcon icon="ri-file-3-line" size="32" color="primary" />
+                      </div>
+
+                      <!-- Info & Acciones -->
+                      <div class="existing-info pa-2">
+                        <div class="text-caption font-weight-medium text-truncate text-high-emphasis" :title="att.file_name">
+                          {{ att.file_name || 'Comprobante' }}
+                        </div>
+                        <div class="d-flex align-center justify-space-between text-caption text-disabled mt-1">
+                          <span style="font-size: 10px;">{{ att.created_at ? new Date(att.created_at).toLocaleDateString() : 'Archivo' }}</span>
+                          <div class="d-flex gap-1">
+                            <VBtn icon="ri-download-2-line" size="x-small" variant="text" color="primary" title="Descargar" @click.stop="openAttachment(att)" />
+                            <VBtn icon="ri-delete-bin-line" size="x-small" variant="text" color="error" title="Eliminar" @click.stop="deleteAttachment(att.id)" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Subir Nuevos Comprobantes -->
+                <ReceiptUploader
+                  v-model="newReceiptFiles"
+                  label="Adjuntar Nuevos Comprobantes (Foto / PDF)"
+                  hint="Puedes agregar o reemplazar fotos del comprobante de adelanto"
+                  :max-files="5"
+                  @error="msg => showNotification(msg, 'error')"
+                />
+              </VCol>
+            </VRow>
+
             <VDivider class="mt-4" />
           <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
             style="position: sticky; bottom: 0; z-index: 2;">
@@ -404,3 +569,76 @@ watch(() => props.expense, async (newVal) => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.existing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.existing-card {
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.existing-media {
+  height: 95px;
+  width: 100%;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.existing-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.existing-media:hover .existing-img {
+  transform: scale(1.06);
+}
+
+.existing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.existing-media:hover .existing-overlay {
+  opacity: 1;
+}
+
+.pdf-media {
+  background: #fef2f2;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdf-tag {
+  font-size: 9px;
+  font-weight: 800;
+  color: #dc2626;
+  letter-spacing: 0.5px;
+}
+
+.existing-info {
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+</style>

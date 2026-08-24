@@ -52,10 +52,13 @@ const selectedItemForReceipts = ref(null)
 const openEmployeeNoteDialog = item => {
   const isPayment = item.type === 'payment'
   const docCode = isPayment ? `PAGO-EMP-${String(item.id).padStart(5, '0')}` : `ADEL-EMP-${String(item.id).padStart(5, '0')}`
+  const attachType = isPayment ? 'employee_payment' : 'employee_advance'
+
   selectedItemForNote.value = {
     ...item,
     id: item.id,
-    type: 'expense',
+    attachable_type: attachType,
+    referencia: attachType,
     amount: item.amount,
     entry_date: item.raw_date || item.date,
     description: `${isPayment ? 'Pago de Nómina' : 'Adelanto de Sueldo'} — ${item.employee_name}${item.description ? ': ' + item.description : ''}`,
