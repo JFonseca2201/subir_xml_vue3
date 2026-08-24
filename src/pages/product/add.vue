@@ -5,11 +5,124 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import ProductExistenceCheckDialog from '@/components/inventory/product/ProductExistenceCheckDialog.vue'
 
 const dropZoneRef = ref()
 const fileData = ref([])
 const { open, reset, onChange } = useFileDialog({ accept: 'image/*', multiple: false })
 const router = useRouter()
+
+const isCheckDialogVisible = ref(false)
+const checkInitialQuery = ref('')
+const checkSearchField = ref('all')
+const skuExistsAlert = ref(null)
+const isCheckingSkuOnBlur = ref(false)
+
+const openCheckDialog = (query = '', field = 'all') => {
+  const q = query !== undefined && query !== null && query !== ''
+    ? query
+    : (field === 'sku' ? product.value.sku : (field === 'description' ? product.value.description : (product.value.sku || product.value.description || '')))
+  checkInitialQuery.value = (q || '').trim()
+  checkSearchField.value = field || 'all'
+  isCheckDialogVisible.value = true
+}
+
+const handleSkuCheck = async () => {
+  const query = product.value.sku?.trim()
+  if (!query) {
+    skuExistsAlert.value = null
+    return
+  }
+
+  isCheckingSkuOnBlur.value = true
+  try {
+    const response = await $api(`products/search?sku=${encodeURIComponent(query)}`, { method: 'GET' })
+    const list = Array.isArray(response) ? response : (response.data || response.products || [])
+
+    if (list.length === 0) {
+      // 0 coincidencias: código libre, no alerta, no diálogo
+      skuExistsAlert.value = null
+    } else if (list.length === 1) {
+      // Exactamente 1 coincidencia: solo VAlert en pantalla (NO VDialog)
+      const exactMatch = list[0]
+      skuExistsAlert.value = {
+        type: 'error',
+        title: `¡Atención! El SKU "${query}" ya está registrado`,
+        text: `Corresponde al producto: "${exactMatch.description}" (Stock: ${exactMatch.stock} ${exactMatch.unit?.name || 'UND'} - PVP: $${parseFloat(exactMatch.price_sale || 0).toFixed(2)}).`,
+        product: exactMatch,
+        count: 1,
+      }
+    } else {
+      // MÁS DE 1 COINCIDENCIA: Se abre el VDialog con los productos
+      skuExistsAlert.value = null
+      checkInitialQuery.value = query
+      checkSearchField.value = 'sku'
+      isCheckDialogVisible.value = true
+    }
+  } catch (e) {
+    console.warn('Error al verificar SKU:', e)
+  } finally {
+    isCheckingSkuOnBlur.value = false
+  }
+}
+
+const handleSkuBlur = () => {
+  handleSkuCheck()
+}
+
+const handleSkuSearchClick = async () => {
+  const query = product.value.sku?.trim()
+  if (!query) {
+    showNotification('Ingresa al menos parte de un SKU para buscar', 'warning')
+    return
+  }
+
+  isCheckingSkuOnBlur.value = true
+  try {
+    const response = await $api(`products/search?sku=${encodeURIComponent(query)}`, { method: 'GET' })
+    const list = Array.isArray(response) ? response : (response.data || response.products || [])
+
+    if (list.length === 0) {
+      skuExistsAlert.value = null
+      showNotification(`✅ SKU "${query}" disponible. No existen coincidencias.`, 'success')
+    } else if (list.length === 1) {
+      // 1 sola coincidencia: no abre VDialog, muestra VAlert
+      const exactMatch = list[0]
+      skuExistsAlert.value = {
+        type: 'error',
+        title: `¡Atención! El SKU "${query}" ya está registrado`,
+        text: `Corresponde al producto: "${exactMatch.description}" (Stock: ${exactMatch.stock} ${exactMatch.unit?.name || 'UND'} - PVP: $${parseFloat(exactMatch.price_sale || 0).toFixed(2)}).`,
+        product: exactMatch,
+        count: 1,
+      }
+      showNotification(`⚠️ Ya existe 1 producto con este SKU: "${exactMatch.description}"`, 'warning')
+    } else {
+      // MÁS DE 1 coincidencia: SÍ se abre el VDialog
+      skuExistsAlert.value = null
+      checkInitialQuery.value = query
+      checkSearchField.value = 'sku'
+      isCheckDialogVisible.value = true
+    }
+  } catch (e) {
+    console.warn('Error al verificar SKU:', e)
+  } finally {
+    isCheckingSkuOnBlur.value = false
+  }
+}
+
+const handleUseProductData = p => {
+  if (p) {
+    if (p.product_categorie_id) product.value.product_categorie_id = p.product_categorie_id
+    if (p.brand) product.value.brand = p.brand
+    if (p.unit_id) product.value.unit_id = p.unit_id
+    if (p.warehouse_id) product.value.warehouse_id = p.warehouse_id
+    if (p.uses) product.value.uses = p.uses
+    if (p.code_aux) product.value.code_aux = p.code_aux
+    if (p.price_sale) product.value.price_sale = p.price_sale
+    if (p.purchase_price) product.value.purchase_price = p.purchase_price
+    showNotification('Datos de producto cargados en el formulario', 'info')
+  }
+}
 
 const createPreview = file => {
   try {
@@ -565,6 +678,65 @@ const loadInitialData = async () => {
             </div>
 
             <VRow>
+              <!-- Alerta si el SKU ya existe al abandonar el campo -->
+              <VCol
+                v-if="skuExistsAlert"
+                cols="12"
+                class="py-1"
+              >
+                <VAlert
+                  :type="skuExistsAlert.type || 'error'"
+                  variant="tonal"
+                  density="comfortable"
+                  closable
+                  class="rounded-lg mb-1"
+                  @click:close="skuExistsAlert = null"
+                >
+                  <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                    <div>
+                      <div class="font-weight-bold">
+                        {{ skuExistsAlert.title }}
+                      </div>
+                      <div class="text-caption">
+                        {{ skuExistsAlert.text }}
+                      </div>
+                    </div>
+                    <div class="d-flex align-center gap-2">
+                      <VBtn
+                        v-if="skuExistsAlert.product"
+                        size="small"
+                        variant="tonal"
+                        color="secondary"
+                        class="text-none font-weight-medium"
+                        @click="handleUseProductData(skuExistsAlert.product)"
+                      >
+                        Usar Datos
+                      </VBtn>
+                      <VBtn
+                        v-if="skuExistsAlert.product"
+                        size="small"
+                        variant="elevated"
+                        :color="skuExistsAlert.type"
+                        class="text-none font-weight-bold"
+                        @click="router.push('/product/edit/' + skuExistsAlert.product.id)"
+                      >
+                        Editar Producto
+                      </VBtn>
+                      <VBtn
+                        v-if="skuExistsAlert.count > 1"
+                        size="small"
+                        variant="tonal"
+                        :color="skuExistsAlert.type"
+                        class="text-none font-weight-medium"
+                        @click="openCheckDialog(product.sku, 'sku')"
+                      >
+                        Ver {{ skuExistsAlert.count }} Coincidencias
+                      </VBtn>
+                    </div>
+                  </div>
+                </VAlert>
+              </VCol>
+
               <VCol
                 cols="12"
                 md="6"
@@ -572,14 +744,38 @@ const loadInitialData = async () => {
                 <VTextField
                   v-model="product.sku"
                   :rules="skuRules"
-                  label="SKU"
+                  label="SKU *"
                   placeholder="Ej. LAP-001"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-barcode-line"
                   hide-details="auto"
                   required
-                />
+                  :loading="isCheckingSkuOnBlur"
+                  @blur="handleSkuBlur"
+                  @update:model-value="skuExistsAlert = null"
+                >
+                  <!-- Lupa para verificar SKU -->
+                  <template #append-inner>
+                    <VTooltip
+                      text="Buscar coincidencias de este SKU"
+                      location="top"
+                    >
+                      <template #activator="{ props: tooltipProps }">
+                        <VBtn
+                          v-bind="tooltipProps"
+                          icon="ri-search-line"
+                          variant="text"
+                          color="primary"
+                          density="compact"
+                          size="small"
+                          class="me-n1"
+                          @click.stop="handleSkuSearchClick"
+                        />
+                      </template>
+                    </VTooltip>
+                  </template>
+                </VTextField>
               </VCol>
               <VCol
                 cols="12"
@@ -588,14 +784,35 @@ const loadInitialData = async () => {
                 <VTextField
                   v-model="product.description"
                   :rules="descriptionRules"
-                  label="Descripción del Producto"
+                  label="Descripción del Producto *"
                   placeholder="Ej. AMORTIGUADOR CHEV. AVEO RH"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-price-tag-3-line"
                   hide-details="auto"
                   required
-                />
+                >
+                  <!-- Lupa para verificar Nombre / Descripción -->
+                  <template #append-inner>
+                    <VTooltip
+                      text="Buscar coincidencias de este Nombre"
+                      location="top"
+                    >
+                      <template #activator="{ props: tooltipProps }">
+                        <VBtn
+                          v-bind="tooltipProps"
+                          icon="ri-search-line"
+                          variant="text"
+                          color="primary"
+                          density="compact"
+                          size="small"
+                          class="me-n1"
+                          @click.stop="openCheckDialog(product.description, 'description')"
+                        />
+                      </template>
+                    </VTooltip>
+                  </template>
+                </VTextField>
               </VCol>
               <VCol
                 cols="12"
@@ -1277,6 +1494,14 @@ const loadInitialData = async () => {
         </div>
       </VForm>
     </VCard>
+
+    <!-- Diálogo de Verificación de Existencia de Producto -->
+    <ProductExistenceCheckDialog
+      v-model="isCheckDialogVisible"
+      :initial-query="checkInitialQuery"
+      :search-field="checkSearchField"
+      @use-data="handleUseProductData"
+    />
   </div>
 </template>
 
