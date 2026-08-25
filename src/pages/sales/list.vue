@@ -911,26 +911,19 @@ onMounted(() => {
                         </span>
                       </div>
 
-                      <!-- Detalle de Forma de Pago debajo del estado -->
+                      <!-- Detalle de Forma de Pago debajo del estado (Texto gris limpio sin chip) -->
                       <div
                         v-if="item.document_type !== 'quote' && item.status !== 'canceled'"
-                        class="d-flex align-center justify-center mt-1"
+                        class="d-flex align-center justify-center gap-1 text-caption text-grey-darken-1 mt-0-5"
+                        style="font-size: 0.72rem;"
+                        :title="getPaymentMethodDisplay(item)"
                       >
-                        <VChip
-                          size="x-small"
-                          :color="getPaymentMethodColor(item)"
-                          variant="tonal"
-                          class="font-weight-medium px-2"
-                          style="font-size: 0.72rem; height: 20px;"
-                        >
-                          <VIcon
-                            :icon="getPaymentMethodIcon(item)"
-                            size="12"
-                            start
-                            class="mr-1"
-                          />
-                          {{ getPaymentMethodDisplay(item) }}
-                        </VChip>
+                        <VIcon
+                          :icon="getPaymentMethodIcon(item)"
+                          size="12"
+                          color="grey-darken-1"
+                        />
+                        <span>{{ getPaymentMethodDisplay(item) }}</span>
                       </div>
                     </div>
                   </td>
