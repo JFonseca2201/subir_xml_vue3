@@ -38,17 +38,28 @@ const activePhotoIndex = ref(0)
 // Helper para obtener URL completa
 const getFullUrl = path => {
   if (!path) return ''
-  if (typeof path === 'object' && path.url) return path.url
-  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  let raw = ''
+  if (typeof path === 'object' && path !== null) {
+    raw = path.file_path || path.url || ''
+  } else {
+    raw = String(path)
+  }
+  if (!raw) return ''
 
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
-  const base = isLocal
-    ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
-    : `http://${hostname}:8000`
+  let cleanPath = raw
+  if (cleanPath.includes('/storage/')) {
+    cleanPath = cleanPath.substring(cleanPath.indexOf('/storage/') + '/storage/'.length)
+  } else {
+    cleanPath = cleanPath.replace(/^\/?storage\/?/, '')
+  }
 
-  const cleanPath = path.replace(/^\/?storage\/?/, '')
-  return `${base}/storage/${cleanPath}`
+  cleanPath = cleanPath.replace(/^https?:\/\/[^\/]+\/storage\//, '')
+  cleanPath = cleanPath.replace(/^\/+/, '')
+
+  const apiBase = getApiBaseUrl().replace(/\/api\/?$/, '')
+  const encodedSegments = cleanPath.split('/').map(segment => encodeURIComponent(decodeURIComponent(segment))).join('/')
+
+  return `${apiBase}/storage/${encodedSegments}`
 }
 
 // Tipo de movimiento normalizado
@@ -296,8 +307,8 @@ const attachableData = computed(() => {
   }
 
   // 4. Movimientos Financieros Estándar (Ingreso / Egreso)
-  const finRecordId = meta?.finance_record_id || m.movable?.finance_record_id || m.movable?.finance_record?.id || m.id
-  const type = movementType.value === 'income' ? 'finance_record' : 'financial_movement'
+  const finRecordId = meta?.finance_record_id || m.movable?.finance_record_id || m.movable?.finance_record?.id || m.movable?.financeRecord?.id || m.id
+  const type = (movementType.value === 'income' || movementType.value === 'expense' || m.type === 0 || m.type === 1 || m.type === '0' || m.type === '1') ? 'finance_record' : 'financial_movement'
 
   return {
     type,

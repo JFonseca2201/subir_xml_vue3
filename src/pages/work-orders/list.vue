@@ -272,7 +272,7 @@ const confirmDeleteWorkOrder = async () => {
 
 // Verifica si es un estado que permite avanzar haciendo clic en el icono
 const canAdvance = workOrder => {
-  return ['received', 'in_progress'].includes(workOrder.status) || (workOrder.status === 'ready' && !workOrder.sale)
+  return ['received', 'in_progress'].includes(workOrder.status) || (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale)
 }
 
 const handleStatusClick = workOrder => {
@@ -281,16 +281,16 @@ const handleStatusClick = workOrder => {
 
 // Obtiene el ícono dinámico basado en la venta de la orden
 const getDynamicIcon = workOrder => {
-  if (workOrder.status === 'ready' && !workOrder.sale) return 'ri-shopping-cart-line'
-  if (workOrder.status === 'ready' && workOrder.sale) return 'ri-check-double-line'
+  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) return 'ri-shopping-cart-line'
+  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) return 'ri-check-double-line'
 
   return statusIcons[workOrder.status]
 }
 
 // Obtiene la leyenda dinámica que va debajo del ícono
 const getDynamicLegend = workOrder => {
-  if (workOrder.status === 'ready' && !workOrder.sale) return 'Facturar'
-  if (workOrder.status === 'ready' && workOrder.sale) return 'Facturado'
+  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) return 'Facturar'
+  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) return 'Facturado'
 
   return statusLabels[workOrder.status]
 }
@@ -956,17 +956,17 @@ onMounted(() => {
                             @click="openTimeline(workOrder)"
                           />
                           <VListItem
-                            v-if="workOrder.status === 'ready' && !workOrder.sale"
+                            v-if="['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale"
                             prepend-icon="ri-shopping-cart-line"
                             title="Generar Venta"
-                            class="text-success text-body-2"
+                            class="text-success text-body-2 font-weight-semibold"
                             @click="goToSale(workOrder.id)"
                           />
                           <VListItem
                             v-if="workOrder.status !== 'delivered' && workOrder.status !== 'draft'"
                             prepend-icon="ri-truck-line"
                             title="Marcar como Entregado"
-                            class="text-success text-body-2"
+                            class="text-primary text-body-2"
                             @click="updateStatus(workOrder.id, 'delivered')"
                           />
                           <VDivider
@@ -1175,7 +1175,7 @@ onMounted(() => {
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn
-            v-if="selectedWorkOrder.status === 'ready' && !selectedWorkOrder.sale"
+            v-if="['ready', 'delivered'].includes(selectedWorkOrder.status) && !selectedWorkOrder.sale"
             color="success"
             variant="elevated"
             prepend-icon="ri-shopping-cart-line"

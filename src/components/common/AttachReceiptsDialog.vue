@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
@@ -157,17 +157,28 @@ const deleteAttachment = async attachment => {
 
 const getFullUrl = path => {
   if (!path) return ''
-  if (typeof path === 'object' && path.url) return path.url
-  if (path.startsWith('http://') || path.startsWith('https://')) return path
-  
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
-  const base = isLocal
-    ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
-    : `http://${hostname}:8000`
-  
-  const cleanPath = path.replace(/^\/?storage\/?/, '')
-  return `${base}/storage/${cleanPath}`
+  let raw = ''
+  if (typeof path === 'object' && path !== null) {
+    raw = path.file_path || path.url || ''
+  } else {
+    raw = String(path)
+  }
+  if (!raw) return ''
+
+  let cleanPath = raw
+  if (cleanPath.includes('/storage/')) {
+    cleanPath = cleanPath.substring(cleanPath.indexOf('/storage/') + '/storage/'.length)
+  } else {
+    cleanPath = cleanPath.replace(/^\/?storage\/?/, '')
+  }
+
+  cleanPath = cleanPath.replace(/^https?:\/\/[^\/]+\/storage\//, '')
+  cleanPath = cleanPath.replace(/^\/+/, '')
+
+  const apiBase = getApiBaseUrl().replace(/\/api\/?$/, '')
+  const encodedSegments = cleanPath.split('/').map(segment => encodeURIComponent(decodeURIComponent(segment))).join('/')
+
+  return `${apiBase}/storage/${encodedSegments}`
 }
 
 const openAttachment = att => {

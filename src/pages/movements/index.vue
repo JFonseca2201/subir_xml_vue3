@@ -709,18 +709,32 @@ const currentPhotoMovement = ref(null)
 
 const getAttachmentUrl = att => {
   if (!att) return ''
-  if (att.url) return att.url
-  if (att.file_path) {
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
-    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1'
-    const base = isLocal
-      ? (import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, '') : 'http://127.0.0.1:8000')
-      : `http://${hostname}:8000`
-    
-    const cleanPath = att.file_path.replace(/^\/?storage\/?/, '')
-    return `${base}/storage/${cleanPath}`
+
+  let rawPath = ''
+  if (typeof att === 'object' && att !== null) {
+    rawPath = att.file_path || att.url || ''
+  } else {
+    rawPath = String(att)
   }
-  return ''
+
+  if (!rawPath) return ''
+
+  // Extraer la ruta relativa dentro de storage
+  let cleanPath = rawPath
+  if (cleanPath.includes('/storage/')) {
+    cleanPath = cleanPath.substring(cleanPath.indexOf('/storage/') + '/storage/'.length)
+  } else {
+    cleanPath = cleanPath.replace(/^\/?storage\/?/, '')
+  }
+
+  // Quitar prefijos http previos si aún existen
+  cleanPath = cleanPath.replace(/^https?:\/\/[^\/]+\/storage\//, '')
+  cleanPath = cleanPath.replace(/^\/+/, '')
+
+  const apiBase = getApiBaseUrl().replace(/\/api\/?$/, '')
+  const encodedSegments = cleanPath.split('/').map(segment => encodeURIComponent(decodeURIComponent(segment))).join('/')
+
+  return `${apiBase}/storage/${encodedSegments}`
 }
 
 const hasImageAttachment = movement => {

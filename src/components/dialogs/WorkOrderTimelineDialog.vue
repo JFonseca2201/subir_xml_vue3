@@ -98,23 +98,29 @@ const timelineSteps = computed(() => {
       id: 4,
       title: 'TRABAJO FINALIZADO',
       date: currentIndex >= 3 ? 'Completado' : null,
-      description: 'Las reparaciones concluyeron exitosamente. Listo para facturar.',
+      description: 'Las reparaciones concluyeron exitosamente. Listo para facturar o entregar.',
       status: currentIndex > 3 ? 'completed' : (currentIndex === 3 ? 'active' : 'pending'),
       icon: 'ri-checkbox-circle-line',
-      action: {
-        label: props.order?.sale ? 'Entregar Vehículo' : 'Generar Venta / Facturar',
-        color: props.order?.sale ? 'primary' : 'success',
-        icon: props.order?.sale ? 'ri-truck-line' : 'ri-shopping-cart-line',
-        handler: () => props.order?.sale ? emit('change-status', 'delivered') : emit('generate-sale'),
-      },
+      action: currentIndex === 3 ? {
+        label: 'Marcar como Entregado',
+        color: 'info',
+        icon: 'ri-truck-line',
+        handler: () => emit('change-status', 'delivered'),
+      } : null,
     },
     {
       id: 5,
       title: 'VEHÍCULO ENTREGADO',
       date: currentIndex === 4 ? 'Entregado' : null,
-      description: 'El vehículo y las llaves fueron entregados satisfactoriamente al cliente.',
+      description: 'El vehículo fue entregado satisfactoriamente al cliente.',
       status: currentIndex === 4 ? 'active' : 'pending',
       icon: 'ri-truck-line',
+      action: (currentIndex >= 3 && !props.order?.sale) ? {
+        label: 'Generar Venta / Facturar',
+        color: 'success',
+        icon: 'ri-shopping-cart-line',
+        handler: () => emit('generate-sale'),
+      } : null,
     },
   ]
 })

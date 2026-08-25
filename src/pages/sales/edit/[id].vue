@@ -111,10 +111,43 @@ const onCreditChange = () => {
   sale.value.is_credited = !sale.value.is_credited
   if (sale.value.is_credited) {
     sale.value.payment_status = 'pending'
+    paymentDistributions.value = []
+    sale.value.payment_method = ''
   } else {
     sale.value.payment_status = 'paid'
+    if (paymentDistributions.value.length === 0 && total.value > 0) {
+      if (paymentDistributions.value.length === 0) {
+        const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+        paymentDistributions.value.push({
+          account_id: cajaChica ? cajaChica.id : null,
+          amount: total.value,
+          payment_method: 'Efectivo',
+        })
+      }
+    }
   }
 }
+
+// Watch para cuando cambia el estado de pago directamente en el selector
+watch(() => sale.value.payment_status, newStatus => {
+  if (newStatus === 'pending') {
+    sale.value.is_credited = true
+    paymentDistributions.value = []
+    sale.value.payment_method = ''
+  } else {
+    if (newStatus === 'paid') {
+      sale.value.is_credited = false
+    }
+    if (paymentDistributions.value.length === 0 && total.value > 0) {
+      const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+      paymentDistributions.value.push({
+        account_id: cajaChica ? cajaChica.id : null,
+        amount: total.value,
+        payment_method: 'Efectivo',
+      })
+    }
+  }
+})
 
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = async () => {
@@ -672,31 +705,30 @@ const submitForm = async () => {
     if (sale.value.payment_status === 'pending') {
       sale.value.is_credited = true
       paymentDistributions.value = []
-    }
-
-    const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
-
-    if ((paymentDistributions.value.length === 0 || totalDist <= 0) && !sale.value.is_credited) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
-
-      return
-    }
-
-    if (totalDist > total.value + 0.01) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
-
-      return
-    }
-
-    // Si el pago no está completado, el estado debe quedar en pendiente o partial.
-    if (Math.abs(totalDist - total.value) <= 0.01) {
-      sale.value.payment_status = 'paid'
-    } else if (totalDist > 0) {
-      sale.value.payment_status = 'partial'
+      sale.value.payment_method = ''
     } else {
-      sale.value.payment_status = 'pending'
+      const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
+
+      if (paymentDistributions.value.length === 0 || totalDist <= 0) {
+        showValidationError.value = true
+        validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
+
+        return
+      }
+
+      if (totalDist > total.value + 0.01) {
+        showValidationError.value = true
+        validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
+
+        return
+      }
+
+      // Si el pago no está completado, el estado debe quedar en pendiente o partial.
+      if (Math.abs(totalDist - total.value) <= 0.01) {
+        sale.value.payment_status = 'paid'
+      } else if (totalDist > 0) {
+        sale.value.payment_status = 'partial'
+      }
     }
   }
 
@@ -1721,6 +1753,7 @@ onMounted(() => {
                   <div class="d-flex justify-space-between align-center mb-2">
                     <span class="font-weight-bold">Distribución de Pagos:</span>
                     <VBtn
+                      v-if="sale.payment_status !== 'pending'"
                       color="primary"
                       variant="text"
                       size="small"
@@ -1732,88 +1765,109 @@ onMounted(() => {
                     </VBtn>
                   </div>
 
-                  <div
-                    v-for="(dist, index) in paymentDistributions"
-                    :key="index"
-                    class="pa-3 mb-2 bg-grey-lighten-5 border rounded-lg"
+                  <!-- Mensaje Informativo cuando el pago está Pendiente -->
+                  <VAlert
+                    v-if="sale.payment_status === 'pending'"
+                    type="warning"
+                    variant="tonal"
+                    density="comfortable"
+                    class="rounded-lg mb-2"
+                    icon="ri-time-line"
                   >
-                    <div class="d-flex justify-space-between mb-2">
-                      <span class="text-caption font-weight-bold">Pago #{{ index + 1 }}</span>
-                      <VIcon
-                        v-if="paymentDistributions.length > 1 && sale.status !== 'canceled'"
-                        icon="ri-close-line"
-                        color="error"
-                        class="cursor-pointer"
-                        size="18"
-                        @click="removePaymentDistribution(index)"
-                      />
+                    <div class="text-subtitle-2 font-weight-bold">
+                      Pago en estado Pendiente
                     </div>
-                    <VRow>
-                      <VCol
-                        cols="12"
-                        sm="6"
-                      >
-                        <VSelect
-                          v-model="dist.payment_method"
-                          :disabled="sale.status === 'canceled'"
-                          :items="paymentMethods"
-                          item-title="title"
-                          item-value="value"
-                          label="Forma"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          class="mb-2"
-                          @update:model-value="(val) => onPaymentMethodChange(dist, val)"
-                        />
-                      </VCol>
-                      <VCol
-                        v-if="dist.payment_method === 'Transferencia'"
-                        cols="12"
-                        sm="6"
-                      >
-                        <VSelect
-                          v-model="dist.account_id"
-                          :disabled="sale.status === 'canceled'"
-                          :items="accounts"
-                          item-title="name"
-                          item-value="id"
-                          label="Cuenta"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          class="mb-2"
-                        />
-                      </VCol>
-                      <VCol
-                        cols="12"
-                        :sm="dist.payment_method === 'Transferencia' ? 12 : 6"
-                      >
-                        <VTextField
-                          v-model.number="dist.amount"
-                          :disabled="sale.status === 'canceled'"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          label="Monto"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          prefix="$"
-                        />
-                      </VCol>
-                    </VRow>
-                  </div>
+                    <div class="text-caption">
+                      No se debe seleccionar método de pago ni registrar abono inmediato. La venta se registrará como pago pendiente / crédito.
+                    </div>
+                  </VAlert>
 
-                  <div
-                    v-if="paymentDistributions.length > 0"
-                    class="mt-3 text-subtitle-2 text-right"
-                  >
-                    <div :class="remainingAmount < 0 ? 'text-error' : 'text-success'">
-                      Falta distribuir: ${{
-                        remainingAmount.toFixed(2) }}
+                  <template v-else>
+                    <div
+                      v-for="(dist, index) in paymentDistributions"
+                      :key="index"
+                      class="pa-3 mb-2 bg-grey-lighten-5 border rounded-lg"
+                    >
+                      <div class="d-flex justify-space-between mb-2">
+                        <span class="text-caption font-weight-bold">Pago #{{ index + 1 }}</span>
+                        <VIcon
+                          v-if="paymentDistributions.length > 1 && sale.status !== 'canceled'"
+                          icon="ri-close-line"
+                          color="error"
+                          class="cursor-pointer"
+                          size="18"
+                          @click="removePaymentDistribution(index)"
+                        />
+                      </div>
+                      <VRow>
+                        <VCol
+                          cols="12"
+                          sm="6"
+                        >
+                          <VSelect
+                            v-model="dist.payment_method"
+                            :disabled="sale.status === 'canceled'"
+                            :items="paymentMethods"
+                            item-title="title"
+                            item-value="value"
+                            label="Forma"
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                            class="mb-2"
+                            @update:model-value="(val) => onPaymentMethodChange(dist, val)"
+                          />
+                        </VCol>
+                        <VCol
+                          v-if="dist.payment_method === 'Transferencia'"
+                          cols="12"
+                          sm="6"
+                        >
+                          <VSelect
+                            v-model="dist.account_id"
+                            :disabled="sale.status === 'canceled'"
+                            :items="accounts"
+                            item-title="name"
+                            item-value="id"
+                            label="Cuenta"
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                            class="mb-2"
+                          />
+                        </VCol>
+                        <VCol
+                          cols="12"
+                          :sm="dist.payment_method === 'Transferencia' ? 12 : 6"
+                        >
+                          <VTextField
+                            v-model.number="dist.amount"
+                            :disabled="sale.status === 'canceled'"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            label="Monto"
+                            variant="outlined"
+                            density="compact"
+                            hide-details="auto"
+                            prefix="$"
+                            @input="handlePaymentAmountChange(dist, index)"
+                            @blur="handlePaymentAmountChange(dist, index)"
+                          />
+                        </VCol>
+                      </VRow>
                     </div>
-                  </div>
+
+                    <div
+                      v-if="paymentDistributions.length > 0"
+                      class="mt-3 text-subtitle-2 text-right"
+                    >
+                      <div :class="remainingAmount < 0 ? 'text-error' : 'text-success'">
+                        Falta distribuir: ${{
+                          remainingAmount.toFixed(2) }}
+                      </div>
+                    </div>
+                  </template>
                 </VCol>
               </VRow>
             </VCardText>

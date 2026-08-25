@@ -235,6 +235,59 @@ const getPaidAmount = item => {
   return 0
 }
 
+const getPaymentMethodDisplay = item => {
+  if (!item) return ''
+  if (item.document_type === 'quote') return ''
+  if (item.status === 'canceled') return ''
+  if (item.payment_status === 'pending') {
+    return 'Pendiente'
+  }
+
+  const distributions = item.finance_record?.payment_distributions || []
+  if (distributions.length > 0) {
+    const methods = [...new Set(distributions.map(d => (d.payment_method || '').trim()).filter(Boolean))]
+    if (methods.length === 1) {
+      return methods[0]
+    }
+    if (methods.length > 1) {
+      return methods.join(' + ')
+    }
+  }
+
+  if (item.payment_method) {
+    const raw = item.payment_method.trim()
+    if (raw.toLowerCase() === 'credito / pendiente' || raw.toLowerCase() === 'crédito / pendiente' || raw.toLowerCase() === 'pendiente') {
+      return 'Pendiente'
+    }
+    return raw
+  }
+
+  return 'Efectivo'
+}
+
+const getPaymentMethodIcon = item => {
+  if (!item || item.payment_status === 'pending') return 'ri-time-line'
+  
+  const display = getPaymentMethodDisplay(item).toLowerCase()
+  if (display.includes('+') || display.includes(',')) return 'ri-split-cells-horizontal'
+  if (display.includes('transferencia') || display.includes('banco')) return 'ri-bank-card-line'
+  if (display.includes('tarjeta')) return 'ri-bank-card-2-line'
+  if (display.includes('efectivo')) return 'ri-money-dollar-circle-line'
+  
+  return 'ri-wallet-3-line'
+}
+
+const getPaymentMethodColor = item => {
+  if (!item || item.payment_status === 'pending') return 'error'
+  
+  const display = getPaymentMethodDisplay(item).toLowerCase()
+  if (display.includes('transferencia')) return 'info'
+  if (display.includes('efectivo')) return 'success'
+  if (display.includes('+') || display.includes(',')) return 'primary'
+  
+  return 'secondary'
+}
+
 // Acciones
 const viewSale = async sale => {
   try {
@@ -842,7 +895,7 @@ onMounted(() => {
                   <td class="text-center py-3 px-4">
                     <div
                       v-if="item"
-                      class="d-flex justify-center align-center"
+                      class="d-flex flex-column justify-center align-center gap-1"
                     >
                       <div class="d-flex align-center gap-1">
                         <VIcon
@@ -856,6 +909,28 @@ onMounted(() => {
                         >
                           {{ getStatusInfo(item)?.text }}
                         </span>
+                      </div>
+
+                      <!-- Detalle de Forma de Pago debajo del estado -->
+                      <div
+                        v-if="item.document_type !== 'quote' && item.status !== 'canceled'"
+                        class="d-flex align-center justify-center mt-1"
+                      >
+                        <VChip
+                          size="x-small"
+                          :color="getPaymentMethodColor(item)"
+                          variant="tonal"
+                          class="font-weight-medium px-2"
+                          style="font-size: 0.72rem; height: 20px;"
+                        >
+                          <VIcon
+                            :icon="getPaymentMethodIcon(item)"
+                            size="12"
+                            start
+                            class="mr-1"
+                          />
+                          {{ getPaymentMethodDisplay(item) }}
+                        </VChip>
                       </div>
                     </div>
                   </td>
