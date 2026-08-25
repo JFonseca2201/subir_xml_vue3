@@ -198,6 +198,8 @@ const cancelEditing = () => {
   loadSucursal() // Recargar datos originales
 }
 
+const fileFirma = ref(null)
+
 // Guardar cambios
 const saveSucursal = async () => {
   const { valid } = await formRef.value.validate()
@@ -205,14 +207,35 @@ const saveSucursal = async () => {
 
   isLoading.value = true
   try {
+    let bodyData
+    let headersData = {}
+
+    if (fileFirma.value && fileFirma.value[0]) {
+      const formData = new FormData()
+      formData.append('_method', 'PUT')
+      Object.keys(sucursal.value).forEach(key => {
+        if (sucursal.value[key] !== null && sucursal.value[key] !== undefined) {
+          formData.append(key, sucursal.value[key])
+        }
+      })
+      formData.append('firma_file', fileFirma.value[0])
+      bodyData = formData
+    } else {
+      bodyData = sucursal.value
+    }
+
     const resp = await $api('sucursales/1', {
-      method: 'PUT',
-      body: sucursal.value,
+      method: fileFirma.value && fileFirma.value[0] ? 'POST' : 'PUT',
+      body: bodyData,
       onResponseError({ response }) {
-        console.error('Error al guardar sucursal:', response._data.error)
-        showNotification(response._data.error || 'Error al guardar cambios', 'error')
+        console.error('Error al guardar sucursal:', response._data.error || response._data.message)
+        showNotification(response._data.error || response._data.message || 'Error al guardar cambios', 'error')
       },
     })
+
+    if (resp.sucursal) {
+      sucursal.value = resp.sucursal
+    }
 
     const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
 
@@ -220,7 +243,8 @@ const saveSucursal = async () => {
     if (themeConfig.app) themeConfig.app.title = sName
     if (layoutConfig?.app) layoutConfig.app.title = sName
 
-    showNotification('Información guardada correctamente', 'success')
+    showNotification('Información y firma guardadas correctamente', 'success')
+    fileFirma.value = null
     isEditing.value = false // Salir del modo edición
   } catch (error) {
     console.error('Error al guardar sucursal:', error)
@@ -507,15 +531,19 @@ onMounted(() => {
             cols="12"
             md="6"
           >
-            <VTextField
-              v-model="sucursal.firma_electronica"
-              label="Archivo Firma"
+            <VFileInput
+              v-model="fileFirma"
+              label="Subir Firma (.p12 / .pfx)"
+              accept=".p12,.pfx"
               variant="outlined"
               density="comfortable"
-              prepend-inner-icon="ri-file-lock-line"
+              prepend-inner-icon="ri-file-upload-line"
               hide-details="auto"
               :disabled="!isEditing"
             />
+            <small v-if="sucursal.firma_electronica" class="text-caption text-success d-block mt-1">
+              Firma actual: {{ sucursal.firma_electronica }}
+            </small>
           </VCol>
 
           <VCol
@@ -524,7 +552,7 @@ onMounted(() => {
           >
             <VTextField
               v-model="sucursal.password_firma"
-              label="Contraseña Firma"
+              label="Contraseña de la Firma (.p12)"
               variant="outlined"
               density="comfortable"
               prepend-inner-icon="ri-lock-password-line"
