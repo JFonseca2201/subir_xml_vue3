@@ -208,9 +208,10 @@ const saveSucursal = async () => {
   isLoading.value = true
   try {
     let bodyData
-    let headersData = {}
+    const rawFile = Array.isArray(fileFirma.value) ? fileFirma.value[0] : fileFirma.value
+    const hasFile = rawFile && (rawFile instanceof File || rawFile instanceof Blob)
 
-    if (fileFirma.value && fileFirma.value[0]) {
+    if (hasFile) {
       const formData = new FormData()
       formData.append('_method', 'PUT')
       Object.keys(sucursal.value).forEach(key => {
@@ -218,14 +219,14 @@ const saveSucursal = async () => {
           formData.append(key, sucursal.value[key])
         }
       })
-      formData.append('firma_file', fileFirma.value[0])
+      formData.append('firma_file', rawFile)
       bodyData = formData
     } else {
       bodyData = sucursal.value
     }
 
     const resp = await $api('sucursales/1', {
-      method: fileFirma.value && fileFirma.value[0] ? 'POST' : 'PUT',
+      method: hasFile ? 'POST' : 'PUT',
       body: bodyData,
       onResponseError({ response }) {
         console.error('Error al guardar sucursal:', response._data.error || response._data.message)
@@ -235,6 +236,9 @@ const saveSucursal = async () => {
 
     if (resp.sucursal) {
       sucursal.value = resp.sucursal
+      isEditing.value = false
+      fileFirma.value = null
+      showNotification('Configuración guardada exitosamente', 'success')
     }
 
     const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'

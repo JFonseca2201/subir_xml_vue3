@@ -137,17 +137,15 @@ const isLinkedToWorkOrder = computed(() => !!sale.value.work_order_id)
 
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = async () => {
-  if (!isLinkedToWorkOrder.value) {
-    // Obtener el secuencial correcto según el tipo de documento
-    try {
-      const docType = sale.value.document_type
-      const nextNumberRes = await $api(`sales/next-number?document_type=${docType}`)
+  // Obtener el secuencial correcto según el tipo de documento
+  try {
+    const docType = sale.value.document_type
+    const nextNumberRes = await $api(`sales/next-number?document_type=${docType}`)
 
-      nextGlobalNumber.value = nextNumberRes?.data || '000000000'
-      sale.value.document_number = generateDocumentNumber(sale.value.document_type)
-    } catch (error) {
-      console.error('Error al obtener secuencial:', error)
-    }
+    nextGlobalNumber.value = nextNumberRes?.data || '000000000'
+    sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+  } catch (error) {
+    console.error('Error al obtener secuencial:', error)
   }
   if (sale.value.document_type === 'quote') {
     sale.value.payment_status = 'pending'
@@ -384,14 +382,14 @@ const getClientName = c => {
 const loadInitialData = async () => {
   isLoading.value = true
   try {
-    // Cargar datos en paralelo con menos registros para mejorar rendimiento
+    // Cargar datos en paralelo optimizado
     const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
       Promise.resolve([]),
       Promise.resolve([]),
       $api('products', { params: { per_page: 1000 } }),
       $api('accounts', { params: { per_page: 100 } }),
-      $api('sales', { params: { per_page: 1 } }), // Reducido ya que no calculamos la secuencia manualmente
-      $api('work-orders', { params: { per_page: 1 } }),
+      Promise.resolve([]),
+      Promise.resolve([]),
       $api('employees', { params: { per_page: 1000 } }),
       $api('sales/next-number?document_type=' + (route.query.type || 'sale_note')),
     ])
@@ -651,7 +649,7 @@ const onProductSelected = product => {
 
 
 
-// Cálculos
+// Cálculos (Los precios de productos y servicios ya incluyen IVA)
 const TAX_RATE = 0.15 // 15% IVA
 
 const grossSubtotal = computed(() => {
@@ -667,20 +665,28 @@ const totalDiscount = computed(() => {
   return sale.value.items.reduce((sum, item) => sum + (Number(item.discount) || 0), 0)
 })
 
+const netItemsTotal = computed(() => {
+  return Math.max(0, grossSubtotal.value - totalDiscount.value)
+})
+
 const subtotal = computed(() => {
-  return grossSubtotal.value - totalDiscount.value
+  if (sale.value.document_type === 'invoice') {
+    return Number((netItemsTotal.value / (1 + TAX_RATE)).toFixed(2))
+  }
+
+  return Number(netItemsTotal.value.toFixed(2))
 })
 
 const taxAmount = computed(() => {
   if (sale.value.document_type === 'invoice') {
-    return subtotal.value * TAX_RATE
+    return Number((netItemsTotal.value - subtotal.value).toFixed(2))
   }
 
   return 0
 })
 
 const total = computed(() => {
-  return subtotal.value + taxAmount.value
+  return Number(netItemsTotal.value.toFixed(2))
 })
 
 watch(total, newTotal => {
@@ -1469,25 +1475,26 @@ onMounted(async () => {
                   md="6"
                 >
                   <VCard
-                    :class="sale.document_type === 'invoice' ? 'border-red border-2 bg-red-lighten-5' : 'border-opacity-25'"
+                    :class="sale.document_type === 'invoice' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
                     class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all"
                     variant="outlined"
                     @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
                   >
                     <div class="pa-3 d-flex align-center gap-3">
                       <VAvatar
-                        :color="sale.document_type === 'invoice' ? 'red' : 'grey-lighten-2'"
+                        :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-2'"
+                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'flat'"
                         size="40"
                       >
                         <VIcon
                           icon="ri-bill-line"
-                          :color="sale.document_type === 'invoice' ? 'white' : 'grey'"
+                          :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
                         />
                       </VAvatar>
                       <div>
                         <div
                           class="font-weight-bold"
-                          :class="sale.document_type === 'invoice' ? 'text-red' : 'text-grey'"
+                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey'"
                         >
                           Factura
                         </div>

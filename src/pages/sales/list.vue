@@ -150,9 +150,14 @@ const confirmSendMail = async () => {
   if (!mailSaleSelected.value) return
   isMailSending.value = true
   try {
-    const response = await $api(`sales/${mailSaleSelected.value.id}/enviar-cotizacion`, { method: 'POST' })
+    const isInvoice = mailSaleSelected.value.document_type === 'invoice'
+    const endpoint = isInvoice 
+      ? `sales/${mailSaleSelected.value.id}/sri/enviar-email`
+      : `sales/${mailSaleSelected.value.id}/enviar-cotizacion`
+
+    const response = await $api(endpoint, { method: 'POST' })
     if (response.success) {
-      showNotification(response.message || '¡Correo enviado con éxito, mi compa!', 'success')
+      showNotification(response.message || 'Factura y comprobantes enviados exitosamente por correo.', 'success')
       isMailDialogVisible.value = false
     } else {
       showNotification(response.message || 'Error al despachar el correo.', 'error')
@@ -191,10 +196,9 @@ const getClientName = client => {
 const getDocumentTypeInfo = type => {
   const map = {
     quote: { color: 'info', text: 'Cotización' },
-    sale_note: { color: 'primary', text: 'Nota Venta' },
-    invoice: { color: 'deep-purple', text: 'Factura' },
+    sale_note: { color: 'success', text: 'Nota Venta' },
+    invoice: { color: 'primary', text: 'Factura' },
   }
-
 
   return map[type] || { color: 'grey', text: type }
 }
@@ -642,7 +646,7 @@ onMounted(() => {
             <VRow class="align-center" dense>
               <VCol cols="12" md="4">
                 <VTextField v-model="searchForm.search" label="Buscar venta"
-                  placeholder="Nombre, cédula o placa del vehículo..." prepend-inner-icon="ri-search-line"
+                  placeholder="# Doc, Orden de Trabajo, cliente, cédula, placa..." prepend-inner-icon="ri-search-line"
                   variant="outlined" density="compact" hide-details="auto" clearable color="primary" />
               </VCol>
 
@@ -759,10 +763,11 @@ onMounted(() => {
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </span>
                         <span
-                          v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                          class="text-caption font-weight-medium text-indigo bg-indigo-lighten-5 px-1 rounded">
-                          <VIcon icon="ri-link-m" size="12" class="mr-1" />
-                          {{ item.work_order?.number || item.workOrder?.number }}
+                          v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
+                          class="text-caption font-weight-bold text-indigo bg-indigo-lighten-5 px-1.5 py-0.5 rounded d-inline-flex align-center"
+                          :title="`Orden de Trabajo: ${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
+                          <VIcon icon="ri-file-settings-line" size="12" class="mr-1" />
+                          OT: {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
                         </span>
                       </div>
                       <div class="text-body-1 font-weight-medium text-grey-darken-4">
@@ -930,10 +935,11 @@ onMounted(() => {
                               {{ getDocumentTypeInfo(item.document_type)?.text }}
                             </span>
                             <span
-                              v-if="(item.work_order || item.workOrder) && (item.work_order?.number || item.workOrder?.number || '').trim().toUpperCase() !== (item.document_number || '').trim().toUpperCase()"
-                              class="text-caption font-weight-medium text-indigo bg-indigo-lighten-5 px-1 rounded">
-                              <VIcon icon="ri-link-m" size="12" class="mr-1" />
-                              {{ item.work_order?.number || item.workOrder?.number }}
+                              v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
+                              class="text-caption font-weight-bold text-indigo bg-indigo-lighten-5 px-1.5 py-0.5 rounded d-inline-flex align-center"
+                              :title="`Orden de Trabajo: ${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
+                              <VIcon icon="ri-file-settings-line" size="12" class="mr-1" />
+                              OT: {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
                             </span>
                           </div>
                           <div class="text-subtitle-1 font-weight-medium text-primary cursor-pointer"

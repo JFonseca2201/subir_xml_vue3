@@ -314,14 +314,14 @@ const generateSinglePDF = sale => {
             {{ formatDate(saleData.service_date) }}
           </span>
           <span
-            v-if="saleData.work_order_id"
-            class="d-inline-flex align-center gap-1"
+            v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
+            class="d-inline-flex align-center gap-1 font-weight-medium text-indigo bg-indigo-lighten-5 px-2 py-0.5 rounded"
           >
             <VIcon
-              icon="ri-link"
+              icon="ri-file-settings-line"
               size="14"
             />
-            Orden de trabajo vinculada
+            OT: {{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number || 'Vinculada' }}
           </span>
         </div>
       </div>

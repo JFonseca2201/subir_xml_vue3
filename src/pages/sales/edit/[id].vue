@@ -385,7 +385,7 @@ const handleServiceAdded = async newService => {
   }
 }
 
-// Cálculos
+// Cálculos (Los precios de productos y servicios ya incluyen IVA)
 const TAX_RATE = 0.15
 
 const grossSubtotal = computed(() => {
@@ -396,20 +396,28 @@ const totalDiscount = computed(() => {
   return sale.value.items.reduce((sum, item) => sum + (Number(item.discount) || 0), 0)
 })
 
+const netItemsTotal = computed(() => {
+  return Math.max(0, grossSubtotal.value - totalDiscount.value)
+})
+
 const subtotal = computed(() => {
-  return grossSubtotal.value - totalDiscount.value
+  if (sale.value.document_type === 'invoice') {
+    return Number((netItemsTotal.value / (1 + TAX_RATE)).toFixed(2))
+  }
+
+  return Number(netItemsTotal.value.toFixed(2))
 })
 
 const taxAmount = computed(() => {
   if (sale.value.document_type === 'invoice') {
-    return subtotal.value * TAX_RATE
+    return Number((netItemsTotal.value - subtotal.value).toFixed(2))
   }
 
   return 0
 })
 
 const total = computed(() => {
-  return subtotal.value + taxAmount.value
+  return Number(netItemsTotal.value.toFixed(2))
 })
 
 watch(total, (newTotal, oldTotal) => {
