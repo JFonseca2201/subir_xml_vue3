@@ -222,6 +222,18 @@ export default [
         to: 'invoice-list',
         permission: 'list_purchase',
       },
+      {
+        title: 'Conciliación y Pagos',
+        icon: { icon: 'ri-exchange-dollar-line' },
+        to: 'invoice-reconciliation',
+        permission: 'list_purchase',
+      },
+      {
+        title: 'Saldos a Favor',
+        icon: { icon: 'ri-hand-coin-line' },
+        to: 'invoice-supplier-credits',
+        permission: 'list_purchase',
+      },
     ],
   },
 

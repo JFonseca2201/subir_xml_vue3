@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -19,6 +19,24 @@ const categories = ref([])
 const accounts = ref([])
 const partners = ref([])
 const products = ref([])
+
+// Saldo a favor disponible del proveedor
+const supplierAvailableCredit = ref(0)
+
+const checkSupplierCredit = async (supId) => {
+  if (!supId) {
+    supplierAvailableCredit.value = 0
+    return
+  }
+  try {
+    const res = await $api(`supplier-reconciliation/credit-balances/${supId}`)
+    if (res.success) {
+      supplierAvailableCredit.value = Number(res.total_available || 0)
+    }
+  } catch (err) {
+    console.error('Error al consultar crédito del proveedor:', err)
+  }
+}
 
 const getLocalDateString = () => {
   const tzOffset = (new Date()).getTimezoneOffset() * 60000
@@ -150,10 +168,10 @@ const loadConfig = async () => {
   }
 }
 
-// Watcher para buscar productos cuando cambia el proveedor
-import { watch } from 'vue'
-
+// Watcher para buscar productos y saldo a favor cuando cambia el proveedor
 watch(() => formData.value.supplier_id, async newSupplierId => {
+  checkSupplierCredit(newSupplierId)
+
   if (!newSupplierId) {
     products.value = []
     
@@ -432,6 +450,31 @@ onMounted(() => {
                   density="comfortable"
                   :loading="isLoadingConfig"
                 />
+
+                <!-- Alerta de Saldo a Favor / NC disponible -->
+                <VAlert
+                  v-if="supplierAvailableCredit > 0"
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-2 rounded-lg"
+                  icon="ri-hand-coin-line"
+                >
+                  <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                    <span class="text-caption">
+                      Este proveedor tiene un <strong>Saldo a Favor de ${{ supplierAvailableCredit.toFixed(2) }}</strong>.
+                    </span>
+                    <VBtn
+                      size="x-small"
+                      variant="outlined"
+                      color="info"
+                      to="/invoice/reconciliation"
+                      class="text-none font-weight-bold"
+                    >
+                      Ir a Conciliar
+                    </VBtn>
+                  </div>
+                </VAlert>
               </VCol>
               <VCol
                 cols="12"

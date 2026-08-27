@@ -663,7 +663,8 @@ onMounted(() => {
               :items="[
                 { title: 'Todos los Estados', value: 'all' },
                 { title: 'Totalmente Pagados', value: 'paid' },
-                { title: 'Con Saldo Pendiente', value: 'pending' },
+                { title: 'Con Saldo Parcial (Abonado)', value: 'partial' },
+                { title: 'Con Saldo Pendiente (Total)', value: 'pending' },
               ]"
               item-title="title"
               item-value="value"

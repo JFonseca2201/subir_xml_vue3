@@ -175,12 +175,7 @@ onMounted(() => {
       <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
         <div>
           <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-            <VIcon
-              icon="ri-file-list-3-line"
-              color="primary"
-              class="me-2"
-              size="28"
-            />
+            <VIcon icon="ri-file-list-3-line" color="primary" class="me-2" size="28" />
             Compras
           </h1>
           <p class="text-medium-emphasis mb-0">
@@ -188,19 +183,17 @@ onMounted(() => {
           </p>
         </div>
         <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-          <VBtn
-            color="secondary"
-            variant="tonal"
-            prepend-icon="ri-file-upload-line"
-            @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible"
-          >
+          <VBtn color="info" variant="tonal" prepend-icon="ri-exchange-dollar-line" to="/invoice/reconciliation">
+            Conciliación de Pagos
+          </VBtn>
+          <VBtn color="success" variant="tonal" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits">
+            Saldos a Favor
+          </VBtn>
+          <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-upload-line"
+            @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible">
             Subir XML
           </VBtn>
-          <VBtn
-            color="primary"
-            prepend-icon="ri-add-circle-line"
-            to="/invoice/manual-purchase"
-          >
+          <VBtn color="primary" prepend-icon="ri-add-circle-line" to="/invoice/manual-purchase">
             Compra Manual
           </VBtn>
         </div>
@@ -210,58 +203,22 @@ onMounted(() => {
       <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
         <VCardText class="pa-4 bg-grey-lighten-5">
           <VRow class="align-center">
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VTextField
-                v-model="search"
-                label="Buscar factura"
-                placeholder="Número, proveedor, RUC..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
+            <VCol cols="12" md="4">
+              <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor, RUC..."
+                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <VAutocomplete
-                v-model="supplier_id"
-                label="Proveedores"
-                placeholder="Todos"
-                :items="providers"
-                item-title="name"
-                item-value="id"
-                clearable
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                color="primary"
-              />
+            <VCol cols="12" sm="6" md="4">
+              <VAutocomplete v-model="supplier_id" label="Proveedores" placeholder="Todos" :items="providers"
+                item-title="name" item-value="id" clearable variant="outlined" density="comfortable" hide-details="auto"
+                color="primary" />
             </VCol>
 
-            <VCol
-              cols="12"
-              sm="6"
-              md="4"
-            >
-              <AppDateTimePicker
-                v-model="range_date"
-                label="Rango de fecha"
-                placeholder="Seleccionar rango de fechas"
-                :config="{ mode: 'range' }"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                color="primary"
-              />
+            <VCol cols="12" sm="6" md="4">
+              <AppDateTimePicker v-model="range_date" label="Rango de fecha" placeholder="Seleccionar rango de fechas"
+                :config="{ mode: 'range' }" variant="outlined" density="comfortable" hide-details="auto"
+                color="primary" />
             </VCol>
           </VRow>
         </VCardText>
@@ -272,124 +229,64 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Tabla de Facturas -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="isLoading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
+        <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;" />
 
         <div class="overflow-x-auto">
-          <VTable
-            hover
-            class="invoices-table"
-          >
+          <VTable hover class="invoices-table">
             <thead>
               <tr>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 60px;"
-                >
+                <th class="text-center font-weight-bold text-uppercase" style="width: 60px;">
                   #
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 200px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="min-width: 200px;">
                   PROVEEDOR
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 150px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="width: 150px;">
                   FACTURA
                 </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
+                <th class="text-left font-weight-bold text-uppercase" style="width: 120px;">
                   FECHA
                 </th>
-                <th
-                  class="text-right font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
+                <th class="text-right font-weight-bold text-uppercase" style="width: 120px;">
                   SUBTOTAL
                 </th>
-                <th
-                  class="text-right font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
+                <th class="text-right font-weight-bold text-uppercase" style="width: 120px;">
                   IVA (15%)
                 </th>
-                <th
-                  class="text-right font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
+                <th class="text-right font-weight-bold text-uppercase" style="width: 120px;">
                   TOTAL
                 </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
+                <th class="text-center font-weight-bold text-uppercase" style="width: 120px;">
                   ESTADO
                 </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 90px;"
-                >
+                <th class="text-center font-weight-bold text-uppercase" style="width: 90px;">
                   ACCIONES
                 </th>
               </tr>
             </thead>
             <tbody v-if="isLoading">
-              <tr
-                v-for="i in 5"
-                :key="i"
-              >
+              <tr v-for="i in 5" :key="i">
                 <td class="text-center py-3">
-                  <div
-                    class="shimmer-line mx-auto"
-                    style="width: 20px;"
-                  />
+                  <div class="shimmer-line mx-auto" style="width: 20px;" />
                 </td>
                 <td class="text-left py-3">
-                  <div
-                    class="shimmer-line"
-                    style="width: 80%;"
-                  />
+                  <div class="shimmer-line" style="width: 80%;" />
                 </td>
                 <td class="text-left py-3">
-                  <div
-                    class="shimmer-line"
-                    style="width: 60%;"
-                  />
+                  <div class="shimmer-line" style="width: 60%;" />
                 </td>
                 <td class="text-left py-3">
-                  <div
-                    class="shimmer-line"
-                    style="width: 50%;"
-                  />
+                  <div class="shimmer-line" style="width: 50%;" />
                 </td>
                 <td class="text-right py-3">
-                  <div
-                    class="shimmer-line ms-auto"
-                    style="width: 50px;"
-                  />
+                  <div class="shimmer-line ms-auto" style="width: 50px;" />
                 </td>
                 <td class="text-right py-3">
-                  <div
-                    class="shimmer-line ms-auto"
-                    style="width: 50px;"
-                  />
+                  <div class="shimmer-line ms-auto" style="width: 50px;" />
                 </td>
                 <td class="text-right py-3">
-                  <div
-                    class="shimmer-line ms-auto"
-                    style="width: 60px;"
-                  />
+                  <div class="shimmer-line ms-auto" style="width: 60px;" />
                 </td>
                 <td class="text-center py-3">
                   <div class="shimmer-chip mx-auto" />
@@ -401,15 +298,8 @@ onMounted(() => {
             </tbody>
             <tbody v-else-if="!list_invoices || list_invoices.length === 0">
               <tr>
-                <td
-                  colspan="9"
-                  class="text-center pa-8 text-medium-emphasis"
-                >
-                  <VIcon
-                    size="48"
-                    class="mb-3"
-                    color="grey-lighten-1"
-                  >
+                <td colspan="9" class="text-center pa-8 text-medium-emphasis">
+                  <VIcon size="48" class="mb-3" color="grey-lighten-1">
                     ri-inbox-line
                   </VIcon>
                   <div class="text-h6">
@@ -422,23 +312,14 @@ onMounted(() => {
               </tr>
             </tbody>
             <tbody v-else>
-              <tr
-                v-for="invoice in list_invoices"
-                :key="invoice.id"
-                class="invoices-row align-middle"
-              >
+              <tr v-for="invoice in list_invoices" :key="invoice.id" class="invoices-row align-middle">
                 <td class="text-center py-3">
                   <span class="font-weight-bold text-subtitle-1 text-primary">{{ invoice.id }}</span>
                 </td>
 
-                <td
-                  class="text-left py-3"
-                  style="max-width: 250px;"
-                >
-                  <div
-                    class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
-                    :title="invoice.supplier?.name ? truncate(invoice.supplier.name, 50) : '-'"
-                  >
+                <td class="text-left py-3" style="max-width: 250px;">
+                  <div class="font-weight-semibold text-truncate text-body-1 text-grey-darken-4"
+                    :title="invoice.supplier?.name ? truncate(invoice.supplier.name, 50) : '-'">
                     {{ invoice.supplier?.name ? truncate(invoice.supplier.name, 50) : '-' }}
                   </div>
                 </td>
@@ -449,11 +330,7 @@ onMounted(() => {
 
                 <td class="text-no-wrap text-left py-3">
                   <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-calendar-line"
-                      size="14"
-                      class="mr-1 text-grey"
-                    />
+                    <VIcon icon="ri-calendar-line" size="14" class="mr-1 text-grey" />
                     <span class="text-body-2 text-medium-emphasis">
                       {{ invoice.issue_date ? new Date(invoice.issue_date).toISOString().slice(0, 10) : '-' }}
                     </span>
@@ -479,11 +356,7 @@ onMounted(() => {
                 </td>
 
                 <td class="text-no-wrap text-center py-3">
-                  <VChip
-                    :color="invoice.invoice_process === 1 ? 'success' : 'warning'"
-                    variant="tonal"
-                    size="small"
-                  >
+                  <VChip :color="invoice.invoice_process === 1 ? 'success' : 'warning'" variant="tonal" size="small">
                     {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
                   </VChip>
                 </td>
@@ -491,67 +364,26 @@ onMounted(() => {
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center">
                     <!-- Procesar Factura -->
-                    <VBtn
-                      v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="success"
-                      title="Procesar Factura"
-                      @click="processInvoice(invoice)"
-                    >
-                      <VIcon
-                        icon="ri-check-line"
-                        size="20"
-                      />
+                    <VBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" class="action-btn"
+                      variant="text" icon size="small" color="success" title="Procesar Factura"
+                      @click="processInvoice(invoice)">
+                      <VIcon icon="ri-check-line" size="20" />
                     </VBtn>
-                    <VBtn
-                      v-else
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="success"
-                      title="Factura Procesada"
-                      disabled
-                    >
-                      <VIcon
-                        icon="ri-file-check-line"
-                        size="20"
-                      />
+                    <VBtn v-else class="action-btn" variant="text" icon size="small" color="success"
+                      title="Factura Procesada" disabled>
+                      <VIcon icon="ri-file-check-line" size="20" />
                     </VBtn>
 
                     <!-- Ver Detalle -->
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="info"
-                      title="Ver Factura"
-                      @click="showItem(invoice)"
-                    >
-                      <VIcon
-                        icon="ri-eye-line"
-                        size="20"
-                      />
+                    <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Factura"
+                      @click="showItem(invoice)">
+                      <VIcon icon="ri-eye-line" size="20" />
                     </VBtn>
 
                     <!-- Eliminar -->
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="error"
-                      title="Eliminar Factura"
-                      @click="deleteInvoice(invoice)"
-                    >
-                      <VIcon
-                        icon="ri-delete-bin-6-line"
-                        size="20"
-                      />
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar Factura"
+                      @click="deleteInvoice(invoice)">
+                      <VIcon icon="ri-delete-bin-6-line" size="20" />
                     </VBtn>
                   </div>
                 </td>
@@ -567,43 +399,24 @@ onMounted(() => {
       <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
         <div class="d-flex flex-column align-center gap-3 w-100">
           <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ list_invoices.length }}</span> de <span class="font-weight-bold">{{
-              totalItems }}</span> facturas
+            Mostrando <span class="font-weight-bold">{{ list_invoices.length }}</span> de <span
+              class="font-weight-bold">{{
+                totalItems }}</span> facturas
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPage"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="list"
-          />
+          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="list" />
         </div>
       </VCardActions>
     </VCard>
 
     <!-- DIALOG -->
-    <InvoiceAddDialog
-      v-model:isDialogVisible="isInvoiceAddDialogVisible"
-      @add-invoice="addInvoice"
-    />
-    <InvoiceShowDialog
-      v-if="isInvoiceShowDialogVisible"
-      v-model:isDialogVisible="isInvoiceShowDialogVisible"
-      :invoice-selected="invoiceSelected"
-    />
-    <InvoiceDeleteDialog
-      v-if="isInvoiceDeleteDialogVisible"
-      v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
-      :invoice-selected="invoiceSelected"
-      @delete-invoice-success="onDeleteSuccess"
-    />
-    <InvoiceProcessDialog
-      v-if="isInvoiceProcessDialogVisible"
-      v-model:isDialogVisible="isInvoiceProcessDialogVisible"
-      :invoice="invoiceToProcess"
-      @process-success="onProcessSuccess"
-    />
+    <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @add-invoice="addInvoice" />
+    <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
+      :invoice-selected="invoiceSelected" />
+    <InvoiceDeleteDialog v-if="isInvoiceDeleteDialogVisible" v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
+      :invoice-selected="invoiceSelected" @delete-invoice-success="onDeleteSuccess" />
+    <InvoiceProcessDialog v-if="isInvoiceProcessDialogVisible" v-model:isDialogVisible="isInvoiceProcessDialogVisible"
+      :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
 
@@ -647,6 +460,7 @@ onMounted(() => {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

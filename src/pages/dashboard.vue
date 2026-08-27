@@ -36,6 +36,8 @@ const kpis = ref({
 })
 
 const topProducts = ref([])
+const topPurchasedProducts = ref([])
+const topSuppliers = ref([])
 const cashFlow = ref([])
 
 
@@ -323,6 +325,8 @@ const fetchDashboardData = async () => {
     if (response && response.status === 200) {
       kpis.value = response.data.kpis
       topProducts.value = response.data.top_products || []
+      topPurchasedProducts.value = response.data.top_purchased_products || []
+      topSuppliers.value = response.data.top_suppliers || []
       cashFlow.value = response.data.cash_flow || []
       hasError.value = false
     } else {
@@ -525,14 +529,90 @@ const barChartSeries = computed(() => {
 })
 
 // =======================================================
-// NUEVO REPORTE: RENDIMIENTO DE TÉCNICOS (Basado en OTs)
+// PASTEL DE PRODUCTOS MÁS COMPRADOS A PROVEEDORES
+// =======================================================
+const purchasedProductsSeries = computed(() => {
+  if (!topPurchasedProducts.value || topPurchasedProducts.value.length === 0) return []
+  return topPurchasedProducts.value.map(p => Number(p.total_quantity) || 0)
+})
+
+const purchasedProductsOptions = computed(() => {
+  const labels = topPurchasedProducts.value.map(p => {
+    const desc = p.description || 'Producto'
+    return desc.length > 25 ? desc.substring(0, 25) + '...' : desc
+  })
+
+  return {
+    chart: {
+      type: 'donut',
+      background: 'transparent',
+    },
+    labels: labels.length > 0 ? labels : ['Sin datos'],
+    colors: ['#7367F0', '#00CFE8', '#28C76F', '#FF9F43', '#EA5455', '#A8AAAE'],
+    dataLabels: {
+      enabled: true,
+      formatter: (val) => `${Math.round(val)}%`,
+      style: {
+        fontSize: '11px',
+        fontWeight: 'bold',
+      },
+      dropShadow: { enabled: false },
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '62%',
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: 'Total Unidades',
+              fontSize: '11px',
+              color: chartThemes.value.textColor,
+              formatter: () => {
+                const totalQty = topPurchasedProducts.value.reduce((acc, p) => acc + Number(p.total_quantity || 0), 0)
+                return `${Math.round(totalQty)} u.`
+              },
+            },
+            value: {
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: theme.current.value.dark ? '#ffffff' : '#262B43',
+            },
+          },
+        },
+      },
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      labels: { colors: chartThemes.value.textColor },
+      fontSize: '11px',
+    },
+    stroke: { show: false },
+    tooltip: {
+      theme: chartThemes.value.tooltipTheme,
+      y: {
+        formatter: (val, opts) => {
+          const item = topPurchasedProducts.value[opts.seriesIndex]
+          if (item && item.total_spent) {
+            return `${Number(val).toLocaleString()} u. (Total: ${formatCurrency(item.total_spent)})`
+          }
+          return `${Number(val).toLocaleString()} unidades`
+        },
+      },
+    },
+  }
+})
+
+// =======================================================
+// REPORTE DE ÓRDENES DE TRABAJO (100% Real de Base de Datos)
 // =======================================================
 
 const workOrdersReport = computed(() => kpis.value?.work_orders_report || {
   ot_totales: [],
   sla: [],
   technicians: {},
-  satisfaction: [],
 })
 
 const otTotalesSeries = computed(() => {
@@ -568,23 +648,6 @@ const slaOptions = computed(() => {
     colors: ['#28C76F', '#FF9F43', '#EA5455', '#7367F0'],
     dataLabels: { enabled: true },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
-    stroke: { show: false },
-  }
-})
-
-const satisfaccionSeries = computed(() => {
-  return workOrdersReport.value.satisfaction.map(i => i.count)
-})
-
-const satisfaccionOptions = computed(() => {
-  const labels = workOrdersReport.value.satisfaction.map(i => i.status)
-
-  return {
-    chart: { type: 'donut', background: 'transparent' },
-    labels: labels.length > 0 ? labels : ['Sin datos'],
-    colors: ['#28C76F', '#00CFE8', '#EA5455'],
-    legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
-    plotOptions: { pie: { donut: { size: '55%' } } },
     stroke: { show: false },
   }
 })
@@ -1417,17 +1480,207 @@ const tecnicosOptions = computed(() => {
         </VCol>
       </VRow>
 
-      <!-- NUEVO: Panel de Rendimiento de Taller (Órdenes de Trabajo) -->
+      <!-- SECCIÓN: GESTIÓN DE COMPRAS Y PROVEEDORES -->
+      <div class="mt-8 mb-4">
+        <div class="d-flex justify-space-between align-center flex-wrap gap-2">
+          <div>
+            <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
+              <VIcon
+                icon="ri-truck-line"
+                color="primary"
+              />
+              Compras a Proveedores & Repuestos Adquiridos
+            </h2>
+            <p class="text-caption text-medium-emphasis mb-0">
+              Proveedores con mayor facturación y distribución de productos más comprados
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <VBtn
+              size="small"
+              variant="tonal"
+              color="primary"
+              prepend-icon="ri-exchange-dollar-line"
+              to="/invoice/reconciliation"
+              class="font-weight-bold"
+            >
+              Conciliación
+            </VBtn>
+            <VBtn
+              size="small"
+              variant="elevated"
+              color="primary"
+              prepend-icon="ri-file-list-3-line"
+              to="/invoice/list"
+              class="font-weight-bold"
+            >
+              Ver Compras
+            </VBtn>
+          </div>
+        </div>
+      </div>
+
+      <VRow class="mb-6">
+        <!-- Top Proveedores a los que más se les ha comprado -->
+        <VCol
+          cols="12"
+          lg="7"
+        >
+          <VCard
+            elevation="0"
+            class="pa-5 mock-card h-100 d-flex flex-column justify-space-between"
+          >
+            <div>
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-3 d-flex justify-space-between align-center flex-wrap gap-2"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-store-3-line" />
+                  <span>Top Proveedores con Mayor Facturación</span>
+                </div>
+                <VChip
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="font-weight-bold"
+                >
+                  Total: {{ formatCurrency(kpis.total_purchases_spent) }}
+                </VChip>
+              </div>
+
+              <div
+                v-if="topSuppliers.length === 0"
+                class="text-center py-8 text-medium-emphasis"
+              >
+                <VIcon icon="ri-inbox-line" size="40" class="mb-2 text-disabled" />
+                <p class="text-caption mb-0">Sin compras registradas aún en el sistema.</p>
+              </div>
+
+              <div
+                v-else
+                class="d-flex flex-column gap-3"
+              >
+                <div
+                  v-for="(sup, idx) in topSuppliers"
+                  :key="sup.id"
+                  class="pa-3 rounded-xl border d-flex align-center justify-space-between flex-wrap gap-3 transition-all hover-elevate"
+                  style="background-color: rgba(var(--v-theme-surface), 1); border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+                >
+                  <!-- Rank + Info -->
+                  <div class="d-flex align-center gap-3 flex-grow-1" style="min-width: 220px;">
+                    <div
+                      class="supplier-rank-badge font-weight-black"
+                      :class="`rank-${idx + 1}`"
+                    >
+                      #{{ idx + 1 }}
+                    </div>
+
+                    <div class="overflow-hidden" style="max-width: 280px;">
+                      <div class="font-weight-bold text-subtitle-2 text-high-emphasis text-truncate" :title="sup.name">
+                        {{ sup.name }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis d-flex align-center gap-2 mt-0.5">
+                        <span v-if="sup.ruc">RUC: <code class="text-primary">{{ sup.ruc }}</code></span>
+                        <span v-if="sup.last_purchase">• Última: {{ sup.last_purchase }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Invoices Count & Total -->
+                  <div class="d-flex align-center justify-space-between justify-sm-end gap-4" style="min-width: 200px;">
+                    <VChip
+                      size="x-small"
+                      color="secondary"
+                      variant="tonal"
+                      class="font-weight-medium"
+                    >
+                      {{ sup.invoices_count }} {{ sup.invoices_count === 1 ? 'factura' : 'facturas' }}
+                    </VChip>
+
+                    <div class="text-right" style="min-width: 110px;">
+                      <div class="font-weight-black text-subtitle-1 text-high-emphasis font-mono">
+                        {{ formatCurrency(sup.total) }}
+                      </div>
+                      <div class="d-flex align-center justify-end gap-1 text-caption text-medium-emphasis">
+                        <span class="font-weight-bold text-primary">{{ sup.percentage }}%</span>
+                        <span>del total</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Progress Linear -->
+                  <div class="w-100 mt-1">
+                    <VProgressLinear
+                      :model-value="sup.percentage"
+                      :color="idx === 0 ? '#7367F0' : (idx === 1 ? '#00CFE8' : (idx === 2 ? '#28C76F' : '#FF9F43'))"
+                      height="5"
+                      rounded
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+
+        <!-- Pastel del Producto Más Comprado -->
+        <VCol
+          cols="12"
+          lg="5"
+        >
+          <VCard
+            elevation="0"
+            class="pa-5 mock-card h-100 d-flex flex-column justify-space-between"
+          >
+            <div>
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-3 d-flex align-center gap-2"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <VIcon icon="ri-pie-chart-line" />
+                <span>Productos Más Comprados a Proveedores</span>
+              </div>
+              <p class="text-caption text-medium-emphasis mb-2">
+                Distribución por unidades adquiridas según facturas de compra
+              </p>
+
+              <div
+                v-if="topPurchasedProducts.length === 0"
+                class="text-center py-10 text-medium-emphasis"
+              >
+                <VIcon icon="ri-pie-chart-2-line" size="48" class="mb-2 text-disabled" />
+                <p class="text-caption mb-0">Sin ítems de compras procesados aún.</p>
+              </div>
+
+              <div
+                v-else
+                class="pa-2 d-flex justify-center align-center"
+              >
+                <VueApexCharts
+                  type="donut"
+                  height="330"
+                  width="100%"
+                  :options="purchasedProductsOptions"
+                  :series="purchasedProductsSeries"
+                />
+              </div>
+            </div>
+          </VCard>
+        </VCol>
+      </VRow>
+
+      <!-- Panel de Rendimiento de Taller (Órdenes de Trabajo) -->
       <div class="mt-8 mb-4">
         <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
           <VIcon
             icon="ri-tools-fill"
             color="primary"
           />
-          Reporte Inicial Técnicos - Basado en OTs
+          Rendimiento Operativo de Taller - Basado en OTs
         </h2>
         <p class="text-caption text-medium-emphasis">
-          Métricas operativas y rendimiento del personal técnico
+          Métricas de órdenes de trabajo y rendimiento del personal técnico
         </p>
       </div>
 
@@ -1435,22 +1688,22 @@ const tecnicosOptions = computed(() => {
         <!-- OT Totales -->
         <VCol
           cols="12"
-          md="4"
+          md="6"
         >
           <VCard
             elevation="0"
             class="pa-4 mock-card h-100"
           >
             <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">
-              OTs Totales
+              OTs Totales por Estado
             </div>
             <div class="text-h4 font-weight-black text-high-emphasis mb-4">
-              {{ otTotalesSeries.reduce((a, b) => a + b, 0) }}
+              {{ otTotalesSeries.reduce((a, b) => a + b, 0) }} órdenes
             </div>
             <div class="pa-2 d-flex justify-center align-center">
               <VueApexCharts
                 type="donut"
-                height="220"
+                height="240"
                 width="100%"
                 :options="otTotalesOptions"
                 :series="otTotalesSeries"
@@ -1462,22 +1715,22 @@ const tecnicosOptions = computed(() => {
         <!-- SLA -->
         <VCol
           cols="12"
-          md="4"
+          md="6"
         >
           <VCard
             elevation="0"
             class="pa-4 mock-card h-100"
           >
             <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
-              SLA
+              SLA de Cierre de Órdenes
             </div>
             <div class="text-caption text-medium-emphasis mb-4">
-              Días hasta que la OT queda como Cerrada-OK
+              Tiempo en días hasta que la OT queda como Cerrada / Finalizada
             </div>
-            <div class="pa-2 d-flex justify-center align-center mt-4">
+            <div class="pa-2 d-flex justify-center align-center mt-2">
               <VueApexCharts
                 type="pie"
-                height="220"
+                height="240"
                 width="100%"
                 :options="slaOptions"
                 :series="slaSeries"
@@ -1486,43 +1739,16 @@ const tecnicosOptions = computed(() => {
           </VCard>
         </VCol>
 
-        <!-- Satisfacción del Cliente -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">
-              Conforme del Cliente
-            </div>
-            <div class="pa-2 d-flex justify-center align-center mt-8">
-              <VueApexCharts
-                type="donut"
-                height="220"
-                width="100%"
-                :options="satisfaccionOptions"
-                :series="satisfaccionSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <VRow class="mb-6">
         <!-- Cant de Servicios por Técnico -->
         <VCol
           cols="12"
-          md="8"
         >
           <VCard
             elevation="0"
             class="pa-4 mock-card h-100"
           >
             <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">
-              Cant de Servicios por Técnico
+              Cantidad de Servicios Asignados por Técnico
             </div>
             <div class="pa-2">
               <VueApexCharts
@@ -1839,4 +2065,49 @@ const tecnicosOptions = computed(() => {
     </VDialog>
   </VContainer>
 </template>
+
+<style scoped>
+.supplier-rank-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.supplier-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #FFB400 0%, #FF8F00 100%);
+  box-shadow: 0 4px 10px rgba(255, 180, 0, 0.4);
+}
+
+.supplier-rank-badge.rank-2 {
+  background: linear-gradient(135deg, #A8AAAE 0%, #787B80 100%);
+  box-shadow: 0 4px 10px rgba(168, 170, 174, 0.4);
+}
+
+.supplier-rank-badge.rank-3 {
+  background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+  box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4);
+}
+
+.supplier-rank-badge.rank-4,
+.supplier-rank-badge.rank-5,
+.supplier-rank-badge.rank-6 {
+  background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
+  box-shadow: 0 4px 10px rgba(115, 103, 240, 0.3);
+}
+
+.hover-elevate {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.hover-elevate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+}
+</style>
 
