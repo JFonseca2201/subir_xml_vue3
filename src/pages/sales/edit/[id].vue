@@ -18,6 +18,8 @@ const isLoading = ref(false)
 const isDocumentNumberLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
+const isDispatching = ref(false)
+const isProcessing = computed(() => loader.loading || isDispatching.value)
 
 // Opciones
 const documentTypes = [
@@ -794,8 +796,6 @@ const submitForm = async () => {
   }
 }
 
-const isDispatching = ref(false)
-
 const dispatchSale = async () => {
   isDispatching.value = true
   sale.value.payment_status = 'pending'
@@ -948,6 +948,7 @@ onMounted(() => {
     <VForm
       v-else
       ref="formRef"
+      :disabled="isProcessing"
       @submit.prevent="submitForm"
     >
       <VRow>
@@ -1957,11 +1958,15 @@ onMounted(() => {
           <!-- Acciones -->
           <VCard class="elevation-2">
             <VCardText class="pa-6">
-              <div class="d-flex justify-end gap-3">
+              <div
+                class="d-flex justify-end gap-3"
+                :style="isProcessing ? 'pointer-events: none; opacity: 0.75;' : ''"
+              >
                 <VBtn
                   color="grey"
                   variant="outlined"
                   prepend-icon="ri-close-line"
+                  :disabled="isProcessing"
                   @click="router.push(sale.document_type === 'quote' ? '/quotes/list' : '/sales/list')"
                 >
                   Cancelar
@@ -1971,7 +1976,8 @@ onMounted(() => {
                   color="secondary"
                   variant="elevated"
                   prepend-icon="ri-draft-line"
-                  :loading="loader.loading"
+                  :loading="loader.loading && !isDispatching"
+                  :disabled="isProcessing"
                   @click.prevent="saveDraft"
                 >
                   Actualizar Borrador
@@ -1982,17 +1988,18 @@ onMounted(() => {
                   variant="elevated"
                   prepend-icon="ri-truck-line"
                   :loading="isDispatching"
+                  :disabled="isProcessing"
                   @click.prevent="dispatchSale"
                 >
                   Despachar (Pago Pendiente)
                 </VBtn>
                 <VBtn
                   type="submit"
-                  :disabled="sale.status === 'canceled'"
+                  :disabled="sale.status === 'canceled' || isProcessing"
                   color="primary"
                   variant="elevated"
                   prepend-icon="ri-save-3-line"
-                  :loading="loader.loading"
+                  :loading="loader.loading && !isDispatching"
                   size="large"
                 >
                   {{ sale.status === 'draft' ? 'Finalizar Venta' : 'Guardar Cambios' }}

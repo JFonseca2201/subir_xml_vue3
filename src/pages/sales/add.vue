@@ -29,6 +29,7 @@ const isLoading = ref(false)
 const isSavingDraft = ref(false)
 const isDispatching = ref(false)
 const isSubmitting = ref(false)
+const isProcessing = computed(() => isSubmitting.value || isSavingDraft.value || isDispatching.value || loader.loading)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 
@@ -1390,6 +1391,7 @@ onMounted(async () => {
     <VForm
       v-else
       ref="formRef"
+      :disabled="isProcessing"
       @submit.prevent="submitForm"
     >
       <VRow>
@@ -2380,12 +2382,16 @@ onMounted(async () => {
           <!-- Acciones -->
           <VCard class="elevation-2">
             <VCardText class="pa-6">
-              <div class="d-flex justify-end gap-3">
+              <div
+                class="d-flex justify-end gap-3"
+                :style="isProcessing ? 'pointer-events: none; opacity: 0.75;' : ''"
+              >
                 <VBtn
                   type="button"
                   color="grey"
                   variant="outlined"
                   prepend-icon="ri-close-line"
+                  :disabled="isProcessing"
                   @click="router.push('/sales/list')"
                 >
                   Cancelar
@@ -2397,6 +2403,7 @@ onMounted(async () => {
                   variant="elevated"
                   prepend-icon="ri-draft-line"
                   :loading="isSavingDraft"
+                  :disabled="isProcessing"
                   @click.prevent="saveDraft"
                 >
                   Guardar Borrador
@@ -2408,6 +2415,7 @@ onMounted(async () => {
                   variant="elevated"
                   prepend-icon="ri-truck-line"
                   :loading="isDispatching"
+                  :disabled="isProcessing"
                   @click.prevent="dispatchSale"
                 >
                   Despachar (Pago Pendiente)
@@ -2418,9 +2426,10 @@ onMounted(async () => {
                   variant="elevated"
                   prepend-icon="ri-save-3-line"
                   :loading="isSubmitting"
+                  :disabled="isProcessing"
                   size="large"
                 >
-                  Registrar Venta
+                  {{ isQuote ? 'Registrar Cotización' : (sale.document_type === 'invoice' ? 'Registrar Factura' : 'Registrar Venta') }}
                 </VBtn>
               </div>
             </VCardText>
