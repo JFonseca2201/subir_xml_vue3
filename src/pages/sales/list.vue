@@ -384,6 +384,16 @@ const openSriErrorDialog = errorMsg => {
   sriErrorDialogVisible.value = true
 }
 
+const getDownloadFileName = (item, extension) => {
+  const ot = item.work_order_number || item.work_order?.number || item.document_number || 'DOC'
+  const surname = item.client?.surname ? item.client.surname.trim() : ''
+  const name = item.client?.name ? item.client.name.trim() : ''
+  let clientName = (surname || name) ? `${surname} ${name}`.trim() : (item.client?.full_name || 'CLIENTE')
+  clientName = clientName.trim()
+  const cleanName = `${ot} ${clientName}`.replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ').trim()
+  return `${cleanName}.${extension}`
+}
+
 const downloadXml = async item => {
   try {
     const response = await $api(`sales/${item.id}/xml`, { responseType: 'blob' })
@@ -391,7 +401,7 @@ const downloadXml = async item => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `factura_${item.document_number}.xml`
+    a.download = getDownloadFileName(item, 'xml')
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -409,7 +419,7 @@ const downloadRide = async item => {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `RIDE_${item.document_number}.pdf`
+    a.download = getDownloadFileName(item, 'pdf')
     document.body.appendChild(a)
     a.click()
     window.URL.revokeObjectURL(url)
@@ -502,8 +512,7 @@ const downloadSinglePDF = async sale => {
     const plate = (sale.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
     const docNumber = (sale.document_number || 'Documento').replace(/[^a-zA-Z0-9\-_]/g, '')
     const parts = [typeLabel, docNumber, clientName]
-    if (plate) parts.push(plate)
-    const fileName = parts.join('_') + '.pdf'
+    const fileName = getDownloadFileName(sale, 'pdf')
 
     const a = document.createElement('a')
 
