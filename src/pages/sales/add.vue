@@ -732,11 +732,11 @@ watch(() => selectedVehicle.value, newVal => {
 
 // Envío del formulario
 const submitForm = async () => {
+  if (isSubmitting.value) return
+
   getUserId()
   sale.value.user_id = userId.value
-  console.log(userId.value)
 
-  //return
   showValidationError.value = false
   validationErrorMessage.value = ''
 
@@ -904,7 +904,7 @@ const submitForm = async () => {
   } catch (error) {
     console.error('Error enviando formulario', error)
 
-    const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+    const errMsg = error.data?.error || error.data?.message || error.response?._data?.error || error.response?._data?.message || error.message || 'Error al procesar la solicitud'
 
     showNotification(errMsg, 'error')
   } finally {
@@ -977,13 +977,13 @@ const saveDraft = async () => {
 
 // Despachar venta con pago pendiente
 const dispatchSale = async () => {
+  if (isDispatching.value) return
+
   getUserId()
   sale.value.user_id = userId.value
 
   showValidationError.value = false
   validationErrorMessage.value = ''
-
-
 
   // Validar que haya un cliente seleccionado
   if (!sale.value.client_id) {
@@ -1089,7 +1089,7 @@ const dispatchSale = async () => {
   } catch (error) {
     console.error('Error al despachar venta', error)
 
-    const errMsg = error.response?._data?.message || 'Error al procesar la solicitud'
+    const errMsg = error.data?.error || error.data?.message || error.response?._data?.error || error.response?._data?.message || error.message || 'Error al procesar la solicitud'
 
     showNotification(errMsg, 'error')
   } finally {
