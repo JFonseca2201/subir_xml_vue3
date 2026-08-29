@@ -188,7 +188,7 @@ onMounted(() => {
             Saldos a Favor
           </VBtn>
           <VBtn color="primary" prepend-icon="ri-add-circle-line" to="/invoice/manual-purchase">
-            Nueva Compra
+            Nueva Compra (Manual / XML)
           </VBtn>
         </div>
       </div>
@@ -306,9 +306,10 @@ onMounted(() => {
               </tr>
             </tbody>
             <tbody v-else>
-              <tr v-for="invoice in list_invoices" :key="invoice.id" class="invoices-row align-middle">
+              <tr v-for="(invoice, index) in list_invoices" :key="invoice.id" class="invoices-row align-middle">
                 <td class="text-center py-3">
-                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ invoice.id }}</span>
+                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ (currentPage - 1) * (perPage || 10) +
+                    index + 1 }}</span>
                 </td>
 
                 <td class="text-left py-3" style="max-width: 250px;">

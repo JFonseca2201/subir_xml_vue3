@@ -696,6 +696,17 @@ const grandTotal = computed(() => {
   return subtotal.value + totalTax.value
 })
  */
+const customProductFilter = (value, query, item) => {
+  if (!query) return true
+  const q = query.toString().toLowerCase().trim()
+  const raw = item?.raw || item || {}
+  const desc = (raw.description || raw.name || '').toString().toLowerCase()
+  const sku = (raw.sku || raw.code || '').toString().toLowerCase()
+  const brand = (raw.brand || '').toString().toLowerCase()
+
+  return desc.includes(q) || sku.includes(q) || brand.includes(q)
+}
+
 const addProductToItems = product => {
   if (!product) return
 
@@ -1140,8 +1151,9 @@ onMounted(() => {
             </VCardTitle>
             <VCardText class="px-6">
               <VAutocomplete v-if="!xmlLoadedInfo && !isDuplicateInvoice" v-model="searchProduct" :items="products"
-                item-title="description" item-value="id" label="Buscar Producto en catálogo para añadir..."
-                placeholder="Escribe el nombre o SKU" variant="outlined" prepend-inner-icon="ri-search-line"
+                item-title="description" item-value="id" :custom-filter="customProductFilter"
+                label="Buscar Producto en catálogo por Nombre o SKU para añadir..."
+                placeholder="Escribe el nombre o SKU (ej: 03-005...)" variant="outlined" prepend-inner-icon="ri-search-line"
                 return-object clearable class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts"
                 :disabled="!formData.supplier_id" @update:model-value="addProductToItems">
                 <template #no-data>
@@ -1341,9 +1353,24 @@ onMounted(() => {
                         </div>
                       </td>
 
-                      <!-- Cantidad (Columna Individual) -->
-                      <td class="text-center py-3">
-                        <span class="text-body-2 font-weight-bold text-high-emphasis">{{ item.quantity }}</span>
+                      <!-- Cantidad (Columna Individual - Editable en Compra Manual) -->
+                      <td class="text-center py-2" style="width: 75px;">
+                        <VTextField
+                          v-if="!xmlLoadedInfo && !isDuplicateInvoice"
+                          v-model.number="item.quantity"
+                          type="number"
+                          min="1"
+                          step="1"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          class="custom-number-input"
+                          style="max-width: 65px; margin: 0 auto;"
+                          @update:model-value="updateItemTotals(item)"
+                        />
+                        <span v-else class="text-body-2 font-weight-bold text-high-emphasis">
+                          {{ item.quantity }}
+                        </span>
                       </td>
 
                       <!-- Precio Unitario (Columna Individual) -->
