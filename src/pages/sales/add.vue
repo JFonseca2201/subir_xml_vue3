@@ -32,6 +32,20 @@ const isSubmitting = ref(false)
 const isProcessing = computed(() => isSubmitting.value || isSavingDraft.value || isDispatching.value || loader.loading)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
+const isConfirmInvoiceDialogVisible = ref(false)
+
+const computedPaymentMethodSummary = computed(() => {
+  if (sale.value.payment_status === 'pending' || sale.value.is_credited) {
+    return 'Crédito / Pendiente'
+  }
+  if (paymentDistributions.value && paymentDistributions.value.length > 0) {
+    const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length > 0) {
+      return methods.join(', ')
+    }
+  }
+  return sale.value.payment_method || 'Contado'
+})
 
 // Opciones
 const documentTypes = [
@@ -66,7 +80,7 @@ const getLocalDateString = () => {
 }
 
 const sale = ref({
-  document_type: 'sale_note',
+  document_type: 'invoice',
   document_number: '',
   client_id: null,
   vehicle_id: null,
@@ -857,6 +871,27 @@ const submitForm = async () => {
     }
   }
 
+  // Sincronizar método de pago de cabecera con los pagos distribuidos antes de confirmar
+  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length === 1) {
+      sale.value.payment_method = methods[0]
+    } else if (methods.length > 1) {
+      sale.value.payment_method = methods.join(', ')
+    }
+  }
+
+  // Si es Factura, abrimos el VDialog de confirmación
+  if (sale.value.document_type === 'invoice') {
+    isConfirmInvoiceDialogVisible.value = true
+  } else {
+    await executeSaleSubmission()
+  }
+}
+
+// Ejecución real del registro de la venta o factura
+const executeSaleSubmission = async () => {
+  if (isSubmitting.value) return
   isSubmitting.value = true
 
   try {
@@ -893,7 +928,13 @@ const submitForm = async () => {
     })
 
     if (response.success || response.status === 201 || response.status === 200) {
-      showNotification('Registro procesado exitosamente', 'success')
+      isConfirmInvoiceDialogVisible.value = false
+      showNotification(
+        sale.value.document_type === 'invoice'
+          ? 'Factura generada y encolada para autorización SRI'
+          : 'Registro procesado exitosamente',
+        'success'
+      )
       if (sale.value.document_type === 'quote') {
         router.push('/quotes/list')
       } else {
@@ -1270,6 +1311,8 @@ onMounted(async () => {
     sale.value.document_type = 'quote'
     sale.value.payment_status = 'pending'
   }
+
+  await onDocumentTypeChange()
 })
 </script>
 
@@ -1288,23 +1331,47 @@ onMounted(async () => {
       <div>
         <div class="d-flex align-center">
           <VAvatar
-            :color="isQuote ? 'info-lighten-5' : 'primary-lighten-5'"
-            size="48"
-            class="mr-3"
+            :color="isQuote ? 'info-lighten-5' : (sale.document_type === 'invoice' ? 'primary-lighten-5' : 'success-lighten-5')"
+            size="52"
+            class="mr-3 elevation-1"
           >
             <VIcon
-              :icon="isQuote ? 'ri-file-list-3-line' : 'ri-add-line'"
-              size="32"
-              :color="isQuote ? 'info' : 'primary'"
+              :icon="isQuote ? 'ri-file-list-3-line' : (sale.document_type === 'invoice' ? 'ri-bill-line' : 'ri-file-text-line')"
+              size="30"
+              :color="isQuote ? 'info' : (sale.document_type === 'invoice' ? 'primary' : 'success')"
             />
           </VAvatar>
-          <h1 class="text-h4 font-weight-bold mb-1">
-            {{ isQuote ? 'Registrar Cotización' : 'Registrar Venta' }}
-          </h1>
+          <div>
+            <div class="d-flex align-center gap-2 flex-wrap">
+              <h1 class="text-h4 font-weight-bold mb-0">
+                {{ isQuote ? 'Registrar Cotización' : (sale.document_type === 'invoice' ? 'Registrar Factura' : 'Registrar Venta') }}
+              </h1>
+              <VChip
+                v-if="!isQuote && sale.document_type === 'invoice'"
+                color="primary"
+                size="small"
+                variant="flat"
+                class="font-weight-bold"
+                prepend-icon="ri-shield-check-line"
+              >
+                SRI Electrónica
+              </VChip>
+              <VChip
+                v-else-if="!isQuote"
+                color="success"
+                size="small"
+                variant="tonal"
+                class="font-weight-bold"
+                prepend-icon="ri-store-2-line"
+              >
+                Nota de Venta
+              </VChip>
+            </div>
+            <p class="text-medium-emphasis mb-0 mt-1">
+              {{ isQuote ? 'Crea una nueva cotización de servicios y repuestos para un cliente' : (sale.document_type === 'invoice' ? 'Emisión de comprobante fiscal electrónico autorizado por el SRI' : 'Crea un nuevo comprobante comercial de venta') }}
+            </p>
+          </div>
         </div>
-        <p class="text-medium-emphasis mb-0">
-          {{ isQuote ? 'Crea una nueva cotización para un cliente' : 'Crea un nuevo documento comercial' }}
-        </p>
       </div>
     </div>
 
@@ -1420,7 +1487,7 @@ onMounted(async () => {
                       Tipo de Documento
                     </h3>
                     <p class="text-caption text-grey mb-0">
-                      Selecciona el tipo de comprobante comercial
+                      Selecciona el comprobante comercial que deseas emitir
                     </p>
                   </div>
                 </div>
@@ -1436,78 +1503,104 @@ onMounted(async () => {
                   </div>
                 </div>
               </div>
-              <VRow>
-                <VCol
-                  cols="12"
-                  md="6"
+              <!-- Selector Unido de Tipo de Documento -->
+              <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
+                <!-- Opción Nota de Venta -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
                 >
-                  <VCard
-                    :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all"
-                    variant="outlined"
-                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
-                  >
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar
-                        :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'"
-                        size="40"
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'"
+                      size="44"
+                      class="transition-all"
+                    >
+                      <VIcon
+                        icon="ri-file-text-line"
+                        size="24"
+                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div
+                        class="text-subtitle-1 font-weight-bold"
+                        :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'"
                       >
-                        <VIcon
-                          icon="ri-file-list-3-line"
-                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey'"
-                        />
-                      </VAvatar>
-                      <div>
-                        <div
-                          class="font-weight-bold"
-                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'"
-                        >
-                          Nota de Venta
-                        </div>
-                        <div class="text-caption text-medium-emphasis">
-                          Documento de venta
-                        </div>
+                        Nota de Venta
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Comprobante comercial interno
                       </div>
                     </div>
-                  </VCard>
-                </VCol>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      size="x-small"
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
+                      :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'"
+                      class="font-weight-bold"
+                    >
+                      Interno
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="22"
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'"
+                    />
+                  </div>
+                </div>
 
-                <VCol
-                  cols="12"
-                  md="6"
+                <!-- Opción Factura -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
                 >
-                  <VCard
-                    :class="sale.document_type === 'invoice' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-lg elevation-0 hover:elevation-2 transition-all"
-                    variant="outlined"
-                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
-                  >
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar
-                        :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-2'"
-                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'flat'"
-                        size="40"
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'"
+                      size="44"
+                      class="transition-all"
+                    >
+                      <VIcon
+                        icon="ri-bill-line"
+                        size="24"
+                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div
+                        class="text-subtitle-1 font-weight-bold"
+                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'"
                       >
-                        <VIcon
-                          icon="ri-bill-line"
-                          :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                        />
-                      </VAvatar>
-                      <div>
-                        <div
-                          class="font-weight-bold"
-                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey'"
-                        >
-                          Factura
-                        </div>
-                        <div class="text-caption text-medium-emphasis">
-                          Documento fiscal
-                        </div>
+                        Factura Electrónica
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Documento fiscal válido para el SRI
                       </div>
                     </div>
-                  </VCard>
-                </VCol>
-              </VRow>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      size="x-small"
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
+                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'"
+                      class="font-weight-bold"
+                    >
+                      SRI Oficial
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="22"
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'"
+                    />
+                  </div>
+                </div>
+              </div>
             </VCardText>
           </VCard>
 
@@ -2591,61 +2684,138 @@ onMounted(async () => {
     </VDialog>
 
     <!-- Dialog para agregar servicio express -->
+    <!-- Dialog para agregar servicio express -->
     <AddServiceDialog
       :is-dialog-visible="isAddServiceDialogVisible"
       @update:is-dialog-visible="isAddServiceDialogVisible = $event"
       @service-added="handleServiceAdded"
     />
+
+    <!-- Diálogo de confirmación para Factura -->
+    <VDialog
+      v-model="isConfirmInvoiceDialogVisible"
+      max-width="540px"
+      persistent
+    >
+      <VCard class="custom-dialog-card rounded-xl overflow-hidden elevation-10">
+        <!-- Header Banner Primary -->
+        <div
+          class="custom-dialog-header-primary pa-5 text-center position-relative"
+          style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white;"
+        >
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn position-absolute"
+            style="top: 12px; right: 12px; color: white;"
+            :disabled="isSubmitting"
+            @click="isConfirmInvoiceDialogVisible = false"
+          />
+          <div
+            class="mx-auto mb-3 d-flex align-center justify-center rounded-circle"
+            style="width: 64px; height: 64px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);"
+          >
+            <VIcon
+              icon="ri-bill-line"
+              size="36"
+              color="white"
+            />
+          </div>
+          <h3 class="text-h5 font-weight-bold text-white mb-1">
+            ¿Estás seguro que deseas realizar esta "FACTURA"?
+          </h3>
+          <p class="text-caption text-white opacity-90 mb-0">
+            Se emitirá el comprobante electrónico fiscal con autorización ante el SRI.
+          </p>
+        </div>
+
+        <VCardText class="pa-5 bg-grey-lighten-5">
+          <!-- Resumen de Factura -->
+          <VCard class="pa-4 rounded-lg border border-light elevation-0 mb-4 bg-white">
+            <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
+              <span class="text-caption text-medium-emphasis font-weight-medium">CLIENTE</span>
+              <span class="text-body-2 font-weight-bold text-grey-darken-4 text-right">
+                {{ selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname || ''}`.trim() || selectedClient.n_document) : 'Consumidor Final' }}
+              </span>
+            </div>
+
+            <div
+              v-if="selectedClient?.n_document"
+              class="d-flex justify-space-between align-center pb-2 border-b mb-3"
+            >
+              <span class="text-caption text-medium-emphasis font-weight-medium">RUC / CÉDULA</span>
+              <span class="text-body-2 font-weight-semibold text-primary">
+                {{ selectedClient.n_document }}
+              </span>
+            </div>
+
+            <div
+              v-if="selectedVehicle"
+              class="d-flex justify-space-between align-center pb-2 border-b mb-3"
+            >
+              <span class="text-caption text-medium-emphasis font-weight-medium">VEHÍCULO</span>
+              <span class="text-body-2 font-weight-semibold text-grey-darken-3">
+                {{ selectedVehicle.license_plate }} ({{ selectedVehicle.brand }} {{ selectedVehicle.model }})
+              </span>
+            </div>
+
+            <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
+              <span class="text-caption text-medium-emphasis font-weight-medium">CONDICIÓN DE PAGO</span>
+              <VChip
+                :color="sale.payment_status === 'pending' ? 'warning' : 'success'"
+                size="x-small"
+                variant="tonal"
+                class="font-weight-bold"
+              >
+                {{ computedPaymentMethodSummary }}
+              </VChip>
+            </div>
+
+            <div class="d-flex justify-space-between align-center pt-1">
+              <span class="text-subtitle-1 font-weight-bold text-grey-darken-3">TOTAL A FACTURAR</span>
+              <span class="text-h5 font-weight-black text-primary">
+                ${{ total.toFixed(2) }}
+              </span>
+            </div>
+          </VCard>
+
+          <VAlert
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="rounded-lg mb-0 text-caption"
+            icon="ri-information-line"
+          >
+            Verifica que los datos del cliente y los valores sean correctos antes de emitir la factura.
+          </VAlert>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end gap-3 bg-white">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            :disabled="isSubmitting"
+            @click="isConfirmInvoiceDialogVisible = false"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-check-line"
+            :loading="isSubmitting"
+            size="large"
+            class="px-5 font-weight-bold"
+            @click="executeSaleSubmission"
+          >
+            Sí, emitir factura
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
-
-<style scoped>
-:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
-  max-width: 0 !important;
-  border-width: 0 !important;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

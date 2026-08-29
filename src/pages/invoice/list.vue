@@ -187,8 +187,8 @@ onMounted(() => {
           <VBtn color="success" variant="tonal" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits">
             Saldos a Favor
           </VBtn>
-          <VBtn color="primary" prepend-icon="ri-add-circle-line" to="/invoice/manual-purchase">
-            Nueva Compra (Manual / XML)
+          <VBtn color="primary" prepend-icon="ri-add-line" to="/invoice/manual-purchase">
+            Nueva Compra
           </VBtn>
         </div>
       </div>
@@ -351,9 +351,13 @@ onMounted(() => {
                 </td>
 
                 <td class="text-no-wrap text-center py-3">
-                  <VChip :color="invoice.invoice_process === 1 ? 'success' : 'warning'" variant="tonal" size="small">
-                    {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
-                  </VChip>
+                  <div
+                    class="status-pill-clean"
+                    :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
+                  </div>
                 </td>
 
                 <td class="text-no-wrap text-center py-3">
@@ -413,50 +417,3 @@ onMounted(() => {
       :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
-
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

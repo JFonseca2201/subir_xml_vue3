@@ -151,7 +151,7 @@ const confirmSendMail = async () => {
   isMailSending.value = true
   try {
     const isInvoice = mailSaleSelected.value.document_type === 'invoice'
-    const endpoint = isInvoice 
+    const endpoint = isInvoice
       ? `sales/${mailSaleSelected.value.id}/sri/enviar-email`
       : `sales/${mailSaleSelected.value.id}/enviar-cotizacion`
 
@@ -287,9 +287,22 @@ const getPaymentMethodColor = item => {
   const display = getPaymentMethodDisplay(item).toLowerCase()
   if (display.includes('transferencia')) return 'info'
   if (display.includes('efectivo')) return 'success'
+
   if (display.includes('+') || display.includes(',')) return 'primary'
 
   return 'secondary'
+}
+
+const getPaymentMethodClass = item => {
+  if (!item || item.payment_status === 'pending') return 'pending'
+
+  const display = (getPaymentMethodDisplay(item) || '').toLowerCase()
+  if (display.includes('transferencia') || display.includes('banco')) return 'transfer'
+  if (display.includes('efectivo')) return 'cash'
+  if (display.includes('tarjeta')) return 'card'
+  if (display.includes('+') || display.includes(',')) return 'mixed'
+
+  return 'default'
 }
 
 // Acciones
@@ -316,6 +329,11 @@ const viewSale = async sale => {
 const editSale = sale => {
   if (sale.status === 'canceled') {
     showNotification('No se puede editar una venta anulada', 'warning')
+
+    return
+  }
+  if (sale.document_type === 'invoice' && sale.sri_status === 'AUTORIZADA') {
+    showNotification('Esta factura ya fue autorizada por el SRI y no se puede editar', 'warning')
 
     return
   }
@@ -707,24 +725,24 @@ onMounted(() => {
           <!-- Vista de Tabla para Computadoras (Desktop) -->
           <div class="d-none d-md-block overflow-x-auto">
             <VTable hover class="sales-table bg-white">
-              <thead class="bg-grey-lighten-4">
+              <thead>
                 <tr>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 160px;">
+                  <th class="text-left py-3.5 px-4" style="width: 240px;">
                     Documento
                   </th>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 200px;">
+                  <th class="text-left py-3.5 px-4" style="min-width: 200px;">
                     Cliente
                   </th>
-                  <th class="text-left font-weight-medium text-grey-darken-2 py-3 px-4" style="min-width: 180px;">
+                  <th class="text-left py-3.5 px-4" style="min-width: 190px;">
                     Vehículo
                   </th>
-                  <th class="text-right font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 120px;">
+                  <th class="text-right py-3.5 px-4" style="width: 130px;">
                     Total
                   </th>
-                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 130px;">
+                  <th class="text-center py-3.5 px-4" style="width: 170px;">
                     Estado
                   </th>
-                  <th class="text-center font-weight-medium text-grey-darken-2 py-3 px-4" style="width: 120px;">
+                  <th class="text-center py-3.5 px-4" style="width: 110px;">
                     Acciones
                   </th>
                 </tr>
@@ -763,107 +781,150 @@ onMounted(() => {
 
               <tbody v-else>
                 <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
-                  class="align-middle border-b border-opacity-25">
-                  <td class="text-left py-3 px-4">
+                  class="sale-table-row align-middle border-b">
+                  <!-- 1. Documento (Estructura Premium: Tipo arriba con micro-badge, número mono y fecha) -->
+                  <td class="text-left py-3.5 px-4">
                     <div v-if="item" class="d-flex flex-column gap-1">
-                      <div class="d-flex align-center gap-2">
-                        <span class="text-caption font-weight-bold"
-                          :class="`text-${getDocumentTypeInfo(item.document_type)?.color}`">
+                      <!-- Línea 1: Badge de Tipo de Documento + Tag de OT -->
+                      <div class="d-flex align-center gap-1.5 flex-wrap">
+                        <span
+                          class="doc-type-badge-mini"
+                          :class="`doc-type-tag-${item.document_type}`"
+                        >
+                          <VIcon
+                            :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
+                            size="11"
+                            class="me-1"
+                          />
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </span>
+
                         <span
                           v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
-                          class="text-caption font-weight-bold text-indigo bg-indigo-lighten-5 px-1.5 py-0.5 rounded d-inline-flex align-center"
-                          :title="`Orden de Trabajo: ${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
-                          <VIcon icon="ri-file-settings-line" size="12" class="mr-1" />
+                          class="ot-tag-mini"
+                          :title="`Orden de Trabajo #${item.work_order_number || item.work_order?.number || item.workOrder?.number}`"
+                        >
                           OT: {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
                         </span>
                       </div>
-                      <div class="text-body-1 font-weight-medium text-grey-darken-4">
-                        {{ item.document_number }}
+
+                      <!-- Línea 2: Número de Comprobante Principal -->
+                      <div class="d-flex align-center">
+                        <span
+                          class="doc-number-text cursor-pointer"
+                          :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
+                          @click="viewSale(item)"
+                        >
+                          {{ item.document_number }}
+                        </span>
                       </div>
-                      <div class="text-caption text-medium-emphasis">
-                        {{ formatDate(item.service_date) }}
+
+                      <!-- Línea 3: Fecha sutil con micro icono -->
+                      <div class="d-flex align-center text-slate-400 gap-1" style="font-size: 0.72rem;">
+                        <VIcon icon="ri-calendar-line" size="12" class="text-slate-400" />
+                        <span>{{ formatDate(item.service_date) }}</span>
                       </div>
                     </div>
                   </td>
 
-                  <td class="text-left py-3 px-4">
+                  <!-- 2. Cliente -->
+                  <td class="text-left py-3.5 px-4">
                     <div v-if="item">
-                      <div class="text-body-2 font-weight-medium text-grey-darken-4"
-                        :title="getClientName(item.client)">
+                      <div class="text-body-2 font-weight-semibold text-slate-800 text-truncate"
+                        style="max-width: 240px;" :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis mt-1">
+                      <div v-if="item.client?.n_document" class="text-caption text-slate-400 font-mono mt-0.5">
                         {{ item.client.n_document }}
                       </div>
                     </div>
                   </td>
 
-                  <td class="text-left py-3 px-4">
+                  <!-- 3. Vehículo -->
+                  <td class="text-left py-3.5 px-4">
                     <div v-if="item?.vehicle">
-                      <div class="text-body-2 font-weight-medium text-grey-darken-4"
+                      <div class="text-body-2 font-weight-medium text-slate-700 text-truncate" style="max-width: 220px;"
                         :title="formatVehicleInfo(item.vehicle)">
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
-                      <div class="text-caption text-medium-emphasis mt-1">
-                        {{ item.vehicle.license_plate }}
-                      </div>
-                    </div>
-                    <span v-else class="text-medium-emphasis text-body-2">-</span>
-                  </td>
-
-                  <td class="text-right py-3 px-4">
-                    <div v-if="item" class="font-weight-medium text-body-1"
-                      :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
-                      <div
-                        v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
-                        class="text-caption text-medium-emphasis">
-                        De: {{ formatCurrency(item.total) }}
-                      </div>
-                      {{ formatCurrency(getPaidAmount(item)) }}
-                    </div>
-                  </td>
-
-                  <td class="text-center py-3 px-4">
-                    <div v-if="item" class="d-flex flex-column justify-center align-center gap-1">
-                      <div class="d-flex align-center gap-1">
-                        <VIcon :icon="getStatusInfo(item)?.icon" :color="getStatusInfo(item)?.color" size="15" />
-                        <span class="text-caption font-weight-bold" :class="`text-${getStatusInfo(item)?.color}`">
-                          {{ getStatusInfo(item)?.text }}
+                      <div class="mt-0.5">
+                        <span class="plate-badge font-mono">
+                          {{ item.vehicle.license_plate }}
                         </span>
                       </div>
+                    </div>
+                    <span v-else class="text-slate-400 text-body-2">-</span>
+                  </td>
 
-                      <!-- Detalle de Forma de Pago debajo del estado (Texto gris limpio sin chip) -->
-                      <div v-if="item.document_type !== 'quote' && item.status !== 'canceled'"
-                        class="d-flex align-center justify-center gap-1 text-caption text-grey-darken-1 mt-0-5"
-                        style="font-size: 0.72rem;" :title="getPaymentMethodDisplay(item)">
-                        <VIcon :icon="getPaymentMethodIcon(item)" size="12" color="grey-darken-1" />
-                        <span>{{ getPaymentMethodDisplay(item) }}</span>
+                  <!-- 4. Total -->
+                  <td class="text-right py-3.5 px-4">
+                    <div v-if="item" class="d-flex flex-column align-end gap-1">
+                      <div
+                        class="font-weight-bold text-body-1 text-slate-900 font-mono"
+                        :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
+                        style="font-size: 0.95rem;"
+                      >
+                        {{ formatCurrency(getPaidAmount(item)) }}
                       </div>
 
-                      <!-- Chip de Estado SRI (para Facturas) -->
-                      <VChip v-if="item.document_type === 'invoice' && item.sri_status" size="x-small"
-                        :color="getSriStatusInfo(item.sri_status).color" class="font-weight-bold mt-1 cursor-pointer"
-                        @click="item.sri_error ? openSriErrorDialog(item.sri_error) : null">
-                        <VIcon :icon="getSriStatusInfo(item.sri_status).icon" start size="12" />
-                        {{ getSriStatusInfo(item.sri_status).text }}
-                      </VChip>
+                      <!-- Micro-Pill de Método de Pago debajo del total -->
+                      <div
+                        v-if="item.document_type !== 'quote' && item.status !== 'canceled' && getPaymentMethodDisplay(item)"
+                        class="payment-method-pill"
+                        :class="`payment-method-${getPaymentMethodClass(item)}`"
+                      >
+                        <VIcon :icon="getPaymentMethodIcon(item)" size="11" />
+                        <span>{{ getPaymentMethodDisplay(item) }}</span>
+                      </div>
+                      <div
+                        v-else-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
+                        class="text-caption text-slate-400 font-mono"
+                        style="font-size: 0.72rem;"
+                      >
+                        de {{ formatCurrency(item.total) }}
+                      </div>
                     </div>
                   </td>
 
-                  <td class="text-center py-3 px-4">
+                  <!-- 5. Estado (Pills modernas y fijas sin distorsión) -->
+                  <td class="text-center py-3.5 px-4" style="white-space: nowrap;">
+                    <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
+                      <!-- Estado de Cobro -->
+                      <div class="status-pill-clean"
+                        :class="`status-${item.status === 'canceled' ? 'canceled' : (item.document_type === 'quote' ? 'quote' : item.payment_status)}`">
+                        <span class="status-dot" />
+                        <span>{{ getStatusInfo(item)?.text }}</span>
+                      </div>
+
+                      <!-- Estado SRI (Para facturas) -->
+                      <div v-if="item.document_type === 'invoice' && item.sri_status" class="sri-badge-clean"
+                        :class="`sri-${item.sri_status.toLowerCase()}`"
+                        :title="item.sri_error ? `Error SRI: ${item.sri_error}` : `Estado SRI: ${item.sri_status}`"
+                        @click="item.sri_error ? openSriErrorDialog(item.sri_error) : null">
+                        <VIcon :icon="getSriStatusInfo(item.sri_status).icon" size="12" class="me-1" />
+                        <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- 6. Acciones -->
+                  <td class="text-center py-3.5 px-4">
                     <div v-if="item" class="d-flex justify-center align-center gap-1">
-                      <VBtn variant="text" icon size="small" color="info" title="Ver Detalle" @click="viewSale(item)">
-                        <VIcon icon="ri-eye-line" size="18" />
+                      <VBtn variant="text" icon size="small" class="action-icon-btn text-slate-600" title="Ver Detalle"
+                        @click="viewSale(item)">
+                        <VIcon icon="ri-eye-line" size="17" />
                       </VBtn>
 
-                      <VBtn variant="text" icon size="small" color="warning" title="Editar" @click="editSale(item)">
-                        <VIcon icon="ri-pencil-line" size="18" />
+                      <VBtn variant="text" icon size="small" class="action-icon-btn text-amber-600"
+                        :disabled="item.status === 'canceled' || (item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA')"
+                        :title="(item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA') ? 'Factura autorizada por el SRI (No editable)' : 'Editar'"
+                        @click="editSale(item)">
+                        <VIcon icon="ri-pencil-line" size="17" />
                       </VBtn>
 
-                      <VBtn variant="text" icon size="small" color="secondary" title="Acciones">
-                        <VIcon icon="ri-more-2-line" size="18" />
+                      <VBtn variant="text" icon size="small" class="action-icon-btn text-slate-500"
+                        title="Más Acciones">
+                        <VIcon icon="ri-more-2-fill" size="17" />
                         <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                           <VList density="compact" class="py-1 rounded elevation-3 border">
                             <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2"
@@ -943,8 +1004,7 @@ onMounted(() => {
                               :class="`text-${getDocumentTypeInfo(item.document_type)?.color}`">
                               {{ getDocumentTypeInfo(item.document_type)?.text }}
                             </span>
-                            <span
-                              v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
+                            <span v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
                               class="text-caption font-weight-bold text-indigo bg-indigo-lighten-5 px-1.5 py-0.5 rounded d-inline-flex align-center"
                               :title="`Orden de Trabajo: ${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
                               <VIcon icon="ri-file-settings-line" size="12" class="mr-1" />
@@ -1027,8 +1087,10 @@ onMounted(() => {
                                 class="text-success text-body-2" @click="openPaymentDialog(item)" />
                               <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
                                 class="text-secondary text-body-2" @click="openMailDialog(item)" />
-                              <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-edit-line"
-                                title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
+                              <VListItem
+                                :disabled="item.status === 'canceled' || (item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA')"
+                                prepend-icon="ri-edit-line" title="Editar Venta" class="text-warning text-body-2"
+                                @click="editSale(item)" />
                               <VDivider class="my-1" />
                               <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
                                 title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
@@ -1227,50 +1289,3 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
-
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

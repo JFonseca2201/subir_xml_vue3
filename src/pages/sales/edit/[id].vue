@@ -19,7 +19,13 @@ const isDocumentNumberLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 const isDispatching = ref(false)
-const isProcessing = computed(() => loader.loading || isDispatching.value)
+const isAuthorizedInvoice = computed(() => {
+  return sale.value.document_type === 'invoice' && sale.value.sri_status === 'AUTORIZADA'
+})
+const isReadOnly = computed(() => {
+  return sale.value.status === 'canceled' || isAuthorizedInvoice.value
+})
+const isProcessing = computed(() => loader.loading || isDispatching.value || isReadOnly.value)
 
 // Opciones
 const documentTypes = [
@@ -64,6 +70,8 @@ const sale = ref({
   tax_amount: 0,
   total: 0,
   status: '',
+  sri_status: '',
+  sri_access_key: '',
   client: null,
   vehicle: null,
   items: [],
@@ -153,30 +161,56 @@ watch(() => sale.value.payment_status, newStatus => {
 
 // Watch para regenerar número cuando cambia el tipo de documento
 const onDocumentTypeChange = async () => {
-  // Si el documento original no era una cotización (es decir, era venta o factura),
-  // no se permite cambiar a ningún otro tipo.
-  if (originalDocumentType.value !== 'quote' && sale.value.document_type !== originalDocumentType.value) {
-    showNotification('Solo las cotizaciones pueden convertirse a ventas', 'warning')
-    sale.value.document_type = originalDocumentType.value
-    
+  // 1. Si era Factura, no se puede cambiar a ningún otro tipo
+  if (originalDocumentType.value === 'invoice' && sale.value.document_type !== 'invoice') {
+    showNotification('Una factura no puede convertirse en nota de venta ni en cotización', 'warning')
+    sale.value.document_type = 'invoice'
+
     return
   }
 
-  // Si el original es cotización y el usuario selecciona venta o factura:
-  if (originalDocumentType.value === 'quote' && sale.value.document_type !== 'quote') {
-    // Si el número actual todavía empieza con COT- o coincide con el original, obtenemos el nuevo número
-    if (sale.value.document_number.toUpperCase().startsWith('COT-') || sale.value.document_number === originalDocumentNumber.value) {
-      isDocumentNumberLoading.value = true
-      try {
-        const response = await $api('work-orders/next-number')
-        if (response && response.data) {
-          sale.value.document_number = response.data
-        }
-      } catch (error) {
-        console.error('Error al obtener el siguiente número OT:', error)
-      } finally {
-        isDocumentNumberLoading.value = false
+  // 2. Si era Nota de Venta, solo se puede convertir a Factura (no a cotización)
+  if (originalDocumentType.value === 'sale_note' && sale.value.document_type === 'quote') {
+    showNotification('Una nota de venta no puede convertirse en cotización', 'warning')
+    sale.value.document_type = 'sale_note'
+
+    return
+  }
+
+  // 3. Conversión de Nota de Venta -> Factura
+  if (originalDocumentType.value === 'sale_note' && sale.value.document_type === 'invoice') {
+    isDocumentNumberLoading.value = true
+    try {
+      const response = await $api('sales/next-number?document_type=invoice')
+      if (response && response.data) {
+        sale.value.document_number = response.data
       }
+      showNotification('Convertir a Factura: al guardar se emitirá comprobante electrónico con IVA al SRI', 'info')
+    } catch (error) {
+      console.error('Error al obtener secuencial de factura:', error)
+    } finally {
+      isDocumentNumberLoading.value = false
+    }
+
+    return
+  } else if (originalDocumentType.value === 'sale_note' && sale.value.document_type === 'sale_note') {
+    sale.value.document_number = originalDocumentNumber.value
+
+    return
+  }
+
+  // 4. Conversión desde Cotización
+  if (originalDocumentType.value === 'quote' && sale.value.document_type !== 'quote') {
+    isDocumentNumberLoading.value = true
+    try {
+      const response = await $api(`sales/next-number?document_type=${sale.value.document_type}`)
+      if (response && response.data) {
+        sale.value.document_number = response.data
+      }
+    } catch (error) {
+      console.error('Error al obtener secuencial:', error)
+    } finally {
+      isDocumentNumberLoading.value = false
     }
 
     // Establecer la fecha actual por defecto al cambiar a venta
@@ -184,7 +218,6 @@ const onDocumentTypeChange = async () => {
 
     sale.value.service_date = new Date(Date.now() - tzOffset).toISOString().split('T')[0]
   } else if (originalDocumentType.value === 'quote' && sale.value.document_type === 'quote') {
-    // Si vuelve a seleccionar cotización, restauramos el número original y la fecha original
     sale.value.document_number = originalDocumentNumber.value
     sale.value.service_date = originalServiceDate.value
   }
@@ -519,6 +552,8 @@ const loadSaleData = async () => {
       tax_amount: saleData.tax_amount,
       total: saleData.total,
       status: saleData.status,
+      sri_status: saleData.sri_status || '',
+      sri_access_key: saleData.sri_access_key || '',
       client: saleData.client,
       vehicle: saleData.vehicle,
       items: (saleData.details || []).map(d => {
@@ -651,6 +686,11 @@ const saveDraft = async () => {
 
 // Envío del formulario
 const submitForm = async () => {
+  if (isAuthorizedInvoice.value) {
+    showNotification('Esta factura ya fue autorizada por el SRI y no puede ser modificada', 'warning')
+    return
+  }
+
   showValidationError.value = false
   validationErrorMessage.value = ''
 
@@ -945,6 +985,21 @@ onMounted(() => {
       </VRow>
     </div>
 
+    <VAlert
+      v-if="isAuthorizedInvoice"
+      type="info"
+      variant="tonal"
+      class="mb-6 rounded-xl border-info border-2"
+      icon="ri-shield-check-line"
+    >
+      <div class="text-subtitle-1 font-weight-bold text-info">
+        Factura Electrónica Autorizada por el SRI
+      </div>
+      <div class="text-body-2">
+        Esta factura ya fue autorizada por el Servicio de Rentas Internas (SRI) y cuenta con validez tributaria oficial. Por normativa legal, no se pueden realizar modificaciones sobre este documento.
+      </div>
+    </VAlert>
+
     <VForm
       v-else
       ref="formRef"
@@ -953,9 +1008,9 @@ onMounted(() => {
     >
       <VRow>
         <VCol cols="12">
-          <!-- Tipo de Documento -->
+          <!-- Tipo de Documento (Permitido para Cotización o Nota de Venta) -->
           <VCard
-            v-if="false"
+            v-if="originalDocumentType === 'quote' || originalDocumentType === 'sale_note'"
             class="elevation-2 mb-4"
           >
             <VCardText class="pa-6">
@@ -976,13 +1031,116 @@ onMounted(() => {
                     Tipo de Documento
                   </h3>
                   <p class="text-caption text-grey mb-0">
-                    Selecciona el tipo de comprobante comercial
+                    {{ originalDocumentType === 'sale_note' ? 'Puedes convertir esta Nota de Venta en Factura Electrónica' : 'Selecciona el comprobante comercial que deseas emitir' }}
                   </p>
                 </div>
               </div>
-              <VRow>
+
+              <!-- Selector Unido cuando el original es Nota de Venta -->
+              <div
+                v-if="originalDocumentType === 'sale_note'"
+                class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row"
+              >
+                <!-- Opción Nota de Venta -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
+                >
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'"
+                      size="44"
+                      class="transition-all"
+                    >
+                      <VIcon
+                        icon="ri-file-text-line"
+                        size="24"
+                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div
+                        class="text-subtitle-1 font-weight-bold"
+                        :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'"
+                      >
+                        Nota de Venta
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Comprobante comercial actual
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      size="x-small"
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
+                      :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'"
+                      class="font-weight-bold"
+                    >
+                      Actual
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="22"
+                      :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'"
+                    />
+                  </div>
+                </div>
+
+                <!-- Opción Factura -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
+                >
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'"
+                      size="44"
+                      class="transition-all"
+                    >
+                      <VIcon
+                        icon="ri-bill-line"
+                        size="24"
+                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div
+                        class="text-subtitle-1 font-weight-bold"
+                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'"
+                      >
+                        Factura Electrónica
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Convertir y autorizar con el SRI
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip
+                      size="x-small"
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
+                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'"
+                      class="font-weight-bold"
+                    >
+                      SRI Oficial
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="22"
+                      :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selector cuando el original es Cotización -->
+              <VRow v-else-if="originalDocumentType === 'quote'">
                 <VCol
-                  v-if="originalDocumentType === 'quote'"
                   cols="12"
                   md="4"
                 >
@@ -1020,7 +1178,7 @@ onMounted(() => {
 
                 <VCol
                   cols="12"
-                  :md="originalDocumentType === 'quote' ? 4 : 6"
+                  md="4"
                 >
                   <VCard
                     :disabled="sale.status === 'canceled'"
@@ -1056,7 +1214,7 @@ onMounted(() => {
 
                 <VCol
                   cols="12"
-                  :md="originalDocumentType === 'quote' ? 4 : 6"
+                  md="4"
                 >
                   <VCard
                     :disabled="sale.status === 'canceled'"
@@ -2017,54 +2175,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
-  max-width: 0 !important;
-  border-width: 0 !important;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
