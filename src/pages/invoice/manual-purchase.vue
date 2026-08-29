@@ -17,6 +17,7 @@ const isLoadingProducts = ref(false)
 // Config data
 const suppliers = ref([])
 const categories = ref([])
+const brands = ref(['SM'])
 const accounts = ref([])
 const partners = ref([])
 const products = ref([])
@@ -24,11 +25,13 @@ const products = ref([])
 // Saldo a favor disponible del proveedor
 const supplierAvailableCredit = ref(0)
 
-// XML Import State
+// XML Import State & Duplicate Detection
 const xmlFileInputRef = ref(null)
 const isDragging = ref(false)
 const xmlLoadedInfo = ref(null)
 const isParsingXml = ref(false)
+const isDuplicateInvoice = ref(false)
+const duplicateInvoiceInfo = ref(null)
 
 const checkSupplierCredit = async (supId) => {
   if (!supId) {
@@ -73,21 +76,12 @@ const itemTypeOptions = [
   { title: '🔨 Herramienta', value: 4 },
 ]
 
-// Check Unificado (Categoría en Bloque + Factura Compartida / Inventario)
+// Bulk Category Assignment State
+const isBulkCategoryEnabled = ref(false)
 const bulkCategory = ref(null)
-
-const isAllSelected = computed(() => {
-  if (items.value.length === 0) return false
-  return items.value.every(item => item._selected !== false)
-})
-
-const isSomeSelected = computed(() => {
-  return items.value.some(item => item._selected !== false)
-})
-
-const selectedProductsCount = computed(() => {
-  return items.value.filter(item => item._selected !== false && Number(item.item_type) === 1).length
-})
+const isAllSelected = computed(() => items.value.length > 0 && items.value.every(item => item._selected !== false))
+const isSomeSelected = computed(() => items.value.some(item => item._selected !== false))
+const selectedProductsCount = computed(() => items.value.filter(item => item._selected !== false && Number(item.item_type) === 1).length)
 
 const toggleSelectAll = () => {
   const newVal = !isAllSelected.value
@@ -142,30 +136,42 @@ const onItemTypeChange = item => {
   }
 }
 
-// Factura Compartida
+// Factura Compartida State
 const isSharedInvoice = ref(false)
 const totalAsumidoTerceros = ref(0)
 
-const calculateTercerosFromUnchecked = () => {
-  let autoTotal = 0
-  items.value.forEach(item => {
-    if (item._selected === false) {
-      const sub = (Number(item.quantity) * Number(item.unit_price)) - (Number(item.discount) || 0)
-      const tax = item.is_taxable ? sub * 0.15 : 0
-      autoTotal += sub + tax
-    }
-  })
-  totalAsumidoTerceros.value = Number(autoTotal.toFixed(2))
-}
-
-const toggleSharedInvoice = () => {
-  if (!isSharedInvoice.value) {
-    totalAsumidoTerceros.value = 0
-    items.value.forEach(i => i._selected = true)
-  } else {
+const toggleSharedInvoice = (val) => {
+  if (val) {
     calculateTercerosFromUnchecked()
+  } else {
+    items.value.forEach(item => {
+      item._selected = true
+    })
+    totalAsumidoTerceros.value = 0
   }
 }
+
+const calculateTercerosFromUnchecked = () => {
+  let unchTotal = 0
+  items.value.forEach(item => {
+    if (item._selected === false) {
+      unchTotal += item.total
+    }
+  })
+  totalAsumidoTerceros.value = Number(unchTotal.toFixed(2))
+}
+
+const subtotal = computed(() => {
+  return items.value.reduce((acc, item) => acc + (item.subtotal || 0), 0)
+})
+
+const totalTax = computed(() => {
+  return items.value.reduce((acc, item) => acc + (item.tax || 0), 0)
+})
+
+const grandTotal = computed(() => {
+  return items.value.reduce((acc, item) => acc + (item.total || 0), 0)
+})
 
 // Desglose Terceros / Taller
 const tercerosMath = computed(() => {
@@ -205,6 +211,46 @@ const manualItem = ref({
   is_taxable: true,
 })
 
+// Item Classification VDialog State (Producto / Servicio / Gasto / Marca)
+const isItemClassificationDialogOpen = ref(false)
+const selectedItemToEdit = ref(null)
+
+const openItemClassificationDialog = item => {
+  if (item._selected === false) return
+  selectedItemToEdit.value = {
+    id: item.id,
+    description: item.description,
+    code: item.code,
+    item_type: Number(item.item_type) || 1,
+    brand: item.brand || 'SM',
+    product_categorie_id: item.product_categorie_id,
+  }
+  isItemClassificationDialogOpen.value = true
+}
+
+const saveItemClassification = () => {
+  if (!selectedItemToEdit.value) return
+  const item = items.value.find(i => i.id === selectedItemToEdit.value.id)
+  if (item) {
+    item.item_type = Number(selectedItemToEdit.value.item_type)
+    const brandTrimmed = (selectedItemToEdit.value.brand || 'SM').toString().trim()
+    item.brand = item.item_type === 1 ? (brandTrimmed || 'SM') : 'N/A'
+
+    // Si la marca es nueva, la agregamos dinámicamente a la lista
+    if (brandTrimmed && !brands.value.includes(brandTrimmed)) {
+      brands.value.push(brandTrimmed)
+    }
+
+    if (item.item_type !== 1) {
+      item.product_categorie_id = null
+    } else if (selectedItemToEdit.value.product_categorie_id) {
+      item.product_categorie_id = selectedItemToEdit.value.product_categorie_id
+    }
+  }
+  isItemClassificationDialogOpen.value = false
+  showNotification('Clasificación de ítem actualizada', 'success')
+}
+
 const openManualProductDialog = (initialSearch = '') => {
   manualItem.value = {
     description: typeof initialSearch === 'string' ? initialSearch : '',
@@ -233,6 +279,11 @@ const addManualProduct = () => {
     return showNotification('Debe seleccionar una categoría para el producto', 'warning')
   }
 
+  const brandTrimmed = (manualItem.value.brand || 'SM').toString().trim()
+  if (isProduct && brandTrimmed && !brands.value.includes(brandTrimmed)) {
+    brands.value.push(brandTrimmed)
+  }
+
   const qty = Number(manualItem.value.quantity) || 1
   const price = Number(manualItem.value.unit_price) || 0
   const disc = Number(manualItem.value.discount) || 0
@@ -244,7 +295,7 @@ const addManualProduct = () => {
     id: Date.now(),
     code: manualItem.value.code && manualItem.value.code.trim() ? manualItem.value.code.trim().toUpperCase() : (isProduct ? `MANUAL-${Date.now().toString().slice(-6)}` : 'GASTO-LOGISTICA'),
     description: manualItem.value.description.trim(),
-    brand: isProduct ? (manualItem.value.brand && manualItem.value.brand.trim() ? manualItem.value.brand.trim() : 'SM') : 'N/A',
+    brand: isProduct ? (brandTrimmed || 'SM') : 'N/A',
     quantity: qty,
     unit_price: price,
     subtotal: sub,
@@ -280,6 +331,10 @@ const loadConfig = async () => {
 
     suppliers.value = configResp.suppliers || []
     categories.value = configResp.categories || []
+
+    const rawBrands = configResp.brands || []
+    const brandSet = new Set(['SM', ...rawBrands])
+    brands.value = Array.from(brandSet).filter(Boolean)
 
     const rawAccounts = accountsResp.data || accountsResp || []
 
@@ -551,7 +606,33 @@ const processXmlFile = async (file) => {
         itemsCount: parsedItems.length,
       }
 
-      showNotification(`Factura XML cargada: ${formData.value.invoice_number} con ${parsedItems.length} ítems`, 'success')
+      // 7. Verificar si la factura ya existe en el sistema
+      try {
+        const checkRes = await $api('invoices/check-duplicate', {
+          method: 'POST',
+          body: {
+            access_key: formData.value.access_key,
+            invoice_number: formData.value.invoice_number,
+            supplier_ruc: ruc,
+            supplier_id: formData.value.supplier_id,
+          },
+        })
+
+        if (checkRes.exists) {
+          isDuplicateInvoice.value = true
+          duplicateInvoiceInfo.value = checkRes.invoice
+          //showNotification('⚠️ Esta factura ya fue registrada previamente en el sistema. Los datos se muestran en modo solo lectura.', 'warning')
+        } else {
+          isDuplicateInvoice.value = false
+          duplicateInvoiceInfo.value = null
+          showNotification(`Factura XML cargada: ${formData.value.invoice_number} con ${parsedItems.length} ítems`, 'success')
+        }
+      } catch (checkErr) {
+        console.error('Error al verificar duplicidad de factura:', checkErr)
+        isDuplicateInvoice.value = false
+        duplicateInvoiceInfo.value = null
+        showNotification(`Factura XML cargada: ${formData.value.invoice_number} con ${parsedItems.length} ítems`, 'success')
+      }
 
     } catch (err) {
       console.error('Error al procesar archivo XML:', err)
@@ -566,6 +647,10 @@ const processXmlFile = async (file) => {
 
 const clearXmlImport = () => {
   xmlLoadedInfo.value = null
+  isDuplicateInvoice.value = false
+  duplicateInvoiceInfo.value = null
+  isBulkCategoryEnabled.value = false
+  bulkCategory.value = null
   items.value = []
   formData.value.invoice_number = ''
   formData.value.access_key = ''
@@ -599,7 +684,7 @@ watch(() => formData.value.supplier_id, async newSupplierId => {
 })
 
 // Computeds for totals
-const subtotal = computed(() => {
+/* const subtotal = computed(() => {
   return items.value.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0)
 })
 
@@ -610,7 +695,7 @@ const totalTax = computed(() => {
 const grandTotal = computed(() => {
   return subtotal.value + totalTax.value
 })
-
+ */
 const addProductToItems = product => {
   if (!product) return
 
@@ -798,8 +883,13 @@ onMounted(() => {
       </VCol>
     </VRow>
 
-    <!-- Form Skeleton loader -->
-    <div v-if="isLoadingConfig" class="d-flex flex-column gap-6">
+    <!-- 1. Carga inicial general -->
+    <div v-if="isLoading" class="d-flex justify-center align-center pa-12">
+      <VProgressCircular indeterminate color="primary" size="64" />
+    </div>
+
+    <!-- 2. Form Skeleton loader inicial al cargar configuraciones -->
+    <div v-else-if="isLoadingConfig" class="d-flex flex-column gap-6">
       <VRow>
         <VCol cols="12">
           <VCard class="pa-6 rounded-xl border-light mb-6">
@@ -843,409 +933,557 @@ onMounted(() => {
       </VRow>
     </div>
 
-    <VRow v-else>
-      <!-- 1. DATOS DE FACTURA (12 COLUMNAS COMPLETAS) -->
-      <VCol cols="12">
-        <VCard class="elevation-2 rounded-xl mb-6 border">
-          <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
-            <VIcon icon="ri-file-info-line" color="primary" />
-            <span>Datos de Factura</span>
-          </VCardTitle>
-          <VCardText class="px-6 pb-6">
+    <!-- 3. SKELETON LOADER AL PROCESAR / CARGAR XML -->
+    <div v-else-if="isParsingXml" class="d-flex flex-column gap-6 mb-6">
+      <VAlert color="primary" variant="tonal" class="rounded-xl border border-primary border-opacity-25 pa-4"
+        icon="ri-file-code-line">
+        <div class="d-flex align-center gap-3">
+          <VProgressCircular indeterminate color="primary" size="28" width="3" />
+          <div>
+            <div class="text-subtitle-2 font-weight-bold text-primary">
+              Procesando y verificando Factura Electrónica del SRI...
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Extrayendo productos, impuestos, proveedor y consultando estado en el sistema...
+            </div>
+          </div>
+        </div>
+      </VAlert>
+
+      <VRow>
+        <!-- Skeleton Datos de Factura (12 cols) -->
+        <VCol cols="12">
+          <VCard class="pa-6 rounded-xl border elevation-0 bg-surface">
+            <div class="d-flex align-center gap-2 mb-4">
+              <div class="shimmer-circle" style="width: 24px; height: 24px;" />
+              <div class="shimmer-line" style="width: 140px; height: 18px;" />
+            </div>
             <VRow>
               <VCol cols="12" md="6">
-                <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
-                  label="Proveedor *" placeholder="Selecciona o busca proveedor" variant="outlined"
-                  density="comfortable" prepend-inner-icon="ri-store-2-line" :loading="isLoadingConfig" />
-
-                <!-- Alerta de Saldo a Favor / NC disponible -->
-                <VAlert v-if="supplierAvailableCredit > 0" type="info" variant="tonal" density="compact"
-                  class="mt-2 rounded-lg" icon="ri-hand-coin-line">
-                  <div class="d-flex align-center justify-space-between flex-wrap gap-2">
-                    <span class="text-caption">
-                      Este proveedor tiene un <strong>Saldo a Favor de ${{ supplierAvailableCredit.toFixed(2)
-                      }}</strong>.
-                    </span>
-                    <VBtn size="x-small" variant="outlined" color="info" to="/invoice/reconciliation"
-                      class="text-none font-weight-bold">
-                      Ir a Conciliar
-                    </VBtn>
-                  </div>
-                </VAlert>
+                <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField v-model="formData.invoice_number" label="N° Factura *" placeholder="000223753"
-                  variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" />
+                <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
               </VCol>
               <VCol cols="12" md="3">
-                <VTextField v-model="formData.issue_date" type="date" label="Fecha de Emisión *" variant="outlined"
-                  density="comfortable" />
+                <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
               </VCol>
             </VRow>
-          </VCardText>
-        </VCard>
-      </VCol>
+          </VCard>
+        </VCol>
 
-      <!-- 2. COLUMNA IZQUIERDA (8 COLUMNAS) -->
-      <VCol cols="12" md="8">
-        <!-- BANNER DE FACTURA COMPARTIDA (SOLO SI SE IMPORTA UN XML, 8 COLUMNAS) -->
-        <VCard v-if="xmlLoadedInfo" class="rounded-xl border elevation-0 pa-2 bg-surface mb-2">
-          <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-4">
-            <div class="d-flex align-center gap-3">
-              <div class="bg-primary-lighten-5 rounded-circle pa-2 d-flex align-center justify-center text-primary">
-                <VIcon icon="ri-pie-chart-2-line" size="26" />
-              </div>
-              <div>
-                <div class="d-flex align-center gap-2">
-                  <span class="text-subtitle-1 font-weight-bold">¿Es una Factura Compartida con Terceros?</span>
-                  <VSwitch v-model="isSharedInvoice" color="primary" density="compact" hide-details
-                    class="d-inline-flex ms-2" @update:model-value="toggleSharedInvoice" />
-                </div>
-                <p class="text-caption text-medium-emphasis mb-0">
-                  Activa esta opción si solo una parte de la compra corresponde al taller. Podrás desmarcar los ítems de
-                  terceros o definir el monto asumido por ellos.
-                </p>
-              </div>
+        <!-- Skeleton Detalle de Productos (8 cols) -->
+        <VCol cols="12" md="8">
+          <VCard class="pa-6 rounded-xl border elevation-0 bg-surface">
+            <div class="d-flex justify-space-between align-center mb-4">
+              <div class="shimmer-line" style="width: 200px; height: 20px;" />
+              <div class="shimmer-chip" style="width: 90px; height: 26px; border-radius: 8px;" />
             </div>
+            <div class="shimmer-line w-100 mb-3" style="height: 44px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
+          </VCard>
+        </VCol>
 
-            <!-- Input directo de Monto Terceros si está activo -->
-            <VExpandTransition>
-              <div v-if="isSharedInvoice"
-                class="d-flex align-center gap-3 flex-wrap bg-grey-lighten-4 pa-3 rounded-lg border">
-                <div>
-                  <div class="text-caption font-weight-bold text-medium-emphasis">
-                    Monto Asumido por Terceros ($)
-                  </div>
-                  <VTextField v-model.number="totalAsumidoTerceros" type="number" min="0" step="0.01" prefix="$"
-                    variant="outlined" density="compact" hide-details style="width: 140px;" />
-                </div>
-                <div class="text-caption border-s ps-3">
-                  <div>Total SRI: <strong>${{ grandTotal.toFixed(2) }}</strong></div>
-                  <div>Gasto Taller: <strong class="text-primary">${{ tallerMath.total.toFixed(2) }}</strong></div>
-                </div>
-              </div>
-            </VExpandTransition>
-          </div>
-        </VCard>
-
-        <!-- DETALLE DE PRODUCTOS -->
-        <VCard class="elevation-2 rounded-xl border">
-          <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between flex-wrap gap-2">
-            <div class="text-h6 font-weight-bold d-flex align-center gap-2">
-              <VIcon icon="ri-box-3-line" color="primary" />
-              <span>Detalle de Productos ({{ items.length }})</span>
-            </div>
-            <VBtn v-if="!xmlLoadedInfo" color="primary" variant="tonal" size="small" prepend-icon="ri-add-line"
-              class="rounded-lg font-weight-bold" @click="openManualProductDialog('')">
-              Ingresar Producto Manual
-            </VBtn>
-          </VCardTitle>
-          <VCardText class="px-6">
-            <VAutocomplete v-if="!xmlLoadedInfo" v-model="searchProduct" :items="products" item-title="description"
-              item-value="id" label="Buscar Producto en catálogo para añadir..." placeholder="Escribe el nombre o SKU"
-              variant="outlined" prepend-inner-icon="ri-search-line" return-object clearable class="mb-4"
-              :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts" :disabled="!formData.supplier_id"
-              @update:model-value="addProductToItems">
-              <template #no-data>
-                <div class="pa-4 text-center">
-                  <p class="text-medium-emphasis mb-2">
-                    {{
-                      formData.supplier_id ? '¿No encuentras el producto en el catálogo?'
-                        : 'Seleccione un proveedor primero'
-                    }}
-                  </p>
-                  <VBtn v-if="formData.supplier_id" color="primary" variant="outlined" size="small"
-                    prepend-icon="ri-edit-box-line" class="mt-1"
-                    @click="openManualProductDialog(typeof searchProduct === 'string' ? searchProduct : '')">
-                    Ingresar Producto Manualmente
-                  </VBtn>
-                </div>
-              </template>
-              <template #item="{ props, item }">
-                <VListItem v-bind="props" :title="undefined">
-                  <VListItemTitle style="white-space: normal !important; line-height: 1.4;" class="font-weight-medium">
-                    {{ item.raw.description || item.raw.name }}
-                  </VListItemTitle>
-                  <VListItemSubtitle class="mt-1 text-grey">
-                    SKU: {{ item.raw.sku }} | Marca: {{ item.raw.brand || 'SM' }} | Costo actual: ${{
-                      parseFloat(item.raw.purchase_price).toFixed(2) }}
-                  </VListItemSubtitle>
-                </VListItem>
-              </template>
-            </VAutocomplete>
-
-            <!-- BARRA DE ASIGNACIÓN DE CATEGORÍA EN BLOQUE -->
-            <div v-if="items.length > 0"
-              class="d-flex align-center justify-space-between flex-wrap gap-3 mb-4 pa-3 rounded-lg bg-grey-lighten-4 border">
-              <div class="d-flex align-center gap-2">
-                <VIcon icon="ri-folder-shared-line" color="primary" size="20" />
-                <span class="text-caption font-weight-bold text-high-emphasis">
-                  Asignar Categoría:
-                </span>
-                <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold ms-1">
-                  {{ selectedProductsCount }} producto(s)
-                </VChip>
-              </div>
-              <div class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0" style="min-width: 300px;">
-                <VSelect v-model="bulkCategory" :items="categories" item-title="title" item-value="id"
-                  placeholder="Categoría" variant="outlined" density="compact" hide-details style="min-width: 180px;" />
-                <VBtn color="primary" variant="elevated" size="small" class="font-weight-bold text-none rounded-lg"
-                  @click="applyBulkCategory">
-                  Aplicar ({{ selectedProductsCount }})
-                </VBtn>
-              </div>
-            </div>
-
-            <!-- TABLA DE PRODUCTOS CON TIPO, CATEGORIA Y MARCA EDITABLES -->
-            <div class="overflow-x-auto">
-              <VTable class="manual-purchase-table border rounded-xl overflow-hidden">
-                <thead>
-                  <tr class="bg-grey-lighten-4">
-                    <!-- Checkbox Único Maestro -->
-                    <th class="text-center font-weight-bold py-3" style="width: 48px;"
-                      :title="isSharedInvoice ? 'Marcar si pertenece al taller / aplicar categoría' : 'Marcar para aplicar categoría'">
-                      <VCheckbox :model-value="isAllSelected" :indeterminate="isSomeSelected && !isAllSelected"
-                        density="compact" hide-details @click.stop="toggleSelectAll" />
-                    </th>
-                    <th class="text-left font-weight-bold py-3" style="min-width: 210px;">
-                      PRODUCTO / SKU
-                    </th>
-                    <th class="text-left font-weight-bold py-3" style="min-width: 140px;">
-                      TIPO
-                    </th>
-                    <th class="text-left font-weight-bold py-3" style="min-width: 155px;">
-                      CATEGORÍA
-                    </th>
-                    <th class="text-left font-weight-bold py-3" style="min-width: 125px;">
-                      MARCA
-                    </th>
-                    <th class="text-center font-weight-bold py-3" style="width: 85px;">
-                      CANT.
-                    </th>
-                    <th class="text-center font-weight-bold py-3" style="width: 110px;">
-                      P.U. (COSTO)
-                    </th>
-                    <th class="text-center font-weight-bold py-3" style="width: 95px;">
-                      DCTO.
-                    </th>
-                    <th class="text-right font-weight-bold py-3 pr-4" style="width: 105px;">
-                      SUBTOTAL
-                    </th>
-                    <th class="text-center font-weight-bold py-3" style="width: 60px;">
-                      ACCIÓN
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="items.length === 0">
-                    <td colspan="10" class="text-center py-10 text-medium-emphasis">
-                      <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
-                      <div class="text-body-1 font-weight-medium">
-                        No hay productos agregados a la compra
-                      </div>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Carga un XML del SRI arriba o ingresa productos manualmente
-                      </p>
-                    </td>
-                  </tr>
-                  <tr v-for="(item, index) in items" :key="item.id" class="purchase-item-row"
-                    :class="{ 'opacity-50 bg-grey-lighten-5': isSharedInvoice && item._selected === false }">
-                    <!-- Checkbox Único por Fila -->
-                    <td class="text-center py-3">
-                      <VCheckbox :model-value="item._selected !== false" color="primary" density="compact" hide-details
-                        :title="isSharedInvoice ? 'Marcar si pertenece al taller / categoría' : 'Marcar para aplicar categoría'"
-                        @update:model-value="val => onToggleItem(item, val)" />
-                    </td>
-
-                    <!-- Nombre y SKU -->
-                    <td class="py-3">
-                      <div class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-2 flex-wrap">
-                        <span>{{ item.description }}</span>
-                        <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
-                          class="font-weight-bold">
-                          XML
-                        </VChip>
-                        <VChip v-else-if="item.is_manual" size="x-small" color="info" variant="tonal"
-                          class="font-weight-bold">
-                          Manual
-                        </VChip>
-                      </div>
-                      <div class="text-caption text-medium-emphasis mt-0-5">
-                        SKU: <strong class="text-high-emphasis">{{ item.code }}</strong>
-                      </div>
-                    </td>
-
-                    <!-- Tipo (Producto vs Gasto/Logística) -->
-                    <td class="py-3">
-                      <VSelect v-if="item._selected !== false" v-model="item.item_type" :items="itemTypeOptions"
-                        item-title="title" item-value="value" variant="outlined" density="compact" hide-details
-                        class="custom-table-select" style="min-width: 135px;"
-                        @update:model-value="onItemTypeChange(item)" />
-                      <div v-else
-                        class="text-caption text-medium-emphasis text-center py-2 px-2 bg-grey-lighten-4 rounded border border-dashed"
-                        style="min-width: 135px;">
-                        <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
-                        Terceros
-                      </div>
-                    </td>
-
-                    <!-- Selector Editable de Categoría (Solo si está marcado y es Producto) -->
-                    <td class="py-3">
-                      <VSelect v-if="item._selected !== false && Number(item.item_type) === 1"
-                        v-model="item.product_categorie_id" :items="categories" item-title="title" item-value="id"
-                        placeholder="Categoría *" variant="outlined" density="compact" hide-details
-                        class="custom-table-select" style="min-width: 170px;" />
-                      <div v-else
-                        class="text-caption text-medium-emphasis text-center py-2 px-2 bg-grey-lighten-4 rounded border border-dashed"
-                        style="min-width: 145px;">
-                        <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
-                        No aplica
-                      </div>
-                    </td>
-
-                    <!-- Campo Editable de Marca (Solo si está marcado y es Producto) -->
-                    <td class="py-3">
-                      <VTextField v-if="item._selected !== false && Number(item.item_type) === 1" v-model="item.brand"
-                        placeholder="Ej: Bosch" variant="outlined" density="compact" hide-details
-                        class="custom-table-input" style="min-width: 115px;" />
-                      <div v-else
-                        class="text-caption text-medium-emphasis text-center py-2 px-2 bg-grey-lighten-4 rounded border border-dashed"
-                        style="min-width: 115px;">
-                        N/A
-                      </div>
-                    </td>
-
-                    <!-- Cantidad (Solo lectura en span) -->
-                    <td class="text-center py-3">
-                      <span class="text-body-2 font-weight-bold text-high-emphasis">{{ item.quantity }}</span>
-                    </td>
-
-                    <!-- Precio Unitario (Solo lectura en span) -->
-                    <td class="text-center py-3">
-                      <span class="text-body-2 font-weight-medium">${{ Number(item.unit_price || 0).toFixed(2) }}</span>
-                    </td>
-
-                    <!-- Descuento (Solo lectura en span) -->
-                    <td class="text-center py-3">
-                      <span class="text-body-2 text-medium-emphasis">${{ Number(item.discount || 0).toFixed(2) }}</span>
-                    </td>
-
-                    <!-- Subtotal (Solo lectura en span) -->
-                    <td class="text-right py-3 text-body-2 font-weight-bold text-high-emphasis pr-4">
-                      <span>${{ Number((item.quantity * item.unit_price) - (item.discount || 0)).toFixed(2) }}</span>
-                    </td>
-
-                    <!-- Acción Eliminar -->
-                    <td class="text-center py-3">
-                      <VBtn icon="ri-delete-bin-line" color="error" variant="tonal" size="small" class="rounded-lg"
-                        title="Eliminar producto" @click="removeItem(index)" />
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-
-      <!-- SECCION FINANCIERA Y TOTALES -->
-      <VCol cols="12" md="4">
-        <VCard class="elevation-2 rounded-xl mb-6 border-primary border-opacity-50 border-s-4 border">
-          <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
-            <VIcon icon="ri-money-dollar-circle-line" color="primary" />
-            <span>Origen de Fondos</span>
-          </VCardTitle>
-          <VCardText class="px-6 pb-6">
-            <VRadioGroup v-model="formData.payment_type" class="mb-4">
-              <VRadio label="Pago Inmediato (Caja/Banco)" value="efectivo" color="success" />
-              <VRadio label="Cuenta por Pagar (Crédito)" value="credito" color="primary" />
-              <VRadio label="Financiado por Socio (Aporte)" value="aporte" color="warning" />
-            </VRadioGroup>
-
-            <!-- Conditional Selectors -->
-            <VExpandTransition>
-              <div v-if="formData.payment_type === 'efectivo'">
-                <VSelect v-model="formData.account_id" :items="accounts" item-title="name" item-value="id"
-                  label="Cuenta de Egreso (Origen de Fondos) *" placeholder="Seleccione la cuenta obligatoria"
-                  variant="outlined" density="comfortable" prepend-inner-icon="ri-bank-card-line"
-                  :rules="[val => !!val || 'Debe escoger obligatoriamente de qué cuenta salen los fondos']"
-                  :loading="isLoadingConfig" />
-                <p class="text-caption text-medium-emphasis mt-1 mb-0">
-                  <VIcon icon="ri-information-line" size="14" class="me-1" />
-                  El monto pagado se descontará automáticamente del saldo de esta cuenta.
-                </p>
-              </div>
-            </VExpandTransition>
-
-            <VExpandTransition>
-              <div v-if="formData.payment_type === 'aporte'">
-                <VSelect v-model="formData.partner_id" :items="partners" item-title="nombre" item-value="id"
-                  label="Seleccionar Socio Capitalista *" variant="outlined" density="comfortable"
-                  prepend-inner-icon="ri-user-star-line" :loading="isLoadingConfig" />
-              </div>
-            </VExpandTransition>
-
-            <VAlert v-if="formData.payment_type === 'credito'" color="primary" variant="tonal"
-              icon="ri-information-line" class="mt-2 text-caption">
-              Se registrará la compra en el inventario y se creará una Cuenta por Pagar asociada al proveedor. No se
-              descontará dinero de las cuentas aún.
-            </VAlert>
-          </VCardText>
-        </VCard>
-
-        <!-- RESUMEN TOTAL -->
-        <VCard class="elevation-2 rounded-xl bg-grey-lighten-4 border">
-          <VCardTitle class="px-6 pt-6 text-h6 font-weight-bold">
-            Resumen de Factura
-          </VCardTitle>
-          <VCardText class="px-6">
-            <div class="d-flex justify-space-between mb-2">
-              <span class="text-medium-emphasis">Subtotal SRI</span>
-              <span class="font-weight-bold">${{ subtotal.toFixed(2) }}</span>
+        <!-- Skeleton Resumen & Fondos (4 cols) -->
+        <VCol cols="12" md="4">
+          <VCard class="pa-6 rounded-xl border elevation-0 bg-surface mb-6">
+            <div class="shimmer-line mb-4" style="width: 140px; height: 20px;" />
+            <div class="shimmer-line w-100 mb-3" style="height: 40px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-3" style="height: 40px; border-radius: 8px;" />
+          </VCard>
+          <VCard class="pa-6 rounded-xl border elevation-0 bg-grey-lighten-4">
+            <div class="shimmer-line mb-4" style="width: 160px; height: 20px;" />
+            <div class="d-flex justify-space-between mb-3">
+              <div class="shimmer-line" style="width: 100px; height: 16px;" />
+              <div class="shimmer-line" style="width: 60px; height: 16px;" />
             </div>
             <div class="d-flex justify-space-between mb-4">
-              <span class="text-medium-emphasis">Impuestos (IVA 15%)</span>
-              <span class="font-weight-bold">${{ totalTax.toFixed(2) }}</span>
+              <div class="shimmer-line" style="width: 120px; height: 16px;" />
+              <div class="shimmer-line" style="width: 50px; height: 16px;" />
             </div>
-            <div class="d-flex justify-space-between mb-3 align-center">
-              <span class="text-subtitle-1 font-weight-bold">Total Factura SRI</span>
-              <span class="text-h5 font-weight-bold text-grey-darken-3">${{ grandTotal.toFixed(2) }}</span>
-            </div>
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
 
-            <!-- Desglose de Factura Compartida -->
-            <VExpandTransition>
-              <div v-if="isSharedInvoice">
-                <VDivider class="mb-3" />
-                <div class="d-flex justify-space-between mb-2 text-error">
-                  <span class="text-caption font-weight-bold">(-) Asumido por Terceros</span>
-                  <span class="font-weight-bold">-${{ tercerosMath.total.toFixed(2) }}</span>
+    <!-- 4. Formulario Real y Contenido -->
+    <div v-else>
+      <!-- BANNER DE ALERTA: FACTURA YA REGISTRADA (SOLO LECTURA) -->
+      <VAlert v-if="isDuplicateInvoice" color="error" variant="tonal" class="rounded-xl mb-6 border border-error pa-4"
+        icon="ri-lock-2-line">
+        <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-3">
+          <div>
+            <div class="text-subtitle-1 font-weight-bold text-error d-flex align-center gap-2">
+              <span>Factura Ya Registrada en el Sistema</span>
+            </div>
+            <div class="text-body-2 medium-emphasis mt-1">
+              Esta factura (N° <strong>{{ formData.invoice_number }}</strong> de <strong>{{ formData.supplier_name ||
+                'Proveedor' }}</strong>) ya fue ingresada previamente en el sistema el <strong>{{
+                  duplicateInvoiceInfo?.created_at || 'en registros anteriores' }}</strong>.
+            </div>
+          </div>
+          <VBtn color="error" variant="outlined" size="small" class="font-weight-bold text-none rounded-lg"
+            @click="clearXmlImport">
+            Cargar Otro XML
+          </VBtn>
+        </div>
+      </VAlert>
+
+      <VRow>
+        <!-- 1. DATOS DE FACTURA (12 COLUMNAS COMPLETAS) -->
+        <VCol cols="12">
+          <VCard class="elevation-2 rounded-xl mb-6 border"
+            :class="{ 'opacity-90 bg-grey-lighten-5': isDuplicateInvoice }">
+            <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
+              <VIcon icon="ri-file-info-line" color="primary" />
+              <span>Datos de Factura</span>
+            </VCardTitle>
+            <VCardText class="px-6 pb-6">
+              <VRow>
+                <VCol cols="12" md="6">
+                  <VAutocomplete v-model="formData.supplier_id" :items="suppliers" item-title="name" item-value="id"
+                    label="Proveedor *" placeholder="Selecciona o busca proveedor" variant="outlined"
+                    density="comfortable" prepend-inner-icon="ri-store-2-line" :loading="isLoadingConfig"
+                    :disabled="isDuplicateInvoice" />
+
+                  <!-- Alerta de Saldo a Favor / NC disponible -->
+                  <VAlert v-if="supplierAvailableCredit > 0 && !isDuplicateInvoice" type="info" variant="tonal"
+                    density="compact" class="mt-2 rounded-lg" icon="ri-hand-coin-line">
+                    <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                      <span class="text-caption">
+                        Este proveedor tiene un <strong>Saldo a Favor de ${{ supplierAvailableCredit.toFixed(2)
+                        }}</strong>.
+                      </span>
+                      <VBtn size="x-small" variant="outlined" color="info" to="/invoice/reconciliation"
+                        class="text-none font-weight-bold">
+                        Ir a Conciliar
+                      </VBtn>
+                    </div>
+                  </VAlert>
+                </VCol>
+                <VCol cols="12" md="3">
+                  <VTextField v-model="formData.invoice_number" label="N° Factura *" placeholder="000223753"
+                    variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag"
+                    :disabled="isDuplicateInvoice" />
+                </VCol>
+                <VCol cols="12" md="3">
+                  <VTextField v-model="formData.issue_date" type="date" label="Fecha de Emisión *" variant="outlined"
+                    density="comfortable" :disabled="isDuplicateInvoice" />
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- 2. COLUMNA IZQUIERDA (8 COLUMNAS) -->
+        <VCol cols="12" md="8">
+          <!-- BANNER DE FACTURA COMPARTIDA (SOLO SI SE IMPORTA UN XML, 8 COLUMNAS) -->
+          <VCard v-if="xmlLoadedInfo && !isDuplicateInvoice" class="rounded-xl border elevation-0 pa-2 bg-surface mb-2">
+            <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between gap-4">
+              <div class="d-flex align-center gap-3">
+                <div class="bg-primary-lighten-5 rounded-circle pa-2 d-flex align-center justify-center text-primary">
+                  <VIcon icon="ri-pie-chart-2-line" size="26" />
                 </div>
-                <div
-                  class="d-flex justify-space-between mb-4 align-center bg-primary-lighten-5 pa-3 rounded-lg border border-primary border-opacity-25">
-                  <div>
-                    <div class="text-subtitle-2 font-weight-bold text-primary">Gasto Real Taller</div>
-                    <div class="text-caption text-medium-emphasis">Monto a pagar/egresar</div>
+                <div>
+                  <div class="d-flex align-center gap-2">
+                    <span class="text-subtitle-1 font-weight-bold">¿Es una Factura Compartida con Terceros?</span>
+                    <VSwitch v-model="isSharedInvoice" color="primary" density="compact" hide-details
+                      class="d-inline-flex ms-2" @update:model-value="toggleSharedInvoice" />
                   </div>
-                  <span class="text-h4 font-weight-black text-primary">${{ tallerMath.total.toFixed(2) }}</span>
+                  <p class="text-caption text-medium-emphasis mb-0">
+                    Activa esta opción si solo una parte de la compra corresponde al taller. Podrás desmarcar los ítems
+                    de
+                    terceros o definir el monto asumido por ellos.
+                  </p>
                 </div>
               </div>
-            </VExpandTransition>
 
-            <VDivider v-if="!isSharedInvoice" class="mb-4" />
-
-            <div v-if="!isSharedInvoice" class="d-flex justify-space-between mb-6 align-center">
-              <span class="text-h6 font-weight-bold">Total Compra</span>
-              <span class="text-h4 font-weight-black text-primary">${{ grandTotal.toFixed(2) }}</span>
+              <!-- Input directo de Monto Terceros si está activo -->
+              <VExpandTransition>
+                <div v-if="isSharedInvoice"
+                  class="d-flex align-center gap-3 flex-wrap bg-grey-lighten-4 pa-3 rounded-lg border">
+                  <div>
+                    <div class="text-caption font-weight-bold text-medium-emphasis">
+                      Monto Asumido por Terceros ($)
+                    </div>
+                    <VTextField v-model.number="totalAsumidoTerceros" type="number" min="0" step="0.01" prefix="$"
+                      variant="outlined" density="compact" hide-details style="width: 140px;" />
+                  </div>
+                  <div class="text-caption border-s ps-3">
+                    <div>Total SRI: <strong>${{ grandTotal.toFixed(2) }}</strong></div>
+                    <div>Gasto Taller: <strong class="text-primary">${{ tallerMath.total.toFixed(2) }}</strong></div>
+                  </div>
+                </div>
+              </VExpandTransition>
             </div>
+          </VCard>
 
-            <VBtn block color="primary" size="x-large" elevation="3" :loading="isSubmitting"
-              prepend-icon="ri-save-3-line" class="font-weight-bold mt-2" @click="submitPurchase">
-              Registrar Compra
-            </VBtn>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
+          <!-- DETALLE DE PRODUCTOS -->
+          <VCard class="elevation-2 rounded-xl border">
+            <VCardTitle class="px-6 pt-6 pb-2 d-flex align-center justify-space-between flex-wrap gap-2">
+              <div class="text-h6 font-weight-bold d-flex align-center gap-2">
+                <VIcon icon="ri-box-3-line" color="primary" />
+                <span>Detalle de Productos ({{ items.length }})</span>
+                <VChip v-if="isDuplicateInvoice" size="x-small" color="error" variant="tonal"
+                  class="ms-1 font-weight-bold">
+                  Informativo
+                </VChip>
+              </div>
+              <VBtn v-if="!xmlLoadedInfo && !isDuplicateInvoice" color="primary" variant="tonal" size="small"
+                prepend-icon="ri-add-line" class="rounded-lg font-weight-bold" @click="openManualProductDialog('')">
+                Ingresar Producto Manual
+              </VBtn>
+            </VCardTitle>
+            <VCardText class="px-6">
+              <VAutocomplete v-if="!xmlLoadedInfo && !isDuplicateInvoice" v-model="searchProduct" :items="products"
+                item-title="description" item-value="id" label="Buscar Producto en catálogo para añadir..."
+                placeholder="Escribe el nombre o SKU" variant="outlined" prepend-inner-icon="ri-search-line"
+                return-object clearable class="mb-4" :menu-props="{ maxWidth: 0 }" :loading="isLoadingProducts"
+                :disabled="!formData.supplier_id" @update:model-value="addProductToItems">
+                <template #no-data>
+                  <div class="pa-4 text-center">
+                    <p class="text-medium-emphasis mb-2">
+                      {{
+                        formData.supplier_id ? '¿No encuentras el producto en el catálogo?'
+                          : 'Seleccione un proveedor primero'
+                      }}
+                    </p>
+                    <VBtn v-if="formData.supplier_id" color="primary" variant="outlined" size="small"
+                      prepend-icon="ri-edit-box-line" class="mt-1"
+                      @click="openManualProductDialog(typeof searchProduct === 'string' ? searchProduct : '')">
+                      Ingresar Producto Manualmente
+                    </VBtn>
+                  </div>
+                </template>
+                <template #item="{ props, item }">
+                  <VListItem v-bind="props" :title="undefined">
+                    <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                      class="font-weight-medium">
+                      {{ item.raw.description || item.raw.name }}
+                    </VListItemTitle>
+                    <VListItemSubtitle class="mt-1 text-grey">
+                      SKU: {{ item.raw.sku }} | Marca: {{ item.raw.brand || 'SM' }} | Costo actual: ${{
+                        parseFloat(item.raw.purchase_price).toFixed(2) }}
+                    </VListItemSubtitle>
+                  </VListItem>
+                </template>
+              </VAutocomplete>
+
+              <!-- BARRA DE ASIGNACIÓN DE CATEGORÍA EN BLOQUE (Solo si hay más de 1 ítem) -->
+              <div v-if="items.length > 1 && !isDuplicateInvoice"
+                class="d-flex align-center justify-space-between flex-wrap gap-3 mb-4 pa-3 rounded-lg bg-grey-lighten-4 border">
+                <div class="d-flex align-center gap-3">
+                  <VCheckbox v-model="isBulkCategoryEnabled" color="primary" density="compact" hide-details
+                    label="Asignar Categoría por Lote" class="font-weight-bold" />
+                  <VChip v-if="isBulkCategoryEnabled" size="x-small" color="primary" variant="tonal"
+                    class="font-weight-bold ms-1">
+                    {{ selectedProductsCount }} producto(s) marcado(s)
+                  </VChip>
+                </div>
+                <VExpandTransition>
+                  <div v-if="isBulkCategoryEnabled" class="d-flex align-center gap-2 flex-grow-1 flex-sm-grow-0"
+                    style="min-width: 300px;">
+                    <VSelect v-model="bulkCategory" :items="categories" item-title="title" item-value="id"
+                      placeholder="Seleccionar Categoría *" variant="outlined" density="compact" hide-details
+                      style="min-width: 210px;" />
+                    <VBtn color="primary" variant="elevated" size="small" class="font-weight-bold text-none rounded-lg"
+                      @click="applyBulkCategory">
+                      Aplicar
+                    </VBtn>
+                  </div>
+                </VExpandTransition>
+              </div>
+
+              <!-- TABLA DE PRODUCTOS CON CANTIDAD EN COLUMNA INDIVIDUAL Y MODAL DE TIPO -->
+              <div>
+                <VTable class="manual-purchase-table border rounded-xl overflow-hidden w-100">
+                  <thead>
+                    <tr class="bg-grey-lighten-4">
+                      <!-- Checkbox Único Maestro -->
+                      <th class="text-center font-weight-bold py-3" style="width: 44px;"
+                        :title="isDuplicateInvoice ? 'Número de ítem' : (isSharedInvoice ? 'Marcar si pertenece al taller / aplicar categoría' : 'Marcar para aplicar categoría')">
+                        <span v-if="isDuplicateInvoice"
+                          class="text-caption font-weight-bold text-medium-emphasis">#</span>
+                        <VCheckbox v-else :model-value="isAllSelected" :indeterminate="isSomeSelected && !isAllSelected"
+                          density="compact" hide-details @click.stop="toggleSelectAll" />
+                      </th>
+                      <th class="text-left font-weight-bold py-3" style="min-width: 160px;">
+                        PRODUCTO / SKU
+                      </th>
+                      <th class="text-center font-weight-bold py-3" style="width: 130px;">
+                        TIPO
+                      </th>
+                      <th class="text-left font-weight-bold py-3" style="width: 160px;">
+                        CATEGORÍA
+                      </th>
+                      <th class="text-center font-weight-bold py-3" style="width: 65px;">
+                        CANT.
+                      </th>
+                      <th class="text-center font-weight-bold py-3" style="width: 85px;">
+                        PRECIO
+                      </th>
+                      <th class="text-right font-weight-bold py-3 pr-3" style="width: 90px;">
+                        SUBTOTAL
+                      </th>
+                      <th v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center font-weight-bold py-3"
+                        style="width: 44px;">
+                        <VIcon icon="ri-settings-3-line" size="16" color="grey" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="items.length === 0">
+                      <td :colspan="xmlLoadedInfo || isDuplicateInvoice ? 7 : 8"
+                        class="text-center py-10 text-medium-emphasis">
+                        <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
+                        <div class="text-body-1 font-weight-medium">
+                          No hay productos agregados a la compra
+                        </div>
+                        <p class="text-caption text-medium-emphasis mb-0">
+                          Carga un XML del SRI arriba o ingresa productos manualmente
+                        </p>
+                      </td>
+                    </tr>
+                    <tr v-for="(item, index) in items" :key="item.id" class="purchase-item-row"
+                      :class="{ 'opacity-50 bg-grey-lighten-5': isSharedInvoice && item._selected === false }">
+                      <!-- Checkbox Único por Fila -->
+                      <td class="text-center py-3">
+                        <span v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis font-weight-bold">{{
+                          index + 1
+                        }}</span>
+                        <VCheckbox v-else :model-value="item._selected !== false" color="primary" density="compact"
+                          hide-details
+                          :title="isSharedInvoice ? 'Marcar si pertenece al taller / categoría' : 'Marcar para aplicar categoría'"
+                          @update:model-value="val => onToggleItem(item, val)" />
+                      </td>
+
+                      <!-- Nombre y SKU -->
+                      <td class="py-3">
+                        <div
+                          class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-1 flex-wrap">
+                          <span>{{ item.description }}</span>
+                          <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
+                            class="font-weight-bold" style="height: 18px;">
+                            XML
+                          </VChip>
+                          <VChip v-else-if="item.is_manual" size="x-small" color="info" variant="tonal"
+                            class="font-weight-bold" style="height: 18px;">
+                            Manual
+                          </VChip>
+                        </div>
+                        <div class="text-caption text-medium-emphasis mt-0-5 d-flex align-center gap-2">
+                          <span>SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
+                        </div>
+                      </td>
+
+                      <!-- Tipo (Clickable chip para abrir modal VDialog) -->
+                      <td class="text-center py-3">
+                        <div v-if="isDuplicateInvoice">
+                          <VChip size="small"
+                            :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
+                            variant="tonal" class="font-weight-medium">
+                            <VIcon
+                              :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 2 ? 'ri-truck-line' : 'ri-tools-line')"
+                              size="14" class="me-1" />
+                            {{itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] ||
+                              'Producto'}}
+                          </VChip>
+                          <div v-if="Number(item.item_type) === 1 && item.brand && item.brand !== 'N/A'"
+                            class="text-caption text-medium-emphasis mt-0-5" style="font-size: 0.72rem;">
+                            {{ item.brand }}
+                          </div>
+                        </div>
+                        <div v-else-if="item._selected !== false">
+                          <VChip size="small"
+                            :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
+                            variant="tonal" class="font-weight-bold cursor-pointer"
+                            title="Haga clic para cambiar tipo de ítem / marca"
+                            @click="openItemClassificationDialog(item)">
+                            <VIcon
+                              :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 2 ? 'ri-truck-line' : 'ri-tools-line')"
+                              size="14" class="me-1" />
+                            {{itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] ||
+                              'Producto'}}
+                          </VChip>
+                          <div v-if="Number(item.item_type) === 1" class="text-caption text-medium-emphasis mt-0-5"
+                            style="font-size: 0.72rem;">
+                            {{ item.brand || 'SM' }}
+                          </div>
+                        </div>
+                        <div v-else
+                          class="text-caption text-medium-emphasis text-center py-1-5 px-2 bg-grey-lighten-4 rounded border border-dashed">
+                          <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
+                          Terceros
+                        </div>
+                      </td>
+
+                      <!-- Selector Editable de Categoría (Solo si está marcado y es Producto) -->
+                      <td class="py-3">
+                        <div v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis">
+                          <span v-if="getCategoryName(item.product_categorie_id)"
+                            class="text-primary font-weight-medium">
+                            {{ getCategoryName(item.product_categorie_id) }}
+                          </span>
+                          <span v-else class="text-disabled">—</span>
+                        </div>
+                        <VSelect v-else-if="item._selected !== false && Number(item.item_type) === 1"
+                          v-model="item.product_categorie_id" :items="categories" item-title="title" item-value="id"
+                          placeholder="Categoría *" variant="outlined" density="compact" hide-details
+                          class="custom-table-select" />
+                        <div v-else
+                          class="text-caption text-medium-emphasis text-center py-1-5 px-2 bg-grey-lighten-4 rounded border border-dashed">
+                          <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
+                          No aplica
+                        </div>
+                      </td>
+
+                      <!-- Cantidad (Columna Individual) -->
+                      <td class="text-center py-3">
+                        <span class="text-body-2 font-weight-bold text-high-emphasis">{{ item.quantity }}</span>
+                      </td>
+
+                      <!-- Precio Unitario (Columna Individual) -->
+                      <td class="text-center py-3">
+                        <span class="text-body-2 font-weight-medium text-grey-darken-3">${{ Number(item.unit_price ||
+                          0).toFixed(2)
+                        }}</span>
+                      </td>
+
+                      <!-- Subtotal (Columna Individual) -->
+                      <td class="text-right py-3 pr-3">
+                        <span class="font-weight-bold text-body-2 text-primary">
+                          ${{ Number((item.quantity * item.unit_price) - (item.discount || 0)).toFixed(2) }}
+                        </span>
+                        <div v-if="item.discount > 0" class="text-caption text-error text-no-wrap"
+                          style="font-size: 0.7rem;">
+                          -${{ Number(item.discount).toFixed(2) }}
+                        </div>
+                      </td>
+
+                      <!-- Acción Eliminar (Oculta si es importado de XML) -->
+                      <td v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center py-3">
+                        <VBtn v-if="!item.is_from_xml" icon="ri-delete-bin-line" color="error" variant="text"
+                          size="small" class="rounded-lg" title="Eliminar producto" @click="removeItem(index)" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </VTable>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- SECCION FINANCIERA Y TOTALES -->
+        <VCol cols="12" md="4">
+          <VCard class="elevation-2 rounded-xl mb-6 border-primary border-opacity-50 border-s-4 border"
+            :class="{ 'opacity-90 bg-grey-lighten-5': isDuplicateInvoice }">
+            <VCardTitle class="px-6 pt-6 pb-2 text-h6 font-weight-bold d-flex align-center gap-2">
+              <VIcon icon="ri-money-dollar-circle-line" color="primary" />
+              <span>Origen de Fondos</span>
+              <VChip v-if="isDuplicateInvoice" size="x-small" color="error" variant="tonal"
+                class="ms-2 font-weight-bold">
+                Solo Lectura
+              </VChip>
+            </VCardTitle>
+            <VCardText class="px-6 pb-6">
+              <VRadioGroup v-model="formData.payment_type" class="mb-4" :disabled="isDuplicateInvoice">
+                <VRadio label="Pago Inmediato (Caja/Banco)" value="efectivo" color="success" />
+                <VRadio label="Cuenta por Pagar (Crédito)" value="credito" color="primary" />
+                <VRadio label="Financiado por Socio (Aporte)" value="aporte" color="warning" />
+              </VRadioGroup>
+
+              <!-- Conditional Selectors -->
+              <VExpandTransition>
+                <div v-if="formData.payment_type === 'efectivo'">
+                  <VSelect v-model="formData.account_id" :items="accounts" item-title="name" item-value="id"
+                    label="Cuenta de Egreso (Origen de Fondos) *" placeholder="Seleccione la cuenta obligatoria"
+                    variant="outlined" density="comfortable" prepend-inner-icon="ri-bank-card-line"
+                    :rules="[val => !!val || 'Debe escoger obligatoriamente de qué cuenta salen los fondos']"
+                    :loading="isLoadingConfig" :disabled="isDuplicateInvoice" />
+                  <p class="text-caption text-medium-emphasis mt-1 mb-0">
+                    <VIcon icon="ri-information-line" size="14" class="me-1" />
+                    El monto pagado se descontará automáticamente del saldo de esta cuenta.
+                  </p>
+                </div>
+              </VExpandTransition>
+
+              <VExpandTransition>
+                <div v-if="formData.payment_type === 'aporte'">
+                  <VSelect v-model="formData.partner_id" :items="partners" item-title="nombre" item-value="id"
+                    label="Seleccionar Socio Capitalista *" variant="outlined" density="comfortable"
+                    prepend-inner-icon="ri-user-star-line" :loading="isLoadingConfig" :disabled="isDuplicateInvoice" />
+                </div>
+              </VExpandTransition>
+
+              <VAlert v-if="formData.payment_type === 'credito'" color="primary" variant="tonal"
+                icon="ri-information-line" class="mt-2 text-caption">
+                Se registrará la compra en el inventario y se creará una Cuenta por Pagar asociada al proveedor. No se
+                descontará dinero de las cuentas aún.
+              </VAlert>
+            </VCardText>
+          </VCard>
+
+          <!-- RESUMEN TOTAL -->
+          <VCard class="elevation-2 rounded-xl bg-grey-lighten-4 border">
+            <VCardTitle class="px-6 pt-6 text-h6 font-weight-bold">
+              Resumen de Factura
+            </VCardTitle>
+            <VCardText class="px-6">
+              <div class="d-flex justify-space-between mb-2">
+                <span class="text-medium-emphasis">Subtotal SRI</span>
+                <span class="font-weight-bold">${{ subtotal.toFixed(2) }}</span>
+              </div>
+              <div class="d-flex justify-space-between mb-4">
+                <span class="text-medium-emphasis">Impuestos (IVA 15%)</span>
+                <span class="font-weight-bold">${{ totalTax.toFixed(2) }}</span>
+              </div>
+              <div class="d-flex justify-space-between mb-3 align-center">
+                <span class="text-subtitle-1 font-weight-bold">Total Factura SRI</span>
+                <span class="text-h5 font-weight-bold text-grey-darken-3">${{ grandTotal.toFixed(2) }}</span>
+              </div>
+
+              <!-- Desglose de Factura Compartida -->
+              <VExpandTransition>
+                <div v-if="isSharedInvoice">
+                  <VDivider class="mb-3" />
+                  <div class="d-flex justify-space-between mb-2 text-error">
+                    <span class="text-caption font-weight-bold">(-) Asumido por Terceros</span>
+                    <span class="font-weight-bold">-${{ tercerosMath.total.toFixed(2) }}</span>
+                  </div>
+                  <div
+                    class="d-flex justify-space-between mb-4 align-center bg-primary-lighten-5 pa-3 rounded-lg border border-primary border-opacity-25">
+                    <div>
+                      <div class="text-subtitle-2 font-weight-bold text-primary">Gasto Real Taller</div>
+                      <div class="text-caption text-medium-emphasis">Monto a pagar/egresar</div>
+                    </div>
+                    <span class="text-h4 font-weight-black text-primary">${{ tallerMath.total.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </VExpandTransition>
+
+              <VDivider v-if="!isSharedInvoice" class="mb-4" />
+
+              <div v-if="!isSharedInvoice" class="d-flex justify-space-between mb-6 align-center">
+                <span class="text-h6 font-weight-bold">Total Compra</span>
+                <span class="text-h4 font-weight-black text-primary">${{ grandTotal.toFixed(2) }}</span>
+              </div>
+
+              <VBtn block :color="isDuplicateInvoice ? 'secondary' : 'primary'" size="x-large"
+                :elevation="isDuplicateInvoice ? 0 : 3" :loading="isSubmitting" :disabled="isDuplicateInvoice"
+                :prepend-icon="isDuplicateInvoice ? 'ri-lock-2-line' : 'ri-save-3-line'"
+                :variant="isDuplicateInvoice ? 'tonal' : 'elevated'" class="font-weight-bold mt-2"
+                @click="submitPurchase">
+                {{ isDuplicateInvoice ? 'Factura Ya Registrada' : 'Registrar Compra' }}
+              </VBtn>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
+    </div>
 
     <!-- Modal Dialog para Agregar Producto Manual -->
     <VDialog v-model="isManualProductDialogOpen" scrollable max-width="600">
@@ -1285,8 +1523,9 @@ onMounted(() => {
             </VCol>
 
             <VCol v-if="Number(manualItem.item_type) === 1" cols="12" sm="6" class="mb-2">
-              <VTextField v-model="manualItem.brand" label="Marca" placeholder="Ej: Bosch, Mobil, SM..."
-                variant="outlined" density="comfortable" prepend-inner-icon="ri-price-tag-3-line" />
+              <VCombobox v-model="manualItem.brand" :items="brands" label="Marca"
+                placeholder="Seleccionar o escribir marca nueva..." variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-price-tag-3-line" clearable :return-object="false" />
             </VCol>
 
             <VCol v-if="Number(manualItem.item_type) === 1" cols="12" sm="6" class="mb-2">
@@ -1327,6 +1566,77 @@ onMounted(() => {
           <VBtn color="primary" variant="elevated" prepend-icon="ri-add-line" class="rounded-lg px-6 font-weight-bold"
             height="40" @click="addManualProduct">
             Añadir a la Compra
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Modal Dialog para Clasificar Tipo de Ítem (Producto / Servicio / Gasto / Marca) -->
+    <VDialog v-model="isItemClassificationDialogOpen" max-width="520">
+      <VCard v-if="selectedItemToEdit" class="custom-dialog-card rounded-xl">
+        <div class="pa-5 text-white"
+          style="background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info)));">
+          <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center gap-3">
+              <div class="bg-white rounded-circle pa-2 d-flex align-center justify-center text-primary">
+                <VIcon icon="ri-settings-4-line" size="24" />
+              </div>
+              <div>
+                <h3 class="text-h6 font-weight-bold text-white mb-0">
+                  Tipo de Ítem
+                </h3>
+                <p class="text-caption text-white text-opacity-80 mb-0">
+                  Clasificación y detalles para inventario
+                </p>
+              </div>
+            </div>
+            <VBtn icon="ri-close-line" variant="text" size="small" color="white"
+              @click="isItemClassificationDialogOpen = false" />
+          </div>
+        </div>
+
+        <VCardText class="pa-5">
+          <!-- Info del Producto -->
+          <div class="bg-grey-lighten-4 pa-3 rounded-lg border mb-4">
+            <div class="font-weight-bold text-body-2 text-high-emphasis">
+              {{ selectedItemToEdit.description }}
+            </div>
+            <div class="text-caption text-medium-emphasis mt-1">
+              SKU: <strong class="text-high-emphasis">{{ selectedItemToEdit.code }}</strong>
+            </div>
+          </div>
+
+          <VRow dense>
+            <!-- Selector de Tipo -->
+            <VCol cols="12" class="mb-3">
+              <label class="text-caption font-weight-bold text-medium-emphasis mb-2 d-block">
+                Selecciona la naturaleza del ítem:
+              </label>
+              <VRadioGroup v-model="selectedItemToEdit.item_type" density="compact" hide-details class="mt-1">
+                <VRadio v-for="opt in itemTypeOptions" :key="opt.value" :label="opt.title" :value="opt.value"
+                  color="primary" class="mb-2" />
+              </VRadioGroup>
+            </VCol>
+
+            <!-- Marca si es producto físico (VCombobox para elegir existente o escribir nueva) -->
+            <VCol v-if="Number(selectedItemToEdit.item_type) === 1" cols="12" class="mb-2">
+              <VCombobox v-model="selectedItemToEdit.brand" :items="brands" label="Marca del Producto"
+                placeholder="Seleccionar o escribir marca nueva..." variant="outlined" density="comfortable"
+                prepend-inner-icon="ri-price-tag-3-line" clearable :return-object="false" />
+            </VCol>
+          </VRow>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 d-flex justify-end gap-2 bg-grey-lighten-5">
+          <VBtn variant="outlined" color="secondary" class="rounded-lg text-none"
+            @click="isItemClassificationDialogOpen = false">
+            Cancelar
+          </VBtn>
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line"
+            class="rounded-lg font-weight-bold text-none px-5" @click="saveItemClassification">
+            Guardar Cambios
           </VBtn>
         </VCardActions>
       </VCard>

@@ -188,7 +188,7 @@ onMounted(() => {
             Saldos a Favor
           </VBtn>
           <VBtn color="primary" prepend-icon="ri-add-circle-line" to="/invoice/manual-purchase">
-            Nueva Compra (Manual / XML)
+            Nueva Compra
           </VBtn>
         </div>
       </div>
@@ -372,6 +372,12 @@ onMounted(() => {
                     <VBtn class="action-btn" variant="text" icon size="small" color="info" title="Ver Factura"
                       @click="showItem(invoice)">
                       <VIcon icon="ri-eye-line" size="20" />
+                    </VBtn>
+
+                    <!-- Eliminar Factura -->
+                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar Factura"
+                      @click="deleteInvoice(invoice)">
+                      <VIcon icon="ri-delete-bin-line" size="20" />
                     </VBtn>
                   </div>
                 </td>

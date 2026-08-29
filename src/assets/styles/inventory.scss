@@ -5556,13 +5556,15 @@
 
 .manual-purchase-table {
     border-color: rgba(var(--v-border-color), 0.12) !important;
+    width: 100% !important;
+    table-layout: auto !important;
 
     th {
         background-color: rgba(var(--v-theme-on-surface), 0.03) !important;
-        font-size: 0.75rem !important;
+        font-size: 0.72rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.5px;
-        height: 48px !important;
+        height: 44px !important;
         vertical-align: middle !important;
         color: rgba(var(--v-theme-on-surface), 0.7) !important;
     }
@@ -5570,6 +5572,8 @@
     td {
         vertical-align: middle !important;
         border-bottom: 1px solid rgba(var(--v-border-color), 0.08) !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
     }
 }
 
@@ -5583,8 +5587,17 @@
 
 .custom-table-select .v-field,
 .custom-table-input .v-field {
-    border-radius: 8px !important;
-    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    font-size: 0.8rem !important;
+    min-height: 32px !important;
+}
+
+.custom-table-select .v-field__input,
+.custom-table-input .v-field__input {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    min-height: 32px !important;
+    font-size: 0.8rem !important;
 }
 
 .custom-number-input .v-field {
@@ -5614,4 +5627,42 @@
     color: rgba(var(--v-theme-on-surface), 0.6) !important;
     font-weight: 600 !important;
     padding-inline-end: 2px !important;
+}
+
+// ============================================
+// SHIMMER SKELETON LOADER ANIMATIONS
+// ============================================
+@keyframes loading-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.shimmer-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-line {
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+    width: 60px;
+    height: 20px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite ease-in-out;
 }
