@@ -5525,3 +5525,93 @@
     border-radius: 6px;
     border: 1px solid rgba(var(--v-theme-primary), 0.2);
 }
+
+// ============================================
+// MANUAL PURCHASE & XML IMPORT STYLES
+// ============================================
+.xml-dropzone-card {
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.04) 0%, rgba(var(--v-theme-surface), 1) 100%);
+    border-color: rgba(var(--v-theme-primary), 0.35) !important;
+    transition: all 0.25s ease;
+    cursor: pointer;
+
+    &:hover,
+    &.xml-dropzone-active {
+        background-color: rgba(var(--v-theme-primary), 0.08) !important;
+        border-color: rgb(var(--v-theme-primary)) !important;
+        transform: translateY(-1px);
+    }
+}
+
+.xml-icon-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    background-color: rgba(var(--v-theme-primary), 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.manual-purchase-table {
+    border-color: rgba(var(--v-border-color), 0.12) !important;
+
+    th {
+        background-color: rgba(var(--v-theme-on-surface), 0.03) !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px;
+        height: 48px !important;
+        vertical-align: middle !important;
+        color: rgba(var(--v-theme-on-surface), 0.7) !important;
+    }
+
+    td {
+        vertical-align: middle !important;
+        border-bottom: 1px solid rgba(var(--v-border-color), 0.08) !important;
+    }
+}
+
+.purchase-item-row {
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: rgba(var(--v-theme-primary), 0.015);
+    }
+}
+
+.custom-table-select .v-field,
+.custom-table-input .v-field {
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+}
+
+.custom-number-input .v-field {
+    border-radius: 8px !important;
+}
+
+.custom-number-input .v-field__input {
+    text-align: center !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    padding-inline-start: 4px !important;
+    padding-inline-end: 4px !important;
+}
+
+.custom-price-input .v-field {
+    border-radius: 8px !important;
+}
+
+.custom-price-input .v-field__input {
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding-inline-start: 4px !important;
+    padding-inline-end: 6px !important;
+}
+
+.custom-price-input .v-field__prefix {
+    color: rgba(var(--v-theme-on-surface), 0.6) !important;
+    font-weight: 600 !important;
+    padding-inline-end: 2px !important;
+}

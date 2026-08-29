@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useLoaderStore } from '@/stores/loader'
 import { $api } from '@/utils/api'
+import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDialog.vue'
+import InvoiceProcessDialog from '@/components/inventory/invoices/InvoiceProcessDialog.vue'
+import InvoiceShowDialog from '@/components/inventory/invoices/InvoiceShowDialog.vue'
 
 const invoiceSelected = ref(null)
 const currentPage = ref(1)
@@ -10,8 +14,6 @@ const perPage = ref(10)
 const totalItems = ref(0)
 
 const { showNotification } = useGlobalToast()
-import { useLoaderStore } from '@/stores/loader'
-
 const loader = useLoaderStore()
 
 const list_invoices = ref([])
@@ -22,16 +24,12 @@ const range_date = ref(null)
 const search = ref(null)
 const type = ref(1)
 
-
 const isLoading = ref(false)
 
-const isInvoiceAddDialogVisible = ref(false)
 const isInvoiceShowDialogVisible = ref(false)
 const isInvoiceDeleteDialogVisible = ref(false)
 const isInvoiceProcessDialogVisible = ref(false)
 const invoiceToProcess = ref(null)
-import InvoiceDeleteDialog from '@/components/inventory/invoices/InvoiceDeleteDialog.vue'
-import InvoiceProcessDialog from '@/components/inventory/invoices/InvoiceProcessDialog.vue'
 
 const list = async () => {
   isLoading.value = true
@@ -189,12 +187,8 @@ onMounted(() => {
           <VBtn color="success" variant="tonal" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits">
             Saldos a Favor
           </VBtn>
-          <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-upload-line"
-            @click="isInvoiceAddDialogVisible = !isInvoiceAddDialogVisible">
-            Subir XML
-          </VBtn>
           <VBtn color="primary" prepend-icon="ri-add-circle-line" to="/invoice/manual-purchase">
-            Compra Manual
+            Nueva Compra (Manual / XML)
           </VBtn>
         </div>
       </div>
@@ -379,12 +373,6 @@ onMounted(() => {
                       @click="showItem(invoice)">
                       <VIcon icon="ri-eye-line" size="20" />
                     </VBtn>
-
-                    <!-- Eliminar -->
-                    <VBtn class="action-btn" variant="text" icon size="small" color="error" title="Eliminar Factura"
-                      @click="deleteInvoice(invoice)">
-                      <VIcon icon="ri-delete-bin-6-line" size="20" />
-                    </VBtn>
                   </div>
                 </td>
               </tr>
@@ -410,7 +398,6 @@ onMounted(() => {
     </VCard>
 
     <!-- DIALOG -->
-    <InvoiceAddDialog v-model:isDialogVisible="isInvoiceAddDialogVisible" @add-invoice="addInvoice" />
     <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
       :invoice-selected="invoiceSelected" />
     <InvoiceDeleteDialog v-if="isInvoiceDeleteDialogVisible" v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
