@@ -101,7 +101,6 @@ const loadSales = async () => {
     }
 
     sales.value = extractArray(response, 'sales')
-
     const paginator = response?.data?.data ? response.data : (response?.data || response?.sales || response || {})
 
     totalItems.value = paginator.total || sales.value.length || 0
@@ -213,9 +212,17 @@ const getPaymentStatusInfo = status => {
   return map[status] || { color: 'grey', text: status || 'Pendiente', icon: 'ri-question-line' }
 }
 
+const isSaleCanceled = item => {
+  if (!item) return false
+  if (item.deleted_at) return true
+  const s = String(item.status || '').toLowerCase()
+  const ps = String(item.payment_status || '').toLowerCase()
+  return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
+}
+
 const getStatusInfo = item => {
   if (!item) return { color: 'grey', text: '-', icon: 'ri-question-line' }
-  if (item.status === 'canceled') {
+  if (isSaleCanceled(item)) {
     return { color: 'error', text: 'Anulada', icon: 'ri-close-circle-line' }
   }
   if (item.document_type === 'quote') {
@@ -729,28 +736,28 @@ onMounted(() => {
             <VTable hover class="sales-table bg-white">
               <thead>
                 <tr>
-                  <th class="text-left py-3 px-4" style="width: 140px;">
+                  <th class="text-left py-3 px-3" style="width: 12%; min-width: 130px;">
                     Documento
                   </th>
-                  <th class="text-center py-3 px-2" style="width: 105px;">
+                  <th class="text-center py-3 px-2" style="width: 8%; min-width: 70px;">
                     O.T.
                   </th>
-                  <th class="text-center py-3 px-2" style="width: 105px;">
+                  <th class="text-center py-3 px-2" style="width: 9%; min-width: 85px;">
                     Fecha
                   </th>
-                  <th class="text-left py-3 px-4" style="min-width: 170px;">
+                  <th class="text-left py-3 px-3" style="width: 22%; min-width: 150px; max-width: 180px;">
                     Cliente
                   </th>
-                  <th class="text-left py-3 px-4" style="min-width: 150px;">
+                  <th class="text-left py-3 px-3" style="width: 18%; min-width: 130px; max-width: 150px;">
                     Vehículo
                   </th>
-                  <th class="text-right py-3 px-4" style="width: 110px;">
+                  <th class="text-right py-3 px-3" style="width: 12%; min-width: 85px;">
                     Total
                   </th>
-                  <th class="text-center py-3 px-4" style="width: 130px;">
+                  <th class="text-center py-3 px-3" style="width: 13%; min-width: 110px;">
                     Estado
                   </th>
-                  <th class="text-center py-3 px-4" style="width: 100px;">
+                  <th class="text-center py-3 px-2" style="width: 6%; min-width: 65px;">
                     Acciones
                   </th>
                 </tr>
@@ -759,31 +766,31 @@ onMounted(() => {
               <!-- Cargando (Skeleton Rows) -->
               <tbody v-if="loading">
                 <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
-                  <td class="py-3 px-4">
-                    <div class="shimmer-line w-40 mb-2" />
-                    <div class="shimmer-line w-60" />
+                  <td class="py-3 px-3">
+                    <div class="shimmer-line w-50 mb-2" />
+                    <div class="shimmer-line w-75" />
                   </td>
                   <td class="py-3 px-2 text-center">
-                    <div class="shimmer-chip mx-auto" style="width: 60px;" />
+                    <div class="shimmer-chip mx-auto" style="width: 55px;" />
                   </td>
                   <td class="py-3 px-2 text-center">
-                    <div class="shimmer-line mx-auto" style="width: 70px;" />
+                    <div class="shimmer-line mx-auto" style="width: 65px;" />
                   </td>
-                  <td class="py-3 px-4">
+                  <td class="py-3 px-3">
                     <div class="shimmer-line w-75 mb-2" />
                     <div class="shimmer-line w-50" />
                   </td>
-                  <td class="py-3 px-4">
+                  <td class="py-3 px-3">
                     <div class="shimmer-line w-60 mb-2" />
                     <div class="shimmer-line w-40" />
                   </td>
-                  <td class="py-3 px-4">
+                  <td class="py-3 px-3">
                     <div class="shimmer-line w-50 ms-auto" />
                   </td>
-                  <td class="py-3 px-4 text-center">
+                  <td class="py-3 px-3 text-center">
                     <div class="shimmer-chip mx-auto" />
                   </td>
-                  <td class="py-3 px-4 text-center">
+                  <td class="py-3 px-2 text-center">
                     <div class="d-flex justify-center gap-1">
                       <div class="shimmer-button" />
                       <div class="shimmer-button" />
@@ -797,7 +804,7 @@ onMounted(() => {
                 <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
                   class="sale-table-row align-middle border-b">
 
-                  <td class="text-left py-3 px-4">
+                  <td class="text-left py-3 px-3">
                     <div v-if="item" class="d-flex flex-column gap-0.5">
                       <div class="d-flex align-center">
                         <span class="font-weight-bold d-inline-flex align-center"
@@ -811,7 +818,7 @@ onMounted(() => {
                       </div>
                       <div class="d-flex align-center">
                         <span class="doc-number-text"
-                          :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
+                          :class="isSaleCanceled(item) ? 'text-decoration-line-through opacity-50' : ''"
                           style="font-size: 0.85rem;">
                           {{ item.document_number }}
                         </span>
@@ -838,10 +845,10 @@ onMounted(() => {
                   </td>
 
                   <!-- 4. Cliente -->
-                  <td class="text-left py-3 px-4">
+                  <td class="text-left py-3 px-3" style="max-width: 180px;">
                     <div v-if="item">
-                      <div class="font-weight-semibold text-slate-800 text-truncate"
-                        style="max-width: 200px; font-size: 0.85rem;" :title="getClientName(item.client)">
+                      <div class="font-weight-semibold text-slate-800 text-truncate" style="font-size: 0.85rem;"
+                        :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
                       <div v-if="item.client?.n_document" class="text-slate-500 font-mono mt-0.5"
@@ -852,10 +859,10 @@ onMounted(() => {
                   </td>
 
                   <!-- 5. Vehículo -->
-                  <td class="text-left py-3 px-4">
+                  <td class="text-left py-3 px-3" style="max-width: 150px;">
                     <div v-if="item?.vehicle">
-                      <div class="font-weight-medium text-slate-700 text-truncate"
-                        style="max-width: 180px; font-size: 0.85rem;" :title="formatVehicleInfo(item.vehicle)">
+                      <div class="font-weight-medium text-slate-700 text-truncate" style="font-size: 0.85rem;"
+                        :title="formatVehicleInfo(item.vehicle)">
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
                       <div class="mt-0.5">
@@ -871,23 +878,18 @@ onMounted(() => {
                   <td class="text-right py-3 px-4">
                     <div v-if="item" class="d-flex flex-column align-end gap-1">
                       <div class="font-weight-bold text-slate-900 font-mono"
-                        :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
+                        :class="isSaleCanceled(item) ? 'text-decoration-line-through opacity-50' : ''"
                         style="font-size: 0.85rem;">
-                        {{ formatCurrency(getPaidAmount(item)) }}
+                        {{ formatCurrency(item.total) }}
                       </div>
 
-                      <!-- Micro-Pill de Método de Pago debajo del total -->
+                      <!-- Micro-Pill de Método de Pago debajo del total (solo activas) -->
                       <div
-                        v-if="item.document_type !== 'quote' && item.status !== 'canceled' && getPaymentMethodDisplay(item)"
+                        v-if="item.document_type !== 'quote' && !isSaleCanceled(item) && getPaymentMethodDisplay(item)"
                         class="payment-method-pill" :class="`payment-method-${getPaymentMethodClass(item)}`"
                         style="font-size: 0.85rem;">
                         <VIcon :icon="getPaymentMethodIcon(item)" size="13" />
                         <span>{{ getPaymentMethodDisplay(item) }}</span>
-                      </div>
-                      <div
-                        v-else-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
-                        class="text-slate-400 font-mono" style="font-size: 0.85rem;">
-                        de {{ formatCurrency(item.total) }}
                       </div>
                     </div>
                   </td>
@@ -895,17 +897,17 @@ onMounted(() => {
                   <!-- 7. Estado -->
                   <td class="text-center py-3 px-4" style="white-space: nowrap;">
                     <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
-                      <!-- Estado de Cobro -->
+                      <!-- Estado de Cobro / Anulada -->
                       <div class="status-pill-clean"
-                        :class="`status-${item.status === 'canceled' ? 'canceled' : (item.document_type === 'quote' ? 'quote' : item.payment_status)}`"
+                        :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : item.payment_status)}`"
                         style="font-size: 0.85rem;">
                         <span class="status-dot" />
                         <span>{{ getStatusInfo(item)?.text }}</span>
                       </div>
 
-                      <!-- Estado SRI (Para facturas) -->
-                      <div v-if="item.document_type === 'invoice' && item.sri_status" class="sri-badge-clean"
-                        :class="`sri-${item.sri_status.toLowerCase()}`"
+                      <!-- Estado SRI (Solo para facturas activas) -->
+                      <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                        class="sri-badge-clean" :class="`sri-${item.sri_status.toLowerCase()}`"
                         :title="item.sri_error ? `Error SRI: ${item.sri_error}` : `Estado SRI: ${item.sri_status}`"
                         style="font-size: 0.85rem;" @click="item.sri_error ? openSriErrorDialog(item.sri_error) : null">
                         <VIcon :icon="getSriStatusInfo(item.sri_status).icon" size="13" class="me-1" />
@@ -960,10 +962,9 @@ onMounted(() => {
                             <VListItem v-if="item.document_type === 'invoice' && item.sri_error"
                               prepend-icon="ri-alert-line" title="Ver Error SRI" class="text-error text-body-2"
                               @click="openSriErrorDialog(item.sri_error)" />
-                            <VDivider v-if="can('delete_sale')" class="my-1" />
-                            <VListItem v-if="can('delete_sale')" :disabled="item.status === 'canceled'"
-                              prepend-icon="ri-close-circle-line" title="Anular Documento"
-                              class="text-error text-body-2" @click="cancelSale(item)" />
+                            <VDivider class="my-1" />
+                            <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
+                              title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
                           </VList>
                         </VMenu>
                       </VBtn>
@@ -1053,7 +1054,7 @@ onMounted(() => {
                           <VIcon icon="ri-car-line" size="16" class="mr-2 text-medium-emphasis" />
                           <div>
                             <span class="text-body-2 text-grey-darken-4 mr-2">{{ formatVehicleInfo(item.vehicle)
-                            }}</span>
+                              }}</span>
                             <span class="text-caption text-medium-emphasis border px-1 rounded">{{
                               item.vehicle.license_plate }}</span>
                           </div>
@@ -1167,7 +1168,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <span class="text-body-2 text-medium-emphasis">Total a Pagar:</span>
               <span class="text-subtitle-1 font-weight-bold text-success">{{ formatCurrency(selectedSale?.total)
-              }}</span>
+                }}</span>
             </div>
           </div>
 
@@ -1235,7 +1236,7 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VIcon icon="ri-file-text-line" size="18" color="primary" />
                   <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{ mailSaleSelected?.document_number
-                  }}</span>
+                    }}</span>
                 </div>
               </div>
               <div class="text-right">

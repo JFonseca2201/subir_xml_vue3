@@ -33,6 +33,21 @@ const isProcessing = computed(() => isSubmitting.value || isSavingDraft.value ||
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 const isConfirmInvoiceDialogVisible = ref(false)
+const sriAmbiente = ref('1')
+
+const sriEnvironmentInfo = computed(() => {
+  const isProd = String(sriAmbiente.value) === '2'
+  return {
+    isProd,
+    type: isProd ? '2' : '1',
+    text: isProd ? 'PRODUCCIÓN' : 'PRUEBAS',
+    color: isProd ? 'success' : 'warning',
+    icon: isProd ? 'ri-shield-check-line' : 'ri-test-tube-line',
+    desc: isProd 
+      ? 'Ambiente Oficial de Producción del SRI (con validez tributaria real).' 
+      : 'Ambiente de Pruebas y Certificación del SRI (sin validez tributaria).',
+  }
+})
 
 const computedPaymentMethodSummary = computed(() => {
   if (sale.value.payment_status === 'pending' || sale.value.is_credited) {
@@ -398,7 +413,7 @@ const loadInitialData = async () => {
   isLoading.value = true
   try {
     // Cargar datos en paralelo optimizado
-    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes] = await Promise.all([
+    const [clientsRes, vehiclesRes, productsRes, accountsRes, salesRes, workOrdersRes, employeesRes, nextNumberRes, sucursalRes] = await Promise.all([
       Promise.resolve([]),
       Promise.resolve([]),
       $api('products', { params: { per_page: 1000 } }),
@@ -407,7 +422,12 @@ const loadInitialData = async () => {
       Promise.resolve([]),
       $api('employees', { params: { per_page: 1000 } }),
       $api('sales/next-number?document_type=' + (route.query.type || 'sale_note')),
+      $api('sucursales/1').catch(() => null),
     ])
+
+    if (sucursalRes?.sucursal?.ambiente) {
+      sriAmbiente.value = String(sucursalRes.sucursal.ambiente)
+    }
 
     const extractArray = (res, key) => {
       if (Array.isArray(res)) return res
@@ -2761,6 +2781,19 @@ onMounted(async () => {
             </div>
 
             <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
+              <span class="text-caption text-medium-emphasis font-weight-medium">AMBIENTE SRI</span>
+              <VChip
+                :color="sriEnvironmentInfo.color"
+                size="small"
+                variant="flat"
+                class="font-weight-bold px-2.5"
+              >
+                <VIcon :icon="sriEnvironmentInfo.icon" size="14" class="me-1" />
+                {{ sriEnvironmentInfo.text }}
+              </VChip>
+            </div>
+
+            <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">CONDICIÓN DE PAGO</span>
               <VChip
                 :color="sale.payment_status === 'pending' ? 'warning' : 'success'"
@@ -2781,13 +2814,13 @@ onMounted(async () => {
           </VCard>
 
           <VAlert
-            type="info"
+            :type="sriEnvironmentInfo.isProd ? 'warning' : 'info'"
             variant="tonal"
             density="compact"
-            class="rounded-lg mb-0 text-caption"
-            icon="ri-information-line"
+            class="rounded-lg mb-0 text-caption font-weight-medium"
+            :icon="sriEnvironmentInfo.icon"
           >
-            Verifica que los datos del cliente y los valores sean correctos antes de emitir la factura.
+            <strong>Ambiente SRI: {{ sriEnvironmentInfo.text }}</strong> — {{ sriEnvironmentInfo.desc }}
           </VAlert>
         </VCardText>
 
