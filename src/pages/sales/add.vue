@@ -190,10 +190,10 @@ const paymentDistributions = ref([])
 // Inicializar con un pago distribuido cuando hay items
 const initializePaymentDistribution = () => {
   if (paymentDistributions.value.length === 0) {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+    const defaultAcc = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja')) || accounts.value[0]
 
     paymentDistributions.value.push({
-      account_id: cajaChica ? cajaChica.id : null,
+      account_id: defaultAcc ? defaultAcc.id : null,
       amount: total.value,
       payment_method: 'Efectivo',
     })

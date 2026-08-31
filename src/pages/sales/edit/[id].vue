@@ -127,9 +127,9 @@ const onCreditChange = () => {
     sale.value.payment_status = 'paid'
     if (paymentDistributions.value.length === 0 && total.value > 0) {
       if (paymentDistributions.value.length === 0) {
-        const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+        const defaultAcc = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja')) || accounts.value[0]
         paymentDistributions.value.push({
-          account_id: cajaChica ? cajaChica.id : null,
+          account_id: defaultAcc ? defaultAcc.id : null,
           amount: total.value,
           payment_method: 'Efectivo',
         })
@@ -149,9 +149,9 @@ watch(() => sale.value.payment_status, newStatus => {
       sale.value.is_credited = false
     }
     if (paymentDistributions.value.length === 0 && total.value > 0) {
-      const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+      const defaultAcc = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja')) || accounts.value[0]
       paymentDistributions.value.push({
-        account_id: cajaChica ? cajaChica.id : null,
+        account_id: defaultAcc ? defaultAcc.id : null,
         amount: total.value,
         payment_method: 'Efectivo',
       })
