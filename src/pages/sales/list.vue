@@ -239,44 +239,47 @@ const getPaidAmount = item => {
   return 0
 }
 
+const formatMethodName = name => {
+  const n = (name || '').toLowerCase().trim()
+  if (n.includes('transferencia') || n.includes('banco') || n === 'transfer') return 'TRANSF.'
+  if (n.includes('efectivo') || n === 'cash') return 'EFECT.'
+  if (n.includes('tarjeta') || n === 'card') return 'TARJ.'
+  if (n.includes('cheque') || n === 'check') return 'CHEQ.'
+  if (n.includes('credito') || n.includes('pendiente') || n === 'credit') return 'PEND.'
+  return (name || '').toUpperCase()
+}
+
 const getPaymentMethodDisplay = item => {
   if (!item) return ''
   if (item.document_type === 'quote') return ''
   if (item.status === 'canceled') return ''
   if (item.payment_status === 'pending') {
-    return 'Pendiente'
+    return 'PEND.'
   }
 
   const distributions = item.finance_record?.payment_distributions || []
   if (distributions.length > 0) {
-    const methods = [...new Set(distributions.map(d => (d.payment_method || '').trim()).filter(Boolean))]
-    if (methods.length === 1) {
-      return methods[0]
-    }
-    if (methods.length > 1) {
+    const methods = [...new Set(distributions.map(d => formatMethodName(d.payment_method)).filter(Boolean))]
+    if (methods.length > 0) {
       return methods.join(' + ')
     }
   }
 
   if (item.payment_method) {
-    const raw = item.payment_method.trim()
-    if (raw.toLowerCase() === 'credito / pendiente' || raw.toLowerCase() === 'crédito / pendiente' || raw.toLowerCase() === 'pendiente') {
-      return 'Pendiente'
-    }
-    return raw
+    return formatMethodName(item.payment_method)
   }
 
-  return 'Efectivo'
+  return 'EFEC.T.'
 }
 
 const getPaymentMethodIcon = item => {
   if (!item || item.payment_status === 'pending') return 'ri-time-line'
 
-  const display = getPaymentMethodDisplay(item).toLowerCase()
+  const display = (getPaymentMethodDisplay(item) || '').toLowerCase()
   if (display.includes('+') || display.includes(',')) return 'ri-split-cells-horizontal'
-  if (display.includes('transferencia') || display.includes('banco')) return 'ri-bank-card-line'
-  if (display.includes('tarjeta')) return 'ri-bank-card-2-line'
-  if (display.includes('efectivo')) return 'ri-money-dollar-circle-line'
+  if (display.includes('transf')) return 'ri-bank-card-line'
+  if (display.includes('tarj')) return 'ri-bank-card-2-line'
+  if (display.includes('efec')) return 'ri-money-dollar-circle-line'
 
   return 'ri-wallet-3-line'
 }
@@ -284,10 +287,9 @@ const getPaymentMethodIcon = item => {
 const getPaymentMethodColor = item => {
   if (!item || item.payment_status === 'pending') return 'error'
 
-  const display = getPaymentMethodDisplay(item).toLowerCase()
-  if (display.includes('transferencia')) return 'info'
-  if (display.includes('efectivo')) return 'success'
-
+  const display = (getPaymentMethodDisplay(item) || '').toLowerCase()
+  if (display.includes('transf')) return 'info'
+  if (display.includes('efec')) return 'success'
   if (display.includes('+') || display.includes(',')) return 'primary'
 
   return 'secondary'
@@ -297,9 +299,9 @@ const getPaymentMethodClass = item => {
   if (!item || item.payment_status === 'pending') return 'pending'
 
   const display = (getPaymentMethodDisplay(item) || '').toLowerCase()
-  if (display.includes('transferencia') || display.includes('banco')) return 'transfer'
-  if (display.includes('efectivo')) return 'cash'
-  if (display.includes('tarjeta')) return 'card'
+  if (display.includes('transf')) return 'transfer'
+  if (display.includes('efec')) return 'cash'
+  if (display.includes('tarj')) return 'card'
   if (display.includes('+') || display.includes(',')) return 'mixed'
 
   return 'default'
@@ -727,22 +729,28 @@ onMounted(() => {
             <VTable hover class="sales-table bg-white">
               <thead>
                 <tr>
-                  <th class="text-left py-3.5 px-4" style="width: 240px;">
+                  <th class="text-left py-3 px-4" style="width: 140px;">
                     Documento
                   </th>
-                  <th class="text-left py-3.5 px-4" style="min-width: 200px;">
+                  <th class="text-center py-3 px-2" style="width: 105px;">
+                    O.T.
+                  </th>
+                  <th class="text-center py-3 px-2" style="width: 105px;">
+                    Fecha
+                  </th>
+                  <th class="text-left py-3 px-4" style="min-width: 170px;">
                     Cliente
                   </th>
-                  <th class="text-left py-3.5 px-4" style="min-width: 190px;">
+                  <th class="text-left py-3 px-4" style="min-width: 150px;">
                     Vehículo
                   </th>
-                  <th class="text-right py-3.5 px-4" style="width: 130px;">
+                  <th class="text-right py-3 px-4" style="width: 110px;">
                     Total
                   </th>
-                  <th class="text-center py-3.5 px-4" style="width: 170px;">
+                  <th class="text-center py-3 px-4" style="width: 130px;">
                     Estado
                   </th>
-                  <th class="text-center py-3.5 px-4" style="width: 110px;">
+                  <th class="text-center py-3 px-4" style="width: 100px;">
                     Acciones
                   </th>
                 </tr>
@@ -751,25 +759,31 @@ onMounted(() => {
               <!-- Cargando (Skeleton Rows) -->
               <tbody v-if="loading">
                 <tr v-for="n in 5" :key="n" class="skeleton-row align-middle border-b border-opacity-25">
-                  <td class="py-4 px-4">
+                  <td class="py-3 px-4">
                     <div class="shimmer-line w-40 mb-2" />
                     <div class="shimmer-line w-60" />
                   </td>
-                  <td class="py-4 px-4">
+                  <td class="py-3 px-2 text-center">
+                    <div class="shimmer-chip mx-auto" style="width: 60px;" />
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <div class="shimmer-line mx-auto" style="width: 70px;" />
+                  </td>
+                  <td class="py-3 px-4">
                     <div class="shimmer-line w-75 mb-2" />
                     <div class="shimmer-line w-50" />
                   </td>
-                  <td class="py-4 px-4">
+                  <td class="py-3 px-4">
                     <div class="shimmer-line w-60 mb-2" />
                     <div class="shimmer-line w-40" />
                   </td>
-                  <td class="py-4 px-4">
+                  <td class="py-3 px-4">
                     <div class="shimmer-line w-50 ms-auto" />
                   </td>
-                  <td class="py-4 px-4 text-center">
+                  <td class="py-3 px-4 text-center">
                     <div class="shimmer-chip mx-auto" />
                   </td>
-                  <td class="py-4 px-4 text-center">
+                  <td class="py-3 px-4 text-center">
                     <div class="d-flex justify-center gap-1">
                       <div class="shimmer-button" />
                       <div class="shimmer-button" />
@@ -782,116 +796,109 @@ onMounted(() => {
               <tbody v-else>
                 <tr v-for="(item, index) in sales" :key="item?.id ? `sale-${item.id}` : `sale-idx-${index}`"
                   class="sale-table-row align-middle border-b">
-                  <!-- 1. Documento (Estructura Premium: Tipo arriba con micro-badge, número mono y fecha) -->
-                  <td class="text-left py-3.5 px-4">
-                    <div v-if="item" class="d-flex flex-column gap-1">
-                      <!-- Línea 1: Badge de Tipo de Documento + Tag de OT -->
-                      <div class="d-flex align-center gap-1.5 flex-wrap">
-                        <span
-                          class="doc-type-badge-mini"
-                          :class="`doc-type-tag-${item.document_type}`"
-                        >
+
+                  <td class="text-left py-3 px-4">
+                    <div v-if="item" class="d-flex flex-column gap-0.5">
+                      <div class="d-flex align-center">
+                        <span class="font-weight-bold d-inline-flex align-center"
+                          :class="item.document_type === 'invoice' ? 'text-primary' : (item.document_type === 'sale_note' ? 'text-success' : 'text-info')"
+                          style="font-size: 0.85rem; letter-spacing: 0.3px; text-transform: uppercase;">
                           <VIcon
                             :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                            size="11"
-                            class="me-1"
-                          />
+                            size="14" class="me-1" />
                           {{ getDocumentTypeInfo(item.document_type)?.text }}
                         </span>
-
-                        <span
-                          v-if="item.work_order_number || item.work_order?.number || item.workOrder?.number"
-                          class="ot-tag-mini"
-                          :title="`Orden de Trabajo #${item.work_order_number || item.work_order?.number || item.workOrder?.number}`"
-                        >
-                          OT: {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
-                        </span>
                       </div>
-
-                      <!-- Línea 2: Número de Comprobante Principal -->
                       <div class="d-flex align-center">
-                        <span
-                          class="doc-number-text cursor-pointer"
+                        <span class="doc-number-text"
                           :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
-                          @click="viewSale(item)"
-                        >
+                          style="font-size: 0.85rem;">
                           {{ item.document_number }}
                         </span>
-                      </div>
-
-                      <!-- Línea 3: Fecha sutil con micro icono -->
-                      <div class="d-flex align-center text-slate-400 gap-1" style="font-size: 0.72rem;">
-                        <VIcon icon="ri-calendar-line" size="12" class="text-slate-400" />
-                        <span>{{ formatDate(item.service_date) }}</span>
                       </div>
                     </div>
                   </td>
 
-                  <!-- 2. Cliente -->
-                  <td class="text-left py-3.5 px-4">
+                  <!-- 2. Orden de Trabajo (Sin recuadro) -->
+                  <td class="text-center py-3 px-2">
+                    <span v-if="item?.work_order_number || item?.work_order?.number || item?.workOrder?.number"
+                      class="font-mono font-weight-bold text-slate-700" style="font-size: 0.85rem;"
+                      :title="`Orden de Trabajo #${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
+                      {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
+                    </span>
+                    <span v-else class="text-slate-400 font-weight-medium" style="font-size: 0.85rem;">—</span>
+                  </td>
+
+                  <!-- 3. Fecha -->
+                  <td class="text-center py-3 px-2">
+                    <div class="d-flex align-center justify-center text-slate-600 gap-1" style="font-size: 0.85rem;">
+                      <VIcon icon="ri-calendar-line" size="14" class="text-slate-400" />
+                      <span class="font-medium font-mono">{{ formatDate(item.service_date) }}</span>
+                    </div>
+                  </td>
+
+                  <!-- 4. Cliente -->
+                  <td class="text-left py-3 px-4">
                     <div v-if="item">
-                      <div class="text-body-2 font-weight-semibold text-slate-800 text-truncate"
-                        style="max-width: 240px;" :title="getClientName(item.client)">
+                      <div class="font-weight-semibold text-slate-800 text-truncate"
+                        style="max-width: 200px; font-size: 0.85rem;" :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-caption text-slate-400 font-mono mt-0.5">
+                      <div v-if="item.client?.n_document" class="text-slate-500 font-mono mt-0.5"
+                        style="font-size: 0.85rem;">
                         {{ item.client.n_document }}
                       </div>
                     </div>
                   </td>
 
-                  <!-- 3. Vehículo -->
-                  <td class="text-left py-3.5 px-4">
+                  <!-- 5. Vehículo -->
+                  <td class="text-left py-3 px-4">
                     <div v-if="item?.vehicle">
-                      <div class="text-body-2 font-weight-medium text-slate-700 text-truncate" style="max-width: 220px;"
-                        :title="formatVehicleInfo(item.vehicle)">
+                      <div class="font-weight-medium text-slate-700 text-truncate"
+                        style="max-width: 180px; font-size: 0.85rem;" :title="formatVehicleInfo(item.vehicle)">
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
                       <div class="mt-0.5">
-                        <span class="plate-badge font-mono">
+                        <span class="plate-badge font-mono" style="font-size: 0.85rem;">
                           {{ item.vehicle.license_plate }}
                         </span>
                       </div>
                     </div>
-                    <span v-else class="text-slate-400 text-body-2">-</span>
+                    <span v-else class="text-slate-400" style="font-size: 0.85rem;">-</span>
                   </td>
 
-                  <!-- 4. Total -->
-                  <td class="text-right py-3.5 px-4">
+                  <!-- 6. Total -->
+                  <td class="text-right py-3 px-4">
                     <div v-if="item" class="d-flex flex-column align-end gap-1">
-                      <div
-                        class="font-weight-bold text-body-1 text-slate-900 font-mono"
+                      <div class="font-weight-bold text-slate-900 font-mono"
                         :class="item.status === 'canceled' ? 'text-decoration-line-through opacity-50' : ''"
-                        style="font-size: 0.95rem;"
-                      >
+                        style="font-size: 0.85rem;">
                         {{ formatCurrency(getPaidAmount(item)) }}
                       </div>
 
                       <!-- Micro-Pill de Método de Pago debajo del total -->
                       <div
                         v-if="item.document_type !== 'quote' && item.status !== 'canceled' && getPaymentMethodDisplay(item)"
-                        class="payment-method-pill"
-                        :class="`payment-method-${getPaymentMethodClass(item)}`"
-                      >
-                        <VIcon :icon="getPaymentMethodIcon(item)" size="11" />
+                        class="payment-method-pill" :class="`payment-method-${getPaymentMethodClass(item)}`"
+                        style="font-size: 0.85rem;">
+                        <VIcon :icon="getPaymentMethodIcon(item)" size="13" />
                         <span>{{ getPaymentMethodDisplay(item) }}</span>
                       </div>
                       <div
                         v-else-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
-                        class="text-caption text-slate-400 font-mono"
-                        style="font-size: 0.72rem;"
-                      >
+                        class="text-slate-400 font-mono" style="font-size: 0.85rem;">
                         de {{ formatCurrency(item.total) }}
                       </div>
                     </div>
                   </td>
 
-                  <!-- 5. Estado (Pills modernas y fijas sin distorsión) -->
-                  <td class="text-center py-3.5 px-4" style="white-space: nowrap;">
+                  <!-- 7. Estado -->
+                  <td class="text-center py-3 px-4" style="white-space: nowrap;">
                     <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
                       <!-- Estado de Cobro -->
                       <div class="status-pill-clean"
-                        :class="`status-${item.status === 'canceled' ? 'canceled' : (item.document_type === 'quote' ? 'quote' : item.payment_status)}`">
+                        :class="`status-${item.status === 'canceled' ? 'canceled' : (item.document_type === 'quote' ? 'quote' : item.payment_status)}`"
+                        style="font-size: 0.85rem;">
                         <span class="status-dot" />
                         <span>{{ getStatusInfo(item)?.text }}</span>
                       </div>
@@ -900,15 +907,15 @@ onMounted(() => {
                       <div v-if="item.document_type === 'invoice' && item.sri_status" class="sri-badge-clean"
                         :class="`sri-${item.sri_status.toLowerCase()}`"
                         :title="item.sri_error ? `Error SRI: ${item.sri_error}` : `Estado SRI: ${item.sri_status}`"
-                        @click="item.sri_error ? openSriErrorDialog(item.sri_error) : null">
-                        <VIcon :icon="getSriStatusInfo(item.sri_status).icon" size="12" class="me-1" />
+                        style="font-size: 0.85rem;" @click="item.sri_error ? openSriErrorDialog(item.sri_error) : null">
+                        <VIcon :icon="getSriStatusInfo(item.sri_status).icon" size="13" class="me-1" />
                         <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
                       </div>
                     </div>
                   </td>
 
-                  <!-- 6. Acciones -->
-                  <td class="text-center py-3.5 px-4">
+                  <!-- 8. Acciones -->
+                  <td class="text-center py-3 px-4">
                     <div v-if="item" class="d-flex justify-center align-center gap-1">
                       <VBtn variant="text" icon size="small" class="action-icon-btn text-slate-600" title="Ver Detalle"
                         @click="viewSale(item)">
