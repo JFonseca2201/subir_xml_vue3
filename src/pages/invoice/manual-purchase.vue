@@ -419,7 +419,7 @@ const processXmlFile = async (file) => {
         ignoreAttributes: false,
         cdataPropName: '#cdata-section',
         textNodeName: '#text',
-        parseNodeValue: true,
+        parseNodeValue: false,
         trimValues: true,
       })
 
@@ -429,7 +429,7 @@ const processXmlFile = async (file) => {
       if (match) {
         const cleanXml = match[0].trim()
         const parsed = parser.parse(cleanXml)
-        facturaData = parsed.factura || parsed.Factura
+        facturaData = parsed.factura || parsed.Factura || parsed
       } else {
         const parsed = parser.parse(xmlString)
         if (parsed.factura) {
@@ -439,12 +439,12 @@ const processXmlFile = async (file) => {
           if (typeof comp === 'string') {
             comp = comp.replace('<![CDATA[', '').replace(']]>', '')
             const innerParsed = parser.parse(comp)
-            facturaData = innerParsed.factura || innerParsed.Factura
+            facturaData = innerParsed.factura || innerParsed.Factura || innerParsed
           } else if (comp['#cdata-section'] || comp['#text']) {
             let inner = comp['#cdata-section'] || comp['#text'] || ''
             inner = inner.replace('<![CDATA[', '').replace(']]>', '')
             const innerParsed = parser.parse(inner)
-            facturaData = innerParsed.factura || innerParsed.Factura
+            facturaData = innerParsed.factura || innerParsed.Factura || innerParsed
           }
         } else if (parsed.comprobante && parsed.comprobante.factura) {
           facturaData = parsed.comprobante.factura
@@ -458,7 +458,8 @@ const processXmlFile = async (file) => {
       }
 
       // 2. Extraer datos del proveedor
-      const ruc = (facturaData.infoTributaria.ruc || '').toString().trim()
+      let ruc = (facturaData.infoTributaria.ruc || '').toString().trim()
+      const rawRucWithoutZero = ruc.replace(/^0+/, '')
       const razonSocial = (facturaData.infoTributaria.razonSocial || '').toString().trim()
       const nombreComercial = (facturaData.infoTributaria.nombreComercial || razonSocial).toString().trim()
       const dirMatriz = (facturaData.infoTributaria.dirMatriz || 'S/N').toString().trim()
@@ -468,13 +469,15 @@ const processXmlFile = async (file) => {
       formData.value.supplier_address = dirMatriz
 
       // Buscar proveedor en la lista local por RUC o por Nombre
-      let matchedSupplier = suppliers.value.find(s =>
-        (s.ruc && s.ruc.toString().trim() === ruc) ||
-        (s.identification && s.identification.toString().trim() === ruc) ||
-        (s.tax_id && s.tax_id.toString().trim() === ruc) ||
-        (s.name && s.name.toLowerCase() === nombreComercial.toLowerCase()) ||
-        (s.trade_name && s.trade_name.toLowerCase() === razonSocial.toLowerCase())
-      )
+      let matchedSupplier = suppliers.value.find(s => {
+        const sRuc = (s.ruc || s.identification || s.tax_id || '').toString().trim()
+        const sRucClean = sRuc.replace(/^0+/, '')
+        return (
+          (sRuc && (sRuc === ruc || sRucClean === rawRucWithoutZero)) ||
+          (s.name && s.name.toLowerCase() === nombreComercial.toLowerCase()) ||
+          (s.trade_name && s.trade_name.toLowerCase() === razonSocial.toLowerCase())
+        )
+      })
 
       if (matchedSupplier) {
         formData.value.supplier_id = matchedSupplier.id
@@ -513,8 +516,10 @@ const processXmlFile = async (file) => {
       const secuencial = (facturaData.infoTributaria.secuencial || '').toString().trim().padStart(9, '0')
       formData.value.invoice_number = secuencial
 
-      // 4. Extraer Clave de Acceso (como String)
-      formData.value.access_key = String(facturaData.infoTributaria.claveAcceso || '').trim()
+      // 4. Extraer Clave de Acceso (como String de 49 dígitos exactos)
+      const claveMatch = xmlString.match(/<(?:claveAcceso|numeroAutorizacion)[^>]*>([0-9]{49})<\/(?:claveAcceso|numeroAutorizacion)>/i)
+      const rawClave = claveMatch ? claveMatch[1] : (facturaData.infoTributaria?.claveAcceso || '')
+      formData.value.access_key = String(rawClave || '').trim()
 
       // 5. Extraer Fecha de Emisión
       if (facturaData.infoFactura?.fechaEmision) {
@@ -621,7 +626,10 @@ const processXmlFile = async (file) => {
         if (checkRes.exists) {
           isDuplicateInvoice.value = true
           duplicateInvoiceInfo.value = checkRes.invoice
-          //showNotification('⚠️ Esta factura ya fue registrada previamente en el sistema. Los datos se muestran en modo solo lectura.', 'warning')
+          if (checkRes.invoice.supplier?.id) {
+            formData.value.supplier_id = checkRes.invoice.supplier.id
+          }
+          showNotification('⚠️ Esta factura ya fue registrada previamente en el sistema. Los datos se muestran en modo solo lectura.', 'warning')
         } else {
           isDuplicateInvoice.value = false
           duplicateInvoiceInfo.value = null
