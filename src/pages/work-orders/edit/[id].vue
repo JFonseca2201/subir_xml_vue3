@@ -124,6 +124,13 @@ const loadWorkOrder = async id => {
     const response = await $api(`work-orders/${id}`)
     const data = response.data || response
 
+    if (data.sale && data.sale.status !== 'canceled') {
+      const docType = data.sale.document_type === 'invoice' ? 'factura' : 'venta'
+      showNotification(`Esta orden de trabajo ya cuenta con una ${docType} (#${data.sale.document_number || data.sale.id}) y no puede ser editada.`, 'warning')
+      router.replace('/work-orders/list')
+      return
+    }
+
     originalStatus.value = data.status
 
     workOrder.value = {

@@ -29,16 +29,7 @@ export default [
     permission: 'list_product',
   },
 
-  {
-    heading: 'Negocio Paralelo',
-    permissions: ['list_transaction', 'register_transaction', 'edit_transaction', 'delete_transaction', 'approve_transactions'],
-  },
-  {
-    title: 'Cuentas Paralelo',
-    icon: { icon: 'ri-store-2-line' },
-    to: 'negocio-paralelo',
-    permission: 'list_transaction',
-  },
+
 
   {
     heading: 'Finanzas',
@@ -357,5 +348,15 @@ export default [
         permission: 'kardex',
       },
     ],
+  },
+  {
+    heading: 'Negocio Paralelo',
+    permissions: ['list_transaction', 'register_transaction', 'edit_transaction', 'delete_transaction', 'approve_transactions'],
+  },
+  {
+    title: 'Cuentas Paralelo',
+    icon: { icon: 'ri-store-2-line' },
+    to: 'negocio-paralelo',
+    permission: 'list_transaction',
   },
 ]

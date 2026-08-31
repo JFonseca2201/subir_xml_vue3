@@ -6,6 +6,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
+import CreditNoteDialog from '@/components/inventory/sales/CreditNoteDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 
@@ -26,8 +27,19 @@ const pdfLoading = ref(false)
 const isViewDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const isPaymentDialogVisible = ref(false)
+const isCreditNoteDialogVisible = ref(false)
+const selectedSaleForCreditNote = ref(null)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
+
+const openCreditNoteDialog = sale => {
+  selectedSaleForCreditNote.value = sale
+  isCreditNoteDialogVisible.value = true
+}
+
+const handleCreditNoteCreated = () => {
+  loadSales()
+}
 
 
 // Estado del formulario de pago
@@ -233,7 +245,7 @@ const getStatusInfo = item => {
 }
 
 const getPaidAmount = item => {
-  if (item.status === 'canceled' || item.document_type === 'quote') {
+  if (isSaleCanceled(item) || item.document_type === 'quote') {
     return item.total
   }
   if (item.payment_status === 'paid') {
@@ -259,7 +271,7 @@ const formatMethodName = name => {
 const getPaymentMethodDisplay = item => {
   if (!item) return ''
   if (item.document_type === 'quote') return ''
-  if (item.status === 'canceled') return ''
+  if (isSaleCanceled(item)) return ''
   if (item.payment_status === 'pending') {
     return 'PEND.'
   }
@@ -336,7 +348,7 @@ const viewSale = async sale => {
 
 
 const editSale = sale => {
-  if (sale.status === 'canceled') {
+  if (isSaleCanceled(sale)) {
     showNotification('No se puede editar una venta anulada', 'warning')
 
     return
@@ -558,7 +570,7 @@ const downloadSinglePDF = async sale => {
 }
 
 const cancelSale = sale => {
-  if (sale.status === 'canceled') return
+  if (isSaleCanceled(sale)) return
   selectedSale.value = sale
   isDeleteDialogVisible.value = true
 }
@@ -918,14 +930,14 @@ onMounted(() => {
 
                   <!-- 8. Acciones -->
                   <td class="text-center py-3 px-4">
-                    <div v-if="item" class="d-flex justify-center align-center gap-1">
+                    <div v-if="item && !isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                       <VBtn variant="text" icon size="small" class="action-icon-btn text-slate-600" title="Ver Detalle"
                         @click="viewSale(item)">
                         <VIcon icon="ri-eye-line" size="17" />
                       </VBtn>
 
                       <VBtn variant="text" icon size="small" class="action-icon-btn text-amber-600"
-                        :disabled="item.status === 'canceled' || (item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA')"
+                        :disabled="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
                         :title="(item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA') ? 'Factura autorizada por el SRI (No editable)' : 'Editar'"
                         @click="editSale(item)">
                         <VIcon icon="ri-pencil-line" size="17" />
@@ -942,8 +954,7 @@ onMounted(() => {
                               @click="generateSinglePDF(item)" />
                             <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
                               class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                            <VListItem
-                              v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
+                            <VListItem v-if="item.payment_status === 'pending' && item.document_type !== 'quote'"
                               prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                               class="text-success text-body-2" @click="openPaymentDialog(item)" />
                             <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
@@ -959,15 +970,21 @@ onMounted(() => {
                             <VListItem v-if="item.document_type === 'invoice' && item.sri_status !== 'AUTORIZADA'"
                               prepend-icon="ri-refresh-line" title="Reenviar al SRI" class="text-warning text-body-2"
                               @click="resendSri(item)" />
+                            <VListItem v-if="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
+                              prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)" class="text-error text-body-2 font-weight-medium"
+                              @click="openCreditNoteDialog(item)" />
                             <VListItem v-if="item.document_type === 'invoice' && item.sri_error"
                               prepend-icon="ri-alert-line" title="Ver Error SRI" class="text-error text-body-2"
                               @click="openSriErrorDialog(item.sri_error)" />
                             <VDivider class="my-1" />
-                            <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
-                              title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
+                            <VListItem prepend-icon="ri-close-circle-line" title="Anular Documento"
+                              class="text-error text-body-2" @click="cancelSale(item)" />
                           </VList>
                         </VMenu>
                       </VBtn>
+                    </div>
+                    <div v-else class="text-caption text-medium-emphasis">
+                      —
                     </div>
                   </td>
                 </tr>
@@ -1054,7 +1071,7 @@ onMounted(() => {
                           <VIcon icon="ri-car-line" size="16" class="mr-2 text-medium-emphasis" />
                           <div>
                             <span class="text-body-2 text-grey-darken-4 mr-2">{{ formatVehicleInfo(item.vehicle)
-                              }}</span>
+                            }}</span>
                             <span class="text-caption text-medium-emphasis border px-1 rounded">{{
                               item.vehicle.license_plate }}</span>
                           </div>
@@ -1068,17 +1085,17 @@ onMounted(() => {
                     <VCardActions class="pa-3 bg-grey-lighten-5 d-flex justify-space-between align-center">
                       <div class="d-flex flex-column">
                         <span
-                          v-if="item.document_type !== 'quote' && item.status !== 'canceled' && item.payment_status !== 'paid'"
+                          v-if="item.document_type !== 'quote' && !isSaleCanceled(item) && item.payment_status !== 'paid'"
                           class="text-caption text-medium-emphasis">
                           De: {{ formatCurrency(item.total) }}
                         </span>
                         <span class="text-subtitle-1 font-weight-medium"
-                          :class="item.status === 'canceled' ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
+                          :class="isSaleCanceled(item) ? 'text-decoration-line-through text-medium-emphasis' : 'text-grey-darken-4'">
                           {{ formatCurrency(getPaidAmount(item)) }}
                         </span>
                       </div>
 
-                      <div class="d-flex gap-1">
+                      <div v-if="!isSaleCanceled(item)" class="d-flex gap-1">
                         <VBtn variant="text" color="secondary" size="small" class="text-none px-2">
                           Más
                           <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
@@ -1089,25 +1106,30 @@ onMounted(() => {
                                 class="text-success text-body-2" @click="generateSinglePDF(item)" />
                               <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
                                 class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                              <VListItem
-                                v-if="item.payment_status === 'pending' && item.status !== 'canceled' && item.document_type !== 'quote'"
+                              <VListItem v-if="item.payment_status === 'pending' && item.document_type !== 'quote'"
                                 prepend-icon="ri-money-dollar-circle-line" title="Registrar Pago"
                                 class="text-success text-body-2" @click="openPaymentDialog(item)" />
                               <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo"
                                 class="text-secondary text-body-2" @click="openMailDialog(item)" />
                               <VListItem
-                                :disabled="item.status === 'canceled' || (item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA')"
+                                :disabled="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
                                 prepend-icon="ri-edit-line" title="Editar Venta" class="text-warning text-body-2"
                                 @click="editSale(item)" />
+                              <VListItem v-if="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
+                                prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)" class="text-error text-body-2 font-weight-medium"
+                                @click="openCreditNoteDialog(item)" />
                               <VDivider class="my-1" />
-                              <VListItem :disabled="item.status === 'canceled'" prepend-icon="ri-close-circle-line"
-                                title="Anular Documento" class="text-error text-body-2" @click="cancelSale(item)" />
+                              <VListItem prepend-icon="ri-close-circle-line" title="Anular Documento"
+                                class="text-error text-body-2" @click="cancelSale(item)" />
                             </VList>
                           </VMenu>
                         </VBtn>
                         <VBtn variant="text" color="info" size="small" class="text-none px-2" @click="viewSale(item)">
                           Ver
                         </VBtn>
+                      </div>
+                      <div v-else class="text-caption text-medium-emphasis">
+                        —
                       </div>
                     </VCardActions>
                   </VCard>
@@ -1168,7 +1190,7 @@ onMounted(() => {
             <div class="d-flex justify-space-between align-center">
               <span class="text-body-2 text-medium-emphasis">Total a Pagar:</span>
               <span class="text-subtitle-1 font-weight-bold text-success">{{ formatCurrency(selectedSale?.total)
-                }}</span>
+              }}</span>
             </div>
           </div>
 
@@ -1236,7 +1258,7 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VIcon icon="ri-file-text-line" size="18" color="primary" />
                   <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{ mailSaleSelected?.document_number
-                    }}</span>
+                  }}</span>
                 </div>
               </div>
               <div class="text-right">
@@ -1295,5 +1317,13 @@ onMounted(() => {
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Diálogo para Emitir Nota de Crédito SRI -->
+    <CreditNoteDialog
+      :is-dialog-visible="isCreditNoteDialogVisible"
+      :sale-selected="selectedSaleForCreditNote"
+      @update:is-dialog-visible="isCreditNoteDialogVisible = $event"
+      @credit-note-created="handleCreditNoteCreated"
+    />
   </div>
 </template>

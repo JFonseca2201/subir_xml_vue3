@@ -46,6 +46,7 @@ declare module 'vue' {
     ClientShowDialog: typeof import('./src/components/inventory/clients/ClientShowDialog.vue')['default']
     ConfirmDialog: typeof import('./src/components/dialogs/ConfirmDialog.vue')['default']
     CreateAppDialog: typeof import('./src/components/dialogs/CreateAppDialog.vue')['default']
+    CreditNoteDialog: typeof import('./src/components/inventory/sales/CreditNoteDialog.vue')['default']
     CustomCheckboxes: typeof import('./src/@core/components/app-form-elements/CustomCheckboxes.vue')['default']
     CustomCheckboxesWithIcon: typeof import('./src/@core/components/app-form-elements/CustomCheckboxesWithIcon.vue')['default']
     CustomCheckboxesWithImage: typeof import('./src/@core/components/app-form-elements/CustomCheckboxesWithImage.vue')['default']

@@ -308,7 +308,15 @@ const goToSale = workOrderId => {
   router.push({ path: '/sales/add', query: { work_order_id: workOrderId } })
 }
 
-const goToEdit = workOrderId => {
+const isWorkOrderInvoiced = workOrder => {
+  return !!(workOrder?.sale && workOrder.sale.status !== 'canceled')
+}
+
+const goToEdit = (workOrderId, workOrder = null) => {
+  if (workOrder && isWorkOrderInvoiced(workOrder)) {
+    showNotification('Esta orden de trabajo ya ha sido facturada y no se puede editar', 'warning')
+    return
+  }
   router.push(`/work-orders/edit/${workOrderId}`)
 }
 
@@ -892,14 +900,39 @@ onMounted(() => {
                       Detalle
                     </VBtn>
 
+                    <!-- Botón Editar / Facturada Bloqueado -->
+                    <VTooltip
+                      v-if="isWorkOrderInvoiced(workOrder)"
+                      text="Esta orden ya fue facturada y no se puede editar"
+                      location="top"
+                    >
+                      <template #activator="{ props: tooltipProps }">
+                        <span
+                          v-bind="tooltipProps"
+                          class="d-inline-block"
+                        >
+                          <VBtn
+                            variant="tonal"
+                            color="secondary"
+                            prepend-icon="ri-lock-line"
+                            size="small"
+                            disabled
+                            class="text-none font-weight-bold action-btn opacity-60"
+                          >
+                            Facturada
+                          </VBtn>
+                        </span>
+                      </template>
+                    </VTooltip>
+
                     <VBtn
-                      v-if="can('edit_sale')"
+                      v-else-if="can('edit_sale')"
                       variant="text"
                       color="warning"
                       prepend-icon="ri-edit-line"
                       size="small"
                       class="text-none font-weight-bold action-btn"
-                      @click="goToEdit(workOrder.id)"
+                      @click="goToEdit(workOrder.id, workOrder)"
                     >
                       Editar
                     </VBtn>
