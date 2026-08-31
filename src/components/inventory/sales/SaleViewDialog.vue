@@ -840,8 +840,7 @@ const generateSinglePDF = sale => {
                     :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
                     size="34" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
                   <div class="text-body-2 font-weight-bold text-slate-800">
-                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' :
-                      'Venta de Contado') }}
+                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' : 'Venta de Contado') }}
                   </div>
                   <p class="text-caption text-medium-emphasis mb-0 mt-1">
                     {{ isQuote ? 'No genera salidas ni ingresos de caja hasta su conversión.' : (saleData.is_credited ?
