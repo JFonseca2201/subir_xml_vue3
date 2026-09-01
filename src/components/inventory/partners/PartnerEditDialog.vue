@@ -54,8 +54,8 @@ const emailRules = [emailRule]
 
 const phoneRule = v => {
   if (!v) return 'Campo obligatorio'
-  const val = String(v).trim()
-  if (!/^\d{1,10}$/.test(val)) return 'Solo se permiten hasta 10 números'
+  const val = String(v).trim().replace(/\D/g, '')
+  if (val.length !== 10) return 'El teléfono debe tener exactamente 10 dígitos'
   
   return true
 }

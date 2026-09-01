@@ -335,6 +335,8 @@ const showConfirmPassword = ref(false)
                     variant="outlined"
                     density="comfortable"
                     prepend-inner-icon="ri-id-card-line"
+                    maxlength="13"
+                    @input="e => { formData.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
                   />
                 </VCol>
 
@@ -350,6 +352,8 @@ const showConfirmPassword = ref(false)
                     variant="outlined"
                     density="comfortable"
                     prepend-inner-icon="ri-phone-line"
+                    maxlength="10"
+                    @input="e => { formData.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
                   />
                 </VCol>
 

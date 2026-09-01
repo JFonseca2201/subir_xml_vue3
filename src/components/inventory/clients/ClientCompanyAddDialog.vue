@@ -207,7 +207,7 @@ const rules = {
     v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Email inválido',
   ],
   phone: [
-    v => !v || /^[0-9+\-\s()]+$/.test(v) || 'Teléfono inválido',
+    v => !v || /^\d{10}$/.test(String(v).replace(/\D/g, '')) || 'El teléfono debe tener 10 dígitos',
   ],
   capital_social: [
     v => !v || /^\d+(\.\d{1,2})?$/.test(v) || 'Capital social inválido',
@@ -483,7 +483,7 @@ const filterDocumentKey = event => {
 const filterPhoneKey = event => {
   if (event.key && event.key.length > 1) return
   const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
-  if (!/^[0-9+\-\s()]$/.test(charStr)) {
+  if (!/^[0-9]$/.test(charStr)) {
     event.preventDefault()
   }
 }
@@ -685,7 +685,7 @@ onMounted(() => {
                 prepend-inner-icon="ri-phone-line"
                 :rules="rules.phone"
                 clearable
-                maxlength="20"
+                maxlength="10"
                 :disabled="fieldsDisabled"
                 :loading="loading"
                 @keypress="filterPhoneKey"

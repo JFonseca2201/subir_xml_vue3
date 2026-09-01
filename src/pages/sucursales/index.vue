@@ -99,7 +99,7 @@ const rules = {
   },
   phone: value => {
     if (!value) return 'El teléfono es requerido'
-    if (!/^\d{7,10}$/.test(value)) return 'El teléfono debe tener entre 7 y 10 dígitos'
+    if (!/^\d{10}$/.test(String(value).trim().replace(/\D/g, ''))) return 'El teléfono debe tener 10 dígitos'
     
     return true
   },
@@ -647,6 +647,8 @@ onMounted(() => {
               required
               :disabled="!isEditing"
               :rules="[rules.phone]"
+              maxlength="10"
+              @input="sucursal.phone = sucursal.phone.replace(/\D/g, '').slice(0, 10)"
             />
           </VCol>
 

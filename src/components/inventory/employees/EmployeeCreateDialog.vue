@@ -99,7 +99,7 @@ const ecuadorianIdRule = v => {
 
 const identificationRules = [
   ecuadorianIdRule,
-  maxLengthRule(20),
+  maxLengthRule(10),
 ]
 
 const nameRules = [
@@ -115,7 +115,7 @@ const emailRules = [
 ]
 
 const phoneRules = [
-  maxLengthRule(20),
+  v => !v || /^\d{10}$/.test(String(v).replace(/\D/g, '')) || 'El teléfono debe tener 10 dígitos',
 ]
 
 const positionRules = [
@@ -134,6 +134,14 @@ const salaryRules = [
 const hiredAtRules = [
   requiredRule,
 ]
+
+const filterDigitsKey = event => {
+  if (event.key && event.key.length > 1) return
+  const charStr = event.key || String.fromCharCode(event.keyCode || event.which)
+  if (!/^[0-9]$/.test(charStr)) {
+    event.preventDefault()
+  }
+}
 
 // Métodos
 const resetEmployeeForm = () => {
@@ -265,6 +273,8 @@ watch(() => props.modelValue, newValue => {
                   prepend-inner-icon="ri-id-card-line"
                   hide-details="auto"
                   required
+                  maxlength="10"
+                  @keypress="filterDigitsKey"
                 />
               </VCol>
 
@@ -328,11 +338,13 @@ watch(() => props.modelValue, newValue => {
                   v-model="employeeForm.phone"
                   :rules="phoneRules"
                   label="Teléfono"
-                  placeholder="Ej. +57 300 123 4567"
+                  placeholder="Ej. 0991234567"
                   variant="outlined"
                   density="comfortable"
                   prepend-inner-icon="ri-phone-line"
                   hide-details="auto"
+                  maxlength="10"
+                  @keypress="filterDigitsKey"
                 />
               </VCol>
 

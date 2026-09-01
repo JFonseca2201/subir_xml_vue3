@@ -70,8 +70,8 @@ const emailRules = [emailRule]
 
 const phoneRule = v => {
   if (!v) return 'Campo obligatorio'
-  const val = String(v).trim()
-  if (!/^\d{1,10}$/.test(val)) return 'Solo se permiten hasta 10 números'
+  const val = String(v).trim().replace(/\D/g, '')
+  if (val.length !== 10) return 'El teléfono debe tener exactamente 10 dígitos'
   
   return true
 }
@@ -535,14 +535,14 @@ const onFormReset = () => {
                 v-model="newUser.identification"
                 :rules="identificationRules"
                 label="Número de Documento"
-                placeholder="Ej. 1700000001"
+                :placeholder="newUser.type_document === 'CI' ? 'Ej. 1710034065' : 'Ej. 1793192550001'"
                 variant="outlined"
                 density="comfortable"
                 prepend-inner-icon="ri-user-line"
                 hide-details="auto"
                 required
-                maxlength="13"
-                @input="e => { newUser.identification = e.target.value.replace(/\D/g, '').slice(0, 13) }"
+                :maxlength="newUser.type_document === 'CI' ? 10 : (newUser.type_document === 'RUC' ? 13 : 20)"
+                @input="e => { const maxL = newUser.type_document === 'CI' ? 10 : (newUser.type_document === 'RUC' ? 13 : 20); newUser.identification = e.target.value.replace(/\D/g, '').slice(0, maxL) }"
               />
             </VCol>
 

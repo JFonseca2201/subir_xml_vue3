@@ -56,6 +56,10 @@ const emailRules = [
   v => !v || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || 'El correo electrónico no es válido',
 ]
 
+const phoneRules = [
+  v => !v || /^\d{10}$/.test(String(v).replace(/\D/g, '')) || 'El teléfono debe tener 10 dígitos',
+]
+
 const addressRules = [
   v => !!v || 'La dirección es requerida',
   v => (v && v.length >= 5) || 'La dirección debe tener al menos 5 caracteres',
@@ -224,6 +228,7 @@ watch(() => props.isDialogVisible, val => {
                 prepend-inner-icon="ri-file-list-3-line"
                 maxlength="13"
                 required
+                @input="e => { provider.ruc = e.target.value.replace(/\D/g, '').slice(0, 13) }"
               />
             </VCol>
 
@@ -281,9 +286,12 @@ watch(() => props.isDialogVisible, val => {
                 v-model="provider.phone"
                 label="Teléfono"
                 placeholder="Ej: 0999999999"
+                :rules="phoneRules"
                 variant="outlined"
                 density="comfortable"
                 prepend-inner-icon="ri-phone-line"
+                maxlength="10"
+                @input="e => { provider.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
               />
             </VCol>
 

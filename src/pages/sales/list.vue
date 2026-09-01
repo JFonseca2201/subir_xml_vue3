@@ -108,7 +108,7 @@ const loadSales = async () => {
       }
     })
 
-    const response = await $api('sales', { 
+    const response = await $api('sales', {
       params,
       signal: salesAbortController.signal,
     })
@@ -744,8 +744,8 @@ onMounted(() => {
             <VRow class="align-center" dense>
               <VCol cols="12" md="4">
                 <VTextField v-model="searchForm.search" label="Buscar venta"
-                  placeholder="# Doc, Orden de Trabajo, cliente, cédula, placa..."
-                  variant="outlined" density="compact" hide-details="auto" clearable color="primary" :loading="loading">
+                  placeholder="# Doc, Orden de Trabajo, cliente, cédula, placa..." variant="outlined" density="compact"
+                  hide-details="auto" clearable color="primary" :loading="loading">
                   <template #prepend-inner>
                     <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
                     <VIcon v-else icon="ri-search-line" />
@@ -807,7 +807,7 @@ onMounted(() => {
                     Documento
                   </th>
                   <th class="text-center py-3 px-2" style="width: 8%; min-width: 70px;">
-                    O.T.
+                    ORD. TR.
                   </th>
                   <th class="text-center py-3 px-2" style="width: 9%; min-width: 85px;">
                     Fecha
@@ -886,14 +886,14 @@ onMounted(() => {
                       <div class="d-flex align-center">
                         <span class="doc-number-text"
                           :class="isSaleCanceled(item) ? 'text-decoration-line-through opacity-50' : ''"
-                          style="font-size: 0.88rem; font-weight: 600;">
+                          style="font-size: 0.55rem; font-weight: 200;">
                           {{ item.document_number }}
                         </span>
                       </div>
                     </div>
                   </td>
 
-                  <!-- 2. Orden de Trabajo (Sin recuadro) -->
+                  <!-- 2. Orden de Trabajo -->
                   <td class="text-center py-3 px-2">
                     <span v-if="item?.work_order_number || item?.work_order?.number || item?.workOrder?.number"
                       class="font-weight-semibold text-slate-700" style="font-size: 0.85rem;"
@@ -918,8 +918,7 @@ onMounted(() => {
                         :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-slate-500 mt-0.5"
-                        style="font-size: 0.85rem;">
+                      <div v-if="item.client?.n_document" class="text-slate-500 mt-0.5" style="font-size: 0.85rem;">
                         {{ item.client.n_document }}
                       </div>
                     </div>
@@ -1026,8 +1025,8 @@ onMounted(() => {
                               prepend-icon="ri-refresh-line" title="Reenviar al SRI" class="text-warning text-body-2"
                               @click="resendSri(item)" />
                             <VListItem v-if="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
-                              prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)" class="text-error text-body-2 font-weight-medium"
-                              @click="openCreditNoteDialog(item)" />
+                              prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)"
+                              class="text-error text-body-2 font-weight-medium" @click="openCreditNoteDialog(item)" />
                             <VListItem v-if="item.document_type === 'invoice' && item.sri_error"
                               prepend-icon="ri-alert-line" title="Ver Error SRI" class="text-error text-body-2"
                               @click="openSriErrorDialog(item.sri_error)" />
@@ -1039,7 +1038,8 @@ onMounted(() => {
                       </VBtn>
                     </div>
                     <div v-else class="d-flex justify-center align-center">
-                      <VBtn variant="text" icon size="small" class="action-icon-btn text-error" title="Documento Anulado (Clic para información)"
+                      <VBtn variant="text" icon size="small" class="action-icon-btn text-error"
+                        title="Documento Anulado (Clic para información)"
                         @click="showCanceledDocAlert(item.document_number || item.id)">
                         <VIcon icon="ri-information-line" size="18" />
                       </VBtn>
@@ -1174,8 +1174,8 @@ onMounted(() => {
                                 prepend-icon="ri-edit-line" title="Editar Venta" class="text-warning text-body-2"
                                 @click="editSale(item)" />
                               <VListItem v-if="item.document_type === 'invoice' && item.sri_status === 'AUTORIZADA'"
-                                prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)" class="text-error text-body-2 font-weight-medium"
-                                @click="openCreditNoteDialog(item)" />
+                                prepend-icon="ri-refund-2-line" title="Emitir Nota de Crédito (SRI)"
+                                class="text-error text-body-2 font-weight-medium" @click="openCreditNoteDialog(item)" />
                               <VDivider class="my-1" />
                               <VListItem prepend-icon="ri-close-circle-line" title="Anular Documento"
                                 class="text-error text-body-2" @click="cancelSale(item)" />
@@ -1377,11 +1377,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Diálogo para Emitir Nota de Crédito SRI -->
-    <CreditNoteDialog
-      :is-dialog-visible="isCreditNoteDialogVisible"
-      :sale-selected="selectedSaleForCreditNote"
-      @update:is-dialog-visible="isCreditNoteDialogVisible = $event"
-      @credit-note-created="handleCreditNoteCreated"
-    />
+    <CreditNoteDialog :is-dialog-visible="isCreditNoteDialogVisible" :sale-selected="selectedSaleForCreditNote"
+      @update:is-dialog-visible="isCreditNoteDialogVisible = $event" @credit-note-created="handleCreditNoteCreated" />
   </div>
 </template>
