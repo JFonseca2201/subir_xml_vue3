@@ -76,14 +76,15 @@ const resetForm = () => {
     account_name: '',
   }
   receiptFiles.value = []
-  formRef.value?.reset()
+  if (formRef.value) {
+    formRef.value.reset()
+    formRef.value.resetValidation()
+  }
 }
 
 const closeDialog = () => {
   show.value = false
-  setTimeout(() => {
-    resetForm()
-  }, 300)
+  resetForm()
 }
 
 const loadEmployees = async () => {
@@ -198,13 +199,15 @@ const isLoadingData = ref(false)
 
 // Watchers
 watch(() => show.value, newVal => {
-  if (newVal && !props.expense) {
+  if (newVal) {
     resetForm()
     isLoadingData.value = true
     Promise.all([loadEmployees(), loadAccounts()])
       .finally(() => {
         isLoadingData.value = false
       })
+  } else {
+    resetForm()
   }
 })
 

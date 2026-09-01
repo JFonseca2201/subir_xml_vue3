@@ -173,16 +173,13 @@ const loadingData = ref(false)
 // Watchers profesionales
 watch(show, newVal => {
   if (newVal) {
+    resetForm()
     loadingData.value = true
     Promise.all([loadPartners(), loadAccounts()])
       .then(() => {
-        if (!form.value.fecha_aporte) {
-          form.value.fecha_aporte = today.value
-        }
-        if (!form.value.hora_aporte) {
-          const now = new Date()
-          form.value.hora_aporte = now.toTimeString().slice(0, 5)
-        }
+        form.value.fecha_aporte = today.value
+        const now = new Date()
+        form.value.hora_aporte = now.toTimeString().slice(0, 5)
       })
       .catch(error => {
         console.error('❌ Error cargando datos:', error)

@@ -71,21 +71,7 @@ const loadAccounts = async () => {
   }
 }
 
-watch(() => props.modelValue, async newVal => {
-  if (newVal) {
-    isLoadingData.value = true
-    try {
-      await loadAccounts()
-      await nextTick()
-    } finally {
-      isLoadingData.value = false
-    }
-  }
-})
-
-onMounted(() => {
-  loadAccounts()
-})
+const formRef = ref(null)
 
 // Mapping para rastrear IDs originales de distribuciones
 const paymentIdMap = ref(new Map())
@@ -111,7 +97,34 @@ const resetForm = () => {
       { account_id: null, amount: 0 },
     ],
   }
+  paymentIdMap.value.clear()
+  if (formRef.value) {
+    formRef.value.resetValidation()
+  }
 }
+
+watch(() => props.modelValue, async newVal => {
+  if (newVal) {
+    if (!props.editingMovement) {
+      resetForm()
+    }
+    isLoadingData.value = true
+    try {
+      await loadAccounts()
+      await nextTick()
+    } finally {
+      isLoadingData.value = false
+    }
+  } else {
+    if (!props.editingMovement) {
+      resetForm()
+    }
+  }
+})
+
+onMounted(() => {
+  loadAccounts()
+})
 
 // Watch for editing movement
 watch(() => props.editingMovement, newVal => {
@@ -164,6 +177,9 @@ watch(() => form.value.entry_date, newDate => {
 
 const closeDialog = () => {
   emit('update:modelValue', false)
+  if (!props.editingMovement) {
+    resetForm()
+  }
 }
 
 // Computed properties
@@ -315,7 +331,7 @@ const formatCurrency = value => {
           </VRow>
         </div>
 
-        <VForm v-else @submit.prevent="saveIncome">
+        <VForm v-else ref="formRef" @submit.prevent="saveIncome">
           <VRow dense>
             <VCol cols="12" md="6">
               <VTextField
