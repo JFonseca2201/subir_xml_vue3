@@ -238,336 +238,436 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 account-management-page"
   >
-    <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-bank-line"
+    <!-- Encabezado Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <div class="d-flex align-center gap-3">
+          <VAvatar
             color="primary"
-            class="me-2"
-            size="28"
-          />
-          Gestión de Cartera
-        </h1>
-        <p class="text-medium-emphasis mb-0">
-          Administración de cuentas y movimientos financieros
-        </p>
-      </div>
-      <div class="d-flex gap-2">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          @click="openAccountDialog"
-        >
-          Nueva Cuenta
-        </VBtn>
-      </div>
-    </div>
+            variant="tonal"
+            rounded="lg"
+            size="44"
+            class="elevation-1"
+          >
+            <VIcon
+              icon="ri-bank-line"
+              size="24"
+            />
+          </VAvatar>
+          <div>
+            <div class="d-flex align-center gap-2">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                Gestión de Cuentas y Cajas
+              </h1>
+              <VChip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="font-weight-bold"
+              >
+                {{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}
+              </VChip>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Administración de cuentas bancarias, cajas chicas y saldos financieros
+            </p>
+          </div>
+        </div>
 
-    <!-- Tarjetas de Resumen -->
-    <VRow class="mb-6">
+        <div class="d-flex align-center gap-3">
+          <VBtn
+            title="Actualizar cuentas"
+            variant="tonal"
+            color="secondary"
+            icon="ri-refresh-line"
+            size="small"
+            :loading="loading"
+            @click="loadAccounts"
+          />
+          <VBtn
+            color="primary"
+            variant="elevated"
+            size="small"
+            prepend-icon="ri-add-circle-line"
+            class="font-weight-semibold elevation-2"
+            @click="openAccountDialog"
+          >
+            Nueva Cuenta
+          </VBtn>
+        </div>
+      </div>
+    </VCard>
+
+    <!-- Tarjetas de Resumen KPI con colores tonales -->
+    <VRow class="mb-5">
+      <!-- Saldo Total Acumulado -->
       <VCol
         cols="12"
+        sm="6"
         md="4"
       >
         <VCard
-          class="pa-4 rounded-lg border-light border elevation-0"
-          color="primary"
-          variant="tonal"
+          class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card"
+          elevation="0"
         >
-          <div class="d-flex justify-space-between align-center">
+          <div class="d-flex align-center justify-space-between">
             <div>
-              <div class="text-body-2 text-primary font-weight-medium mb-1">
-                Saldo Total
-              </div>
-              <div class="text-h5 font-weight-bold text-primary">
+              <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
+                Saldo Total Acumulado
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ formatCurrency(totalBalance) }}
               </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Suma consolidada de todas las cuentas
+              </span>
             </div>
-            <VIcon
-              size="40"
+            <VAvatar
               color="primary"
+              variant="elevated"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
-              ri-money-dollar-circle-line
-            </VIcon>
+              <VIcon
+                size="24"
+                icon="ri-money-dollar-circle-line"
+                color="white"
+              />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>
+
+      <!-- Total Cuentas -->
       <VCol
         cols="12"
+        sm="6"
         md="4"
       >
-        <VCard class="pa-4 rounded-lg border-light border elevation-0">
-          <div class="d-flex justify-space-between align-center">
+        <VCard
+          class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card"
+          elevation="0"
+        >
+          <div class="d-flex align-center justify-space-between">
             <div>
-              <div class="text-body-2 text-medium-emphasis font-weight-medium mb-1">
-                Total Cuentas
-              </div>
-              <div class="text-h5 font-weight-bold">
+              <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
+                Total de Cuentas
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ accounts.length }}
               </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Cuentas y cajas registradas
+              </span>
             </div>
-            <VIcon
-              size="40"
+            <VAvatar
               color="success"
+              variant="elevated"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
-              ri-bank-card-line
-            </VIcon>
+              <VIcon
+                size="24"
+                icon="ri-bank-card-line"
+                color="white"
+              />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>
+
+      <!-- Cuentas Activas -->
       <VCol
         cols="12"
+        sm="12"
         md="4"
       >
-        <VCard class="pa-4 rounded-lg border-light border elevation-0">
-          <div class="d-flex justify-space-between align-center">
+        <VCard
+          class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card"
+          elevation="0"
+        >
+          <div class="d-flex align-center justify-space-between">
             <div>
-              <div class="text-body-2 text-medium-emphasis font-weight-medium mb-1">
+              <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
                 Cuentas Activas
-              </div>
-              <div class="text-h5 font-weight-bold">
+              </span>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
                 {{ accounts.filter(acc => Boolean(acc.is_active)).length }}
               </div>
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                Habilitadas para operaciones
+              </span>
             </div>
-            <VIcon
-              size="40"
+            <VAvatar
               color="info"
+              variant="elevated"
+              size="42"
+              class="elevation-2 kpi-avatar"
             >
-              ri-check-line
-            </VIcon>
+              <VIcon
+                size="24"
+                icon="ri-checkbox-circle-line"
+                color="white"
+              />
+            </VAvatar>
           </div>
         </VCard>
       </VCol>
     </VRow>
 
     <!-- Contenedor Principal (Tabla) -->
-    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <div class="position-relative">
-        <VProgressLinear
-          v-if="loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
+    <VCard class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        height="3"
+        class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;"
+      />
 
-        <VTable
-          hover
-          class="account-table text-no-wrap overflow-x-auto"
-        >
-          <thead>
-            <tr>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 80px;"
-              >
-                ID
-              </th>
-              <th class="text-left font-weight-bold text-uppercase">
-                Nombre
-              </th>
-              <th
-                class="text-left font-weight-bold text-uppercase"
-                style="width: 140px;"
-              >
-                Tipo
-              </th>
-              <th class="text-left font-weight-bold text-uppercase">
-                Banco
-              </th>
-              <th
-                class="text-right font-weight-bold text-uppercase"
-                style="width: 180px;"
-              >
-                Saldo Actual
-              </th>
-              <th
-                class="text-center font-weight-bold text-uppercase"
-                style="width: 140px;"
-              >
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <!-- Cargando (Skeleton Rows) -->
-          <tbody v-if="loading">
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
+      <VTable
+        hover
+        class="transfer-table text-no-wrap overflow-x-auto"
+      >
+        <thead>
+          <tr>
+            <th
+              class="text-left py-4"
+              style="width: 90px;"
             >
-              <td class="py-4">
-                <div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-chip" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-40 ms-auto" />
-              </td>
-              <td class="py-4 text-center">
-                <div class="d-flex justify-center gap-2">
-                  <div class="shimmer-button" />
-                  <div class="shimmer-button" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
+              ID
+            </th>
+            <th class="text-left py-4" style="min-width: 280px;">
+              NOMBRE DE LA CUENTA
+            </th>
+            <th
+              class="text-left py-4"
+              style="width: 150px;"
+            >
+              TIPO
+            </th>
+            <th class="text-left py-4" style="min-width: 240px;">
+              INSTITUCIÓN / BANCO
+            </th>
+            <th
+              class="text-right py-4"
+              style="width: 180px;"
+            >
+              SALDO DISPONIBLE
+            </th>
+            <th
+              class="text-center py-4"
+              style="width: 130px;"
+            >
+              ACCIONES
+            </th>
+          </tr>
+        </thead>
+        
+        <!-- Cargando (Skeleton Rows) -->
+        <tbody v-if="loading">
+          <tr
+            v-for="n in 5"
+            :key="n"
+            class="skeleton-row align-middle"
+          >
+            <td class="py-4">
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-60" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-chip" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-40 ms-auto" />
+            </td>
+            <td class="py-4 text-center">
+              <div class="d-flex justify-center gap-2">
+                <div class="shimmer-button" />
+                <div class="shimmer-button" />
+              </div>
+            </td>
+          </tr>
+        </tbody>
 
-          <!-- Sin resultados -->
-          <tbody v-else-if="!accounts.length">
-            <tr>
-              <td
-                colspan="6"
-                class="text-center text-medium-emphasis py-12"
+        <!-- Sin resultados -->
+        <tbody v-else-if="!accounts.length">
+          <tr>
+            <td
+              colspan="6"
+              class="text-center text-medium-emphasis py-12"
+            >
+              <VAvatar
+                size="64"
+                color="primary"
+                variant="tonal"
+                class="mb-3"
               >
+                <VIcon
+                  size="32"
+                  color="primary"
+                  icon="ri-bank-line"
+                />
+              </VAvatar>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                No se encontraron cuentas
+              </div>
+              <div class="text-body-2 text-medium-emphasis mt-1">
+                Intenta registrar una nueva cuenta bancaria o de caja.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+
+        <!-- Datos Reales -->
+        <tbody v-else>
+          <tr
+            v-for="account in accounts"
+            :key="account.id"
+            class="transfer-row"
+          >
+            <!-- ID -->
+            <td class="font-weight-bold text-slate-700">
+              #{{ account.id }}
+            </td>
+
+            <!-- Nombre -->
+            <td class="py-3">
+              <div class="d-flex align-center gap-3">
                 <VAvatar
-                  size="64"
-                  color="grey-lighten-4"
-                  class="mb-3"
-                >
-                  <VIcon
-                    size="32"
-                    color="grey"
-                    icon="ri-bank-line"
-                  />
-                </VAvatar>
-                <div class="text-h6 font-weight-semibold text-grey-darken-1">
-                  No se encontraron cuentas
-                </div>
-                <div class="text-body-2 text-grey">
-                  Intenta crear una nueva cuenta bancaria o de caja.
-                </div>
-              </td>
-            </tr>
-          </tbody>
-
-          <!-- Datos Reales -->
-          <tbody v-else>
-            <tr
-              v-for="account in accounts"
-              :key="account.id"
-              class="account-row transition"
-              :class="getRowClass(account)"
-            >
-              <!-- ID -->
-              <td class="font-weight-medium text-grey-darken-1">
-                #{{ account.id }}
-              </td>
-
-              <!-- Nombre -->
-              <td>
-                <div class="d-flex align-center gap-2">
-                  <VIcon
-                    v-if="account.is_system"
-                    icon="ri-lock-2-line"
-                    size="16"
-                    color="warning"
-                  />
-                  <span class="font-weight-bold text-grey-darken-3 text-uppercase">{{ account.name }}</span>
-                </div>
-              </td>
-
-              <!-- Tipo -->
-              <td>
-                <VChip
+                  size="36"
                   :color="account.type === 'bank' ? 'primary' : 'success'"
                   variant="tonal"
-                  size="small"
-                  class="font-weight-semibold text-uppercase"
+                  class="rounded-lg shrink-0"
                 >
-                  {{ getTypeLabel(account.type) }}
-                </VChip>
-              </td>
-
-              <!-- Banco -->
-              <td>
-                <div
-                  v-if="account.bank_name"
-                  class="d-flex align-center gap-2"
-                >
-                  <span class="text-uppercase text-grey-darken-2 font-weight-medium">{{ account.bank_name }}</span>
-                  <VChip
-                    v-if="isBankGuayaquil(account)"
-                    color="info"
-                    variant="tonal"
-                    size="x-small"
-                  >
-                    Principal
-                  </VChip>
+                  <VIcon
+                    :icon="account.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
+                    size="20"
+                  />
+                </VAvatar>
+                <div class="d-flex flex-column text-left">
+                  <div class="d-flex align-center gap-2">
+                    <span class="text-body-2 font-weight-bold text-slate-900">
+                      {{ account.name }}
+                    </span>
+                    <VChip
+                      v-if="account.is_system"
+                      size="x-small"
+                      color="warning"
+                      variant="tonal"
+                      class="font-weight-bold"
+                    >
+                      <VIcon start icon="ri-lock-2-line" size="12" />
+                      Sistema
+                    </VChip>
+                  </div>
+                  <span class="text-caption text-medium-emphasis">
+                    {{ account.code || `Cuenta #${account.id}` }}
+                  </span>
                 </div>
-                <span
-                  v-else
-                  class="text-medium-emphasis"
-                >-</span>
-              </td>
+              </div>
+            </td>
 
-              <!-- Saldo Actual -->
-              <td
-                class="text-right font-weight-bold text-body-2"
-                :class="parseFloat(account.saldo_actual) < 0 ? 'text-error' : 'text-slate-800'"
+            <!-- Tipo -->
+            <td class="py-3">
+              <VChip
+                :color="account.type === 'bank' ? 'primary' : 'success'"
+                variant="tonal"
+                size="small"
+                class="font-weight-bold text-uppercase"
+              >
+                <VIcon start :icon="account.type === 'bank' ? 'ri-bank-card-line' : 'ri-cash-line'" size="14" />
+                {{ getTypeLabel(account.type) }}
+              </VChip>
+            </td>
+
+            <!-- Banco -->
+            <td class="py-3">
+              <div
+                v-if="account.bank_name"
+                class="d-flex align-center gap-2"
+              >
+                <span class="text-body-2 font-weight-bold text-slate-900">
+                  {{ account.bank_name }}
+                </span>
+                <VChip
+                  v-if="isBankGuayaquil(account)"
+                  color="info"
+                  variant="tonal"
+                  size="x-small"
+                  class="font-weight-bold"
+                >
+                  Principal
+                </VChip>
+              </div>
+              <span
+                v-else
+                class="text-caption text-medium-emphasis"
+              >No especificado</span>
+            </td>
+
+            <!-- Saldo Actual -->
+            <td class="py-3 text-right">
+              <span
+                class="text-subtitle-1 font-weight-black"
+                :class="parseFloat(account.saldo_actual) >= 0 ? 'text-success' : 'text-error'"
               >
                 {{ formatCurrency(account.saldo_actual || 0) }}
-              </td>
+              </span>
+            </td>
 
-              <!-- Acciones -->
-              <td class="text-center">
-                <div class="d-flex justify-center gap-1">
+            <!-- Acciones -->
+            <td class="py-3 text-center">
+              <div class="d-flex align-center justify-center gap-1">
+                <template v-if="!account.is_system">
                   <VBtn
-                    v-if="!account.is_system"
-                    icon
-                    variant="text"
+                    icon="ri-pencil-line"
+                    variant="tonal"
                     size="small"
-                    class="action-btn text-warning"
+                    color="warning"
+                    class="action-btn"
+                    title="Editar Cuenta"
                     @click="openEditDialog(account)"
-                  >
-                    <VIcon icon="ri-pencil-line" />
-                    <VTooltip
-                      activator="parent"
-                      text="Editar Cuenta"
-                    />
-                  </VBtn>
+                  />
 
                   <VBtn
-                    v-if="!account.is_system"
-                    icon
-                    variant="text"
+                    icon="ri-delete-bin-line"
+                    variant="tonal"
                     size="small"
-                    class="action-btn text-error"
+                    color="error"
+                    class="action-btn"
+                    title="Eliminar Cuenta"
                     @click="deleteAccount(account)"
-                  >
-                    <VIcon icon="ri-delete-bin-line" />
-                    <VTooltip
-                      activator="parent"
-                      text="Eliminar Cuenta"
-                    />
-                  </VBtn>
-                  <span
-                    v-else
-                    class="text-caption text-grey-lighten-1"
-                  >Sistema</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </div>
+                  />
+                </template>
+                <VChip
+                  v-else
+                  size="small"
+                  variant="tonal"
+                  color="secondary"
+                  class="font-weight-medium"
+                >
+                  <VIcon start icon="ri-shield-check-line" size="14" />
+                  Protegida
+                </VChip>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
 
       <VDivider />
 
       <!-- Pie de Página -->
       <VCardActions class="justify-start pa-4 bg-grey-lighten-5">
-        <div class="text-caption text-grey-darken-1">
-          Mostrando <span class="font-weight-bold">{{ accounts.length }}</span> cuentas registradas
+        <div class="text-caption text-slate-700 font-weight-medium">
+          Mostrando <strong class="text-primary font-weight-bold">{{ accounts.length }}</strong> cuentas registradas en el sistema
         </div>
       </VCardActions>
     </VCard>
@@ -636,50 +736,3 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
-
-<style scoped>
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
