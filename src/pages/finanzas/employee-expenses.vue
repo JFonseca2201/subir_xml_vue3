@@ -95,12 +95,12 @@ const canAccessEmployeeExpenses = computed(() => {
 })
 
 const headers = [
-  { title: 'TIPO / REGISTRO', key: 'type', sortable: true, width: '220px', minWidth: '200px' },
-  { title: 'EMPLEADO', key: 'employee_name', sortable: true, width: '220px', minWidth: '190px' },
-  { title: 'DESCRIPCIÓN', key: 'description', minWidth: '230px' },
-  { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '190px', minWidth: '170px' },
-  { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '130px', minWidth: '120px' },
-  { title: 'FECHA', key: 'raw_date', sortable: true, width: '140px', minWidth: '120px' },
+  { title: 'TIPO / REGISTRO', key: 'type', sortable: true, width: '280px', minWidth: '260px' },
+  { title: 'EMPLEADO', key: 'employee_name', sortable: true, width: '260px', minWidth: '230px' },
+  { title: 'DESCRIPCIÓN', key: 'description', minWidth: '240px' },
+  { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '200px', minWidth: '180px' },
+  { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '140px', minWidth: '130px' },
+  { title: 'FECHA', key: 'raw_date', sortable: true, width: '140px', minWidth: '130px' },
   { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '110px' },
 ]
 
@@ -630,14 +630,14 @@ onMounted(() => {
         <!-- Slot: TIPO / REGISTRO (Diseño Chévere y Moderno) -->
         <template #item.type="{ item }">
           <!-- 1. Caso: PAGO DE NÓMINA / ROL DE PAGOS -->
-          <div v-if="item.type === 'payment'" class="d-flex align-center gap-2.5 py-1">
+          <div v-if="item.type === 'payment'" class="d-flex align-center gap-3.5 py-1 pe-4">
             <VAvatar
-              size="38"
+              size="40"
               color="success"
               variant="tonal"
               class="rounded-lg shrink-0"
             >
-              <VIcon icon="ri-file-user-line" size="20" color="success" />
+              <VIcon icon="ri-file-user-line" size="22" color="success" />
             </VAvatar>
             <div class="d-flex flex-column text-left">
               <span class="font-weight-bold text-slate-900 text-body-2 leading-tight">
@@ -654,14 +654,14 @@ onMounted(() => {
           </div>
 
           <!-- 2. Caso: ADELANTO LIQUIDADO / DEDUCIDO -->
-          <div v-else-if="item.is_deducted" class="d-flex align-center gap-2.5 py-1">
+          <div v-else-if="item.is_deducted" class="d-flex align-center gap-3.5 py-1 pe-4">
             <VAvatar
-              size="38"
+              size="40"
               color="secondary"
               variant="tonal"
               class="rounded-lg shrink-0"
             >
-              <VIcon icon="ri-checkbox-circle-line" size="20" color="success" />
+              <VIcon icon="ri-checkbox-circle-line" size="22" color="success" />
             </VAvatar>
             <div class="d-flex flex-column text-left">
               <span class="font-weight-bold text-slate-700 text-body-2 leading-tight">
@@ -675,14 +675,14 @@ onMounted(() => {
           </div>
 
           <!-- 3. Caso: ADELANTO PENDIENTE DE COBRO -->
-          <div v-else class="d-flex align-center gap-2.5 py-1">
+          <div v-else class="d-flex align-center gap-3.5 py-1 pe-4">
             <VAvatar
-              size="38"
+              size="40"
               color="warning"
               variant="tonal"
               class="rounded-lg shrink-0"
             >
-              <VIcon icon="ri-hand-coin-line" size="20" color="warning" />
+              <VIcon icon="ri-hand-coin-line" size="22" color="warning" />
             </VAvatar>
             <div class="d-flex flex-column text-left">
               <span class="font-weight-bold text-slate-800 text-body-2 leading-tight">
@@ -698,14 +698,14 @@ onMounted(() => {
 
         <!-- Slot: EMPLEADO -->
         <template #item.employee_name="{ item }">
-          <div class="d-flex align-center gap-2.5 py-1">
+          <div class="d-flex align-center gap-3 py-1 ps-2">
             <VAvatar
-              size="34"
+              size="36"
               color="primary"
               variant="tonal"
               class="rounded-circle shrink-0 font-weight-bold text-caption"
             >
-              <VIcon icon="ri-user-3-line" size="18" />
+              <VIcon icon="ri-user-3-line" size="20" />
             </VAvatar>
             <div class="d-flex flex-column">
               <span class="font-weight-bold text-slate-800 text-body-2">
