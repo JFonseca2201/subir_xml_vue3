@@ -6744,3 +6744,48 @@
         }
     }
 }
+
+.work-orders-create-page {
+    .fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch {
+        max-width: 0 !important;
+        border-width: 0 !important;
+    }
+
+    .qty-selector {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 2px;
+        
+        .qty-input {
+            width: 42px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .qty-btn {
+            border-radius: 6px;
+        }
+    }
+
+    .stock-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 600;
+
+        &.stock-low {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+    }
+}

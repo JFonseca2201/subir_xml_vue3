@@ -493,16 +493,75 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VContainer class="pa-6 position-relative">
+  <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
     <VProgressLinear
       v-if="isLoading"
-      v-slot
       indeterminate
       color="primary"
       height="3"
       class="position-absolute"
       style="top: 0; left: 0; right: 0; z-index: 10;"
     />
+
+    <!-- Header Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <div class="d-flex align-center gap-3">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            size="44"
+            class="elevation-1"
+          >
+            <VIcon
+              icon="ri-draft-line"
+              size="24"
+            />
+          </VAvatar>
+          <div>
+            <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+              Nueva Orden de Trabajo
+            </h1>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Completa la información para crear una orden de trabajo
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex align-center gap-2 flex-wrap">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-arrow-left-line"
+            class="font-weight-medium"
+            @click="cancel"
+          >
+            Volver
+          </VBtn>
+          <VBtn
+            color="secondary"
+            variant="tonal"
+            prepend-icon="ri-file-draft-line"
+            class="font-weight-semibold"
+            :loading="isSavingDraft"
+            @click="saveDraft"
+          >
+            Guardar Borrador
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-save-3-line"
+            class="font-weight-bold elevation-1"
+            :loading="isSubmitting"
+            @click="saveWorkOrder"
+          >
+            Guardar Orden
+          </VBtn>
+        </div>
+      </div>
+    </VCard>
 
     <!-- Form Skeleton loader -->
     <div
@@ -512,7 +571,7 @@ onMounted(async () => {
       <VRow>
         <VCol
           cols="12"
-          md="8"
+          lg="8"
         >
           <VCard class="pa-6 rounded-xl border-light mb-6">
             <div
@@ -551,7 +610,7 @@ onMounted(async () => {
         </VCol>
         <VCol
           cols="12"
-          md="4"
+          lg="4"
         >
           <VCard class="pa-6 rounded-xl border-light mb-6">
             <div
@@ -584,153 +643,165 @@ onMounted(async () => {
       </VRow>
     </div>
 
+    <!-- Formulario Principal -->
     <VForm
       v-else
       ref="formRef"
       @submit.prevent
     >
+      <!-- Alerta de Validación -->
+      <VAlert
+        v-if="showValidationError"
+        color="error"
+        variant="tonal"
+        class="mb-6 rounded-xl"
+        border="start"
+        closable
+        @click:close="showValidationError = false"
+      >
+        <div class="d-flex align-center">
+          <VIcon
+            icon="ri-error-warning-line"
+            class="mr-2"
+          />
+          <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
+        </div>
+      </VAlert>
+
       <VRow>
-        <VCol cols="12">
-          <!-- Header -->
-          <div class="d-flex align-center mb-6">
-            <div>
-              <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-                <VIcon
-                  icon="ri-draft-line"
-                  color="primary"
-                  class="me-2"
-                  size="28"
-                />
-                Nueva Orden de Trabajo
-              </h1>
-              <p class="text-body-2 text-grey">
-                Completa la información para crear una orden de trabajo
-              </p>
-            </div>
-          </div>
-          <!-- Información del Cliente y Vehículo -->
-          <VCard class="elevation-2 mb-4">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center mb-6">
-                <VAvatar
-                  size="48"
-                  color="primary"
-                  variant="tonal"
-                  class="mr-3"
-                >
-                  <VIcon
-                    icon="ri-car-line"
-                    size="28"
-                  />
-                </VAvatar>
-                <div>
-                  <h3 class="text-h5 font-weight-bold mb-0">
-                    Información del Cliente y Vehículo
-                  </h3>
-                  <p class="text-caption text-grey mb-0">
-                    Selecciona el cliente y el vehículo para la orden
-                  </p>
-                </div>
-              </div>
-
-              <VRow>
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <div class="mb-4">
-                    <VTextField
-                      v-model="workOrder.number"
-                      label="Número de Orden *"
-                      prepend-inner-icon="ri-hashtag"
-                      variant="outlined"
-                      :rules="[(v) => !!v || 'Número de orden es requerido']"
-                      :loading="isLoading"
-                    />
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <div class="mb-4">
-                    <VTextField
-                      v-model="workOrder.date"
-                      type="date"
-                      label="Fecha *"
-                      prepend-inner-icon="ri-calendar-line"
-                      variant="outlined"
-                      :rules="[(v) => !!v || 'Fecha es requerida']"
-                    />
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <div class="mb-4">
-                    <VSearch
-                      v-model="selectedClient"
-                      :return-object="true"
-                      endpoint="clients/search"
-                      item-title="full_name"
-                      label="Cliente *"
-                      icon="ri-user-line"
-                      :initial-item="selectedClient"
-                      :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
-                    >
-                      <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.full_name || item.raw.name"
-                        >
-                          <VListItemSubtitle
-                            v-if="item.raw.n_document"
-                            class="mt-1 text-grey"
-                          >
-                            Documento: {{ item.raw.n_document }}
-                          </VListItemSubtitle>
-                        </VListItem>
-                      </template>
-                      <template #append>
-                        <VBtn
-                          icon
-                          size="small"
-                          variant="tonal"
-                          color="primary"
-                          type="button"
-                        >
-                          <VIcon icon="ri-add-line" />
-                          <VMenu activator="parent">
-                            <VList>
-                              <VListItem
-                                prepend-icon="ri-user-line"
-                                title="Cliente Final"
-                                @click="showClientDialog = true"
-                              />
-                              <VListItem
-                                prepend-icon="ri-building-line"
-                                title="Cliente Empresa"
-                                @click="showCompanyDialog = true"
-                              />
-                            </VList>
-                          </VMenu>
-                        </VBtn>
-                      </template>
-                    </VSearch>
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="6"
-                >
-                  <div
-                    class="mb-4"
-                    style="text-transform: uppercase;"
+        <!-- Columna Izquierda (8 cols): Cliente, Vehículo y Productos/Servicios -->
+        <VCol
+          cols="12"
+          lg="8"
+        >
+          <!-- Tarjeta 1: Información del Cliente y Vehículo -->
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar
+                    size="36"
+                    color="primary"
+                    variant="tonal"
+                    class="rounded-lg"
                   >
+                    <VIcon
+                      icon="ri-car-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                      Información del Cliente y Vehículo
+                    </h3>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Selecciona el cliente y el vehículo para la orden
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+
+            <VCardText class="pa-4 pa-sm-5 bg-white">
+              <VRow>
+                <!-- Número de Orden -->
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <VTextField
+                    v-model="workOrder.number"
+                    label="Número de Orden *"
+                    prepend-inner-icon="ri-hashtag"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    :rules="[(v) => !!v || 'Número de orden es requerido']"
+                    :loading="isLoading"
+                  />
+                </VCol>
+
+                <!-- Fecha -->
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <VTextField
+                    v-model="workOrder.date"
+                    type="date"
+                    label="Fecha *"
+                    prepend-inner-icon="ri-calendar-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    :rules="[(v) => !!v || 'Fecha es requerida']"
+                  />
+                </VCol>
+
+                <!-- Cliente -->
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <VSearch
+                    v-model="selectedClient"
+                    :return-object="true"
+                    endpoint="clients/search"
+                    item-title="full_name"
+                    label="Cliente *"
+                    icon="ri-user-line"
+                    :initial-item="selectedClient"
+                    :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
+                  >
+                    <template #item="{ props, item }">
+                      <VListItem
+                        v-bind="props"
+                        :title="item.raw.full_name || item.raw.name"
+                      >
+                        <VListItemSubtitle
+                          v-if="item.raw.n_document"
+                          class="mt-1 text-grey"
+                        >
+                          Documento: {{ item.raw.n_document }}
+                        </VListItemSubtitle>
+                      </VListItem>
+                    </template>
+                    <template #append>
+                      <VBtn
+                        icon
+                        size="small"
+                        variant="tonal"
+                        color="primary"
+                        type="button"
+                      >
+                        <VIcon icon="ri-add-line" />
+                        <VMenu activator="parent">
+                          <VList density="compact" class="rounded-lg elevation-4 border">
+                            <VListItem
+                              prepend-icon="ri-user-line"
+                              title="Cliente Final"
+                              @click="showClientDialog = true"
+                            />
+                            <VListItem
+                              prepend-icon="ri-building-line"
+                              title="Cliente Empresa"
+                              @click="showCompanyDialog = true"
+                            />
+                          </VList>
+                        </VMenu>
+                      </VBtn>
+                    </template>
+                  </VSearch>
+                </VCol>
+
+                <!-- Vehículo -->
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <div style="text-transform: uppercase;">
                     <VSearch
                       v-model="selectedVehicle"
                       :return-object="true"
@@ -772,217 +843,158 @@ onMounted(async () => {
                     </VSearch>
                   </div>
                 </VCol>
-
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-4">
-                    <VTextField
-                      v-model.number="workOrder.mileage"
-                      type="number"
-                      label="Kilometraje"
-                      prepend-inner-icon="ri-speed-line"
-                      variant="outlined"
-                    />
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-4">
-                    <VSelect
-                      v-model="workOrder.fuel_level"
-                      :items="fuelLevels"
-                      label="Nivel de Combustible"
-                      prepend-inner-icon="ri-gas-station-line"
-                      variant="outlined"
-                      clearable
-                    />
-                  </div>
-                </VCol>
-
-                <VCol
-                  cols="12"
-                  md="4"
-                >
-                  <div class="mb-4">
-                    <VAutocomplete
-                      v-model="workOrder.technicians"
-                      :items="employees"
-                      :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                      item-value="id"
-                      label="Técnicos (máximo 2)"
-                      prepend-inner-icon="ri-user-settings-line"
-                      variant="outlined"
-                      clearable
-                      :loading="isLoading"
-                      multiple
-                      chips
-                      :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
-                      class="fix-notch-bug"
-                    >
-                      <template #chip="{ props, item }">
-                        <VChip
-                          v-bind="props"
-                          :text="`${item.raw.first_name} ${item.raw.last_name}`"
-                        />
-                      </template>
-                    </VAutocomplete>
-                  </div>
-                </VCol>
               </VRow>
             </VCardText>
           </VCard>
 
-
-
-          <!-- Productos y Servicios -->
-          <VCard class="elevation-2 mb-4">
-            <VCardText class="pa-6">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="d-flex align-center">
-                  <VAvatar
-                    size="40"
-                    color="success"
-                    variant="tonal"
-                    class="mr-3"
-                  >
-                    <VIcon
-                      icon="ri-shopping-bag-3-line"
-                      size="24"
-                    />
-                  </VAvatar>
-                  <div>
-                    <h3 class="text-h6 font-weight-bold mb-0">
-                      Productos y Servicios
-                    </h3>
-                    <p class="text-caption text-grey mb-0">
-                      Agrega los items a la orden de trabajo
-                    </p>
+          <!-- Tarjeta 2: Productos y Servicios -->
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="success"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-shopping-bag-3-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Productos y Servicios
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Agrega los items a la orden de trabajo
+                      </p>
+                    </div>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <VBtn
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      prepend-icon="ri-box-3-line"
+                      class="font-weight-semibold"
+                      @click="addTemporaryProduct"
+                    >
+                      Producto Temporal
+                    </VBtn>
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      prepend-icon="ri-tools-line"
+                      class="font-weight-semibold"
+                      @click="showAddServiceDialog = true"
+                    >
+                      Servicio Express
+                    </VBtn>
                   </div>
                 </div>
-                <div class="d-flex gap-2">
-                  <VBtn
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    prepend-icon="ri-box-3-line"
-                    @click="addTemporaryProduct"
-                  >
-                    Producto Temporal
-                  </VBtn>
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="outlined"
-                    prepend-icon="ri-tools-line"
-                    @click="showAddServiceDialog = true"
-                  >
-                    Servicio Express
-                  </VBtn>
-                </div>
+              </template>
+            </VCardItem>
+
+            <VCardText class="pa-4 pa-sm-5 bg-white">
+              <!-- Cuadro de búsqueda de productos -->
+              <div class="mb-4">
+                <VSearch
+                  v-model="productSearch"
+                  endpoint="products/search"
+                  item-title="description"
+                  :return-object="true"
+                  label="Buscar y agregar producto por nombre, código o SKU..."
+                  icon="ri-search-line"
+                  class="mb-0"
+                  hide-details
+                  @change="addProductFromSearch"
+                >
+                  <template #item="{ props, item }">
+                    <VListItem
+                      v-bind="props"
+                      :title="undefined"
+                    >
+                      <template #prepend>
+                        <VAvatar
+                          size="32"
+                          color="primary"
+                          variant="tonal"
+                          class="rounded-lg"
+                        >
+                          <VIcon icon="ri-box-3-line" size="18" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle
+                        style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium text-body-2"
+                      >
+                        {{ item.raw.description || item.raw.name }}
+                      </VListItemTitle>
+                      <VListItemSubtitle
+                        v-if="item.raw.code_aux || item.raw.sku"
+                        class="mt-1 text-grey"
+                      >
+                        Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
+                      </VListItemSubtitle>
+                      <template #append>
+                        <VChip
+                          size="small"
+                          color="success"
+                          variant="tonal"
+                          class="font-weight-bold"
+                        >
+                          ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
+                        </VChip>
+                      </template>
+                    </VListItem>
+                  </template>
+                </VSearch>
               </div>
 
-              <!-- Cuadro de búsqueda de productos -->
-              <VCard
-                class="mb-4 elevation-1"
-                color="grey-lighten-5"
-              >
-                <VCardText class="pa-4">
-                  <VSearch
-                    v-model="productSearch"
-                    endpoint="products/search"
-                    item-title="description"
-                    :return-object="true"
-                    label="Buscar y agregar producto por nombre, código o SKU..."
-                    icon="ri-search-line"
-                    class="mb-0"
-                    hide-details
-                    @change="addProductFromSearch"
-                  >
-                    <template #item="{ props, item }">
-                      <VListItem
-                        v-bind="props"
-                        :title="undefined"
-                      >
-                        <template #prepend>
-                          <VAvatar
-                            size="32"
-                            color="primary"
-                            variant="tonal"
-                          >
-                            <VIcon icon="ri-box-3-line" />
-                          </VAvatar>
-                        </template>
-                        <VListItemTitle
-                          style="white-space: normal !important; line-height: 1.4;"
-                          class="font-weight-medium"
-                        >
-                          {{ item.raw.description || item.raw.name }}
-                        </VListItemTitle>
-                        <VListItemSubtitle
-                          v-if="item.raw.code_aux || item.raw.sku"
-                          class="mt-1 text-grey"
-                        >
-                          Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
-                        </VListItemSubtitle>
-                        <template #append>
-                          <VChip
-                            size="small"
-                            color="success"
-                          >
-                            ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
-                          </VChip>
-                        </template>
-                      </VListItem>
-                    </template>
-                  </VSearch>
-                </VCardText>
-              </VCard>
-
               <!-- Tabla de items -->
-              <VCard
+              <div
                 v-if="workOrder.items.length > 0"
-                class="elevation-1"
+                class="rounded-xl border overflow-hidden"
               >
                 <VTable class="custom-items-table text-no-wrap">
                   <thead>
-                    <tr class="bg-grey-lighten-4">
+                    <tr class="bg-slate-50 text-caption font-weight-bold">
                       <th
-                        class="text-left"
+                        class="text-left font-weight-bold text-slate-700"
                         style="min-width: 250px;"
                       >
                         Ítem / Descripción
                       </th>
                       <th
-                        class="text-center"
+                        class="text-center font-weight-bold text-slate-700"
                         style="width: 130px;"
                       >
                         Cantidad
                       </th>
                       <th
-                        class="text-center"
+                        class="text-center font-weight-bold text-slate-700"
                         style="width: 140px;"
                       >
                         Precio Unit.
                       </th>
                       <th
-                        class="text-center"
+                        class="text-center font-weight-bold text-slate-700"
                         style="width: 120px;"
                       >
                         Descuento
                       </th>
                       <th
-                        class="text-center"
+                        class="text-center font-weight-bold text-slate-700"
                         style="width: 130px;"
                       >
                         Subtotal
                       </th>
                       <th
-                        class="text-center"
+                        class="text-center font-weight-bold text-slate-700"
                         style="width: 60px;"
                       >
                         Acciones
@@ -998,14 +1010,14 @@ onMounted(async () => {
                       <td>
                         <div class="d-flex align-center gap-3 py-1">
                           <VAvatar
-                            size="38"
+                            size="36"
                             :color="item.type === 'product' ? 'primary' : 'info'"
                             variant="tonal"
-                            class="elevation-1"
+                            class="rounded-lg"
                           >
                             <VIcon
                               :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'"
-                              size="20"
+                              size="18"
                             />
                           </VAvatar>
                           <div class="flex-grow-1">
@@ -1015,9 +1027,9 @@ onMounted(async () => {
                               variant="plain"
                               hide-details
                               placeholder="Descripción del ítem..."
-                              class="premium-input font-weight-medium"
+                              class="font-weight-bold text-slate-900"
                             />
-                            <div class="text-caption text-grey mt-1 d-flex align-center gap-2">
+                            <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
                               <span
                                 class="text-uppercase font-weight-bold"
                                 :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
@@ -1064,7 +1076,7 @@ onMounted(async () => {
                             type="number"
                             min="1"
                             max="99"
-                            class="qty-input"
+                            class="qty-input font-mono font-weight-bold"
                             @input="item.quantity > 99 ? item.quantity = 99 : null"
                             @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null"
                           >
@@ -1089,7 +1101,7 @@ onMounted(async () => {
                           min="0"
                           step="0.01"
                           prefix="$"
-                          class="premium-input font-weight-bold"
+                          class="font-weight-bold text-slate-800 font-mono"
                         />
                       </td>
                       <td>
@@ -1102,11 +1114,11 @@ onMounted(async () => {
                           min="0"
                           step="0.01"
                           prefix="$"
-                          class="premium-input text-error font-weight-medium"
+                          class="font-weight-medium text-error font-mono"
                         />
                       </td>
                       <td class="text-center">
-                        <span class="text-h6 font-weight-black text-success">
+                        <span class="text-body-1 font-weight-black text-success font-mono">
                           ${{ calculateItemSubtotal(item).toFixed(2) }}
                         </span>
                       </td>
@@ -1123,128 +1135,276 @@ onMounted(async () => {
                     </tr>
                   </tbody>
                 </VTable>
-              </VCard>
+              </div>
 
+              <!-- Estado Vacío -->
               <div
                 v-else
-                class="text-center pa-8"
+                class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed"
               >
-                <VIcon
-                  icon="ri-shopping-bag-3-line"
-                  size="64"
-                  color="grey-lighten-1"
-                />
-                <p class="mt-4 text-body-2 text-grey">
-                  No hay productos o servicios agregados
-                </p>
-                <p class="text-caption text-grey">
-                  Usa el buscador para agregar items
-                </p>
-              </div>
-
-              <!-- Total -->
-              <div class="d-flex justify-end mt-4">
-                <VCard
-                  class="pa-4 elevation-2"
-                  width="320"
-                  color="primary-lighten-5"
-                >
-                  <div class="d-flex align-center mb-2">
-                    <VIcon
-                      icon="ri-money-dollar-circle-line"
-                      size="24"
-                      color="primary"
-                      class="mr-2"
-                    />
-                    <span class="text-body-1 font-weight-medium">Total de la Orden</span>
-                  </div>
-                  <div class="d-flex justify-space-between align-center">
-                    <span class="text-h4 font-weight-bold text-primary">${{ calculateTotal().toFixed(2)
-                    }}</span>
-                    <VChip
-                      size="small"
-                      color="primary"
-                      label
-                    >
-                      {{ workOrder.items.length }} items
-                    </VChip>
-                  </div>
-                </VCard>
-              </div>
-            </VCardText>
-          </VCard>
-          <VAlert
-            v-if="showValidationError"
-            color="error"
-            variant="tonal"
-            class="mb-4"
-            border="start"
-            closable
-            @click:close="showValidationError = false"
-          >
-            <div class="d-flex align-center">
-              <VIcon
-                icon="ri-error-warning-line"
-                class="mr-2"
-              />
-              <span class="text-body-2">{{ validationErrorMessage }}</span>
-            </div>
-          </VAlert>
-          <!-- Observaciones -->
-          <VCard class="elevation-2 mb-4">
-            <VCardText class="pa-6">
-              <h3 class="text-h6 font-weight-bold mb-4">
-                Observaciones
-              </h3>
-              <VTextarea
-                v-model="workOrder.observations"
-                label="Observaciones de la orden"
-                prepend-inner-icon="ri-file-text-line"
-                variant="outlined"
-                rows="3"
-                placeholder="Describe cualquier observación relevante..."
-                hide-details
-              />
-            </VCardText>
-          </VCard>
-
-          <!-- Botones de acción -->
-          <VCard class="elevation-2">
-            <VCardText class="pa-6">
-              <div class="d-flex justify-end gap-3">
-                <VBtn
-                  type="button"
-                  color="grey"
-                  variant="outlined"
-                  prepend-icon="ri-close-line"
-                  @click="cancel"
-                >
-                  Cancelar
-                </VBtn>
-                <VBtn
-                  type="button"
-                  color="secondary"
+                <VAvatar
+                  color="primary"
                   variant="tonal"
-                  prepend-icon="ri-file-draft-line"
-                  :loading="isSavingDraft"
-                  @click="saveDraft"
+                  size="64"
+                  class="mb-3"
                 >
-                  Guardar Borrador
-                </VBtn>
+                  <VIcon
+                    icon="ri-shopping-bag-3-line"
+                    size="32"
+                  />
+                </VAvatar>
+                <div class="text-subtitle-1 font-weight-bold text-slate-900">
+                  No hay productos o servicios agregados
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  Usa el buscador para agregar ítems o crea un producto/servicio temporal.
+                </div>
+              </div>
+            </VCardText>
+          </VCard>
+        </VCol>
+
+        <!-- Columna Derecha (4 cols): Parámetros, Observaciones y Resumen -->
+        <VCol
+          cols="12"
+          lg="4"
+        >
+          <div class="d-flex flex-column gap-6">
+            <!-- Tarjeta 3: Parámetros del Vehículo & Técnicos -->
+            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="warning"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-tools-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Datos del Taller
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Kilometraje, combustible y técnicos
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </VCardItem>
+
+              <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
+                <!-- Kilometraje -->
+                <div>
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
+                  <VTextField
+                    v-model.number="workOrder.mileage"
+                    type="number"
+                    placeholder="Ej: 45000"
+                    prepend-inner-icon="ri-speed-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                  />
+                </div>
+
+                <!-- Nivel de Combustible -->
+                <div>
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Nivel de Combustible</label>
+                  <VSelect
+                    v-model="workOrder.fuel_level"
+                    :items="fuelLevels"
+                    placeholder="Seleccionar nivel"
+                    prepend-inner-icon="ri-gas-station-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    clearable
+                  />
+                </div>
+
+                <!-- Técnicos Asignados -->
+                <div>
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos (máximo 2)</label>
+                  <VAutocomplete
+                    v-model="workOrder.technicians"
+                    :items="employees"
+                    :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
+                    item-value="id"
+                    placeholder="Seleccionar técnicos..."
+                    prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    clearable
+                    :loading="isLoading"
+                    multiple
+                    chips
+                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
+                    class="fix-notch-bug"
+                  >
+                    <template #chip="{ props, item }">
+                      <VChip
+                        v-bind="props"
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
+                      />
+                    </template>
+                  </VAutocomplete>
+                </div>
+              </VCardText>
+            </VCard>
+
+            <!-- Tarjeta 4: Observaciones -->
+            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="secondary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-file-text-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Observaciones
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Notas internas o novedades
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </VCardItem>
+              <VCardText class="pa-4 bg-white">
+                <VTextarea
+                  v-model="workOrder.observations"
+                  rows="3"
+                  variant="outlined"
+                  density="comfortable"
+                  placeholder="Describe cualquier novedad u observación del vehículo..."
+                  hide-details="auto"
+                  color="primary"
+                />
+              </VCardText>
+            </VCard>
+
+            <!-- Tarjeta 5: Resumen Económico y Acciones -->
+            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-money-dollar-circle-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Resumen de la Orden
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        {{ workOrder.items.length }} {{ workOrder.items.length === 1 ? 'ítem agregado' : 'ítems agregados' }}
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </VCardItem>
+
+              <VCardText class="pa-4 bg-white d-flex flex-column gap-3">
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-body-2 text-slate-600 font-weight-medium">Items en Orden:</span>
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
+                    {{ workOrder.items.length }} ítems
+                  </VChip>
+                </div>
+
+                <div class="d-flex justify-space-between align-center pa-3 rounded-xl bg-slate-50 border">
+                  <div>
+                    <div class="text-caption font-weight-bold text-slate-500 text-uppercase">
+                      Total a Pagar
+                    </div>
+                    <div class="text-h4 font-weight-black text-primary font-mono mt-0.5">
+                      ${{ calculateTotal().toFixed(2) }}
+                    </div>
+                  </div>
+                  <VAvatar
+                    color="primary"
+                    variant="tonal"
+                    size="44"
+                    class="rounded-xl"
+                  >
+                    <VIcon icon="ri-wallet-3-line" size="24" />
+                  </VAvatar>
+                </div>
+              </VCardText>
+
+              <VDivider />
+
+              <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
                 <VBtn
-                  type="button"
+                  block
                   color="primary"
                   variant="elevated"
-                  prepend-icon="ri-save-3-line"
-                  :loading="isSubmitting"
                   size="large"
+                  prepend-icon="ri-save-3-line"
+                  class="font-weight-bold elevation-2"
+                  :loading="isSubmitting"
                   @click="saveWorkOrder"
                 >
-                  Guardar Orden de Trabajo
+                  GUARDAR ORDEN
                 </VBtn>
-              </div>
-            </VCardText>
-          </VCard>
+                <div class="d-flex gap-2 w-100">
+                  <VBtn
+                    color="secondary"
+                    variant="tonal"
+                    prepend-icon="ri-file-draft-line"
+                    class="font-weight-semibold flex-grow-1"
+                    :loading="isSavingDraft"
+                    @click="saveDraft"
+                  >
+                    Borrador
+                  </VBtn>
+                  <VBtn
+                    color="secondary"
+                    variant="outlined"
+                    prepend-icon="ri-close-line"
+                    class="font-weight-medium"
+                    @click="cancel"
+                  >
+                    Cancelar
+                  </VBtn>
+                </div>
+              </VCardActions>
+            </VCard>
+          </div>
         </VCol>
       </VRow>
     </VForm>
@@ -1262,6 +1422,7 @@ onMounted(async () => {
       @update:is-dialog-visible="showCompanyDialog = $event"
       @add-client-company="onCompanyAdded"
     />
+
     <!-- Dialog para agregar vehículo -->
     <VehicleAddDialog
       :is-dialog-visible="showVehicleDialog"
@@ -1275,56 +1436,5 @@ onMounted(async () => {
       v-model:isDialogVisible="showAddServiceDialog"
       @service-added="handleServiceAdded"
     />
-  </VContainer>
+  </div>
 </template>
-
-<style scoped>
-:deep(.fix-notch-bug:not(:has(.v-chip)):not(:focus-within) .v-field__outline__notch) {
-  max-width: 0 !important;
-  border-width: 0 !important;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
