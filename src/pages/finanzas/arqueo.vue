@@ -321,34 +321,31 @@ onMounted(() => {
 
 <template>
   <div class="arqueo-container pa-4 pa-sm-6 position-relative">
-    <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
-      style="top: 0; left: 0; right: 0; z-index: 99;" />
+    <VProgressLinear
+      v-if="loading"
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 99;"
+    />
 
-    <!-- Restrict Access Screen -->
-    <!-- Top Title Bar -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
-      <div class="d-flex align-center gap-3">
-
-        <VIcon icon="ri-safe-2-line" color="primary" variant="tonal" size="35" />
-        <div>
-          <h1 class="text-h4 font-weight-bold mb-1 page-title">
-            Caja Diaria
-          </h1>
-          <p class="text-medium-emphasis mb-0 page-subtitle">
-            Cierre diario de control físico de dinero y conciliación bancaria
-          </p>
-        </div>
-      </div>
-
-      <div class="date-selector-container">
-        <span class="text-caption text-uppercase font-weight-bold text-grey-darken-1 mr-2 d-none d-sm-inline">Fecha de
-          Corte:</span>
-        <input v-model="payload.count_date" type="date" class="custom-date-input" :disabled="saving || loading">
-      </div>
-    </div>
-    <div v-if="!canAccessArqueo" class="d-flex justify-center align-center" style="height: 450px">
-      <VCard class="pa-8 text-center rounded-xl border-thin" elevation="8" max-width="450">
-        <VIcon size="64" color="primary" class="mb-4">
+    <!-- Pantalla de Bloqueo por Permisos -->
+    <div
+      v-if="!canAccessArqueo"
+      class="d-flex justify-center align-center"
+      style="height: 450px"
+    >
+      <VCard
+        class="pa-8 text-center rounded-xl border-thin"
+        elevation="8"
+        max-width="450"
+      >
+        <VIcon
+          size="64"
+          color="primary"
+          class="mb-4"
+        >
           ri-lock-line
         </VIcon>
         <h3 class="text-h5 mb-2 font-weight-bold">
@@ -358,170 +355,135 @@ onMounted(() => {
           Tu rol no cuenta con los permisos necesarios para realizar el
           arqueo de caja diario.
         </p>
-        <VBtn color="primary" class="text-none font-weight-bold" prepend-icon="ri-arrow-left-line"
-          @click="router.push('/dashboard')">
+        <VBtn
+          color="primary"
+          class="text-none font-weight-bold"
+          prepend-icon="ri-arrow-left-line"
+          @click="router.push('/dashboard')"
+        >
           Volver al Dashboard
         </VBtn>
       </VCard>
     </div>
 
-    <!-- Loading Skeleton Screen -->
-    <div v-else-if="loading" class="arqueo-content-layout">
-      <!-- Date Formatted Alert Shimmer -->
-      <VCard elevation="0" class="mb-5 pa-4 rounded-lg border-light border">
-        <div class="d-flex justify-space-between align-center">
-          <div class="shimmer-line w-40" style="height: 20px;" />
-          <div class="shimmer-chip" style="width: 200px;" />
-        </div>
-      </VCard>
-
-      <VRow class="mb-6">
-        <!-- Columna Izquierda (9/12) -->
-        <VCol cols="12" md="9">
-          <VCard elevation="3" class="rounded-xl h-100 border-light border">
-            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-              <div class="shimmer-line w-50" style="height: 20px;" />
-            </VCardItem>
-            <VCardText class="pa-0">
-              <!-- Shimmer Rows -->
-              <div v-for="n in 3" :key="n" class="d-flex align-center pa-4 border-b">
-                <div class="shimmer-circle mr-4" style="width: 54px; height: 54px;" />
-                <div class="w-100">
-                  <VRow no-gutters>
-                    <VCol cols="12" sm="4" class="px-2 mb-2 mb-sm-0">
-                      <div class="shimmer-line w-60 mb-2" />
-                      <div class="shimmer-line w-40" />
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-2 mb-2 mb-sm-0">
-                      <div class="shimmer-line w-50 mb-2" />
-                      <div class="shimmer-line w-30" />
-                    </VCol>
-                    <VCol cols="12" sm="4" class="px-2">
-                      <div class="shimmer-line w-70 mb-2" />
-                      <div class="shimmer-line w-50" />
-                    </VCol>
-                  </VRow>
-                </div>
+    <!-- Contenido Principal -->
+    <div v-else>
+      <!-- Header Principal Sticky -->
+      <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+        <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+          <div class="d-flex align-center gap-3">
+            <VAvatar
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              size="44"
+              class="elevation-1"
+            >
+              <VIcon
+                icon="ri-safe-2-line"
+                size="24"
+              />
+            </VAvatar>
+            <div>
+              <div class="d-flex align-center gap-2 flex-wrap">
+                <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                  Caja Diaria & Conciliación
+                </h1>
+                <VChip
+                  v-if="isSealed"
+                  color="error"
+                  variant="flat"
+                  size="small"
+                  class="font-weight-bold px-3 py-1"
+                >
+                  <VIcon start size="14">
+                    ri-lock-password-fill
+                  </VIcon>
+                  DÍA SELLADO (SOLO LECTURA)
+                </VChip>
+                <VChip
+                  v-else-if="alreadyCounted"
+                  color="success"
+                  variant="flat"
+                  size="small"
+                  class="font-weight-bold px-3 py-1"
+                >
+                  <VIcon start size="14">
+                    ri-checkbox-circle-fill
+                  </VIcon>
+                  REGISTRADO (EDICIÓN)
+                </VChip>
+                <VChip
+                  v-else
+                  color="warning"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold px-3 py-1"
+                >
+                  <VIcon start size="14">
+                    ri-time-line
+                  </VIcon>
+                  PENDIENTE POR ARCHIVAR
+                </VChip>
               </div>
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Columna Derecha (3/12) -->
-        <VCol cols="12" md="3">
-          <VCard elevation="3" class="rounded-xl h-100 border-light border">
-            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-              <div class="shimmer-line w-75" style="height: 20px;" />
-            </VCardItem>
-            <VCardText class="pa-4 d-flex flex-column gap-4 justify-center" style="height: 180px;">
-              <div class="shimmer-line w-80" />
-              <div class="shimmer-line w-100" style="height: 36px;" />
-              <div class="shimmer-line w-60" />
-              <div class="shimmer-line w-100" style="height: 36px;" />
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <VRow>
-        <!-- Left Breakdown -->
-        <VCol cols="12" md="8">
-          <VCard elevation="3" class="rounded-xl border-light border">
-            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-              <div class="shimmer-line w-60" style="height: 20px;" />
-            </VCardItem>
-            <VCardText class="pa-4">
-              <VRow>
-                <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
-                  <div class="shimmer-line w-50 mb-4" />
-                  <div v-for="i in 5" :key="i" class="d-flex justify-space-between mb-3 align-center">
-                    <div class="shimmer-chip" style="width: 50px;" />
-                    <div class="shimmer-line w-30" />
-                    <div class="shimmer-line w-20" />
-                  </div>
-                </VCol>
-                <VCol cols="12" sm="6" class="pl-sm-4">
-                  <div class="shimmer-line w-50 mb-4" />
-                  <div v-for="i in 5" :key="i" class="d-flex justify-space-between mb-3 align-center">
-                    <div class="shimmer-chip" style="width: 50px;" />
-                    <div class="shimmer-line w-30" />
-                    <div class="shimmer-line w-20" />
-                  </div>
-                </VCol>
-              </VRow>
-            </VCardText>
-          </VCard>
-        </VCol>
-
-        <!-- Right Breakdown -->
-        <VCol cols="12" md="4">
-          <VCard elevation="3" class="rounded-xl border-light border">
-            <VCardItem class="bg-grey-lighten-4 py-4 border-b">
-              <div class="shimmer-line w-60" style="height: 20px;" />
-            </VCardItem>
-            <VCardText class="pa-4 d-flex flex-column gap-4">
-              <div class="shimmer-line w-50" />
-              <div class="shimmer-line w-100" style="height: 48px;" />
-              <div class="shimmer-line w-50" />
-              <div class="shimmer-line w-100" style="height: 48px;" />
-              <div class="shimmer-line w-100" style="height: 60px;" />
-              <div class="shimmer-button w-100" style="height: 36px;" />
-              <div class="shimmer-button w-100" style="height: 36px;" />
-            </VCardText>
-          </VCard>
-        </VCol>
-      </VRow>
-    </div>
-
-    <!-- Actual Content -->
-    <div v-else class="arqueo-content-layout">
-
-
-      <!-- Elegante Fecha Formateada Alert -->
-      <VCard v-if="dateFormatted" elevation="0" class="date-display-card mb-5 pa-4 rounded-lg border-light border">
-        <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-2">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-calendar-event-line" color="primary" size="22" />
-            <span class="text-h6 font-weight-bold text-grey-darken-4 capitalize-first">{{ dateFormatted }}</span>
+              <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+                Cierre diario de control físico de dinero y conciliación bancaria
+              </p>
+            </div>
           </div>
-          <VChip v-if="isSealed" color="error" variant="flat" size="small" class="font-weight-bold px-3 py-1">
-            <VIcon start size="14">
-              ri-lock-password-fill
-            </VIcon>
-            DÍA SELLADO (SOLO LECTURA)
-          </VChip>
-          <VChip v-else-if="alreadyCounted" color="success" variant="flat" size="small"
-            class="font-weight-bold px-3 py-1">
-            <VIcon start size="14">
-              ri-checkbox-circle-fill
-            </VIcon>
-            ARQUEO YA REGISTRADO (MODO EDICIÓN)
-          </VChip>
-          <VChip v-else color="warning" variant="tonal" size="small" class="font-weight-bold px-3 py-1">
-            <VIcon start size="14">
-              ri-time-line
-            </VIcon>
-            PENDIENTE POR ARCHIVAR
-          </VChip>
+
+          <div class="d-flex align-center gap-3">
+            <div class="d-flex align-center gap-2 bg-white px-3 py-1.5 rounded-lg border">
+              <VIcon icon="ri-calendar-event-line" color="primary" size="18" />
+              <span class="text-caption font-weight-bold text-slate-700 text-uppercase d-none d-sm-inline">Fecha de Corte:</span>
+              <input
+                v-model="payload.count_date"
+                type="date"
+                class="custom-date-input border-0 pa-0 font-weight-bold"
+                :disabled="saving || loading"
+              >
+            </div>
+          </div>
         </div>
       </VCard>
 
+      <!-- Banner Informativo de Fecha -->
+      <VCard
+        v-if="dateFormatted"
+        class="pa-4 mb-5 rounded-xl bg-primary-tonal border-primary elevation-0 d-flex justify-space-between align-center flex-wrap gap-3"
+      >
+        <div class="d-flex align-center gap-2">
+          <VIcon icon="ri-calendar-check-line" color="primary" size="22" />
+          <span class="text-subtitle-1 font-weight-bold text-slate-900 capitalize-first">{{ dateFormatted }}</span>
+        </div>
+        <div class="text-caption text-primary font-weight-semibold">
+          Control diario de efectivo y cuentas
+        </div>
+      </VCard>
+
+      <!-- Fila 1: Comparativa de Saldos (8 cols) + Resumen de Cuadre (4 cols) -->
       <VRow class="mb-6">
-        <!-- Columna Izquierda (9/12) - Tabla Comparativa Estructurada -->
-        <VCol cols="12" md="9">
-          <VCard elevation="2" class="rounded-xl border-light border h-100 overflow-hidden">
-            <!-- Encabezado de la Tarjeta -->
-            <VCardItem class="bg-grey-50 py-3 px-4 border-b">
+        <!-- Columna Izquierda (8 cols): Comparativa Estructurada -->
+        <VCol cols="12" md="8">
+          <VCard elevation="1" class="rounded-xl border-light h-100 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-scales-3-line" size="22" color="primary" />
-                    <span class="text-subtitle-1 font-weight-bold text-grey-darken-3">
-                      Comparativa de Saldos: Arrastre vs. Sistema vs. Conteo Físico
+                    <VAvatar color="primary" variant="tonal" size="32" class="rounded-lg">
+                      <VIcon icon="ri-scales-3-line" size="18" />
+                    </VAvatar>
+                    <span class="text-subtitle-1 font-weight-bold text-slate-900">
+                      Comparativa de Saldos
                     </span>
                   </div>
-                  <VChip v-if="initialBalances.origin_date" size="small" color="primary" variant="tonal"
-                    class="font-weight-semibold">
+                  <VChip
+                    v-if="initialBalances.origin_date"
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-semibold"
+                  >
                     <VIcon start size="14">
                       ri-history-line
                     </VIcon>
@@ -532,11 +494,10 @@ onMounted(() => {
             </VCardItem>
 
             <VCardText class="pa-0">
-              <!-- Tabla comparativa estructurada con columnas claras -->
               <VTable hover class="arqueo-summary-table">
                 <thead>
-                  <tr class="bg-grey-100 text-caption font-weight-bold">
-                    <th class="py-3 px-4 text-left font-weight-bold text-grey-darken-2" style="width: 28%;">
+                  <tr class="bg-slate-50 text-caption font-weight-bold">
+                    <th class="py-3 px-4 text-left font-weight-bold text-slate-700" style="width: 28%;">
                       CUENTA / CAJA
                     </th>
                     <th class="py-3 px-3 text-center font-weight-bold text-primary" style="width: 24%;">
@@ -546,8 +507,7 @@ onMounted(() => {
                         </VIcon>
                         <span>SALDO INICIAL</span>
                       </div>
-                      <div class="text-caption text-grey font-weight-regular text-none"
-                        style="font-size: 0.72rem !important;">
+                      <div class="text-caption text-slate-500 font-weight-regular text-none" style="font-size: 0.72rem !important;">
                         (Arrastre día anterior)
                       </div>
                     </th>
@@ -558,8 +518,7 @@ onMounted(() => {
                         </VIcon>
                         <span>SALDO EN SISTEMA</span>
                       </div>
-                      <div class="text-caption text-grey font-weight-regular text-none"
-                        style="font-size: 0.72rem !important;">
+                      <div class="text-caption text-slate-500 font-weight-regular text-none" style="font-size: 0.72rem !important;">
                         (Movimientos en Cartera)
                       </div>
                     </th>
@@ -570,8 +529,7 @@ onMounted(() => {
                         </VIcon>
                         <span>CONTEO DE HOY</span>
                       </div>
-                      <div class="text-caption text-grey font-weight-regular text-none"
-                        style="font-size: 0.72rem !important;">
+                      <div class="text-caption text-slate-500 font-weight-regular text-none" style="font-size: 0.72rem !important;">
                         (Arqueo físico ingresado)
                       </div>
                     </th>
@@ -582,37 +540,47 @@ onMounted(() => {
                   <tr>
                     <td class="py-3 px-4">
                       <div class="d-flex align-center gap-3">
-                        <div class="rounded-circle pa-2 bg-primary-lighten-5 d-flex align-center justify-center"
-                          style="inline-size: 38px; block-size: 38px;">
-                          <VIcon icon="ri-money-dollar-circle-line" size="22" color="primary" />
-                        </div>
+                        <VAvatar
+                          color="success"
+                          variant="tonal"
+                          size="36"
+                          class="rounded-lg"
+                        >
+                          <VIcon icon="ri-money-dollar-circle-line" size="20" />
+                        </VAvatar>
                         <div>
-                          <div class="font-weight-bold text-body-2 text-grey-darken-3">
+                          <div class="font-weight-bold text-body-2 text-slate-900">
                             Efectivo Físico
                           </div>
-                          <div class="text-caption text-grey">
+                          <div class="text-caption text-medium-emphasis">
                             Caja Chica Principal
                           </div>
                         </div>
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-grey-darken-3">
+                      <div class="font-weight-bold font-mono text-body-1 text-slate-800">
                         {{ formatCurrency(initialBalances.cash) }}
                       </div>
-                      <VBtn v-if="initialBalances.origin_date" variant="text" color="primary" size="x-small"
-                        class="px-1 text-none font-weight-semibold" prepend-icon="ri-history-line"
-                        @click="prevCountDetailsDialog = true">
+                      <VBtn
+                        v-if="initialBalances.origin_date"
+                        variant="text"
+                        color="primary"
+                        size="x-small"
+                        class="px-1 text-none font-weight-semibold"
+                        prepend-icon="ri-history-line"
+                        @click="prevCountDetailsDialog = true"
+                      >
                         Ver billetes
                       </VBtn>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-indigo-darken-1">
+                      <div class="font-weight-bold font-mono text-body-1 text-indigo">
                         {{ formatCurrency(systemBalances.cash) }}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-success-darken-1">
+                      <div class="font-weight-black font-mono text-body-1 text-success">
                         {{ formatCurrency(totalCash) }}
                       </div>
                     </td>
@@ -622,32 +590,36 @@ onMounted(() => {
                   <tr>
                     <td class="py-3 px-4">
                       <div class="d-flex align-center gap-3">
-                        <div class="rounded-circle pa-2 bg-warning-lighten-5 d-flex align-center justify-center"
-                          style="inline-size: 38px; block-size: 38px;">
-                          <VIcon icon="ri-bank-line" size="22" color="warning" />
-                        </div>
+                        <VAvatar
+                          color="warning"
+                          variant="tonal"
+                          size="36"
+                          class="rounded-lg"
+                        >
+                          <VIcon icon="ri-bank-line" size="20" />
+                        </VAvatar>
                         <div>
-                          <div class="font-weight-bold text-body-2 text-grey-darken-3">
+                          <div class="font-weight-bold text-body-2 text-slate-900">
                             Banco Pichincha
                           </div>
-                          <div class="text-caption text-grey">
+                          <div class="text-caption text-medium-emphasis">
                             Cuenta de Ahorros
                           </div>
                         </div>
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-grey-darken-3">
+                      <div class="font-weight-bold font-mono text-body-1 text-slate-800">
                         {{ formatCurrency(initialBalances.pichincha) }}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-indigo-darken-1">
+                      <div class="font-weight-bold font-mono text-body-1 text-indigo">
                         {{ formatCurrency(systemBalances.pichincha) }}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-success-darken-1">
+                      <div class="font-weight-black font-mono text-body-1 text-success">
                         {{ formatCurrency(payload.pichincha_total) }}
                       </div>
                     </td>
@@ -657,32 +629,36 @@ onMounted(() => {
                   <tr>
                     <td class="py-3 px-4">
                       <div class="d-flex align-center gap-3">
-                        <div class="rounded-circle pa-2 bg-error-lighten-5 d-flex align-center justify-center"
-                          style="inline-size: 38px; block-size: 38px;">
-                          <VIcon icon="ri-safe-2-line" size="22" color="error" />
-                        </div>
+                        <VAvatar
+                          color="primary"
+                          variant="tonal"
+                          size="36"
+                          class="rounded-lg"
+                        >
+                          <VIcon icon="ri-safe-2-line" size="20" />
+                        </VAvatar>
                         <div>
-                          <div class="font-weight-bold text-body-2 text-grey-darken-3">
+                          <div class="font-weight-bold text-body-2 text-slate-900">
                             Banco Guayaquil
                           </div>
-                          <div class="text-caption text-grey">
+                          <div class="text-caption text-medium-emphasis">
                             BGA Dólares (USD)
                           </div>
                         </div>
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-grey-darken-3">
+                      <div class="font-weight-bold font-mono text-body-1 text-slate-800">
                         {{ formatCurrency(initialBalances.guayaquil) }}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-indigo-darken-1">
+                      <div class="font-weight-bold font-mono text-body-1 text-indigo">
                         {{ formatCurrency(systemBalances.guayaquil) }}
                       </div>
                     </td>
                     <td class="py-3 px-3 text-center">
-                      <div class="font-weight-bold font-mono text-body-1 text-success-darken-1">
+                      <div class="font-weight-black font-mono text-body-1 text-success">
                         {{ formatCurrency(payload.guayaquil_total) }}
                       </div>
                     </td>
@@ -691,17 +667,17 @@ onMounted(() => {
 
                 <!-- Pie de tabla con Totales -->
                 <tfoot>
-                  <tr class="bg-grey-100 border-t">
-                    <td class="py-3 px-4 font-weight-black text-grey-darken-4 text-uppercase">
+                  <tr class="bg-slate-100 border-t">
+                    <td class="py-3 px-4 font-weight-black text-slate-900 text-uppercase">
                       TOTAL GENERAL
                     </td>
                     <td class="py-3 px-3 text-center font-weight-black font-mono text-body-1 text-primary">
                       {{ formatCurrency(initialBalances.total) }}
                     </td>
-                    <td class="py-3 px-3 text-center font-weight-black font-mono text-body-1 text-indigo-darken-2">
+                    <td class="py-3 px-3 text-center font-weight-black font-mono text-body-1 text-indigo">
                       {{ formatCurrency(systemBalances.cash + systemBalances.pichincha + systemBalances.guayaquil) }}
                     </td>
-                    <td class="py-3 px-3 text-center font-weight-black font-mono text-body-1 text-success-darken-2">
+                    <td class="py-3 px-3 text-center font-weight-black font-mono text-body-1 text-success">
                       {{ formatCurrency(grandTotal) }}
                     </td>
                   </tr>
@@ -711,22 +687,30 @@ onMounted(() => {
           </VCard>
         </VCol>
 
-        <!-- Columna Derecha (3/12) - Resumen de Cuadre -->
-        <VCol cols="12" md="3">
-          <VCard elevation="2" class="rounded-xl d-flex flex-column h-100 border-light border overflow-hidden">
-            <VCardItem class="bg-grey-50 py-3 text-center border-b">
-              <VCardTitle class="text-subtitle-1 font-weight-black text-grey-darken-3 text-uppercase">
-                Resumen de Cuadre
-              </VCardTitle>
+        <!-- Columna Derecha (4 cols): Resumen de Cuadre -->
+        <VCol cols="12" md="4">
+          <VCard elevation="1" class="rounded-xl d-flex flex-column h-100 border-light overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-2">
+                  <VAvatar color="primary" variant="tonal" size="32" class="rounded-lg">
+                    <VIcon icon="ri-dashboard-3-line" size="18" />
+                  </VAvatar>
+                  <span class="text-subtitle-1 font-weight-bold text-slate-900 text-uppercase">
+                    Resumen de Cuadre
+                  </span>
+                </div>
+              </template>
             </VCardItem>
+
             <VCardText class="pa-4 d-flex flex-column flex-grow-1 justify-space-around gap-3">
               <!-- Conteo Físico Total -->
-              <div class="d-flex justify-space-between align-center">
+              <div class="d-flex justify-space-between align-center pa-2 rounded-lg bg-slate-50">
                 <div>
-                  <div class="font-weight-bold text-body-2 text-grey-darken-3">
+                  <div class="font-weight-bold text-body-2 text-slate-900">
                     Total Físico Hoy
                   </div>
-                  <div class="text-caption text-grey">
+                  <div class="text-caption text-medium-emphasis">
                     (Arqueo ingresado)
                   </div>
                 </div>
@@ -735,77 +719,78 @@ onMounted(() => {
                 </div>
               </div>
 
-              <VDivider />
-
               <!-- Saldo Teórico en Sistema -->
-              <div class="d-flex justify-space-between align-center">
+              <div class="d-flex justify-space-between align-center pa-2 rounded-lg bg-slate-50">
                 <div>
-                  <div class="font-weight-bold text-body-2 text-grey-darken-3">
+                  <div class="font-weight-bold text-body-2 text-slate-900">
                     Total en Cartera
                   </div>
-                  <div class="text-caption text-grey">
+                  <div class="text-caption text-medium-emphasis">
                     (Saldo en Sistema)
                   </div>
                 </div>
-                <div class="text-body-1 font-weight-black font-mono text-grey-darken-3">
+                <div class="text-body-1 font-weight-black font-mono text-slate-800">
                   {{ formatCurrency(systemBalances.cash + systemBalances.pichincha + systemBalances.guayaquil) }}
                 </div>
               </div>
 
-              <VDivider />
-
               <!-- Diferencia (Alerta Cuadrado / Descuadre) -->
-              <div class="pa-3 rounded-lg border text-center"
-                :class="Math.abs(totalDifferenceSystem) < 0.01 ? 'bg-success-lighten-5 border-success text-success-darken-3' : 'bg-error-lighten-5 border-error text-error-darken-3'">
-                <div class="font-weight-bold text-caption text-uppercase mb-1">
-                  {{ Math.abs(totalDifferenceSystem) < 0.01 ? '✓ Arqueo Cuadrado' : '⚠ Diferencia con Sistema' }} </div>
-                    <div class="text-h5 font-weight-black font-mono">
-                      {{ formatCurrency(totalDifferenceSystem) }}
-                    </div>
-                    <div class="text-caption text-grey-darken-1 mt-1 font-weight-medium">
-                      {{ Math.abs(totalDifferenceSystem) < 0.01 ? 'Sin diferencias registradas' :
-                        (totalDifferenceSystem > 0 ?
-                          'Sobrante en caja' : 'Faltante en caja') }}
-                    </div>
+              <div
+                class="pa-4 rounded-xl text-center"
+                :class="Math.abs(totalDifferenceSystem) < 0.01 ? 'bg-success-tonal border-success' : 'bg-error-tonal border-error'"
+              >
+                <div class="font-weight-bold text-caption text-uppercase mb-1" :class="Math.abs(totalDifferenceSystem) < 0.01 ? 'text-success' : 'text-error'">
+                  {{ Math.abs(totalDifferenceSystem) < 0.01 ? '✓ Arqueo Cuadrado' : '⚠ Diferencia con Sistema' }}
                 </div>
+                <div class="text-h5 font-weight-black font-mono" :class="Math.abs(totalDifferenceSystem) < 0.01 ? 'text-success' : 'text-error'">
+                  {{ formatCurrency(totalDifferenceSystem) }}
+                </div>
+                <div class="text-caption text-slate-600 mt-1 font-weight-medium">
+                  {{ Math.abs(totalDifferenceSystem) < 0.01 ? 'Sin diferencias registradas' :
+                    (totalDifferenceSystem > 0 ? 'Sobrante en caja' : 'Faltante en caja') }}
+                </div>
+              </div>
             </VCardText>
           </VCard>
         </VCol>
       </VRow>
 
-      <!-- Main Form Grid -->
+      <!-- Fila 2: Desglose Físico (8 cols) + Cuentas y Observaciones (4 cols) -->
       <VRow>
-        <!-- Left: Physical Cash Breakdown -->
+        <!-- Desglose Físico de Efectivo -->
         <VCol cols="12" md="8">
-          <VCard elevation="0" class="rounded-lg border-light border h-100">
-            <VCardItem class="bg-grey-lighten-4 py-3 border-b">
+          <VCard elevation="1" class="rounded-xl border-light h-100 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-coins-line" color="primary" size="20" />
-                  <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Desglose Físico de Efectivo (Caja
-                    Chica)</span>
+                  <VAvatar color="primary" variant="tonal" size="32" class="rounded-lg">
+                    <VIcon icon="ri-coins-line" size="18" />
+                  </VAvatar>
+                  <span class="font-weight-bold text-subtitle-1 text-slate-900">
+                    Desglose Físico de Efectivo (Caja Chica)
+                  </span>
                 </div>
               </template>
             </VCardItem>
 
             <VCardText class="pa-4 bg-white">
               <VRow>
-                <!-- Bills Column -->
+                <!-- Columna Billetes -->
                 <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
                   <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
                     <VIcon icon="ri-bill-line" color="primary" size="18" />
-                    <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Billetes</span>
+                    <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Billetes</span>
                   </div>
                   <table class="w-100 table-cash text-uppercase">
                     <thead>
                       <tr>
-                        <th class="text-left py-1 text-grey-darken-1 text-caption">
+                        <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
                           Denom.
                         </th>
-                        <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">
+                        <th class="text-center py-1 text-slate-500 text-caption font-weight-bold" style="width: 110px;">
                           Cant.
                         </th>
-                        <th class="text-right py-1 text-grey-darken-1 text-caption">
+                        <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
                           Subtotal
                         </th>
                       </tr>
@@ -813,19 +798,23 @@ onMounted(() => {
                     <tbody>
                       <tr v-for="denom in billsList" :key="`bill-${denom}`">
                         <td class="py-2 text-body-1 font-weight-medium">
-                          <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2"
-                            style="width: 55px; justify-content: center;">
+                          <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
                             ${{ denom }}
                           </VChip>
                         </td>
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
-                            <input v-model.number="payload.cash_details.bills[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading || isSealed"
-                              @focus="$event.target.select()">
+                            <input
+                              v-model.number="payload.cash_details.bills[denom]"
+                              type="number"
+                              min="0"
+                              class="cash-qty-input"
+                              :disabled="saving || loading || isSealed"
+                              @focus="$event.target.select()"
+                            >
                           </div>
                         </td>
-                        <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                        <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
                           {{ formatCurrency(denom * (parseInt(payload.cash_details.bills[denom]) || 0)) }}
                         </td>
                       </tr>
@@ -833,22 +822,22 @@ onMounted(() => {
                   </table>
                 </VCol>
 
-                <!-- Coins Column -->
+                <!-- Columna Monedas -->
                 <VCol cols="12" sm="6" class="pl-sm-4">
                   <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                    <VIcon icon="ri-coins-line" color="primary" size="18" />
-                    <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Monedas</span>
+                    <VIcon icon="ri-coins-line" color="secondary" size="18" />
+                    <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Monedas</span>
                   </div>
                   <table class="w-100 table-cash text-uppercase">
                     <thead>
                       <tr>
-                        <th class="text-left py-1 text-grey-darken-1 text-caption">
+                        <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
                           Denom.
                         </th>
-                        <th class="text-center py-1 text-grey-darken-1 text-caption" style="width: 110px;">
+                        <th class="text-center py-1 text-slate-500 text-caption font-weight-bold" style="width: 110px;">
                           Cant.
                         </th>
-                        <th class="text-right py-1 text-grey-darken-1 text-caption">
+                        <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
                           Subtotal
                         </th>
                       </tr>
@@ -856,19 +845,23 @@ onMounted(() => {
                     <tbody>
                       <tr v-for="denom in coinsList" :key="`coin-${denom}`">
                         <td class="py-2 text-body-1 font-weight-medium">
-                          <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2"
-                            style="width: 55px; justify-content: center;">
+                          <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
                             ${{ denom }}
                           </VChip>
                         </td>
                         <td class="py-1">
                           <div class="d-flex align-center justify-center">
-                            <input v-model.number="payload.cash_details.coins[denom]" type="number" min="0"
-                              class="cash-qty-input" :disabled="saving || loading || isSealed"
-                              @focus="$event.target.select()">
+                            <input
+                              v-model.number="payload.cash_details.coins[denom]"
+                              type="number"
+                              min="0"
+                              class="cash-qty-input"
+                              :disabled="saving || loading || isSealed"
+                              @focus="$event.target.select()"
+                            >
                           </div>
                         </td>
-                        <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                        <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
                           {{ formatCurrency(parseFloat(denom) * (parseInt(payload.cash_details.coins[denom]) || 0)) }}
                         </td>
                       </tr>
@@ -877,33 +870,32 @@ onMounted(() => {
                 </VCol>
               </VRow>
 
-              <!-- Total Cash Box section with live system comparison -->
-              <div class="total-cash-panel mt-4 pa-4 rounded-lg bg-grey-lighten-4">
+              <!-- Panel Subtotal Efectivo -->
+              <div class="total-cash-panel mt-4 pa-4 rounded-xl bg-slate-50 border">
                 <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-2">
                   <div class="d-flex flex-column">
-                    <span class="text-caption font-weight-bold text-grey-darken-1 text-uppercase">Subtotales de
-                      Efectivo</span>
-                    <span class="text-body-2 text-grey-darken-3">
-                      Billetes: <strong class="font-mono">{{ formatCurrency(totalBills) }}</strong> |
-                      Monedas: <strong class="font-mono">{{ formatCurrency(totalCoins) }}</strong>
+                    <span class="text-caption font-weight-bold text-slate-500 text-uppercase">Subtotales de Efectivo</span>
+                    <span class="text-body-2 text-slate-800">
+                      Billetes: <strong class="font-mono text-slate-900">{{ formatCurrency(totalBills) }}</strong> |
+                      Monedas: <strong class="font-mono text-slate-900">{{ formatCurrency(totalCoins) }}</strong>
                     </span>
                   </div>
                   <div class="d-flex align-center gap-3">
-                    <span class="text-h6 font-weight-black text-grey-darken-3 text-uppercase">Físico Contado:</span>
-                    <span class="text-h5 font-weight-black text-success font-mono">{{ formatCurrency(totalCash)
-                    }}</span>
+                    <span class="text-h6 font-weight-black text-slate-900 text-uppercase">Físico Contado:</span>
+                    <span class="text-h5 font-weight-black text-success font-mono">{{ formatCurrency(totalCash) }}</span>
                   </div>
                 </div>
                 <div class="d-flex justify-space-between align-center pt-2 border-t flex-wrap gap-2">
-                  <span class="text-caption font-weight-medium text-grey-darken-1">
+                  <span class="text-caption font-weight-medium text-slate-600">
                     Saldo Teórico del Sistema (Caja Chica):
-                    <strong class="font-mono text-grey-darken-4">{{ formatCurrency(systemBalances.cash) }}</strong>
+                    <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.cash) }}</strong>
                   </span>
-                  <span class="text-caption font-weight-bold"
-                    :class="cashDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                  <span
+                    class="text-caption font-weight-bold"
+                    :class="cashDifference >= 0 ? 'text-success' : 'text-error'"
+                  >
                     Diferencia Caja:
-                    <strong class="font-mono">{{ cashDifference > 0 ? '+' : '' }}{{ formatCurrency(cashDifference)
-                    }}</strong>
+                    <strong class="font-mono">{{ cashDifference > 0 ? '+' : '' }}{{ formatCurrency(cashDifference) }}</strong>
                   </span>
                 </div>
               </div>
@@ -911,57 +903,82 @@ onMounted(() => {
           </VCard>
         </VCol>
 
-        <!-- Right: Banks, Notes, Summary and Actions -->
+        <!-- Saldos Bancarios y Acciones -->
         <VCol cols="12" md="4">
-          <div class="d-flex flex-column gap-6 h-100 justify-space-between">
+          <div class="d-flex flex-column gap-5 h-100 justify-space-between">
             <!-- Cuentas Bancarias -->
-            <VCard elevation="0" class="rounded-lg border-light border">
-              <VCardItem class="bg-grey-lighten-4 py-3 border-b">
+            <VCard elevation="1" class="rounded-xl border-light overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-bank-line" color="primary" size="20" />
-                    <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Saldos en Cuentas
-                      Bancarias</span>
+                    <VAvatar color="primary" variant="tonal" size="32" class="rounded-lg">
+                      <VIcon icon="ri-bank-line" size="18" />
+                    </VAvatar>
+                    <span class="font-weight-bold text-subtitle-1 text-slate-900">
+                      Saldos Bancarios
+                    </span>
                   </div>
                 </template>
               </VCardItem>
-              <VCardText class="pa-4 bg-white d-flex flex-column gap-4 text-uppercase">
-                <!-- Pichincha Input & Comparison -->
+              <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
+                <!-- Pichincha -->
                 <div>
                   <div class="d-flex justify-space-between align-center mb-1">
-                    <label class="text-caption font-weight-bold text-grey-darken-2">Banco Pichincha ($)</label>
-                    <span class="text-caption font-weight-medium text-grey-darken-1">
-                      Sistema: <strong class="font-mono text-grey-darken-4">{{
-                        formatCurrency(systemBalances.pichincha)
-                      }}</strong>
+                    <label class="text-caption font-weight-bold text-slate-800">Banco Pichincha ($)</label>
+                    <span class="text-caption font-weight-medium text-slate-500">
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha) }}</strong>
                     </span>
                   </div>
-                  <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
-                    prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading || isSealed"
-                    @focus="$event.target.select()" />
-                  <div class="text-right text-caption mt-1 font-weight-bold"
-                    :class="pichinchaDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                  <VTextField
+                    v-model.number="pichinchaVal"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    prepend-inner-icon="ri-bank-card-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    class="bank-input"
+                    :disabled="saving || loading || isSealed"
+                    @focus="$event.target.select()"
+                  />
+                  <div
+                    class="text-right text-caption mt-1 font-weight-bold"
+                    :class="pichinchaDifference >= 0 ? 'text-success' : 'text-error'"
+                  >
                     Dif: {{ pichinchaDifference > 0 ? '+' : '' }}{{ formatCurrency(pichinchaDifference) }}
                   </div>
                 </div>
 
-                <!-- Guayaquil Input & Comparison -->
+                <!-- Guayaquil -->
                 <div>
                   <div class="d-flex justify-space-between align-center mb-1">
-                    <label class="text-caption font-weight-bold text-grey-darken-2">Banco Guayaquil ($)</label>
-                    <span class="text-caption font-weight-medium text-grey-darken-1">
-                      Sistema: <strong class="font-mono text-grey-darken-4">{{
-                        formatCurrency(systemBalances.guayaquil)
-                      }}</strong>
+                    <label class="text-caption font-weight-bold text-slate-800">Banco Guayaquil ($)</label>
+                    <span class="text-caption font-weight-medium text-slate-500">
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil) }}</strong>
                     </span>
                   </div>
-                  <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
-                    prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
-                    color="primary" class="bank-input" :disabled="saving || loading || isSealed"
-                    @focus="$event.target.select()" />
-                  <div class="text-right text-caption mt-1 font-weight-bold"
-                    :class="guayaquilDifference >= 0 ? 'text-success-dark' : 'text-error-dark'">
+                  <VTextField
+                    v-model.number="guayaquilVal"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    prepend-inner-icon="ri-bank-card-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    class="bank-input"
+                    :disabled="saving || loading || isSealed"
+                    @focus="$event.target.select()"
+                  />
+                  <div
+                    class="text-right text-caption mt-1 font-weight-bold"
+                    :class="guayaquilDifference >= 0 ? 'text-success' : 'text-error'"
+                  >
                     Dif: {{ guayaquilDifference > 0 ? '+' : '' }}{{ formatCurrency(guayaquilDifference) }}
                   </div>
                 </div>
@@ -969,49 +986,76 @@ onMounted(() => {
             </VCard>
 
             <!-- Observaciones -->
-            <VCard elevation="0" class="rounded-lg border-light border">
-              <VCardItem class="bg-grey-lighten-4 py-3 border-b">
+            <VCard elevation="1" class="rounded-xl border-light overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-file-text-line" color="primary" size="20" />
-                    <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Observaciones / Novedades</span>
+                    <VAvatar color="secondary" variant="tonal" size="32" class="rounded-lg">
+                      <VIcon icon="ri-file-text-line" size="18" />
+                    </VAvatar>
+                    <span class="font-weight-bold text-subtitle-1 text-slate-900">Observaciones</span>
                   </div>
                 </template>
               </VCardItem>
-              <VCardText class="pa-4 bg-white text-uppercase">
-                <VTextarea v-model="payload.observations" label="Describa diferencias o novedades..." rows="3"
-                  variant="outlined" density="comfortable" hide-details="auto" color="primary"
-                  :disabled="saving || loading || isSealed" />
+              <VCardText class="pa-4 bg-white">
+                <VTextarea
+                  v-model="payload.observations"
+                  label="Describa diferencias o novedades..."
+                  rows="2"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details="auto"
+                  color="primary"
+                  :disabled="saving || loading || isSealed"
+                />
               </VCardText>
             </VCard>
-            <VCardActions class="pa-4 bg-grey-lighten-5 border-t d-flex flex-column gap-2">
-              <VBtn block variant="flat" color="primary" class="text-none font-weight-bold text-white m-0"
-                :loading="saving" :disabled="saving || sealing || loading || isSealed" @click="saveArqueo">
-                <VIcon start>
-                  ri-save-3-line
-                </VIcon>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex flex-column gap-2">
+              <VBtn
+                block
+                variant="elevated"
+                color="primary"
+                size="large"
+                class="font-weight-bold elevation-2"
+                :loading="saving"
+                :disabled="saving || sealing || loading || isSealed"
+                prepend-icon="ri-save-3-line"
+                @click="saveArqueo"
+              >
                 GUARDAR ARQUEO DIARIO
               </VBtn>
-              <VBtn block variant="flat" color="success" class="text-none font-weight-bold text-white m-0"
-                :loading="sealing" :disabled="sealing || saving || loading || isSealed"
-                @click="confirmSealDialog = true">
-                <VIcon start>
-                  ri-lock-password-line
-                </VIcon>
+              <VBtn
+                block
+                variant="elevated"
+                color="success"
+                size="large"
+                class="font-weight-bold elevation-2"
+                :loading="sealing"
+                :disabled="sealing || saving || loading || isSealed"
+                prepend-icon="ri-lock-password-line"
+                @click="confirmSealDialog = true"
+              >
                 SELLAR DÍA
               </VBtn>
-            </VCardActions>
+            </div>
           </div>
         </VCol>
       </VRow>
-      <!-- Confirmación de sellado -->
-      <!-- Confirmación de sellado -->
+
+      <!-- Diálogo de Confirmación de Sellado -->
       <VDialog v-model="confirmSealDialog" scrollable persistent max-width="480">
         <VCard class="custom-dialog-card elevation-24">
-          <!-- Header Banner Primary -->
           <div class="custom-dialog-header-primary">
-            <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" :disabled="sealing"
-              @click="confirmSealDialog = false" />
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              class="custom-dialog-close-btn"
+              :disabled="sealing"
+              @click="confirmSealDialog = false"
+            />
             <div class="custom-dialog-avatar">
               <VIcon icon="ri-lock-password-line" />
             </div>
@@ -1029,29 +1073,48 @@ onMounted(() => {
 
           <VDivider />
 
-          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-            style="position: sticky; bottom: 0; z-index: 2;">
-            <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
-              class="rounded-lg px-6 font-weight-medium" height="40" :disabled="sealing"
-              @click="confirmSealDialog = false">
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
+          >
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
+              :disabled="sealing"
+              @click="confirmSealDialog = false"
+            >
               Cancelar
             </VBtn>
-            <VBtn color="success" variant="elevated" prepend-icon="ri-check-line"
-              class="rounded-lg px-6 font-weight-bold" height="40" :loading="sealing" :disabled="sealing"
-              @click="confirmSeal">
+            <VBtn
+              color="success"
+              variant="elevated"
+              prepend-icon="ri-check-line"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
+              :loading="sealing"
+              :disabled="sealing"
+              @click="confirmSeal"
+            >
               Confirmar Sellado
             </VBtn>
           </VCardActions>
         </VCard>
       </VDialog>
 
-      <!-- Diálogo para ver desglose del día anterior -->
+      <!-- Diálogo de Desglose Día Anterior -->
       <VDialog v-model="prevCountDetailsDialog" scrollable max-width="600">
         <VCard class="custom-dialog-card elevation-24">
-          <!-- Header Banner Primary -->
           <div class="custom-dialog-header-primary">
-            <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
-              @click="prevCountDetailsDialog = false" />
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              class="custom-dialog-close-btn"
+              @click="prevCountDetailsDialog = false"
+            />
             <div class="custom-dialog-avatar">
               <VIcon icon="ri-history-line" />
             </div>
@@ -1069,18 +1132,18 @@ onMounted(() => {
               <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
                 <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
                   <VIcon icon="ri-bill-line" color="primary" size="18" />
-                  <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Billetes</span>
+                  <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Billetes</span>
                 </div>
                 <table class="w-100 table-cash text-uppercase">
                   <thead>
                     <tr>
-                      <th class="text-left py-1 text-grey-darken-1 text-caption">
+                      <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
                         Denom.
                       </th>
-                      <th class="text-center py-1 text-grey-darken-1 text-caption">
+                      <th class="text-center py-1 text-slate-500 text-caption font-weight-bold">
                         Cant.
                       </th>
-                      <th class="text-right py-1 text-grey-darken-1 text-caption">
+                      <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
                         Subtotal
                       </th>
                     </tr>
@@ -1088,15 +1151,14 @@ onMounted(() => {
                   <tbody>
                     <tr v-for="denom in billsList" :key="`prev-bill-${denom}`">
                       <td class="py-2">
-                        <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2"
-                          style="width: 55px; justify-content: center;">
+                        <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
                           ${{ denom }}
                         </VChip>
                       </td>
-                      <td class="py-2 text-center font-weight-bold font-mono">
+                      <td class="py-2 text-center font-weight-bold font-mono text-slate-800">
                         {{ getPrevBillQty(denom) }}
                       </td>
-                      <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                      <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
                         {{ formatCurrency(denom * getPrevBillQty(denom)) }}
                       </td>
                     </tr>
@@ -1107,19 +1169,19 @@ onMounted(() => {
               <!-- Monedas -->
               <VCol cols="12" sm="6" class="pl-sm-4">
                 <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                  <VIcon icon="ri-coins-line" color="primary" size="18" />
-                  <span class="font-weight-bold text-subtitle-2 text-grey-darken-3 text-uppercase">Monedas</span>
+                  <VIcon icon="ri-coins-line" color="secondary" size="18" />
+                  <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Monedas</span>
                 </div>
                 <table class="w-100 table-cash text-uppercase">
                   <thead>
                     <tr>
-                      <th class="text-left py-1 text-grey-darken-1 text-caption">
+                      <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
                         Denom.
                       </th>
-                      <th class="text-center py-1 text-grey-darken-1 text-caption">
+                      <th class="text-center py-1 text-slate-500 text-caption font-weight-bold">
                         Cant.
                       </th>
-                      <th class="text-right py-1 text-grey-darken-1 text-caption">
+                      <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
                         Subtotal
                       </th>
                     </tr>
@@ -1127,15 +1189,14 @@ onMounted(() => {
                   <tbody>
                     <tr v-for="denom in coinsList" :key="`prev-coin-${denom}`">
                       <td class="py-2">
-                        <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2"
-                          style="width: 55px; justify-content: center;">
+                        <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
                           ${{ denom }}
                         </VChip>
                       </td>
-                      <td class="py-2 text-center font-weight-bold font-mono">
+                      <td class="py-2 text-center font-weight-bold font-mono text-slate-800">
                         {{ getPrevCoinQty(denom) }}
                       </td>
-                      <td class="py-2 text-right font-weight-bold font-mono text-grey-darken-3">
+                      <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
                         {{ formatCurrency(parseFloat(denom) * getPrevCoinQty(denom)) }}
                       </td>
                     </tr>
@@ -1147,9 +1208,8 @@ onMounted(() => {
             <VDivider class="my-4" />
 
             <div class="d-flex justify-space-between align-center px-2 py-1">
-              <span class="font-weight-bold text-subtitle-1 text-grey-darken-3">Total Efectivo Día Anterior:</span>
-              <span class="text-h6 font-weight-black text-success font-mono">{{ formatCurrency(initialBalances.cash)
-              }}</span>
+              <span class="font-weight-bold text-subtitle-1 text-slate-900">Total Efectivo Día Anterior:</span>
+              <span class="text-h6 font-weight-black text-success font-mono">{{ formatCurrency(initialBalances.cash) }}</span>
             </div>
           </VCardText>
 
@@ -1164,10 +1224,18 @@ onMounted(() => {
           </VCardText>
 
           <VDivider />
-          <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-            style="position: sticky; bottom: 0; z-index: 2;">
-            <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
-              class="rounded-lg px-6 font-weight-medium" height="40" @click="prevCountDetailsDialog = false">
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
+          >
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
+              @click="prevCountDetailsDialog = false"
+            >
               Cerrar
             </VBtn>
           </VCardActions>
@@ -1176,80 +1244,6 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-
-
-<style scoped>
-.arqueo-summary-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-}
-
-.arqueo-summary-table th {
-  letter-spacing: 0.5px;
-  background-color: #f8fafc !important;
-  border-bottom: 2px solid #e2e8f0 !important;
-}
-
-.arqueo-summary-table td {
-  border-bottom: 1px solid #f1f5f9 !important;
-}
-
-.arqueo-summary-table tbody tr:hover {
-  background-color: #f8faff !important;
-}
-
-.arqueo-summary-table tfoot td {
-  background-color: #f1f5f9 !important;
-  border-top: 2px solid #cbd5e1 !important;
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
 
 <route lang="yaml">
 meta:
