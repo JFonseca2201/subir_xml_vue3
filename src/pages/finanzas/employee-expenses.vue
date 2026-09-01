@@ -627,10 +627,10 @@ onMounted(() => {
             </div>
           </div>
         </template>
-        <!-- Slot: TIPO / REGISTRO (Diseño Chévere y Moderno) -->
+        <!-- Slot: TIPO / REGISTRO (Diseño Chévere y Espaciado) -->
         <template #item.type="{ item }">
           <!-- 1. Caso: PAGO DE NÓMINA / ROL DE PAGOS -->
-          <div v-if="item.type === 'payment'" class="d-flex align-center gap-3.5 py-1 pe-4">
+          <div v-if="item.type === 'payment'" class="d-flex align-center py-1.5" style="gap: 14px;">
             <VAvatar
               size="40"
               color="success"
@@ -643,18 +643,18 @@ onMounted(() => {
               <span class="font-weight-bold text-slate-900 text-body-2 leading-tight">
                 Rol de Pagos
               </span>
-              <span v-if="item.payment_month" class="text-caption font-weight-bold text-primary d-flex align-center gap-1 mt-0.5">
-                <VIcon icon="ri-calendar-event-line" size="13" />
+              <span v-if="item.payment_month" class="text-caption font-weight-bold text-primary d-flex align-center mt-1" style="gap: 5px;">
+                <VIcon icon="ri-calendar-event-line" size="14" />
                 {{ formatMonthLabel(item.payment_month) }}
               </span>
-              <span v-else class="text-caption text-medium-emphasis mt-0.5">
+              <span v-else class="text-caption text-medium-emphasis mt-1">
                 Liquidación
               </span>
             </div>
           </div>
 
           <!-- 2. Caso: ADELANTO LIQUIDADO / DEDUCIDO -->
-          <div v-else-if="item.is_deducted" class="d-flex align-center gap-3.5 py-1 pe-4">
+          <div v-else-if="item.is_deducted" class="d-flex align-center py-1.5" style="gap: 14px;">
             <VAvatar
               size="40"
               color="secondary"
@@ -667,15 +667,15 @@ onMounted(() => {
               <span class="font-weight-bold text-slate-700 text-body-2 leading-tight">
                 Adelanto
               </span>
-              <span class="text-caption font-weight-semibold text-success d-flex align-center gap-1 mt-0.5">
-                <VIcon icon="ri-check-line" size="13" />
+              <span class="text-caption font-weight-semibold text-success d-flex align-center mt-1" style="gap: 5px;">
+                <VIcon icon="ri-check-line" size="14" />
                 Liquidado en Rol
               </span>
             </div>
           </div>
 
           <!-- 3. Caso: ADELANTO PENDIENTE DE COBRO -->
-          <div v-else class="d-flex align-center gap-3.5 py-1 pe-4">
+          <div v-else class="d-flex align-center py-1.5" style="gap: 14px;">
             <VAvatar
               size="40"
               color="warning"
@@ -688,8 +688,8 @@ onMounted(() => {
               <span class="font-weight-bold text-slate-800 text-body-2 leading-tight">
                 Adelanto
               </span>
-              <span class="text-caption font-weight-semibold text-warning d-flex align-center gap-1 mt-0.5">
-                <VIcon icon="ri-time-line" size="13" />
+              <span class="text-caption font-weight-semibold text-warning d-flex align-center mt-1" style="gap: 5px;">
+                <VIcon icon="ri-time-line" size="14" />
                 Por Deducir
               </span>
             </div>
@@ -698,7 +698,7 @@ onMounted(() => {
 
         <!-- Slot: EMPLEADO -->
         <template #item.employee_name="{ item }">
-          <div class="d-flex align-center gap-3 py-1 ps-2">
+          <div class="d-flex align-center py-1.5" style="gap: 14px;">
             <VAvatar
               size="36"
               color="primary"
@@ -707,7 +707,7 @@ onMounted(() => {
             >
               <VIcon icon="ri-user-3-line" size="20" />
             </VAvatar>
-            <div class="d-flex flex-column">
+            <div class="d-flex flex-column text-left">
               <span class="font-weight-bold text-slate-800 text-body-2">
                 {{ item.employee_name }}
               </span>
