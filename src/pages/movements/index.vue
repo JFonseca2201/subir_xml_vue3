@@ -1382,7 +1382,7 @@ onMounted(() => {
               <!-- OT / Factura -->
               <td class="py-3">
                 <span
-                  class="text-body-2 font-weight-bold text-high-emphasis cursor-pointer"
+                  class="text-body-2 font-weight-black text-slate-900 cursor-pointer"
                   title="Clic para ver nota completa y comprobantes"
                   @click="openMovementNoteDialog(movement)"
                 >
@@ -1392,43 +1392,59 @@ onMounted(() => {
 
               <!-- Tipo (Ingreso vs Egreso) -->
               <td class="py-3">
-                <span
+                <VChip
                   v-if="movement.type === 0 || movement.type === 'income'"
-                  class="text-success font-weight-bold text-caption text-uppercase"
+                  color="success"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold text-uppercase"
                 >
-                  INGRESO
-                </span>
-                <span
+                  <VIcon start icon="ri-arrow-down-line" size="14" />
+                  Ingreso
+                </VChip>
+                <VChip
                   v-else-if="movement.type === 1 || movement.type === 'expense'"
-                  class="text-error font-weight-bold text-caption text-uppercase"
+                  color="error"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold text-uppercase"
                 >
-                  EGRESO
-                </span>
-                <span
+                  <VIcon start icon="ri-arrow-up-line" size="14" />
+                  Egreso
+                </VChip>
+                <VChip
                   v-else-if="movement.type === 'transfer'"
-                  class="text-info font-weight-bold text-caption text-uppercase"
+                  color="info"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold text-uppercase"
                 >
-                  TRANSFERENCIA
-                </span>
-                <span
+                  <VIcon start icon="ri-arrow-left-right-line" size="14" />
+                  Transferencia
+                </VChip>
+                <VChip
                   v-else
-                  class="text-medium-emphasis font-weight-bold text-caption"
+                  color="secondary"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold text-uppercase"
                 >
                   {{ movement.type }}
-                </span>
+                </VChip>
               </td>
 
               <!-- Descripción & Fecha -->
               <td class="py-3">
                 <div
-                  class="d-flex flex-column cursor-pointer"
+                  class="d-flex flex-column cursor-pointer text-left"
                   title="Clic para ver nota completa y comprobantes"
                   @click="openMovementNoteDialog(movement)"
                 >
-                  <span class="text-body-2 font-weight-medium text-high-emphasis">
+                  <span class="text-body-2 font-weight-bold text-slate-900 mb-0.5">
                     {{ movement.description || 'Sin descripción' }}
                   </span>
-                  <span class="text-caption text-medium-emphasis">
+                  <span class="text-caption text-medium-emphasis d-flex align-center gap-1 font-weight-medium">
+                    <VIcon icon="ri-calendar-line" size="12" class="text-slate-400" />
                     {{ formatDate(movement.entry_date) }}
                   </span>
                 </div>
@@ -1495,7 +1511,7 @@ onMounted(() => {
                     variant="tonal"
                     color="secondary"
                     prepend-icon="ri-attachment-line"
-                    class="text-caption text-none"
+                    class="text-caption text-none font-weight-medium"
                     @click="openAttachDialog(movement)"
                   >
                     Adjuntar
@@ -1511,31 +1527,36 @@ onMounted(() => {
 
               <!-- Cuenta & Método -->
               <td class="py-3">
-                <div class="d-flex flex-column gap-0.5">
-                  <div class="d-flex align-center gap-1">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar
+                    size="32"
+                    color="primary"
+                    variant="tonal"
+                    class="rounded-lg shrink-0"
+                  >
                     <VIcon
                       size="16"
-                      color="primary"
-                    >
-                      ri-bank-line
-                    </VIcon>
-                    <span class="text-body-2 font-weight-medium text-high-emphasis">
+                      icon="ri-bank-line"
+                    />
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left">
+                    <span class="text-body-2 font-weight-bold text-slate-900">
                       {{ getAccountName(movement) }}
                     </span>
+                    <span
+                      class="text-medium-emphasis font-weight-semibold text-uppercase"
+                      style="font-size: 10px !important;"
+                    >
+                      {{ getPaymentMethod(movement, accounts) }}
+                    </span>
                   </div>
-                  <span
-                    class="text-medium-emphasis font-weight-medium ps-5 text-uppercase"
-                    style="font-size: 10px !important;"
-                  >
-                    {{ getPaymentMethod(movement, accounts) }}
-                  </span>
                 </div>
               </td>
 
               <!-- Monto -->
               <td class="py-3 text-right">
                 <span
-                  class="text-subtitle-1 font-weight-extrabold me-1"
+                  class="text-subtitle-1 font-weight-black me-1"
                   :class="(movement.type === 0 || movement.type === 'income') ? 'text-success' : ((movement.type === 1 || movement.type === 'expense') ? 'text-error' : 'text-info')"
                 >
                   {{ (movement.type === 0 || movement.type === 'income') ? '+' : ((movement.type === 1 || movement.type
