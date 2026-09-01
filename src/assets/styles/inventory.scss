@@ -6462,3 +6462,92 @@
 .text-white-70 {
     color: rgba(255, 255, 255, 0.8) !important;
 }
+
+// ============================================
+// TRANSFERS MODULE
+// ============================================
+
+.transfers-page {
+    .sticky-header {
+        position: sticky;
+        top: 62px;
+        z-index: 99;
+        background-color: rgb(var(--v-theme-surface)) !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease;
+
+        @media (min-width: 960px) {
+            top: 70px;
+        }
+    }
+}
+
+.transfer-route-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.transfer-account-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    &.source {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+    }
+
+    &.dest {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+    }
+}
+
+.transfer-flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    flex-shrink: 0;
+}
+
+.transfer-date-header-row {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+
+    td {
+        padding: 10px 18px !important;
+    }
+}
+
+.transfer-row {
+    transition: background-color 0.15s ease;
+
+    &:hover td {
+        background-color: #f8fafc !important;
+    }
+
+    td {
+        padding: 14px 18px !important;
+        vertical-align: middle !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+}

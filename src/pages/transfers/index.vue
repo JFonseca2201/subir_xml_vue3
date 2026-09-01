@@ -628,22 +628,22 @@ onMounted(() => {
         <thead>
           <tr>
             <th
-              class="text-left py-3"
-              style="min-width: 320px;"
+              class="text-left py-4"
+              style="min-width: 380px;"
             >
               FLUJO DE LA TRANSFERENCIA
             </th>
-            <th class="text-left py-3">
+            <th class="text-left py-4" style="min-width: 240px;">
               DESCRIPCIÓN & FECHA
             </th>
             <th
-              class="text-right py-3"
+              class="text-right py-4"
               style="width: 160px;"
             >
               MONTO
             </th>
             <th
-              class="text-center py-3"
+              class="text-center py-4"
               style="width: 120px;"
             >
               ACCIONES
@@ -715,37 +715,42 @@ onMounted(() => {
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
               <td colspan="4">
-                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                   <div class="d-flex align-center gap-3">
                     <VAvatar
                       color="primary"
                       variant="tonal"
-                      size="32"
-                      rounded="lg"
+                      size="36"
+                      class="rounded-lg"
                     >
                       <VIcon
                         icon="ri-calendar-event-line"
-                        size="18"
+                        size="20"
                         color="primary"
                       />
                     </VAvatar>
                     <div class="d-flex align-center gap-2">
-                      <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                      <span class="text-subtitle-2 font-weight-bold text-slate-900">
                         {{ formatDateHeader(group.label) }}
                       </span>
-                      <span class="text-caption text-medium-emphasis">
-                        • {{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}
-                      </span>
+                      <VChip
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        class="font-weight-bold"
+                      >
+                        {{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}
+                      </VChip>
                     </div>
                   </div>
 
                   <div class="d-flex align-center gap-2 me-2">
-                    <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">TOTAL DÍA:</span>
+                    <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
                     <VChip
-                      color="primary"
+                      color="success"
                       variant="tonal"
                       size="small"
-                      class="font-weight-bold px-3"
+                      class="font-weight-black px-3 text-subtitle-2"
                     >
                       {{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}
                     </VChip>
@@ -760,37 +765,60 @@ onMounted(() => {
               :key="transfer.id"
               class="transfer-row"
             >
-              <!-- Flujo: Origen -> Destino con chips tonales y nombres adaptados (bank_name) -->
+              <!-- Flujo: Origen -> Destino con badges claros de alto contraste -->
               <td class="py-3">
-                <div class="d-flex align-center gap-2 flex-wrap">
-                  <div class="d-flex align-center gap-1 bg-red-tonal px-3 py-1 rounded-lg border-danger">
-                    <VIcon
-                      start
-                      size="14"
-                      icon="ri-bank-line"
+                <div class="d-flex align-center flex-wrap" style="gap: 10px;">
+                  <!-- Origen (Sale de) -->
+                  <div class="transfer-account-badge source">
+                    <VAvatar
+                      size="26"
                       color="error"
-                    />
-                    <span class="text-body-2 font-weight-bold text-error">
-                      {{ getAccountName(transfer.source_account) }}
-                    </span>
+                      variant="tonal"
+                      class="rounded-lg shrink-0"
+                    >
+                      <VIcon
+                        :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="15"
+                        color="error"
+                      />
+                    </VAvatar>
+                    <div class="d-flex flex-column text-left">
+                      <span class="text-caption font-weight-bold leading-none text-uppercase opacity-70" style="font-size: 0.65rem;">Sale de</span>
+                      <span class="text-body-2 font-weight-bold text-error mt-0.5">
+                        {{ getAccountName(transfer.source_account) }}
+                      </span>
+                    </div>
                   </div>
 
-                  <VIcon
-                    icon="ri-arrow-right-line"
-                    size="16"
-                    class="text-medium-emphasis mx-1 animate-arrow"
-                  />
-
-                  <div class="d-flex align-center gap-1 bg-success-tonal px-3 py-1 rounded-lg border-success">
+                  <!-- Conector Flujo -->
+                  <div class="transfer-flow-arrow">
                     <VIcon
-                      start
-                      size="14"
-                      icon="ri-bank-line"
-                      color="success"
+                      icon="ri-arrow-right-line"
+                      size="16"
+                      color="primary"
                     />
-                    <span class="text-body-2 font-weight-bold text-success">
-                      {{ getAccountName(transfer.destination_account) }}
-                    </span>
+                  </div>
+
+                  <!-- Destino (Ingresa a) -->
+                  <div class="transfer-account-badge dest">
+                    <VAvatar
+                      size="26"
+                      color="success"
+                      variant="tonal"
+                      class="rounded-lg shrink-0"
+                    >
+                      <VIcon
+                        :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="15"
+                        color="success"
+                      />
+                    </VAvatar>
+                    <div class="d-flex flex-column text-left">
+                      <span class="text-caption font-weight-bold leading-none text-uppercase opacity-70" style="font-size: 0.65rem;">Ingresa a</span>
+                      <span class="text-body-2 font-weight-bold text-success mt-0.5">
+                        {{ getAccountName(transfer.destination_account) }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -798,18 +826,23 @@ onMounted(() => {
               <!-- Descripción & Fecha -->
               <td class="py-3">
                 <div class="d-flex flex-column">
-                  <span class="text-body-2 font-weight-semibold text-high-emphasis">
-                    {{ transfer.description || 'Sin descripción' }}
+                  <span class="text-body-2 font-weight-bold text-slate-900 leading-tight">
+                    {{ transfer.description || 'Transferencia entre cuentas' }}
                   </span>
-                  <span class="text-caption text-medium-emphasis">
-                    {{ formatDate(transfer.transfer_date || transfer.created_at) }}
-                  </span>
+                  <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis font-weight-medium mt-1">
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="14"
+                      color="secondary"
+                    />
+                    <span>{{ formatDate(transfer.transfer_date || transfer.created_at) }}</span>
+                  </div>
                 </div>
               </td>
 
               <!-- Monto -->
               <td class="py-3 text-right">
-                <span class="text-subtitle-1 font-weight-bold text-primary me-1">
+                <span class="text-subtitle-1 font-weight-black text-primary">
                   {{ formatCurrency(transfer.amount) }}
                 </span>
               </td>
@@ -994,66 +1027,6 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.sticky-header {
-  position: sticky;
-  top: 62px;
-  z-index: 99;
-  background-color: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.2s ease;
-}
-@media (min-width: 960px) {
-  .sticky-header {
-    top: 70px;
-  }
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
 
 <route lang="yaml">
 meta:
