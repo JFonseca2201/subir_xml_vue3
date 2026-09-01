@@ -68,14 +68,14 @@ const navigateTo = itemRoute => {
       </p>
     </div>
 
-    <!-- 4 Tarjetas de Acceso Rápido Compactas -->
+    <!-- 3 Tarjetas de Acceso Rápido Compactas -->
     <VRow dense>
       <VCol
         v-for="item in navItems"
         :key="item.id"
         cols="12"
-        sm="6"
-        md="3"
+        sm="4"
+        md="4"
       >
         <VCard
           elevation="1"
@@ -114,21 +114,3 @@ const navigateTo = itemRoute => {
     </VRow>
   </div>
 </template>
-
-<style scoped>
-.operation-nav-card {
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.operation-nav-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
-}
-
-.active-nav-card {
-  border: 2px solid rgb(var(--v-theme-primary)) !important;
-  background-color: rgba(var(--v-theme-primary), 0.03) !important;
-  box-shadow: 0 4px 14px rgba(var(--v-theme-primary), 0.15) !important;
-}
-</style>

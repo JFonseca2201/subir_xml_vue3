@@ -6589,3 +6589,43 @@
         }
     }
 }
+
+// ============================================
+// OPERATIONS DASHBOARD MODULE
+// ============================================
+
+.operations-dashboard-page, .operations-header-nav {
+    .operation-nav-card {
+        border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08) !important;
+            border-color: rgba(var(--v-theme-primary), 0.5) !important;
+        }
+
+        &.active-nav-card {
+            border: 2px solid rgb(var(--v-theme-primary)) !important;
+            background-color: rgba(var(--v-theme-primary), 0.04) !important;
+            box-shadow: 0 4px 14px rgba(var(--v-theme-primary), 0.15) !important;
+        }
+    }
+
+    .operations-date-header {
+        background: #f8fafc !important;
+        border-top: 1px solid #e2e8f0 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 10px 16px !important;
+    }
+
+    .operations-movement-item {
+        transition: background-color 0.15s ease;
+        padding: 14px 18px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+
+        &:hover {
+            background-color: #f8fafc !important;
+        }
+    }
+}

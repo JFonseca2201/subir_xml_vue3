@@ -151,9 +151,20 @@ const groupMovementsByDate = movements => {
     let moduleName = 'General'
     if (m.movable_type) {
       const type = m.movable_type.split('\\').pop()
-      const typeMap = { 'AporteCapital': 'Aporte de Capital', 'EmployeeExpense': 'Gasto de Empleado', 'Income': 'Ingreso Manual', 'Expense': 'Egreso Manual' }
+      const typeMap = {
+        'AporteCapital': 'Aporte de Socio',
+        'EmployeeExpense': 'Gasto de Personal',
+        'EmployeePayment': 'Pago de Nómina',
+        'EmployeeAdvance': 'Adelanto de Nómina',
+        'PaymentDistribution': 'Egreso / Pago',
+        'Income': 'Ingreso Manual',
+        'Expense': 'Egreso Manual',
+        'FinanceRecord': 'Registro Financiero',
+        'Sale': 'Venta',
+        'Purchase': 'Compra / Gasto',
+      }
 
-      moduleName = typeMap[type] || type
+      moduleName = typeMap[type] || type.replace(/([A-Z])/g, ' $1').trim()
     }
 
     const method = getPaymentMethod(m, accounts.value)
@@ -342,7 +353,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="operations-dashboard-page">
     <!-- Pantalla de Bloqueo -->
     <div
       v-if="!canAccessOperations"
@@ -382,15 +393,15 @@ onMounted(() => {
       <!-- Encabezado y Navegación de Operaciones Compartido -->
       <OperationsHeaderNav active-tab="dashboard" />
 
-      <VRow>
-        <!-- Columna Movimientos -->
+      <VRow class="mt-2">
+        <!-- Columna Movimientos (Izquierda) -->
         <VCol
           cols="12"
           md="8"
         >
           <VCard
-            elevation="2"
-            class="rounded-lg h-100 position-relative"
+            elevation="1"
+            class="rounded-xl border-light h-100 position-relative overflow-hidden"
           >
             <VProgressLinear
               v-if="loading"
@@ -400,14 +411,24 @@ onMounted(() => {
               class="position-absolute"
               style="top: 0; left: 0; right: 0; z-index: 10;"
             />
-            <VCardItem class="pa-4 border-b">
+            
+            <VCardItem class="pa-4 border-b bg-white">
               <template #title>
-                <div class="d-flex align-center gap-2">
-                  <VIcon
-                    icon="ri-history-line"
+                <div class="d-flex align-center gap-3">
+                  <VAvatar
                     color="primary"
-                  />
-                  <span class="font-weight-bold text-h6">Movimientos Recientes</span>
+                    variant="tonal"
+                    size="36"
+                    class="rounded-lg"
+                  >
+                    <VIcon
+                      icon="ri-history-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <div>
+                    <span class="font-weight-bold text-h6 text-slate-900">Movimientos Recientes</span>
+                  </div>
                 </div>
               </template>
               <template #append>
@@ -416,7 +437,8 @@ onMounted(() => {
                   prepend-icon="ri-file-pdf-line"
                   :loading="pdfLoading"
                   size="small"
-                  variant="tonal"
+                  variant="elevated"
+                  class="font-weight-semibold elevation-1"
                   @click="generatePDF"
                 >
                   Generar PDF
@@ -429,7 +451,7 @@ onMounted(() => {
               <VList
                 v-if="loading"
                 lines="two"
-                class="bg-transparent"
+                class="bg-transparent pa-0"
               >
                 <div
                   v-for="n in 4"
@@ -453,172 +475,240 @@ onMounted(() => {
                 class="pa-10 text-center text-medium-emphasis"
               >
                 <VAvatar
-                  color="grey-lighten-3"
+                  color="primary"
+                  variant="tonal"
                   size="72"
                   class="mb-4"
                 >
                   <VIcon
                     icon="ri-folder-info-line"
                     size="36"
-                    color="grey"
                   />
                 </VAvatar>
-                <h3 class="text-h6 font-weight-medium">
+                <h3 class="text-h6 font-weight-bold text-high-emphasis">
                   No hay movimientos
                 </h3>
-                <p class="text-body-2 mt-1">
+                <p class="text-body-2 text-medium-emphasis mt-1">
                   No se encontraron registros financieros para este mes.
                 </p>
               </div>
 
-              <VList
+              <!-- Lista Agrupada por Día -->
+              <div
                 v-else
-                lines="two"
-                class="bg-transparent"
-                style="max-height: 550px; overflow-y: auto;"
+                class="overflow-y-auto"
+                style="max-height: 600px;"
               >
                 <template
                   v-for="day in recentMovements"
                   :key="day.dateKey"
                 >
-                  <VListSubheader class="text-uppercase font-weight-bold text-primary bg-grey-50 pa-4 sticky-top">
-                    {{ day.date }}
-                  </VListSubheader>
+                  <!-- Subheader de Día -->
+                  <div class="operations-date-header d-flex align-center justify-space-between px-4 py-2">
+                    <div class="d-flex align-center gap-2">
+                      <VIcon icon="ri-calendar-event-line" size="16" color="primary" />
+                      <span class="text-caption font-weight-bold text-uppercase text-slate-700 tracking-wider">
+                        {{ day.date }}
+                      </span>
+                    </div>
+                    <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                      {{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos' }}
+                    </VChip>
+                  </div>
 
-                  <VListItem
+                  <!-- Filas de Movimiento -->
+                  <div
                     v-for="movement in day.movements"
                     :key="movement.id"
-                    class="border-b movement-item"
+                    class="operations-movement-item d-flex align-center justify-space-between gap-3 px-4 py-3"
                   >
-                    <template #prepend>
+                    <!-- Izquierda: Avatar + Detalles -->
+                    <div class="d-flex align-center gap-3">
                       <VAvatar
                         :color="movement.type === 'transfer' ? 'info' : (movement.type === 'income' ? 'success' : 'error')"
                         variant="tonal"
-                        class="mr-4"
+                        size="40"
+                        class="rounded-lg shrink-0"
                       >
-                        <VIcon :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')" />
+                        <VIcon
+                          :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
+                          size="20"
+                        />
                       </VAvatar>
-                    </template>
 
-                    <VListItemTitle class="font-weight-medium mb-1">
-                      {{ movement.description }}
-                    </VListItemTitle>
+                      <div class="d-flex flex-column text-left">
+                        <span class="text-body-1 font-weight-bold text-slate-900 mb-1">
+                          {{ movement.description }}
+                        </span>
 
-                    <VListItemSubtitle>
-                      <div class="d-flex align-center flex-wrap gap-2 text-caption">
-                        <span class="d-flex align-center"><VIcon
-                          icon="ri-folder-open-line"
-                          size="14"
-                          class="mr-1"
-                        />{{ movement.module }}</span>
-                        <span class="opacity-50">•</span>
-                        <span class="d-flex align-center"><VIcon
-                          :icon="movement.method === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'"
-                          size="14"
-                          class="mr-1"
-                        />{{ movement.method === 'TRANSFERENCIA' ? 'Transferencia' : 'Efectivo' }}</span>
-                        <span class="opacity-50">•</span>
-                        <span class="d-flex align-center"><VIcon
-                          icon="ri-time-line"
-                          size="14"
-                          class="mr-1"
-                        />{{ movement.time }}</span>
+                        <div class="d-flex align-center flex-wrap gap-2 text-caption text-medium-emphasis">
+                          <VChip
+                            size="x-small"
+                            variant="tonal"
+                            color="secondary"
+                            class="font-weight-medium"
+                          >
+                            <VIcon start icon="ri-folder-open-line" size="12" />
+                            {{ movement.module }}
+                          </VChip>
+
+                          <span class="opacity-40">•</span>
+
+                          <span class="d-flex align-center font-weight-medium text-slate-700">
+                            <VIcon
+                              :icon="movement.method === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'"
+                              size="14"
+                              class="me-1 text-slate-500"
+                            />
+                            {{ movement.method === 'TRANSFERENCIA' ? 'Transferencia' : 'Efectivo' }}
+                          </span>
+
+                          <span class="opacity-40">•</span>
+
+                          <span class="d-flex align-center font-weight-medium text-slate-600">
+                            <VIcon
+                              icon="ri-time-line"
+                              size="14"
+                              class="me-1 text-slate-500"
+                            />
+                            {{ movement.time }}
+                          </span>
+                        </div>
                       </div>
-                    </VListItemSubtitle>
+                    </div>
 
-                    <template #append>
-                      <div
-                        class="font-weight-bold text-subtitle-1"
+                    <!-- Derecha: Monto -->
+                    <div class="text-right shrink-0 ps-2">
+                      <span
+                        class="text-subtitle-1 font-weight-black"
                         :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-success' : 'text-error')"
                       >
                         {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                         {{ formatCurrency(movement.amount) }}
-                      </div>
-                    </template>
-                  </VListItem>
+                      </span>
+                    </div>
+                  </div>
                 </template>
-              </VList>
+              </div>
             </VCardText>
           </VCard>
         </VCol>
 
-        <!-- Columna Lateral (Resumen) -->
+        <!-- Columna Lateral (Resumen Financiero) -->
         <VCol
           cols="12"
           md="4"
-          class="d-flex flex-column gap-6"
+          class="d-flex flex-column gap-5"
         >
+          <!-- Resumen Financiero Card -->
           <VCard
-            elevation="2"
-            class="rounded-lg"
+            elevation="1"
+            class="rounded-xl border-light overflow-hidden"
           >
-            <VCardItem class="pa-4 border-b">
+            <VCardItem class="pa-4 border-b bg-white">
               <template #title>
-                <div class="d-flex align-center gap-2">
-                  <VIcon
-                    icon="ri-pie-chart-line"
+                <div class="d-flex align-center gap-3">
+                  <VAvatar
                     color="primary"
-                  />
-                  <span class="font-weight-bold text-h6">Resumen Financiero</span>
+                    variant="tonal"
+                    size="36"
+                    class="rounded-lg"
+                  >
+                    <VIcon
+                      icon="ri-pie-chart-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <span class="font-weight-bold text-h6 text-slate-900">Resumen Financiero</span>
                 </div>
               </template>
             </VCardItem>
-            <VCardText class="pa-5">
-              <div class="d-flex justify-space-between align-center mb-4">
-                <span class="text-body-1 text-medium-emphasis">Ingresos del mes</span>
-                <span class="text-success font-weight-bold text-subtitle-1">{{ formatCurrency(financialSummary.monthlyIncome) }}</span>
+            
+            <VCardText class="pa-4">
+              <!-- Ingresos del Mes -->
+              <div class="pa-3 rounded-lg bg-success-tonal border-success mb-3 d-flex justify-space-between align-center">
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-arrow-down-circle-line" color="success" size="20" />
+                  <span class="text-body-2 font-weight-bold text-slate-700">Ingresos del mes</span>
+                </div>
+                <span class="text-success font-weight-black text-subtitle-1">{{ formatCurrency(financialSummary.monthlyIncome) }}</span>
               </div>
-              <div class="d-flex justify-space-between align-center mb-5">
-                <span class="text-body-1 text-medium-emphasis">Egresos del mes</span>
-                <span class="text-error font-weight-bold text-subtitle-1">{{ formatCurrency(financialSummary.monthlyExpense) }}</span>
+
+              <!-- Egresos del Mes -->
+              <div class="pa-3 rounded-lg bg-error-tonal border-error mb-4 d-flex justify-space-between align-center">
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-arrow-up-circle-line" color="error" size="20" />
+                  <span class="text-body-2 font-weight-bold text-slate-700">Egresos del mes</span>
+                </div>
+                <span class="text-error font-weight-black text-subtitle-1">{{ formatCurrency(financialSummary.monthlyExpense) }}</span>
               </div>
-              <VDivider class="mb-5" />
-              <div class="d-flex justify-space-between align-center">
-                <span class="text-subtitle-1 font-weight-bold text-high-emphasis">Balance actual</span>
-                <span class="text-h5 font-weight-black text-primary">{{ formatCurrency(financialSummary.currentBalance) }}</span>
+
+              <VDivider class="mb-4" />
+
+              <!-- Balance Actual -->
+              <div class="pa-4 rounded-xl bg-primary-tonal border-primary">
+                <div class="text-caption text-uppercase font-weight-bold text-primary tracking-wider mb-1">
+                  Balance Neto Actual
+                </div>
+                <div class="text-h5 font-weight-black text-primary">
+                  {{ formatCurrency(financialSummary.currentBalance) }}
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Diferencia entre ingresos y egresos
+                </div>
               </div>
             </VCardText>
           </VCard>
 
+          <!-- Info Adicional Card -->
           <VCard
-            elevation="2"
-            class="rounded-lg"
+            elevation="1"
+            class="rounded-xl border-light overflow-hidden"
           >
-            <VCardItem class="pa-4 border-b">
+            <VCardItem class="pa-4 border-b bg-white">
               <template #title>
-                <div class="d-flex align-center gap-2">
-                  <VIcon
-                    icon="ri-information-line"
-                    color="primary"
-                  />
-                  <span class="font-weight-bold text-h6">Info. Adicional</span>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar
+                    color="info"
+                    variant="tonal"
+                    size="36"
+                    class="rounded-lg"
+                  >
+                    <VIcon
+                      icon="ri-information-line"
+                      size="20"
+                    />
+                  </VAvatar>
+                  <span class="font-weight-bold text-h6 text-slate-900">Info. Adicional</span>
                 </div>
               </template>
             </VCardItem>
-            <VCardText class="pa-5">
-              <div class="d-flex align-start gap-4 mb-4">
+
+            <VCardText class="pa-4">
+              <div class="d-flex align-center gap-3 pa-3 rounded-lg bg-info-tonal border-info">
                 <VAvatar
                   color="info"
-                  variant="tonal"
-                  rounded
-                  size="48"
+                  variant="elevated"
+                  size="40"
+                  class="rounded-lg elevation-1"
                 >
                   <VIcon
                     icon="ri-exchange-line"
-                    size="24"
+                    size="20"
+                    color="white"
                   />
                 </VAvatar>
                 <div>
-                  <div class="text-caption text-medium-emphasis mb-1 text-uppercase font-weight-medium">
+                  <div class="text-caption text-info font-weight-bold text-uppercase tracking-wider">
                     Última transferencia
                   </div>
-                  <div class="font-weight-bold text-h6">
+                  <div class="font-weight-black text-h6 text-slate-900">
                     {{ formatCurrency(financialSummary.lastTransfer.amount) }}
                   </div>
-                  <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-1">
+                  <div class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-0">
                     <VIcon
                       icon="ri-calendar-event-line"
-                      size="14"
+                      size="12"
                     />
                     {{ financialSummary.lastTransfer.date }}
                   </div>
@@ -632,7 +722,7 @@ onMounted(() => {
                   color="warning"
                   variant="tonal"
                   density="compact"
-                  class="mt-4"
+                  class="mt-3 rounded-lg"
                 >
                   <template #prepend>
                     <VIcon
@@ -653,46 +743,4 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.sticky-header {
-  position: sticky;
-  top: 62px;
-  z-index: 99;
-  background-color: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.2s ease;
-}
-@media (min-width: 960px) {
-  .sticky-header {
-    top: 70px;
-  }
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
 
