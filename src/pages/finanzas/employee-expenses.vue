@@ -237,6 +237,22 @@ const formatCurrency = value => {
   }).format(value || 0)
 }
 
+const formatMonthLabel = monthStr => {
+  if (!monthStr) return ''
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
+  const parts = String(monthStr).split('-')
+  if (parts.length === 2) {
+    const mIndex = parseInt(parts[1], 10) - 1
+    if (mIndex >= 0 && mIndex < 12) {
+      return `${monthNames[mIndex]} ${parts[0]}`
+    }
+  }
+  return monthStr
+}
+
 const generatePDF = async item => {
   try {
     const response = await $api(`employee-expenses/${item.type}/${item.id}/pdf`, {
@@ -247,8 +263,9 @@ const generatePDF = async item => {
     const link = document.createElement('a')
 
     const safeName = item.employee_name ? item.employee_name.replace(/\s+/g, '_') : 'empleado'
-    const dateStr = new Date().toISOString().split('T')[0]
-    const fileName = `${item.type}_${item.id}_${safeName}_${dateStr}.pdf`
+    const dateStr = item.payment_month || new Date().toISOString().split('T')[0]
+    const prefix = item.type === 'payment' ? 'ROL_PAGOS' : 'ADELANTO'
+    const fileName = `${prefix}_${item.id}_${safeName}_${dateStr}.pdf`
 
     link.href = url
     link.setAttribute('download', fileName)
@@ -611,20 +628,32 @@ onMounted(() => {
           </div>
         </template>
         <template #item.type="{ item }">
-          <VChip
-            :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')"
-            variant="tonal"
-            size="small"
-            class="font-weight-bold"
-          >
-            <VIcon
-              start
-              size="14"
+          <div class="d-flex flex-column align-start gap-1">
+            <VChip
+              :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')"
+              variant="tonal"
+              size="small"
+              class="font-weight-bold"
             >
-              {{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ? 'ri-check-line' : 'ri-hand-coin-line') }}
-            </VIcon>
-            {{ item.type === 'payment' ? 'PAGO' : (item.is_deducted ? 'ADELANTO PAGADO' : 'ADELANTO') }}
-          </VChip>
+              <VIcon
+                start
+                size="14"
+              >
+                {{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ? 'ri-check-line' : 'ri-hand-coin-line') }}
+              </VIcon>
+              {{ item.type === 'payment' ? 'ROL DE PAGOS' : (item.is_deducted ? 'ADELANTO LIQUIDADO' : 'ADELANTO') }}
+            </VChip>
+            <VChip
+              v-if="item.type === 'payment' && item.payment_month"
+              size="x-small"
+              variant="outlined"
+              color="primary"
+              class="font-weight-bold"
+            >
+              <VIcon start size="12">ri-calendar-line</VIcon>
+              {{ formatMonthLabel(item.payment_month) }}
+            </VChip>
+          </div>
         </template>
 
         <template #item.employee_name="{ item }">
@@ -704,13 +733,13 @@ onMounted(() => {
                   <template #prepend>
                     <VIcon
                       icon="ri-file-pdf-line"
-                      color="info"
+                      :color="item.type === 'payment' ? 'primary' : 'info'"
                       size="18"
                       class="me-2"
                     />
                   </template>
                   <VListItemTitle class="font-weight-medium text-body-2">
-                    Descargar PDF
+                    {{ item.type === 'payment' ? 'Descargar Rol de Pagos' : 'Descargar Comprobante' }}
                   </VListItemTitle>
                 </VListItem>
 

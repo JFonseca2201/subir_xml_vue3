@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
-import { now } from '@vueuse/core'
 import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
 
 // Props
@@ -25,21 +24,53 @@ const employees = ref([])
 const accounts = ref([])
 const loading = ref(false)
 const isLoadingData = ref(false)
+const isCheckingMonth = ref(false)
+const monthPaidInfo = ref(null)
 const pendingAdvances = ref([])
 const totalPendingAdvances = ref(0)
-const loadingAdvances = ref(false)
+const baseSalary = ref(0)
 const receiptFiles = ref([])
+
+// Obtener mes actual YYYY-MM
+const getCurrentMonthValue = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
 
 const form = ref({
   employee_id: null,
   employee_name: '',
+  payment_month: getCurrentMonthValue(),
   account_id: null,
   account_name: null,
-  amount: null,
+  amount: 0,
+  base_salary: 0,
   description: '',
   payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
   payment_method: 'TRANSFERENCIA',
   reference: '',
+})
+
+// Opciones de Meses (últimos 12 meses, actual y 2 futuros)
+const monthOptions = computed(() => {
+  const options = []
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
+  const today = new Date()
+
+  for (let i = 2; i >= -12; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const value = `${year}-${month}`
+    const title = `${monthNames[d.getMonth()]} ${year}`
+    options.push({ title, value })
+  }
+  return options
 })
 
 // Métodos de pago
@@ -67,18 +98,16 @@ const filteredAccounts = computed(() => {
   return accounts.value
 })
 
-const selectedEmployeeSalary = computed(() => {
-  if (!form.value.employee_id) return 0
-  const emp = employees.value.find(e => e.id === form.value.employee_id)
-  
-  return emp ? parseFloat(emp.salary || 0) : 0
-})
+const formatCurrency = value => {
+  return new Intl.NumberFormat('es-EC', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value || 0)
+}
 
-// Función para mostrar notificaciones toast
+// Notificación Toast
 const showToast = (message, type = 'info') => {
-  // Crear elemento toast
   const toast = document.createElement('div')
-
   toast.className = `toast toast-${type}`
   toast.textContent = message
   toast.style.cssText = `
@@ -86,21 +115,18 @@ const showToast = (message, type = 'info') => {
         top: 20px;
         right: 20px;
         padding: 12px 20px;
-        background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#2196f3'};
+        background: ${type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6'};
         color: white;
-        border-radius: 4px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        z-index: 9999;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 999999;
         font-size: 14px;
-        max-width: 300px;
+        font-weight: 500;
+        max-width: 380px;
         word-wrap: break-word;
         animation: slideIn 0.3s ease-out;
     `
-
-  // Agregar al DOM
   document.body.appendChild(toast)
-
-  // Remover automáticamente después de 4 segundos
   setTimeout(() => {
     if (toast.parentNode) {
       toast.parentNode.removeChild(toast)
@@ -108,51 +134,22 @@ const showToast = (message, type = 'info') => {
   }, 4000)
 }
 
-// Agregar animación CSS si no existe
-if (!document.querySelector('#toast-styles')) {
-  const style = document.createElement('style')
-
-  style.id = 'toast-styles'
-  style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    `
-  document.head.appendChild(style)
-}
-
-
-
-// Funciones
+// Cargar Datos
 const loadEmployees = async () => {
   try {
-    console.log('Cargando empleados...')
-
     const response = await $api('employees')
-
-    console.log('Respuesta completa:', response)
-    console.log('Empleados:', response.employees)
-
-    // Transform employee data to include a computed name field
     employees.value = response.employees?.map(emp => ({
       ...emp,
       name: `${emp.first_name} ${emp.last_name}`.trim(),
+      display_title: `${emp.first_name} ${emp.last_name} (${emp.position || 'Empleado'} - Sueldo: ${formatCurrency(emp.salary)})`,
     })) || []
-    console.log('Empleados cargados:', employees.value)
   } catch (error) {
     console.error('Error al cargar empleados:', error)
   }
 }
 
-const transformAccounts = accounts => {
-  return (accounts || []).map(account => {
+const transformAccounts = accs => {
+  return (accs || []).map(account => {
     const cleanedName = (account.name || '')
       .replace(/\(EFECTIVO\)/gi, '')
       .replace(/\(TRANSFERENCIA\)/gi, '')
@@ -160,7 +157,7 @@ const transformAccounts = accounts => {
 
     return {
       ...account,
-      display_name: `${account.bank_name} (${cleanedName})`,
+      display_name: `${account.bank_name || 'Cuenta'} (${cleanedName})`,
     }
   })
 }
@@ -168,59 +165,69 @@ const transformAccounts = accounts => {
 const loadAccounts = async () => {
   try {
     const response = await $api('accounts')
-    
     return transformAccounts(response)
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
-    
     return []
   }
 }
 
-const getEmployeeAdvances = async employeeId => {
-  try {
-    loadingAdvances.value = true
-
-    const response = await $api(`employee-pending-advances/${employeeId}`)
-
-    console.log('Adelantos pendientes:', response)
-    pendingAdvances.value = response.pending_advances || []
-    totalPendingAdvances.value = response.total_pending_amount || 0
-    
-    return response
-  } catch (error) {
-    console.error('Error al cargar adelantos del empleado:', error)
-    pendingAdvances.value = []
-    totalPendingAdvances.value = 0
-    
-    return null
-  } finally {
-    loadingAdvances.value = false
+// Verificar Pago del Mes Seleccionado
+const checkMonthStatus = async () => {
+  if (!form.value.employee_id || !form.value.payment_month) {
+    monthPaidInfo.value = null
+    return
   }
-}
 
-const calculateMaxPaymentAmount = async employeeId => {
+  isCheckingMonth.value = true
   try {
-    const response = await $api(`employee-earnings/${employeeId}`)
-    
-    return response.data?.available_for_payment || null
+    const response = await $api('employee-expenses/check-month', {
+      params: {
+        employee_id: form.value.employee_id,
+        month: form.value.payment_month,
+      }
+    })
+
+    if (response.is_paid) {
+      monthPaidInfo.value = response
+      form.value.amount = 0
+      form.value.base_salary = response.existing_payment?.base_salary || 0
+      baseSalary.value = response.existing_payment?.base_salary || 0
+      pendingAdvances.value = []
+      totalPendingAdvances.value = response.existing_payment?.advances_amount || 0
+    } else {
+      monthPaidInfo.value = null
+      baseSalary.value = response.base_salary || 0
+      form.value.base_salary = response.base_salary || 0
+      totalPendingAdvances.value = response.total_advances || 0
+      pendingAdvances.value = response.pending_advances || []
+      form.value.amount = response.net_amount || 0
+    }
   } catch (error) {
-    console.error('Error al calcular ganancias:', error)
-    
-    return null
+    console.error('Error al verificar mes de pago:', error)
+  } finally {
+    isCheckingMonth.value = false
   }
 }
 
 const resetForm = () => {
   form.value = {
     employee_id: null,
+    employee_name: '',
+    payment_month: getCurrentMonthValue(),
     account_id: null,
-    amount: null,
+    account_name: null,
+    amount: 0,
+    base_salary: 0,
     description: '',
     payment_date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
     payment_method: 'TRANSFERENCIA',
     reference: '',
   }
+  monthPaidInfo.value = null
+  pendingAdvances.value = []
+  totalPendingAdvances.value = 0
+  baseSalary.value = 0
   receiptFiles.value = []
   formRef.value?.reset()
 }
@@ -229,10 +236,15 @@ const closeDialog = () => {
   show.value = false
   setTimeout(() => {
     resetForm()
-  }, 50)
+  }, 100)
 }
 
 const handleSubmit = async () => {
+  if (monthPaidInfo.value?.is_paid) {
+    showToast('No se puede registrar el pago porque este mes ya fue liquidado.', 'error')
+    return
+  }
+
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
@@ -241,7 +253,9 @@ const handleSubmit = async () => {
   try {
     const formData = new FormData()
     formData.append('employee_id', form.value.employee_id)
+    formData.append('payment_month', form.value.payment_month)
     formData.append('account_id', form.value.account_id)
+    formData.append('base_salary', form.value.base_salary || baseSalary.value)
     formData.append('amount', form.value.amount)
     formData.append('description', form.value.description || '')
     formData.append('payment_date', form.value.payment_date)
@@ -258,37 +272,30 @@ const handleSubmit = async () => {
       body: formData,
     })
 
-    // Mostrar mensaje con información de descuentos
-    if (response.total_advances_deducted > 0) {
-      showToast(`Pago procesado: $${response.final_amount.toFixed(2)} (Original: $${response.original_amount.toFixed(2)} - Descuentos: $${response.total_advances_deducted.toFixed(2)})`, 'success')
-    } else {
-      showToast('Pago procesado correctamente', 'success')
-    }
+    showToast(response.message || 'Pago de nómina registrado exitosamente.', 'success')
 
     emit('created', response)
     closeDialog()
   } catch (error) {
     console.error('Error al guardar pago:', error)
 
-    // Manejar errores de validación específicos
     if (error.status === 422) {
       const errorData = error.data
-      if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
-        // Mostrar mensaje amigable de saldo insuficiente
-        showToast('Saldo insuficiente en la cuenta.\nSaldo disponible: $' + errorData.saldo_disponible + '\nMonto solicitado: $' + errorData.monto_solicitado, 'error')
-        
+      if (errorData.error === 'month_already_paid') {
+        showToast(errorData.message, 'error')
+        monthPaidInfo.value = { is_paid: true, message: errorData.message }
         return
       }
-
-      // Manejar otros errores de validación
+      if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
+        showToast('Saldo insuficiente en la cuenta seleccionada.', 'error')
+        return
+      }
       if (errorData.message) {
         showToast(errorData.message, 'error')
-        
         return
       }
     }
 
-    // Error genérico
     showToast('Error al guardar el pago. Por favor, intente nuevamente.', 'error')
   } finally {
     loading.value = false
@@ -300,83 +307,40 @@ watch(() => show.value, newVal => {
   if (newVal) {
     resetForm()
     loadEmployees()
-
-    // Cargar cuentas desde props o API
     if (props.accounts && props.accounts.length > 0) {
-      // Las cuentas ya vienen del padre
       accounts.value = transformAccounts(props.accounts)
     } else {
-      // Cargar cuentas desde API si no vienen en props
-      loadAccounts().then(response => {
-        accounts.value = response
-        console.log('Cuentas cargadas:', accounts.value)
-      }).catch(error => {
-        console.error('Error al cargar cuentas:', error)
-      })
+      loadAccounts().then(res => accounts.value = res)
     }
   }
 })
 
-watch(() => form.value.employee_id, async employeeId => {
-  if (employeeId) {
-    // Encontrar el empleado seleccionado para obtener su salario
-    const selectedEmployee = employees.value.find(emp => emp.id === employeeId)
-
-    // Actualizar el nombre del empleado en el formulario
+watch(() => form.value.employee_id, async newId => {
+  if (newId) {
+    const selectedEmployee = employees.value.find(emp => emp.id === newId)
     if (selectedEmployee) {
       form.value.employee_name = selectedEmployee.name
     }
-
-    // Cargar adelantos pendientes del empleado
-    await getEmployeeAdvances(employeeId)
-
-    // Calcular ganancias disponibles para pago
-    const earnings = await calculateMaxPaymentAmount(employeeId)
-
-    // Usar el salario del empleado como base si está disponible
-    const employeeSalary = selectedEmployee ? parseFloat(selectedEmployee.salary) : 0
-    const availableEarnings = earnings !== null ? earnings : employeeSalary
-
-    // Establecer el monto sugerido automáticamente al sueldo base sin deducciones
-    if (availableEarnings > 0) {
-      form.value.amount = availableEarnings.toFixed(2)
-      console.log(`Monto sugerido: $${availableEarnings.toFixed(2)} (El backend descontará los adelantos automáticamente)`)
-    }
-
-    // Mostrar mensaje sobre adelantos si hay
-    if (totalPendingAdvances.value > 0) {
-      showToast(`Empleado tiene $${totalPendingAdvances.value.toFixed(2)} en adelantos pendientes que se deducirán del pago.`, 'info')
-    }
-
+    await checkMonthStatus()
   } else {
-    // Limpiar datos cuando no hay empleado seleccionado
-    form.value.employee_name = ''
-    form.value.amount = null
+    monthPaidInfo.value = null
+    baseSalary.value = 0
     pendingAdvances.value = []
     totalPendingAdvances.value = 0
+    form.value.amount = 0
   }
 })
 
-watch(() => form.value.account_id, accountId => {
-  if (accountId) {
-    // Encontrar la cuenta seleccionada para obtener su nombre
-    const selectedAccount = accounts.value.find(acc => acc.id === accountId)
-
-    // Actualizar el nombre de la cuenta en el formulario
-    if (selectedAccount) {
-      form.value.account_name = selectedAccount.name
-    }
-  } else {
-    // Limpiar nombre de cuenta cuando no hay cuenta seleccionada
-    form.value.account_name = ''
+watch(() => form.value.payment_month, async newMonth => {
+  if (newMonth && form.value.employee_id) {
+    await checkMonthStatus()
   }
 })
 
-watch(() => form.value.payment_method, method => {
+watch(() => form.value.payment_method, () => {
   form.value.account_id = null
 })
 
-// Lifecycle
 onMounted(async () => {
   isLoadingData.value = true
   try {
@@ -396,41 +360,42 @@ onMounted(async () => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="920"
+    max-width="880"
     persistent
   >
-    <VCard class="custom-dialog-card">
+    <VCard class="custom-dialog-card rounded-xl">
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+      <div class="custom-dialog-header-primary bg-primary text-white pa-5 d-flex align-center justify-space-between">
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="white" variant="tonal" size="44" class="text-white">
+            <VIcon icon="ri-file-user-line" size="24" />
+          </VAvatar>
+          <div>
+            <h3 class="text-h6 font-weight-bold text-white mb-0">
+              Nuevo Pago de Nómina / Rol de Pagos
+            </h3>
+            <p class="text-caption text-white-70 mb-0">
+              Registra el sueldo mensual, deducción de adelantos y genera el rol oficial
+            </p>
+          </div>
+        </div>
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn"
+          color="white"
           @click="closeDialog"
         />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-money-dollar-circle-line" />
-        </div>
-        <h3 class="custom-dialog-title">
-          Nuevo Pago de Nómina
-        </h3>
-        <p class="custom-dialog-subtitle">
-          Completa los datos para registrar un pago al personal
-        </p>
       </div>
 
       <!-- Formulario -->
-      <VCardText class="pa-6">
+      <VCardText class="pa-6 bg-slate-50">
         <!-- Skeleton Loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-2">
+        <div v-if="isLoadingData" class="py-4">
           <VRow>
-            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+            <VCol cols="12" md="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" md="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12"><VSkeletonLoader type="card" height="120" class="rounded-lg mb-2" /></VCol>
           </VRow>
         </div>
 
@@ -439,62 +404,158 @@ onMounted(async () => {
           ref="formRef"
           @submit.prevent="handleSubmit"
         >
-          <VRow>
-            <!-- Empleado -->
-            <VCol cols="12">
+          <VRow class="g-3">
+            <!-- 1. Selección de Empleado -->
+            <VCol cols="12" md="7">
               <VSelect
                 v-model="form.employee_id"
                 :items="employees"
-                item-title="name"
+                item-title="display_title"
                 item-value="id"
-                label="Empleado *"
+                label="Empleado a Liquidar *"
                 placeholder="Selecciona un empleado"
-                :rules="[v => !!v || 'El empleado es requerido']"
+                :rules="[v => !!v || 'Debes seleccionar un empleado']"
                 variant="outlined"
                 density="comfortable"
+                class="bg-white rounded-lg"
               >
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-user-line
-                  </VIcon>
+                  <VIcon color="primary" size="20">ri-user-follow-line</VIcon>
                 </template>
               </VSelect>
             </VCol>
-            <!-- Monto -->
-            <VCol cols="6">
-              <VTextField
-                v-model="form.amount"
-                label="Monto *"
-                placeholder="0.00"
-                type="text"
-                prefix="$"
-                :rules="[
-                  v => !!v || 'El monto es requerido',
-                  v => v > 0 || 'El monto debe ser mayor a 0'
-                ]"
+
+            <!-- 2. Selección de Mes de Pago -->
+            <VCol cols="12" md="5">
+              <VSelect
+                v-model="form.payment_month"
+                :items="monthOptions"
+                item-title="title"
+                item-value="value"
+                label="Mes a Pagar / Liquidar *"
+                placeholder="Selecciona el mes"
+                :rules="[v => !!v || 'Debes seleccionar el mes a pagar']"
                 variant="outlined"
                 density="comfortable"
-                disabled
+                class="bg-white rounded-lg"
+                :loading="isCheckingMonth"
               >
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-money-dollar-box-line
-                  </VIcon>
+                  <VIcon color="primary" size="20">ri-calendar-check-line</VIcon>
                 </template>
-              </VTextField>
+              </VSelect>
             </VCol>
 
-            <!-- Método de Pago -->
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <!-- ALERTA DE MES YA PAGADO (BLOQUEO) -->
+            <VCol v-if="monthPaidInfo?.is_paid" cols="12">
+              <VAlert
+                type="error"
+                variant="tonal"
+                class="rounded-xl border border-error mb-2 elevation-1"
+                prominent
+              >
+                <template #title>
+                  <div class="d-flex align-center gap-2 font-weight-black text-subtitle-1">
+                    <VIcon icon="ri-lock-2-line" size="22" />
+                    Sueldo Ya Liquidado para este Período
+                  </div>
+                </template>
+                <div class="text-body-2 mt-1">
+                  {{ monthPaidInfo.message }}
+                </div>
+                <div class="d-flex align-center gap-3 mt-3 flex-wrap">
+                  <VChip color="error" size="small" variant="flat" class="font-weight-bold">
+                    Pago #{{ monthPaidInfo.existing_payment?.id }}
+                  </VChip>
+                  <VChip color="slate" size="small" variant="outlined" class="font-weight-medium">
+                    Fecha: {{ monthPaidInfo.existing_payment?.payment_date }}
+                  </VChip>
+                  <VChip color="success" size="small" variant="tonal" class="font-weight-bold">
+                    Neto Pagado: {{ formatCurrency(monthPaidInfo.existing_payment?.amount) }}
+                  </VChip>
+                </div>
+                <div class="text-caption text-error font-weight-bold mt-2">
+                  * No es posible duplicar pagos para el mismo mes. Selecciona otro período o edita el pago existente.
+                </div>
+              </VAlert>
+            </VCol>
+
+            <!-- DESGLOSE FINANCIERO (ROL DE PAGOS EN TIEMPO REAL) -->
+            <VCol v-if="form.employee_id && !monthPaidInfo?.is_paid" cols="12">
+              <VCard class="pa-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-calculator-line" color="primary" size="20" />
+                    <span class="text-subtitle-2 font-weight-bold text-slate-800">
+                      Liquidación de Haberes - Rol de Pagos
+                    </span>
+                  </div>
+                  <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
+                    {{ monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month }}
+                  </VChip>
+                </div>
+
+                <!-- 3 Tarjetas de Resumen KPI Interno -->
+                <VRow class="g-2 text-center mb-3">
+                  <VCol cols="12" sm="4">
+                    <div class="pa-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div class="text-caption text-medium-emphasis font-weight-medium">Sueldo Base (A)</div>
+                      <div class="text-h6 font-weight-bold text-slate-800 mt-0.5">
+                        {{ formatCurrency(baseSalary) }}
+                      </div>
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4">
+                    <div class="pa-3 rounded-lg bg-red-lighten-5 border border-red-200">
+                      <div class="text-caption text-error font-weight-medium">Adelantos a Deducir (B)</div>
+                      <div class="text-h6 font-weight-bold text-error mt-0.5">
+                        -{{ formatCurrency(totalPendingAdvances) }}
+                      </div>
+                    </div>
+                  </VCol>
+                  <VCol cols="12" sm="4">
+                    <div class="pa-3 rounded-lg bg-green-lighten-5 border border-green-300">
+                      <div class="text-caption text-success font-weight-bold">Líquido a Pagar (A - B)</div>
+                      <div class="text-h6 font-weight-black text-success mt-0.5">
+                        {{ formatCurrency(form.amount) }}
+                      </div>
+                    </div>
+                  </VCol>
+                </VRow>
+
+                <!-- Detalle de Adelantos Descontados -->
+                <div v-if="pendingAdvances.length > 0" class="mt-2">
+                  <div class="text-caption font-weight-bold text-slate-700 mb-1 d-flex align-center gap-1">
+                    <VIcon icon="ri-file-list-2-line" size="14" color="warning" />
+                    Detalle de Adelantos que serán liquidados en este pago:
+                  </div>
+                  <div class="rounded-lg border border-slate-200 overflow-hidden">
+                    <VTable density="compact" class="text-caption">
+                      <thead>
+                        <tr class="bg-slate-100">
+                          <th class="text-left font-weight-bold">Fecha</th>
+                          <th class="text-left font-weight-bold">Motivo / Descripción</th>
+                          <th class="text-right font-weight-bold">Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="adv in pendingAdvances" :key="adv.id">
+                          <td>{{ adv.advance_date }}</td>
+                          <td>{{ adv.reason || adv.description || 'Adelanto de sueldo' }}</td>
+                          <td class="text-right font-weight-bold text-error">-${{ Number(adv.amount).toFixed(2) }}</td>
+                        </tr>
+                      </tbody>
+                    </VTable>
+                  </div>
+                </div>
+                <div v-else class="text-caption text-medium-emphasis text-center py-1">
+                  <em>No registra adelantos pendientes de descuento para este empleado.</em>
+                </div>
+              </VCard>
+            </VCol>
+
+            <!-- 3. Método de Pago y Cuenta -->
+            <VCol cols="12" md="6">
               <VSelect
                 v-model="form.payment_method"
                 :items="paymentMethods"
@@ -505,276 +566,154 @@ onMounted(async () => {
                 :rules="[v => !!v || 'El método de pago es requerido']"
                 variant="outlined"
                 density="comfortable"
+                class="bg-white rounded-lg"
+                :disabled="monthPaidInfo?.is_paid"
               >
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-money-dollar-circle-line
-                  </VIcon>
+                  <VIcon color="primary" size="20">ri-bank-card-line</VIcon>
                 </template>
               </VSelect>
             </VCol>
 
-            <!-- Cuenta -->
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <VCol cols="12" md="6">
               <VSelect
                 v-model="form.account_id"
                 :items="filteredAccounts"
                 item-value="id"
                 item-title="display_name"
-                label="Cuenta *"
-                placeholder="Selecciona una cuenta"
+                label="Cuenta de Salida *"
+                placeholder="Selecciona la cuenta"
                 :rules="[v => !!v || 'La cuenta es requerida']"
                 variant="outlined"
                 density="comfortable"
+                class="bg-white rounded-lg"
+                :disabled="monthPaidInfo?.is_paid"
               >
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
+                  <VIcon color="primary" size="20">
                     {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
                   </VIcon>
                 </template>
                 <template #item="{ props, item }">
-                  <VListItem
-                    v-bind="props"
-                    :title="undefined"
-                  >
+                  <VListItem v-bind="props" :title="undefined">
                     <template #prepend>
                       <VAvatar
-                        size="30"
+                        size="28"
                         :color="item.raw.type === 'cash' ? 'success' : 'primary'"
                         variant="tonal"
                         class="me-2"
                       >
                         <VIcon
                           :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                          size="18"
+                          size="16"
                         />
                       </VAvatar>
                     </template>
-                    <VListItemTitle class="font-weight-medium">
+                    <VListItemTitle class="font-weight-medium text-body-2">
                       {{ item.raw.display_name }}
                     </VListItemTitle>
-                    <VListItemSubtitle class="text-caption mt-1">
-                      Saldo: <span
-                        class="font-weight-bold"
-                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
-                      >${{ parseFloat(item.raw.saldo_actual).toFixed(2) }}</span>
+                    <VListItemSubtitle class="text-caption">
+                      Saldo disponible: <span class="font-weight-bold" :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">
+                        ${{ parseFloat(item.raw.saldo_actual || 0).toFixed(2) }}
+                      </span>
                     </VListItemSubtitle>
                   </VListItem>
                 </template>
               </VSelect>
             </VCol>
 
-            <!-- Resumen de Adelantos -->
-            <VCol
-              v-if="pendingAdvances.length > 0"
-              cols="12"
-            >
-              <VCard class="bg-orange-lighten-5 rounded-lg pa-4">
-                <VCardTitle class="d-flex align-center gap-2 mb-3">
-                  <VIcon
-                    color="warning"
-                    size="20"
-                  >
-                    ri-information-line
-                  </VIcon>
-                  <span class="text-h6 font-weight-bold">Adelantos Pendientes</span>
-                </VCardTitle>
-                <VCardText class="pa-0">
-                  <div class="mb-3">
-                    <span class="text-body-2">Total a deducir: </span>
-                    <span class="text-h6 font-weight-bold text-warning">${{
-                      totalPendingAdvances.toFixed(2) }}</span>
-                  </div>
-                  <VDivider class="mb-3" />
-                  <div
-                    v-for="(advance, index) in pendingAdvances"
-                    :key="advance.id"
-                    class="mb-2"
-                  >
-                    <div class="d-flex justify-space-between align-center">
-                      <div>
-                        <span class="text-body-2 font-weight-medium">${{
-                          advance.amount.toFixed(2) }}</span>
-                        <span class="text-medium-emphasis text-body-2 ml-2">- {{
-                          advance.description || 'Sin descripción' }}</span>
-                      </div>
-                      <VChip
-                        size="x-small"
-                        color="warning"
-                        variant="tonal"
-                      >
-                        {{ advance.advance_date }}
-                      </VChip>
-                    </div>
-                  </div>
-                  <VAlert
-                    type="info"
-                    variant="tonal"
-                    class="mt-3"
-                    density="compact"
-                  >
-                    <template #prepend>
-                      <VIcon>ri-lightbulb-line</VIcon>
-                    </template>
-                    <span class="text-body-2">
-                      Estos adelantos se deducirán automáticamente del monto del pago.
-                      Monto final del pago = Monto ingresado - ${{ totalPendingAdvances.toFixed(2)
-                      }}
-                    </span>
-                  </VAlert>
-                </VCardText>
-              </VCard>
-            </VCol>
-
-
-            <!-- Sueldo Base (Reemplazo temporal) -->
-            <VCol
-              cols="12"
-              md="6"
-            >
-              <VCard
-                v-if="form.employee_id"
-                variant="tonal"
-                color="success"
-                class="h-100 d-flex flex-column align-center justify-center pa-2"
-                style="border: 1px dashed currentColor; min-height: 56px;"
-              >
-                <div
-                  class="text-caption font-weight-bold text-uppercase mb-1"
-                  style="line-height: 1;"
-                >
-                  A Recibir (Sueldo - Adelantos)
-                </div>
-                <div class="text-h6 font-weight-black">
-                  ${{ Math.max(0, selectedEmployeeSalary -
-                    totalPendingAdvances).toFixed(2)
-                  }}
-                </div>
-              </VCard>
-            </VCol>
-
-            <!-- Fecha -->
-            <VCol
-              cols="12"
-              md="6"
-            >
+            <!-- 4. Fecha de Pago y Referencia -->
+            <VCol cols="12" md="6">
               <VTextField
                 v-model="form.payment_date"
-                label="Fecha *"
+                label="Fecha de Emisión / Pago *"
                 type="date"
-                :rules="[v => !!v || 'La fecha es requerida']"
                 variant="outlined"
                 density="comfortable"
+                class="bg-white rounded-lg"
+                :rules="[v => !!v || 'La fecha es requerida']"
+                :disabled="monthPaidInfo?.is_paid"
+              />
+            </VCol>
+
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="form.reference"
+                label="Nº Documento / Transferencia (Opcional)"
+                placeholder="Ej. TRANS-98421"
+                variant="outlined"
+                density="comfortable"
+                class="bg-white rounded-lg"
+                :disabled="monthPaidInfo?.is_paid"
               >
                 <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-calendar-line
-                  </VIcon>
+                  <VIcon color="secondary" size="20">ri-hashtag</VIcon>
                 </template>
               </VTextField>
             </VCol>
 
-            <!-- Descripción -->
+            <!-- 5. Observaciones -->
             <VCol cols="12">
               <VTextarea
                 v-model="form.description"
-                label="Descripción *"
-                placeholder="Describe el pago realizado..."
-                rows="3"
+                label="Observaciones o Notas del Rol (Opcional)"
+                placeholder="Detalles adicionales sobre el pago del mes..."
+                rows="2"
                 variant="outlined"
                 density="comfortable"
-                no-resize
-                :rules="[
-                  v => !!v || 'La descripción es requerida'
-                ]"
-              >
-                <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-article-line
-                  </VIcon>
-                </template>
-              </VTextarea>
+                class="bg-white rounded-lg"
+                :disabled="monthPaidInfo?.is_paid"
+              />
             </VCol>
 
-            <!-- Referencia -->
-            <VCol cols="12">
-              <VTextField
-                v-model="form.reference"
-                label="Referencia"
-                placeholder="Número de comprobante, cheque, etc..."
-                variant="outlined"
-                density="comfortable"
-              >
-                <template #prepend-inner>
-                  <VIcon
-                    color="primary"
-                    size="20"
-                  >
-                    ri-file-text-line
-                  </VIcon>
-                </template>
-              </VTextField>
-            </VCol>
-
-            <!-- Comprobante / Recibo Adjunto -->
+            <!-- 6. Adjuntar Comprobantes -->
             <VCol cols="12">
               <ReceiptUploader
                 v-model="receiptFiles"
-                label="Comprobante(s) de Pago (Foto / PDF)"
-                hint="Formatos JPG, PNG, WEBP o PDF hasta 15MB"
-                :max-files="5"
-                @error="msg => showToast(msg, 'error')"
+                title="Comprobante de Transferencia / Recibo (Opcional)"
+                subtitle="Adjunta fotos o archivos PDF del comprobante bancario"
+                :max-files="3"
+                :disabled="monthPaidInfo?.is_paid"
               />
             </VCol>
           </VRow>
+
+          <!-- Acciones del Diálogo -->
+          <div class="d-flex justify-end align-center gap-3 mt-6 pt-3 border-t">
+            <VBtn
+              color="secondary"
+              variant="outlined"
+              class="rounded-lg px-5 font-weight-medium"
+              height="42"
+              @click="closeDialog"
+            >
+              Cancelar
+            </VBtn>
+
+            <VBtn
+              type="submit"
+              color="primary"
+              variant="elevated"
+              prepend-icon="ri-check-line"
+              class="rounded-lg px-6 font-weight-bold elevation-2"
+              height="42"
+              :loading="loading"
+              :disabled="monthPaidInfo?.is_paid || isCheckingMonth"
+            >
+              Guardar y Emitir Pago
+            </VBtn>
+          </div>
         </VForm>
       </VCardText>
-
-      <VDivider />
-
-      <!-- Footer -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          :disabled="loading"
-          @click="closeDialog"
-        >
-          Cancelar
-        </VBtn>
-        <VBtn
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-save-line"
-          class="rounded-lg px-6 font-weight-bold"
-          height="40"
-          :loading="loading"
-          @click="handleSubmit"
-        >
-          Guardar Pago
-        </VBtn>
-      </VCardActions>
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.custom-dialog-card {
+  overflow: hidden;
+}
+.text-white-70 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+</style>
