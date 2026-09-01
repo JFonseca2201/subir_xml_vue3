@@ -95,13 +95,13 @@ const canAccessEmployeeExpenses = computed(() => {
 })
 
 const headers = [
-  { title: 'TIPO', key: 'type', sortable: true },
-  { title: 'EMPLEADO', key: 'employee_name', sortable: true },
-  { title: 'DESCRIPCIÓN', key: 'description' },
-  { title: 'CUENTA', key: 'account_name', sortable: true },
-  { title: 'MONTO', key: 'amount', sortable: true, align: 'end' },
-  { title: 'FECHA', key: 'raw_date', sortable: true },
-  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center' },
+  { title: 'TIPO / REGISTRO', key: 'type', sortable: true, width: '220px', minWidth: '200px' },
+  { title: 'EMPLEADO', key: 'employee_name', sortable: true, width: '220px', minWidth: '190px' },
+  { title: 'DESCRIPCIÓN', key: 'description', minWidth: '230px' },
+  { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '190px', minWidth: '170px' },
+  { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '130px', minWidth: '120px' },
+  { title: 'FECHA', key: 'raw_date', sortable: true, width: '140px', minWidth: '120px' },
+  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '110px' },
 ]
 
 // Functions
@@ -627,70 +627,137 @@ onMounted(() => {
             </div>
           </div>
         </template>
+        <!-- Slot: TIPO / REGISTRO (Diseño Chévere y Moderno) -->
         <template #item.type="{ item }">
-          <div class="d-flex flex-column align-start gap-1">
-            <VChip
-              :color="item.type === 'payment' ? 'success' : (item.is_deducted ? 'grey' : 'info')"
+          <!-- 1. Caso: PAGO DE NÓMINA / ROL DE PAGOS -->
+          <div v-if="item.type === 'payment'" class="d-flex align-center gap-2.5 py-1">
+            <VAvatar
+              size="38"
+              color="success"
               variant="tonal"
-              size="small"
-              class="font-weight-bold"
+              class="rounded-lg shrink-0"
+            >
+              <VIcon icon="ri-file-user-line" size="20" color="success" />
+            </VAvatar>
+            <div class="d-flex flex-column text-left">
+              <span class="font-weight-bold text-slate-900 text-body-2 leading-tight">
+                Rol de Pagos
+              </span>
+              <span v-if="item.payment_month" class="text-caption font-weight-bold text-primary d-flex align-center gap-1 mt-0.5">
+                <VIcon icon="ri-calendar-event-line" size="13" />
+                {{ formatMonthLabel(item.payment_month) }}
+              </span>
+              <span v-else class="text-caption text-medium-emphasis mt-0.5">
+                Liquidación
+              </span>
+            </div>
+          </div>
+
+          <!-- 2. Caso: ADELANTO LIQUIDADO / DEDUCIDO -->
+          <div v-else-if="item.is_deducted" class="d-flex align-center gap-2.5 py-1">
+            <VAvatar
+              size="38"
+              color="secondary"
+              variant="tonal"
+              class="rounded-lg shrink-0"
+            >
+              <VIcon icon="ri-checkbox-circle-line" size="20" color="success" />
+            </VAvatar>
+            <div class="d-flex flex-column text-left">
+              <span class="font-weight-bold text-slate-700 text-body-2 leading-tight">
+                Adelanto
+              </span>
+              <span class="text-caption font-weight-semibold text-success d-flex align-center gap-1 mt-0.5">
+                <VIcon icon="ri-check-line" size="13" />
+                Liquidado en Rol
+              </span>
+            </div>
+          </div>
+
+          <!-- 3. Caso: ADELANTO PENDIENTE DE COBRO -->
+          <div v-else class="d-flex align-center gap-2.5 py-1">
+            <VAvatar
+              size="38"
+              color="warning"
+              variant="tonal"
+              class="rounded-lg shrink-0"
+            >
+              <VIcon icon="ri-hand-coin-line" size="20" color="warning" />
+            </VAvatar>
+            <div class="d-flex flex-column text-left">
+              <span class="font-weight-bold text-slate-800 text-body-2 leading-tight">
+                Adelanto
+              </span>
+              <span class="text-caption font-weight-semibold text-warning d-flex align-center gap-1 mt-0.5">
+                <VIcon icon="ri-time-line" size="13" />
+                Por Deducir
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <!-- Slot: EMPLEADO -->
+        <template #item.employee_name="{ item }">
+          <div class="d-flex align-center gap-2.5 py-1">
+            <VAvatar
+              size="34"
+              color="primary"
+              variant="tonal"
+              class="rounded-circle shrink-0 font-weight-bold text-caption"
+            >
+              <VIcon icon="ri-user-3-line" size="18" />
+            </VAvatar>
+            <div class="d-flex flex-column">
+              <span class="font-weight-bold text-slate-800 text-body-2">
+                {{ item.employee_name }}
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <!-- Slot: DESCRIPCIÓN -->
+        <template #item.description="{ item }">
+          <div class="text-body-2 text-slate-700 py-1" style="max-width: 320px; white-space: normal; line-height: 1.35;">
+            {{ item.description || item.reason || 'Sin descripción adicional' }}
+          </div>
+        </template>
+
+        <!-- Slot: CUENTA DE PAGO -->
+        <template #item.account_name="{ item }">
+          <div class="d-flex align-center gap-2 py-1">
+            <VAvatar
+              size="30"
+              :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'"
+              variant="tonal"
+              class="rounded-lg shrink-0"
             >
               <VIcon
-                start
-                size="14"
-              >
-                {{ item.type === 'payment' ? 'ri-money-dollar-circle-line' : (item.is_deducted ? 'ri-check-line' : 'ri-hand-coin-line') }}
-              </VIcon>
-              {{ item.type === 'payment' ? 'ROL DE PAGOS' : (item.is_deducted ? 'ADELANTO LIQUIDADO' : 'ADELANTO') }}
-            </VChip>
-            <VChip
-              v-if="item.type === 'payment' && item.payment_month"
-              size="x-small"
-              variant="outlined"
-              color="primary"
-              class="font-weight-bold"
-            >
-              <VIcon start size="12">ri-calendar-line</VIcon>
-              {{ formatMonthLabel(item.payment_month) }}
-            </VChip>
+                :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                size="16"
+              />
+            </VAvatar>
+            <span class="font-weight-medium text-slate-800 text-body-2">
+              {{ cleanAccountName(item.account_name) }}
+            </span>
           </div>
         </template>
 
-        <template #item.employee_name="{ item }">
-          <div class="d-flex align-center gap-2 font-weight-medium text-high-emphasis">
-            <VIcon
-              color="primary"
-              size="18"
-            >
-              ri-user-line
-            </VIcon>
-            {{ item.employee_name }}
-          </div>
-        </template>
-
-        <template #item.account_name="{ item }">
-          <div class="d-flex align-center gap-2 font-weight-medium text-high-emphasis">
-            <VIcon
-              color="primary"
-              size="18"
-            >
-              ri-bank-line
-            </VIcon>
-            {{ cleanAccountName(item.account_name) }}
-          </div>
-        </template>
-
+        <!-- Slot: MONTO -->
         <template #item.amount="{ item }">
           <span
-            class="font-weight-extrabold"
+            class="font-weight-black text-subtitle-1"
             :class="item.type === 'payment' ? 'text-primary' : 'text-info'"
           >
             {{ formatCurrency(item.amount) }}
           </span>
         </template>
 
+        <!-- Slot: FECHA -->
         <template #item.raw_date="{ item }">
-          <span class="text-body-2 text-medium-emphasis">{{ item.date }}</span>
+          <div class="d-flex align-center gap-1.5 text-body-2 text-medium-emphasis font-weight-medium">
+            <VIcon icon="ri-calendar-line" size="16" color="secondary" />
+            <span>{{ item.date }}</span>
+          </div>
         </template>
 
         <template #item.actions="{ item }">
@@ -885,6 +952,34 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.transfer-table-container :deep(table) {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.transfer-table-container :deep(th) {
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #475569 !important;
+  padding: 16px 18px !important;
+  background-color: #f8fafc !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  white-space: nowrap !important;
+}
+
+.transfer-table-container :deep(td) {
+  padding: 14px 18px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 0.885rem !important;
+}
+
+.transfer-table-container :deep(tbody tr:hover td) {
+  background-color: #f8fafc !important;
+}
+
 .sticky-header {
   position: sticky;
   top: 62px;
