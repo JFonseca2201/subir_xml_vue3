@@ -428,20 +428,7 @@ const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
 
-const isSaleCanceled = item => {
-  if (!item) return false
-  if (item.deleted_at) return true
-  const s = String(item.status || '').toLowerCase()
-  const ps = String(item.payment_status || '').toLowerCase()
-  return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
-}
-
 const printSale = saleId => {
-  if (props.saleData && isSaleCanceled(props.saleData)) {
-    showNotification('Este documento se encuentra ANULADO y no se puede imprimir.', 'warning')
-    return
-  }
-
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
@@ -462,11 +449,6 @@ const printSale = saleId => {
 }
 
 const generateSinglePDF = sale => {
-  if (isSaleCanceled(sale)) {
-    showNotification('Este documento se encuentra ANULADO y no dispone de comprobante activo.', 'warning')
-    return
-  }
-
   const token = localStorage.getItem('token')
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const resource = isQuote.value ? 'quotes' : 'sales'
@@ -551,18 +533,18 @@ const generateSinglePDF = sale => {
           <VRow class="mb-5 g-3">
             <!-- 1. Total -->
             <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--total h-100">
-                <div class="d-flex align-center gap-3">
-                  <div class="stat-icon-wrapper stat-icon--total">
-                    <VIcon icon="ri-money-dollar-circle-line" size="22" />
-                  </div>
-                  <div>
+              <div class="stat-glass-card stat-card--total h-100 pa-4">
+                <div class="d-flex align-center justify-space-between gap-2">
+                  <div class="d-flex align-center gap-2">
+                    <div class="stat-icon-wrapper stat-icon--total">
+                      <VIcon icon="ri-money-dollar-circle-line" size="20" />
+                    </div>
                     <div class="stat-label">
-                      Total Facturado
+                      Total
                     </div>
-                    <div class="stat-value text-primary font-weight-black">
-                      {{ formatCurrency(saleData.total) }}
-                    </div>
+                  </div>
+                  <div class="stat-value text-primary font-weight-black text-right">
+                    {{ formatCurrency(saleData.total) }}
                   </div>
                 </div>
               </div>
@@ -570,21 +552,21 @@ const generateSinglePDF = sale => {
 
             <!-- 2. Estado de pago / SRI -->
             <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--status h-100">
-                <div class="d-flex align-center gap-3">
-                  <div class="stat-icon-wrapper stat-icon--status">
-                    <VIcon :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'" size="22" />
+              <div class="stat-glass-card stat-card--status h-100 pa-4">
+                <div class="d-flex align-center justify-space-between gap-2">
+                  <div class="d-flex align-center gap-2">
+                    <div class="stat-icon-wrapper stat-icon--status">
+                      <VIcon :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'" size="20" />
+                    </div>
+                    <div class="stat-label">
+                      {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
+                    </div>
                   </div>
                   <div>
-                    <div class="stat-label">
-                      Estado {{ isInvoice ? 'SRI' : 'Pago' }}
-                    </div>
-                    <div class="mt-0.5">
-                      <VChip :color="isInvoice && sriStatus ? sriStatusColor : getPaymentStatusColor" size="small"
-                        variant="tonal" class="font-weight-bold">
-                        {{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}
-                      </VChip>
-                    </div>
+                    <VChip :color="isInvoice && sriStatus ? sriStatusColor : getPaymentStatusColor" size="small"
+                      variant="tonal" class="font-weight-bold">
+                      {{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}
+                    </VChip>
                   </div>
                 </div>
               </div>
@@ -592,19 +574,18 @@ const generateSinglePDF = sale => {
 
             <!-- 3. Ítems -->
             <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--items h-100">
-                <div class="d-flex align-center gap-3">
-                  <div class="stat-icon-wrapper stat-icon--items">
-                    <VIcon icon="ri-shopping-bag-3-line" size="22" />
-                  </div>
-                  <div>
+              <div class="stat-glass-card stat-card--items h-100 pa-4">
+                <div class="d-flex align-center justify-space-between gap-2">
+                  <div class="d-flex align-center gap-2">
+                    <div class="stat-icon-wrapper stat-icon--items">
+                      <VIcon icon="ri-shopping-bag-3-line" size="20" />
+                    </div>
                     <div class="stat-label">
                       Ítems
                     </div>
-                    <div class="stat-value text-slate-800 font-weight-black">
-                      {{ itemsCount }} <span class="text-caption font-weight-medium text-medium-emphasis">{{ itemsCount
-                        === 1 ? 'ítem' : 'ítems' }}</span>
-                    </div>
+                  </div>
+                  <div class="stat-value text-slate-800 font-weight-black text-right">
+                    {{ itemsCount }} <span class="text-caption font-weight-medium text-medium-emphasis">{{ itemsCount === 1 ? 'ítem' : 'ítems' }}</span>
                   </div>
                 </div>
               </div>
@@ -612,19 +593,19 @@ const generateSinglePDF = sale => {
 
             <!-- 4. Método de pago -->
             <VCol cols="12" sm="6" md="3">
-              <div class="stat-glass-card stat-card--payment h-100">
-                <div class="d-flex align-center gap-3">
-                  <div class="stat-icon-wrapper stat-icon--payment">
-                    <VIcon icon="ri-bank-card-line" size="22" />
+              <div class="stat-glass-card stat-card--payment h-100 pa-4">
+                <div class="d-flex align-center justify-space-between gap-2">
+                  <div class="d-flex align-center gap-2 overflow-hidden">
+                    <div class="stat-icon-wrapper stat-icon--payment flex-shrink-0">
+                      <VIcon icon="ri-bank-card-line" size="20" />
+                    </div>
+                    <div class="stat-label text-truncate">
+                      Pago
+                    </div>
                   </div>
-                  <div class="overflow-hidden">
-                    <div class="stat-label">
-                      Método de pago
-                    </div>
-                    <div class="text-body-2 font-weight-bold text-slate-800 text-truncate"
-                      :title="displayPaymentMethod">
-                      {{ displayPaymentMethod }}
-                    </div>
+                  <div class="text-body-2 font-weight-bold text-slate-800 text-right text-truncate"
+                    :title="displayPaymentMethod">
+                    {{ displayPaymentMethod }}
                   </div>
                 </div>
               </div>
@@ -840,7 +821,8 @@ const generateSinglePDF = sale => {
                     :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
                     size="34" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
                   <div class="text-body-2 font-weight-bold text-slate-800">
-                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' : 'Venta de Contado') }}
+                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' : 'Venta de
+                    Contado') }}
                   </div>
                   <p class="text-caption text-medium-emphasis mb-0 mt-1">
                     {{ isQuote ? 'No genera salidas ni ingresos de caja hasta su conversión.' : (saleData.is_credited ?
