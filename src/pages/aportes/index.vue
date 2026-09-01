@@ -586,29 +586,29 @@ onMounted(() => {
         <thead>
           <tr>
             <th
-              class="text-left py-3"
-              style="min-width: 220px;"
+              class="text-left py-4"
+              style="min-width: 260px;"
             >
               SOCIO
             </th>
-            <th class="text-left py-3">
+            <th class="text-left py-4" style="min-width: 260px;">
               DESCRIPCIÓN
             </th>
-            <th class="text-left py-3">
-              CUENTA & MÉTODO
+            <th class="text-left py-4" style="min-width: 200px;">
+              CUENTA DE INGRESO
             </th>
-            <th class="text-left py-3">
+            <th class="text-left py-4" style="min-width: 180px;">
               REGISTRADO POR
             </th>
             <th
-              class="text-right py-3"
+              class="text-right py-4"
               style="width: 160px;"
             >
               MONTO
             </th>
             <th
-              class="text-center py-3"
-              style="width: 160px;"
+              class="text-center py-4"
+              style="width: 120px;"
             >
               ACCIONES
             </th>
@@ -685,40 +685,44 @@ onMounted(() => {
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
               <td colspan="6">
-                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                   <div class="d-flex align-center gap-3">
                     <VAvatar
                       color="primary"
                       variant="tonal"
-                      size="32"
-                      rounded="lg"
+                      size="36"
+                      class="rounded-lg"
                     >
                       <VIcon
                         icon="ri-calendar-event-line"
-                        size="18"
+                        size="20"
                         color="primary"
                       />
                     </VAvatar>
                     <div class="d-flex align-center gap-2">
-                      <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                      <span class="text-subtitle-2 font-weight-bold text-slate-900">
                         {{ dia.label }}
                       </span>
-                      <span class="text-caption text-medium-emphasis">
-                        • {{ dia.aportes.length }} {{ dia.aportes.length === 1 ? 'aporte' : 'aportes' }}
-                      </span>
+                      <VChip
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        class="font-weight-bold"
+                      >
+                        {{ dia.aportes.length }} {{ dia.aportes.length === 1 ? 'aporte' : 'aportes' }}
+                      </VChip>
                     </div>
                   </div>
 
                   <div class="d-flex align-center gap-2 me-2">
-                    <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">TOTAL DÍA:</span>
+                    <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
                     <VChip
-                      color="primary"
+                      color="success"
                       variant="tonal"
                       size="small"
-                      class="font-weight-bold px-3"
+                      class="font-weight-black px-3 text-subtitle-2"
                     >
-                      {{ formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto || 0),
-                                                                            0)) }}
+                      {{ formatCurrency(dia.total_dia || dia.aportes.reduce((acc, a) => acc + parseFloat(a.monto || 0), 0)) }}
                     </VChip>
                   </div>
                 </div>
@@ -733,45 +737,60 @@ onMounted(() => {
             >
               <!-- Socio -->
               <td class="py-3">
-                <div class="d-flex align-center gap-2 font-weight-bold text-high-emphasis">
+                <div class="d-flex align-center gap-3">
                   <VAvatar
-                    size="26"
+                    size="36"
                     color="success"
                     variant="tonal"
+                    class="rounded-circle shrink-0 font-weight-bold"
                   >
                     <VIcon
-                      size="16"
-                      icon="ri-user-line"
+                      size="20"
+                      icon="ri-user-star-line"
+                      color="success"
                     />
                   </VAvatar>
-                  {{ aporte.partner_nombre }}
+                  <div class="d-flex flex-column text-left">
+                    <span class="text-body-2 font-weight-bold text-slate-900">
+                      {{ aporte.partner_nombre }}
+                    </span>
+                    <span class="text-caption text-medium-emphasis">
+                      Socio Inversionista
+                    </span>
+                  </div>
                 </div>
               </td>
 
               <!-- Descripción -->
               <td class="py-3">
                 <div
-                  class="text-body-2 font-weight-medium text-high-emphasis text-wrap"
-                  style="max-width: 250px;"
+                  class="text-body-2 font-weight-medium text-slate-800 text-wrap"
+                  style="max-width: 280px; line-height: 1.35;"
                 >
-                  {{ aporte.descripcion || 'Sin descripción' }}
+                  {{ aporte.descripcion || 'Aporte de Capital' }}
                 </div>
               </td>
 
               <!-- Cuenta & Método -->
               <td class="py-3">
                 <div class="d-flex align-center gap-2">
-                  <VIcon
-                    :icon="aporte.metodo_pago === 'TRANSFERENCIA' ? 'ri-bank-card-line' : 'ri-money-dollar-circle-line'"
-                    size="16"
-                    :color="aporte.metodo_pago === 'TRANSFERENCIA' ? 'info' : 'success'"
-                  />
+                  <VAvatar
+                    size="30"
+                    :color="aporte.metodo_pago === 'EFECTIVO' ? 'success' : 'primary'"
+                    variant="tonal"
+                    class="rounded-lg shrink-0"
+                  >
+                    <VIcon
+                      :icon="aporte.metodo_pago === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                      size="16"
+                    />
+                  </VAvatar>
                   <div class="d-flex flex-column">
-                    <span class="text-body-2 font-weight-semibold text-high-emphasis">
+                    <span class="text-body-2 font-weight-bold text-slate-900">
                       {{ cleanAccountName(aporte.cuenta) }}
                     </span>
-                    <span class="text-caption text-medium-emphasis text-lowercase capitalize-first">
-                      {{ aporte.metodo_pago }}
+                    <span class="text-caption text-medium-emphasis text-capitalize">
+                      {{ (aporte.metodo_pago || '').toLowerCase() }}
                     </span>
                   </div>
                 </div>
@@ -779,21 +798,35 @@ onMounted(() => {
 
               <!-- Registrado por -->
               <td class="py-3">
-                <div class="d-flex align-center gap-2 text-body-2 font-weight-medium text-high-emphasis">
-                  <VIcon
-                    icon="ri-user-settings-line"
-                    size="16"
-                    class="text-medium-emphasis"
-                  />
-                  <span class="text-caption text-medium-emphasis">
-                    {{ aporte.hora }} • {{ aporte.user_nombre || 'N/A' }}
-                  </span>
+                <div class="d-flex align-center gap-2">
+                  <VAvatar
+                    size="28"
+                    color="secondary"
+                    variant="tonal"
+                    class="rounded-circle shrink-0"
+                  >
+                    <VIcon
+                      icon="ri-user-settings-line"
+                      size="15"
+                    />
+                  </VAvatar>
+                  <div class="d-flex flex-column">
+                    <span class="text-body-2 font-weight-medium text-slate-800">
+                      {{ aporte.user_nombre || 'Super-Admin' }}
+                    </span>
+                    <span class="text-caption text-medium-emphasis d-flex align-center gap-1">
+                      <VIcon icon="ri-time-line" size="12" />
+                      {{ aporte.hora || '' }}
+                    </span>
+                  </div>
                 </div>
               </td>
 
               <!-- Monto -->
-              <td class="py-3 text-right font-weight-bold text-subtitle-1 text-success">
-                +{{ formatCurrency(aporte.monto) }}
+              <td class="py-3 text-right">
+                <span class="text-subtitle-1 font-weight-black text-success">
+                  +{{ formatCurrency(aporte.monto) }}
+                </span>
               </td>
 
               <!-- Acciones -->
@@ -915,38 +948,49 @@ onMounted(() => {
   <AttachReceiptsDialog
     v-if="selectedAporteForReceipts"
     :is-dialog-visible="isReceiptsDialogVisible"
-    attachable-type="aporte"
+    attachable-type="partner_capital"
     :attachable-id="selectedAporteForReceipts.id"
-    :title="`Comprobantes de Aporte #${selectedAporteForReceipts.id} — ${selectedAporteForReceipts.partner_nombre}`"
+    :title="`Comprobantes de Aporte — ${selectedAporteForReceipts.partner_nombre}`"
     :identifier="`APORTE-${String(selectedAporteForReceipts.id).padStart(5, '0')}`"
     :party-name="selectedAporteForReceipts.partner_nombre"
     @update:is-dialog-visible="val => { isReceiptsDialogVisible = val; if (!val) selectedAporteForReceipts = null; }"
     @updated="loadAportes"
   />
 
-  <!-- Diálogo de Eliminar Aporte -->
+  <!-- Diálogo Confirmar Eliminación (VDialog) -->
   <VDialog
     v-model="showDeleteDialog"
     scrollable
     max-width="440"
-    persistent
   >
-    <VCard class="custom-dialog-card">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="closeDeleteDialog"
-        />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-delete-bin-line" />
+    <VCard class="custom-dialog-card rounded-xl">
+      <!-- Header Banner Danger -->
+      <div class="custom-dialog-header-danger bg-error text-white pa-4">
+        <div class="d-flex align-center justify-space-between mb-1">
+          <div class="d-flex align-center gap-2">
+            <VAvatar
+              color="white"
+              variant="tonal"
+              size="32"
+            >
+              <VIcon
+                color="white"
+                icon="ri-delete-bin-line"
+                size="18"
+              />
+            </VAvatar>
+            <h3 class="custom-dialog-title text-white font-weight-bold">
+              Eliminar Aporte
+            </h3>
+          </div>
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            color="white"
+            @click="closeDeleteDialog"
+          />
         </div>
-        <h3 class="custom-dialog-title">
-          Eliminar Aporte
-        </h3>
         <p class="custom-dialog-subtitle">
           Esta acción revertirá el saldo y no se puede deshacer
         </p>
@@ -1002,68 +1046,6 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.sticky-header {
-  position: sticky;
-  top: 62px;
-  z-index: 99;
-  background-color: rgb(var(--v-theme-surface)) !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.2s ease;
-}
-
-@media (min-width: 960px) {
-  .sticky-header {
-    top: 70px;
-  }
-}
-
-.shimmer-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-line {
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-chip {
-  width: 60px;
-  height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-.shimmer-button {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
-}
-
-@keyframes loading-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>
 
 <route lang="yaml">
 meta:

@@ -6551,3 +6551,22 @@
         border-bottom: 1px solid #f1f5f9 !important;
     }
 }
+
+// ============================================
+// APORTES / PARTNER CONTRIBUTIONS MODULE
+// ============================================
+
+.aportes-page {
+    .sticky-header {
+        position: sticky;
+        top: 62px;
+        z-index: 99;
+        background-color: rgb(var(--v-theme-surface)) !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease;
+
+        @media (min-width: 960px) {
+            top: 70px;
+        }
+    }
+}
