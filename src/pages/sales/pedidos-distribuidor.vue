@@ -641,7 +641,8 @@ onMounted(async () => {
                   <VTextField v-model="searchReplacementQuery"
                     placeholder="Buscar por repuesto, código SKU o distribuidor sugerido..."
                     prepend-inner-icon="ri-search-line" variant="solo" density="comfortable" clearable hide-details
-                    bg-color="white" class="elevation-3 rounded-lg text-body-1 text-grey-darken-4" />
+                    bg-color="white" class="elevation-3 rounded-lg text-body-1 text-grey-darken-4"
+                    :loading="loadingPendingReplacements" />
                 </div>
               </div>
 

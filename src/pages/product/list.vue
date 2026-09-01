@@ -80,8 +80,15 @@ const headers = [
   { title: 'Acciones', key: 'actions', sortable: false, width: '120px' },
 ]
 
+let productsAbortController = null
+
 // Métodos
 const searchProducts = async () => {
+  if (productsAbortController) {
+    productsAbortController.abort()
+  }
+  productsAbortController = new AbortController()
+
   loading.value = true
   try {
     const params = {
@@ -97,7 +104,10 @@ const searchProducts = async () => {
       }
     })
 
-    const response = await $api('products', { params })
+    const response = await $api('products', { 
+      params,
+      signal: productsAbortController.signal,
+    })
 
     console.log(response)
 
@@ -117,6 +127,7 @@ const searchProducts = async () => {
       }
     }
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error al buscar productos:', error)
   } finally {
     loading.value = false
@@ -337,14 +348,18 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   v-model="searchForm.search"
                   label="Búsqueda General"
                   placeholder="Descripción, SKU, código..."
-                  prepend-inner-icon="ri-search-line"
                   variant="outlined"
                   density="comfortable"
                   hide-details="auto"
                   clearable
                   color="primary"
                   :loading="loading"
-                />
+                >
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
 
               <VCol

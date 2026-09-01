@@ -428,7 +428,20 @@ const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
 
+const isSaleCanceled = item => {
+  if (!item) return false
+  if (item.deleted_at) return true
+  const s = String(item.status || '').toLowerCase()
+  const ps = String(item.payment_status || '').toLowerCase()
+  return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
+}
+
 const printSale = saleId => {
+  if (props.saleData && isSaleCanceled(props.saleData)) {
+    showNotification('Este documento se encuentra ANULADO y no se puede imprimir.', 'warning')
+    return
+  }
+
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
@@ -449,6 +462,11 @@ const printSale = saleId => {
 }
 
 const generateSinglePDF = sale => {
+  if (isSaleCanceled(sale)) {
+    showNotification('Este documento se encuentra ANULADO y no dispone de comprobante activo.', 'warning')
+    return
+  }
+
   const token = localStorage.getItem('token')
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const resource = isQuote.value ? 'quotes' : 'sales'
@@ -822,8 +840,8 @@ const generateSinglePDF = sale => {
                     :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
                     size="34" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
                   <div class="text-body-2 font-weight-bold text-slate-800">
-                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' : 'Venta de
-                    Contado') }}
+                    {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' :
+                      'Venta de Contado') }}
                   </div>
                   <p class="text-caption text-medium-emphasis mb-0 mt-1">
                     {{ isQuote ? 'No genera salidas ni ingresos de caja hasta su conversión.' : (saleData.is_credited ?

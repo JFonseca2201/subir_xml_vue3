@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import VueApexCharts from 'vue3-apexcharts'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 // Dialogs Import
 import ClientShowDialog from '@/components/inventory/clients/ClientShowDialog.vue'
@@ -47,11 +48,15 @@ const isSearchFocused = ref(false)
 const searchResults = ref([])
 const searchLoading = ref(false)
 let debounceTimeout = null
+let dashboardSearchAbortController = null
 
 watch(searchQuery, newVal => {
   if (debounceTimeout) clearTimeout(debounceTimeout)
+  if (dashboardSearchAbortController) {
+    dashboardSearchAbortController.abort()
+  }
 
-  const query = newVal.trim()
+  const query = (newVal || '').trim()
   if (query.length < 2) {
     searchResults.value = []
 
@@ -59,14 +64,18 @@ watch(searchQuery, newVal => {
   }
 
   debounceTimeout = setTimeout(async () => {
+    dashboardSearchAbortController = new AbortController()
     try {
       searchLoading.value = true
 
-      const response = await $api(`/dashboard/search?q=${encodeURIComponent(query)}`)
+      const response = await $api(`/dashboard/search?q=${encodeURIComponent(query)}`, {
+        signal: dashboardSearchAbortController.signal,
+      })
       if (response.status === 200) {
         searchResults.value = response.results || []
       }
     } catch (err) {
+      if (err?.name === 'AbortError' || err?.message?.includes('aborted')) return
       console.error('Error al realizar búsqueda en base de datos:', err)
     } finally {
       searchLoading.value = false
@@ -730,14 +739,19 @@ const tecnicosOptions = computed(() => {
             v-model="searchQuery"
             density="compact"
             placeholder="Buscar cliente, auto, SKU..."
-            prepend-inner-icon="ri-search-line"
             variant="solo"
             hide-details
+            :loading="searchLoading"
             class="rounded-xl search-field"
             style="box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.1) !important;"
             @focus="isSearchFocused = true"
             @blur="handleSearchBlur"
-          />
+          >
+            <template #prepend-inner>
+              <VProgressCircular v-if="searchLoading" indeterminate color="primary" size="18" width="2" class="me-1" />
+              <VIcon v-else icon="ri-search-line" />
+            </template>
+          </VTextField>
 
           <!-- Floating search results drop panel -->
           <VCard
@@ -1955,7 +1969,7 @@ const tecnicosOptions = computed(() => {
                 {{ selectedReminder.vehicle?.license_plate }}
               </div>
               <div class="text-caption text-medium-emphasis">
-                {{ selectedReminder.vehicle?.brand }} {{ selectedReminder.vehicle?.model }} ({{ selectedReminder.vehicle?.usage_type ? String(selectedReminder.vehicle.usage_type).toUpperCase() : 'PARTICULAR' }})
+                {{ getBrandNameById(selectedReminder.vehicle?.brand) }} {{ selectedReminder.vehicle?.model }} ({{ selectedReminder.vehicle?.usage_type ? String(selectedReminder.vehicle.usage_type).toUpperCase() : 'PARTICULAR' }})
               </div>
             </VCol>
 

@@ -1,8 +1,11 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
+import Swal from 'sweetalert2'
+import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { $api, getApiBaseUrl } from '@/utils/api'
+import { getBrandNameById } from '@/data/vehicleBrands.js'
 
 definePage({ meta: { permission: 'kardex' } })
 
@@ -156,35 +159,62 @@ const formatDateParam = d => {
   return `${y}-${m}-${day}`
 }
 
-// Cargar opciones de Clientes
+let clientSelectorAbortController = null
+let vehicleSelectorAbortController = null
+
+// Cargar opciones de Clientes con AbortController
 const fetchClients = async (query = '') => {
+  if (clientSelectorAbortController) {
+    clientSelectorAbortController.abort()
+  }
+  clientSelectorAbortController = new AbortController()
+
   isSearchingClients.value = true
   try {
-    const resp = await $api(`kardex/clientes/selector?search=${encodeURIComponent(query || '')}`)
+    const resp = await $api(`kardex/clientes/selector?search=${encodeURIComponent(query || '')}`, {
+      signal: clientSelectorAbortController.signal,
+    })
     if (resp?.clients) {
       clientOptions.value = resp.clients
     }
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error cargando selector de clientes:', error)
   } finally {
     isSearchingClients.value = false
   }
 }
 
-// Cargar opciones de Vehículos / Placas
+const debouncedFetchClients = useDebounceFn(query => {
+  fetchClients(query)
+}, 350)
+
+// Cargar opciones de Vehículos / Placas con AbortController
 const fetchVehicles = async (query = '') => {
+  if (vehicleSelectorAbortController) {
+    vehicleSelectorAbortController.abort()
+  }
+  vehicleSelectorAbortController = new AbortController()
+
   isSearchingVehicles.value = true
   try {
-    const resp = await $api(`kardex/vehiculos/selector?search=${encodeURIComponent(query || '')}`)
+    const resp = await $api(`kardex/vehiculos/selector?search=${encodeURIComponent(query || '')}`, {
+      signal: vehicleSelectorAbortController.signal,
+    })
     if (resp?.vehicles) {
       vehicleOptions.value = resp.vehicles
     }
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error cargando selector de vehículos:', error)
   } finally {
     isSearchingVehicles.value = false
   }
 }
+
+const debouncedFetchVehicles = useDebounceFn(query => {
+  fetchVehicles(query)
+}, 350)
 
 // Cargar Kardex Principal
 const loadKardex = async () => {
@@ -281,8 +311,35 @@ const resetFilters = () => {
   loadKardex()
 }
 
+// Helper para verificar transacciones anuladas
+const isSaleCanceled = item => {
+  if (!item) return false
+  if (item.deleted_at) return true
+  const s = String(item.status || '').toLowerCase()
+  const ps = String(item.payment_status || '').toLowerCase()
+  return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
+}
+
 // Generar y abrir PDF de la transacción
 const openPDF = sale => {
+  if (isSaleCanceled(sale)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Transacción Anulada',
+      html: `
+        <div style="text-align: center; color: #4b5563; font-size: 0.95rem;">
+          La transacción / comprobante <b>#${sale.document_number || sale.id}</b> fue <b>ANULADA</b> en el sistema.<br><br>
+          <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px; color: #991b1b; font-size: 0.88rem; line-height: 1.4;">
+            ⚠️ Este comprobante fue dado de baja y no cuenta con archivo PDF disponible para descarga o impresión.
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#7367f0',
+    })
+    return
+  }
+
   const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || ''
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
@@ -495,7 +552,7 @@ onMounted(() => {
               clearable
               :loading="isSearchingClients"
               hide-details
-              @update:search="val => val && val.length > 0 && fetchClients(val)"
+              @update:search="val => val && val.length > 0 && debouncedFetchClients(val)"
               @update:model-value="onClientSelected"
             >
               <template #item="{ props: itemProps, item }">
@@ -558,13 +615,13 @@ onMounted(() => {
               clearable
               :loading="isSearchingVehicles"
               hide-details
-              @update:search="val => val && val.length > 0 && fetchVehicles(val)"
+              @update:search="val => val && val.length > 0 && debouncedFetchVehicles(val)"
               @update:model-value="onVehicleSelected"
             >
               <template #item="{ props: itemProps, item }">
                 <VListItem
                   v-bind="itemProps"
-                  :title="`${item.raw.brand || ''} ${item.raw.model || ''} (${item.raw.year || 'S/A'})`"
+                  :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''} (${item.raw.year || 'S/A'})`.trim()"
                   :subtitle="item.raw.client ? `Dueño: ${item.raw.client.full_name} (${item.raw.client.n_document || ''})` : 'Sin dueño asignado'"
                 >
                   <template #prepend>
@@ -697,7 +754,7 @@ onMounted(() => {
               </span>
               <div>
                 <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
-                  {{ vehicleProfile.brand }} {{ vehicleProfile.model }}
+                  {{ getBrandNameById(vehicleProfile.brand) }} {{ vehicleProfile.model }}
                 </h3>
                 <span class="text-caption text-medium-emphasis">
                   Año {{ vehicleProfile.year || 'N/A' }} • Color: {{ vehicleProfile.color || 'No especificado' }}
@@ -806,7 +863,7 @@ onMounted(() => {
                   icon="ri-car-line"
                   size="14"
                 />
-                {{ veh.license_plate }} ({{ veh.brand }} {{ veh.model }})
+                {{ veh.license_plate }} ({{ getBrandNameById(veh.brand) }} {{ veh.model }})
               </VChip>
             </div>
             <span
@@ -1018,7 +1075,7 @@ onMounted(() => {
                     {{ tx.vehicle.license_plate }}
                   </span>
                   <span class="font-weight-bold text-body-2 text-high-emphasis">
-                    {{ tx.vehicle.brand }} {{ tx.vehicle.model }}
+                    {{ getBrandNameById(tx.vehicle.brand) }} {{ tx.vehicle.model }}
                   </span>
                 </div>
               </div>
@@ -1117,6 +1174,7 @@ onMounted(() => {
               </VChip>
 
               <VBtn
+                v-if="!isSaleCanceled(tx)"
                 icon
                 size="small"
                 color="error"
@@ -1136,6 +1194,18 @@ onMounted(() => {
                   Descargar Comprobante
                 </VTooltip>
               </VBtn>
+              <VChip
+                v-else
+                size="small"
+                color="error"
+                variant="flat"
+                class="font-weight-bold cursor-pointer"
+                title="Clic para más información"
+                @click.stop="openPDF(tx)"
+              >
+                <VIcon start icon="ri-close-circle-line" size="14" />
+                ANULADA
+              </VChip>
             </div>
           </div>
         </div>

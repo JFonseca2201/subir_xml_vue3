@@ -1,4 +1,9 @@
 // Write your overrides
 
+// SweetAlert2 Z-Index fix to always show above Vuetify VDialog and overlays
+.swal2-container {
+  z-index: 99999 !important;
+}
+
 // Inventory module styles
 @import './inventory.scss';

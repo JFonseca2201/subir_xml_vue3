@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -226,18 +227,30 @@ const generateFullName = () => {
   }
 }
 
+const isCheckingDocument = ref(false)
+let checkDocCompanyAbortController = null
+
 const checkDocument = async () => {
-  const doc = clientForm.value.n_document
+  const doc = (clientForm.value.n_document || '').trim()
   if (!doc) return
+
+  if (checkDocCompanyAbortController) {
+    checkDocCompanyAbortController.abort()
+  }
+  checkDocCompanyAbortController = new AbortController()
 
   const type = Number(clientForm.value.type_document)
   if (type === 1 && !validateEcuadorianCedula(doc)) return
   if (type === 2 && !validateEcuadorianRUC(doc)) return
   if (type === 3 && doc.length < 5) return
 
+  isCheckingDocument.value = true
   loading.value = true
   try {
-    const resp = await $api('clients', { params: { search: doc } })
+    const resp = await $api('clients', { 
+      params: { search: doc },
+      signal: checkDocCompanyAbortController.signal,
+    })
     const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
 
     const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim())
@@ -256,28 +269,22 @@ const checkDocument = async () => {
       clientForm.value.ubigeo_distrito = match.ubigeo_distrito || ''
       clientForm.value.state = match.state || 1
     } else {
-      showNotification('RUC/cédula no registrado. Complete los datos para crear el cliente empresa.', 'success')
       isClientExisting.value = false
       matchedClient.value = null
-
-      clientForm.value.full_name = ''
-      clientForm.value.phone = ''
-      clientForm.value.email = ''
-      clientForm.value.birth_date = ''
-      clientForm.value.address = ''
-      clientForm.value.ubigeo_region = ''
-      clientForm.value.ubigeo_provincia = ''
-      clientForm.value.ubigeo_distrito = ''
-      clientForm.value.state = 1
     }
     isDocumentChecked.value = true
   } catch (err) {
+    if (err?.name === 'AbortError' || err?.message?.includes('aborted')) return
     console.error('Error al verificar RUC/cédula:', err)
-    showNotification('Error al verificar el RUC/cédula', 'error')
   } finally {
     loading.value = false
+    isCheckingDocument.value = false
   }
 }
+
+const debouncedCheckDocument = useDebounceFn(() => {
+  checkDocument()
+}, 350)
 
 // Guardar cliente empresa
 const saveClient = async () => {
@@ -451,16 +458,9 @@ watch(() => clientForm.value.n_document, newVal => {
     const cleanDoc = newVal.replace(/[\s-]/g, '')
     const type = Number(clientForm.value.type_document)
 
-    if (cleanDoc.length === 10) {
-      const thirdDigit = parseInt(cleanDoc.substring(2, 3))
-      if ([6, 9].includes(thirdDigit)) {
-        clientForm.value.n_document = cleanDoc + '001'
-      }
-    }
-
     const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null)
     if (requiredLen && cleanDoc.length === requiredLen) {
-      checkDocument()
+      debouncedCheckDocument()
     }
   }
 })

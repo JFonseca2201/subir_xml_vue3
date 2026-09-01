@@ -269,6 +269,7 @@ onMounted(() => {
                 hide-details="auto"
                 clearable
                 color="primary"
+                :loading="loading"
               />
             </VCol>
 

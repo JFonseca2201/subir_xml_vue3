@@ -476,6 +476,7 @@ onMounted(() => {
                 hide-details="auto"
                 clearable
                 color="primary"
+                :loading="loading"
                 @click:clear="clearSearch"
               />
             </VCol>
@@ -1064,6 +1065,7 @@ onMounted(() => {
               clearable
               style="min-width: 240px; flex: 1 1 200px;"
               color="primary"
+              :loading="loading"
             />
 
             <VSelect

@@ -1,15 +1,15 @@
 <script setup>
-import { useLoaderStore } from '@/stores/loader'
+import { ref, watch, onMounted } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { $api } from '@/utils/api'
+import { usePermissions } from '@/composables/usePermissions'
 import UserAddDialog from '@/components/inventory/users/UserAddDialog.vue'
 import UserViewDialog from '@/components/inventory/users/UserViewDialog.vue'
 import UserEditDialog from '@/components/inventory/users/UserEditDialog.vue'
 import UserDeleteDialog from '@/components/inventory/users/UserDeleteDialog.vue'
 
-const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
-import { usePermissions } from '@/composables/usePermissions'
-
 const { can } = usePermissions()
 const roles = ref([])
 
@@ -29,6 +29,7 @@ const isUserDeleteDialogVisible = ref(false)
 const isUserViewDialogVisible = ref(false)
 
 const isLoading = ref(false)
+const isSearching = ref(false)
 const list_users = ref([])
 const seachQuery = ref(null)
 const user_selected_edit = ref(null)
@@ -45,43 +46,42 @@ const normalizeAvatarUrl = avatar => {
   return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
 }
 
+let usersAbortController = null
+
 const list = async () => {
-  loader.start()
+  if (usersAbortController) {
+    usersAbortController.abort()
+  }
+  usersAbortController = new AbortController()
+
+  isLoading.value = true
   try {
-    // Endpoint provisional 'users'
     const resp = await $api("users?search=" + (seachQuery.value ? seachQuery.value : ''), {
       method: 'GET',
+      signal: usersAbortController.signal,
       onResponseError({ response }) {
-        console.log(response._data.error)
+        console.log(response._data?.error)
         showNotification('Error al cargar los usuarios', 'error')
       },
     })
 
-    // Ajustar según la estructura de respuesta real
-    list_users.value = resp.users || []
-
-    list_users.value = list_users.value.map(user => ({
+    list_users.value = (resp.users || []).map(user => ({
       ...user,
       avatar: normalizeAvatarUrl(user.avatar),
     }))
-
-    // Depurar estructura de usuarios
-    if (list_users.value.length > 0) {
-      console.log('Estructura de usuario:', list_users.value[0])
-      console.log('Campos disponibles:', Object.keys(list_users.value[0]))
-      console.log('Avatar procesado:', list_users.value[0].avatar)
-    }
-
-    showNotification('Lista de usuarios cargada correctamente', 'success')
-    console.log(resp)
-
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.log(error)
     showNotification('Error al cargar la lista de usuarios', 'error')
   } finally {
-    loader.stop()
+    isLoading.value = false
+    isSearching.value = false
   }
 }
+
+const debouncedList = useDebounceFn(() => {
+  list()
+}, 350)
 
 const addNewUser = newUser => {
   // Crear una copia del usuario para evitar problemas de reactividad
@@ -205,17 +205,13 @@ const loadRoles = async () => {
 
 
 
-// Búsqueda en tiempo real (debounce)
-let searchTimeout = null
+// Búsqueda en tiempo real con debounce
 watch(seachQuery, () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    list()
-  }, 500)
+  isSearching.value = true
+  debouncedList()
 })
 
 onMounted(() => {
-  // Descomentar cuando exista el endpoint real
   loadRoles()
   list()
 })
@@ -262,13 +258,28 @@ onMounted(() => {
                 v-model="seachQuery"
                 label="Buscar usuario"
                 placeholder="Nombre, email, identificación..."
-                prepend-inner-icon="ri-search-line"
                 variant="outlined"
                 density="comfortable"
                 hide-details="auto"
                 clearable
                 color="primary"
-              />
+                :loading="isLoading || isSearching"
+              >
+                <template #prepend-inner>
+                  <VProgressCircular
+                    v-if="isLoading || isSearching"
+                    indeterminate
+                    color="primary"
+                    size="18"
+                    width="2"
+                    class="me-1"
+                  />
+                  <VIcon
+                    v-else
+                    icon="ri-search-line"
+                  />
+                </template>
+              </VTextField>
             </VCol>
           </VRow>
         </VCardText>
@@ -279,14 +290,6 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Tabla de Usuarios -->
       <div class="position-relative">
-        <VProgressLinear
-          v-if="loader.loading"
-          indeterminate
-          color="primary"
-          height="3"
-          class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;"
-        />
         <div class="overflow-x-auto">
           <VTable
             hover
@@ -338,23 +341,43 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loader.loading">
-              <tr>
-                <td
-                  colspan="7"
-                  class="text-center pa-6"
-                >
-                  <VProgressCircular
-                    indeterminate
-                    color="primary"
-                    size="40"
-                  />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
+
+            <!-- Skeletons en carga -->
+            <tbody v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="n"
+                class="skeleton-row align-middle"
+              >
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-avatar" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-line w-75 mb-2" />
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-chip" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-2">
+                    <div class="shimmer-button" />
+                    <div class="shimmer-button" />
                   </div>
                 </td>
               </tr>
             </tbody>
+
+            <!-- Sin resultados -->
             <tbody v-else-if="!list_users || list_users.length === 0">
               <tr>
                 <td

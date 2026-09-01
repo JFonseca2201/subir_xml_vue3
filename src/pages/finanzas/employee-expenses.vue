@@ -530,6 +530,7 @@ onMounted(() => {
             clearable
             variant="outlined"
             density="compact"
+            :loading="loading"
           />
         </VCol>
 

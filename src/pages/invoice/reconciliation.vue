@@ -573,6 +573,7 @@ onMounted(() => {
                   density="compact"
                   hide-details
                   clearable
+                  :loading="loading"
                   class="bg-white"
                   style="max-width: 320px;"
                 />

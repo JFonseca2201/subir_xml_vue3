@@ -347,10 +347,10 @@ watch(() => clientForm.value.surname, () => {
 watch(() => clientForm.value.n_document, newVal => {
   if (newVal) {
     const cleanDoc = newVal.replace(/[\s-]/g, '')
+    const type = Number(clientForm.value.type_document)
     if (cleanDoc.length === 10) {
       const thirdDigit = parseInt(cleanDoc.substring(2, 3))
-      if ([6, 9].includes(thirdDigit)) {
-        clientForm.value.n_document = cleanDoc + '001'
+      if ([6, 9].includes(thirdDigit) && type !== 2) {
         clientForm.value.type_document = 2 // RUC
       }
     }

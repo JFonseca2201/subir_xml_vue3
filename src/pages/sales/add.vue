@@ -2662,7 +2662,7 @@ onMounted(async () => {
                         order.client?.n_document }}</small>
                     </td>
                     <td>
-                      {{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ order.vehicle?.brand }} {{
+                      {{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ getBrandNameById(order.vehicle?.brand) }} {{
                         order.vehicle?.model }}</small>
                     </td>
                     <td>
@@ -2776,7 +2776,7 @@ onMounted(async () => {
             >
               <span class="text-caption text-medium-emphasis font-weight-medium">VEHÍCULO</span>
               <span class="text-body-2 font-weight-semibold text-grey-darken-3">
-                {{ selectedVehicle.license_plate }} ({{ selectedVehicle.brand }} {{ selectedVehicle.model }})
+                {{ selectedVehicle.license_plate }} ({{ getBrandNameById(selectedVehicle.brand) }} {{ selectedVehicle.model }})
               </span>
             </div>
 

@@ -254,6 +254,7 @@ onMounted(() => {
               hide-details="auto"
               clearable
               color="primary"
+              :loading="loading"
               @keyup.enter="() => { currentPage = 1; loadCredits(); }"
             />
           </VCol>

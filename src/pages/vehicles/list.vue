@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -64,8 +65,15 @@ const generateYearOptions = () => {
   }
 }
 
+let vehiclesAbortController = null
+
 // Cargar vehículos
 const loadVehicles = async () => {
+  if (vehiclesAbortController) {
+    vehiclesAbortController.abort()
+  }
+  vehiclesAbortController = new AbortController()
+
   loading.value = true
   try {
     const params = {
@@ -90,6 +98,7 @@ const loadVehicles = async () => {
     const resp = await $api("vehicles", {
       method: "GET",
       params: params,
+      signal: vehiclesAbortController.signal,
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -130,6 +139,7 @@ const loadVehicles = async () => {
     totalItems.value = resp.total || resp.total_items || resp.count || vehiclesData.length
 
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('❌ Error general al cargar vehículos:', error)
     console.error('❌ Stack trace:', error.stack)
     vehicles.value = []
@@ -140,10 +150,14 @@ const loadVehicles = async () => {
   }
 }
 
-// Watch para resetear página cuando cambia el filtro
-watch(searchForm, () => {
+// Watch con debounce para resetear página cuando cambia el filtro
+const debouncedLoadVehicles = useDebounceFn(() => {
   currentPage.value = 1
   loadVehicles()
+}, 350)
+
+watch(searchForm, () => {
+  debouncedLoadVehicles()
 }, { deep: true })
 
 // Watch para paginación
@@ -265,8 +279,13 @@ onMounted(() => {
             <VRow class="gap-y-3">
               <VCol cols="12" md="4">
                 <VTextField v-model="searchForm.search" label="Buscar vehículo" placeholder="Placa, marca, modelo..."
-                  prepend-inner-icon="ri-search-line" clearable hide-details variant="outlined" density="comfortable"
-                  color="primary" />
+                  clearable hide-details variant="outlined" density="comfortable"
+                  color="primary" :loading="loading">
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
               <VCol cols="12" sm="4" md="3">
                 <VSelect v-model="searchForm.vehicle_type" :items="vehicleTypeOptions" item-title="title"

@@ -1,6 +1,7 @@
 <script setup>
 /* eslint-disable camelcase */
 import { ref, onMounted, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
@@ -89,8 +90,15 @@ const genderOptions = ref([
   { title: 'Otro', value: 'O' },
 ])
 
+let clientsAbortController = null
+
 // Cargar clientes
 const loadClients = async () => {
+  if (clientsAbortController) {
+    clientsAbortController.abort()
+  }
+  clientsAbortController = new AbortController()
+
   loading.value = true
   try {
     // Primero probar sin filtros para ver si hay datos
@@ -118,6 +126,7 @@ const loadClients = async () => {
     const resp = await $api("clients", {
       method: "GET",
       params: params,
+      signal: clientsAbortController.signal,
       onResponseError({ response }) {
         console.log(response._data.error)
       },
@@ -133,16 +142,21 @@ const loadClients = async () => {
     totalItems.value = resp.total || resp.data?.length || 0
 
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('❌ Error al cargar clientes:', error)
   } finally {
     loading.value = false
   }
 }
 
-// Watch para resetear página cuando cambia el filtro
-watch(searchForm, () => {
+// Watch con debounce para resetear página cuando cambia el filtro
+const debouncedLoadClients = useDebounceFn(() => {
   currentPage.value = 1
   loadClients()
+}, 350)
+
+watch(searchForm, () => {
+  debouncedLoadClients()
 }, { deep: true })
 
 // Watch para paginación
@@ -290,8 +304,13 @@ onMounted(() => {
             <VRow class="gap-y-3">
               <VCol cols="12" md="6">
                 <VTextField v-model="searchForm.search" label="Buscar cliente"
-                  placeholder="Nombre, email, RUC o cédula..." prepend-inner-icon="ri-search-line" clearable hide-details
-                  variant="outlined" density="comfortable" color="primary" />
+                  placeholder="Nombre, email, RUC o cédula..." clearable hide-details
+                  variant="outlined" density="comfortable" color="primary" :loading="loading">
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
               <VCol cols="12" sm="6" md="3">
                 <VSelect v-model="searchForm.type_client" :items="typeClientOptions" item-title="title" item-value="value"

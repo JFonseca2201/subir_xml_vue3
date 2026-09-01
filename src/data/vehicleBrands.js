@@ -716,7 +716,16 @@ export const vehicleBrands = {
 
 // Función para obtener el nombre de la marca por ID
 export const getBrandNameById = id => {
-  return vehicleBrands[id] || 'MARCA DESCONOCIDA'
+  if (!id && id !== 0) return ''
+  if (typeof id === 'object' && id !== null) {
+    return id.name || id.title || id.brand_name || (id.id ? getBrandNameById(id.id) : '')
+  }
+  const str = String(id).trim()
+  if (isNaN(Number(str))) {
+    return str.toUpperCase()
+  }
+  const numericId = Number(str)
+  return vehicleBrands[numericId] || vehicleBrands[str] || str
 }
 
 // Función para obtener el ID de la marca por nombre

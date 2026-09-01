@@ -1,13 +1,12 @@
 <script setup>
+import { ref, watch, onMounted } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import RoleDeleteDialog from '@/components/inventory/role/RoleDeleteDialog.vue'
-import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
-
-const loader = useLoaderStore()
-const { showNotification } = useGlobalToast()
 import { usePermissions } from '@/composables/usePermissions'
 
+const { showNotification } = useGlobalToast()
 const { can } = usePermissions()
 
 const data = ref([])
@@ -44,29 +43,42 @@ const list_roles = ref([])
 const seachQuery = ref(null)
 const role_selected_edit = ref(null)
 const role_selected_delete = ref(null)
+const loading = ref(false)
+const isSearching = ref(false)
+
+let rolesAbortController = null
 
 const list = async () => {
-  loader.start()
+  if (rolesAbortController) {
+    rolesAbortController.abort()
+  }
+  rolesAbortController = new AbortController()
+
+  loading.value = true
   try {
     const resp = await $api("role?search=" + (seachQuery.value ? seachQuery.value : ''), {
       method: 'GET',
+      signal: rolesAbortController.signal,
       onResponseError({ response }) {
-        console.log(response._data.error)
+        console.log(response._data?.error)
         showNotification('Error al cargar los roles', 'error')
       },
     })
 
-    list_roles.value = resp.roles.filter(role => role.id !== 1)
-    //showNotification('Lista de roles cargada correctamente', 'success')
-    console.log(resp)
-
+    list_roles.value = (resp.roles || []).filter(role => role.id !== 1)
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.log(error)
     showNotification('Error al cargar la lista de roles', 'error')
   } finally {
-    loader.stop()
+    loading.value = false
+    isSearching.value = false
   }
 }
+
+const debouncedList = useDebounceFn(() => {
+  list()
+}, 350)
 
 const addNewRole = newRole => {
   list_roles.value.unshift(newRole)
@@ -130,13 +142,10 @@ const deleteItem = item => {
   role_selected_delete.value = item
 }
 
-// Búsqueda en tiempo real (debounce)
-let searchTimeout = null
+// Búsqueda en tiempo real con debounce
 watch(seachQuery, () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    list()
-  }, 500)
+  isSearching.value = true
+  debouncedList()
 })
 
 onMounted(() => {
@@ -173,8 +182,23 @@ onMounted(() => {
           <VRow class="align-center">
             <VCol cols="12">
               <VTextField v-model="seachQuery" label="Buscar rol" placeholder="Ej: Administrador, Cajero..."
-                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
-                clearable color="primary" />
+                variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" :loading="loading || isSearching">
+                <template #prepend-inner>
+                  <VProgressCircular
+                    v-if="loading || isSearching"
+                    indeterminate
+                    color="primary"
+                    size="18"
+                    width="2"
+                    class="me-1"
+                  />
+                  <VIcon
+                    v-else
+                    icon="ri-search-line"
+                  />
+                </template>
+              </VTextField>
             </VCol>
           </VRow>
         </VCardText>
@@ -185,8 +209,6 @@ onMounted(() => {
     <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
       <!-- Tabla de Roles -->
       <div class="position-relative">
-        <VProgressLinear v-if="loader.loading" indeterminate color="primary" height="3" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" />
         <div class="overflow-x-auto">
           <VTable hover class="roles-table">
             <thead>
@@ -208,16 +230,38 @@ onMounted(() => {
                 </th>
               </tr>
             </thead>
-            <tbody v-if="loader.loading">
-              <tr>
-                <td colspan="5" class="text-center pa-6">
-                  <VProgressCircular indeterminate color="primary" size="40" />
-                  <div class="mt-2 text-medium-emphasis">
-                    Cargando registros...
+
+            <!-- Skeleton Loaders -->
+            <tbody v-if="loading">
+              <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+                <td class="text-center py-4">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="d-flex align-center gap-3">
+                    <div class="shimmer-avatar" />
+                    <div class="shimmer-line w-60" />
+                  </div>
+                </td>
+                <td class="text-left py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="text-left py-4">
+                  <div class="d-flex gap-2 align-center flex-wrap">
+                    <div class="shimmer-chip" />
+                    <div class="shimmer-chip" />
+                    <div class="shimmer-chip" />
+                  </div>
+                </td>
+                <td class="text-center py-4">
+                  <div class="d-flex justify-center gap-2">
+                    <div class="shimmer-button" />
+                    <div class="shimmer-button" />
                   </div>
                 </td>
               </tr>
             </tbody>
+
             <tbody v-else-if="!list_roles || list_roles.length === 0">
               <tr>
                 <td colspan="5" class="text-center pa-8 text-medium-emphasis">

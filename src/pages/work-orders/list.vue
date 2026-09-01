@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -36,6 +37,8 @@ const openTimeline = workOrder => {
 const isLoading = ref(false)
 const workOrders = ref([])
 const searchQuery = ref('')
+const debouncedSearchQuery = ref('')
+const isSearching = ref(false)
 const statusFilter = ref('all')
 const selectedWorkOrder = ref(null)
 const showDetailsDialog = ref(false)
@@ -103,8 +106,8 @@ const filteredWorkOrders = computed(() => {
     filtered = filtered.filter(wo => wo.status === statusFilter.value)
   }
 
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
+  if (debouncedSearchQuery.value) {
+    const query = debouncedSearchQuery.value.toLowerCase()
     const cleanQuery = query.replace(/[^a-z0-9]/g, '')
 
     filtered = filtered.filter(wo => {
@@ -202,17 +205,37 @@ const formatDateGroup = dateStr => {
   }).format(date)
 }
 
-watch([searchQuery, statusFilter], () => {
+const debouncedSetSearch = useDebounceFn(val => {
+  debouncedSearchQuery.value = val || ''
+  isSearching.value = false
+}, 350)
+
+watch(searchQuery, val => {
+  isSearching.value = true
+  debouncedSetSearch(val)
+})
+
+watch([debouncedSearchQuery, statusFilter], () => {
   currentPage.value = 1
 })
 
+let workOrdersAbortController = null
+
 const loadWorkOrders = async () => {
+  if (workOrdersAbortController) {
+    workOrdersAbortController.abort()
+  }
+  workOrdersAbortController = new AbortController()
+
   isLoading.value = true
   try {
-    const response = await $api('work-orders')
+    const response = await $api('work-orders', {
+      signal: workOrdersAbortController.signal,
+    })
 
     workOrders.value = response.data || []
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error al cargar órdenes de trabajo:', error)
     showNotification('Error al cargar las órdenes de trabajo', 'error')
   } finally {
@@ -563,13 +586,18 @@ onMounted(() => {
                   v-model="searchQuery"
                   label="Buscar orden"
                   placeholder="Número, cliente o placa del vehículo..."
-                  prepend-inner-icon="ri-search-line"
                   variant="outlined"
                   density="comfortable"
                   hide-details="auto"
                   clearable
                   color="primary"
-                />
+                  :loading="isLoading || isSearching"
+                >
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="isLoading || isSearching" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
 
               <VCol

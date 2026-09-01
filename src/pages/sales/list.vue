@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import Swal from 'sweetalert2'
+import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -82,8 +84,15 @@ const paymentStatusOptions = [
   { title: 'Pendiente', value: 'pending' },
 ]
 
+let salesAbortController = null
+
 // Cargar datos
 const loadSales = async () => {
+  if (salesAbortController) {
+    salesAbortController.abort()
+  }
+  salesAbortController = new AbortController()
+
   loading.value = true
   try {
     const params = {
@@ -99,7 +108,10 @@ const loadSales = async () => {
       }
     })
 
-    const response = await $api('sales', { params })
+    const response = await $api('sales', { 
+      params,
+      signal: salesAbortController.signal,
+    })
 
     // Extraer el arreglo real sin importar la estructura de la respuesta
     const extractArray = (res, key) => {
@@ -118,6 +130,7 @@ const loadSales = async () => {
     totalItems.value = paginator.total || sales.value.length || 0
     totalPages.value = paginator.last_page || 1
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error al cargar ventas:', error)
     showNotification('Error al cargar el historial de ventas', 'error')
   } finally {
@@ -483,7 +496,29 @@ const resendSri = async item => {
   }
 }
 
+const showCanceledDocAlert = docNumber => {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Documento Anulado',
+    html: `
+      <div style="text-align: center; color: #4b5563; font-size: 0.95rem;">
+        La venta / factura <b>${docNumber ? '#' + docNumber : ''}</b> se encuentra <b>ANULADA</b> en el sistema.<br><br>
+        <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px; color: #991b1b; font-size: 0.88rem; line-height: 1.4;">
+          ⚠️ Los comprobantes anulados son dados de baja permanentemente y no disponen de archivo PDF ni permiten cobros o modificaciones.
+        </div>
+      </div>
+    `,
+    confirmButtonText: 'Entendido',
+    confirmButtonColor: '#7367f0',
+  })
+}
+
 const generateSinglePDF = sale => {
+  if (isSaleCanceled(sale)) {
+    showCanceledDocAlert(sale.document_number || sale.id)
+    return
+  }
+
   const token = localStorage.getItem('token')
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
   const pdfUrl = `${apiBaseUrl}/sales/${sale.id}/pdf?token=${token}`
@@ -498,6 +533,12 @@ const generateSinglePDF = sale => {
 }
 
 const printSale = saleId => {
+  const sale = sales.value.find(s => s.id === saleId)
+  if (sale && isSaleCanceled(sale)) {
+    showCanceledDocAlert(sale.document_number || sale.id)
+    return
+  }
+
   try {
     const token = localStorage.getItem('token')
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
@@ -532,6 +573,11 @@ const printDirectlyFromServer = async (id, type) => {
 }
 
 const downloadSinglePDF = async sale => {
+  if (isSaleCanceled(sale)) {
+    showCanceledDocAlert(sale.document_number || sale.id)
+    return
+  }
+
   try {
     const response = await $api(`sales/${sale.id}/pdf`, {
       method: 'GET',
@@ -642,10 +688,14 @@ const formatDateGroup = dateStr => {
   }).format(date)
 }
 
-// Watchers
-watch(searchForm, () => {
+// Watchers con debounce para evitar congelamiento de UI en búsquedas
+const debouncedLoadSales = useDebounceFn(() => {
   currentPage.value = 1
   loadSales()
+}, 350)
+
+watch(searchForm, () => {
+  debouncedLoadSales()
 }, { deep: true })
 
 watch(currentPage, () => {
@@ -694,8 +744,13 @@ onMounted(() => {
             <VRow class="align-center" dense>
               <VCol cols="12" md="4">
                 <VTextField v-model="searchForm.search" label="Buscar venta"
-                  placeholder="# Doc, Orden de Trabajo, cliente, cédula, placa..." prepend-inner-icon="ri-search-line"
-                  variant="outlined" density="compact" hide-details="auto" clearable color="primary" />
+                  placeholder="# Doc, Orden de Trabajo, cliente, cédula, placa..."
+                  variant="outlined" density="compact" hide-details="auto" clearable color="primary" :loading="loading">
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
 
               <VCol cols="12" sm="6" md="2">
@@ -831,7 +886,7 @@ onMounted(() => {
                       <div class="d-flex align-center">
                         <span class="doc-number-text"
                           :class="isSaleCanceled(item) ? 'text-decoration-line-through opacity-50' : ''"
-                          style="font-size: 0.85rem;">
+                          style="font-size: 0.88rem; font-weight: 600;">
                           {{ item.document_number }}
                         </span>
                       </div>
@@ -841,7 +896,7 @@ onMounted(() => {
                   <!-- 2. Orden de Trabajo (Sin recuadro) -->
                   <td class="text-center py-3 px-2">
                     <span v-if="item?.work_order_number || item?.work_order?.number || item?.workOrder?.number"
-                      class="font-mono font-weight-bold text-slate-700" style="font-size: 0.85rem;"
+                      class="font-weight-semibold text-slate-700" style="font-size: 0.85rem;"
                       :title="`Orden de Trabajo #${item.work_order_number || item.work_order?.number || item.workOrder?.number}`">
                       {{ item.work_order_number || item.work_order?.number || item.workOrder?.number }}
                     </span>
@@ -852,7 +907,7 @@ onMounted(() => {
                   <td class="text-center py-3 px-2">
                     <div class="d-flex align-center justify-center text-slate-600 gap-1" style="font-size: 0.85rem;">
                       <VIcon icon="ri-calendar-line" size="14" class="text-slate-400" />
-                      <span class="font-medium font-mono">{{ formatDate(item.service_date) }}</span>
+                      <span class="font-weight-medium">{{ formatDate(item.service_date) }}</span>
                     </div>
                   </td>
 
@@ -863,7 +918,7 @@ onMounted(() => {
                         :title="getClientName(item.client)">
                         {{ getClientName(item.client) }}
                       </div>
-                      <div v-if="item.client?.n_document" class="text-slate-500 font-mono mt-0.5"
+                      <div v-if="item.client?.n_document" class="text-slate-500 mt-0.5"
                         style="font-size: 0.85rem;">
                         {{ item.client.n_document }}
                       </div>
@@ -878,7 +933,7 @@ onMounted(() => {
                         {{ formatVehicleInfo(item.vehicle) }}
                       </div>
                       <div class="mt-0.5">
-                        <span class="plate-badge font-mono" style="font-size: 0.85rem;">
+                        <span class="plate-badge font-weight-semibold" style="font-size: 0.85rem;">
                           {{ item.vehicle.license_plate }}
                         </span>
                       </div>
@@ -889,9 +944,9 @@ onMounted(() => {
                   <!-- 6. Total -->
                   <td class="text-right py-3 px-4">
                     <div v-if="item" class="d-flex flex-column align-end gap-1">
-                      <div class="font-weight-bold text-slate-900 font-mono"
+                      <div class="font-weight-bold text-slate-900"
                         :class="isSaleCanceled(item) ? 'text-decoration-line-through opacity-50' : ''"
-                        style="font-size: 0.85rem;">
+                        style="font-size: 0.88rem; font-variant-numeric: tabular-nums;">
                         {{ formatCurrency(item.total) }}
                       </div>
 
@@ -983,8 +1038,11 @@ onMounted(() => {
                         </VMenu>
                       </VBtn>
                     </div>
-                    <div v-else class="text-caption text-medium-emphasis">
-                      —
+                    <div v-else class="d-flex justify-center align-center">
+                      <VBtn variant="text" icon size="small" class="action-icon-btn text-error" title="Documento Anulado (Clic para información)"
+                        @click="showCanceledDocAlert(item.document_number || item.id)">
+                        <VIcon icon="ri-information-line" size="18" />
+                      </VBtn>
                     </div>
                   </td>
                 </tr>

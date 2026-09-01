@@ -72,7 +72,14 @@ const loading = ref(false)
 const items = ref([])
 const search = ref('')
 
+let vSearchAbortController = null
+
 const fetchItems = async query => {
+  if (vSearchAbortController) {
+    vSearchAbortController.abort()
+  }
+  vSearchAbortController = new AbortController()
+
   if (!query || query.length < props.minChars) {
     if (props.modelValue && props.initialItem) {
       items.value = [props.initialItem]
@@ -90,10 +97,14 @@ const fetchItems = async query => {
       ...props.extraParams,
     }
 
-    const response = await $api(props.endpoint, { params })
+    const response = await $api(props.endpoint, { 
+      params,
+      signal: vSearchAbortController.signal,
+    })
 
     items.value = response?.data || response || []
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error in VSearch:', error)
     items.value = []
   } finally {
@@ -150,6 +161,7 @@ watch(() => props.initialItem, newVal => {
     :clearable="clearable"
     :variant="variant"
     :density="density"
+    :loading="loading"
     :hide-details="hideDetails"
     :hide-no-data="hideNoData"
     :no-filter="true"

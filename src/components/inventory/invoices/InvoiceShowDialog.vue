@@ -341,6 +341,7 @@ onMounted(() => {
                   hide-details
                   prepend-inner-icon="ri-search-line"
                   color="primary"
+                  :loading="isLoading"
                   style="background-color: #f8fafc;"
                   class="rounded-lg text-body-2"
                 />

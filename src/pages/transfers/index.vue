@@ -531,6 +531,7 @@ onMounted(() => {
             clearable
             variant="outlined"
             density="compact"
+            :loading="loading"
             class="search-input"
           />
         </VCol>

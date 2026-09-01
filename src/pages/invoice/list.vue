@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { $api } from '@/utils/api'
@@ -25,13 +26,21 @@ const search = ref(null)
 const type = ref(1)
 
 const isLoading = ref(false)
+const isSearching = ref(false)
 
 const isInvoiceShowDialogVisible = ref(false)
 const isInvoiceDeleteDialogVisible = ref(false)
 const isInvoiceProcessDialogVisible = ref(false)
 const invoiceToProcess = ref(null)
 
+let invoiceAbortController = null
+
 const list = async () => {
+  if (invoiceAbortController) {
+    invoiceAbortController.abort()
+  }
+  invoiceAbortController = new AbortController()
+
   isLoading.value = true
 
   try {
@@ -49,6 +58,7 @@ const list = async () => {
     const resp = await $api("invoices/index?page=" + currentPage.value, {
       method: "POST",
       body: data,
+      signal: invoiceAbortController.signal,
       onResponseError({ response }) {
         showNotification('Error al cargar las facturas', 'error')
       },
@@ -70,6 +80,7 @@ const list = async () => {
 
     showNotification('Facturas cargadas correctamente', 'success')
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('❌ Error al cargar facturas:', error)
     showNotification('Error al cargar las facturas', 'error')
   } finally {
@@ -130,14 +141,17 @@ const addInvoice = newInvoice => {
   list_invoices.value.unshift(newInvoice)
 }
 
-// Búsqueda en tiempo real (debounce)
-let searchTimeout = null
-watch([search, supplier_id, range_date], () => {
+// Búsqueda en tiempo real con debounce
+const debouncedLoadInvoices = useDebounceFn(() => {
   currentPage.value = 1
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    list()
-  }, 500)
+  list().finally(() => {
+    isSearching.value = false
+  })
+}, 350)
+
+watch([search, supplier_id, range_date], () => {
+  isSearching.value = true
+  debouncedLoadInvoices()
 })
 
 // Método de refresco para reiniciar todos los filtros
@@ -199,8 +213,13 @@ onMounted(() => {
           <VRow class="align-center">
             <VCol cols="12" md="4">
               <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor, RUC..."
-                prepend-inner-icon="ri-search-line" variant="outlined" density="comfortable" hide-details="auto"
-                clearable color="primary" />
+                variant="outlined" density="comfortable" hide-details="auto"
+                clearable color="primary" :loading="isLoading || isSearching">
+                <template #prepend-inner>
+                  <VProgressCircular v-if="isLoading || isSearching" indeterminate color="primary" size="18" width="2" class="me-1" />
+                  <VIcon v-else icon="ri-search-line" />
+                </template>
+              </VTextField>
             </VCol>
 
             <VCol cols="12" sm="6" md="4">

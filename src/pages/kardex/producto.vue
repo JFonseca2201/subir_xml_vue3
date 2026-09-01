@@ -231,6 +231,7 @@ definePage({ meta: { permission: 'kardex' } })
               variant="outlined"
               hide-details
               clearable
+              :loading="loading"
               @keyup.enter="applyFilters"
             />
           </VCol>

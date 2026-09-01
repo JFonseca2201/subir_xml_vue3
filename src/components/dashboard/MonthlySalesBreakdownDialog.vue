@@ -245,6 +245,7 @@ const getRankIcon = index => {
               hide-details
               bg-color="grey-lighten-5"
               clearable
+              :loading="loading"
               class="filter-input"
             />
           </VCol>

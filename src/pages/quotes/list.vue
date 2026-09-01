@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -70,8 +71,15 @@ const itemsPerPage = ref(15)
 const totalItems = ref(0)
 const totalPages = ref(0)
 
+let quotesAbortController = null
+
 // Cargar datos
 const loadQuotes = async () => {
+  if (quotesAbortController) {
+    quotesAbortController.abort()
+  }
+  quotesAbortController = new AbortController()
+
   loading.value = true
   try {
     const params = {
@@ -86,7 +94,10 @@ const loadQuotes = async () => {
       }
     })
 
-    const response = await $api('quotes', { params })
+    const response = await $api('quotes', { 
+      params,
+      signal: quotesAbortController.signal,
+    })
 
     const extractArray = (res, key) => {
       if (res?.data && Array.isArray(res.data)) return res.data
@@ -105,6 +116,7 @@ const loadQuotes = async () => {
     totalItems.value = responseData?.total || quotes.value.length || 0
     totalPages.value = responseData?.last_page || 1
   } catch (error) {
+    if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error al cargar cotizaciones:', error)
     showNotification('Error al cargar el historial de cotizaciones', 'error')
   } finally {
@@ -450,10 +462,14 @@ const formatDateGroup = dateStr => {
   }).format(date)
 }
 
-// Watchers
-watch(searchForm, () => {
+// Watchers con debounce para evitar congelamiento de UI en búsquedas
+const debouncedLoadQuotes = useDebounceFn(() => {
   currentPage.value = 1
   loadQuotes()
+}, 350)
+
+watch(searchForm, () => {
+  debouncedLoadQuotes()
 }, { deep: true })
 
 watch(currentPage, () => {
@@ -517,12 +533,17 @@ onMounted(() => {
                   v-model="searchForm.search"
                   label="Buscar cotización"
                   placeholder="Nombre, cédula o placa del vehículo..."
-                  prepend-inner-icon="ri-search-line"
                   variant="outlined"
                   density="compact"
                   hide-details="auto"
                   color="primary"
-                />
+                  :loading="loading"
+                >
+                  <template #prepend-inner>
+                    <VProgressCircular v-if="loading" indeterminate color="primary" size="18" width="2" class="me-1" />
+                    <VIcon v-else icon="ri-search-line" />
+                  </template>
+                </VTextField>
               </VCol>
 
               <VCol
