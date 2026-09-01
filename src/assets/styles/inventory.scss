@@ -6405,3 +6405,60 @@
         background-position: -200% 0;
     }
 }
+
+// ============================================
+// EMPLOYEE EXPENSES & PAYROLL MODULE
+// ============================================
+
+.employee-expenses-page {
+    .sticky-header {
+        position: sticky;
+        top: 62px;
+        z-index: 99;
+        background-color: rgb(var(--v-theme-surface)) !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease;
+
+        @media (min-width: 960px) {
+            top: 70px;
+        }
+    }
+}
+
+.transfer-table-container {
+    table {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+
+    th {
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+        color: #475569 !important;
+        padding: 16px 18px !important;
+        background-color: #f8fafc !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        white-space: nowrap !important;
+    }
+
+    td {
+        padding: 14px 18px !important;
+        vertical-align: middle !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 0.885rem !important;
+    }
+
+    tbody tr:hover td {
+        background-color: #f8fafc !important;
+    }
+}
+
+.custom-dialog-card {
+    overflow: hidden !important;
+}
+
+.text-white-70 {
+    color: rgba(255, 255, 255, 0.8) !important;
+}

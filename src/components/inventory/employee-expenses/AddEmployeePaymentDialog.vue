@@ -357,12 +357,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VDialog
-    v-model="show"
-    scrollable
-    max-width="880"
-    persistent
-  >
+  <VDialog v-model="show" scrollable max-width="880" persistent>
     <VCard class="custom-dialog-card rounded-xl">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white pa-5 d-flex align-center justify-space-between">
@@ -379,13 +374,7 @@ onMounted(async () => {
             </p>
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          color="white"
-          @click="closeDialog"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" color="white" @click="closeDialog" />
       </div>
 
       <!-- Formulario -->
@@ -393,32 +382,26 @@ onMounted(async () => {
         <!-- Skeleton Loader mientras cargan datos -->
         <div v-if="isLoadingData" class="py-4">
           <VRow>
-            <VCol cols="12" md="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" md="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12"><VSkeletonLoader type="card" height="120" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" md="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12" md="6">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12">
+              <VSkeletonLoader type="card" height="120" class="rounded-lg mb-2" />
+            </VCol>
           </VRow>
         </div>
 
-        <VForm
-          v-else
-          ref="formRef"
-          @submit.prevent="handleSubmit"
-        >
+        <VForm v-else ref="formRef" @submit.prevent="handleSubmit">
           <VRow class="g-3">
             <!-- 1. Selección de Empleado -->
             <VCol cols="12" md="7">
-              <VSelect
-                v-model="form.employee_id"
-                :items="employees"
-                item-title="display_title"
-                item-value="id"
-                label="Empleado a Liquidar *"
-                placeholder="Selecciona un empleado"
-                :rules="[v => !!v || 'Debes seleccionar un empleado']"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-              >
+              <VSelect v-model="form.employee_id" :items="employees" item-title="display_title" item-value="id"
+                label="Empleado a Liquidar *" placeholder="Selecciona un empleado"
+                :rules="[v => !!v || 'Debes seleccionar un empleado']" variant="outlined" density="comfortable"
+                class="bg-white rounded-lg">
                 <template #prepend-inner>
                   <VIcon color="primary" size="20">ri-user-follow-line</VIcon>
                 </template>
@@ -427,19 +410,10 @@ onMounted(async () => {
 
             <!-- 2. Selección de Mes de Pago -->
             <VCol cols="12" md="5">
-              <VSelect
-                v-model="form.payment_month"
-                :items="monthOptions"
-                item-title="title"
-                item-value="value"
-                label="Mes a Pagar / Liquidar *"
-                placeholder="Selecciona el mes"
-                :rules="[v => !!v || 'Debes seleccionar el mes a pagar']"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :loading="isCheckingMonth"
-              >
+              <VSelect v-model="form.payment_month" :items="monthOptions" item-title="title" item-value="value"
+                label="Mes a Pagar / Liquidar *" placeholder="Selecciona el mes"
+                :rules="[v => !!v || 'Debes seleccionar el mes a pagar']" variant="outlined" density="comfortable"
+                class="bg-white rounded-lg" :loading="isCheckingMonth">
                 <template #prepend-inner>
                   <VIcon color="primary" size="20">ri-calendar-check-line</VIcon>
                 </template>
@@ -448,12 +422,7 @@ onMounted(async () => {
 
             <!-- ALERTA DE MES YA PAGADO (BLOQUEO) -->
             <VCol v-if="monthPaidInfo?.is_paid" cols="12">
-              <VAlert
-                type="error"
-                variant="tonal"
-                class="rounded-xl border border-error mb-2 elevation-1"
-                prominent
-              >
+              <VAlert type="error" variant="tonal" class="rounded-xl border border-error mb-2 elevation-1" prominent>
                 <template #title>
                   <div class="d-flex align-center gap-2 font-weight-black text-subtitle-1">
                     <VIcon icon="ri-lock-2-line" size="22" />
@@ -491,7 +460,7 @@ onMounted(async () => {
                     </span>
                   </div>
                   <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
-                    {{ monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month }}
+                    {{monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month}}
                   </VChip>
                 </div>
 
@@ -556,19 +525,10 @@ onMounted(async () => {
 
             <!-- 3. Método de Pago y Cuenta -->
             <VCol cols="12" md="6">
-              <VSelect
-                v-model="form.payment_method"
-                :items="paymentMethods"
-                item-title="text"
-                item-value="value"
-                label="Método de Pago *"
-                placeholder="Selecciona método"
-                :rules="[v => !!v || 'El método de pago es requerido']"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :disabled="monthPaidInfo?.is_paid"
-              >
+              <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text" item-value="value"
+                label="Método de Pago *" placeholder="Selecciona método"
+                :rules="[v => !!v || 'El método de pago es requerido']" variant="outlined" density="comfortable"
+                class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid">
                 <template #prepend-inner>
                   <VIcon color="primary" size="20">ri-bank-card-line</VIcon>
                 </template>
@@ -576,19 +536,10 @@ onMounted(async () => {
             </VCol>
 
             <VCol cols="12" md="6">
-              <VSelect
-                v-model="form.account_id"
-                :items="filteredAccounts"
-                item-value="id"
-                item-title="display_name"
-                label="Cuenta de Salida *"
-                placeholder="Selecciona la cuenta"
-                :rules="[v => !!v || 'La cuenta es requerida']"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :disabled="monthPaidInfo?.is_paid"
-              >
+              <VSelect v-model="form.account_id" :items="filteredAccounts" item-value="id" item-title="display_name"
+                label="Cuenta de Salida *" placeholder="Selecciona la cuenta"
+                :rules="[v => !!v || 'La cuenta es requerida']" variant="outlined" density="comfortable"
+                class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid">
                 <template #prepend-inner>
                   <VIcon color="primary" size="20">
                     {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
@@ -597,23 +548,18 @@ onMounted(async () => {
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="undefined">
                     <template #prepend>
-                      <VAvatar
-                        size="28"
-                        :color="item.raw.type === 'cash' ? 'success' : 'primary'"
-                        variant="tonal"
-                        class="me-2"
-                      >
-                        <VIcon
-                          :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                          size="16"
-                        />
+                      <VAvatar size="28" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal"
+                        class="me-2">
+                        <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                          size="16" />
                       </VAvatar>
                     </template>
                     <VListItemTitle class="font-weight-medium text-body-2">
                       {{ item.raw.display_name }}
                     </VListItemTitle>
                     <VListItemSubtitle class="text-caption">
-                      Saldo disponible: <span class="font-weight-bold" :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">
+                      Saldo disponible: <span class="font-weight-bold"
+                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">
                         ${{ parseFloat(item.raw.saldo_actual || 0).toFixed(2) }}
                       </span>
                     </VListItemSubtitle>
@@ -624,28 +570,15 @@ onMounted(async () => {
 
             <!-- 4. Fecha de Pago y Referencia -->
             <VCol cols="12" md="6">
-              <VTextField
-                v-model="form.payment_date"
-                label="Fecha de Emisión / Pago *"
-                type="date"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :rules="[v => !!v || 'La fecha es requerida']"
-                :disabled="monthPaidInfo?.is_paid"
-              />
+              <VTextField v-model="form.payment_date" label="Fecha de Emisión / Pago *" type="date" variant="outlined"
+                density="comfortable" class="bg-white rounded-lg" :rules="[v => !!v || 'La fecha es requerida']"
+                :disabled="monthPaidInfo?.is_paid" />
             </VCol>
 
             <VCol cols="12" md="6">
-              <VTextField
-                v-model="form.reference"
-                label="Nº Documento / Transferencia (Opcional)"
-                placeholder="Ej. TRANS-98421"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :disabled="monthPaidInfo?.is_paid"
-              >
+              <VTextField v-model="form.reference" label="Nº Documento / Transferencia (Opcional)"
+                placeholder="Ej. TRANS-98421" variant="outlined" density="comfortable" class="bg-white rounded-lg"
+                :disabled="monthPaidInfo?.is_paid">
                 <template #prepend-inner>
                   <VIcon color="secondary" size="20">ri-hashtag</VIcon>
                 </template>
@@ -654,52 +587,29 @@ onMounted(async () => {
 
             <!-- 5. Observaciones -->
             <VCol cols="12">
-              <VTextarea
-                v-model="form.description"
-                label="Observaciones o Notas del Rol (Opcional)"
-                placeholder="Detalles adicionales sobre el pago del mes..."
-                rows="2"
-                variant="outlined"
-                density="comfortable"
-                class="bg-white rounded-lg"
-                :disabled="monthPaidInfo?.is_paid"
-              />
+              <VTextarea v-model="form.description" label="Observaciones o Notas del Rol (Opcional)"
+                placeholder="Detalles adicionales sobre el pago del mes..." rows="2" variant="outlined"
+                density="comfortable" class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid" />
             </VCol>
 
             <!-- 6. Adjuntar Comprobantes -->
             <VCol cols="12">
-              <ReceiptUploader
-                v-model="receiptFiles"
-                title="Comprobante de Transferencia / Recibo (Opcional)"
-                subtitle="Adjunta fotos o archivos PDF del comprobante bancario"
-                :max-files="3"
-                :disabled="monthPaidInfo?.is_paid"
-              />
+              <ReceiptUploader v-model="receiptFiles" title="Comprobante de Transferencia / Recibo (Opcional)"
+                subtitle="Adjunta fotos o archivos PDF del comprobante bancario" :max-files="3"
+                :disabled="monthPaidInfo?.is_paid" />
             </VCol>
           </VRow>
 
           <!-- Acciones del Diálogo -->
           <div class="d-flex justify-end align-center gap-3 mt-6 pt-3 border-t">
-            <VBtn
-              color="secondary"
-              variant="outlined"
-              class="rounded-lg px-5 font-weight-medium"
-              height="42"
-              @click="closeDialog"
-            >
+            <VBtn color="secondary" variant="outlined" class="rounded-lg px-5 font-weight-medium" height="42"
+              @click="closeDialog">
               Cancelar
             </VBtn>
 
-            <VBtn
-              type="submit"
-              color="primary"
-              variant="elevated"
-              prepend-icon="ri-check-line"
-              class="rounded-lg px-6 font-weight-bold elevation-2"
-              height="42"
-              :loading="loading"
-              :disabled="monthPaidInfo?.is_paid || isCheckingMonth"
-            >
+            <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-check-line"
+              class="rounded-lg px-6 font-weight-bold elevation-2" height="42" :loading="loading"
+              :disabled="monthPaidInfo?.is_paid || isCheckingMonth">
               Guardar y Emitir Pago
             </VBtn>
           </div>
@@ -708,12 +618,3 @@ onMounted(async () => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped>
-.custom-dialog-card {
-  overflow: hidden;
-}
-.text-white-70 {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-</style>
