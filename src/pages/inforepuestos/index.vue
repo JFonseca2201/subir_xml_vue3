@@ -458,47 +458,37 @@ onMounted(() => {
             </VChip>
 
             <div class="d-flex align-center gap-1">
-              <VTooltip text="Ver Ficha Técnica Completa" location="top">
-                <template #activator="{ props: tProps }">
-                  <VBtn
-                    v-bind="tProps"
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    prepend-icon="ri-file-list-3-line"
-                    class="font-weight-medium"
-                    @click="openDetail(item)"
-                  >
-                    Ficha
-                  </VBtn>
-                </template>
-              </VTooltip>
+              <VBtn
+                size="small"
+                color="info"
+                variant="tonal"
+                prepend-icon="ri-file-list-3-line"
+                class="font-weight-medium"
+                title="Ver Ficha Técnica Completa"
+                @click="openDetail(item)"
+              >
+                Ficha
+              </VBtn>
 
-              <VTooltip v-if="can('edit_product')" text="Editar Registro" location="top">
-                <template #activator="{ props: tProps }">
-                  <VBtn
-                    v-bind="tProps"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-edit-line"
-                    @click="openEdit(item)"
-                  />
-                </template>
-              </VTooltip>
+              <VBtn
+                v-if="can('edit_product')"
+                size="small"
+                color="warning"
+                variant="tonal"
+                icon="ri-edit-line"
+                title="Editar Registro"
+                @click="openEdit(item)"
+              />
 
-              <VTooltip v-if="can('delete_product')" text="Eliminar Vehículo" location="top">
-                <template #activator="{ props: tProps }">
-                  <VBtn
-                    v-bind="tProps"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    @click="deleteRequest(item)"
-                  />
-                </template>
-              </VTooltip>
+              <VBtn
+                v-if="can('delete_product')"
+                size="small"
+                color="error"
+                variant="tonal"
+                icon="ri-delete-bin-line"
+                title="Eliminar Vehículo"
+                @click="deleteRequest(item)"
+              />
             </div>
           </div>
         </div>
