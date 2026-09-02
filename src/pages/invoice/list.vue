@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import Swal from 'sweetalert2'
 import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
@@ -107,6 +108,25 @@ const config = async () => {
 }
 
 const showItem = ShowInvoice => {
+  if (ShowInvoice?.status === 'canceled' || ShowInvoice?.deleted_at || ShowInvoice?.is_canceled) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Documento Anulado',
+      html: `
+        <div style="text-align: center; color: #4b5563; font-size: 0.95rem;">
+          La factura <b>${ShowInvoice.invoice_number ? '#' + ShowInvoice.invoice_number : ''}</b> no existe o no se encuentra disponible porque fue <b>ANULADA</b>.<br><br>
+          <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px; color: #991b1b; font-size: 0.88rem; line-height: 1.4;">
+            ⚠️ Este documento fue dado de baja del sistema y no permite consultar detalles.
+          </div>
+        </div>
+      `,
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#7367f0',
+    })
+    showNotification('El documento no existe porque fue anulado', 'warning')
+    return
+  }
+
   console.log(ShowInvoice)
   isInvoiceShowDialogVisible.value = true
   invoiceSelected.value = ShowInvoice

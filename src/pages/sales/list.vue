@@ -385,19 +385,43 @@ const getPaymentMethodClass = item => {
 
 // Acciones
 const viewSale = async sale => {
+  if (isSaleCanceled(sale)) {
+    showCanceledDocAlert(sale.document_number || sale.id)
+    showNotification('El documento no existe porque fue anulado', 'warning')
+    return
+  }
+
   try {
     viewLoading.value = true
 
     const response = await $api(`sales/${sale.id}`)
     if (response?.success || response?.data) {
-      selectedSale.value = response.data || response
+      const saleData = response.data || response
+      if (isSaleCanceled(saleData)) {
+        showCanceledDocAlert(saleData.document_number || saleData.id)
+        showNotification('El documento no existe porque fue anulado', 'warning')
+        return
+      }
+      selectedSale.value = saleData
       isViewDialogVisible.value = true
     } else {
       showNotification('Error al cargar los detalles de la venta', 'error')
     }
   } catch (error) {
     console.error('Error al cargar venta:', error)
-    showNotification('Error al cargar los detalles de la venta', 'error')
+    const errorMsg = error?.data?.message || error?.message || ''
+    if (
+      error?.status === 404 ||
+      error?.response?.status === 404 ||
+      errorMsg.toLowerCase().includes('anulad') ||
+      errorMsg.toLowerCase().includes('no encontrad') ||
+      errorMsg.toLowerCase().includes('not found')
+    ) {
+      showCanceledDocAlert(sale.document_number || sale.id)
+      showNotification('El documento no existe porque fue anulado', 'warning')
+    } else {
+      showNotification('Error al cargar los detalles de la venta', 'error')
+    }
   } finally {
     viewLoading.value = false
   }
@@ -546,9 +570,9 @@ const showCanceledDocAlert = docNumber => {
     title: 'Documento Anulado',
     html: `
       <div style="text-align: center; color: #4b5563; font-size: 0.95rem;">
-        La venta / factura <b>${docNumber ? '#' + docNumber : ''}</b> se encuentra <b>ANULADA</b> en el sistema.<br><br>
+        El documento <b>${docNumber ? '#' + docNumber : ''}</b> no existe o no se encuentra disponible porque fue <b>ANULADO</b>.<br><br>
         <div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px; color: #991b1b; font-size: 0.88rem; line-height: 1.4;">
-          ⚠️ Los comprobantes anulados son dados de baja permanentemente y no disponen de archivo PDF ni permiten cobros o modificaciones.
+          ⚠️ Este comprobante fue dado de baja del sistema. No es posible consultar su detalle ni realizar cobros o modificaciones sobre el mismo.
         </div>
       </div>
     `,
