@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { vehicleBrands } from '@/data/vehicleBrands.js'
@@ -21,30 +21,30 @@ const brandOptions = computed(() => {
   return [...new Set(Object.values(vehicleBrands).map(b => b.toUpperCase()))].sort()
 })
 
-const categoryOptions = ref([
-  'SUSPENSIÓN',
-  'MOTOR',
-  'FRENOS',
-  'TRANSMISIÓN',
-  'ELÉCTRICO',
-  'ACCESORIOS',
-  'CARROCERÍA',
-])
+const categoryOptions = ref([])
 
 const loadCategories = async () => {
   try {
-    const resp = await $api('products/config', { method: 'GET' })
-    if (resp && resp.data && resp.data.categories) {
-      const apiCats = resp.data.categories
-        .map(cat => (cat.title || '').toUpperCase().trim())
-        .filter(Boolean)
-      
-      categoryOptions.value = [...new Set([...categoryOptions.value, ...apiCats])].sort()
+    const resp = await $api('spare-part-requests/categories', { method: 'GET' })
+    if (resp && resp.data && Array.isArray(resp.data)) {
+      categoryOptions.value = resp.data
+    } else {
+      const confResp = await $api('products/config', { method: 'GET' })
+      if (confResp && confResp.data && confResp.data.categories) {
+        categoryOptions.value = confResp.data.categories
+          .map(cat => (cat.title || '').toUpperCase().trim())
+          .filter(Boolean)
+          .sort()
+      }
     }
   } catch (err) {
-    console.error('Error al cargar categorías de productos:', err)
+    console.error('Error al cargar categorías del sistema:', err)
   }
 }
+
+onMounted(() => {
+  loadCategories()
+})
 
 const { showNotification } = useGlobalToast()
 
