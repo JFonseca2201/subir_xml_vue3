@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import Swal from 'sweetalert2'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -21,8 +21,34 @@ const totalItems = ref(0)
 
 // Filters
 const searchQuery = ref('')
+const categoryFilter = ref('ALL')
+const minPriceFilter = ref(null)
+const maxPriceFilter = ref(null)
 const tractionFilter = ref('ALL')
 const yearFilter = ref(null)
+
+// Dynamic Categories
+const availableCategories = ref([])
+const categoryOptions = computed(() => {
+  return [
+    { title: 'Todas las Categorías', value: 'ALL' },
+    ...availableCategories.value.map(cat => ({
+      title: cat,
+      value: cat,
+    })),
+  ]
+})
+
+const loadCategories = async () => {
+  try {
+    const response = await $api('spare-part-requests/categories')
+    if (response && response.data) {
+      availableCategories.value = response.data
+    }
+  } catch (err) {
+    console.warn('Error al cargar categorías de repuestos:', err)
+  }
+}
 
 // Dialog states
 const isFormDialogOpen = ref(false)
@@ -41,11 +67,20 @@ const loadRequests = async () => {
     if (searchQuery.value && searchQuery.value.trim()) {
       params.search = searchQuery.value.trim()
     }
-    if (tractionFilter.value !== 'ALL') {
+    if (tractionFilter.value && tractionFilter.value !== 'ALL') {
       params.traction = tractionFilter.value
     }
     if (yearFilter.value) {
       params.year = yearFilter.value
+    }
+    if (categoryFilter.value && categoryFilter.value !== 'ALL') {
+      params.category = categoryFilter.value
+    }
+    if (minPriceFilter.value !== null && minPriceFilter.value !== '' && !isNaN(minPriceFilter.value)) {
+      params.min_price = minPriceFilter.value
+    }
+    if (maxPriceFilter.value !== null && maxPriceFilter.value !== '' && !isNaN(maxPriceFilter.value)) {
+      params.max_price = maxPriceFilter.value
     }
 
     const response = await $api('spare-part-requests', { params })
@@ -62,11 +97,58 @@ const loadRequests = async () => {
   }
 }
 
-// Watch filters to reset page and reload
-watch([searchQuery, tractionFilter, yearFilter], () => {
+// Watch filters with debounce for inputs and immediate for dropdowns
+let searchDebounceTimer = null
+watch([searchQuery, minPriceFilter, maxPriceFilter], () => {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    page.value = 1
+    loadRequests()
+  }, 350)
+})
+
+watch([tractionFilter, yearFilter, categoryFilter], () => {
   page.value = 1
   loadRequests()
 })
+
+const hasActiveFilters = computed(() => {
+  return !!(
+    (searchQuery.value && searchQuery.value.trim()) ||
+    (categoryFilter.value && categoryFilter.value !== 'ALL') ||
+    (minPriceFilter.value !== null && minPriceFilter.value !== '') ||
+    (maxPriceFilter.value !== null && maxPriceFilter.value !== '') ||
+    (tractionFilter.value && tractionFilter.value !== 'ALL') ||
+    yearFilter.value
+  )
+})
+
+const resetFilters = () => {
+  searchQuery.value = ''
+  categoryFilter.value = 'ALL'
+  minPriceFilter.value = null
+  maxPriceFilter.value = null
+  tractionFilter.value = 'ALL'
+  yearFilter.value = null
+  page.value = 1
+  loadRequests()
+}
+
+// Matching helpers for highlighting in table
+const isMatchingCategory = cat => {
+  if (!categoryFilter.value || categoryFilter.value === 'ALL') return false
+  return (cat || '').toUpperCase().trim() === categoryFilter.value.toUpperCase().trim()
+}
+
+const isMatchingPrice = price => {
+  const p = parseFloat(price) || 0
+  const hasMin = minPriceFilter.value !== null && minPriceFilter.value !== '' && !isNaN(minPriceFilter.value)
+  const hasMax = maxPriceFilter.value !== null && maxPriceFilter.value !== '' && !isNaN(maxPriceFilter.value)
+  if (!hasMin && !hasMax) return false
+  if (hasMin && p < parseFloat(minPriceFilter.value)) return false
+  if (hasMax && p > parseFloat(maxPriceFilter.value)) return false
+  return true
+}
 
 const handlePageChange = newPage => {
   page.value = newPage
@@ -75,6 +157,7 @@ const handlePageChange = newPage => {
 
 // Reactively reload on save/edit/delete (no page reload)
 const handleSaveSuccess = () => {
+  loadCategories()
   loadRequests()
 }
 
@@ -123,6 +206,7 @@ const deleteRequest = async item => {
 }
 
 onMounted(() => {
+  loadCategories()
   loadRequests()
 })
 </script>
@@ -139,7 +223,7 @@ onMounted(() => {
             Gestión y Búsqueda de Repuestos por Vehículo
           </h1>
           <p class="text-medium-emphasis mb-0">
-            Administra el historial de repuestos y compatibilidades por marca, modelo y año.
+            Administra el historial de repuestos y compatibilidades por marca, modelo, año, categoría y precio.
           </p>
         </div>
 
@@ -152,31 +236,122 @@ onMounted(() => {
       <!-- Filtros de Búsqueda -->
       <VCard class="mb-4 elevation-0 border-light border rounded-lg sticky-filter-card">
         <VCardText class="pa-4 bg-grey-lighten-5">
-          <VRow dense class="gap-y-2">
-            <!-- Búsqueda General -->
-            <VCol cols="12" md="6">
-              <VTextField v-model="searchQuery" label="Búsqueda por Palabra Clave"
-                placeholder="Ej: Chevrolet, Vitara, Amortiguador, Frenos..." clearable variant="outlined"
-                density="comfortable" hide-details="auto" prepend-inner-icon="ri-search-2-line" />
+          <VRow dense class="gap-y-2 align-center">
+            <!-- Fila 1: Búsqueda General, Categoría y Tracción -->
+            <VCol cols="12" md="5">
+              <VTextField
+                v-model="searchQuery"
+                label="Búsqueda por Palabra Clave o Código"
+                placeholder="Ej: Chevrolet, Vitara, Amortiguador, 45.00..."
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                prepend-inner-icon="ri-search-2-line"
+              />
+            </VCol>
+
+            <!-- Categoría de Repuesto -->
+            <VCol cols="12" sm="6" md="4">
+              <VAutocomplete
+                v-model="categoryFilter"
+                label="Categoría de Repuesto"
+                :items="categoryOptions"
+                item-title="title"
+                item-value="value"
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                prepend-inner-icon="ri-price-tag-3-line"
+                placeholder="Todas las Categorías"
+              />
             </VCol>
 
             <!-- Tracción / Suspensión -->
             <VCol cols="12" sm="6" md="3">
-              <VSelect v-model="tractionFilter" label="Tracción / Suspensión" :items="[
-                { title: 'Todos', value: 'ALL' },
-                { title: '4x4', value: '4X4' },
-                { title: '4x2', value: '4X2' },
-                { title: 'AWD', value: 'AWD' },
-                { title: 'FWD', value: 'FWD' },
-                { title: 'RWD', value: 'RWD' }
-              ]" item-title="title" item-value="value" variant="outlined" density="comfortable" hide-details="auto" />
+              <VSelect
+                v-model="tractionFilter"
+                label="Tracción / Suspensión"
+                :items="[
+                  { title: 'Todas', value: 'ALL' },
+                  { title: '4x4', value: '4X4' },
+                  { title: '4x2', value: '4X2' },
+                  { title: 'AWD', value: 'AWD' },
+                  { title: 'FWD', value: 'FWD' },
+                  { title: 'RWD', value: 'RWD' }
+                ]"
+                item-title="title"
+                item-value="value"
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+              />
+            </VCol>
+
+            <!-- Fila 2: Rango de Precios, Año y Limpiar -->
+            <VCol cols="6" sm="4" md="3">
+              <VTextField
+                v-model.number="minPriceFilter"
+                label="Precio Mínimo"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="0.00"
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                prefix="$"
+                prepend-inner-icon="ri-money-dollar-circle-line"
+              />
+            </VCol>
+
+            <VCol cols="6" sm="4" md="3">
+              <VTextField
+                v-model.number="maxPriceFilter"
+                label="Precio Máximo"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="100.00"
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                prefix="$"
+                prepend-inner-icon="ri-money-dollar-circle-line"
+              />
             </VCol>
 
             <!-- Año -->
-            <VCol cols="12" sm="6" md="3">
-              <VTextField v-model.number="yearFilter" label="Año del Vehículo" type="number" placeholder="Ej: 2007"
-                clearable variant="outlined" density="comfortable" hide-details="auto"
-                prepend-inner-icon="ri-calendar-line" />
+            <VCol cols="12" sm="4" md="3">
+              <VTextField
+                v-model.number="yearFilter"
+                label="Año del Vehículo"
+                type="number"
+                placeholder="Ej: 2012"
+                clearable
+                variant="outlined"
+                density="comfortable"
+                hide-details="auto"
+                prepend-inner-icon="ri-calendar-line"
+              />
+            </VCol>
+
+            <!-- Botón Limpiar Filtros -->
+            <VCol cols="12" md="3" class="d-flex align-center">
+              <VBtn
+                v-if="hasActiveFilters"
+                variant="tonal"
+                color="secondary"
+                size="default"
+                prepend-icon="ri-filter-off-line"
+                class="w-100"
+                @click="resetFilters"
+              >
+                Limpiar Filtros
+              </VBtn>
             </VCol>
           </VRow>
         </VCardText>
@@ -306,17 +481,27 @@ onMounted(() => {
 
                     <!-- Category -->
                     <div class="item-category">
-                      <span style="font-size: 10px;">
+                      <VChip
+                        size="x-small"
+                        :color="isMatchingCategory(subItem.category) ? 'primary' : 'default'"
+                        :variant="isMatchingCategory(subItem.category) ? 'elevated' : 'tonal'"
+                        class="font-weight-medium text-uppercase"
+                      >
                         {{ subItem.category }}
-                      </span>
+                      </VChip>
                     </div>
 
                     <!-- Pricing -->
                     <div class="item-pricing">
-                      <span class="price-sell">PVP: ${{
-                        parseFloat(subItem.public_price || 0).toFixed(2) }}</span>
-                      <span class="price-buy">Compra: ${{ parseFloat(subItem.purchase_price || 0).toFixed(2)
-                      }}</span>
+                      <span
+                        class="price-sell"
+                        :class="{ 'text-primary font-weight-bold': isMatchingPrice(subItem.public_price) }"
+                      >
+                        PVP: ${{ parseFloat(subItem.public_price || 0).toFixed(2) }}
+                      </span>
+                      <span class="price-buy">
+                        Compra: ${{ parseFloat(subItem.purchase_price || 0).toFixed(2) }}
+                      </span>
                     </div>
                   </div>
                 </div>
