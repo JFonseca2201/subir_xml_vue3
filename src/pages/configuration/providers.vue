@@ -255,61 +255,68 @@ definePage({ meta: { permission: "settings" } })
 
 <template>
   <div class="pa-4 pa-sm-6 providers-management-page">
-    <!-- Header y Filtros Fijos (Sticky Top) -->
-    <div class="sticky-page-header-wrapper">
-      <!-- Encabezado de la página -->
-      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
-        <div>
-          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-            <VIcon
-              icon="ri-truck-line"
-              color="primary"
-              class="me-2"
-              size="28"
-            />
-            Proveedores
-          </h1>
-          <p class="text-medium-emphasis mb-0">
-            Administración de proveedores del sistema
-          </p>
+    <!-- Header Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+            <VIcon icon="ri-truck-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="d-flex align-center gap-2">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                Proveedores
+              </h1>
+              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+                {{ list_providers.length }} {{ list_providers.length === 1 ? 'registro' : 'registros' }}
+              </VChip>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Administración de proveedores del sistema
+            </p>
+          </div>
         </div>
-        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+
+        <div class="d-flex align-center gap-3 flex-wrap">
           <VBtn
             v-if="can('register_supplier')"
             color="primary"
+            variant="elevated"
+            size="small"
             prepend-icon="ri-add-line"
+            class="font-weight-semibold elevation-2"
             @click="isProviderAddDialogVisible = !isProviderAddDialogVisible"
           >
             Nuevo Proveedor
           </VBtn>
         </div>
       </div>
+    </VCard>
 
-      <!-- Filtros y Búsqueda -->
-      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
-        <VCardText class="pa-4 bg-grey-lighten-5">
-          <VRow class="align-center">
-            <VCol cols="12">
-              <VTextField
-                v-model="searchQuery"
-                label="Buscar proveedor"
-                placeholder="Nombre, RUC, dirección..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-    </div>
+    <!-- Filtros y Búsqueda -->
+    <VCard class="mb-5 rounded-xl border-light elevation-1">
+      <VCardText class="pa-3 pa-sm-4 bg-white">
+        <VRow class="align-center">
+          <VCol cols="12">
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar proveedor"
+              placeholder="Nombre, RUC, dirección..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+              :loading="loading"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
 
     <!-- Contenedor Principal (Tabla) -->
-    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+    <VCard class="rounded-xl border-light overflow-hidden elevation-1">
       <!-- Tabla de Proveedores -->
       <div class="position-relative">
         <div class="overflow-x-auto">
@@ -497,51 +504,36 @@ definePage({ meta: { permission: "settings" } })
                   </div>
                 </td>
                 <td class="text-no-wrap text-center py-3">
-                  <div class="d-flex justify-center align-center">
+                  <div class="d-flex justify-center align-center gap-1">
                     <VBtn
                       class="action-btn"
-                      variant="text"
-                      icon
+                      variant="tonal"
+                      icon="ri-eye-line"
                       size="small"
                       color="info"
                       title="Ver detalle"
                       @click="viewItem(item)"
-                    >
-                      <VIcon
-                        icon="ri-eye-line"
-                        size="20"
-                      />
-                    </VBtn>
+                    />
                     <VBtn
                       v-if="can('edit_supplier')"
                       class="action-btn"
-                      variant="text"
-                      icon
+                      variant="tonal"
+                      icon="ri-pencil-line"
                       size="small"
-                      color="primary"
+                      color="warning"
                       title="Editar"
                       @click="editItem(item)"
-                    >
-                      <VIcon
-                        icon="ri-pencil-line"
-                        size="20"
-                      />
-                    </VBtn>
+                    />
                     <VBtn
                       v-if="can('delete_supplier')"
                       class="action-btn"
-                      variant="text"
-                      icon
+                      variant="tonal"
+                      icon="ri-delete-bin-line"
                       size="small"
                       color="error"
                       title="Eliminar"
                       @click="deleteItem(item)"
-                    >
-                      <VIcon
-                        icon="ri-delete-bin-line"
-                        size="20"
-                      />
-                    </VBtn>
+                    />
                   </div>
                 </td>
               </tr>
