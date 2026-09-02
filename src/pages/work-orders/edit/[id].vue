@@ -721,7 +721,96 @@ onMounted(() => {
             </VCardText>
           </VCard>
 
-          <!-- Tarjeta 2: Productos y Servicios -->
+          <!-- Tarjeta 2: Detalles del Taller -->
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
+                    <VIcon icon="ri-tools-line" size="20" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                      Detalles del Taller
+                    </h3>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Kilometraje, combustible y técnicos asignados
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+
+            <VCardText class="pa-4 pa-sm-5 bg-white">
+              <VRow>
+                <!-- Kilometraje -->
+                <VCol cols="12" sm="4">
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
+                  <VTextField
+                    v-model.number="workOrder.mileage"
+                    type="number"
+                    placeholder="Ej: 45000"
+                    prepend-inner-icon="ri-speed-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                  />
+                </VCol>
+
+                <!-- Nivel de Combustible -->
+                <VCol cols="12" sm="4">
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Nivel de Combustible</label>
+                  <VSelect
+                    v-model="workOrder.fuel_level"
+                    :items="fuelLevels"
+                    placeholder="Seleccionar nivel"
+                    prepend-inner-icon="ri-gas-station-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    clearable
+                  />
+                </VCol>
+
+                <!-- Técnicos Asignados -->
+                <VCol cols="12" sm="4">
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos (máximo 2)</label>
+                  <VAutocomplete
+                    v-model="workOrder.technicians"
+                    :items="employees"
+                    :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
+                    item-value="id"
+                    placeholder="Seleccionar técnicos..."
+                    prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                    color="primary"
+                    clearable
+                    :loading="isLoading"
+                    multiple
+                    chips
+                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
+                    class="fix-notch-bug"
+                  >
+                    <template #chip="{ props, item }">
+                      <VChip
+                        v-bind="props"
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
+                      />
+                    </template>
+                  </VAutocomplete>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Tarjeta 3: Productos y Servicios -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
@@ -833,18 +922,18 @@ onMounted(() => {
                   <tbody>
                     <tr
                       v-for="(item, index) in workOrder.items"
-                      :key="item.id || item.product_id || index"
+                      :key="index"
                       class="hover-row"
                     >
                       <td>
                         <div class="d-flex align-center gap-3 py-1">
                           <VAvatar
                             size="36"
-                            :color="item.type === 'product' ? 'primary' : 'info'"
+                            :color="item.type === 'service' ? 'info' : 'primary'"
                             variant="tonal"
                             class="rounded-lg"
                           >
-                            <VIcon :icon="item.type === 'product' ? 'ri-box-3-line' : 'ri-tools-line'" size="18" />
+                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="18" />
                           </VAvatar>
                           <div class="flex-grow-1">
                             <VTextField
@@ -858,13 +947,13 @@ onMounted(() => {
                             <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
                               <span
                                 class="text-uppercase font-weight-bold"
-                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
+                                :class="item.type === 'service' ? 'text-primary' : 'text-secondary'"
                                 style="font-size: 0.65rem;"
                               >
-                                {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
+                                {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
                               <span
-                                v-if="!isServiceItem(item)"
+                                v-if="item.type === 'product'"
                                 class="stock-tag"
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
                               >
@@ -872,11 +961,11 @@ onMounted(() => {
                                 {{ getProductStock(item.product_id, item) }} en stock
                               </span>
                               <span
-                                v-if="getProductSku(item.product_id) || item.sku"
+                                v-if="item.product && (item.product.sku || item.product.code_aux)"
                                 class="text-uppercase font-weight-bold"
                                 style="font-size: 0.65rem;"
                               >
-                                {{ getProductSku(item.product_id) || item.sku }}
+                                {{ item.product.sku || item.product.code_aux }}
                               </span>
                             </div>
                           </div>
@@ -962,7 +1051,7 @@ onMounted(() => {
               <!-- Estado Vacío -->
               <div v-else class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed">
                 <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
-                  <VIcon icon="ri-shopping-bag-3-line" size="32" />
+                  <VIcon icon="ri-shopping-cart-line" size="32" />
                 </VAvatar>
                 <div class="text-subtitle-1 font-weight-bold text-slate-900">
                   No hay productos o servicios agregados
@@ -975,95 +1064,9 @@ onMounted(() => {
           </VCard>
         </VCol>
 
-        <!-- Columna Derecha (4 cols): Parámetros, Observaciones y Resumen -->
+        <!-- Columna Derecha (4 cols): Observaciones y Resumen -->
         <VCol cols="12" lg="4">
           <div class="d-flex flex-column gap-6">
-            <!-- Tarjeta 3: Parámetros del Vehículo & Técnicos -->
-            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
-              <VCardItem class="bg-white py-3 px-4 border-b">
-                <template #title>
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
-                      <VIcon icon="ri-tools-line" size="20" />
-                    </VAvatar>
-                    <div>
-                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Datos del Taller
-                      </h3>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Kilometraje, combustible y técnicos
-                      </p>
-                    </div>
-                  </div>
-                </template>
-              </VCardItem>
-
-              <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
-                <!-- Kilometraje -->
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
-                  <VTextField
-                    v-model.number="workOrder.mileage"
-                    type="number"
-                    placeholder="Ej: 45000"
-                    prepend-inner-icon="ri-speed-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                  />
-                </div>
-
-                <!-- Nivel de Combustible -->
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Nivel de Combustible</label>
-                  <VSelect
-                    v-model="workOrder.fuel_level"
-                    :items="fuelLevels"
-                    placeholder="Seleccionar nivel"
-                    prepend-inner-icon="ri-gas-station-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    clearable
-                  />
-                </div>
-
-                <!-- Técnicos Asignados -->
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos (máximo 2)</label>
-                  <VAutocomplete
-                    v-model="workOrder.technicians"
-                    :items="employees"
-                    :item-title="(item) => `${item.first_name} ${item.last_name} - ${item.position || ''}`"
-                    item-value="id"
-                    placeholder="Seleccionar técnicos..."
-                    prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details="auto"
-                    color="primary"
-                    clearable
-                    :loading="isLoading"
-                    multiple
-                    chips
-                    :rules="[(v) => !v || v.length <= 2 || 'Máximo 2 técnicos']"
-                    class="fix-notch-bug"
-                  >
-                    <template #chip="{ props, item }">
-                      <VChip
-                        v-bind="props"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
-                      />
-                    </template>
-                  </VAutocomplete>
-                </div>
-              </VCardText>
-            </VCard>
 
             <!-- Tarjeta 4: Observaciones -->
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">

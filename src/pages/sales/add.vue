@@ -1835,7 +1835,75 @@ onMounted(async () => {
             </VCardText>
           </VCard>
 
-          <!-- Tarjeta 2: Productos y Servicios -->
+          <!-- Tarjeta 2: Detalles del Taller -->
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
+                    <VIcon icon="ri-tools-line" size="20" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                      Detalles del Taller
+                    </h3>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Kilometraje y técnicos asignados
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+            <VCardText class="pa-4 pa-sm-5 bg-white">
+              <VRow>
+                <VCol cols="12" sm="6">
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
+                  <VTextField
+                    v-model="sale.mileage"
+                    placeholder="Ej: 45000"
+                    type="number"
+                    variant="outlined"
+                    density="comfortable"
+                    prepend-inner-icon="ri-dashboard-3-line"
+                    hide-details="auto"
+                    color="primary"
+                  />
+                </VCol>
+                <VCol cols="12" sm="6">
+                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos</label>
+                  <VAutocomplete
+                    v-model="sale.technicians"
+                    :items="employees"
+                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
+                    item-value="id"
+                    placeholder="Seleccionar técnicos..."
+                    prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined"
+                    density="comfortable"
+                    clearable
+                    multiple
+                    chips
+                    :readonly="isLinkedToWorkOrder"
+                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
+                    persistent-hint
+                    class="fix-notch-bug"
+                  >
+                    <template #chip="{ props, item }">
+                      <VChip
+                        v-bind="props"
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
+                      />
+                    </template>
+                  </VAutocomplete>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+
+          <!-- Tarjeta 3: Productos y Servicios -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
@@ -2090,75 +2158,9 @@ onMounted(async () => {
           </VCard>
         </VCol>
 
-        <!-- Columna Derecha (4 cols): Taller, Pagos, Observaciones y Resumen Financiero -->
+        <!-- Columna Derecha (4 cols): Pagos, Observaciones y Resumen Financiero -->
         <VCol cols="12" lg="4">
           <div class="d-flex flex-column gap-6">
-            <!-- Tarjeta 3: Taller & Técnicos -->
-            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
-              <VCardItem class="bg-white py-3 px-4 border-b">
-                <template #title>
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
-                      <VIcon icon="ri-tools-line" size="20" />
-                    </VAvatar>
-                    <div>
-                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Taller & Técnicos
-                      </h3>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Kilometraje y asignación técnica
-                      </p>
-                    </div>
-                  </div>
-                </template>
-              </VCardItem>
-              <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
-                  <VTextField
-                    v-model="sale.mileage"
-                    placeholder="Ej: 45000"
-                    type="number"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="ri-dashboard-3-line"
-                    hide-details="auto"
-                    color="primary"
-                  />
-                </div>
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos</label>
-                  <VAutocomplete
-                    v-model="sale.technicians"
-                    :items="employees"
-                    :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
-                    item-value="id"
-                    placeholder="Seleccionar técnicos..."
-                    prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined"
-                    density="comfortable"
-                    clearable
-                    multiple
-                    chips
-                    :readonly="isLinkedToWorkOrder"
-                    :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint
-                    class="fix-notch-bug"
-                  >
-                    <template #chip="{ props, item }">
-                      <VChip
-                        v-bind="props"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
-                      />
-                    </template>
-                  </VAutocomplete>
-                </div>
-              </VCardText>
-            </VCard>
-
             <!-- Tarjeta 4: Configuración de Pagos (si no es cotización) -->
             <VCard
               v-if="sale.document_type !== 'quote'"

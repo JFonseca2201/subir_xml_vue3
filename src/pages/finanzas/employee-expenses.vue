@@ -95,13 +95,13 @@ const canAccessEmployeeExpenses = computed(() => {
 })
 
 const headers = [
-  { title: 'TIPO / REGISTRO', key: 'type', sortable: true, width: '280px', minWidth: '260px' },
-  { title: 'EMPLEADO', key: 'employee_name', sortable: true, width: '260px', minWidth: '230px' },
-  { title: 'DESCRIPCIÓN', key: 'description', minWidth: '240px' },
-  { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '200px', minWidth: '180px' },
-  { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '140px', minWidth: '130px' },
-  { title: 'FECHA', key: 'raw_date', sortable: true, width: '140px', minWidth: '130px' },
-  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '110px' },
+  { title: 'TIPO / REGISTRO', key: 'type', sortable: true, width: '220px', minWidth: '220px' },
+  { title: 'EMPLEADO', key: 'employee_name', sortable: true, width: '180px', minWidth: '180px' },
+  { title: 'DESCRIPCIÓN', key: 'description', minWidth: '220px' },
+  { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '180px', minWidth: '180px' },
+  { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '140px', minWidth: '140px' },
+  { title: 'FECHA', key: 'raw_date', sortable: true, width: '140px', minWidth: '140px' },
+  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '120px', minWidth: '120px' },
 ]
 
 // Functions
