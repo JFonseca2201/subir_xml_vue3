@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
 import UnitAddConversionDialog from '@/components/inventory/config/unit_conversions/UnitAddConversionDialog.vue'
 import UnitDeleteConversionDialog from '@/components/inventory/config/unit_conversions/UnitDeleteConversionDialog.vue'
@@ -9,38 +9,37 @@ import { useLoaderStore } from '@/stores/loader'
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 
-const headers = [
-  {
-    title: "#",
-    key: "index",
-  },
-  {
-    title: "Unidad Origen",
-    key: "from_unit",
-  },
-  {
-    title: "Unidad Destino",
-    key: "to_unit",
-  },
-  {
-    title: "Factor",
-    key: "factor",
-  },
-  {
-    title: "Acciones",
-    key: "action",
-  },
-]
-
 const isUnitAddConversionDialogVisible = ref(false)
 const isUnitDeleteConversionDialogVisible = ref(false)
 
 const list_conversions = ref([])
 const list_units = ref([])
+const searchQuery = ref(null)
 const conversion_selected_edit = ref(null)
 const conversion_selected_delete = ref(null)
 
 const isLoading = ref(false)
+
+// Conversiones filtradas
+const filteredConversions = computed(() => {
+  if (!searchQuery.value || !searchQuery.value.trim()) return list_conversions.value
+  const q = searchQuery.value.trim().toLowerCase()
+  return list_conversions.value.filter(c => {
+    const fromName = (c.from_unit?.name || '').toLowerCase()
+    const toName = (c.to_unit?.name || '').toLowerCase()
+    const fromCode = (c.from_unit?.code || '').toLowerCase()
+    const toCode = (c.to_unit?.code || '').toLowerCase()
+    return fromName.includes(q) || toName.includes(q) || fromCode.includes(q) || toCode.includes(q)
+  })
+})
+
+const hasActiveFilters = computed(() => {
+  return !!(searchQuery.value && searchQuery.value.trim())
+})
+
+const resetFilters = () => {
+  searchQuery.value = null
+}
 
 const list = async () => {
   isLoading.value = true
@@ -49,23 +48,20 @@ const list = async () => {
       $api("unit-conversions", {
         method: "GET",
         onResponseError({ response }) {
-          console.log(response._data.error)
-          showNotification('Error al cargar las conversiones', 'error')
+          console.log(response._data?.error)
         },
       }),
       $api("units", {
         method: "GET",
         params: { per_page: 1000 },
         onResponseError({ response }) {
-          console.log(response._data.error)
-          showNotification('Error al cargar las unidades', 'error')
+          console.log(response._data?.error)
         },
       }),
     ])
 
     list_conversions.value = conversionsResp.conversions || []
     list_units.value = unitsResp.units || []
-    showNotification('Lista de conversiones cargada correctamente', 'success')
   } catch (error) {
     console.log(error)
     showNotification('Error al cargar la lista de conversiones', 'error')
@@ -75,69 +71,44 @@ const list = async () => {
 }
 
 const addNewConversion = newConversion => {
-  console.log(newConversion)
-  let backup = list_conversions.value
-  list_conversions.value = []
-  backup.unshift(newConversion)
-  setTimeout(() => {
-    list_conversions.value = backup
-  }, 50)
+  list_conversions.value.unshift(newConversion)
   showNotification('Conversión agregada correctamente', 'success')
 }
 
 const addEditConversion = editConversion => {
-  console.log(editConversion)
-  let backup = list_conversions.value
-  list_conversions.value = []
-  let INDEX = backup.findIndex(conv => conv.id == editConversion.id)
-  if (INDEX != -1) {
-    backup[INDEX] = editConversion
+  const index = list_conversions.value.findIndex(conv => conv.id == editConversion.id)
+  if (index !== -1) {
+    list_conversions.value[index] = editConversion
+    showNotification('Conversión actualizada correctamente', 'success')
+  } else {
+    list()
   }
-  setTimeout(() => {
-    list_conversions.value = backup
-  }, 50)
-  showNotification('Conversión actualizada correctamente', 'success')
 }
 
 const addDeleteConversion = deletedConversion => {
-  console.log('Conversión eliminada:', deletedConversion)
-
-  if (!deletedConversion || !deletedConversion.id) {
-    console.error('Conversión eliminada no válida:', deletedConversion)
-    showNotification('Error: datos de la conversión no válidos', 'error')
-    
-    return
-  }
-
-  let backup = list_conversions.value
-  list_conversions.value = []
-  let INDEX = backup.findIndex(conv => conv.id == deletedConversion.id)
-
-  if (INDEX !== -1) {
-    backup.splice(INDEX, 1)
-    console.log('Conversión eliminada de la lista en índice:', INDEX)
-  } else {
-    console.warn('No se encontró la conversión en la lista local')
-    list()
-    
-    return
-  }
-
-  setTimeout(() => {
-    list_conversions.value = backup
+  if (!deletedConversion || !deletedConversion.id) return
+  const index = list_conversions.value.findIndex(conv => conv.id == deletedConversion.id)
+  if (index !== -1) {
+    list_conversions.value.splice(index, 1)
     showNotification('Conversión eliminada correctamente', 'success')
-  }, 50)
+  } else {
+    list()
+  }
+}
+
+const openNewConversionDialog = () => {
+  conversion_selected_edit.value = null
+  isUnitAddConversionDialogVisible.value = true
 }
 
 const editItem = item => {
-  console.log(item)
-  isUnitAddConversionDialogVisible.value = true
   conversion_selected_edit.value = item
+  isUnitAddConversionDialogVisible.value = true
 }
 
 const deleteItem = item => {
-  isUnitDeleteConversionDialogVisible.value = true
   conversion_selected_delete.value = item
+  isUnitDeleteConversionDialogVisible.value = true
 }
 
 onMounted(() => {
@@ -149,219 +120,272 @@ definePage({ meta: { permission: "settings" } })
 
 <template>
   <div class="pa-4 pa-sm-6 unit-conversions-management-page">
-    <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+    <!-- Encabezado Principal y Acciones -->
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-exchange-line" size="26" />
+          </VAvatar>
+          Conversiones de Unidades
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Equivalencias y factores multiplicadores entre distintas unidades de inventario
+        </p>
+      </div>
+
+      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          class="elevation-2 font-weight-bold"
+          @click="openNewConversionDialog"
+        >
+          Nueva Conversión
+        </VBtn>
+      </div>
+    </div>
+
+    <!-- Barra de Métricas Rápidas (KPIs) -->
+    <VRow class="mb-4" dense>
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
             <VIcon icon="ri-scales-3-line" size="24" />
           </VAvatar>
           <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                Conversiones de Unidades
-              </h1>
-              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
-                {{ list_conversions.length }} {{ list_conversions.length === 1 ? 'registro' : 'registros' }}
-              </VChip>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Total Factores de Conversión</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis">
+              {{ list_conversions.length }} <span class="text-caption text-disabled font-weight-regular">registrados</span>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
-              Administración de conversiones entre unidades de medida
-            </p>
           </div>
-        </div>
+        </VCard>
+      </VCol>
 
-        <div class="d-flex align-center gap-3 flex-wrap">
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+            <VIcon icon="ri-ruler-2-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Unidades Base Vinculadas</div>
+            <div class="text-h6 font-weight-bold text-success">
+              {{ list_units.length }} <span class="text-caption text-disabled font-weight-regular">unidades</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+            <VIcon icon="ri-calculator-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Cálculo en Ventas y Compras</div>
+            <div class="text-h6 font-weight-bold text-warning">
+              Automático <span class="text-caption text-disabled font-weight-regular">(En tiempo real)</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Filtros y Búsqueda -->
+    <VCard class="rounded-xl border elevation-0 mb-5 bg-surface">
+      <VCardText class="pa-4">
+        <div class="d-flex align-center justify-space-between mb-3">
+          <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <span>Filtros de Búsqueda</span>
+          </div>
+
           <VBtn
-            color="primary"
-            variant="elevated"
+            v-if="hasActiveFilters"
+            variant="text"
+            color="error"
             size="small"
-            prepend-icon="ri-add-line"
-            class="font-weight-semibold elevation-2"
-            @click="isUnitAddConversionDialogVisible = !isUnitAddConversionDialogVisible"
+            prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold"
+            @click="resetFilters"
           >
-            Nueva Conversión
+            Limpiar Filtros
           </VBtn>
         </div>
+
+        <VRow dense class="gap-y-3">
+          <VCol cols="12">
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar conversión"
+              placeholder="Unidad origen o destino..."
+              prepend-inner-icon="ri-search-2-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+              :loading="isLoading"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
+
+    <!-- ESTADO DE CARGA -->
+    <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VTable>
+        <tbody>
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
+            <td class="py-4"><div class="shimmer-line w-60" /></td>
+            <td class="py-4"><div class="shimmer-line w-60" /></td>
+            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-50" /></td>
+            <td class="py-4 text-center" style="width: 120px;"><div class="shimmer-button rounded mx-auto" /></td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
+
+    <!-- ESTADO VACÍO -->
+    <VCard
+      v-else-if="!filteredConversions || filteredConversions.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
+    >
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-exchange-line" />
+      </VAvatar>
+      <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
+        No se encontraron conversiones
+      </h3>
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+        Intenta ajustar los criterios de búsqueda o registra una nueva regla de conversión de unidades.
+      </p>
+      <div class="d-flex justify-center gap-3">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+          Restablecer Filtros
+        </VBtn>
+        <VBtn color="primary" prepend-icon="ri-add-line" @click="openNewConversionDialog">
+          Nueva Conversión
+        </VBtn>
       </div>
     </VCard>
 
-    <!-- Contenedor Principal (Tabla) -->
-    <VCard class="rounded-xl border-light overflow-hidden elevation-1">
-      <!-- Tabla de Conversiones -->
-      <div class="position-relative">
-        <div class="overflow-x-auto">
-          <VTable
-            hover
-            class="conversions-table"
-          >
-            <thead>
-              <tr>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 60px;"
-                >
-                  #
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 200px;"
-                >
-                  UNIDAD ORIGEN
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 200px;"
-                >
-                  UNIDAD DESTINO
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
-                  FACTOR
-                </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
-                  ACCIONES
-                </th>
-              </tr>
-            </thead>
+    <!-- TABLA DE CONVERSIONES -->
+    <div v-else>
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable hover class="conversions-modern-table overflow-x-auto">
+          <thead>
+            <tr class="bg-grey-lighten-5">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
+                #
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+                Unidad Origen
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 60px;">
+                
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+                Unidad Destino
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px;">
+                Factor Multiplicador
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in filteredConversions" :key="item.id" class="conversion-table-row">
+              <td class="font-weight-bold text-disabled">
+                #{{ index + 1 }}
+              </td>
 
-            <!-- Cargando (Skeleton Rows) -->
-            <tbody v-if="isLoading">
-              <tr
-                v-for="n in 5"
-                :key="n"
-                class="skeleton-row align-middle"
-              >
-                <td class="text-center py-4">
-                  <div class="shimmer-line w-40 mx-auto" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-75" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-75" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-chip" />
-                </td>
-                <td class="text-center py-4">
-                  <div class="d-flex justify-center gap-1">
-                    <div class="shimmer-button rounded" />
-                    <div class="shimmer-button rounded" />
+              <!-- Unidad Origen -->
+              <td class="py-3">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="32" color="primary" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-ruler-line" size="18" />
+                  </VAvatar>
+                  <div>
+                    <span class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                      {{ item.from_unit?.name || 'Sin nombre' }}
+                    </span>
+                    <span v-if="item.from_unit?.code" class="text-caption text-disabled ms-1 font-mono">
+                      ({{ item.from_unit.code }})
+                    </span>
                   </div>
-                </td>
-              </tr>
-            </tbody>
+                </div>
+              </td>
 
-            <tbody v-else-if="!list_conversions || list_conversions.length === 0">
-              <tr>
-                <td
-                  colspan="5"
-                  class="text-center pa-8 text-medium-emphasis"
-                >
-                  <VIcon
-                    size="48"
-                    class="mb-3"
-                    color="grey-lighten-1"
-                  >
-                    ri-file-ppt-2-line
-                  </VIcon>
-                  <div class="text-h6">
-                    No hay conversiones registradas
+              <!-- Flecha Indicadora -->
+              <td class="text-center py-3">
+                <VIcon icon="ri-arrow-right-line" color="medium-emphasis" size="20" />
+              </td>
+
+              <!-- Unidad Destino -->
+              <td class="py-3">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="32" color="secondary" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-ruler-2-line" size="18" />
+                  </VAvatar>
+                  <div>
+                    <span class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                      {{ item.to_unit?.name || 'Sin nombre' }}
+                    </span>
+                    <span v-if="item.to_unit?.code" class="text-caption text-disabled ms-1 font-mono">
+                      ({{ item.to_unit.code }})
+                    </span>
                   </div>
-                  <div class="text-body-2">
-                    Agrega conversiones entre unidades de medida
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else>
-              <tr
-                v-for="(item, index) in list_conversions"
-                :key="item.id"
-                class="conversions-row align-middle"
-              >
-                <td class="text-center py-3">
-                  <span class="font-weight-bold text-caption text-primary bg-primary-lighten-5 px-2 py-1 rounded">
-                    #{{ index + 1 }}
-                  </span>
-                </td>
-                <td class="text-left py-3">
-                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">
-                    {{ item.from_unit?.name || 'Sin nombre' }}
-                  </span>
-                  <VChip
-                    size="x-small"
-                    class="ml-2"
-                    :color="item.from_unit?.category === 'volume' ? 'info' : 'success'"
+                </div>
+              </td>
+
+              <!-- Factor (Tipografía monoespaciada sin chip) -->
+              <td class="py-3">
+                <span class="text-body-1 font-weight-bold font-mono text-primary">
+                  1 = {{ item.factor }}
+                </span>
+              </td>
+
+              <!-- Acciones -->
+              <td class="text-center">
+                <div class="d-flex justify-center align-center gap-1">
+                  <VBtn
+                    size="small"
+                    color="warning"
                     variant="tonal"
-                  >
-                    {{ item.from_unit?.code || '' }}
-                  </VChip>
-                </td>
-                <td class="text-left py-3">
-                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">
-                    {{ item.to_unit?.name || 'Sin nombre' }}
-                  </span>
-                  <VChip
-                    size="x-small"
-                    class="ml-2"
-                    :color="item.to_unit?.category === 'volume' ? 'info' : 'success'"
+                    icon="ri-pencil-line"
+                    title="Editar Conversión"
+                    @click="editItem(item)"
+                  />
+                  <VBtn
+                    size="small"
+                    color="error"
                     variant="tonal"
-                  >
-                    {{ item.to_unit?.code || '' }}
-                  </VChip>
-                </td>
-                <td class="text-left py-3">
-                  <span class="text-body-2 text-grey-darken-3 font-weight-medium">
-                    {{ item.factor }}
-                  </span>
-                </td>
-                <td class="text-no-wrap text-center py-3">
-                  <div class="d-flex justify-center align-center gap-1">
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon="ri-pencil-line"
-                      size="small"
-                      color="primary"
-                      title="Editar"
-                      @click="editItem(item)"
-                    />
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon="ri-delete-bin-line"
-                      size="small"
-                      color="error"
-                      title="Eliminar"
-                      @click="deleteItem(item)"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
-        </div>
-      </div>
+                    icon="ri-delete-bin-line"
+                    title="Eliminar Conversión"
+                    @click="deleteItem(item)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
 
-      <VDivider />
-
-      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
-        <div class="d-flex flex-column align-center gap-3 w-100">
-          <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ list_conversions.length }}</span> registros
+      <!-- Resumen -->
+      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong class="text-high-emphasis">{{ filteredConversions.length }}</strong> conversiones registradas
           </div>
         </div>
-      </VCardActions>
-    </VCard>
+      </VCard>
+    </div>
 
-    <!-- DIALOGS -->
+    <!-- DIÁLOGOS -->
     <UnitAddConversionDialog
       v-model:isDialogVisible="isUnitAddConversionDialogVisible"
       :unit-selected="conversion_selected_edit"
@@ -378,3 +402,26 @@ definePage({ meta: { permission: "settings" } })
     />
   </div>
 </template>
+
+<style scoped lang="scss">
+.kpi-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
+
+.conversion-table-row {
+  transition: background-color 0.15s ease;
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+</style>

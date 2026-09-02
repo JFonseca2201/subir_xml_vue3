@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -7,12 +7,10 @@ import EmployeeCreateDialog from '@/components/inventory/employees/EmployeeCreat
 import EmployeeEditDialog from '@/components/inventory/employees/EmployeeEditDialog.vue'
 import EmployeeViewDialog from '@/components/inventory/employees/EmployeeViewDialog.vue'
 import EmployeeDeleteDialog from '@/components/inventory/employees/EmployeeDeleteDialog.vue'
-
-// Loader y notificaciones
-const loader = useLoaderStore()
-const { showNotification } = useGlobalToast()
 import { usePermissions } from '@/composables/usePermissions'
 
+const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
 const { can } = usePermissions()
 
 // Estado
@@ -33,7 +31,7 @@ const employeeToDelete = ref(null)
 // Formulario de búsqueda
 const searchForm = ref({
   search: '',
-  status: 'active', // active, inactive, all
+  status: 'active',
 })
 
 // Paginación
@@ -42,15 +40,6 @@ const itemsPerPage = ref(10)
 const totalItems = ref(0)
 const totalPages = ref(0)
 
-const pagination = ref({
-  total: 0,
-  per_page: 10,
-  current_page: 1,
-  last_page: 1,
-  from: 0,
-  to: 0,
-})
-
 // Opciones de estado
 const statusOptions = [
   { label: 'Activos', value: 'active' },
@@ -58,17 +47,39 @@ const statusOptions = [
   { label: 'Todos', value: 'all' },
 ]
 
-// Headers de la tabla
-const headers = [
-  { title: 'Identificación', key: 'identification', sortable: false },
-  { title: 'Nombre', key: 'first_name', sortable: false },
-  { title: 'Apellido', key: 'last_name', sortable: false },
-  { title: 'Email', key: 'email', sortable: false },
-  { title: 'Cargo', key: 'position', sortable: false },
-  { title: 'Salario', key: 'salary', sortable: false, align: 'end' },
-  { title: 'Estado', key: 'status', sortable: false, width: '100px' },
-  { title: 'Acciones', key: 'actions', sortable: false, width: '120px' },
-]
+// Métricas computadas
+const activeEmployeesCount = computed(() => {
+  return employees.value.filter(e => e.status === 'active' || e.status === 1 || e.status === '1').length
+})
+
+const uniquePositionsCount = computed(() => {
+  const positions = new Set(employees.value.map(e => e.position).filter(Boolean))
+  return positions.size
+})
+
+const hasActiveFilters = computed(() => {
+  return !!(
+    (searchForm.value.search && searchForm.value.search.trim()) ||
+    (searchForm.value.status && searchForm.value.status !== 'active')
+  )
+})
+
+const resetFilters = () => {
+  searchForm.value = {
+    search: '',
+    status: 'active',
+  }
+  currentPage.value = 1
+  searchEmployees()
+}
+
+const getEmployeeInitials = (first, last) => {
+  const f = (first || '').trim()
+  const l = (last || '').trim()
+  if (f && l) return (f[0] + l[0]).toUpperCase()
+  if (f) return f.slice(0, 2).toUpperCase()
+  return 'EM'
+}
 
 // Métodos
 const openCreateDialog = () => {
@@ -85,13 +96,20 @@ const openViewDialog = employee => {
   viewDialog.value = true
 }
 
-const onEmployeeCreated = createdEmployee => {
-  // Recargar la lista para mostrar el nuevo empleado
+const openDeleteDialog = employee => {
+  employeeToDelete.value = employee
+  deleteDialog.value = true
+}
+
+const onEmployeeCreated = () => {
   searchEmployees()
 }
 
-const onEmployeeUpdated = updatedEmployee => {
-  // Recargar la lista para mostrar los cambios
+const onEmployeeUpdated = () => {
+  searchEmployees()
+}
+
+const onEmployeeDeleted = () => {
   searchEmployees()
 }
 
@@ -104,7 +122,6 @@ const searchEmployees = async () => {
       ...searchForm.value,
     }
 
-    // Eliminar parámetros nulos o vacíos
     Object.keys(params).forEach(key => {
       if (params[key] === null || params[key] === '') {
         delete params[key]
@@ -113,18 +130,10 @@ const searchEmployees = async () => {
 
     const response = await $api('employees', { params })
 
-    if (response.status === 200) {
+    if (response.status === 200 || response.employees) {
       employees.value = response.employees || []
       totalItems.value = response.total || 0
-      totalPages.value = response.total_pages || 0
-      pagination.value = {
-        total: response.total || 0,
-        per_page: response.per_page || 10,
-        current_page: response.current_page || 1,
-        last_page: response.total_pages || 1,
-        from: response.from || 0,
-        to: response.to || 0,
-      }
+      totalPages.value = response.total_pages || response.last_page || 1
     }
   } catch (error) {
     console.error('Error al buscar empleados:', error)
@@ -134,86 +143,19 @@ const searchEmployees = async () => {
   }
 }
 
-const clearSearch = () => {
-  searchForm.value = {
-    search: '',
-    status: 'active',
-  }
-  currentPage.value = 1
-  searchEmployees()
-}
-
-const addEmployee = () => {
-  openCreateDialog()
-}
-
-const editEmployee = employee => {
-  openEditDialog(employee)
-}
-
-const viewEmployee = employee => {
-  openViewDialog(employee)
-}
-
-const deleteEmployee = employee => {
-  openDeleteDialog(employee)
-}
-
-const restoreEmployee = async employee => {
-  try {
-    await $api(`employees/${employee.id}/restore`, {
-      method: 'POST',
-    })
-
-    // Recargar la lista para reflejar los cambios
-    searchEmployees()
-
-    console.log('Empleado restaurado exitosamente')
-  } catch (error) {
-    console.error('Error al restaurar empleado:', error)
-  }
-}
-
-const onEmployeeDeleted = deletedEmployee => {
-  // Recargar la lista para mostrar los cambios
-  searchEmployees()
-}
-
-const formatSalary = salary => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-  }).format(salary)
-}
-
-const closeCreateDialog = () => {
-  createDialog.value = false
-}
-
-const openDeleteDialog = employee => {
-  employeeToDelete.value = employee
-  deleteDialog.value = true
-}
-
-const getStatusColor = status => {
-  return status === 'active' ? 'success' : 'error'
-}
-
-const getStatusText = status => {
-  return status === 'active' ? 'Activo' : 'Inactivo'
-}
-
-// Watcher para resetear página cuando los filtros cambian (con debounce)
 let searchTimeout = null
 watch([() => searchForm.value.search, () => searchForm.value.status], () => {
   currentPage.value = 1
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     searchEmployees()
-  }, 500)
+  }, 400)
 }, { deep: true })
 
-// Montar componente
+watch(currentPage, () => {
+  searchEmployees()
+})
+
 onMounted(() => {
   searchEmployees()
 })
@@ -221,326 +163,290 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 employees-management-page">
-    <!-- Header y Filtros Fijos (Sticky Top) -->
-    <div class="sticky-page-header-wrapper">
-      <!-- Encabezado de la página -->
-      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
-        <div>
-          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-            <VIcon
-              icon="ri-user-settings-line"
-              color="primary"
-              class="me-2"
-              size="28"
-            />
-            Empleados
-          </h1>
-          <p class="text-medium-emphasis mb-0">
-            Gestión de empleados y personal del taller
-          </p>
-        </div>
-        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-          <VBtn
-            v-if="can('register_employee')"
-            color="primary"
-            prepend-icon="ri-add-line"
-            @click="addEmployee"
-          >
-            Nuevo Empleado
-          </VBtn>
-        </div>
+    <!-- Encabezado Principal y Acciones -->
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+      <div>
+        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-user-settings-line" size="26" />
+          </VAvatar>
+          Gestión de Empleados
+        </h1>
+        <p class="text-medium-emphasis mb-0">
+          Directorio de personal operativo y administrativo del taller
+        </p>
       </div>
 
-      <!-- Filtros y Búsqueda -->
-      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
-        <VCardText class="pa-4 bg-grey-lighten-5">
-          <VRow class="align-center">
-            <VCol
-              cols="12"
-              md="8"
-            >
-              <VTextField
-                v-model="searchForm.search"
-                label="Búsqueda General"
-                placeholder="Identificación, nombre, email, cargo..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="4"
-            >
-              <VSelect
-                v-model="searchForm.status"
-                :items="statusOptions"
-                item-title="label"
-                item-value="value"
-                label="Estado"
-                placeholder="Todos"
-                prepend-inner-icon="ri-filter-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
+      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+        <VBtn
+          v-if="can('register_employee')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          class="elevation-2 font-weight-bold"
+          @click="openCreateDialog"
+        >
+          Nuevo Empleado
+        </VBtn>
+      </div>
     </div>
 
-    <!-- Contenedor Principal (Tabla) -->
-    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
-      <!-- Tabla de Empleados -->
-      <div class="position-relative">
-        <div class="overflow-x-auto">
-          <VTable
-            hover
-            class="employees-table"
+    <!-- Barra de Métricas Rápidas (KPIs) -->
+    <VRow class="mb-4" dense>
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+            <VIcon icon="ri-user-star-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Total Empleados Registrados</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis">
+              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+            <VIcon icon="ri-user-follow-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Empleados Activos</div>
+            <div class="text-h6 font-weight-bold text-success">
+              {{ activeEmployeesCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+            <VIcon icon="ri-briefcase-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Cargos / Especialidades</div>
+            <div class="text-h6 font-weight-bold text-warning">
+              {{ uniquePositionsCount }} <span class="text-caption text-disabled font-weight-regular">cargos distintos</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- Filtros y Búsqueda -->
+    <VCard class="rounded-xl border elevation-0 mb-5 bg-surface">
+      <VCardText class="pa-4">
+        <div class="d-flex align-center justify-space-between mb-3">
+          <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <span>Filtros de Búsqueda</span>
+          </div>
+
+          <VBtn
+            v-if="hasActiveFilters"
+            variant="text"
+            color="error"
+            size="small"
+            prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold"
+            @click="resetFilters"
           >
-            <thead>
-              <tr>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="width: 150px;"
-                >
-                  IDENTIFICACIÓN
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 180px;"
-                >
-                  NOMBRE
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 180px;"
-                >
-                  APELLIDO
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 200px;"
-                >
-                  EMAIL
-                </th>
-                <th
-                  class="text-left font-weight-bold text-uppercase"
-                  style="min-width: 150px;"
-                >
-                  CARGO
-                </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 120px;"
-                >
-                  ESTADO
-                </th>
-                <th
-                  class="text-center font-weight-bold text-uppercase"
-                  style="width: 90px;"
-                >
-                  ACCIONES
-                </th>
-              </tr>
-            </thead>
-
-            <!-- Cargando (Skeleton Rows) -->
-            <tbody v-if="loading">
-              <tr
-                v-for="n in 5"
-                :key="n"
-                class="skeleton-row align-middle"
-              >
-                <td class="py-4">
-                  <div class="shimmer-line w-75" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-80" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-80" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-90" />
-                </td>
-                <td class="py-4">
-                  <div class="shimmer-line w-70" />
-                </td>
-                <td class="text-center py-4">
-                  <div class="shimmer-chip mx-auto" />
-                </td>
-                <td class="text-center py-4">
-                  <div class="d-flex justify-center gap-1">
-                    <div class="shimmer-button rounded" />
-                    <div class="shimmer-button rounded" />
-                    <div class="shimmer-button rounded" />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-
-            <tbody v-else-if="!employees || employees.length === 0">
-              <tr>
-                <td
-                  colspan="7"
-                  class="text-center pa-8 text-medium-emphasis"
-                >
-                  <VIcon
-                    size="48"
-                    class="mb-3"
-                    color="grey-lighten-1"
-                  >
-                    ri-user-unfollow-line
-                  </VIcon>
-                  <div class="text-h6">
-                    No se encontraron empleados
-                  </div>
-                  <div class="text-body-2">
-                    Intenta ajustar los filtros de búsqueda
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-            <tbody v-else>
-              <tr
-                v-for="item in employees"
-                :key="item.id"
-                class="employees-row align-middle"
-              >
-                <!-- Identificación -->
-                <td class="text-no-wrap text-left py-3">
-                  <span class="font-weight-bold text-subtitle-1 text-primary">{{ item.identification }}</span>
-                </td>
-
-                <!-- Nombre -->
-                <td class="text-left py-3">
-                  <span class="font-weight-semibold text-body-1 text-grey-darken-4">{{ item.first_name }}</span>
-                </td>
-
-                <!-- Apellido -->
-                <td class="text-left py-3">
-                  <span class="text-body-2 text-grey-darken-3">{{ item.last_name }}</span>
-                </td>
-
-                <!-- Email -->
-                <td
-                  class="text-left py-3"
-                  style="max-width: 250px;"
-                >
-                  <span
-                    class="text-body-2 text-grey-darken-3 text-truncate"
-                    :title="item.email"
-                  >{{ item.email }}</span>
-                </td>
-
-                <!-- Cargo -->
-                <td class="text-left py-3">
-                  <span class="text-body-2 text-grey-darken-3">{{ item.position || '-' }}</span>
-                </td>
-
-                <!-- Estado -->
-                <td class="text-no-wrap text-center py-3">
-                  <VChip
-                    :color="getStatusColor(item.deleted_at ? 'inactive' : 'active')"
-                    variant="tonal"
-                    size="small"
-                  >
-                    {{ getStatusText(item.deleted_at ? 'inactive' : 'active') }}
-                  </VChip>
-                </td>
-
-                <!-- Acciones -->
-                <td class="text-no-wrap text-center py-3">
-                  <div class="d-flex justify-center align-center">
-                    <!-- Ver Detalle -->
-                    <VBtn
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="info"
-                      title="Ver Detalle"
-                      @click="viewEmployee(item)"
-                    >
-                      <VIcon
-                        icon="ri-eye-line"
-                        size="20"
-                      />
-                    </VBtn>
-
-                    <!-- Editar -->
-                    <VBtn
-                      v-if="can('edit_employee')"
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="warning"
-                      title="Editar"
-                      @click="editEmployee(item)"
-                    >
-                      <VIcon
-                        icon="ri-edit-line"
-                        size="20"
-                      />
-                    </VBtn>
-
-                    <!-- Eliminar o Restaurar -->
-                    <VBtn
-                      v-if="searchForm.status === 'active' && can('delete_employee')"
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="error"
-                      title="Eliminar"
-                      @click="deleteEmployee(item)"
-                    >
-                      <VIcon
-                        icon="ri-delete-bin-line"
-                        size="20"
-                      />
-                    </VBtn>
-                    <VBtn
-                      v-else
-                      class="action-btn"
-                      variant="text"
-                      icon
-                      size="small"
-                      color="success"
-                      title="Restaurar empleado"
-                      @click="restoreEmployee(item)"
-                    >
-                      <VIcon
-                        icon="ri-refresh-line"
-                        size="20"
-                      />
-                    </VBtn>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+            Limpiar Filtros
+          </VBtn>
         </div>
-      </div>
 
-      <VDivider />
+        <VRow dense class="gap-y-3">
+          <VCol cols="12" md="8">
+            <VTextField
+              v-model="searchForm.search"
+              label="Buscar empleado"
+              placeholder="Identificación, nombre, apellido, cargo o email..."
+              prepend-inner-icon="ri-search-2-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+              :loading="loading"
+            />
+          </VCol>
+
+          <VCol cols="12" md="4">
+            <VSelect
+              v-model="searchForm.status"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              label="Estado Laboral"
+              placeholder="Todos"
+              prepend-inner-icon="ri-toggle-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              color="primary"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
+
+    <!-- ESTADO DE CARGA -->
+    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VTable>
+        <tbody>
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-75" /></td>
+            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
+            <td class="py-4"><div class="shimmer-line w-60" /></td>
+            <td class="py-4"><div class="shimmer-line w-50" /></td>
+            <td class="py-4" style="width: 120px;"><div class="shimmer-chip mx-auto" /></td>
+            <td class="py-4 text-center" style="width: 130px;"><div class="shimmer-button rounded mx-auto" /></td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
+
+    <!-- ESTADO VACÍO -->
+    <VCard
+      v-else-if="!employees || employees.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
+    >
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-user-unfollow-line" />
+      </VAvatar>
+      <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
+        No se encontraron empleados
+      </h3>
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+        Intenta ajustar los filtros de búsqueda o registra un nuevo empleado al personal.
+      </p>
+      <div class="d-flex justify-center gap-3">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+          Restablecer Filtros
+        </VBtn>
+        <VBtn v-if="can('register_employee')" color="primary" prepend-icon="ri-add-line" @click="openCreateDialog">
+          Nuevo Empleado
+        </VBtn>
+      </div>
+    </VCard>
+
+    <!-- TABLA DE EMPLEADOS -->
+    <div v-else>
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable hover class="employees-modern-table overflow-x-auto">
+          <thead>
+            <tr class="bg-grey-lighten-5">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
+                Identificación
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
+                Empleado
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 240px;">
+                Email
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px;">
+                Cargo / Puesto
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+                Estado
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px;">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in employees" :key="item.id" class="employee-table-row">
+              <!-- Identificación -->
+              <td class="py-3">
+                <span class="font-weight-bold text-high-emphasis font-mono">
+                  {{ item.identification || 'Sin cédula' }}
+                </span>
+              </td>
+
+              <!-- Empleado -->
+              <td class="py-3">
+                <div class="d-flex align-center gap-3">
+                  <VAvatar size="38" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0">
+                    <span>{{ getEmployeeInitials(item.first_name, item.last_name) }}</span>
+                  </VAvatar>
+                  <div>
+                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                      {{ item.first_name }} {{ item.last_name }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Email -->
+              <td class="py-3">
+                <span class="text-body-2 text-medium-emphasis text-truncate" style="max-width: 230px;" :title="item.email">
+                  {{ item.email || '-' }}
+                </span>
+              </td>
+
+              <!-- Cargo (Texto limpio, sin vchip) -->
+              <td class="py-3">
+                <span class="text-body-2 font-weight-medium text-high-emphasis text-uppercase">
+                  {{ item.position || 'No especificado' }}
+                </span>
+              </td>
+
+              <!-- Estado -->
+              <td class="text-center">
+                <VChip
+                  :color="item.status === 'active' || item.status === 1 || item.status === '1' ? 'success' : 'error'"
+                  size="small"
+                  variant="tonal"
+                  class="font-weight-semibold"
+                >
+                  <VIcon :icon="item.status === 'active' || item.status === 1 || item.status === '1' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
+                  {{ item.status === 'active' || item.status === 1 || item.status === '1' ? 'ACTIVO' : 'INACTIVO' }}
+                </VChip>
+              </td>
+
+              <!-- Acciones -->
+              <td class="text-center">
+                <div class="d-flex justify-center align-center gap-1">
+                  <VBtn
+                    size="small"
+                    color="info"
+                    variant="tonal"
+                    icon="ri-eye-line"
+                    title="Ver Ficha de Empleado"
+                    @click="openViewDialog(item)"
+                  />
+                  <VBtn
+                    size="small"
+                    color="warning"
+                    variant="tonal"
+                    icon="ri-pencil-line"
+                    title="Editar Empleado"
+                    @click="openEditDialog(item)"
+                  />
+                  <VBtn
+                    size="small"
+                    color="error"
+                    variant="tonal"
+                    icon="ri-delete-bin-line"
+                    title="Eliminar Empleado"
+                    @click="openDeleteDialog(item)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
 
       <!-- Paginación -->
-      <VCardActions class="justify-center pa-5 bg-grey-lighten-5">
-        <div class="d-flex flex-column align-center gap-3 w-100">
-          <div class="text-caption text-grey-darken-1">
-            Mostrando <span class="font-weight-bold">{{ employees.length }}</span> de <span class="font-weight-bold">{{
-              totalItems }}</span> registros
+      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong class="text-high-emphasis">{{ employees.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> empleados
           </div>
           <VPagination
             v-model="currentPage"
@@ -551,33 +457,50 @@ onMounted(() => {
             @update:model-value="searchEmployees"
           />
         </div>
-      </VCardActions>
-    </VCard>
+      </VCard>
+    </div>
 
-    <!-- Diálogo de Eliminación de Empleado -->
-    <EmployeeDeleteDialog
-      v-model="deleteDialog"
-      :employee="employeeToDelete"
-      @employee-deleted="onEmployeeDeleted"
-    />
-
-    <!-- Diálogo de Vista de Empleado -->
-    <EmployeeViewDialog
-      v-model="viewDialog"
-      :employee="employeeToView"
-    />
-
-    <!-- Diálogo de Creación de Empleado -->
+    <!-- DIÁLOGOS -->
     <EmployeeCreateDialog
-      v-model="createDialog"
+      v-model:isDialogVisible="createDialog"
       @employee-created="onEmployeeCreated"
     />
-
-    <!-- Diálogo de Edición de Empleado -->
     <EmployeeEditDialog
-      v-model="editDialog"
+      v-model:isDialogVisible="editDialog"
       :employee="employeeToEdit"
       @employee-updated="onEmployeeUpdated"
     />
+    <EmployeeViewDialog
+      v-model:isDialogVisible="viewDialog"
+      :employee="employeeToView"
+    />
+    <EmployeeDeleteDialog
+      v-model:isDialogVisible="deleteDialog"
+      :employee="employeeToDelete"
+      @employee-deleted="onEmployeeDeleted"
+    />
   </div>
 </template>
+
+<style scoped lang="scss">
+.kpi-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
+
+.employee-table-row {
+  transition: background-color 0.15s ease;
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+</style>
