@@ -241,20 +241,52 @@ const onVehicleAdded = async newVehicle => {
   showVehicleDialog.value = false
 }
 
-watch(() => selectedClient.value, newVal => {
+watch(() => selectedClient.value, async newVal => {
   if (newVal && newVal.id) {
     workOrder.value.client_id = newVal.id
+    if (!newVal.email) {
+      try {
+        const res = await $api(`clients/${newVal.id}`)
+        const fullClient = res.client || res.data || res
+        if (fullClient && fullClient.email) {
+          selectedClient.value = { ...newVal, ...fullClient }
+        }
+      } catch (e) {
+        console.warn('Error fetching full client:', e)
+      }
+    }
   } else {
     workOrder.value.client_id = null
   }
 })
 
-watch(() => selectedVehicle.value, newVal => {
+watch(() => selectedVehicle.value, async newVal => {
   if (newVal && newVal.id) {
     workOrder.value.vehicle_id = newVal.id
+
+    if (!newVal.color) {
+      try {
+        const fullVehicle = await $api(`vehicles/${newVal.id}`)
+        if (fullVehicle && fullVehicle.id) {
+          selectedVehicle.value = { ...newVal, ...fullVehicle }
+        }
+      } catch (e) {
+        console.warn('Error fetching full vehicle:', e)
+      }
+    }
+
     if (newVal.client_id && !workOrder.value.client_id) {
       workOrder.value.client_id = newVal.client_id
-      selectedClient.value = newVal.client || null
+      if (newVal.client && newVal.client.email) {
+        selectedClient.value = newVal.client
+      } else {
+        try {
+          const res = await $api(`clients/${newVal.client_id}`)
+          selectedClient.value = res.client || res.data || res || newVal.client
+        } catch (e) {
+          selectedClient.value = newVal.client || null
+        }
+      }
     }
   } else {
     workOrder.value.vehicle_id = null
