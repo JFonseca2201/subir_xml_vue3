@@ -17,7 +17,6 @@ const { can } = usePermissions()
 const loading = ref(false)
 const employees = ref([])
 const searchFormRef = ref(null)
-const selectedEmployee = ref(null)
 
 // Diálogos
 const createDialog = ref(false)
@@ -47,9 +46,19 @@ const statusOptions = [
   { label: 'Todos', value: 'all' },
 ]
 
+// Helper para saber si un empleado está activo (en base de datos usa deleted_at soft delete)
+const isEmployeeActive = employee => {
+  if (!employee) return false
+  if (employee.deleted_at) return false
+  if (employee.status !== undefined && employee.status !== null) {
+    return employee.status === 'active' || employee.status === 1 || employee.status === '1'
+  }
+  return true
+}
+
 // Métricas computadas
 const activeEmployeesCount = computed(() => {
-  return employees.value.filter(e => e.status === 'active' || e.status === 1 || e.status === '1').length
+  return employees.value.filter(e => isEmployeeActive(e)).length
 })
 
 const uniquePositionsCount = computed(() => {
@@ -81,7 +90,7 @@ const getEmployeeInitials = (first, last) => {
   return 'EM'
 }
 
-// Métodos
+// Métodos de diálogo
 const openCreateDialog = () => {
   createDialog.value = true
 }
@@ -99,6 +108,19 @@ const openViewDialog = employee => {
 const openDeleteDialog = employee => {
   employeeToDelete.value = employee
   deleteDialog.value = true
+}
+
+const restoreEmployee = async employee => {
+  try {
+    await $api(`employees/${employee.id}/restore`, {
+      method: 'POST',
+    })
+    showNotification('Empleado restaurado exitosamente', 'success')
+    searchEmployees()
+  } catch (error) {
+    console.error('Error al restaurar empleado:', error)
+    showNotification('Error al restaurar empleado', 'error')
+  }
 }
 
 const onEmployeeCreated = () => {
@@ -398,13 +420,13 @@ onMounted(() => {
               <!-- Estado -->
               <td class="text-center">
                 <VChip
-                  :color="item.status === 'active' || item.status === 1 || item.status === '1' ? 'success' : 'error'"
+                  :color="isEmployeeActive(item) ? 'success' : 'error'"
                   size="small"
                   variant="tonal"
                   class="font-weight-semibold"
                 >
-                  <VIcon :icon="item.status === 'active' || item.status === 1 || item.status === '1' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
-                  {{ item.status === 'active' || item.status === 1 || item.status === '1' ? 'ACTIVO' : 'INACTIVO' }}
+                  <VIcon :icon="isEmployeeActive(item) ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
+                  {{ isEmployeeActive(item) ? 'ACTIVO' : 'INACTIVO' }}
                 </VChip>
               </td>
 
@@ -420,6 +442,7 @@ onMounted(() => {
                     @click="openViewDialog(item)"
                   />
                   <VBtn
+                    v-if="can('edit_employee')"
                     size="small"
                     color="warning"
                     variant="tonal"
@@ -428,6 +451,16 @@ onMounted(() => {
                     @click="openEditDialog(item)"
                   />
                   <VBtn
+                    v-if="!isEmployeeActive(item) && can('edit_employee')"
+                    size="small"
+                    color="success"
+                    variant="tonal"
+                    icon="ri-refresh-line"
+                    title="Restaurar Empleado"
+                    @click="restoreEmployee(item)"
+                  />
+                  <VBtn
+                    v-else-if="can('delete_employee')"
                     size="small"
                     color="error"
                     variant="tonal"
@@ -462,20 +495,20 @@ onMounted(() => {
 
     <!-- DIÁLOGOS -->
     <EmployeeCreateDialog
-      v-model:isDialogVisible="createDialog"
+      v-model="createDialog"
       @employee-created="onEmployeeCreated"
     />
     <EmployeeEditDialog
-      v-model:isDialogVisible="editDialog"
+      v-model="editDialog"
       :employee="employeeToEdit"
       @employee-updated="onEmployeeUpdated"
     />
     <EmployeeViewDialog
-      v-model:isDialogVisible="viewDialog"
+      v-model="viewDialog"
       :employee="employeeToView"
     />
     <EmployeeDeleteDialog
-      v-model:isDialogVisible="deleteDialog"
+      v-model="deleteDialog"
       :employee="employeeToDelete"
       @employee-deleted="onEmployeeDeleted"
     />
