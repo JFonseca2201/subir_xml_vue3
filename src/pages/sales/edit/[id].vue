@@ -1414,11 +1414,9 @@ onMounted(() => {
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <VIcon icon="ri-id-card-line" size="14" class="text-primary" />
-                        <span>Identificación: {{ selectedClient.n_document || "Sin identificación" }}</span>
+                        <span>CI/RUC: {{ selectedClient.n_document || "Sin identificación" }}</span>
                       </div>
                       <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <VIcon icon="ri-mail-line" size="14" class="text-secondary" />
                         <span>Email: {{ selectedClient.email || "Sin email" }}</span>
                         <span v-if="selectedClient.phone" class="ms-1 text-slate-500">• Tel: {{ selectedClient.phone }}</span>
                       </div>
@@ -1475,11 +1473,9 @@ onMounted(() => {
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <VIcon icon="ri-roadster-line" size="14" class="text-success" />
                         <span>{{ getVehicleBrandModel(selectedVehicle) }}</span>
                       </div>
                       <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <VIcon icon="ri-palette-line" size="14" class="text-secondary" />
                         <span>Color: {{ selectedVehicle.color || "Sin color" }}</span>
                         <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year }}</span>
                       </div>

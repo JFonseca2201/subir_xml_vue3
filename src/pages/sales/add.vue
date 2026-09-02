@@ -43,8 +43,8 @@ const sriEnvironmentInfo = computed(() => {
     text: isProd ? 'PRODUCCIÓN' : 'PRUEBAS',
     color: isProd ? 'success' : 'warning',
     icon: isProd ? 'ri-shield-check-line' : 'ri-test-tube-line',
-    desc: isProd 
-      ? 'Ambiente Oficial de Producción del SRI (con validez tributaria real).' 
+    desc: isProd
+      ? 'Ambiente Oficial de Producción del SRI (con validez tributaria real).'
       : 'Ambiente de Pruebas y Certificación del SRI (sin validez tributaria).',
   }
 })
@@ -90,7 +90,7 @@ const employees = ref([])
 // Estado del formulario
 const getLocalDateString = () => {
   const tzOffset = (new Date()).getTimezoneOffset() * 60000
-  
+
   return new Date(Date.now() - tzOffset).toISOString().split('T')[0]
 }
 
@@ -177,11 +177,7 @@ const onDocumentTypeChange = async () => {
   } catch (error) {
     console.error('Error al obtener secuencial:', error)
   }
-  if (sale.value.document_type === 'quote') {
-    sale.value.payment_status = 'pending'
-  } else {
-    sale.value.payment_status = sale.value.is_credited ? 'pending' : 'paid'
-  }
+  sale.value.payment_status = sale.value.is_credited ? 'pending' : 'paid'
 }
 
 // Pagos distribuidos
@@ -214,7 +210,7 @@ const filteredWorkOrders = computed(() => {
   if (!workOrderSearchQuery.value) return readyWorkOrders.value
 
   const query = workOrderSearchQuery.value.toLowerCase().trim()
-  
+
   return readyWorkOrders.value.filter(order => {
     const idMatch = String(order.id).includes(query)
     const clientName = `${order.client?.name || ''} ${order.client?.surname || ''}`.toLowerCase()
@@ -256,7 +252,7 @@ const loadVehicles = async () => {
       const brandName = brandId ? getBrandNameById(brandId) : ''
       const parts = [v.license_plate, brandName, v.model].filter(p => p !== undefined && p !== null)
       const displayTitle = parts.length > 0 ? parts.join(' - ') : v.license_plate || 'Vehículo'
-      
+
       return {
         ...v,
         brand: brandId,
@@ -373,7 +369,7 @@ const selectWorkOrder = async workOrder => {
       if (item.product && !products.value.find(p => p.id === item.product.id)) {
         products.value.push(item.product)
       }
-      
+
       return {
         product_id: item.product_id,
         description: item.description,
@@ -474,7 +470,7 @@ const loadInitialData = async () => {
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
 
-      
+
       return {
         ...acc,
         name: acc.bank_name ? `${acc.bank_name} (${cleaned})` : cleaned,
@@ -518,8 +514,8 @@ const isServiceItem = item => {
   if (item.item_type === 2) return true
   if (item.product?.item_type === 2) return true
   const itemSku = item.sku || item.product?.sku || ''
-  const product = products.value.find(p => 
-    (item.product_id && p.id === item.product_id) || 
+  const product = products.value.find(p =>
+    (item.product_id && p.id === item.product_id) ||
     (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
   )
   if (product && (product.item_type === 2 || product.type === 'service')) return true
@@ -530,8 +526,8 @@ const isServiceItem = item => {
 
 const getProductStock = (productId, item = null) => {
   const itemSku = item?.sku || item?.product?.sku || ''
-  const product = products.value.find(p => 
-    (productId && p.id === productId) || 
+  const product = products.value.find(p =>
+    (productId && p.id === productId) ||
     (itemSku && (p.sku === itemSku || p.code === itemSku || p.code_aux === itemSku))
   )
 
@@ -552,7 +548,7 @@ const getProductStock = (productId, item = null) => {
 
 const getProductSku = productId => {
   const product = products.value.find(p => p.id === productId)
-  
+
   return product ? (product.sku || product.code_aux || product.code || '') : ''
 }
 
@@ -731,15 +727,6 @@ watch(total, newTotal => {
   }
 })
 
-// Computed para verificar si es cotización
-const isQuote = computed(() => {
-  return sale.value.document_type === 'quote'
-})
-
-// Computed para verificar si se puede convertir a venta
-const canConvertToSale = computed(() => {
-  return isQuote.value && sale.value.status !== 'canceled' && sale.value.items.length > 0
-})
 
 // Refs para almacenar el objeto completo seleccionado
 const selectedClient = ref(null)
@@ -841,18 +828,15 @@ const submitForm = async () => {
     return
   }
 
-  // Validar stock solo si no es cotización
-  // Validar stock solo si no es cotización y es producto físico (item_type == 1)
-  if (sale.value.document_type !== 'quote') {
-    for (const item of sale.value.items) {
-      if (item.product_id) {
-        const product = products.value.find(p => p.id === item.product_id)
-        if (product && product.item_type === 1 && product.stock < item.quantity) {
-          showValidationError.value = true
-          validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
+  // Validar stock de productos físicos (item_type == 1)
+  for (const item of sale.value.items) {
+    if (item.product_id) {
+      const product = products.value.find(p => p.id === item.product_id)
+      if (product && product.item_type === 1 && product.stock < item.quantity) {
+        showValidationError.value = true
+        validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado: ${item.quantity}`
 
-          return
-        }
+        return
       }
     }
   }
@@ -899,40 +883,38 @@ const submitForm = async () => {
     }
   }
 
-  // Validar pagos distribuidos solo si no es cotización
-  if (sale.value.document_type !== 'quote') {
-    if (sale.value.payment_status === 'pending') {
-      sale.value.is_credited = true
-      paymentDistributions.value = []
-      sale.value.payment_method = ''
-    } else {
-      const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
+  // Validar pagos distribuidos
+  if (sale.value.payment_status === 'pending') {
+    sale.value.is_credited = true
+    paymentDistributions.value = []
+    sale.value.payment_method = ''
+  } else {
+    const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
 
-      if (paymentDistributions.value.length === 0 || totalDist <= 0) {
-        showValidationError.value = true
-        validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
+    if (paymentDistributions.value.length === 0 || totalDist <= 0) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
-        return
-      }
+      return
+    }
 
-      if (totalDist > total.value + 0.01) {
-        showValidationError.value = true
-        validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
+    if (totalDist > total.value + 0.01) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
 
-        return
-      }
+      return
+    }
 
-      // Si el pago no está completado, el estado debe quedar en pendiente o partial.
-      if (Math.abs(totalDist - total.value) <= 0.01) {
-        sale.value.payment_status = 'paid'
-      } else if (totalDist > 0) {
-        sale.value.payment_status = 'partial'
-      }
+    // Si el pago no está completado, el estado debe quedar en pendiente o partial.
+    if (Math.abs(totalDist - total.value) <= 0.01) {
+      sale.value.payment_status = 'paid'
+    } else if (totalDist > 0) {
+      sale.value.payment_status = 'partial'
     }
   }
 
   // Sincronizar método de pago de cabecera con los pagos distribuidos antes de confirmar
-  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+  if (paymentDistributions.value.length > 0) {
     const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
     if (methods.length === 1) {
       sale.value.payment_method = methods[0]
@@ -955,13 +937,8 @@ const executeSaleSubmission = async () => {
   isSubmitting.value = true
 
   try {
-    // Asegurarnos de que las cotizaciones siempre se guarden como pendientes
-    if (sale.value.document_type === 'quote') {
-      sale.value.payment_status = 'pending'
-    }
-
     // Sincronizar método de pago de cabecera con los pagos distribuidos reales
-    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    if (paymentDistributions.value.length > 0) {
       const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
       if (methods.length === 1) {
         sale.value.payment_method = methods[0]
@@ -977,8 +954,8 @@ const executeSaleSubmission = async () => {
       total: total.value,
     }
 
-    // Enviar pagos distribuidos solo si no es cotización
-    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    // Enviar pagos distribuidos
+    if (paymentDistributions.value.length > 0) {
       payload.payment_distributions = paymentDistributions.value
     }
 
@@ -992,14 +969,10 @@ const executeSaleSubmission = async () => {
       showNotification(
         sale.value.document_type === 'invoice'
           ? 'Factura generada y encolada para autorización SRI'
-          : 'Registro procesado exitosamente',
+          : 'Nota de venta registrada exitosamente',
         'success'
       )
-      if (sale.value.document_type === 'quote') {
-        router.push('/quotes/list')
-      } else {
-        router.push('/sales/list')
-      }
+      router.push('/sales/list')
     } else {
       showNotification(response.message || 'Error al registrar', 'error')
     }
@@ -1025,14 +998,14 @@ const saveDraft = async () => {
   if (!sale.value.client_id) {
     showValidationError.value = true
     validationErrorMessage.value = 'Debe seleccionar un cliente para guardar el borrador'
-    
+
     return
   }
 
   if (sale.value.items.length === 0) {
     showValidationError.value = true
     validationErrorMessage.value = 'Debe agregar al menos un producto o servicio para guardar el borrador'
-    
+
     return
   }
 
@@ -1047,7 +1020,7 @@ const saveDraft = async () => {
       is_draft: true,
     }
 
-    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    if (paymentDistributions.value.length > 0) {
       payload.payment_distributions = paymentDistributions.value
     }
 
@@ -1058,11 +1031,7 @@ const saveDraft = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       showNotification('Borrador guardado exitosamente', 'success')
-      if (sale.value.document_type === 'quote') {
-        router.push('/quotes/list')
-      } else {
-        router.push('/sales/list')
-      }
+      router.push('/sales/list')
     } else {
       showNotification(response.message || 'Error al guardar borrador', 'error')
     }
@@ -1250,7 +1219,7 @@ onMounted(async () => {
             if (item.product && !products.value.find(p => p.id === item.product.id)) {
               products.value.push(item.product)
             }
-            
+
             return {
               product_id: item.product_id,
               description: item.description,
@@ -1332,10 +1301,10 @@ onMounted(async () => {
               }
             }
 
-            const isService = item.type === 'service' || 
-              item.item_type === 2 || 
-              item.product?.item_type === 2 || 
-              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) || 
+            const isService = item.type === 'service' ||
+              item.item_type === 2 ||
+              item.product?.item_type === 2 ||
+              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
               (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
               (!item.product_id && !item.sku)
 
@@ -1365,11 +1334,11 @@ onMounted(async () => {
     }
   }
 
-  // Si viene con ?type=quote, preseleccionar cotización
+  // Si se intenta acceder con ?type=quote, redirigir al módulo de cotizaciones
   const typeParam = route.query.type
   if (typeParam === 'quote' && !workOrderId && !quoteId) {
-    sale.value.document_type = 'quote'
-    sale.value.payment_status = 'pending'
+    router.replace('/quotes/add')
+    return
   }
 
   await onDocumentTypeChange()
@@ -1378,72 +1347,41 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
-    <VProgressLinear
-      v-if="isLoading"
-      indeterminate
-      color="primary"
-      height="3"
-      class="position-absolute"
-      style="top: 0; left: 0; right: 0; z-index: 10;"
-    />
+    <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;" />
 
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-3">
-          <VAvatar
-            :color="isQuote ? 'info' : (sale.document_type === 'invoice' ? 'primary' : 'success')"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              :icon="isQuote ? 'ri-file-list-3-line' : (sale.document_type === 'invoice' ? 'ri-bill-line' : 'ri-file-text-line')"
-              size="24"
-            />
+          <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'success'" variant="tonal" rounded="lg"
+            size="44" class="elevation-1">
+            <VIcon :icon="sale.document_type === 'invoice' ? 'ri-bill-line' : 'ri-file-text-line'" size="24" />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2 flex-wrap">
               <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                {{ isQuote ? 'Registrar Cotización' : (sale.document_type === 'invoice' ? 'Registrar Factura' : 'Registrar Venta') }}
+                {{ sale.document_type === 'invoice' ? 'Registrar Factura' : 'Registrar Nota de Venta' }}
               </h1>
-              <VChip
-                v-if="!isQuote && sale.document_type === 'invoice'"
-                color="primary"
-                size="small"
-                variant="tonal"
-                class="font-weight-bold"
-                prepend-icon="ri-shield-check-line"
-              >
+              <VChip v-if="sale.document_type === 'invoice'" color="primary" size="small" variant="tonal"
+                class="font-weight-bold" prepend-icon="ri-shield-check-line">
                 SRI Electrónica
               </VChip>
-              <VChip
-                v-else-if="!isQuote"
-                color="success"
-                size="small"
-                variant="tonal"
-                class="font-weight-bold"
-                prepend-icon="ri-store-2-line"
-              >
+              <VChip v-else color="success" size="small" variant="tonal" class="font-weight-bold"
+                prepend-icon="ri-store-2-line">
                 Nota de Venta
               </VChip>
             </div>
             <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
-              {{ isQuote ? 'Crea una nueva cotización de servicios y repuestos para un cliente' : (sale.document_type === 'invoice' ? 'Emisión de comprobante fiscal electrónico autorizado por el SRI' : 'Crea un nuevo comprobante comercial de venta') }}
+              {{ sale.document_type === 'invoice' ? 'Emisión de comprobante fiscal electrónico autorizado por el SRI' :
+              'Crea un nuevo comprobante comercial de venta interno' }}
             </p>
           </div>
         </div>
 
         <div class="d-flex align-center gap-2 flex-wrap">
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            prepend-icon="ri-arrow-left-line"
-            class="font-weight-medium"
-            :disabled="isProcessing"
-            @click="router.push(isQuote ? '/quotes/list' : '/sales/list')"
-          >
+          <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
+            :disabled="isProcessing" @click="router.push('/sales/list')">
             Volver al Listado
           </VBtn>
         </div>
@@ -1451,67 +1389,28 @@ onMounted(async () => {
     </VCard>
 
     <!-- Form Skeleton loader -->
-    <div
-      v-if="isLoading"
-      class="d-flex flex-column gap-6"
-    >
+    <div v-if="isLoading" class="d-flex flex-column gap-6">
       <VRow>
-        <VCol
-          cols="12"
-          lg="8"
-        >
+        <VCol cols="12" lg="8">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-40 mb-6"
-              style="height: 24px;"
-            />
+            <div class="shimmer-line w-40 mb-6" style="height: 24px;" />
             <VRow class="mb-4">
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
-                <div
-                  class="shimmer-line w-100 mb-2"
-                  style="height: 48px; border-radius: 8px;"
-                />
+              <VCol cols="12" sm="6">
+                <div class="shimmer-line w-100 mb-2" style="height: 48px; border-radius: 8px;" />
               </VCol>
             </VRow>
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 80px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100"
-              style="height: 120px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100 mb-4" style="height: 80px; border-radius: 8px;" />
+            <div class="shimmer-line w-100" style="height: 120px; border-radius: 8px;" />
           </VCard>
         </VCol>
-        <VCol
-          cols="12"
-          lg="4"
-        >
+        <VCol cols="12" lg="4">
           <VCard class="pa-6 rounded-xl border-light mb-6">
-            <div
-              class="shimmer-line w-60 mb-6"
-              style="height: 24px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-4"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-60 mb-6" style="height: 24px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
+            <div class="shimmer-line w-100 mb-4" style="height: 48px; border-radius: 8px;" />
             <VDivider class="my-4" />
             <div class="d-flex justify-space-between mb-2">
               <div class="shimmer-line w-30" />
@@ -1521,32 +1420,17 @@ onMounted(async () => {
               <div class="shimmer-line w-40" />
               <div class="shimmer-line w-30" />
             </div>
-            <div
-              class="shimmer-line w-100"
-              style="height: 48px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100" style="height: 48px; border-radius: 8px;" />
           </VCard>
         </VCol>
       </VRow>
     </div>
 
     <!-- Formulario Principal -->
-    <VForm
-      v-else
-      ref="formRef"
-      :disabled="isProcessing"
-      @submit.prevent="submitForm"
-    >
+    <VForm v-else ref="formRef" :disabled="isProcessing" @submit.prevent="submitForm">
       <!-- Alerta de Validación -->
-      <VAlert
-        v-if="showValidationError"
-        color="error"
-        variant="tonal"
-        class="mb-6 rounded-xl"
-        border="start"
-        closable
-        @click:close="showValidationError = false"
-      >
+      <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-6 rounded-xl" border="start" closable
+        @click:close="showValidationError = false">
         <div class="d-flex align-center">
           <VIcon icon="ri-error-warning-line" class="mr-2" />
           <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
@@ -1567,10 +1451,10 @@ onMounted(async () => {
                     </VAvatar>
                     <div>
                       <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        {{ isQuote ? 'Información de Cotización' : 'Comprobante & Cliente' }}
+                        Comprobante & Cliente
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        Datos del documento comercial y beneficiario
+                        Datos del comprobante comercial y beneficiario
                       </p>
                     </div>
                   </div>
@@ -1580,15 +1464,8 @@ onMounted(async () => {
                         OT #{{ sale.work_order_number }}
                       </VChip>
                     </div>
-                    <VBtn
-                      v-if="!isQuote"
-                      color="info"
-                      variant="tonal"
-                      prepend-icon="ri-file-download-line"
-                      size="small"
-                      class="font-weight-semibold"
-                      @click="openWorkOrderImportDialog"
-                    >
+                    <VBtn color="info" variant="tonal" prepend-icon="ri-file-download-line" size="small"
+                      class="font-weight-semibold" @click="openWorkOrderImportDialog">
                       Importar OT
                     </VBtn>
                   </div>
@@ -1597,34 +1474,25 @@ onMounted(async () => {
             </VCardItem>
 
             <VCardText class="pa-4 pa-sm-5 bg-white">
-              <!-- Selector Unido de Tipo de Documento si no es cotización -->
-              <div v-if="!isQuote" class="mb-5">
+              <!-- Selector Unido de Tipo de Documento -->
+              <div class="mb-5">
                 <label class="text-caption font-weight-bold text-slate-800 mb-2 d-block">Tipo de Comprobante</label>
                 <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
                   <!-- Opción Nota de Venta -->
                   <div
                     class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
                     :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
-                  >
+                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar
-                        :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'"
-                        size="40"
-                        class="transition-all"
-                      >
-                        <VIcon
-                          icon="ri-file-text-line"
-                          size="22"
-                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'"
-                        />
+                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
+                        :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40"
+                        class="transition-all">
+                        <VIcon icon="ri-file-text-line" size="22"
+                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
                       </VAvatar>
                       <div>
-                        <div
-                          class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'"
-                        >
+                        <div class="text-body-2 font-weight-bold"
+                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'">
                           Nota de Venta
                         </div>
                         <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
@@ -1633,19 +1501,13 @@ onMounted(async () => {
                       </div>
                     </div>
                     <div class="d-flex align-center gap-2">
-                      <VChip
-                        size="x-small"
-                        :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
-                        :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'"
-                        class="font-weight-bold"
-                      >
+                      <VChip size="x-small" :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
+                        :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'" class="font-weight-bold">
                         Interno
                       </VChip>
                       <VIcon
                         :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20"
-                        :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'"
-                      />
+                        size="20" :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'" />
                     </div>
                   </div>
 
@@ -1653,26 +1515,16 @@ onMounted(async () => {
                   <div
                     class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
                     :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
-                  >
+                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
                     <div class="d-flex align-center gap-3">
-                      <VAvatar
-                        :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'"
-                        size="40"
-                        class="transition-all"
-                      >
-                        <VIcon
-                          icon="ri-bill-line"
-                          size="22"
-                          :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'"
-                        />
+                      <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
+                        :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
+                        <VIcon icon="ri-bill-line" size="22"
+                          :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
                       </VAvatar>
                       <div>
-                        <div
-                          class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'"
-                        >
+                        <div class="text-body-2 font-weight-bold"
+                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
                           Factura Electrónica
                         </div>
                         <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
@@ -1681,19 +1533,13 @@ onMounted(async () => {
                       </div>
                     </div>
                     <div class="d-flex align-center gap-2">
-                      <VChip
-                        size="x-small"
-                        :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'"
-                        class="font-weight-bold"
-                      >
+                      <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
+                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
                         SRI Oficial
                       </VChip>
                       <VIcon
                         :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20"
-                        :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'"
-                      />
+                        size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
                     </div>
                   </div>
                 </div>
@@ -1702,111 +1548,58 @@ onMounted(async () => {
               <!-- Fila 1: Número de documento y Fecha -->
               <VRow>
                 <VCol cols="12" sm="6">
-                  <VTextField
-                    v-model="sale.document_number"
-                    label="Número de Documento *"
-                    :rules="[requiredRule]"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="ri-hashtag"
-                    hide-details="auto"
-                    required
-                    color="primary"
-                    :readonly="isLinkedToWorkOrder"
-                    :loading="isLoading"
+                  <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
+                    variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
+                    required color="primary" :readonly="isLinkedToWorkOrder" :loading="isLoading"
                     :hint="isLinkedToWorkOrder ? `Vinculado a OT: ${sale.work_order_number || ''}` : undefined"
-                    persistent-hint
-                  />
+                    persistent-hint />
                 </VCol>
                 <VCol cols="12" sm="6">
-                  <VTextField
-                    v-model="sale.service_date"
-                    label="Fecha de Servicio *"
-                    type="date"
-                    :rules="[requiredRule]"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="ri-calendar-line"
-                    hide-details="auto"
-                    required
-                    color="primary"
-                  />
+                  <VTextField v-model="sale.service_date" label="Fecha de Servicio *" type="date"
+                    :rules="[requiredRule]" variant="outlined" density="comfortable"
+                    prepend-inner-icon="ri-calendar-line" hide-details="auto" required color="primary" />
                 </VCol>
 
                 <!-- Fila 2: Cliente y Vehículo -->
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2">
-                    <VSearch
-                      v-model="selectedClient"
-                      :return-object="true"
-                      endpoint="clients/search"
-                      item-title="full_name"
-                      label="Cliente *"
-                      icon="ri-user-line"
-                      :initial-item="selectedClient"
-                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']"
-                    >
+                    <VSearch v-model="selectedClient" :return-object="true" endpoint="clients/search"
+                      item-title="full_name" label="Cliente *" icon="ri-user-line" :initial-item="selectedClient"
+                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']">
                       <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.full_name || item.raw.name"
-                        >
-                          <VListItemSubtitle
-                            v-if="item.raw.n_document"
-                            class="mt-1 text-grey"
-                          >
+                        <VListItem v-bind="props" :title="item.raw.full_name || item.raw.name">
+                          <VListItemSubtitle v-if="item.raw.n_document" class="mt-1 text-grey">
                             Documento: {{ item.raw.n_document }}
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn
-                      icon
-                      size="small"
-                      color="primary"
-                      variant="tonal"
-                    >
+                    <VBtn icon size="small" color="primary" variant="tonal">
                       <VIcon icon="ri-add-line" />
                       <VMenu activator="parent">
                         <VList density="compact" class="rounded-lg elevation-4 border">
-                          <VListItem
-                            prepend-icon="ri-user-line"
-                            title="Cliente Final"
-                            @click="isClientFinalAddDialogVisible = true"
-                          />
-                          <VListItem
-                            prepend-icon="ri-building-line"
-                            title="Cliente Empresa"
-                            @click="isClientCompanyAddDialogVisible = true"
-                          />
+                          <VListItem prepend-icon="ri-user-line" title="Cliente Final"
+                            @click="isClientFinalAddDialogVisible = true" />
+                          <VListItem prepend-icon="ri-building-line" title="Cliente Empresa"
+                            @click="isClientCompanyAddDialogVisible = true" />
                         </VList>
                       </VMenu>
                     </VBtn>
                   </div>
-                  <div
-                    v-if="selectedClient"
-                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3"
-                  >
-                    <VAvatar
-                      color="primary"
-                      variant="tonal"
-                      size="36"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-user-line"
-                        size="20"
-                      />
+                  <div v-if="selectedClient"
+                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3">
+                    <VAvatar color="primary" variant="tonal" size="36" class="rounded-lg">
+                      <VIcon icon="ri-user-line" size="20" />
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <VIcon icon="ri-id-card-line" size="14" class="text-primary" />
-                        <span>Identificación: {{ selectedClient.n_document || "Sin identificación" }}</span>
+                        <span>CI/RUC: {{ selectedClient.n_document || "Sin identificación" }}</span>
                       </div>
-                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <VIcon icon="ri-mail-line" size="14" class="text-secondary" />
+                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5"
+                        style="font-size: 0.75rem;">
                         <span>Email: {{ selectedClient.email || "Sin email" }}</span>
-                        <span v-if="selectedClient.phone" class="ms-1 text-slate-500">• Tel: {{ selectedClient.phone }}</span>
+                        <span v-if="selectedClient.phone" class="ms-1 text-slate-500">• Tel: {{ selectedClient.phone
+                          }}</span>
                       </div>
                     </div>
                   </div>
@@ -1814,66 +1607,41 @@ onMounted(async () => {
 
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
-                    <VSearch
-                      v-model="selectedVehicle"
-                      :return-object="true"
-                      endpoint="vehicles/search"
-                      item-title="license_plate"
-                      label="Vehículo (Opcional)"
-                      icon="ri-car-line"
+                    <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
+                      item-title="license_plate" label="Vehículo (Opcional)" icon="ri-car-line"
                       :initial-item="selectedVehicle"
-                      :extra-params="sale.client_id ? { client_id: sale.client_id } : {}"
-                    >
+                      :extra-params="sale.client_id ? { client_id: sale.client_id } : {}">
                       <template #item="{ props, item }">
-                        <VListItem
-                          v-bind="props"
-                          :title="item.raw.license_plate"
-                        >
+                        <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
-                            <span>{{ getBrandNameById(item.raw.brand?.name || item.raw.brand || item.raw.brand_id) }} {{ item.raw.model || '' }}</span>
+                            <span>{{ getBrandNameById(item.raw.brand?.name || item.raw.brand || item.raw.brand_id) }} {{
+                              item.raw.model || '' }}</span>
                             <span v-if="item.raw.color" class="ms-1">• Color: {{ item.raw.color }}</span>
-                            <span
-                              v-if="item.raw.client"
-                              class="text-primary font-weight-medium ms-2"
-                            >
-                              • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' + (item.raw.client.surname || '')) }}
+                            <span v-if="item.raw.client" class="text-primary font-weight-medium ms-2">
+                              • Propietario: {{ item.raw.client.full_name || (item.raw.client.name + ' ' +
+                                (item.raw.client.surname || '')) }}
                             </span>
                           </VListItemSubtitle>
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn
-                      color="success"
-                      variant="tonal"
-                      size="small"
-                      icon="ri-add-line"
-                      @click="isVehicleAddDialogVisible = true"
-                    />
+                    <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
+                      @click="isVehicleAddDialogVisible = true" />
                   </div>
-                  <div
-                    v-if="selectedVehicle"
-                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3"
-                  >
-                    <VAvatar
-                      color="success"
-                      variant="tonal"
-                      size="36"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-car-line"
-                        size="20"
-                      />
+                  <div v-if="selectedVehicle"
+                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3">
+                    <VAvatar color="success" variant="tonal" size="36" class="rounded-lg">
+                      <VIcon icon="ri-car-line" size="20" />
                     </VAvatar>
                     <div class="d-flex flex-column">
                       <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <VIcon icon="ri-roadster-line" size="14" class="text-success" />
                         <span>{{ getVehicleBrandModel(selectedVehicle) }}</span>
                       </div>
-                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <VIcon icon="ri-palette-line" size="14" class="text-secondary" />
+                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5"
+                        style="font-size: 0.75rem;">
                         <span>Color: {{ selectedVehicle.color || "Sin color" }}</span>
-                        <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year }}</span>
+                        <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year
+                          }}</span>
                       </div>
                     </div>
                   </div>
@@ -1905,44 +1673,21 @@ onMounted(async () => {
               <VRow>
                 <VCol cols="12" sm="6">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
-                  <VTextField
-                    v-model="sale.mileage"
-                    placeholder="Ej: 45000"
-                    type="number"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="ri-dashboard-3-line"
-                    hide-details="auto"
-                    color="primary"
-                  />
+                  <VTextField v-model="sale.mileage" placeholder="Ej: 45000" type="number" variant="outlined"
+                    density="comfortable" prepend-inner-icon="ri-dashboard-3-line" hide-details="auto"
+                    color="primary" />
                 </VCol>
                 <VCol cols="12" sm="6">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Técnicos</label>
-                  <VAutocomplete
-                    v-model="sale.technicians"
-                    :items="employees"
+                  <VAutocomplete v-model="sale.technicians" :items="employees"
                     :item-title="item => `${item.first_name} ${item.last_name}${item.position ? ' - ' + item.position : ''}`"
-                    item-value="id"
-                    placeholder="Seleccionar técnicos..."
-                    prepend-inner-icon="ri-user-settings-line"
-                    variant="outlined"
-                    density="comfortable"
-                    clearable
-                    multiple
-                    chips
-                    :readonly="isLinkedToWorkOrder"
+                    item-value="id" placeholder="Seleccionar técnicos..." prepend-inner-icon="ri-user-settings-line"
+                    variant="outlined" density="comfortable" clearable multiple chips :readonly="isLinkedToWorkOrder"
                     :hint="isLinkedToWorkOrder ? 'Heredados de la orden de trabajo' : 'Opcional: uno o más'"
-                    persistent-hint
-                    class="fix-notch-bug"
-                  >
+                    persistent-hint class="fix-notch-bug">
                     <template #chip="{ props, item }">
-                      <VChip
-                        v-bind="props"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                        :text="`${item.raw.first_name} ${item.raw.last_name}`"
-                      />
+                      <VChip v-bind="props" size="small" color="primary" variant="tonal"
+                        :text="`${item.raw.first_name} ${item.raw.last_name}`" />
                     </template>
                   </VAutocomplete>
                 </VCol>
@@ -1964,29 +1709,17 @@ onMounted(async () => {
                         Productos y Servicios
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        Agrega los ítems a la venta o cotización
+                        Agrega ítems
                       </p>
                     </div>
                   </div>
                   <div class="d-flex gap-2">
-                    <VBtn
-                      size="small"
-                      color="primary"
-                      variant="tonal"
-                      prepend-icon="ri-box-3-line"
-                      class="font-weight-semibold"
-                      @click="addTemporaryProduct"
-                    >
+                    <VBtn size="small" color="primary" variant="tonal" prepend-icon="ri-box-3-line"
+                      class="font-weight-semibold" @click="addTemporaryProduct">
                       Producto Temporal
                     </VBtn>
-                    <VBtn
-                      size="small"
-                      color="info"
-                      variant="tonal"
-                      prepend-icon="ri-tools-line"
-                      class="font-weight-semibold"
-                      @click="isAddServiceDialogVisible = true"
-                    >
+                    <VBtn size="small" color="info" variant="tonal" prepend-icon="ri-tools-line"
+                      class="font-weight-semibold" @click="isAddServiceDialogVisible = true">
                       Servicio Express
                     </VBtn>
                   </div>
@@ -1997,17 +1730,9 @@ onMounted(async () => {
             <VCardText class="pa-4 pa-sm-5 bg-white">
               <!-- Cuadro de búsqueda de productos -->
               <div class="mb-4">
-                <VSearch
-                  v-model="searchProduct"
-                  endpoint="products/search"
-                  item-title="description"
-                  :return-object="true"
-                  label="Buscar y agregar producto por nombre, código o SKU..."
-                  icon="ri-search-line"
-                  class="mb-0"
-                  hide-details
-                  @change="onProductSelected"
-                >
+                <VSearch v-model="searchProduct" endpoint="products/search" item-title="description"
+                  :return-object="true" label="Buscar y agregar producto por nombre, código o SKU..."
+                  icon="ri-search-line" class="mb-0" hide-details @change="onProductSelected">
                   <template #item="{ props, item }">
                     <VListItem v-bind="props" :title="undefined">
                       <template #prepend>
@@ -2015,10 +1740,8 @@ onMounted(async () => {
                           <VIcon icon="ri-box-3-line" size="18" />
                         </VAvatar>
                       </template>
-                      <VListItemTitle
-                        style="white-space: normal !important; line-height: 1.4;"
-                        class="font-weight-medium text-body-2"
-                      >
+                      <VListItemTitle style="white-space: normal !important; line-height: 1.4;"
+                        class="font-weight-medium text-body-2">
                         {{ item.raw.description || item.raw.name }}
                       </VListItemTitle>
                       <VListItemSubtitle v-if="item.raw.code_aux || item.raw.sku" class="mt-1 text-grey">
@@ -2060,51 +1783,29 @@ onMounted(async () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(item, index) in sale.items"
-                      :key="index"
-                      class="hover-row"
-                    >
+                    <tr v-for="(item, index) in sale.items" :key="index" class="hover-row">
                       <td>
                         <div class="d-flex align-center gap-3 py-1">
-                          <VAvatar
-                            size="36"
-                            :color="item.type === 'service' ? 'info' : 'primary'"
-                            variant="tonal"
-                            class="rounded-lg"
-                          >
+                          <VAvatar size="36" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
+                            class="rounded-lg">
                             <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="18" />
                           </VAvatar>
                           <div class="flex-grow-1">
-                            <VTextField
-                              v-model="item.description"
-                              density="compact"
-                              variant="plain"
-                              hide-details
-                              placeholder="Descripción del ítem..."
-                              class="font-weight-bold text-slate-900"
-                            />
+                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
+                              placeholder="Descripción del ítem..." class="font-weight-bold text-slate-900" />
                             <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
-                              <span
-                                class="text-uppercase font-weight-bold"
+                              <span class="text-uppercase font-weight-bold"
                                 :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
-                                style="font-size: 0.65rem;"
-                              >
+                                style="font-size: 0.65rem;">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span
-                                v-if="!isServiceItem(item) && sale.document_type !== 'quote'"
-                                class="stock-tag"
-                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }"
-                              >
+                              <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="stock-tag"
+                                :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }">
                                 <VIcon icon="ri-stack-line" size="12" class="mr-1" />
                                 {{ getProductStock(item.product_id, item) }} en stock
                               </span>
-                              <span
-                                v-if="getProductSku(item.product_id) || item.sku"
-                                class="text-uppercase font-weight-bold"
-                                style="font-size: 0.65rem;"
-                              >
+                              <span v-if="getProductSku(item.product_id) || item.sku"
+                                class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
                                 {{ getProductSku(item.product_id) || item.sku }}
                               </span>
                             </div>
@@ -2113,61 +1814,24 @@ onMounted(async () => {
                       </td>
                       <td class="text-center">
                         <div class="d-inline-flex align-center qty-selector">
-                          <VBtn
-                            icon="ri-subtract-line"
-                            variant="text"
-                            color="primary"
-                            :disabled="item.quantity <= 1"
-                            class="qty-btn"
-                            size="small"
-                            @click="item.quantity--"
-                          />
-                          <input
-                            v-model.number="item.quantity"
-                            type="number"
-                            min="1"
-                            max="99"
+                          <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
+                            class="qty-btn" size="small" @click="item.quantity--" />
+                          <input v-model.number="item.quantity" type="number" min="1" max="99"
                             class="qty-input font-mono font-weight-bold"
                             @input="item.quantity > 99 ? item.quantity = 99 : null"
-                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null"
-                          >
-                          <VBtn
-                            icon="ri-add-line"
-                            variant="text"
-                            color="primary"
-                            :disabled="item.quantity >= 99"
-                            class="qty-btn"
-                            size="small"
-                            @click="item.quantity < 99 ? item.quantity++ : null"
-                          />
+                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null">
+                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
+                            class="qty-btn" size="small" @click="item.quantity < 99 ? item.quantity++ : null" />
                         </div>
                       </td>
                       <td>
-                        <VTextField
-                          v-model.number="item.price"
-                          type="number"
-                          density="compact"
-                          variant="plain"
-                          hide-details
-                          min="0"
-                          step="0.01"
-                          prefix="$"
-                          :rules="[requiredRule, positiveNumberRule]"
-                          class="font-weight-bold text-slate-800 font-mono"
-                        />
+                        <VTextField v-model.number="item.price" type="number" density="compact" variant="plain"
+                          hide-details min="0" step="0.01" prefix="$" :rules="[requiredRule, positiveNumberRule]"
+                          class="font-weight-bold text-slate-800 font-mono" />
                       </td>
                       <td>
-                        <VTextField
-                          v-model.number="item.discount"
-                          type="number"
-                          density="compact"
-                          variant="plain"
-                          hide-details
-                          min="0"
-                          step="0.01"
-                          prefix="$"
-                          class="font-weight-medium text-error font-mono"
-                        />
+                        <VTextField v-model.number="item.discount" type="number" density="compact" variant="plain"
+                          hide-details min="0" step="0.01" prefix="$" class="font-weight-medium text-error font-mono" />
                       </td>
                       <td class="text-center">
                         <span class="text-body-1 font-weight-black text-success font-mono">
@@ -2175,14 +1839,8 @@ onMounted(async () => {
                         </span>
                       </td>
                       <td class="text-center">
-                        <VBtn
-                          icon="ri-delete-bin-line"
-                          size="small"
-                          color="error"
-                          variant="text"
-                          class="delete-btn"
-                          @click="removeItem(index)"
-                        />
+                        <VBtn icon="ri-delete-bin-line" size="small" color="error" variant="text" class="delete-btn"
+                          @click="removeItem(index)" />
                       </td>
                     </tr>
                   </tbody>
@@ -2209,10 +1867,7 @@ onMounted(async () => {
         <VCol cols="12" lg="4">
           <div class="d-flex flex-column gap-6">
             <!-- Tarjeta 4: Configuración de Pagos (si no es cotización) -->
-            <VCard
-              v-if="sale.document_type !== 'quote'"
-              class="rounded-xl border-light elevation-1 overflow-hidden"
-            >
+            <VCard v-if="sale.document_type !== 'quote'" class="rounded-xl border-light elevation-1 overflow-hidden">
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
                   <div class="d-flex align-center gap-3">
@@ -2234,32 +1889,16 @@ onMounted(async () => {
               <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
                 <div>
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Estado del Pago</label>
-                  <VSelect
-                    v-model="sale.payment_status"
-                    :items="paymentStatuses"
-                    item-title="title"
-                    item-value="value"
-                    placeholder="Seleccionar estado"
-                    :rules="[requiredRule]"
-                    variant="outlined"
-                    density="comfortable"
-                    prepend-inner-icon="ri-flag-line"
-                    hide-details="auto"
-                  />
+                  <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title" item-value="value"
+                    placeholder="Seleccionar estado" :rules="[requiredRule]" variant="outlined" density="comfortable"
+                    prepend-inner-icon="ri-flag-line" hide-details="auto" />
                 </div>
 
-                <VCard
-                  variant="tonal"
-                  color="primary"
-                  class="pa-3 rounded-xl cursor-pointer border"
-                  :class="sale.is_credited ? 'border-primary border' : 'opacity-80'"
-                  @click="onCreditChange"
-                >
+                <VCard variant="tonal" color="primary" class="pa-3 rounded-xl cursor-pointer border"
+                  :class="sale.is_credited ? 'border-primary border' : 'opacity-80'" @click="onCreditChange">
                   <div class="d-flex align-center gap-3">
-                    <VIcon
-                      :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                      size="22"
-                    />
+                    <VIcon :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="22" />
                     <div>
                       <div class="text-body-2 font-weight-bold">
                         Venta a crédito
@@ -2275,92 +1914,41 @@ onMounted(async () => {
                 <div>
                   <div class="d-flex justify-space-between align-center mb-2">
                     <span class="text-caption font-weight-bold text-slate-800">Distribución de Pagos:</span>
-                    <VBtn
-                      v-if="sale.payment_status !== 'pending'"
-                      color="primary"
-                      variant="text"
-                      size="x-small"
-                      prepend-icon="ri-add-line"
-                      class="font-weight-bold"
-                      @click="addPaymentDistribution"
-                    >
+                    <VBtn v-if="sale.payment_status !== 'pending'" color="primary" variant="text" size="x-small"
+                      prepend-icon="ri-add-line" class="font-weight-bold" @click="addPaymentDistribution">
                       Agregar Pago
                     </VBtn>
                   </div>
 
                   <!-- Mensaje Informativo cuando el pago está Pendiente -->
-                  <VAlert
-                    v-if="sale.payment_status === 'pending'"
-                    type="warning"
-                    variant="tonal"
-                    density="compact"
-                    class="rounded-lg mb-2 text-caption"
-                    icon="ri-time-line"
-                  >
+                  <VAlert v-if="sale.payment_status === 'pending'" type="warning" variant="tonal" density="compact"
+                    class="rounded-lg mb-2 text-caption" icon="ri-time-line">
                     La venta se registrará como pago pendiente / crédito.
                   </VAlert>
 
                   <template v-else>
-                    <div
-                      v-for="(dist, index) in paymentDistributions"
-                      :key="index"
-                      class="pa-3 mb-2 bg-slate-50 border rounded-lg"
-                    >
+                    <div v-for="(dist, index) in paymentDistributions" :key="index"
+                      class="pa-3 mb-2 bg-slate-50 border rounded-lg">
                       <div class="d-flex justify-space-between align-center mb-2">
                         <span class="text-caption font-weight-bold text-slate-700">Pago #{{ index + 1 }}</span>
-                        <VIcon
-                          v-if="paymentDistributions.length > 1"
-                          icon="ri-close-line"
-                          color="error"
-                          class="cursor-pointer"
-                          size="18"
-                          @click="removePaymentDistribution(index)"
-                        />
+                        <VIcon v-if="paymentDistributions.length > 1" icon="ri-close-line" color="error"
+                          class="cursor-pointer" size="18" @click="removePaymentDistribution(index)" />
                       </div>
                       <div class="d-flex flex-column gap-2">
-                        <VSelect
-                          v-model="dist.payment_method"
-                          :items="paymentMethods"
-                          item-title="title"
-                          item-value="value"
-                          label="Forma"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          @update:model-value="(val) => onPaymentMethodChange(dist, val)"
-                        />
-                        <VSelect
-                          v-if="dist.payment_method === 'Transferencia'"
-                          v-model="dist.account_id"
-                          :items="accounts"
-                          item-title="name"
-                          item-value="id"
-                          label="Cuenta"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                        />
-                        <VTextField
-                          v-model.number="dist.amount"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          label="Monto"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          prefix="$"
-                          class="font-mono font-weight-bold"
-                          @input="handlePaymentAmountChange(dist, index)"
-                          @blur="handlePaymentAmountChange(dist, index)"
-                        />
+                        <VSelect v-model="dist.payment_method" :items="paymentMethods" item-title="title"
+                          item-value="value" label="Forma" variant="outlined" density="compact" hide-details="auto"
+                          @update:model-value="(val) => onPaymentMethodChange(dist, val)" />
+                        <VSelect v-if="dist.payment_method === 'Transferencia'" v-model="dist.account_id"
+                          :items="accounts" item-title="name" item-value="id" label="Cuenta" variant="outlined"
+                          density="compact" hide-details="auto" />
+                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" label="Monto"
+                          variant="outlined" density="compact" hide-details="auto" prefix="$"
+                          class="font-mono font-weight-bold" @input="handlePaymentAmountChange(dist, index)"
+                          @blur="handlePaymentAmountChange(dist, index)" />
                       </div>
                     </div>
 
-                    <div
-                      v-if="paymentDistributions.length > 0"
-                      class="mt-2 text-caption text-right font-weight-bold"
-                    >
+                    <div v-if="paymentDistributions.length > 0" class="mt-2 text-caption text-right font-weight-bold">
                       <div :class="remainingAmount < 0 ? 'text-error' : 'text-success'">
                         Falta distribuir: ${{ remainingAmount.toFixed(2) }}
                       </div>
@@ -2390,15 +1978,8 @@ onMounted(async () => {
                 </template>
               </VCardItem>
               <VCardText class="pa-4 bg-white">
-                <VTextarea
-                  v-model="sale.observations"
-                  placeholder="Notas o términos y condiciones adicionales..."
-                  variant="outlined"
-                  rows="3"
-                  density="comfortable"
-                  hide-details="auto"
-                  color="primary"
-                />
+                <VTextarea v-model="sale.observations" placeholder="Notas o términos y condiciones adicionales..."
+                  variant="outlined" rows="3" density="comfortable" hide-details="auto" color="primary" />
               </VCardText>
             </VCard>
 
@@ -2427,10 +2008,7 @@ onMounted(async () => {
                   <span class="text-medium-emphasis font-weight-medium">Subtotal Bruto:</span>
                   <span class="font-mono font-weight-bold">${{ grossSubtotal.toFixed(2) }}</span>
                 </div>
-                <div
-                  v-if="totalDiscount > 0"
-                  class="d-flex justify-space-between align-center text-body-2 text-error"
-                >
+                <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center text-body-2 text-error">
                   <span class="font-weight-medium">Descuento:</span>
                   <span class="font-mono font-weight-bold">-${{ totalDiscount.toFixed(2) }}</span>
                 </div>
@@ -2438,10 +2016,8 @@ onMounted(async () => {
                   <span class="text-medium-emphasis font-weight-medium">Base Imponible:</span>
                   <span class="font-mono font-weight-bold">${{ subtotal.toFixed(2) }}</span>
                 </div>
-                <div
-                  v-if="sale.document_type === 'invoice'"
-                  class="d-flex justify-space-between align-center text-body-2"
-                >
+                <div v-if="sale.document_type === 'invoice'"
+                  class="d-flex justify-space-between align-center text-body-2">
                   <span class="text-medium-emphasis font-weight-medium">IVA (15%):</span>
                   <span class="font-mono font-weight-bold">${{ taxAmount.toFixed(2) }}</span>
                 </div>
@@ -2464,56 +2040,24 @@ onMounted(async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
-                <VBtn
-                  block
-                  type="submit"
-                  color="primary"
-                  variant="elevated"
-                  size="large"
-                  prepend-icon="ri-save-3-line"
-                  class="font-weight-bold elevation-2"
-                  :loading="isSubmitting"
-                  :disabled="isProcessing"
-                >
-                  {{ isQuote ? 'REGISTRAR COTIZACIÓN' : (sale.document_type === 'invoice' ? 'REGISTRAR FACTURA' : 'REGISTRAR VENTA') }}
+                <VBtn block type="submit" color="primary" variant="elevated" size="large" prepend-icon="ri-save-3-line"
+                  class="font-weight-bold elevation-2" :loading="isSubmitting" :disabled="isProcessing">
+                  {{ sale.document_type === 'invoice' ? 'REGISTRAR FACTURA' : 'REGISTRAR NOTA DE VENTA' }}
                 </VBtn>
 
-                <VBtn
-                  v-if="sale.document_type !== 'quote'"
-                  block
-                  color="warning"
-                  variant="tonal"
-                  prepend-icon="ri-truck-line"
-                  class="font-weight-semibold"
-                  :loading="isDispatching"
-                  :disabled="isProcessing"
-                  @click.prevent="dispatchSale"
-                >
+                <VBtn block color="warning" variant="tonal" prepend-icon="ri-truck-line" class="font-weight-semibold"
+                  :loading="isDispatching" :disabled="isProcessing" @click.prevent="dispatchSale">
                   Despachar (Pago Pendiente)
                 </VBtn>
 
                 <div class="d-flex gap-2 w-100">
-                  <VBtn
-                    v-if="sale.document_type !== 'quote'"
-                    color="secondary"
-                    variant="tonal"
-                    prepend-icon="ri-file-draft-line"
-                    class="font-weight-semibold flex-grow-1"
-                    :loading="isSavingDraft"
-                    :disabled="isProcessing"
-                    @click.prevent="saveDraft"
-                  >
+                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-draft-line"
+                    class="font-weight-semibold flex-grow-1" :loading="isSavingDraft" :disabled="isProcessing"
+                    @click.prevent="saveDraft">
                     Borrador
                   </VBtn>
-                  <VBtn
-                    color="secondary"
-                    variant="outlined"
-                    prepend-icon="ri-close-line"
-                    class="font-weight-medium"
-                    :class="{ 'flex-grow-1': sale.document_type === 'quote' }"
-                    :disabled="isProcessing"
-                    @click="router.push(isQuote ? '/quotes/list' : '/sales/list')"
-                  >
+                  <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
+                    :disabled="isProcessing" @click="router.push('/sales/list')">
                     Cancelar
                   </VBtn>
                 </div>
@@ -2526,39 +2070,20 @@ onMounted(async () => {
 
 
     <!-- Dialogs -->
-    <ClientFinalAddDialog
-      v-if="isClientFinalAddDialogVisible"
-      v-model:isDialogVisible="isClientFinalAddDialogVisible"
-      @add-client-final="handleClientAdded"
-    />
-    <ClientCompanyAddDialog
-      v-if="isClientCompanyAddDialogVisible"
-      v-model:isDialogVisible="isClientCompanyAddDialogVisible"
-      @add-client-company="handleClientAdded"
-    />
-    <VehicleAddDialog
-      v-if="isVehicleAddDialogVisible"
-      v-model:isDialogVisible="isVehicleAddDialogVisible"
-      :client-selected-id="sale.client_id"
-      @add-vehicle="handleVehicleAdded"
-    />
+    <ClientFinalAddDialog v-if="isClientFinalAddDialogVisible" v-model:isDialogVisible="isClientFinalAddDialogVisible"
+      @add-client-final="handleClientAdded" />
+    <ClientCompanyAddDialog v-if="isClientCompanyAddDialogVisible"
+      v-model:isDialogVisible="isClientCompanyAddDialogVisible" @add-client-company="handleClientAdded" />
+    <VehicleAddDialog v-if="isVehicleAddDialogVisible" v-model:isDialogVisible="isVehicleAddDialogVisible"
+      :client-selected-id="sale.client_id" @add-vehicle="handleVehicleAdded" />
 
     <!-- Diálogo de importación de orden de trabajo -->
-    <VDialog
-      v-model="isWorkOrderImportDialogVisible"
-      scrollable
-      max-width="800px"
-    >
+    <VDialog v-model="isWorkOrderImportDialogVisible" scrollable max-width="800px">
       <VCard class="custom-dialog-card">
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn"
-            @click="isWorkOrderImportDialogVisible = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            @click="isWorkOrderImportDialogVisible = false" />
           <div class="custom-dialog-avatar">
             <VIcon icon="ri-file-download-line" />
           </div>
@@ -2570,48 +2095,24 @@ onMounted(async () => {
           </p>
         </div>
         <VCardText class="pa-4">
-          <div
-            v-if="isLoadingWorkOrders"
-            class="text-center pa-8"
-          >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-              size="48"
-            />
+          <div v-if="isLoadingWorkOrders" class="text-center pa-8">
+            <VProgressCircular indeterminate color="primary" size="48" />
             <p class="mt-4">
               Cargando órdenes listas para facturar...
             </p>
           </div>
-          <div
-            v-else-if="readyWorkOrders.length === 0"
-            class="text-center pa-8"
-          >
-            <VIcon
-              icon="ri-file-list-3-line"
-              size="64"
-              color="grey-lighten-1"
-            />
+          <div v-else-if="readyWorkOrders.length === 0" class="text-center pa-8">
+            <VIcon icon="ri-file-list-3-line" size="64" color="grey-lighten-1" />
             <p class="mt-4 text-grey">
               No hay órdenes de trabajo listas para facturar.
             </p>
           </div>
           <div v-else>
-            <VTextField
-              v-model="workOrderSearchQuery"
-              placeholder="Buscar orden (placa, cliente, #)..."
-              prepend-inner-icon="ri-search-line"
-              variant="outlined"
-              density="compact"
-              class="mb-4"
-              hide-details
-              clearable
-            />
+            <VTextField v-model="workOrderSearchQuery" placeholder="Buscar orden (placa, cliente, #)..."
+              prepend-inner-icon="ri-search-line" variant="outlined" density="compact" class="mb-4" hide-details
+              clearable />
             <div class="border rounded-lg overflow-x-auto">
-              <VTable
-                density="comfortable"
-                hover
-              >
+              <VTable density="comfortable" hover>
                 <thead>
                   <tr>
                     <th>OT #</th>
@@ -2624,10 +2125,7 @@ onMounted(async () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="order in filteredWorkOrders"
-                    :key="order.id"
-                  >
+                  <tr v-for="order in filteredWorkOrders" :key="order.id">
                     <td class="font-weight-medium">
                       OT-{{ order.id }}
                     </td>
@@ -2636,19 +2134,17 @@ onMounted(async () => {
                         order.client?.n_document }}</small>
                     </td>
                     <td>
-                      {{ order.vehicle?.license_plate }}<br><small class="text-grey">{{ getBrandNameById(order.vehicle?.brand) }} {{
-                        order.vehicle?.model }}</small>
+                      {{ order.vehicle?.license_plate }}<br><small class="text-grey">{{
+                        getBrandNameById(order.vehicle?.brand) }} {{
+                          order.vehicle?.model }}</small>
                     </td>
                     <td>
-                      {{ order.entry_date ? (order.entry_date.includes(':') ? new Date(order.entry_date.replace(' ', 'T')) : new Date(order.entry_date.replace(/-/g, '/'))).toLocaleDateString() : 'N/A' }}
+                      {{ order.entry_date ? (order.entry_date.includes(':') ? new Date(order.entry_date.replace(' ',
+                        'T')) :
+                        new Date(order.entry_date.replace(/-/g, '/'))).toLocaleDateString() : 'N/A' }}
                     </td>
                     <td class="text-right">
-                      <VBtn
-                        color="primary"
-                        size="small"
-                        variant="elevated"
-                        @click="selectWorkOrder(order)"
-                      >
+                      <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
                         Importar
                       </VBtn>
                     </td>
@@ -2659,18 +2155,10 @@ onMounted(async () => {
           </div>
         </VCardText>
         <VDivider />
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            @click="isWorkOrderImportDialogVisible = false"
-          >
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium" height="40" @click="isWorkOrderImportDialogVisible = false">
             Cerrar
           </VBtn>
         </VCardActions>
@@ -2679,42 +2167,21 @@ onMounted(async () => {
 
     <!-- Dialog para agregar servicio express -->
     <!-- Dialog para agregar servicio express -->
-    <AddServiceDialog
-      :is-dialog-visible="isAddServiceDialogVisible"
-      @update:is-dialog-visible="isAddServiceDialogVisible = $event"
-      @service-added="handleServiceAdded"
-    />
+    <AddServiceDialog :is-dialog-visible="isAddServiceDialogVisible"
+      @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
 
     <!-- Diálogo de confirmación para Factura -->
-    <VDialog
-      v-model="isConfirmInvoiceDialogVisible"
-      max-width="540px"
-      persistent
-    >
+    <VDialog v-model="isConfirmInvoiceDialogVisible" max-width="540px" persistent>
       <VCard class="custom-dialog-card rounded-xl overflow-hidden elevation-10">
         <!-- Header Banner Primary -->
-        <div
-          class="custom-dialog-header-primary pa-5 text-center position-relative"
-          style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white;"
-        >
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn position-absolute"
-            style="top: 12px; right: 12px; color: white;"
-            :disabled="isSubmitting"
-            @click="isConfirmInvoiceDialogVisible = false"
-          />
-          <div
-            class="mx-auto mb-3 d-flex align-center justify-center rounded-circle"
-            style="width: 64px; height: 64px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);"
-          >
-            <VIcon
-              icon="ri-bill-line"
-              size="36"
-              color="white"
-            />
+        <div class="custom-dialog-header-primary pa-5 text-center position-relative"
+          style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white;">
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn position-absolute"
+            style="top: 12px; right: 12px; color: white;" :disabled="isSubmitting"
+            @click="isConfirmInvoiceDialogVisible = false" />
+          <div class="mx-auto mb-3 d-flex align-center justify-center rounded-circle"
+            style="width: 64px; height: 64px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);">
+            <VIcon icon="ri-bill-line" size="36" color="white" />
           </div>
           <h3 class="text-h5 font-weight-bold text-white mb-1">
             ¿Estás seguro que deseas realizar esta "FACTURA"?
@@ -2730,38 +2197,31 @@ onMounted(async () => {
             <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">CLIENTE</span>
               <span class="text-body-2 font-weight-bold text-grey-darken-4 text-right">
-                {{ selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname || ''}`.trim() || selectedClient.n_document) : 'Consumidor Final' }}
+                {{ selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname
+                  ||
+                  ''}`.trim() || selectedClient.n_document) : 'Consumidor Final' }}
               </span>
             </div>
 
-            <div
-              v-if="selectedClient?.n_document"
-              class="d-flex justify-space-between align-center pb-2 border-b mb-3"
-            >
+            <div v-if="selectedClient?.n_document" class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">RUC / CÉDULA</span>
               <span class="text-body-2 font-weight-semibold text-primary">
                 {{ selectedClient.n_document }}
               </span>
             </div>
 
-            <div
-              v-if="selectedVehicle"
-              class="d-flex justify-space-between align-center pb-2 border-b mb-3"
-            >
+            <div v-if="selectedVehicle" class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">VEHÍCULO</span>
               <span class="text-body-2 font-weight-semibold text-grey-darken-3">
-                {{ selectedVehicle.license_plate }} ({{ getBrandNameById(selectedVehicle.brand) }} {{ selectedVehicle.model }})
+                {{ selectedVehicle.license_plate }} ({{ getBrandNameById(selectedVehicle.brand) }} {{
+                selectedVehicle.model
+                }})
               </span>
             </div>
 
             <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">AMBIENTE SRI</span>
-              <VChip
-                :color="sriEnvironmentInfo.color"
-                size="small"
-                variant="flat"
-                class="font-weight-bold px-2.5"
-              >
+              <VChip :color="sriEnvironmentInfo.color" size="small" variant="flat" class="font-weight-bold px-2.5">
                 <VIcon :icon="sriEnvironmentInfo.icon" size="14" class="me-1" />
                 {{ sriEnvironmentInfo.text }}
               </VChip>
@@ -2769,12 +2229,8 @@ onMounted(async () => {
 
             <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
               <span class="text-caption text-medium-emphasis font-weight-medium">CONDICIÓN DE PAGO</span>
-              <VChip
-                :color="sale.payment_status === 'pending' ? 'warning' : 'success'"
-                size="x-small"
-                variant="tonal"
-                class="font-weight-bold"
-              >
+              <VChip :color="sale.payment_status === 'pending' ? 'warning' : 'success'" size="x-small" variant="tonal"
+                class="font-weight-bold">
                 {{ computedPaymentMethodSummary }}
               </VChip>
             </div>
@@ -2787,13 +2243,8 @@ onMounted(async () => {
             </div>
           </VCard>
 
-          <VAlert
-            :type="sriEnvironmentInfo.isProd ? 'warning' : 'info'"
-            variant="tonal"
-            density="compact"
-            class="rounded-lg mb-0 text-caption font-weight-medium"
-            :icon="sriEnvironmentInfo.icon"
-          >
+          <VAlert :type="sriEnvironmentInfo.isProd ? 'warning' : 'info'" variant="tonal" density="compact"
+            class="rounded-lg mb-0 text-caption font-weight-medium" :icon="sriEnvironmentInfo.icon">
             <strong>Ambiente SRI: {{ sriEnvironmentInfo.text }}</strong> — {{ sriEnvironmentInfo.desc }}
           </VAlert>
         </VCardText>
@@ -2801,24 +2252,12 @@ onMounted(async () => {
         <VDivider />
 
         <VCardActions class="pa-4 d-flex justify-end gap-3 bg-white">
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            :disabled="isSubmitting"
-            @click="isConfirmInvoiceDialogVisible = false"
-          >
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" :disabled="isSubmitting"
+            @click="isConfirmInvoiceDialogVisible = false">
             Cancelar
           </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            prepend-icon="ri-check-line"
-            :loading="isSubmitting"
-            size="large"
-            class="px-5 font-weight-bold"
-            @click="executeSaleSubmission"
-          >
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" :loading="isSubmitting" size="large"
+            class="px-5 font-weight-bold" @click="executeSaleSubmission">
             Sí, emitir factura
           </VBtn>
         </VCardActions>
