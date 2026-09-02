@@ -1042,14 +1042,23 @@ onMounted(() => {
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
                       size="15"
-                      :color="item.document_type === 'invoice' ? 'primary' : 'success'"
+                      :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')"
                     />
-                    <span class="text-caption font-weight-bold text-uppercase" :class="item.document_type === 'invoice' ? 'text-primary' : 'text-success'">
+                    <span
+                      class="text-caption font-weight-bold text-uppercase"
+                      :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')"
+                    >
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
                   </div>
                   <div
-                    class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
+                    class="font-mono font-weight-bold text-body-1"
+                    :class="[
+                      isSaleCanceled(item)
+                        ? 'doc-number-canceled cursor-pointer'
+                        : 'doc-number-active cursor-pointer hover-underline'
+                    ]"
+                    :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
                     @click="viewSale(item)"
                   >
                     {{ item.document_number || 'S/N' }}
@@ -1141,7 +1150,7 @@ onMounted(() => {
 
               <!-- Acciones -->
               <td class="text-center py-3">
-                <div class="d-flex justify-center align-center gap-1">
+                <div v-if="!isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                   <!-- Ver venta -->
                   <VBtn
                     size="small"
@@ -1172,6 +1181,9 @@ onMounted(() => {
                       </VList>
                     </VMenu>
                   </VBtn>
+                </div>
+                <div v-else class="text-center">
+                  <span class="text-disabled font-weight-bold text-caption">—</span>
                 </div>
               </td>
             </tr>
@@ -1404,6 +1416,28 @@ onMounted(() => {
 
 .text-xxs {
   font-size: 0.65rem !important;
+}
+
+// Números de documento (gris por defecto, gris con tachón rojo si es anulado)
+.doc-number-active {
+  color: #334155 !important; // Gris elegante
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #0f172a !important;
+  }
+}
+
+.doc-number-canceled {
+  color: #64748b !important; // Gris
+  text-decoration: line-through !important;
+  text-decoration-color: #ef4444 !important; // Tachón rojo
+  text-decoration-thickness: 2.5px !important;
+  opacity: 0.85;
+
+  &:hover {
+    color: #ef4444 !important;
+  }
 }
 
 // Status Pills (Colores aceituna / pastel con punto al inicio)
