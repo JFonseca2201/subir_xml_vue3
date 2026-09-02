@@ -486,22 +486,22 @@ onMounted(() => {
       @add-user="addNewUser"
     />
     <UserViewDialog
-      v-if="isUserViewDialogVisible"
+      v-if="isUserViewDialogVisible && user_selected_view"
       v-model:isDialogVisible="isUserViewDialogVisible"
-      :user-data="user_selected_view"
-      :roles="roles"
+      :user="user_selected_view"
+      :loading="viewLoading"
     />
     <UserEditDialog
-      v-if="isUserEditDialogVisible"
+      v-if="isUserEditDialogVisible && user_selected_edit"
       v-model:isDialogVisible="isUserEditDialogVisible"
-      :user-data="user_selected_edit"
+      :user-selected="user_selected_edit"
       :roles="roles"
       @edit-user="addEditUser"
     />
     <UserDeleteDialog
-      v-if="isUserDeleteDialogVisible"
+      v-if="isUserDeleteDialogVisible && user_selected_delete"
       v-model:isDialogVisible="isUserDeleteDialogVisible"
-      :user-data="user_selected_delete"
+      :user-selected="user_selected_delete"
       @delete-user="addDeleteUser"
     />
   </div>
