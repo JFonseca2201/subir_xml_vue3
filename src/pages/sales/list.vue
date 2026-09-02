@@ -255,6 +255,11 @@ const getClientName = client => {
   return client.full_name || client.name || `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Cliente Desconocido'
 }
 
+const getClientPhone = client => {
+  if (!client) return ''
+  return client.phone || client.mobile || client.cellphone || client.telefono || ''
+}
+
 // Helpers visuales (Chips)
 const getDocumentTypeInfo = type => {
   const map = {

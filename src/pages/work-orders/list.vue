@@ -980,8 +980,12 @@ onMounted(() => {
 
     <!-- Diálogo Comprobantes -->
     <AttachReceiptsDialog
+      v-if="isReceiptsDialogVisible && selectedReceiptsOrder"
       v-model:is-dialog-visible="isReceiptsDialogVisible"
-      :work-order="selectedReceiptsOrder"
+      attachable-type="work_order"
+      :attachable-id="selectedReceiptsOrder.id"
+      :identifier="selectedReceiptsOrder.order_number ? '#' + selectedReceiptsOrder.order_number : '#' + selectedReceiptsOrder.id"
+      :party-name="selectedReceiptsOrder.client?.full_name || selectedReceiptsOrder.client?.name || ''"
     />
   </div>
 </template>
