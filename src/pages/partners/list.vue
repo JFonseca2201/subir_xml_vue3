@@ -149,60 +149,67 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 partners-management-page">
-    <!-- Header y Filtros Fijos (Sticky Top) -->
-    <div class="sticky-page-header-wrapper">
-      <!-- Encabezado de la página -->
-      <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 gap-4">
-        <div>
-          <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-            <VIcon
-              icon="ri-group-3-line"
-              color="primary"
-              class="me-2"
-              size="28"
-            />
-            Socios
-          </h1>
-          <p class="text-medium-emphasis mb-0">
-            Gestión de socios del taller
-          </p>
+    <!-- Header Principal Sticky -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+            <VIcon icon="ri-group-3-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="d-flex align-center gap-2">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                Socios
+              </h1>
+              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+                {{ list_partners.length }} {{ list_partners.length === 1 ? 'registro' : 'registros' }}
+              </VChip>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Gestión de socios del taller
+            </p>
+          </div>
         </div>
-        <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+
+        <div class="d-flex align-center gap-3 flex-wrap">
           <VBtn
             color="primary"
-            prepend-icon="ri-add-circle-line"
+            variant="elevated"
+            size="small"
+            prepend-icon="ri-add-line"
+            class="font-weight-semibold elevation-2"
             @click="isPartnerAddDialogVisible = !isPartnerAddDialogVisible"
           >
             Nuevo Socio
           </VBtn>
         </div>
       </div>
+    </VCard>
 
-      <!-- Filtros y Búsqueda -->
-      <VCard class="rounded-lg border-light border elevation-0 sticky-filter-card">
-        <VCardText class="pa-4 bg-grey-lighten-5">
-          <VRow class="align-center">
-            <VCol cols="12">
-              <VTextField
-                v-model="search"
-                label="Buscar socio"
-                placeholder="Nombre, cédula, email..."
-                prepend-inner-icon="ri-search-line"
-                variant="outlined"
-                density="comfortable"
-                hide-details="auto"
-                clearable
-                color="primary"
-                :loading="loading"
-              />
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-    </div>
+    <!-- Filtros y Búsqueda -->
+    <VCard class="mb-5 rounded-xl border-light elevation-1">
+      <VCardText class="pa-3 pa-sm-4 bg-white">
+        <VRow class="align-center">
+          <VCol cols="12">
+            <VTextField
+              v-model="search"
+              label="Buscar socio"
+              placeholder="Nombre, cédula, email..."
+              prepend-inner-icon="ri-search-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+              :loading="loading"
+            />
+          </VCol>
+        </VRow>
+      </VCardText>
+    </VCard>
 
     <!-- Contenedor Principal (Tabla) -->
-    <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+    <VCard class="rounded-xl border-light overflow-hidden elevation-1">
       <!-- Tabla de Socios -->
       <div class="position-relative">
 
@@ -361,74 +368,33 @@ onMounted(() => {
 
                 <td class="text-no-wrap text-center py-3">
                   <div class="d-flex justify-center align-center gap-1">
-                    <!-- Botón Principal: Ver Detalle -->
                     <VBtn
                       class="action-btn"
-                      variant="tonal"
+                      variant="text"
                       size="small"
-                      color="primary"
+                      color="info"
                       icon="ri-eye-line"
                       title="Ver Detalle del Socio"
                       @click="showItem(partner)"
                     />
-
-                    <!-- Menú Pro de Acciones Secundarias -->
-                    <VMenu
-                      location="bottom end"
-                      transition="scale-transition"
-                    >
-                      <template #activator="{ props: menuProps }">
-                        <VBtn
-                          v-bind="menuProps"
-                          size="small"
-                          variant="text"
-                          color="secondary"
-                          icon="ri-more-2-fill"
-                          class="action-btn"
-                          title="Más opciones"
-                        />
-                      </template>
-
-                      <VList
-                        density="compact"
-                        elevation="6"
-                        class="py-1 rounded-lg"
-                        min-width="180"
-                      >
-                        <VListItem @click="editPartner(partner)">
-                          <template #prepend>
-                            <VIcon
-                              icon="ri-pencil-line"
-                              color="warning"
-                              size="18"
-                              class="me-2"
-                            />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2">
-                            Editar Socio
-                          </VListItemTitle>
-                        </VListItem>
-
-                        <VDivider class="my-1" />
-
-                        <VListItem
-                          class="text-error"
-                          @click="deletePartner(partner)"
-                        >
-                          <template #prepend>
-                            <VIcon
-                              icon="ri-delete-bin-6-line"
-                              color="error"
-                              size="18"
-                              class="me-2"
-                            />
-                          </template>
-                          <VListItemTitle class="font-weight-medium text-body-2 text-error">
-                            Eliminar Socio
-                          </VListItemTitle>
-                        </VListItem>
-                      </VList>
-                    </VMenu>
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      size="small"
+                      color="primary"
+                      icon="ri-pencil-line"
+                      title="Editar Socio"
+                      @click="editPartner(partner)"
+                    />
+                    <VBtn
+                      class="action-btn"
+                      variant="text"
+                      size="small"
+                      color="error"
+                      icon="ri-delete-bin-line"
+                      title="Eliminar Socio"
+                      @click="deletePartner(partner)"
+                    />
                   </div>
                 </td>
               </tr>
