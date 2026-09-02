@@ -507,7 +507,7 @@ definePage({ meta: { permission: "settings" } })
                   <div class="d-flex justify-center align-center gap-1">
                     <VBtn
                       class="action-btn"
-                      variant="tonal"
+                      variant="text"
                       icon="ri-eye-line"
                       size="small"
                       color="info"
@@ -517,17 +517,17 @@ definePage({ meta: { permission: "settings" } })
                     <VBtn
                       v-if="can('edit_supplier')"
                       class="action-btn"
-                      variant="tonal"
+                      variant="text"
                       icon="ri-pencil-line"
                       size="small"
-                      color="warning"
+                      color="primary"
                       title="Editar"
                       @click="editItem(item)"
                     />
                     <VBtn
                       v-if="can('delete_supplier')"
                       class="action-btn"
-                      variant="tonal"
+                      variant="text"
                       icon="ri-delete-bin-line"
                       size="small"
                       color="error"

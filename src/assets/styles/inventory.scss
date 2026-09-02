@@ -2236,12 +2236,11 @@
 
 .action-btn {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-radius: 8px !important;
 }
 
 .action-btn:hover {
-    transform: translateY(-1px) scale(1.05);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+    transform: scale(1.18);
+    background-color: transparent !important;
 }
 
 /* From src/pages/vehicles/list.vue */
