@@ -2197,6 +2197,11 @@
     padding: 12px 16px;
 }
 
+.expenses-table th,
+.expenses-table td {
+    padding: 8px 10px !important;
+}
+
 /* From src/pages/users/index.vue */
 .border-light {
     border: 1px solid #e2e8f0 !important;
