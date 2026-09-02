@@ -503,16 +503,15 @@ onMounted(() => {
                 </span>
               </td>
 
-              <!-- Estado (Único chip tonal) -->
-              <td class="text-center py-3">
-                <VChip
-                  :color="invoice.invoice_process === 1 ? 'success' : 'warning'"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-semibold text-uppercase"
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
                 >
-                  {{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -627,6 +626,48 @@ onMounted(() => {
 
 .hover-underline:hover {
   text-decoration: underline;
+}
+
+// Status Pills (Colores aceituna / pastel con punto al inicio)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
 }
 
 .shimmer-line {

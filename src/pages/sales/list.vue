@@ -1090,26 +1090,28 @@ onMounted(() => {
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-3">
-                <div class="d-flex flex-column align-center gap-1">
-                  <VChip
-                    :color="getStatusInfo(item).color"
-                    variant="tonal"
-                    size="small"
-                    class="font-weight-semibold text-uppercase"
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
+                  <!-- Estado de Pago / Anulada con punto -->
+                  <div
+                    class="status-pill-clean"
+                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`"
                   >
-                    {{ getStatusInfo(item).text }}
-                  </VChip>
-                  <VChip
-                    v-if="item.document_type === 'invoice' && item.sri_status"
-                    :color="getSriStatusInfo(item.sri_status).color"
-                    variant="tonal"
-                    size="x-small"
-                    class="font-weight-medium"
-                    @click="item.sri_status === 'DEVUELTA' ? openSriErrorDialog(item.sri_error_message) : null"
+                    <span class="status-dot" />
+                    <span>{{ getStatusInfo(item)?.text }}</span>
+                  </div>
+
+                  <!-- Estado SRI (Solo para facturas activas) -->
+                  <div
+                    v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                    class="sri-badge-clean"
+                    :class="`sri-${item.sri_status.toLowerCase()}`"
+                    :title="item.sri_error_message || item.sri_error ? `Error SRI: ${item.sri_error_message || item.sri_error}` : `Estado SRI: ${item.sri_status}`"
+                    @click="item.sri_status === 'DEVUELTA' ? openSriErrorDialog(item.sri_error_message || item.sri_error) : null"
                   >
-                    {{ item.sri_status }}
-                  </VChip>
+                    <span class="sri-dot" />
+                    <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
+                  </div>
                 </div>
               </td>
 
@@ -1378,5 +1380,130 @@ onMounted(() => {
 
 .text-xxs {
   font-size: 0.65rem !important;
+}
+
+// Status Pills (Colores aceituna / pastel con punto al inicio)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-quote {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  .status-dot {
+    background-color: #0ea5e9 !important;
+  }
+}
+
+// SRI Fiscal Status Badges
+.sri-badge-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 0.70rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  .sri-dot {
+    width: 5px !important;
+    height: 5px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+    background-color: currentColor !important;
+  }
+}
+
+.sri-autorizada {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.sri-enviada,
+.sri-firmada,
+.sri-creada {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.sri-devuelta {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.sri-rechazada {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
 }
 </style>
