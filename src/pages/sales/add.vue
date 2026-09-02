@@ -1433,14 +1433,14 @@ onMounted(async () => {
         @click:close="showValidationError = false">
         <div class="d-flex align-center">
           <VIcon icon="ri-error-warning-line" class="mr-2" />
-          <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
+      <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
         </div>
       </VAlert>
 
       <VRow>
         <!-- Columna Izquierda (8 cols): Comprobante, Cliente y Productos/Servicios -->
         <VCol cols="12" lg="8">
-          <!-- Tarjeta 1: Comprobante, Cliente y Vehículo -->
+          <!-- Tarjeta 1: Tipo de Comprobante (VCard sola) -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
@@ -1451,10 +1451,10 @@ onMounted(async () => {
                     </VAvatar>
                     <div>
                       <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Comprobante & Cliente
+                        Tipo de Comprobante
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        Datos del comprobante comercial y beneficiario
+                        Selecciona el tipo de documento a emitir
                       </p>
                     </div>
                   </div>
@@ -1474,79 +1474,98 @@ onMounted(async () => {
             </VCardItem>
 
             <VCardText class="pa-4 pa-sm-5 bg-white">
-              <!-- Selector Unido de Tipo de Documento -->
-              <div class="mb-5">
-                <label class="text-caption font-weight-bold text-slate-800 mb-2 d-block">Tipo de Comprobante</label>
-                <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
-                  <!-- Opción Nota de Venta -->
-                  <div
-                    class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                    :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
-                    <div class="d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40"
-                        class="transition-all">
-                        <VIcon icon="ri-file-text-line" size="22"
-                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
-                      </VAvatar>
-                      <div>
-                        <div class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'">
-                          Nota de Venta
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                          Comprobante comercial interno
-                        </div>
+              <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
+                <!-- Opción Nota de Venta -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40"
+                      class="transition-all">
+                      <VIcon icon="ri-file-text-line" size="22"
+                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-body-2 font-weight-bold"
+                        :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'">
+                        Nota de Venta
                       </div>
-                    </div>
-                    <div class="d-flex align-center gap-2">
-                      <VChip size="x-small" :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
-                        :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'" class="font-weight-bold">
-                        Interno
-                      </VChip>
-                      <VIcon
-                        :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20" :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'" />
+                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
+                        Comprobante comercial interno
+                      </div>
                     </div>
                   </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip size="x-small" :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
+                      :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                      Interno
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="20" :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'" />
+                  </div>
+                </div>
 
-                  <!-- Opción Factura -->
-                  <div
-                    class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                    :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
-                    <div class="d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
-                        <VIcon icon="ri-bill-line" size="22"
-                          :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
-                      </VAvatar>
-                      <div>
-                        <div class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
-                          Factura Electrónica
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                          Documento fiscal válido SRI
-                        </div>
+                <!-- Opción Factura -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
+                      <VIcon icon="ri-bill-line" size="22"
+                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-body-2 font-weight-bold"
+                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
+                        Factura Electrónica
+                      </div>
+                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
+                        Documento fiscal válido SRI
                       </div>
                     </div>
-                    <div class="d-flex align-center gap-2">
-                      <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
-                        SRI Oficial
-                      </VChip>
-                      <VIcon
-                        :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
-                    </div>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
+                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                      SRI Oficial
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
                   </div>
                 </div>
               </div>
+            </VCardText>
+          </VCard>
 
-              <!-- Fila 1: Número de documento y Fecha -->
+          <!-- Tarjeta 2: Cliente, Vehículo y Detalles del Taller (Unidos) -->
+          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
+            <VCardItem class="bg-white py-3 px-4 border-b">
+              <template #title>
+                <div class="d-flex align-center gap-3">
+                  <VAvatar size="36" color="primary" variant="tonal" class="rounded-lg">
+                    <VIcon icon="ri-user-settings-line" size="20" />
+                  </VAvatar>
+                  <div>
+                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                      Cliente y Detalles del Taller
+                    </h3>
+                    <p class="text-caption text-medium-emphasis mb-0">
+                      Datos del cliente, vehículo y servicio técnico
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </VCardItem>
+
+            <VCardText class="pa-4 pa-sm-5 bg-white">
               <VRow>
+                <!-- Fila 1: Número de documento y Fecha -->
                 <VCol cols="12" sm="6">
                   <VTextField v-model="sale.document_number" label="Número de Documento *" :rules="[requiredRule]"
                     variant="outlined" density="comfortable" prepend-inner-icon="ri-hashtag" hide-details="auto"
@@ -1646,31 +1665,8 @@ onMounted(async () => {
                     </div>
                   </div>
                 </VCol>
-              </VRow>
-            </VCardText>
-          </VCard>
 
-          <!-- Tarjeta 2: Detalles del Taller -->
-          <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
-            <VCardItem class="bg-white py-3 px-4 border-b">
-              <template #title>
-                <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="warning" variant="tonal" class="rounded-lg">
-                    <VIcon icon="ri-tools-line" size="20" />
-                  </VAvatar>
-                  <div>
-                    <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                      Detalles del Taller
-                    </h3>
-                    <p class="text-caption text-medium-emphasis mb-0">
-                      Kilometraje y técnicos asignados
-                    </p>
-                  </div>
-                </div>
-              </template>
-            </VCardItem>
-            <VCardText class="pa-4 pa-sm-5 bg-white">
-              <VRow>
+                <!-- Fila 3: Kilometraje y Técnicos -->
                 <VCol cols="12" sm="6">
                   <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Kilometraje</label>
                   <VTextField v-model="sale.mileage" placeholder="Ej: 45000" type="number" variant="outlined"
