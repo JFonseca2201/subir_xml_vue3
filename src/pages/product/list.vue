@@ -537,8 +537,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                     {{ item.description }}
                   </div>
                   <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
-                    <span v-if="item.sku">COD: {{ item.sku }}</span>
-                    <span v-if="item.code_aux">• Cód: {{ item.code_aux }}</span>
+                    <span v-if="item.sku">Cód. P.: {{ item.sku }}</span>
+                    <span v-if="item.code_aux">• Cód. Aux.: {{ item.code_aux }}</span>
                   </div>
                 </div>
               </td>
