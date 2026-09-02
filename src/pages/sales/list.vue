@@ -803,24 +803,12 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('export_data') || can('list_sale')"
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium"
-          :loading="pdfLoading"
-          @click="generatePDF"
-        >
+        <VBtn v-if="can('export_data') || can('list_sale')" variant="tonal" color="secondary"
+          prepend-icon="ri-file-pdf-line" class="font-weight-medium" :loading="pdfLoading" @click="generatePDF">
           Exportar PDF
         </VBtn>
-        <VBtn
-          v-if="can('register_sale')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/sales/add"
-          class="elevation-2 font-weight-bold"
-        >
+        <VBtn v-if="can('register_sale')" color="primary" prepend-icon="ri-add-line" to="/sales/add"
+          class="elevation-2 font-weight-bold">
           Nueva Venta
         </VBtn>
       </div>
@@ -880,91 +868,39 @@ onMounted(() => {
             <span>Filtros de Ventas</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
         <VRow dense class="gap-y-3">
           <VCol cols="12" md="4">
-            <VTextField
-              v-model="searchForm.search"
-              label="Buscar venta"
-              placeholder="# Doc, orden, cliente, cédula o placa..."
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-search-2-line"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="loading"
-            />
+            <VTextField v-model="searchForm.search" label="Buscar venta"
+              placeholder="# Doc, orden, cliente, cédula o placa..." variant="outlined" density="comfortable"
+              prepend-inner-icon="ri-search-2-line" hide-details="auto" clearable color="primary" :loading="loading" />
           </VCol>
 
           <VCol cols="12" sm="6" md="2">
-            <VSelect
-              v-model="searchForm.document_type"
-              :items="documentTypeOptions"
-              item-title="title"
-              item-value="value"
-              label="Tipo de Comprobante"
-              placeholder="Todos"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VSelect v-model="searchForm.document_type" :items="documentTypeOptions" item-title="title"
+              item-value="value" label="Tipo de Comprobante" placeholder="Todos" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
           <VCol cols="12" sm="6" md="2">
-            <VSelect
-              v-model="searchForm.payment_status"
-              :items="paymentStatusOptions"
-              item-title="title"
-              item-value="value"
-              label="Estado de Pago"
-              placeholder="Todos"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VSelect v-model="searchForm.payment_status" :items="paymentStatusOptions" item-title="title"
+              item-value="value" label="Estado de Pago" placeholder="Todos" variant="outlined" density="comfortable"
+              hide-details="auto" clearable color="primary" />
           </VCol>
 
           <VCol cols="12" sm="6" md="2">
-            <VTextField
-              v-model="searchForm.start_date"
-              type="date"
-              label="Desde"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VTextField v-model="searchForm.start_date" type="date" label="Desde" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
           <VCol cols="12" sm="6" md="2">
-            <VTextField
-              v-model="searchForm.end_date"
-              type="date"
-              label="Hasta"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VTextField v-model="searchForm.end_date" type="date" label="Hasta" variant="outlined" density="comfortable"
+              hide-details="auto" clearable color="primary" />
           </VCol>
         </VRow>
       </VCardText>
@@ -975,23 +911,36 @@ onMounted(() => {
       <VTable>
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4" style="width: 100px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 110px;"><div class="shimmer-line w-60 ms-auto" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 130px;"><div class="shimmer-button rounded mx-auto" /></td>
+            <td class="py-4" style="width: 140px;">
+              <div class="shimmer-line w-75" />
+            </td>
+            <td class="py-4" style="width: 100px;">
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-60" />
+            </td>
+            <td class="py-4" style="width: 110px;">
+              <div class="shimmer-line w-60 ms-auto" />
+            </td>
+            <td class="py-4" style="width: 120px;">
+              <div class="shimmer-chip mx-auto" />
+            </td>
+            <td class="py-4 text-center" style="width: 130px;">
+              <div class="shimmer-button rounded mx-auto" />
+            </td>
           </tr>
         </tbody>
       </VTable>
     </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!sales || sales.length === 0"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
+    <VCard v-else-if="!sales || sales.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
       <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
         <VIcon size="38" icon="ri-shopping-cart-2-line" />
       </VAvatar>
@@ -1002,7 +951,8 @@ onMounted(() => {
         Intenta ajustar los criterios de búsqueda o emite una nueva factura o nota de venta.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
         <VBtn v-if="can('register_sale')" color="primary" prepend-icon="ri-add-line" to="/sales/add">
@@ -1021,7 +971,7 @@ onMounted(() => {
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 100px;">
-                OT Vinculada
+                O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 230px;">
                 Cliente
@@ -1052,25 +1002,18 @@ onMounted(() => {
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
                       size="15"
-                      :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')"
-                    />
-                    <span
-                      class="text-caption font-weight-bold text-uppercase"
-                      :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')"
-                    >
+                      :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
+                    <span class="text-caption font-weight-bold text-uppercase"
+                      :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
                   </div>
-                  <div
-                    class="font-mono font-weight-bold text-body-1"
-                    :class="[
-                      isSaleCanceled(item)
-                        ? 'doc-number-canceled cursor-pointer'
-                        : 'doc-number-active cursor-pointer hover-underline'
-                    ]"
-                    :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
-                    @click="viewSale(item)"
-                  >
+                  <div class="font-mono font-weight-bold text-body-1" :class="[
+                    isSaleCanceled(item)
+                      ? 'doc-number-canceled cursor-pointer'
+                      : 'doc-number-active cursor-pointer hover-underline'
+                  ]" :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
+                    @click="viewSale(item)">
                     {{ item.document_number || 'S/N' }}
                   </div>
                 </div>
@@ -1078,13 +1021,12 @@ onMounted(() => {
 
               <!-- OT Vinculada -->
               <td class="text-center py-3">
-                <span
-                  v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
+                <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer"
                   :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
-                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id)"
-                >
-                  {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}
+                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id)">
+                  {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number
+                    || item.work_order_id) }}
                 </span>
                 <span v-else class="text-disabled text-caption">—</span>
               </td>
@@ -1096,7 +1038,8 @@ onMounted(() => {
                     <span class="text-caption font-weight-bold">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" style="max-width: 220px;" :title="getClientName(item.client)">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" style="max-width: 220px;"
+                      :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
                     <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis">
@@ -1137,22 +1080,17 @@ onMounted(() => {
               <td class="text-center py-3" style="white-space: nowrap;">
                 <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
                   <!-- Estado de Pago / Anulada con punto -->
-                  <div
-                    class="status-pill-clean"
-                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`"
-                  >
+                  <div class="status-pill-clean"
+                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`">
                     <span class="status-dot" />
                     <span>{{ getStatusInfo(item)?.text }}</span>
                   </div>
 
                   <!-- Estado SRI (Solo para facturas activas) -->
-                  <div
-                    v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
-                    class="sri-badge-clean"
-                    :class="`sri-${item.sri_status.toLowerCase()}`"
+                  <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                    class="sri-badge-clean" :class="`sri-${item.sri_status.toLowerCase()}`"
                     :title="item.sri_error_message || item.sri_error ? `Error SRI: ${item.sri_error_message || item.sri_error}` : `Estado SRI: ${item.sri_status}`"
-                    @click="item.sri_status === 'DEVUELTA' ? openSriErrorDialog(item.sri_error_message || item.sri_error) : null"
-                  >
+                    @click="item.sri_status === 'DEVUELTA' ? openSriErrorDialog(item.sri_error_message || item.sri_error) : null">
                     <span class="sri-dot" />
                     <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
                   </div>
@@ -1163,32 +1101,25 @@ onMounted(() => {
               <td class="text-center py-3">
                 <div v-if="!isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                   <!-- Ver venta -->
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Detalle"
-                    @click="viewSale(item)"
-                  />
+                  <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
+                    @click="viewSale(item)" />
 
                   <!-- Menú Más Opciones -->
-                  <VBtn
-                    size="small"
-                    color="secondary"
-                    variant="tonal"
-                    icon="ri-more-2-line"
-                    title="Más Opciones"
-                  >
+                  <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
                     <VIcon icon="ri-more-2-line" size="18" />
                     <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                       <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
-                        <VListItem prepend-icon="ri-printer-line" title="Imprimir Ticket" class="text-info text-body-2" @click="printSale(item.id)" />
-                        <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2" @click="generateSinglePDF(item)" />
-                        <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
+                        <VListItem prepend-icon="ri-printer-line" title="Imprimir Ticket" class="text-info text-body-2"
+                          @click="printSale(item.id)" />
+                        <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
+                          @click="generateSinglePDF(item)" />
+                        <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
+                          class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
                         <VDivider class="my-1" />
-                        <VListItem prepend-icon="ri-pencil-line" title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
-                        <VListItem prepend-icon="ri-close-circle-line" title="Anular Venta" class="text-error text-body-2" @click="cancelSale(item)" />
+                        <VListItem prepend-icon="ri-pencil-line" title="Editar Venta" class="text-warning text-body-2"
+                          @click="editSale(item)" />
+                        <VListItem prepend-icon="ri-close-circle-line" title="Anular Venta"
+                          class="text-error text-body-2" @click="cancelSale(item)" />
                       </VList>
                     </VMenu>
                   </VBtn>
@@ -1206,16 +1137,11 @@ onMounted(() => {
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> ventas
+            Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> ventas
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="loadSales"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="loadSales" />
         </div>
       </VCard>
     </div>
@@ -1402,6 +1328,7 @@ onMounted(() => {
 
 .sale-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }

@@ -7,6 +7,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
+import Swal from 'sweetalert2'
 
 // Router & Composables
 const router = useRouter()
@@ -243,8 +244,26 @@ const getStatusInfo = (status, quote = null) => {
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
+const isQuoteCanceled = quote => {
+  if (!quote) return false
+  return quote.status === 'canceled' || !!quote.deleted_at || !!quote.canceled_at
+}
+
 // Acciones
 const viewQuote = async quote => {
+  if (isQuoteCanceled(quote)) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Cotización Anulada',
+      text: 'Este documento no se encuentra disponible porque fue anulado.',
+      confirmButtonText: 'Entendido',
+      customClass: {
+        confirmButton: 'v-btn v-btn--elevated bg-primary text-white px-5 rounded-lg',
+      },
+    })
+    return
+  }
+
   try {
     viewLoading.value = true
 
