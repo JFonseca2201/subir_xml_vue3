@@ -251,19 +251,6 @@ const isQuoteCanceled = quote => {
 
 // Acciones
 const viewQuote = async quote => {
-  if (isQuoteCanceled(quote)) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Cotización Anulada',
-      text: 'Este documento no se encuentra disponible porque fue anulado.',
-      confirmButtonText: 'Entendido',
-      customClass: {
-        confirmButton: 'v-btn v-btn--elevated bg-primary text-white px-5 rounded-lg',
-      },
-    })
-    return
-  }
-
   try {
     viewLoading.value = true
 
@@ -285,11 +272,6 @@ const viewQuote = async quote => {
 }
 
 const editQuote = quote => {
-  if (quote.status === 'canceled') {
-    showNotification('No se puede editar una cotización anulada', 'warning')
-    
-    return
-  }
   if (quote.converted_sale_id || quote.converted_work_order_id) {
     showNotification('Esta cotización ya fue convertida y no puede editarse', 'warning')
     
@@ -387,6 +369,42 @@ const confirmCancelQuote = async () => {
   } catch (error) {
     console.error('Error al anular cotización:', error)
     showNotification('Error al anular la cotización', 'error')
+  }
+}
+
+// Reactivar cotización anulada
+const reactivateQuote = async quote => {
+  try {
+    const result = await Swal.fire({
+      title: '¿Reactivar Cotización?',
+      text: `La cotización ${quote.document_number || 'seleccionada'} volverá al estado Vigente y podrá ser editada o convertida.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, Reactivar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        confirmButton: 'v-btn v-btn--elevated bg-success text-white px-4 rounded-lg me-2',
+        cancelButton: 'v-btn v-btn--outlined text-secondary px-4 rounded-lg',
+      },
+      buttonsStyling: false,
+    })
+
+    if (result.isConfirmed) {
+      const response = await $api(`quotes/${quote.id}/status`, {
+        method: 'PUT',
+        body: { status: 'pending' },
+      })
+
+      if (response.success || response.status === 200) {
+        showNotification('Cotización reactivada exitosamente', 'success')
+        loadQuotes()
+      } else {
+        showNotification(response.message || 'Error al reactivar cotización', 'error')
+      }
+    }
+  } catch (error) {
+    console.error('Error al reactivar cotización:', error)
+    showNotification('Error al reactivar la cotización', 'error')
   }
 }
 
@@ -809,19 +827,21 @@ onMounted(() => {
               <!-- Estado -->
               <td class="text-center py-3">
                 <VChip
-                  :color="isQuoteCanceled(item) ? 'error' : 'info'"
+                  :color="isQuoteCanceled(item) ? 'error' : (item.converted_sale_id || item.converted_work_order_id ? 'success' : 'info')"
                   variant="tonal"
                   size="small"
-                  class="font-weight-semibold text-uppercase"
+                  class="font-weight-semibold text-uppercase cursor-pointer"
+                  :title="isQuoteCanceled(item) ? 'Clic para reactivar cotización' : 'Estado de cotización'"
+                  @click="isQuoteCanceled(item) ? reactivateQuote(item) : null"
                 >
                   <VIcon :icon="isQuoteCanceled(item) ? 'ri-close-circle-fill' : 'ri-file-list-3-line'" size="13" class="me-1" />
-                  {{ isQuoteCanceled(item) ? 'ANULADA' : 'VIGENTE' }}
+                  {{ isQuoteCanceled(item) ? 'ANULADA' : (item.converted_sale_id || item.converted_work_order_id ? 'CONVERTIDA' : 'VIGENTE') }}
                 </VChip>
               </td>
 
               <!-- Acciones -->
               <td class="text-center py-3">
-                <div v-if="!isQuoteCanceled(item)" class="d-flex justify-center align-center gap-1">
+                <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalle -->
                   <VBtn
                     size="small"
@@ -834,6 +854,7 @@ onMounted(() => {
 
                   <!-- Convertir / Facturar -->
                   <VBtn
+                    v-if="!item.converted_sale_id && !item.converted_work_order_id"
                     size="small"
                     color="success"
                     variant="tonal"
@@ -844,6 +865,7 @@ onMounted(() => {
 
                   <!-- Editar -->
                   <VBtn
+                    v-if="!item.converted_sale_id && !item.converted_work_order_id"
                     size="small"
                     color="warning"
                     variant="tonal"
@@ -868,20 +890,24 @@ onMounted(() => {
                         <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
                         <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo" class="text-secondary text-body-2" @click="openMailDialog(item)" />
                         <VDivider class="my-1" />
-                        <VListItem prepend-icon="ri-close-circle-line" title="Anular Cotización" class="text-error text-body-2" @click="cancelQuote(item)" />
+                        <!-- Si está anulada, permitir reactivar; si está vigente, permitir anular -->
+                        <VListItem
+                          v-if="isQuoteCanceled(item)"
+                          prepend-icon="ri-restart-line"
+                          title="Reactivar Cotización"
+                          class="text-success text-body-2"
+                          @click="reactivateQuote(item)"
+                        />
+                        <VListItem
+                          v-else-if="!item.converted_sale_id && !item.converted_work_order_id"
+                          prepend-icon="ri-close-circle-line"
+                          title="Anular Cotización"
+                          class="text-error text-body-2"
+                          @click="cancelQuote(item)"
+                        />
                       </VList>
                     </VMenu>
                   </VBtn>
-                </div>
-
-                <div v-else class="d-flex justify-center align-center">
-                  <VBtn
-                    size="small"
-                    variant="tonal"
-                    color="error"
-                    icon="ri-information-line"
-                    title="Cotización Anulada"
-                  />
                 </div>
               </td>
             </tr>

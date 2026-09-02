@@ -104,7 +104,7 @@ const searchProducts = async () => {
       }
     })
 
-    const response = await $api('products', { 
+    const response = await $api('products', {
       params,
       signal: productsAbortController.signal,
     })
@@ -321,33 +321,16 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('import_xml') || can('register_product')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-upload-2-line"
-          class="font-weight-medium"
-          @click="importProducts"
-        >
+        <VBtn v-if="can('import_xml') || can('register_product')" color="secondary" variant="tonal"
+          prepend-icon="ri-upload-2-line" class="font-weight-medium" @click="importProducts">
           Importar Excel
         </VBtn>
-        <VBtn
-          v-if="can('export_data') || can('list_product')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-download-2-line"
-          class="font-weight-medium"
-          @click="downloadExcel"
-        >
+        <VBtn v-if="can('export_data') || can('list_product')" color="secondary" variant="tonal"
+          prepend-icon="ri-download-2-line" class="font-weight-medium" @click="downloadExcel">
           Exportar Excel
         </VBtn>
-        <VBtn
-          v-if="can('register_product')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/product/add"
-          class="elevation-2 font-weight-bold"
-        >
+        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" to="/product/add"
+          class="elevation-2 font-weight-bold">
           Agregar Producto
         </VBtn>
       </div>
@@ -391,7 +374,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Stock Agotado / Bajo</div>
             <div class="text-h6 font-weight-bold text-warning">
-              {{ lowOrNoStockCount }} <span class="text-caption text-disabled font-weight-regular">requieren reposición</span>
+              {{ lowOrNoStockCount }} <span class="text-caption text-disabled font-weight-regular">requieren
+                reposición</span>
             </div>
           </div>
         </VCard>
@@ -407,84 +391,36 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <span>Filtros de Productos</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
         <VRow dense class="gap-y-3">
           <VCol cols="12" md="6">
-            <VTextField
-              v-model="searchForm.search"
-              label="Buscar producto"
-              placeholder="Descripción, SKU, código auxiliar..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="loading"
-            />
+            <VTextField v-model="searchForm.search" label="Buscar producto"
+              placeholder="Descripción, SKU, código auxiliar..." prepend-inner-icon="ri-search-2-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
+              :loading="loading" />
           </VCol>
 
           <VCol cols="12" sm="4" md="2">
-            <VSelect
-              v-model="searchForm.categorie_id"
-              :items="categories"
-              item-title="title"
-              item-value="id"
-              label="Categoría"
-              placeholder="Todas"
-              prepend-inner-icon="ri-folder-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
+              label="Categoría" placeholder="Todas" prepend-inner-icon="ri-folder-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
           <VCol cols="12" sm="4" md="2">
-            <VSelect
-              v-model="searchForm.warehouse_id"
-              :items="warehouses"
-              item-title="name"
-              item-value="id"
-              label="Almacén"
-              placeholder="Todos"
-              prepend-inner-icon="ri-store-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
+              label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
           <VCol cols="12" sm="4" md="2">
-            <VSelect
-              v-model="searchForm.unit_id"
-              :items="units"
-              item-title="name"
-              item-value="id"
-              label="Unidad"
-              placeholder="Todas"
-              prepend-inner-icon="ri-ruler-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+            <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
+              placeholder="Todas" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
+              hide-details="auto" clearable color="primary" />
           </VCol>
         </VRow>
       </VCardText>
@@ -495,24 +431,39 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       <VTable>
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4 text-center" style="width: 70px;"><div class="shimmer-circle mx-auto" style="width: 36px; height: 36px;" /></td>
-            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-50 ms-auto" /></td>
-            <td class="py-4 text-center" style="width: 100px;"><div class="shimmer-line w-40 mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 110px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 120px;"><div class="shimmer-button rounded mx-auto" /></td>
+            <td class="py-4 text-center" style="width: 70px;">
+              <div class="shimmer-circle mx-auto" style="width: 36px; height: 36px;" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-60" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-60" />
+            </td>
+            <td class="py-4" style="width: 120px;">
+              <div class="shimmer-line w-50 ms-auto" />
+            </td>
+            <td class="py-4 text-center" style="width: 100px;">
+              <div class="shimmer-line w-40 mx-auto" />
+            </td>
+            <td class="py-4 text-center" style="width: 110px;">
+              <div class="shimmer-chip mx-auto" />
+            </td>
+            <td class="py-4 text-center" style="width: 120px;">
+              <div class="shimmer-button rounded mx-auto" />
+            </td>
           </tr>
         </tbody>
       </VTable>
     </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!products || products.length === 0"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
+    <VCard v-else-if="!products || products.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
       <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
         <VIcon size="38" icon="ri-box-3-line" />
       </VAvatar>
@@ -523,7 +474,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         Intenta ajustar los criterios de búsqueda o agrega un nuevo repuesto a tu inventario.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
         <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" to="/product/add">
@@ -551,7 +503,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 Almacén
               </th>
               <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
-                Precio Venta
+                P.V.P
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 110px;">
                 Stock
@@ -568,23 +520,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <tr v-for="item in products" :key="item.id" class="product-table-row">
               <!-- Imagen -->
               <td class="text-center py-3">
-                <VAvatar
-                  v-if="item.imagen"
-                  :image="item.imagen"
-                  size="38"
-                  rounded="lg"
-                  class="cursor-pointer border"
-                  @click="openProductDialog(item)"
-                />
-                <VAvatar
-                  v-else
-                  color="primary"
-                  variant="tonal"
-                  size="38"
-                  rounded="lg"
-                  class="cursor-pointer"
-                  @click="openProductDialog(item)"
-                >
+                <VAvatar v-if="item.imagen" :image="item.imagen" size="38" rounded="lg" class="cursor-pointer border"
+                  @click="openProductDialog(item)" />
+                <VAvatar v-else color="primary" variant="tonal" size="38" rounded="lg" class="cursor-pointer"
+                  @click="openProductDialog(item)">
                   <VIcon icon="ri-box-3-line" size="20" />
                 </VAvatar>
               </td>
@@ -594,14 +533,11 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 <div class="d-flex flex-column gap-0.5">
                   <div
                     class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer hover-underline text-truncate"
-                    style="max-width: 300px;"
-                    :title="item.description"
-                    @click="viewProduct(item)"
-                  >
+                    style="max-width: 300px;" :title="item.description" @click="viewProduct(item)">
                     {{ item.description }}
                   </div>
                   <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
-                    <span v-if="item.sku">SKU: {{ item.sku }}</span>
+                    <span v-if="item.sku">COD: {{ item.sku }}</span>
                     <span v-if="item.code_aux">• Cód: {{ item.code_aux }}</span>
                   </div>
                 </div>
@@ -630,26 +566,19 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
               <!-- Stock -->
               <td class="text-center py-3">
-                <span
-                  v-if="item.item_type == 1"
-                  class="font-mono font-weight-bold text-body-2 px-2 py-0.5 rounded"
-                  :class="(item.stock || 0) > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
-                >
+                <span v-if="item.item_type == 1" class="font-mono font-weight-bold text-body-2 px-2 py-0.5 rounded"
+                  :class="(item.stock || 0) > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'">
                   {{ item.stock || 0 }}
                 </span>
                 <span v-else class="text-caption text-medium-emphasis font-weight-medium">
-                  Servicio
+                  Serv.
                 </span>
               </td>
 
               <!-- Estado (Único chip tonal) -->
               <td class="text-center py-3">
-                <VChip
-                  :color="item.state === 1 ? 'success' : 'error'"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-semibold text-uppercase"
-                >
+                <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small"
+                  class="font-weight-semibold text-uppercase">
                   {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
                 </VChip>
               </td>
@@ -658,36 +587,16 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
               <td class="text-center py-3">
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalle -->
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Producto"
-                    @click="viewProduct(item)"
-                  />
+                  <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Producto"
+                    @click="viewProduct(item)" />
 
                   <!-- Editar -->
-                  <VBtn
-                    v-if="can('edit_product')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Producto"
-                    @click="editProduct(item)"
-                  />
+                  <VBtn v-if="can('edit_product')" size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                    title="Editar Producto" @click="editProduct(item)" />
 
                   <!-- Eliminar -->
-                  <VBtn
-                    v-if="can('delete_product')"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Producto"
-                    @click="deleteProduct(item)"
-                  />
+                  <VBtn v-if="can('delete_product')" size="small" color="error" variant="tonal"
+                    icon="ri-delete-bin-line" title="Eliminar Producto" @click="deleteProduct(item)" />
                 </div>
               </td>
             </tr>
@@ -699,40 +608,24 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ products.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> productos
+            Mostrando <strong class="text-high-emphasis">{{ products.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> productos
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="searchProducts"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="searchProducts" />
         </div>
       </VCard>
     </div>
 
     <!-- Diálogo de Detalles del Producto -->
-    <ViewProduct
-      v-model:dialog="productDialog"
-      :product="selectedProduct"
-    />
+    <ViewProduct v-model:dialog="productDialog" :product="selectedProduct" />
 
     <!-- Diálogo de Eliminación de Producto -->
-    <DeleteProduct
-      v-if="productToDelete"
-      :product="productToDelete"
-      :show-dialog="deleteDialog"
-      @update:show-dialog="deleteDialog = $event"
-      @deleted="handleProductDeleted"
-    />
+    <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
+      @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
 
     <!-- Diálogo de Importación de Excel -->
-    <ImportProductsDialog
-      v-model:isDialogVisible="importDialog"
-      @imported="handleProductsImported"
-    />
+    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
   </div>
 </template>
 
@@ -749,6 +642,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
 .product-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }
@@ -801,6 +695,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

@@ -227,12 +227,6 @@ const loadQuoteData = async () => {
         return
       }
 
-      if (qData.status === 'canceled') {
-        showNotification('No se puede editar una cotización anulada.', 'warning')
-        router.push('/quotes/list')
-        
-        return
-      }
 
       quote.value = {
         document_number: qData.document_number,
