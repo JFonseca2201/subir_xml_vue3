@@ -93,11 +93,13 @@ const filteredWorkOrders = computed(() => {
 
     filtered = filtered.filter(wo => {
       const cleanNumber = wo.number?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+      const formattedNumber = formatWorkOrderNumber(wo.number).toLowerCase()
       const cleanClientName = wo.client?.full_name?.toLowerCase() || ''
       const cleanClientDoc = wo.client?.n_document?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
       const cleanLicensePlate = wo.vehicle?.license_plate?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
 
       return cleanNumber.includes(cleanQuery) ||
+        formattedNumber.includes(query) ||
         cleanClientName.includes(query) ||
         cleanClientDoc.includes(cleanQuery) ||
         cleanLicensePlate.includes(cleanQuery)
@@ -387,6 +389,16 @@ const formatDate = dateStr => {
   })
 }
 
+// Formateador estándar de numeración (# + 6 dígitos, ej: #001619)
+const formatWorkOrderNumber = num => {
+  if (!num) return '-'
+  const clean = String(num).replace(/[^0-9]/g, '')
+  if (!clean) return String(num)
+  const val = parseInt(clean, 10)
+  if (isNaN(val)) return String(num)
+  return '#' + String(val).padStart(6, '0')
+}
+
 onMounted(() => {
   loadWorkOrders()
 })
@@ -600,7 +612,7 @@ onMounted(() => {
                   class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
                   @click="item.status !== 'draft' ? viewDetails(item) : null"
                 >
-                  #{{ item.number }}
+                  {{ formatWorkOrderNumber(item.number) }}
                 </div>
               </td>
 
@@ -819,8 +831,8 @@ onMounted(() => {
               <VIcon icon="ri-file-list-3-line" size="24" />
             </VAvatar>
             <div>
-              <h3 class="text-h5 font-weight-bold text-high-emphasis mb-0">
-                Detalles de Orden #{{ selectedWorkOrder.number }}
+              <h3 class="custom-dialog-title">
+                Detalles de Orden {{ formatWorkOrderNumber(selectedWorkOrder.number) }}
               </h3>
               <p class="text-body-2 text-medium-emphasis mb-0">
                 Información técnica de servicios, repuestos y montos
@@ -931,7 +943,7 @@ onMounted(() => {
         </div>
 
         <VCardText class="pa-5">
-          ¿Estás seguro de que deseas eliminar permanentemente la orden <strong class="font-mono text-error">#{{ workOrderToDelete.number }}</strong>?
+          ¿Estás seguro de que deseas eliminar permanentemente la orden <strong class="font-mono text-error">{{ formatWorkOrderNumber(workOrderToDelete.number) }}</strong>?
         </VCardText>
 
         <VDivider />

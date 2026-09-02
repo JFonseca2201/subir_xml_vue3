@@ -260,6 +260,16 @@ const getClientPhone = client => {
   return client.phone || client.mobile || client.cellphone || client.telefono || ''
 }
 
+// Formateador estándar de numeración (# + 6 dígitos, ej: #001619)
+const formatWorkOrderNumber = num => {
+  if (!num) return '-'
+  const clean = String(num).replace(/[^0-9]/g, '')
+  if (!clean) return String(num)
+  const val = parseInt(clean, 10)
+  if (isNaN(val)) return String(num)
+  return '#' + String(val).padStart(6, '0')
+}
+
 // Helpers visuales (Chips)
 const getDocumentTypeInfo = type => {
   const map = {
@@ -1069,11 +1079,12 @@ onMounted(() => {
               <!-- OT Vinculada -->
               <td class="text-center py-3">
                 <span
-                  v-if="item.work_order_id"
+                  v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer"
-                  @click="goToWorkOrder(item.work_order_id)"
+                  :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
+                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id)"
                 >
-                  #{{ String(item.work_order_id).padStart(5, '0') }}
+                  {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}
                 </span>
                 <span v-else class="text-disabled text-caption">—</span>
               </td>
