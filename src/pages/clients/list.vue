@@ -39,12 +39,6 @@ const isImportDialogVisible = ref(false)
 const isHistoryDialogVisible = ref(false)
 const historyClientId = ref(null)
 
-// Vista: 'table' o 'cards'
-const viewMode = ref(localStorage.getItem('clients_view_mode') || 'table')
-watch(viewMode, val => {
-  localStorage.setItem('clients_view_mode', val)
-})
-
 // Formulario de búsqueda
 const searchForm = ref({
   search: '',
@@ -257,24 +251,6 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <!-- Toggle Vista Tabla / Directorio Cards -->
-        <VBtnToggle
-          v-model="viewMode"
-          mandatory
-          color="primary"
-          variant="outlined"
-          density="comfortable"
-          rounded="lg"
-          class="bg-surface elevation-0"
-        >
-          <VBtn value="table" prepend-icon="ri-table-line">
-            <span class="d-none d-sm-inline">Tabla</span>
-          </VBtn>
-          <VBtn value="cards" prepend-icon="ri-contacts-book-2-line">
-            <span class="d-none d-sm-inline">Tarjetas</span>
-          </VBtn>
-        </VBtnToggle>
-
         <VBtn
           v-if="can('import_xml') || can('register_client')"
           color="secondary"
@@ -432,47 +408,29 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <VRow v-if="viewMode === 'cards'" class="match-height">
-        <VCol v-for="n in 6" :key="'sk-card-' + n" cols="12" sm="6" lg="4" xl="3">
-          <VCard class="rounded-xl border pa-4 h-100 elevation-0 bg-surface">
-            <div class="d-flex align-center gap-3 mb-3">
-              <div class="shimmer-circle" style="width: 48px; height: 48px; border-radius: 50%;" />
-              <div class="flex-grow-1">
-                <div class="shimmer-line w-75 mb-1.5" style="height: 16px;" />
-                <div class="shimmer-line w-40" style="height: 12px;" />
+    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VTable>
+        <tbody>
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
+            <td class="py-4" style="width: 160px;"><div class="shimmer-line w-75" /></td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4"><div class="shimmer-line w-60" /></td>
+            <td class="py-4"><div class="shimmer-line w-50" /></td>
+            <td class="py-4" style="width: 110px;"><div class="shimmer-chip" /></td>
+            <td class="py-4 text-center" style="width: 140px;">
+              <div class="d-flex justify-center gap-2">
+                <div class="shimmer-button rounded" />
+                <div class="shimmer-button rounded" />
               </div>
-            </div>
-            <div class="shimmer-line w-100 mb-2" style="height: 24px; border-radius: 6px;" />
-            <div class="shimmer-line w-60 mb-2" style="height: 20px; border-radius: 6px;" />
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <VCard v-else class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-              <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
-              <td class="py-4" style="width: 160px;"><div class="shimmer-line w-75" /></td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4"><div class="shimmer-line w-60" /></td>
-              <td class="py-4"><div class="shimmer-line w-50" /></td>
-              <td class="py-4" style="width: 110px;"><div class="shimmer-chip" /></td>
-              <td class="py-4 text-center" style="width: 140px;">
-                <div class="d-flex justify-center gap-2">
-                  <div class="shimmer-button rounded" />
-                  <div class="shimmer-button rounded" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
 
     <!-- ESTADO VACÍO -->
     <VCard
@@ -498,146 +456,9 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- CONTENIDO CON DATOS -->
+    <!-- TABLA MODERNA DE CLIENTES -->
     <div v-else>
-      <!-- ================= VISTA 1: TARJETAS (DIRECTORIO CARDS) ================= -->
-      <VRow v-if="viewMode === 'cards'" class="match-height">
-        <VCol
-          v-for="client in clients"
-          :key="'card-' + client.id"
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="3"
-        >
-          <VCard class="client-grid-card h-100 d-flex flex-column rounded-xl border elevation-0 overflow-hidden">
-            <VCardText class="pa-5 flex-grow-1 d-flex flex-column">
-              <!-- Cabecera: Avatar, Nombre e Identificación -->
-              <div class="d-flex align-start gap-3 mb-3">
-                <VAvatar
-                  size="48"
-                  :color="isCompanyClient(client) ? 'warning' : 'primary'"
-                  variant="tonal"
-                  rounded="lg"
-                  class="font-weight-bold elevation-0"
-                >
-                  <VIcon v-if="isCompanyClient(client)" icon="ri-building-line" size="24" />
-                  <span v-else class="text-subtitle-1 font-weight-bold">{{ getClientInitials(client) }}</span>
-                </VAvatar>
-
-                <div class="min-w-0 flex-grow-1">
-                  <div class="d-flex align-center justify-space-between gap-1 mb-0.5">
-                    <VChip
-                      size="x-small"
-                      :color="isCompanyClient(client) ? 'warning' : 'primary'"
-                      variant="tonal"
-                      class="font-weight-semibold text-uppercase text-xxs"
-                    >
-                      {{ isCompanyClient(client) ? 'Empresa' : 'Persona Natural' }}
-                    </VChip>
-
-                    <VChip
-                      :color="parseInt(client.state) === 1 ? 'success' : 'error'"
-                      size="x-small"
-                      variant="tonal"
-                      class="font-weight-semibold"
-                    >
-                      {{ parseInt(client.state) === 1 ? 'ACTIVO' : 'INACTIVO' }}
-                    </VChip>
-                  </div>
-
-                  <h3 class="text-h6 font-weight-bold text-high-emphasis text-uppercase text-truncate mb-0" :title="client.full_name || `${client.name} ${client.surname}`">
-                    {{ client.full_name || `${client.name} ${client.surname}` }}
-                  </h3>
-                </div>
-              </div>
-
-              <!-- Documento (Cédula o RUC) -->
-              <div class="d-flex align-center gap-1.5 mb-3 px-3 py-1.5 rounded-lg bg-grey-lighten-5 border">
-                <VIcon icon="ri-id-card-line" size="16" color="primary" />
-                <span class="text-caption font-weight-medium text-medium-emphasis">
-                  {{ client.type_document === 2 || client.type_document === '2' ? 'RUC:' : 'Cédula:' }}
-                </span>
-                <span class="text-body-2 font-weight-bold font-mono text-high-emphasis">
-                  {{ client.n_document || 'Sin documento' }}
-                </span>
-              </div>
-
-              <VDivider class="mb-3" />
-
-              <!-- Contacto -->
-              <div class="d-flex flex-column gap-2 text-body-2 mb-3">
-                <div class="d-flex align-center gap-2 text-truncate" :title="client.email">
-                  <VIcon icon="ri-mail-line" size="16" color="medium-emphasis" class="flex-shrink-0" />
-                  <span class="text-truncate text-medium-emphasis">
-                    {{ client.email || 'Sin correo electrónico' }}
-                  </span>
-                </div>
-
-                <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-phone-line" size="16" color="medium-emphasis" class="flex-shrink-0" />
-                  <span class="text-medium-emphasis font-weight-medium">
-                    {{ client.phone || 'Sin teléfono' }}
-                  </span>
-                </div>
-
-                <div v-if="client.address" class="d-flex align-center gap-2 text-truncate" :title="client.address">
-                  <VIcon icon="ri-map-pin-line" size="16" color="medium-emphasis" class="flex-shrink-0" />
-                  <span class="text-caption text-disabled text-truncate text-uppercase">
-                    {{ client.address }}
-                  </span>
-                </div>
-              </div>
-            </VCardText>
-
-            <VDivider />
-
-            <!-- Acciones -->
-            <VCardActions class="pa-3 px-4 bg-grey-lighten-5 d-flex align-center justify-space-between">
-              <span class="text-caption text-disabled font-weight-medium">#{{ client.id }}</span>
-
-              <div class="d-flex align-center gap-1">
-                <VBtn
-                  size="small"
-                  color="info"
-                  variant="tonal"
-                  prepend-icon="ri-eye-line"
-                  class="font-weight-medium"
-                  title="Ver Ficha del Cliente"
-                  @click="showClient(client)"
-                >
-                  Ficha
-                </VBtn>
-
-                <VBtn
-                  v-if="can('edit_client')"
-                  size="small"
-                  color="warning"
-                  variant="tonal"
-                  icon="ri-pencil-line"
-                  title="Editar Cliente"
-                  @click="editClient(client)"
-                />
-
-                <!-- Menú Más Opciones -->
-                <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
-                  <VIcon icon="ri-more-2-line" size="18" />
-                  <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                    <VList density="compact" class="py-1 rounded-lg elevation-3 border">
-                      <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2" @click="showHistory(client)" />
-                      <VDivider v-if="can('delete_client')" class="my-1" />
-                      <VListItem v-if="can('delete_client')" prepend-icon="ri-delete-bin-6-line" title="Eliminar Cliente" class="text-error text-body-2" @click="deleteClient(client)" />
-                    </VList>
-                  </VMenu>
-                </VBtn>
-              </div>
-            </VCardActions>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- ================= VISTA 2: TABLA MODERNA ================= -->
-      <VCard v-else class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
         <VTable hover class="client-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">

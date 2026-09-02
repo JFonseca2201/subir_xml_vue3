@@ -35,12 +35,6 @@ const isImportDialogVisible = ref(false)
 const isHistoryDialogVisible = ref(false)
 const historyVehicleId = ref(null)
 
-// Vista: 'table' o 'cards'
-const viewMode = ref(localStorage.getItem('vehicles_view_mode') || 'table')
-watch(viewMode, val => {
-  localStorage.setItem('vehicles_view_mode', val)
-})
-
 // Formulario de búsqueda
 const searchForm = ref({
   search: '',
@@ -275,42 +269,13 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <!-- Toggle Vista Tabla / Tarjetas -->
-        <VBtnToggle
-          v-model="viewMode"
-          mandatory
-          color="primary"
-          variant="outlined"
-          density="comfortable"
-          rounded="lg"
-          class="bg-surface elevation-0"
-        >
-          <VBtn value="table" prepend-icon="ri-table-line">
-            <span class="d-none d-sm-inline">Tabla</span>
-          </VBtn>
-          <VBtn value="cards" prepend-icon="ri-grid-fill">
-            <span class="d-none d-sm-inline">Tarjetas</span>
-          </VBtn>
-        </VBtnToggle>
-
-        <VBtn
-          v-if="can('import_xml') || can('register_car')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-upload-cloud-2-line"
-          class="font-weight-medium"
-          @click="isImportDialogVisible = true"
-        >
+        <VBtn v-if="can('import_xml') || can('register_car')" color="secondary" variant="tonal"
+          prepend-icon="ri-upload-cloud-2-line" class="font-weight-medium" @click="isImportDialogVisible = true">
           Importar
         </VBtn>
 
-        <VBtn
-          v-if="can('register_car')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
-          @click="addVehicle"
-        >
+        <VBtn v-if="can('register_car')" color="primary" prepend-icon="ri-add-line" class="elevation-2 font-weight-bold"
+          @click="addVehicle">
           Agregar Vehículo
         </VBtn>
       </div>
@@ -340,7 +305,8 @@ onMounted(() => {
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Vehículos Activos</div>
             <div class="text-h6 font-weight-bold text-success">
-              {{ activeVehiclesCount }} <span class="text-caption text-disabled font-weight-regular">en página actual</span>
+              {{ activeVehiclesCount }} <span class="text-caption text-disabled font-weight-regular">en página
+                actual</span>
             </div>
           </div>
         </VCard>
@@ -354,7 +320,8 @@ onMounted(() => {
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Marcas en Taller</div>
             <div class="text-h6 font-weight-bold text-warning">
-              {{ uniqueBrandsCount }} <span class="text-caption text-disabled font-weight-regular">marcas distintas</span>
+              {{ uniqueBrandsCount }} <span class="text-caption text-disabled font-weight-regular">marcas
+                distintas</span>
             </div>
           </div>
         </VCard>
@@ -371,145 +338,75 @@ onMounted(() => {
               <span>Filtros de Búsqueda</span>
             </div>
 
-            <VBtn
-              v-if="hasActiveFilters"
-              variant="text"
-              color="error"
-              size="small"
-              prepend-icon="ri-filter-off-line"
-              class="font-weight-semibold"
-              @click="resetFilters"
-            >
+            <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+              class="font-weight-semibold" @click="resetFilters">
               Limpiar Filtros
             </VBtn>
           </div>
 
           <VRow dense class="gap-y-3">
             <VCol cols="12" md="4">
-              <VTextField
-                v-model="searchForm.search"
-                label="Buscar vehículo"
-                placeholder="Placa, marca, modelo o cliente..."
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                :loading="loading"
-                prepend-inner-icon="ri-search-2-line"
-              />
+              <VTextField v-model="searchForm.search" label="Buscar vehículo"
+                placeholder="Placa, marca, modelo o cliente..." clearable hide-details variant="outlined"
+                density="comfortable" color="primary" :loading="loading" prepend-inner-icon="ri-search-2-line" />
             </VCol>
 
             <VCol cols="12" sm="4" md="3">
-              <VSelect
-                v-model="searchForm.vehicle_type"
-                :items="vehicleTypeOptions"
-                item-title="title"
-                item-value="value"
-                label="Tipo de Vehículo"
-                placeholder="Todos"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-truck-line"
-              />
+              <VSelect v-model="searchForm.vehicle_type" :items="vehicleTypeOptions" item-title="title"
+                item-value="value" label="Tipo de Vehículo" placeholder="Todos" clearable hide-details
+                variant="outlined" density="comfortable" color="primary" prepend-inner-icon="ri-truck-line" />
             </VCol>
 
             <VCol cols="12" sm="4" md="3">
-              <VSelect
-                v-model="searchForm.brand"
-                :items="brandOptions"
-                item-title="title"
-                item-value="value"
-                label="Marca"
-                placeholder="Todas"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-shield-star-line"
-              />
+              <VSelect v-model="searchForm.brand" :items="brandOptions" item-title="title" item-value="value"
+                label="Marca" placeholder="Todas" clearable hide-details variant="outlined" density="comfortable"
+                color="primary" prepend-inner-icon="ri-shield-star-line" />
             </VCol>
 
             <VCol cols="12" sm="4" md="2">
-              <VSelect
-                v-model="searchForm.year"
-                :items="yearOptions"
-                item-title="title"
-                item-value="value"
-                label="Año"
-                placeholder="Todos"
-                clearable
-                hide-details
-                variant="outlined"
-                density="comfortable"
-                color="primary"
-                prepend-inner-icon="ri-calendar-line"
-              />
+              <VSelect v-model="searchForm.year" :items="yearOptions" item-title="title" item-value="value" label="Año"
+                placeholder="Todos" clearable hide-details variant="outlined" density="comfortable" color="primary"
+                prepend-inner-icon="ri-calendar-line" />
             </VCol>
           </VRow>
         </VForm>
       </VCardText>
     </VCard>
-
     <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Cards -->
-      <VRow v-if="viewMode === 'cards'" class="match-height">
-        <VCol v-for="n in 6" :key="'sk-card-' + n" cols="12" sm="6" lg="4" xl="3">
-          <VCard class="rounded-xl border pa-4 h-100 elevation-0 bg-surface">
-            <div class="d-flex align-center justify-space-between mb-3">
+    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VTable>
+        <tbody>
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4" style="width: 80px;">
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4" style="width: 140px;">
               <div class="shimmer-chip" style="width: 90px; height: 26px;" />
-              <div class="shimmer-chip" style="width: 60px; height: 22px;" />
-            </div>
-            <div class="d-flex align-center gap-3 mb-3">
-              <div class="shimmer-circle" style="width: 44px; height: 44px; border-radius: 12px;" />
-              <div class="flex-grow-1">
-                <div class="shimmer-line w-75 mb-1.5" style="height: 16px;" />
-                <div class="shimmer-line w-50" style="height: 12px;" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4" style="width: 120px;">
+              <div class="shimmer-chip" />
+            </td>
+            <td class="py-4 text-center" style="width: 140px;">
+              <div class="d-flex justify-center gap-2">
+                <div class="shimmer-button rounded" />
+                <div class="shimmer-button rounded" />
               </div>
-            </div>
-            <div class="shimmer-line w-100 mb-2" style="height: 30px; border-radius: 6px;" />
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- Skeleton Table -->
-      <VCard v-else class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-              <td class="py-4" style="width: 80px;"><div class="shimmer-line w-40" /></td>
-              <td class="py-4" style="width: 140px;"><div class="shimmer-chip" style="width: 90px; height: 26px;" /></td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4" style="width: 120px;"><div class="shimmer-chip" /></td>
-              <td class="py-4 text-center" style="width: 140px;">
-                <div class="d-flex justify-center gap-2">
-                  <div class="shimmer-button rounded" />
-                  <div class="shimmer-button rounded" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!vehicles.length"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
+    <VCard v-else-if="!vehicles.length" class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
       <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
         <VIcon size="38" icon="ri-car-line" />
       </VAvatar>
@@ -520,7 +417,8 @@ onMounted(() => {
         Intenta ajustar tus criterios de búsqueda o agrega un nuevo vehículo al sistema.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
         <VBtn v-if="can('register_car')" color="primary" prepend-icon="ri-add-line" @click="addVehicle">
@@ -529,142 +427,9 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- CONTENIDO CON DATOS -->
+    <!-- TABLA MODERNA DE VEHÍCULOS -->
     <div v-else>
-      <!-- ================= VISTA 1: TARJETAS (CARDS GRID) ================= -->
-      <VRow v-if="viewMode === 'cards'" class="match-height">
-        <VCol
-          v-for="vehicle in vehicles"
-          :key="'card-' + vehicle.id"
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="3"
-        >
-          <VCard class="vehicle-grid-card h-100 d-flex flex-column rounded-xl border elevation-0 overflow-hidden">
-            <VCardText class="pa-5 flex-grow-1 d-flex flex-column">
-              <!-- Cabecera: Placa y Estado -->
-              <div class="d-flex align-center justify-space-between gap-2 mb-3">
-                <div v-if="vehicle.license_plate" class="license-plate-badge">
-                  {{ vehicle.license_plate.toUpperCase() }}
-                </div>
-                <VChip v-else color="warning" size="x-small" variant="tonal" class="font-weight-bold text-uppercase">
-                  Sin placa
-                </VChip>
-
-                <VChip
-                  :color="parseInt(vehicle.status) === 1 ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                  class="font-weight-semibold"
-                >
-                  <VIcon :icon="parseInt(vehicle.status) === 1 ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
-                  {{ parseInt(vehicle.status) === 1 ? 'ACTIVO' : 'INACTIVO' }}
-                </VChip>
-              </div>
-
-              <!-- Identificación del Vehículo -->
-              <div class="d-flex align-center gap-3 mb-3">
-                <VAvatar size="48" rounded="lg" :color="getBrandColor(vehicle.brand)" variant="tonal" class="elevation-0">
-                  <VIcon icon="ri-roadster-line" size="26" />
-                </VAvatar>
-                <div class="min-w-0 flex-grow-1">
-                  <div class="text-caption font-weight-bold text-uppercase text-primary letter-spacing-1">
-                    {{ getBrandNameById(vehicle.brand) || 'Sin marca' }}
-                  </div>
-                  <h3 class="text-h6 font-weight-bold text-high-emphasis text-truncate mb-0">
-                    {{ vehicle.model || 'Modelo no especificado' }}
-                  </h3>
-                </div>
-              </div>
-
-              <!-- Especificaciones (Tipo, Año, Color) -->
-              <div class="d-flex flex-wrap gap-1.5 mb-4">
-                <VChip size="x-small" color="secondary" variant="tonal" class="font-weight-medium">
-                  {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
-                </VChip>
-
-                <VChip v-if="vehicle.year" size="x-small" color="info" variant="tonal" prepend-icon="ri-calendar-line" class="font-weight-medium">
-                  {{ vehicle.year }}
-                </VChip>
-
-                <VChip v-if="vehicle.color" size="x-small" color="warning" variant="tonal" class="font-weight-medium text-uppercase">
-                  {{ vehicle.color }}
-                </VChip>
-              </div>
-
-              <VDivider class="mb-3" />
-
-              <!-- Propietario / Cliente -->
-              <div class="mt-auto">
-                <div class="text-caption text-medium-emphasis font-weight-semibold text-uppercase mb-1">
-                  Propietario
-                </div>
-                <div class="d-flex align-center gap-2">
-                  <VAvatar size="30" color="primary" variant="tonal" rounded="circle">
-                    <VIcon icon="ri-user-smile-line" size="16" />
-                  </VAvatar>
-                  <div class="min-w-0 flex-grow-1">
-                    <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate" :title="vehicle.client?.full_name">
-                      {{ vehicle.client?.full_name || 'Sin dueño asignado' }}
-                    </div>
-                    <div v-if="vehicle.client?.phone" class="text-caption text-disabled d-flex align-center gap-1">
-                      <VIcon icon="ri-phone-line" size="12" />
-                      <span>{{ vehicle.client.phone }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </VCardText>
-
-            <VDivider />
-
-            <!-- Acciones -->
-            <VCardActions class="pa-3 px-4 bg-grey-lighten-5 d-flex align-center justify-space-between">
-              <span class="text-caption text-disabled font-weight-medium">#{{ vehicle.id }}</span>
-
-              <div class="d-flex align-center gap-1">
-                <VBtn
-                  size="small"
-                  color="info"
-                  variant="tonal"
-                  prepend-icon="ri-eye-line"
-                  class="font-weight-medium"
-                  title="Ver Ficha Técnica"
-                  @click="showVehicle(vehicle)"
-                >
-                  Ficha
-                </VBtn>
-
-                <VBtn
-                  v-if="can('edit_car')"
-                  size="small"
-                  color="warning"
-                  variant="tonal"
-                  icon="ri-pencil-line"
-                  title="Editar Vehículo"
-                  @click="editVehicle(vehicle)"
-                />
-
-                <!-- Menú Más Opciones -->
-                <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
-                  <VIcon icon="ri-more-2-line" size="18" />
-                  <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                    <VList density="compact" class="py-1 rounded-lg elevation-3 border">
-                      <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2" @click="showHistory(vehicle)" />
-                      <VDivider v-if="can('delete_car')" class="my-1" />
-                      <VListItem v-if="can('delete_car')" prepend-icon="ri-delete-bin-6-line" title="Eliminar Vehículo" class="text-error text-body-2" @click="deleteVehicle(vehicle)" />
-                    </VList>
-                  </VMenu>
-                </VBtn>
-              </div>
-            </VCardActions>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- ================= VISTA 2: TABLA MODERNA ================= -->
-      <VCard v-else class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
         <VTable hover class="vehicle-modern-table text-no-wrap overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
@@ -707,7 +472,8 @@ onMounted(() => {
               <!-- Vehículo -->
               <td class="py-3">
                 <div class="d-flex align-center gap-3">
-                  <VAvatar size="40" rounded="lg" :color="getBrandColor(vehicle.brand)" variant="tonal" class="elevation-0">
+                  <VAvatar size="40" rounded="lg" :color="getBrandColor(vehicle.brand)" variant="tonal"
+                    class="elevation-0">
                     <VIcon icon="ri-roadster-line" size="22" />
                   </VAvatar>
                   <div>
@@ -715,13 +481,16 @@ onMounted(() => {
                       {{ getBrandNameById(vehicle.brand) || 'Sin marca' }} {{ vehicle.model || '' }}
                     </div>
                     <div class="d-flex align-center gap-1 flex-wrap mt-0.5">
-                      <VChip size="20" density="compact" color="secondary" variant="tonal" class="text-xxs font-weight-medium">
+                      <VChip size="20" density="compact" color="secondary" variant="tonal"
+                        class="text-xxs font-weight-medium">
                         {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
                       </VChip>
-                      <VChip v-if="vehicle.year" size="20" density="compact" color="info" variant="tonal" class="text-xxs font-weight-medium">
+                      <VChip v-if="vehicle.year" size="20" density="compact" color="info" variant="tonal"
+                        class="text-xxs font-weight-medium">
                         Año {{ vehicle.year }}
                       </VChip>
-                      <VChip v-if="vehicle.color" size="20" density="compact" color="warning" variant="tonal" class="text-xxs font-weight-medium text-uppercase">
+                      <VChip v-if="vehicle.color" size="20" density="compact" color="warning" variant="tonal"
+                        class="text-xxs font-weight-medium text-uppercase">
                         {{ vehicle.color }}
                       </VChip>
                     </div>
@@ -736,7 +505,8 @@ onMounted(() => {
                     <VIcon icon="ri-user-line" size="16" />
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate" style="max-width: 220px;" :title="vehicle.client?.full_name">
+                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate"
+                      style="max-width: 220px;" :title="vehicle.client?.full_name">
                       {{ vehicle.client?.full_name || 'Sin dueño asignado' }}
                     </div>
                     <div v-if="vehicle.client?.phone" class="text-caption text-medium-emphasis">
@@ -748,13 +518,10 @@ onMounted(() => {
 
               <!-- Estado -->
               <td class="text-center">
-                <VChip
-                  :color="parseInt(vehicle.status) === 1 ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                  class="font-weight-semibold"
-                >
-                  <VIcon :icon="parseInt(vehicle.status) === 1 ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
+                <VChip :color="parseInt(vehicle.status) === 1 ? 'success' : 'error'" size="small" variant="tonal"
+                  class="font-weight-semibold">
+                  <VIcon :icon="parseInt(vehicle.status) === 1 ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'"
+                    size="14" class="me-1" />
                   {{ parseInt(vehicle.status) === 1 ? 'ACTIVO' : 'INACTIVO' }}
                 </VChip>
               </td>
@@ -762,33 +529,22 @@ onMounted(() => {
               <!-- Acciones -->
               <td class="text-center">
                 <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha"
-                    @click="showVehicle(vehicle)"
-                  />
+                  <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha"
+                    @click="showVehicle(vehicle)" />
 
-                  <VBtn
-                    v-if="can('edit_car')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Vehículo"
-                    @click="editVehicle(vehicle)"
-                  />
+                  <VBtn v-if="can('edit_car')" size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                    title="Editar Vehículo" @click="editVehicle(vehicle)" />
 
                   <!-- Menú Más Opciones -->
                   <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
                     <VIcon icon="ri-more-2-line" size="18" />
                     <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
                       <VList density="compact" class="py-1 rounded-lg elevation-3 border">
-                        <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2" @click="showHistory(vehicle)" />
+                        <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2"
+                          @click="showHistory(vehicle)" />
                         <VDivider v-if="can('delete_car')" class="my-1" />
-                        <VListItem v-if="can('delete_car')" prepend-icon="ri-delete-bin-6-line" title="Eliminar Vehículo" class="text-error text-body-2" @click="deleteVehicle(vehicle)" />
+                        <VListItem v-if="can('delete_car')" prepend-icon="ri-delete-bin-6-line"
+                          title="Eliminar Vehículo" class="text-error text-body-2" @click="deleteVehicle(vehicle)" />
                       </VList>
                     </VMenu>
                   </VBtn>
@@ -803,54 +559,32 @@ onMounted(() => {
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ vehicles.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> vehículos
+            Mostrando <strong class="text-high-emphasis">{{ vehicles.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> vehículos
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="loadVehicles"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="loadVehicles" />
         </div>
       </VCard>
     </div>
 
     <!-- Diálogos -->
-    <VehicleShowDialog
-      v-if="isVehicleShowDialogVisible"
-      v-model:isDialogVisible="isVehicleShowDialogVisible"
-      :vehicle-data="vehicleToShow"
-    />
+    <VehicleShowDialog v-if="isVehicleShowDialogVisible" v-model:isDialogVisible="isVehicleShowDialogVisible"
+      :vehicle-data="vehicleToShow" />
 
-    <VehicleAddDialog
-      v-if="isVehicleAddDialogVisible"
-      v-model:isDialogVisible="isVehicleAddDialogVisible"
-      @add-vehicle="handleVehicleAdded"
-    />
+    <VehicleAddDialog v-if="isVehicleAddDialogVisible" v-model:isDialogVisible="isVehicleAddDialogVisible"
+      @add-vehicle="handleVehicleAdded" />
 
-    <VehicleEditDialog
-      v-if="isVehicleEditDialogVisible"
-      v-model:isDialogVisible="isVehicleEditDialogVisible"
-      :vehicle-data="vehicleToEdit"
-      @vehicle-updated="handleVehicleUpdated"
-    />
+    <VehicleEditDialog v-if="isVehicleEditDialogVisible" v-model:isDialogVisible="isVehicleEditDialogVisible"
+      :vehicle-data="vehicleToEdit" @vehicle-updated="handleVehicleUpdated" />
 
-    <VehicleDeleteDialog
-      v-if="deleteDialog"
-      v-model:isDialogVisible="deleteDialog"
-      :vehicle-selected="vehicleToDelete"
-      @delete-vehicle="handleVehicleDeleted"
-    />
+    <VehicleDeleteDialog v-if="deleteDialog" v-model:isDialogVisible="deleteDialog" :vehicle-selected="vehicleToDelete"
+      @delete-vehicle="handleVehicleDeleted" />
 
     <SalesHistoryDialog v-model="isHistoryDialogVisible" :vehicle-id="historyVehicleId" />
 
-    <ImportData
-      v-model:is-dialog-visible="isImportDialogVisible"
-      default-tab="vehicles"
-      @import-success="loadVehicles"
-    />
+    <ImportData v-model:is-dialog-visible="isImportDialogVisible" default-tab="vehicles"
+      @import-success="loadVehicles" />
   </div>
 </template>
 
@@ -896,6 +630,7 @@ onMounted(() => {
 
 .vehicle-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }
