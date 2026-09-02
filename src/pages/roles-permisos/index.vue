@@ -4,6 +4,7 @@ import { useDebounceFn } from '@vueuse/core'
 import RoleAddDialog from '@/components/inventory/role/RoleAddDialog.vue'
 import RoleEditDialog from '@/components/inventory/role/RoleEditDialog.vue'
 import RoleDeleteDialog from '@/components/inventory/role/RoleDeleteDialog.vue'
+import RoleViewDialog from '@/components/inventory/role/RoleViewDialog.vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { usePermissions } from '@/composables/usePermissions'
@@ -14,11 +15,13 @@ const { can } = usePermissions()
 const isRoleAddDialogVisible = ref(false)
 const isRoleEditDialogVisible = ref(false)
 const isRoleDeleteDialogVisible = ref(false)
+const isRoleViewDialogVisible = ref(false)
 
 const list_roles = ref([])
 const seachQuery = ref(null)
 const role_selected_edit = ref(null)
 const role_selected_delete = ref(null)
+const role_selected_view = ref(null)
 const loading = ref(false)
 const isSearching = ref(false)
 
@@ -109,6 +112,11 @@ const getRoleIcon = roleName => {
   if (name.includes('vendedor') || name.includes('seller')) return 'ri-shopping-cart-line'
   if (name.includes('gerente') || name.includes('manager')) return 'ri-briefcase-4-line'
   return 'ri-shield-user-line'
+}
+
+const viewItem = item => {
+  role_selected_view.value = item
+  isRoleViewDialogVisible.value = true
 }
 
 const editItem = item => {
@@ -352,6 +360,14 @@ onMounted(() => {
               <td class="text-center">
                 <div class="d-flex justify-center align-center gap-1">
                   <VBtn
+                    size="small"
+                    color="info"
+                    variant="tonal"
+                    icon="ri-eye-line"
+                    title="Ver Rol y Permisos"
+                    @click="viewItem(item)"
+                  />
+                  <VBtn
                     v-if="item.id !== 1 && can('edit_role')"
                     size="small"
                     color="warning"
@@ -387,6 +403,12 @@ onMounted(() => {
     </div>
 
     <!-- DIÁLOGOS -->
+    <RoleViewDialog
+      v-if="role_selected_view && isRoleViewDialogVisible"
+      v-model:isDialogVisible="isRoleViewDialogVisible"
+      :role-selected="role_selected_view"
+      @edit-role="editItem"
+    />
     <RoleAddDialog
       v-model:isDialogVisible="isRoleAddDialogVisible"
       @add-role="addNewRole"

@@ -106,6 +106,7 @@ declare module 'vue' {
     RoleAddDialog: typeof import('./src/components/inventory/role/RoleAddDialog.vue')['default']
     RoleDeleteDialog: typeof import('./src/components/inventory/role/RoleDeleteDialog.vue')['default']
     RoleEditDialog: typeof import('./src/components/inventory/role/RoleEditDialog.vue')['default']
+    RoleViewDialog: typeof import('./src/components/inventory/role/RoleViewDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SaleDeleteDialog: typeof import('./src/components/inventory/sales/SaleDeleteDialog.vue')['default']

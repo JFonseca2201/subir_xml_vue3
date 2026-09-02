@@ -1,6 +1,8 @@
 <script setup>
+import { ref, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { PERMISOS } from '@/utils/constants'
+import { $api } from '@/utils/api'
 
 const props = defineProps({
   isDialogVisible: {
@@ -18,66 +20,112 @@ const emit = defineEmits([
   'editRole',
 ])
 
-const isLoading = ref(false)
 const loader = useLoaderStore()
-const name = ref(null)
+const name = ref('')
 const permissions = ref([])
 const warning = ref(null)
 const error_exist = ref(null)
 const success = ref(null)
+const searchQuery = ref('')
 
-// Notificaciones
-const notificationShow = ref(false)
-const notificationMessage = ref('')
-const notificationType = ref('success')
+// Todos los permisos planos
+const allPermissionCodes = computed(() => {
+  return PERMISOS.flatMap(m => (m.permisos || []).map(p => p.permiso))
+})
 
-const showNotification = (message, type = 'success') => {
-  notificationMessage.value = message
-  notificationType.value = type
-  notificationShow.value = true
+const totalPermissionsCount = computed(() => allPermissionCodes.value.length)
+
+// Módulos filtrados según el buscador
+const filteredModules = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return PERMISOS
+
+  return PERMISOS.filter(mod => {
+    const matchModName = mod.name.toLowerCase().includes(q)
+    const matchPerm = (mod.permisos || []).some(p => p.name.toLowerCase().includes(q) || p.permiso.toLowerCase().includes(q))
+    return matchModName || matchPerm
+  })
+})
+
+const initRoleData = () => {
+  if (!props.roleSelected) return
+  name.value = props.roleSelected.name || ''
+
+  const rawPerms = props.roleSelected.permissions_pluck || props.roleSelected.permissions || []
+  permissions.value = rawPerms.map(p => (typeof p === 'object' && p ? p.name || p.permiso : p))
 }
 
-const AddEditPermissionDialog = permission => {
-  let INDEX = permissions.value.findIndex(perm => perm == permission)
-  if (INDEX != -1) {
-    permissions.value.splice(INDEX, 1)
+watch(() => props.roleSelected, () => {
+  initRoleData()
+}, { immediate: true })
+
+watch(() => props.isDialogVisible, val => {
+  if (val) initRoleData()
+})
+
+const togglePermission = permission => {
+  const index = permissions.value.indexOf(permission)
+  if (index !== -1) {
+    permissions.value.splice(index, 1)
   } else {
     permissions.value.push(permission)
   }
-  console.log(permissions)
 }
 
+const selectAll = () => {
+  permissions.value = [...allPermissionCodes.value]
+}
+
+const clearAll = () => {
+  permissions.value = []
+}
+
+const isModuleFullySelected = mod => {
+  const modPerms = (mod.permisos || []).map(p => p.permiso)
+  return modPerms.length > 0 && modPerms.every(p => permissions.value.includes(p))
+}
+
+const toggleModule = mod => {
+  const modPerms = (mod.permisos || []).map(p => p.permiso)
+  if (isModuleFullySelected(mod)) {
+    permissions.value = permissions.value.filter(p => !modPerms.includes(p))
+  } else {
+    modPerms.forEach(p => {
+      if (!permissions.value.includes(p)) {
+        permissions.value.push(p)
+      }
+    })
+  }
+}
+
+const getModuleSelectedCount = mod => {
+  const modPerms = (mod.permisos || []).map(p => p.permiso)
+  return modPerms.filter(p => permissions.value.includes(p)).length
+}
 
 const update = async () => {
-  loader.start()
   warning.value = null
   error_exist.value = null
   success.value = null
 
-  if (!name.value) {
-    setTimeout(() => {
-      warning.value = "Se debe ingresar un nombre de rol"
-    }, 50)
-    loader.stop()
-
-    return
-  }
-  if (permissions.value.length == 0) {
-    setTimeout(() => {
-      warning.value = "Seleccione uno o más permisos."
-    }, 50)
-    loader.stop()
-
+  if (!name.value || !name.value.trim()) {
+    warning.value = "Ingresa un nombre para el rol."
     return
   }
 
-  let data = {
-    name: name.value,
+  if (permissions.value.length === 0) {
+    warning.value = "Selecciona al menos un permiso para el rol."
+    return
+  }
+
+  loader.start()
+  const data = {
+    name: name.value.trim(),
     permissions: permissions.value,
   }
 
   try {
-    const resp = await $api("role/" + props.roleSelected.id, {
+    const resp = await $api(`role/${props.roleSelected.id}`, {
       method: 'PATCH',
       body: data,
       onResponseError({ response }) {
@@ -92,9 +140,7 @@ const update = async () => {
 
     if (resp?.data) {
       emit("editRole", resp.data)
-      setTimeout(() => {
-        onFormReset()
-      }, 1500)
+      onFormReset()
     }
   } catch (error) {
     console.error('Error al actualizar rol:', error)
@@ -103,149 +149,194 @@ const update = async () => {
   }
 }
 
-
-
-
-const onFormSubmit = () => {
-  emit('update:isDialogVisible', false)
-}
-
 const onFormReset = () => {
-  name.value = null
-  permissions.value = []
   warning.value = null
   error_exist.value = null
   success.value = null
-
+  searchQuery.value = ''
   emit('update:isDialogVisible', false)
 }
-
-const dialogVisibleUpdate = val => {
-  emit('update:isDialogVisible', val)
-}
-
-onMounted(() => {
-  isLoading.value = true
-  console.log(props.roleSelected)
-  name.value = props.roleSelected.name
-  permissions.value = props.roleSelected.permissions_pluck
-  isLoading.value = false
-})
 </script>
 
 <template>
-  <!-- Overlay global -->
-  <!-- Global loader in use -->
-  <VDialog scrollable :width="$vuetify.display.smAndDown ? 'auto' : 720" :model-value="props.isDialogVisible"
-    transition="dialog-bottom-transition" @update:model-value="dialogVisibleUpdate">
-    <VCard class="custom-dialog-card elevation-24">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="onFormReset" />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-shield-user-line" />
+  <VDialog
+    scrollable
+    :width="$vuetify.display.smAndDown ? 'auto' : 780"
+    :model-value="props.isDialogVisible"
+    transition="dialog-bottom-transition"
+    @update:model-value="onFormReset"
+  >
+    <VCard class="rounded-xl overflow-hidden border elevation-24 bg-surface">
+      <!-- Cabecera Visual Amigable -->
+      <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="position-absolute"
+          style="top: 12px; right: 12px;"
+          @click="onFormReset"
+        />
+
+        <div class="d-flex align-center gap-3">
+          <VAvatar size="50" color="warning" variant="tonal" rounded="xl" class="elevation-0 font-weight-bold">
+            <VIcon icon="ri-pencil-line" size="26" />
+          </VAvatar>
+
+          <div>
+            <h2 class="text-h5 font-weight-bold text-high-emphasis mb-0">
+              Editar Rol: {{ roleSelected?.name }}
+            </h2>
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              Modifica los permisos y accesos del perfil #{{ roleSelected?.id }}
+            </p>
+          </div>
         </div>
-        <h3 class="custom-dialog-title">
-          Editar Rol
-        </h3>
-        <p class="custom-dialog-subtitle">
-          Define permisos y accesos para el sistema
-        </p>
+
+        <!-- Indicador Dinámico de Permisos -->
+        <div class="mt-4 pa-3 rounded-lg bg-surface border d-flex align-center justify-space-between flex-wrap gap-2">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-checkbox-circle-fill" color="primary" size="20" />
+            <span class="text-body-2 font-weight-bold text-high-emphasis">
+              {{ permissions.length }} de {{ totalPermissionsCount }} permisos asignados
+            </span>
+          </div>
+
+          <div class="d-flex align-center gap-2">
+            <VBtn size="x-small" variant="tonal" color="primary" class="font-weight-medium" @click="selectAll">
+              Seleccionar Todos
+            </VBtn>
+            <VBtn size="x-small" variant="text" color="error" class="font-weight-medium" @click="clearAll">
+              Limpiar
+            </VBtn>
+          </div>
+        </div>
       </div>
 
-      <!-- Form Body Scrollable -->
-      <VCardText class="pa-6">
+      <!-- Formulario y Permisos Scrollable -->
+      <VCardText class="pa-5" style="max-height: 520px;">
         <VForm id="roleEditForm" @submit.prevent="update">
-          <VRow>
-            <!-- Nombre -->
-            <VCol cols="12">
-              <VTextField v-model="name" label="Nombre del rol" placeholder="Ej. Administrador" variant="outlined"
-                density="comfortable" prepend-inner-icon="ri-user-settings-line" hide-details />
-            </VCol>
-            <!-- Roles y permisos -->
-            <VCol cols="12">
-              <VTable class="elevation-0 permissions-table border rounded-lg">
-                <thead>
-                  <tr class="bg-grey-lighten-4">
-                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                      Módulo
-                    </th>
-                    <th class="px-6 py-4 text-body-2 text-medium-emphasis">
-                      Acciones permitidas
-                    </th>
-                  </tr>
-                </thead>
+          <!-- Input Nombre del Rol -->
+          <div class="mb-4">
+            <VTextField
+              v-model="name"
+              label="Nombre del Rol *"
+              placeholder="Ej: Administrador, Vendedor de Mostrador, Mecánico Líder..."
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="ri-shield-user-line"
+              color="primary"
+              hide-details="auto"
+              class="mb-3"
+            />
 
-                <tbody>
-                  <tr v-for="(item, index) in PERMISOS"
-                    :key="(typeof item !== 'undefined' ? (item.id || item.product_id || index) : (typeof dist !== 'undefined' ? (dist.id || index) : index))"
-                    class="permissions-row">
-                    <!-- MÓDULO -->
-                    <td class="px-6 py-6 align-top module-cell">
-                      <div class="module-name font-weight-bold">
-                        {{ item.name }}
-                      </div>
-                      <div class="module-subtitle text-caption text-medium-emphasis">
-                        Gestión del módulo
-                      </div>
-                    </td>
+            <!-- Buscador interno de permisos -->
+            <VTextField
+              v-model="searchQuery"
+              label="Filtrar permisos..."
+              placeholder="Buscar por módulo o acción (ej: eliminar, ventas, autos)..."
+              prepend-inner-icon="ri-search-2-line"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+            />
+          </div>
 
-                    <!-- PERMISOS -->
-                    <td class="px-6 py-6">
-                      <div class="permissions-wrap d-flex flex-wrap gap-2">
-                        <VChip v-for="(permiso, index2) in item.permisos" :key="index2"
-                          :color="permissions.includes(permiso.permiso) ? 'primary' : 'default'"
-                          :variant="permissions.includes(permiso.permiso) ? 'tonal' : 'outlined'"
-                          class="cursor-pointer font-weight-medium"
-                          :prepend-icon="permissions.includes(permiso.permiso) ? 'ri-checkbox-circle-line' : 'ri-checkbox-blank-circle-line'"
-                          @click="AddEditPermissionDialog(permiso.permiso)">
-                          {{ permiso.name }}
-                        </VChip>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </VCol>
+          <!-- Alertas -->
+          <VAlert v-if="warning" color="warning" variant="tonal" closable class="mb-3">
+            <template #prepend><VIcon icon="ri-alert-line" /></template>
+            {{ warning }}
+          </VAlert>
 
-            <VCol v-if="warning" cols="12">
-              <VAlert color="warning" variant="tonal" closable class="mb-2">
-                <template #prepend>
-                  <VIcon icon="ri-alert-line" />
-                </template>
-                {{ warning }}
-              </VAlert>
-            </VCol>
-            <VCol v-if="error_exist" cols="12">
-              <VAlert color="error" variant="tonal" closable class="mb-2">
-                <template #prepend>
-                  <VIcon icon="ri-error-warning-line" />
-                </template>
-                {{ error_exist }}
-              </VAlert>
-            </VCol>
-          </VRow>
+          <VAlert v-if="error_exist" color="error" variant="tonal" closable class="mb-3">
+            <template #prepend><VIcon icon="ri-error-warning-line" /></template>
+            {{ error_exist }}
+          </VAlert>
+
+          <!-- Tarjetas de Módulos y Permisos -->
+          <div class="d-flex flex-column gap-3">
+            <VCard
+              v-for="(mod, index) in filteredModules"
+              :key="'mod-edit-' + index"
+              class="rounded-xl border elevation-0 pa-4 bg-surface"
+            >
+              <!-- Cabecera de Módulo -->
+              <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="28" :color="getModuleSelectedCount(mod) > 0 ? 'primary' : 'secondary'" variant="tonal" rounded="lg">
+                    <VIcon icon="ri-folder-lock-line" size="16" />
+                  </VAvatar>
+                  <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
+                    {{ mod.name }}
+                  </span>
+                  <VChip
+                    size="x-small"
+                    :color="getModuleSelectedCount(mod) > 0 ? 'primary' : 'default'"
+                    variant="tonal"
+                    class="font-weight-bold ms-1"
+                  >
+                    {{ getModuleSelectedCount(mod) }}/{{ (mod.permisos || []).length }}
+                  </VChip>
+                </div>
+
+                <VBtn
+                  size="x-small"
+                  :variant="isModuleFullySelected(mod) ? 'tonal' : 'outlined'"
+                  :color="isModuleFullySelected(mod) ? 'primary' : 'secondary'"
+                  class="font-weight-medium"
+                  @click="toggleModule(mod)"
+                >
+                  {{ isModuleFullySelected(mod) ? 'Desmarcar todo' : 'Marcar todo el módulo' }}
+                </VBtn>
+              </div>
+
+              <!-- Chips de Permisos -->
+              <div class="d-flex flex-wrap gap-2">
+                <VChip
+                  v-for="(perm, pIdx) in mod.permisos"
+                  :key="'perm-edit-' + pIdx"
+                  :color="permissions.includes(perm.permiso) ? 'primary' : 'default'"
+                  :variant="permissions.includes(perm.permiso) ? 'elevated' : 'outlined'"
+                  class="cursor-pointer font-weight-medium"
+                  size="small"
+                  :prepend-icon="permissions.includes(perm.permiso) ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                  @click="togglePermission(perm.permiso)"
+                >
+                  {{ perm.name }}
+                </VChip>
+              </div>
+            </VCard>
+          </div>
         </VForm>
       </VCardText>
 
       <VDivider />
 
-      <!-- Fixed Actions Footer -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;">
-        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium" height="40" @click="onFormReset">
+      <!-- Footer con Acciones -->
+      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-space-between align-center">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          class="rounded-lg px-5 font-weight-medium"
+          @click="onFormReset"
+        >
           Cancelar
         </VBtn>
 
-        <VBtn type="submit" form="roleEditForm" color="primary" variant="elevated" prepend-icon="ri-refresh-line"
-          class="rounded-lg px-6 font-weight-bold" height="40" :loading="loader.loading" :disabled="loader.loading">
-          Modificar Rol
+        <VBtn
+          type="submit"
+          form="roleEditForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-save-3-line"
+          class="rounded-lg px-6 font-weight-bold elevation-2"
+          :loading="loader.loading"
+          :disabled="loader.loading"
+        >
+          Actualizar Rol
         </VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
-
-  <!-- Notificación Toast -->
-  <NotificationToast v-model:show="notificationShow" :message="notificationMessage" :type="notificationType" />
 </template>
