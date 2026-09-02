@@ -507,6 +507,14 @@ watch(() => selectedVehicle.value, newVal => {
   }
 })
 
+const getVehicleBrandModel = vehicle => {
+  if (!vehicle) return ''
+  const brand = getBrandNameById(vehicle.brand?.name || vehicle.brand || vehicle.brand_id)
+  const model = vehicle.model || ''
+  if (brand && model) return `${brand} - ${model}`
+  return brand || model || 'Sin marca/modelo'
+}
+
 // Cargar datos iniciales
 const loadSaleData = async () => {
   isLoading.value = true
@@ -1364,20 +1372,23 @@ onMounted(() => {
                     <VAvatar
                       color="primary"
                       variant="tonal"
-                      size="34"
+                      size="36"
                       class="rounded-lg"
                     >
                       <VIcon
                         icon="ri-user-line"
-                        size="18"
+                        size="20"
                       />
                     </VAvatar>
-                    <div>
-                      <div class="text-caption font-weight-bold text-slate-800">
-                        {{ selectedClient.n_document || "-" }}
+                    <div class="d-flex flex-column">
+                      <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
+                        <VIcon icon="ri-id-card-line" size="14" class="text-primary" />
+                        <span>Identificación: {{ selectedClient.n_document || "Sin identificación" }}</span>
                       </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                        {{ selectedClient.phone || "-" }} • {{ selectedClient.address || "-" }}
+                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
+                        <VIcon icon="ri-mail-line" size="14" class="text-secondary" />
+                        <span>Email: {{ selectedClient.email || "Sin email" }}</span>
+                        <span v-if="selectedClient.phone" class="ms-1 text-slate-500">• Tel: {{ selectedClient.phone }}</span>
                       </div>
                     </div>
                   </div>
@@ -1402,7 +1413,8 @@ onMounted(() => {
                           :title="item.raw.license_plate"
                         >
                           <VListItemSubtitle class="mt-1 text-grey">
-                            <span>{{ item.raw.brand?.name || item.raw.brand || '' }} {{ item.raw.model || '' }}</span>
+                            <span>{{ getBrandNameById(item.raw.brand?.name || item.raw.brand || item.raw.brand_id) }} {{ item.raw.model || '' }}</span>
+                            <span v-if="item.raw.color" class="ms-1">• Color: {{ item.raw.color }}</span>
                             <span
                               v-if="item.raw.client"
                               class="text-primary font-weight-medium ms-2"
@@ -1421,20 +1433,23 @@ onMounted(() => {
                     <VAvatar
                       color="success"
                       variant="tonal"
-                      size="34"
+                      size="36"
                       class="rounded-lg"
                     >
                       <VIcon
                         icon="ri-car-line"
-                        size="18"
+                        size="20"
                       />
                     </VAvatar>
-                    <div>
-                      <div class="text-caption font-weight-bold text-slate-800">
-                        {{ selectedVehicle.license_plate }}
+                    <div class="d-flex flex-column">
+                      <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
+                        <VIcon icon="ri-roadster-line" size="14" class="text-success" />
+                        <span>{{ getVehicleBrandModel(selectedVehicle) }}</span>
                       </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                        {{ selectedVehicle.model || "-" }} • {{ selectedVehicle.year || "-" }}
+                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
+                        <VIcon icon="ri-palette-line" size="14" class="text-secondary" />
+                        <span>Color: {{ selectedVehicle.color || "Sin color" }}</span>
+                        <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year }}</span>
                       </div>
                     </div>
                   </div>
