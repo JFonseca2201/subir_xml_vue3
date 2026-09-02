@@ -820,6 +820,32 @@ const submitForm = async () => {
     return
   }
 
+  // Validaciones fiscales para Facturas Electrónicas SRI
+  if (sale.value.document_type === 'invoice' && selectedClient.value) {
+    const docNum = (selectedClient.value.n_document || '').trim()
+    const clientName = (selectedClient.value.full_name || selectedClient.value.name || '').toUpperCase()
+    const isFinalConsumer = docNum === '9999999999999' || docNum === '9999999999' || clientName.includes('CONSUMIDOR FINAL')
+
+    // Regla SRI: Límite de $50.00 para Consumidor Final
+    if (isFinalConsumer && total.value >= 50.00) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'Por normativa del SRI, no se pueden emitir Facturas a Consumidor Final por montos iguales o superiores a $50.00. Debe registrar o seleccionar un cliente con Cédula o RUC.'
+
+      return
+    }
+
+    // Regla SRI: Formato de Cédula (10 dígitos) o RUC (13 dígitos)
+    if (!isFinalConsumer) {
+      const isNumeric = /^\d+$/.test(docNum)
+      if (!isNumeric || (docNum.length !== 10 && docNum.length !== 13)) {
+        showValidationError.value = true
+        validationErrorMessage.value = `La identificación del cliente (${docNum || 'vacía'}) no es válida para Facturación Electrónica SRI. Debe ser una Cédula de 10 dígitos o un RUC de 13 dígitos numéricos.`
+
+        return
+      }
+    }
+  }
+
   // Validar que haya al menos un producto/servicio
   if (sale.value.items.length === 0) {
     showValidationError.value = true
@@ -889,7 +915,8 @@ const submitForm = async () => {
     paymentDistributions.value = []
     sale.value.payment_method = ''
   } else {
-    const totalDist = paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0)
+    const totalDist = Math.round(paymentDistributions.value.reduce((sum, dist) => sum + (Number(dist.amount) || 0), 0) * 100) / 100
+    const currentTotal = Math.round(total.value * 100) / 100
 
     if (paymentDistributions.value.length === 0 || totalDist <= 0) {
       showValidationError.value = true
@@ -898,15 +925,15 @@ const submitForm = async () => {
       return
     }
 
-    if (totalDist > total.value + 0.01) {
+    if (totalDist > currentTotal + 0.01) {
       showValidationError.value = true
-      validationErrorMessage.value = 'La suma de los pagos no puede ser mayor al total'
+      validationErrorMessage.value = `La suma de los pagos ($${totalDist.toFixed(2)}) no puede ser mayor al total ($${currentTotal.toFixed(2)})`
 
       return
     }
 
     // Si el pago no está completado, el estado debe quedar en pendiente o partial.
-    if (Math.abs(totalDist - total.value) <= 0.01) {
+    if (Math.abs(totalDist - currentTotal) <= 0.01) {
       sale.value.payment_status = 'paid'
     } else if (totalDist > 0) {
       sale.value.payment_status = 'partial'
