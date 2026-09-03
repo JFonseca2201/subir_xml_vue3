@@ -1074,7 +1074,7 @@ onMounted(() => {
     <VDialog
       v-model="isCancelDialogVisible"
       scrollable
-      max-width="450"
+      max-width="500"
     >
       <VCard class="custom-dialog-card">
         <!-- Header Banner Primary -->

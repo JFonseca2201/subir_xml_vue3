@@ -59,7 +59,7 @@ const closeDialog = () => {
   <VDialog
     scrollable
     :model-value="modelValue"
-    max-width="400"
+    max-width="500"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <VCard class="custom-dialog-card elevation-24">

@@ -78,7 +78,7 @@ const dialogVisibleUpdate = val => {
 <template>
   <VDialog
     scrollable
-    max-width="650"
+    max-width="500"
     :model-value="props.isDialogVisible"
     @update:model-value="dialogVisibleUpdate"
   >

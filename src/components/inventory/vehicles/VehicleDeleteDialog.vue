@@ -103,7 +103,7 @@ const cancelDelete = () => {
   <VDialog
     scrollable
     :model-value="props.isDialogVisible"
-    max-width="600px"
+    max-width="500"
     persistent
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"

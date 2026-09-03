@@ -929,7 +929,7 @@ onMounted(() => {
     <!-- Modal Confirmar Eliminación -->
     <VDialog
       v-model="showDeleteDialog"
-      max-width="480"
+      max-width="500"
     >
       <VCard v-if="workOrderToDelete" class="rounded-xl overflow-hidden border elevation-24 bg-surface">
         <div class="pa-5 bg-grey-lighten-5 border-b position-relative">

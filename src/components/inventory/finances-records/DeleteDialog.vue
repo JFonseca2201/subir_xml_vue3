@@ -50,7 +50,7 @@ watch(() => props.modelValue, newVal => {
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="400" 
+    max-width="500" 
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >

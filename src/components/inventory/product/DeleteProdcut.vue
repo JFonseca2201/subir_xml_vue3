@@ -102,7 +102,7 @@ const handleImageError = () => {
   <VDialog
     scrollable 
     :model-value="showDialog" 
-    max-width="400"
+    max-width="500"
     persistent
     @update:model-value="emit('update:showDialog', $event)"
   >

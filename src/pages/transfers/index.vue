@@ -954,7 +954,7 @@ onMounted(() => {
   <VDialog
     v-model="showDeleteDialog"
     scrollable
-    max-width="440"
+    max-width="500"
   >
     <VCard class="rounded-xl pa-2">
       <VCardTitle class="pa-4 pb-2">

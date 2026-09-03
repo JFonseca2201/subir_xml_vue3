@@ -76,7 +76,7 @@ const deleteProvider = async () => {
   <VDialog
     scrollable 
     :model-value="props.isDialogVisible" 
-    max-width="500px"
+    max-width="500"
     persistent
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"

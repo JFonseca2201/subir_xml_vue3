@@ -961,7 +961,7 @@ onMounted(() => {
   <VDialog
     v-model="showDeleteDialog"
     scrollable
-    max-width="440"
+    max-width="500"
   >
     <VCard class="custom-dialog-card rounded-xl">
       <!-- Header Banner Danger -->

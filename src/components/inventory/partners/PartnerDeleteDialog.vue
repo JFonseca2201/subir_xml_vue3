@@ -29,7 +29,7 @@ const onDelete = () => {
   <VDialog
     v-if="props.isDialogVisible && props.partnerSelected"
     scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 500"
+    max-width="500"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"

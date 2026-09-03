@@ -60,7 +60,7 @@ const deleteInvoice = async () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" scrollable max-width="550" persistent
+  <VDialog :model-value="props.isDialogVisible" scrollable max-width="500" persistent
     @update:model-value="val => emit('update:isDialogVisible', val)">
     <VCard class="custom-dialog-card elevation-15">
       <!-- Overlay para bloquear la pantalla si está eliminando -->
