@@ -1,10 +1,23 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { getBrandNameById } from '@/data/vehicleBrands'
 
 const props = defineProps({
+  isDialogVisible: {
+    type: Boolean,
+    default: false,
+  },
+  modelValue: {
+    type: Boolean,
+    default: false,
+  },
   isOpen: {
     type: Boolean,
     default: false,
+  },
+  workOrder: {
+    type: Object,
+    default: () => null,
   },
   order: {
     type: Object,
@@ -16,38 +29,71 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close', 'change-status', 'generate-sale'])
+const emit = defineEmits(['update:isDialogVisible', 'update:modelValue', 'close', 'change-status', 'generate-sale'])
+
+// Diálogo reactivo
+const dialog = computed({
+  get: () => props.isDialogVisible || props.modelValue || props.isOpen,
+  set: val => {
+    emit('update:isDialogVisible', val)
+    emit('update:modelValue', val)
+    if (!val) emit('close')
+  },
+})
 
 // Manejo del cierre del modal
 const handleClose = () => {
-  emit('close')
+  dialog.value = false
 }
 
-// Datos de la orden (Fallback a datos de ejemplo si no se pasan por prop)
-const numeroOrden = computed(() => props.order?.number || 'OT-2026-0089')
+// Objeto de la orden unificado
+const targetOrder = computed(() => props.workOrder || props.order || null)
 
+// Secuencia / Número de la orden
+const numeroOrden = computed(() => {
+  const num = targetOrder.value?.number || targetOrder.value?.id
+  if (!num) return 'SIN NÚMERO'
+  const str = String(num).trim()
+  return str.startsWith('#') ? str : (str.includes('-') ? str : '#' + str)
+})
+
+// Información del vehículo
 const vehiculoInfo = computed(() => {
-  if (props.order?.vehicle) {
-    return `${props.order.vehicle.brand} ${props.order.vehicle.model} - ${props.order.vehicle.plate}`
+  if (targetOrder.value?.vehicle) {
+    const v = targetOrder.value.vehicle
+    const plate = v.license_plate ? `Placa: ${v.license_plate.toUpperCase()}` : 'Sin placa'
+    const brand = getBrandNameById(v.brand?.name || v.brand || v.brand_id) || ''
+    const model = v.model || ''
+    const brandModel = `${brand} ${model}`.trim()
+    return brandModel ? `${brandModel} • ${plate}` : plate
   }
-  
-  return 'Toyota Hilux - PCT-810'
+  return 'Vehículo en Taller'
+})
+
+// Información del cliente
+const clienteInfo = computed(() => {
+  if (targetOrder.value?.client) {
+    const c = targetOrder.value.client
+    return c.full_name || c.name || ''
+  }
+  return ''
 })
 
 // Línea de Tiempo Dinámica
 const timelineSteps = computed(() => {
-  const currentStatus = props.order?.status || 'draft'
+  const currentStatus = targetOrder.value?.status || 'draft'
   const statuses = ['draft', 'received', 'in_progress', 'ready', 'delivered']
   const currentIndex = statuses.indexOf(currentStatus)
-  
+
   let orderDate = 'N/A'
-  if (props.order?.created_at) {
+  if (targetOrder.value?.created_at || targetOrder.value?.date) {
     try {
-      const dateObj = new Date(props.order.created_at.replace(' ', 'T'))
+      const rawDate = targetOrder.value.date || targetOrder.value.created_at
+      const dateObj = new Date(String(rawDate).replace(' ', 'T'))
 
       orderDate = new Intl.DateTimeFormat('es-EC', { dateStyle: 'medium', timeStyle: 'short' }).format(dateObj)
-    } catch(e) {
-      orderDate = props.order.created_at
+    } catch (e) {
+      orderDate = String(targetOrder.value.date || targetOrder.value.created_at)
     }
   }
 
@@ -56,11 +102,11 @@ const timelineSteps = computed(() => {
       id: 1,
       title: 'BORRADOR REGISTRADO',
       date: currentIndex >= 0 ? orderDate : null,
-      description: 'La orden fue creada en el sistema.',
+      description: 'La orden fue creada y guardada preliminarmente en el sistema.',
       status: currentIndex > 0 ? 'completed' : (currentIndex === 0 ? 'active' : 'pending'),
       icon: 'ri-draft-line',
       action: {
-        label: 'Aprobar Ingreso',
+        label: 'Aprobar Ingreso a Taller',
         color: 'info',
         icon: 'ri-arrow-right-line',
         handler: () => emit('change-status', 'received'),
@@ -69,12 +115,12 @@ const timelineSteps = computed(() => {
     {
       id: 2,
       title: 'VEHÍCULO RECIBIDO',
-      date: currentIndex >= 1 ? 'Aprobado' : null,
-      description: 'El cliente autorizó el ingreso y dejó el vehículo en recepción.',
+      date: currentIndex >= 1 ? 'En Taller' : null,
+      description: 'El cliente autorizó el ingreso e inspección del vehículo en recepción.',
       status: currentIndex > 1 ? 'completed' : (currentIndex === 1 ? 'active' : 'pending'),
       icon: 'ri-file-list-3-line',
       action: {
-        label: 'Iniciar Diagnóstico',
+        label: 'Iniciar Diagnóstico / Trabajo',
         color: 'warning',
         icon: 'ri-tools-line',
         handler: () => emit('change-status', 'in_progress'),
@@ -83,12 +129,12 @@ const timelineSteps = computed(() => {
     {
       id: 3,
       title: 'EN DIAGNÓSTICO / REPARACIÓN',
-      date: currentIndex >= 2 ? 'En proceso' : null,
-      description: 'El vehículo está siendo evaluado y reparado por los técnicos asignados.',
+      date: currentIndex >= 2 ? 'En Operación' : null,
+      description: 'El vehículo está siendo intervenido por los técnicos mecánicos.',
       status: currentIndex > 2 ? 'completed' : (currentIndex === 2 ? 'active' : 'pending'),
       icon: 'ri-tools-line',
       action: {
-        label: 'Marcar como Finalizado',
+        label: 'Marcar como Finalizado / Listo',
         color: 'success',
         icon: 'ri-checkbox-circle-line',
         handler: () => emit('change-status', 'ready'),
@@ -98,7 +144,7 @@ const timelineSteps = computed(() => {
       id: 4,
       title: 'TRABAJO FINALIZADO',
       date: currentIndex >= 3 ? 'Completado' : null,
-      description: 'Las reparaciones concluyeron exitosamente. Listo para facturar o entregar.',
+      description: 'Las labores mecánicas concluyeron exitosamente. Listo para entrega o facturación.',
       status: currentIndex > 3 ? 'completed' : (currentIndex === 3 ? 'active' : 'pending'),
       icon: 'ri-checkbox-circle-line',
       action: currentIndex === 3 ? {
@@ -111,11 +157,11 @@ const timelineSteps = computed(() => {
     {
       id: 5,
       title: 'VEHÍCULO ENTREGADO',
-      date: currentIndex === 4 ? 'Entregado' : null,
-      description: 'El vehículo fue entregado satisfactoriamente al cliente.',
+      date: currentIndex === 4 ? 'Entregado al Cliente' : null,
+      description: 'El vehículo fue retirado satisfactoriamente por el cliente.',
       status: currentIndex === 4 ? 'active' : 'pending',
       icon: 'ri-truck-line',
-      action: (currentIndex >= 3 && !props.order?.sale) ? {
+      action: (currentIndex >= 3 && !targetOrder.value?.sale) ? {
         label: 'Generar Venta / Facturar',
         color: 'success',
         icon: 'ri-shopping-cart-line',
@@ -128,37 +174,41 @@ const timelineSteps = computed(() => {
 
 <template>
   <VDialog
-    :model-value="isOpen"
-    max-width="600"
+    v-model="dialog"
+    max-width="640"
     scrollable
     transition="dialog-bottom-transition"
-    @update:model-value="(val) => !val && handleClose()"
   >
-    <VCard class="custom-dialog-card bg-white">
+    <VCard class="custom-dialog-card bg-white rounded-xl overflow-hidden elevation-8">
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
+      <div class="custom-dialog-header-primary bg-primary text-white pa-5 position-relative">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn"
+          class="custom-dialog-close-btn position-absolute"
+          style="top: 12px; right: 12px;"
           @click="handleClose"
         />
-        <div class="custom-dialog-avatar">
-          <VIcon icon="ri-time-line" />
+        <div class="d-flex align-center gap-3">
+          <VAvatar size="46" color="white" variant="tonal" rounded="lg" class="elevation-1">
+            <VIcon icon="ri-time-line" size="26" color="white" />
+          </VAvatar>
+          <div class="min-w-0">
+            <h3 class="text-h6 font-weight-bold text-white mb-0 text-truncate">
+              Secuencia de la Orden: {{ numeroOrden }}
+            </h3>
+            <p class="text-caption text-white opacity-90 mb-0 mt-0.5 text-truncate">
+              {{ vehiculoInfo }} <span v-if="clienteInfo">• {{ clienteInfo }}</span>
+            </p>
+          </div>
         </div>
-        <h3 class="custom-dialog-title">
-          Secuencia de la Orden: #{{ numeroOrden }}
-        </h3>
-        <p class="custom-dialog-subtitle">
-          {{ vehiculoInfo }}
-        </p>
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->
       <VCardText
-        class="pa-6 custom-scrollbar bg-gray-50"
-        style="background-color: #fafafa;"
+        class="pa-6 custom-scrollbar bg-grey-lighten-5"
+        style="background-color: #fafafa; max-height: 60vh;"
       >
         <div class="timeline-container">
           <div
@@ -185,7 +235,7 @@ const timelineSteps = computed(() => {
             <!-- Contenido del Nodo -->
             <div class="timeline-content">
               <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center mb-1 gap-1">
-                <h4 class="text-subtitle-1 font-weight-bold text-uppercase timeline-title">
+                <h4 class="text-subtitle-2 font-weight-bold text-uppercase timeline-title">
                   {{ step.title }}
                 </h4>
                 <span
@@ -194,7 +244,7 @@ const timelineSteps = computed(() => {
                 >
                   <VIcon
                     icon="ri-time-line"
-                    size="14"
+                    size="13"
                   />
                   {{ step.date }}
                 </span>
@@ -203,10 +253,10 @@ const timelineSteps = computed(() => {
                   class="text-caption text-grey-lighten-1"
                 >Por definir</span>
               </div>
-              <p class="text-body-2 timeline-description mb-0">
+              <p class="text-caption timeline-description mb-0">
                 {{ step.description }}
               </p>
-              
+
               <!-- Botón de acción si es el paso activo -->
               <div
                 v-if="step.status === 'active' && step.action"
@@ -231,8 +281,8 @@ const timelineSteps = computed(() => {
 
       <!-- PIE DEL MODAL -->
       <VCardActions
-        class="pa-4 border-t border-gray-100 bg-white d-flex justify-end align-center gap-3"
-        style="position: sticky; bottom: 0; z-index: 2; border-top-color: #f3f4f6;"
+        class="pa-4 border-t bg-white d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           color="secondary"

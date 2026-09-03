@@ -71,18 +71,26 @@ const loadInitialData = async () => {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [employeesRes, productsRes, workOrdersRes, nextNumberRes] = await Promise.all([
-      $api('employees', { params: { per_page: 1000 } }),
-      $api('products', { params: { per_page: 1000 } }),
-      $api('work-orders'),
-      $api('work-orders/next-number'),
+    const [employeesRes, productsRes, nextNumberRes] = await Promise.all([
+      $api('employees', { params: { per_page: 1000 } }).catch(err => {
+        console.warn('Error loading employees:', err)
+        return { data: [] }
+      }),
+      $api('products', { params: { per_page: 1000 } }).catch(err => {
+        console.warn('Error loading products:', err)
+        return { data: [] }
+      }),
+      $api('work-orders/next-number').catch(err => {
+        console.warn('Error loading next work order number:', err)
+        return null
+      }),
     ])
 
-    employees.value = Array.isArray(employeesRes.employees) ? employeesRes.employees :
-      Array.isArray(employeesRes.data) ? employeesRes.data : []
+    employees.value = Array.isArray(employeesRes?.employees) ? employeesRes.employees :
+      Array.isArray(employeesRes?.data) ? employeesRes.data : []
 
-    const rawProducts = Array.isArray(productsRes.products) ? productsRes.products :
-      (Array.isArray(productsRes.data) ? productsRes.data : (Array.isArray(productsRes) ? productsRes : []))
+    const rawProducts = Array.isArray(productsRes?.products) ? productsRes.products :
+      (Array.isArray(productsRes?.data) ? productsRes.data : (Array.isArray(productsRes) ? productsRes : []))
 
     products.value = rawProducts.map(p => ({
       ...p,
@@ -91,9 +99,14 @@ const loadInitialData = async () => {
     }))
 
     // Usamos el número que entrega el backend directamente
-    workOrder.value.number = nextNumberRes?.data || '000000000'
+    const nextSeq = nextNumberRes?.data || nextNumberRes?.number || nextNumberRes
+    if (typeof nextSeq === 'string' && nextSeq.trim()) {
+      workOrder.value.number = nextSeq.trim()
+    } else {
+      workOrder.value.number = '000000001'
+    }
 
-    console.log('Employees loaded:', employees.value.length)
+    console.log('Employees loaded:', employees.value.length, 'Next OT Number:', workOrder.value.number)
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar datos iniciales', 'error')

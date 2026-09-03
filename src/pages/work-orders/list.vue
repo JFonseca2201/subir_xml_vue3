@@ -200,6 +200,14 @@ const updateStatus = async (workOrderId, newStatus) => {
         workOrders.value[index].status = newStatus
       }
     }
+
+    if (selectedTimelineOrder.value && selectedTimelineOrder.value.id === workOrderId) {
+      if (response && response.data) {
+        Object.assign(selectedTimelineOrder.value, response.data)
+      } else {
+        selectedTimelineOrder.value.status = newStatus
+      }
+    }
   } catch (error) {
     console.error('Error al actualizar estado:', error)
     showNotification('Error al actualizar el estado', 'error')
@@ -389,14 +397,19 @@ const formatDate = dateStr => {
   })
 }
 
-// Formateador estándar de numeración (# + 6 dígitos, ej: #001619)
-const formatWorkOrderNumber = num => {
-  if (!num) return '-'
-  const clean = String(num).replace(/[^0-9]/g, '')
-  if (!clean) return String(num)
-  const val = parseInt(clean, 10)
-  if (isNaN(val)) return String(num)
-  return '#' + String(val).padStart(6, '0')
+// Formateador estándar de numeración
+const formatWorkOrderNumber = (num, fallbackId = null) => {
+  if (num && String(num).trim()) {
+    const s = String(num).trim()
+    if (s.startsWith('#')) return s
+    if (s.includes('-')) return s
+    if (/^\d+$/.test(s)) return '#' + s
+    return s
+  }
+  if (fallbackId) {
+    return '#' + String(fallbackId).padStart(6, '0')
+  }
+  return '-'
 }
 
 onMounted(() => {
@@ -610,9 +623,10 @@ onMounted(() => {
               <td class="py-3">
                 <div
                   class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
-                  @click="item.status !== 'draft' ? viewDetails(item) : null"
+                  title="Ver Secuencia e Historial de la Orden"
+                  @click="openTimeline(item)"
                 >
-                  {{ formatWorkOrderNumber(item.number) }}
+                  {{ formatWorkOrderNumber(item.number, item.id) }}
                 </div>
               </td>
 
@@ -832,7 +846,7 @@ onMounted(() => {
             </VAvatar>
             <div>
               <h3 class="custom-dialog-title">
-                Detalles de Orden {{ formatWorkOrderNumber(selectedWorkOrder.number) }}
+                Detalles de Orden {{ formatWorkOrderNumber(selectedWorkOrder.number, selectedWorkOrder.id) }}
               </h3>
               <p class="text-body-2 text-medium-emphasis mb-0">
                 Información técnica de servicios, repuestos y montos
@@ -884,8 +898,8 @@ onMounted(() => {
               <tr v-for="(item, idx) in (selectedWorkOrder.items || [])" :key="idx">
                 <td class="py-2">{{ item.description || item.product?.title || '-' }}</td>
                 <td class="py-2 text-center font-mono">{{ item.quantity || 1 }}</td>
-                <td class="py-2 text-right font-mono">${{ parseFloat(item.price_unit || 0).toFixed(2) }}</td>
-                <td class="py-2 text-right font-mono font-weight-bold">${{ parseFloat(item.subtotal || 0).toFixed(2) }}</td>
+                <td class="py-2 text-right font-mono">${{ parseFloat(item.unit_price || item.price_unit || item.price || 0).toFixed(2) }}</td>
+                <td class="py-2 text-right font-mono font-weight-bold">${{ parseFloat(item.subtotal || ((item.quantity || 1) * (item.unit_price || 0))).toFixed(2) }}</td>
               </tr>
               <tr v-if="!selectedWorkOrder.items || !selectedWorkOrder.items.length">
                 <td colspan="4" class="text-center py-4 text-medium-emphasis">No hay items registrados en la orden</td>
@@ -984,10 +998,14 @@ onMounted(() => {
       </VCard>
     </VDialog>
 
-    <!-- Diálogo Timeline -->
+    <!-- Diálogo Timeline (Secuencia de la Orden de Trabajo) -->
     <WorkOrderTimelineDialog
       v-model:is-dialog-visible="showTimelineDialog"
       :work-order="selectedTimelineOrder"
+      :is-updating="!!loadingOrders"
+      @change-status="(newStatus) => selectedTimelineOrder && updateStatus(selectedTimelineOrder.id, newStatus)"
+      @generate-sale="() => selectedTimelineOrder && goToSale(selectedTimelineOrder.id)"
+      @close="showTimelineDialog = false"
     />
 
     <!-- Diálogo Comprobantes -->
