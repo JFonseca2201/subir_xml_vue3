@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 
 const props = defineProps({
@@ -21,7 +21,7 @@ const emit = defineEmits([
 const warehouse = ref({
   name: '',
   address: '',
-  state: 0, // 0 = Activo, 1 = Inactivo
+  state: 1, // 1 = Activo, 0 = Inactivo
 })
 
 const formRef = ref(null)
@@ -63,7 +63,6 @@ const showNotification = (message, type = 'success') => {
 
 onMounted(() => {
   console.log('Almacén seleccionado:', props.warehouseSelected)
-
 })
 
 const update = async () => {
@@ -73,7 +72,7 @@ const update = async () => {
 
   if (formRef.value && typeof formRef.value.validate === 'function') {
     const valid = await formRef.value.validate()
-    if (!valid) {
+    if (!valid.valid) {
       loader.stop()
       warning.value = 'Corrige los campos obligatorios.'
       
@@ -94,7 +93,7 @@ const update = async () => {
       method: "PUT",
       body: data,
       onResponseError({ response }) {
-        error_exist.value = 'Error al actualizar almacén, verifique que no exista el almacén con el mismo nombre: ' + response
+        error_exist.value = 'Error al actualizar almacén, verifique que no exista el almacén con el mismo nombre: ' + (response?._data?.message || '')
       },
     })
 
@@ -104,7 +103,7 @@ const update = async () => {
     const updatedWarehouse = {
       id: props.warehouseSelected.id,
       name: props.warehouseSelected.name.toUpperCase(),
-      address: props.warehouseSelected.address.toUpperCase(),
+      address: props.warehouseSelected.address?.toUpperCase() || null,
       state: props.warehouseSelected.state,
       created_at: props.warehouseSelected.created_at,
     }
@@ -119,8 +118,6 @@ const update = async () => {
   } catch (error) {
     console.log(error)
     error_exist.value = 'Error al actualizar almacén, verifique que no exista el almacén con el mismo nombre'
-
-    //showNotification('Error al actualizar almacén', 'error');
     loader.stop()
   } finally {
     loader.stop()
@@ -191,7 +188,6 @@ const onFormReset = () => {
                 prepend-inner-icon="ri-store-line"
                 hide-details="auto"
                 required
-                closable
               />
             </VCol>
 
@@ -209,7 +205,6 @@ const onFormReset = () => {
                 density="comfortable"
                 prepend-inner-icon="ri-map-pin-line"
                 hide-details="auto"
-                required
               />
             </VCol>
 
@@ -225,8 +220,8 @@ const onFormReset = () => {
                 variant="outlined"
                 density="comfortable"
                 :items="[
-                  { title: 'Activo', value: 0 },
-                  { title: 'Inactivo', value: 1 }
+                  { title: 'Activo', value: 1 },
+                  { title: 'Inactivo', value: 0 }
                 ]"
                 required
               />
@@ -245,7 +240,6 @@ const onFormReset = () => {
                 {{ warning }}
               </VAlert>
             </VCol>
-            <!-- Alertas de Error/Éxito -->
             <VCol
               v-if="error_exist"
               cols="12"

@@ -575,12 +575,15 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 </span>
               </td>
 
-              <!-- Estado (Único chip tonal) -->
-              <td class="text-center py-3">
-                <VChip :color="item.state === 1 ? 'success' : 'error'" variant="tonal" size="small"
-                  class="font-weight-semibold text-uppercase">
-                  {{ item.state === 1 ? 'Activo' : 'Inactivo' }}
-                </VChip>
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -689,6 +692,48 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
   background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
   background-size: 200% 100%;
   animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+// Status Pills (Estilo listado de clientes/compras)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
 }
 
 @keyframes loading-shimmer {

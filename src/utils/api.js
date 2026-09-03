@@ -50,24 +50,23 @@ export const getApiBaseUrl = () => {
 export const $api = ofetch.create({
   baseURL: getApiBaseUrl(),
   async onRequest(response) {
-    //console.log(response);
-    const accessToken = localStorage.getItem("token")//useCookie('accessToken').value
+    const accessToken = localStorage.getItem("token")
     if (accessToken && isTokenExpired(accessToken) && response.request != "auth/login") {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
 
-      //alert("Su sesion a expirado. Inicie sesión nuevamnente.");
       console.log("Su sesion a expirado. Inicie sesión nuevamnente.")
       setTimeout(() => {
         window.location.href = '/login'
       }, 100)
     }
     let options = response.options
+    options.headers = {
+      Accept: 'application/json',
+      ...options.headers,
+    }
     if (accessToken && response.request !== 'auth/login' && response.request !== 'auth/register') {
-      options.headers = {
-        ...options.headers,
-        Authorization: `Bearer ${accessToken}`,
-      }
+      options.headers.Authorization = `Bearer ${accessToken}`
     }
   },
 }) 

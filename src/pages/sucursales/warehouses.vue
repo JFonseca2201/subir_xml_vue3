@@ -325,17 +325,15 @@ onMounted(() => {
                 </div>
               </td>
 
-              <!-- Estado -->
-              <td class="text-center">
-                <VChip
-                  :color="parseInt(warehouse.state) === 1 || warehouse.state === 'active' ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                  class="font-weight-semibold"
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="parseInt(warehouse.state) === 1 || warehouse.state === 'active' ? 'status-paid' : 'status-pending'"
                 >
-                  <VIcon :icon="parseInt(warehouse.state) === 1 || warehouse.state === 'active' ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
-                  {{ parseInt(warehouse.state) === 1 || warehouse.state === 'active' ? 'ACTIVO' : 'INACTIVO' }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ parseInt(warehouse.state) === 1 || warehouse.state === 'active' ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </td>
 
               <!-- Fecha -->
@@ -416,6 +414,48 @@ onMounted(() => {
   transition: background-color 0.15s ease;
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+// Status Pills (Estilo listado de clientes/compras)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
   }
 }
 </style>

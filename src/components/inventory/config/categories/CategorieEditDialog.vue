@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch, onMounted } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { $api } from '@/utils/api'
 
@@ -17,6 +18,7 @@ const emit = defineEmits(["update:isDialogVisible", "editCategorie"])
 const name = ref(null)
 const FILE_IMAGEN = ref(null)
 const PREVIZUALIZA_IMAGEN = ref(null)
+const remove_image = ref(false)
 const state = ref(1)
 const warning = ref(null)
 const error_exits = ref(null)
@@ -34,59 +36,86 @@ const showNotification = (message, type = 'success') => {
   notificationShow.value = true
 }
 
+const syncData = () => {
+  if (props.categorieSelected) {
+    name.value = props.categorieSelected.title || ''
+    state.value = parseInt(props.categorieSelected.state) === 1 ? 1 : 0
+    PREVIZUALIZA_IMAGEN.value = props.categorieSelected.imagen || null
+    FILE_IMAGEN.value = null
+    remove_image.value = false
+    warning.value = null
+    error_exits.value = null
+    success.value = null
+  }
+}
+
+watch(
+  () => props.categorieSelected,
+  () => {
+    syncData()
+  },
+  { immediate: true, deep: true },
+)
+
 const update = async () => {
   warning.value = null
   error_exits.value = null
   success.value = null
-  if (!name.value) {
+  if (!name.value || !name.value.trim()) {
     setTimeout(() => {
-      warning.value = "Se debe llenar un nombre para la categoria"
+      warning.value = "Se debe llenar un nombre para la categoría"
     }, 50)
 
     return
   }
 
-  //   if(!FILE_IMAGEN.value){
-  //     setTimeout(() => {
-  //       warning.value = "Se debe subir una imagen para la categoria";
-  //     }, 50);
-  //     return;
-  //   }
-
   loader.start()
 
   let formData = new FormData()
-  formData.append("title", name.value)
-  if (FILE_IMAGEN.value) {
+  formData.append("title", name.value.trim())
+  if (remove_image.value) {
+    formData.append("remove_image", "1")
+  } else if (FILE_IMAGEN.value) {
     formData.append("image", FILE_IMAGEN.value)
   }
   formData.append("state", state.value)
   try {
-    const resp = await $api("categories/" + props.categorieSelected.id, {
+    const resp = await $api(`categories/${props.categorieSelected.id}`, {
       method: "POST",
       body: formData,
       onResponseError({ response }) {
-        error_exits.value = response._data.error
+        error_exits.value = response._data?.message_text || response._data?.message || response._data?.error || 'Error al actualizar la categoría'
       },
     })
 
-    console.log(resp)
-    if (resp.message == 403) {
+    console.log('Respuesta actualizar categoría:', resp)
+    if (resp?.message == 403) {
       error_exits.value = resp.message_text
       showNotification(resp.message_text, 'error')
-    } else {
-      success.value = "La categoria se ha editado correctamente"
+    } else if (resp?.categorie) {
+      success.value = "La categoría se ha editado correctamente"
       showNotification("La categoría se ha editado correctamente", 'success')
       emit("editCategorie", resp.categorie)
-      FILE_IMAGEN.value = ""
+      FILE_IMAGEN.value = null
+      remove_image.value = false
       warning.value = null
       error_exits.value = null
 
-      //   success.value = null;
-      //   onFormReset();
+      setTimeout(() => {
+        emit("update:isDialogVisible", false)
+      }, 400)
+    } else {
+      showNotification("Categoría actualizada", 'success')
+      emit("editCategorie", {
+        ...props.categorieSelected,
+        title: name.value.toUpperCase(),
+        imagen: remove_image.value ? null : (PREVIZUALIZA_IMAGEN.value || props.categorieSelected.imagen),
+        state: state.value,
+      })
+      emit("update:isDialogVisible", false)
     }
   } catch (error) {
-    console.log(error)
+    console.error('Error al actualizar categoría:', error)
     showNotification('Error al editar la categoría', 'error')
   } finally {
     loader.stop()
@@ -94,27 +123,38 @@ const update = async () => {
 }
 
 const loadFile = $event => {
-  if ($event.target.files[0].type.indexOf("image") < 0) {
-    error_exits.value = "SOLAMENTE PUEDEN SER ARCHIVOS DE TIPO IMAGEN"
+  if (!$event.target.files || !$event.target.files[0]) return
+  const file = $event.target.files[0]
+  if (file.type.indexOf("image") < 0) {
+    error_exits.value = "SOLAMENTE PUEDEN SER ARCHIVOS DE TIPO IMAGEN (PNG, JPG, JPEG, WEBP)"
 
     return
   }
-  error_exits.value = ""
-  FILE_IMAGEN.value = $event.target.files[0]
+  if (file.size > 3 * 1024 * 1024) {
+    error_exits.value = "LA IMAGEN NO DEBE SUPERAR LOS 3MB"
+
+    return
+  }
+  error_exits.value = null
+  remove_image.value = false
+  FILE_IMAGEN.value = file
   let reader = new FileReader()
-  reader.readAsDataURL(FILE_IMAGEN.value)
+  reader.readAsDataURL(file)
   reader.onloadend = () => (PREVIZUALIZA_IMAGEN.value = reader.result)
 }
 
 const clearImage = () => {
   FILE_IMAGEN.value = null
-  PREVIZUALIZA_IMAGEN.value = props.categorieSelected.imagen // Restaurar imagen original
-  error_exits.value = ""
+  PREVIZUALIZA_IMAGEN.value = null
+  remove_image.value = true
+  error_exits.value = null
 }
 
-const onFormSubmit = () => {
-  emit("update:isDialogVisible", false)
-  emit("submit", userData.value)
+const restoreOriginalImage = () => {
+  FILE_IMAGEN.value = null
+  PREVIZUALIZA_IMAGEN.value = props.categorieSelected.imagen || null
+  remove_image.value = false
+  error_exits.value = null
 }
 
 const onFormReset = () => {
@@ -124,12 +164,6 @@ const onFormReset = () => {
 const dialogVisibleUpdate = val => {
   emit("update:isDialogVisible", val)
 }
-
-onMounted(() => {
-  name.value = props.categorieSelected.title
-  state.value = props.categorieSelected.state
-  PREVIZUALIZA_IMAGEN.value = props.categorieSelected.imagen
-})
 </script>
 
 <template>
@@ -171,8 +205,8 @@ onMounted(() => {
             <VCol cols="12">
               <VTextField
                 v-model="name"
-                label="Nombre de la categoría"
-                placeholder="Ej: Repuestos, Accesorios"
+                label="Nombre de la categoría *"
+                placeholder="Ej: Repuestos, Accesorios, Lubricantes"
                 prepend-inner-icon="ri-store-line"
                 clearable
               />
@@ -229,13 +263,35 @@ onMounted(() => {
                   md="6"
                 >
                   <VFileInput
-                    label="Imagen de la categoría"
-                    prepend-inner-icon="ri-image-line"
+                    label="Cambiar Imagen"
+                    prepend-inner-icon="ri-image-edit-line"
                     accept="image/*"
                     clearable
                     @change="loadFile($event)"
                     @click:clear="clearImage"
                   />
+                  <div class="d-flex align-center gap-2 mt-2">
+                    <VBtn
+                      v-if="PREVIZUALIZA_IMAGEN"
+                      size="x-small"
+                      color="error"
+                      variant="tonal"
+                      prepend-icon="ri-delete-bin-line"
+                      @click="clearImage"
+                    >
+                      Quitar imagen
+                    </VBtn>
+                    <VBtn
+                      v-if="remove_image && props.categorieSelected.imagen"
+                      size="x-small"
+                      color="secondary"
+                      variant="tonal"
+                      prepend-icon="ri-arrow-go-back-line"
+                      @click="restoreOriginalImage"
+                    >
+                      Restaurar
+                    </VBtn>
+                  </div>
                 </VCol>
                 <VCol
                   cols="12"
@@ -246,8 +302,17 @@ onMounted(() => {
                     v-if="PREVIZUALIZA_IMAGEN"
                     :image="PREVIZUALIZA_IMAGEN"
                     size="80"
-                    class="elevation-3"
+                    rounded="lg"
+                    class="elevation-2 border"
                   />
+                  <div
+                    v-else
+                    class="d-flex flex-column align-center justify-center border border-dashed rounded-lg pa-3 text-disabled"
+                    style="width: 80px; height: 80px;"
+                  >
+                    <VIcon icon="ri-image-line" size="28" />
+                    <span style="font-size: 0.65rem;">Sin imagen</span>
+                  </div>
                 </VCol>
               </VRow>
             </VCol>
@@ -263,7 +328,7 @@ onMounted(() => {
                 prepend-inner-icon="ri-toggle-line"
                 :items="[
                   { name: 'Activo', id: 1 },
-                  { name: 'Inactivo', id: 2 },
+                  { name: 'Inactivo', id: 0 },
                 ]"
                 item-title="name"
                 item-value="id"

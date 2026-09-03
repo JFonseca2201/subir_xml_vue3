@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { $api } from '@/utils/api'
 
@@ -10,7 +11,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(["update:isDialogVisible", "addCategorie"])
-const name = ref(null)
+const name = ref('')
 const FILE_IMAGEN = ref(null)
 const PREVIZUALIZA_IMAGEN = ref(null)
 const warning = ref(null)
@@ -33,16 +34,9 @@ const store = async () => {
   warning.value = null
   error_exits.value = null
   success.value = null
-  if (!name.value) {
+  if (!name.value || !name.value.trim()) {
     setTimeout(() => {
-      warning.value = "Se debe llenar un nombre para la categoria"
-    }, 50)
-    
-    return
-  }
-  if (!FILE_IMAGEN.value) {
-    setTimeout(() => {
-      warning.value = "Se debe subir una imagen para la categoria"
+      warning.value = "Se debe llenar un nombre para la categoría"
     }, 50)
     
     return
@@ -51,36 +45,40 @@ const store = async () => {
   loader.start()
 
   let formData = new FormData()
-  formData.append("title", name.value)
-  formData.append("image", FILE_IMAGEN.value)
+  formData.append("title", name.value.trim())
+  if (FILE_IMAGEN.value) {
+    formData.append("image", FILE_IMAGEN.value)
+  }
   formData.append("state", 1)
   try {
     const resp = await $api("categories", {
       method: "POST",
       body: formData,
       onResponseError({ response }) {
-        error_exits.value = response._data.error
+        error_exits.value = response._data?.message_text || response._data?.message || response._data?.error || 'Error al registrar la categoría'
       },
     })
 
-    console.log(resp)
-    if (resp.message == 403) {
+    console.log('Respuesta crear categoría:', resp)
+    if (resp?.message == 403) {
       error_exits.value = resp.message_text
       showNotification(resp.message_text, 'error')
-    } else {
-      success.value = "La categoria se ha registrado correctamente"
+    } else if (resp?.categorie) {
+      success.value = "La categoría se ha registrado correctamente"
       showNotification("La categoría se ha registrado correctamente", 'success')
       emit("addCategorie", resp.categorie)
-      name.value = null
-      FILE_IMAGEN.value = null
-      PREVIZUALIZA_IMAGEN.value = null
-      warning.value = null
-      error_exits.value = null
-      success.value = null
+      onFormReset()
+    } else {
+      showNotification("Categoría registrada", 'success')
+      emit("addCategorie", {
+        title: name.value.toUpperCase(),
+        state: 1,
+        created_at: new Date().toISOString(),
+      })
       onFormReset()
     }
   } catch (error) {
-    console.log(error)
+    console.error('Error al registrar categoría:', error)
     showNotification('Error al registrar la categoría', 'error')
   } finally {
     loader.stop()
@@ -88,34 +86,38 @@ const store = async () => {
 }
 
 const loadFile = $event => {
-  if ($event.target.files[0].type.indexOf("image") < 0) {
-    error_exits.value = "SOLAMENTE PUEDEN SER ARCHIVOS DE TIPO IMAGEN"
+  if (!$event.target.files || !$event.target.files[0]) return
+  const file = $event.target.files[0]
+  if (file.type.indexOf("image") < 0) {
+    error_exits.value = "SOLAMENTE PUEDEN SER ARCHIVOS DE TIPO IMAGEN (PNG, JPG, JPEG, WEBP)"
     
     return
   }
-  error_exits.value = ""
-  FILE_IMAGEN.value = $event.target.files[0]
+  if (file.size > 3 * 1024 * 1024) {
+    error_exits.value = "LA IMAGEN NO DEBE SUPERAR LOS 3MB"
+    
+    return
+  }
+  error_exits.value = null
+  FILE_IMAGEN.value = file
   let reader = new FileReader()
-  reader.readAsDataURL(FILE_IMAGEN.value)
+  reader.readAsDataURL(file)
   reader.onloadend = () => (PREVIZUALIZA_IMAGEN.value = reader.result)
 }
 
 const clearImage = () => {
   FILE_IMAGEN.value = null
   PREVIZUALIZA_IMAGEN.value = null
-  error_exits.value = ""
-}
-
-const onFormSubmit = () => {
-  emit("update:isDialogVisible", false)
-  emit("submit", userData.value)
+  error_exits.value = null
 }
 
 const onFormReset = () => {
-  name.value = null
+  name.value = ''
   FILE_IMAGEN.value = null
   PREVIZUALIZA_IMAGEN.value = null
-
+  warning.value = null
+  error_exits.value = null
+  success.value = null
   emit("update:isDialogVisible", false)
 }
 
@@ -164,8 +166,8 @@ const dialogVisibleUpdate = val => {
             <VCol cols="12">
               <VTextField
                 v-model="name"
-                label="Nombre de la categoría"
-                placeholder="Ej: Repuestos"
+                label="Nombre de la categoría *"
+                placeholder="Ej: Repuestos, Accesorios, Lubricantes"
                 prepend-inner-icon="ri-store-line"
                 clearable
               />
@@ -182,10 +184,12 @@ const dialogVisibleUpdate = val => {
                   md="6"
                 >
                   <VFileInput
-                    label="Subir Imagen"
-                    prepend-icon="ri-image-add-line"
+                    label="Imagen (Opcional)"
+                    prepend-inner-icon="ri-image-add-line"
                     accept="image/*"
-                    @change="selectImagen"
+                    clearable
+                    @change="loadFile($event)"
+                    @click:clear="clearImage"
                   />
                 </VCol>
 
@@ -194,19 +198,26 @@ const dialogVisibleUpdate = val => {
                   md="6"
                   class="d-flex justify-center"
                 >
-                  <VImg
+                  <VAvatar
                     v-if="PREVIZUALIZA_IMAGEN"
-                    :src="PREVIZUALIZA_IMAGEN"
-                    max-width="120"
-                    max-height="120"
-                    contain
-                    class="rounded-lg border"
+                    :image="PREVIZUALIZA_IMAGEN"
+                    size="80"
+                    rounded="lg"
+                    class="elevation-2 border"
                   />
+                  <div
+                    v-else
+                    class="d-flex flex-column align-center justify-center border border-dashed rounded-lg pa-3 text-disabled"
+                    style="width: 80px; height: 80px;"
+                  >
+                    <VIcon icon="ri-image-line" size="28" />
+                    <span style="font-size: 0.65rem;">Sin imagen</span>
+                  </div>
                 </VCol>
               </VRow>
             </VCol>
 
-            <!-- 👉 Alert Warning -->
+            <!-- 👉 Alerts -->
             <VCol
               v-if="warning"
               cols="12"
@@ -273,7 +284,7 @@ const dialogVisibleUpdate = val => {
           form="categorieAddForm"
           color="primary"
           variant="elevated"
-          prepend-icon="ri-save-3-line"
+          prepend-icon="ri-save-line"
           class="rounded-lg px-6 font-weight-bold"
           height="40"
           :loading="loader.loading"

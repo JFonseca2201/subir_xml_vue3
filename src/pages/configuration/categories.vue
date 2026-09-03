@@ -117,6 +117,10 @@ const addNewCategorie = NewCategorie => {
 }
 
 const addEditCategorie = editCategorie => {
+  if (!editCategorie || !editCategorie.id) {
+    list()
+    return
+  }
   const index = list_categories.value.findIndex(categ => categ.id == editCategorie.id)
   if (index !== -1) {
     list_categories.value[index] = editCategorie
@@ -351,12 +355,22 @@ definePage({ meta: { permission: "settings" } })
                   <VAvatar
                     rounded="lg"
                     size="40"
-                    color="grey-lighten-4"
+                    color="primary"
+                    variant="tonal"
                     class="cursor-pointer border elevation-0"
-                    title="Ver imagen ampliada"
-                    @click="viewImage(item)"
+                    :title="item.imagen ? 'Ver imagen ampliada' : 'Sin imagen'"
+                    @click="item.imagen ? viewImage(item) : editItem(item)"
                   >
-                    <VImg :src="getCategoryIcon(item.imagen)" />
+                    <VImg
+                      v-if="item.imagen && item.imagen !== 'null' && !item.imagen.endsWith('/null')"
+                      :src="getCategoryIcon(item.imagen)"
+                      cover
+                    >
+                      <template #error>
+                        <VIcon icon="ri-folder-2-line" size="22" color="primary" />
+                      </template>
+                    </VImg>
+                    <VIcon v-else icon="ri-folder-2-line" size="22" color="primary" />
                   </VAvatar>
                   <div>
                     <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
@@ -366,17 +380,15 @@ definePage({ meta: { permission: "settings" } })
                 </div>
               </td>
 
-              <!-- Estado -->
-              <td class="text-center">
-                <VChip
-                  :color="item.state == 1 ? 'success' : 'error'"
-                  size="small"
-                  variant="tonal"
-                  class="font-weight-semibold"
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="item.state == 1 ? 'status-paid' : 'status-pending'"
                 >
-                  <VIcon :icon="item.state == 1 ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'" size="14" class="me-1" />
-                  {{ item.state == 1 ? 'ACTIVO' : 'INACTIVO' }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ item.state == 1 ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </td>
 
               <!-- Fecha -->
@@ -502,6 +514,48 @@ definePage({ meta: { permission: "settings" } })
   transition: background-color 0.15s ease;
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+// Status Pills (Estilo listado de clientes/vehículos/compras)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
   }
 }
 </style>

@@ -63,44 +63,38 @@ const store = async () => {
 
   if (formRef.value && typeof formRef.value.validate === 'function') {
     const valid = await formRef.value.validate()
-    if (!valid) {
+    if (!valid.valid) {
       loader.stop()
       warning.value = 'Corrige los campos obligatorios.'
-      
       return
     }
   }
 
   try {
-    let data = {
+    const data = {
       name: warehouse.value.name,
       address: warehouse.value.address,
-      sucursale_id: 1,  // Valor por defecto
-      state: 0,           // Activo por defecto (0 = Activo)
+      sucursale_id: 1,
+      state: 1, // 1 = Activo
     }
-    console.log(data)
 
     const resp = await $api("warehouses", {
       method: "POST",
       body: data,
       onResponseError({ response }) {
-        error_exist.value = response._data.error
+        error_exist.value = response._data?.error || response._data?.message || 'Error al registrar'
       },
     })
 
-    console.log(resp)
+    showNotification('Almacén creado exitosamente', 'success')
     emit('addWarehouse', resp.warehouse)
 
     setTimeout(() => {
       onFormReset()
     }, 1500)
-
-    loader.stop()
-
   } catch (error) {
-    console.log(error)
+    console.error(error)
     showNotification('Error al ingresar almacén', 'error')
-    loader.stop()
   } finally {
     loader.stop()
   }
@@ -119,8 +113,6 @@ const onFormReset = () => {
 
 <template>
   <VDialog
-    scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 720"
     :model-value="props.isDialogVisible"
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
