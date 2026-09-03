@@ -91,6 +91,21 @@ const onDelete = () => {
             <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
               <VIcon
                 size="16"
+                icon="ri-id-card-line"
+              />
+              Identificación:
+            </span>
+            <span
+              class="text-body-2 font-weight-bold text-high-emphasis font-mono"
+            >
+              {{ props.partnerSelected.identification || props.partnerSelected.dni || props.partnerSelected.n_document || 'N/A' }}
+            </span>
+          </div>
+
+          <div class="d-flex align-center justify-space-between mb-2">
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
                 icon="ri-mail-line"
               />
               Correo:

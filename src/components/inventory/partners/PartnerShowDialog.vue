@@ -16,6 +16,10 @@ const emit = defineEmits(['update:isDialogVisible'])
 
 const partner = computed(() => props.partnerSelected || {})
 
+const partnerIdentification = computed(() => {
+  return partner.value.identification || partner.value.dni || partner.value.n_document || partner.value.document_number || partner.value.ruc || partner.value.cedula || ''
+})
+
 const initials = computed(() => {
   const parts = String(partner.value.name || '')
     .trim()
@@ -32,11 +36,11 @@ const initials = computed(() => {
 })
 
 const identificationType = computed(() => {
-  const id = String(partner.value.identification || '').replace(/\D/g, '')
+  const id = String(partnerIdentification.value || '').replace(/\D/g, '')
   if (id.length === 13) return { label: 'RUC', color: 'deep-purple' }
   if (id.length === 10) return { label: 'Cédula', color: 'info' }
 
-  return { label: 'Documento', color: 'secondary' }
+  return { label: 'Cédula / RUC', color: 'primary' }
 })
 
 const totalContributions = computed(() => {
@@ -128,7 +132,7 @@ const closeDialog = () => {
               size="14"
               class="me-1"
             />
-            <span><strong>{{ identificationType.label }}:</strong> {{ partner.identification || '—' }}</span>
+            <span><strong>{{ identificationType.label }}:</strong> <span class="font-mono font-weight-bold">{{ partnerIdentification || '—' }}</span></span>
           </div>
 
           <div
@@ -147,24 +151,33 @@ const closeDialog = () => {
       </div>
 
       <VCardText class="pa-5">
-        <!-- Resumen -->
+        <!-- Resumen KPI Tiles -->
         <VRow class="mb-5">
           <VCol
             cols="12"
             :sm="totalContributions ? 6 : 12"
           >
             <div class="kpi-tile">
-              <VIcon
-                icon="ri-shield-user-line"
-                size="22"
-                color="primary"
-                class="mb-2"
-              />
-              <div class="text-caption text-medium-emphasis">
-                Tipo de identificación
+              <div class="d-flex align-center justify-space-between mb-1">
+                <VIcon
+                  icon="ri-id-card-line"
+                  size="24"
+                  color="primary"
+                />
+                <VChip
+                  size="x-small"
+                  :color="identificationType.color"
+                  variant="tonal"
+                  class="font-weight-bold"
+                >
+                  {{ identificationType.label }}
+                </VChip>
               </div>
-              <div class="text-body-1 font-weight-bold mt-1">
-                {{ identificationType.label }}
+              <div class="text-caption text-medium-emphasis">
+                Número de Identificación
+              </div>
+              <div class="text-h6 font-weight-bold text-high-emphasis font-mono mt-1">
+                {{ partnerIdentification || 'Sin documento' }}
               </div>
             </div>
           </VCol>
@@ -174,15 +187,24 @@ const closeDialog = () => {
             sm="6"
           >
             <div class="kpi-tile kpi-tile--accent">
-              <VIcon
-                icon="ri-funds-line"
-                size="22"
-                color="success"
-                class="mb-2"
-              />
+              <div class="d-flex align-center justify-space-between mb-1">
+                <VIcon
+                  icon="ri-funds-line"
+                  size="24"
+                  color="success"
+                />
+                <VChip
+                  v-if="contributionsCount != null"
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                  class="font-weight-bold"
+                >
+                  {{ contributionsCount }} {{ contributionsCount === 1 ? 'aporte' : 'aportes' }}
+                </VChip>
+              </div>
               <div class="text-caption text-medium-emphasis">
-                Aportes registrados
-                <span v-if="contributionsCount != null"> ({{ contributionsCount }})</span>
+                Capital Total Aportado
               </div>
               <div class="text-h6 font-weight-bold text-success mt-1">
                 {{ totalContributions }}
@@ -207,15 +229,27 @@ const closeDialog = () => {
             </VAvatar>
             <div>
               <div class="text-subtitle-1 font-weight-bold">
-                Contacto
+                Datos de Identidad y Contacto
               </div>
               <div class="text-caption text-medium-emphasis">
-                Medios de comunicación del socio
+                Información del socio
               </div>
             </div>
           </div>
 
           <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">
+                <VIcon
+                  icon="ri-id-card-line"
+                  size="16"
+                />
+                {{ identificationType.label }}
+              </span>
+              <span class="info-value font-mono font-weight-bold text-high-emphasis">
+                {{ partnerIdentification || '—' }}
+              </span>
+            </div>
             <div class="info-row">
               <span class="info-label">
                 <VIcon
