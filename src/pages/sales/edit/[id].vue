@@ -1507,31 +1507,6 @@ onMounted(() => {
                       </VListItem>
                     </template>
                   </VSearch>
-                  <div
-                    v-if="selectedClient"
-                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3"
-                  >
-                    <VAvatar
-                      color="primary"
-                      variant="tonal"
-                      size="36"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-user-line"
-                        size="20"
-                      />
-                    </VAvatar>
-                    <div class="d-flex flex-column">
-                      <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <span>CI/RUC: {{ selectedClient.n_document || "Sin identificación" }}</span>
-                      </div>
-                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <span>Email: {{ selectedClient.email || "Sin email" }}</span>
-                        <span v-if="selectedClient.phone" class="ms-1 text-slate-500">• Tel: {{ selectedClient.phone }}</span>
-                      </div>
-                    </div>
-                  </div>
                 </VCol>
 
                 <VCol cols="12" sm="6">
@@ -1583,44 +1558,78 @@ onMounted(() => {
                       </template>
                     </VSearch>
                   </div>
-                  <div
-                    v-if="selectedVehicle"
-                    class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3"
-                  >
-                    <VAvatar
-                      color="success"
-                      variant="tonal"
-                      size="36"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-car-line"
-                        size="20"
-                      />
-                    </VAvatar>
-                    <div class="d-flex flex-column flex-grow-1">
-                      <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
-                        <span>{{ getVehicleBrandModel(selectedVehicle) }}</span>
-                        <VChip v-if="selectedVehicle.license_plate" size="x-small" color="primary" variant="flat" class="font-weight-bold">
-                          {{ selectedVehicle.license_plate }}
-                        </VChip>
-                      </div>
-                      <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
-                        <span>Color: {{ selectedVehicle.color || "Sin color" }}</span>
-                        <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year }}</span>
-                      </div>
-                    </div>
-                  </div>
+                </VCol>
 
-                  <!-- Banner informativo si el dueño del vehículo es diferente del cliente asignado a la orden/factura -->
-                  <div v-if="isVehicleOwnerDifferentFromClient" class="mt-2 pa-2 rounded-lg bg-amber-50 border-amber-200 border text-caption d-flex align-center justify-space-between flex-wrap gap-2">
-                    <div class="d-flex align-center gap-1 text-amber-900">
-                      <VIcon icon="ri-user-shared-line" color="warning" size="18" />
-                      <span><strong>Propietario del auto:</strong> {{ getVehicleOwnerName || 'Otro cliente' }} (Factura/Venta a: <strong>{{ selectedClient?.full_name || selectedClient?.name }}</strong>)</span>
-                    </div>
-                    <VBtn size="x-small" variant="tonal" color="warning" @click="setClientToVehicleOwner">
-                      Asignar al dueño
-                    </VBtn>
+                <!-- Panel Unificado y Elegante de Resumen Cliente / Vehículo (Sin redundancia) -->
+                <VCol v-if="selectedClient || selectedVehicle" cols="12" class="pt-0">
+                  <div class="rounded-xl border bg-slate-50 pa-3 pa-sm-4">
+                    <VRow dense class="align-center">
+                      <!-- Datos del Cliente -->
+                      <VCol cols="12" :sm="selectedVehicle ? 6 : 12" class="d-flex align-center gap-3">
+                        <template v-if="selectedClient">
+                          <VAvatar color="primary" variant="tonal" size="38" class="rounded-lg shrink-0">
+                            <VIcon icon="ri-user-3-line" size="20" />
+                          </VAvatar>
+                          <div class="d-flex flex-column overflow-hidden flex-grow-1">
+                            <div class="d-flex align-center gap-2 flex-wrap">
+                              <span class="text-subtitle-2 font-weight-bold text-slate-800 text-truncate">
+                                {{ selectedClient.full_name || selectedClient.name }}
+                              </span>
+                              <VChip size="x-small" color="primary" variant="flat" class="font-weight-bold">
+                                {{ selectedClient.n_document || 'Sin Documento' }}
+                              </VChip>
+                            </div>
+                            <div class="d-flex align-center gap-3 mt-0.5 text-caption text-medium-emphasis flex-wrap">
+                              <span v-if="selectedClient.phone" class="d-flex align-center gap-1">
+                                <VIcon icon="ri-phone-line" size="13" /> {{ selectedClient.phone }}
+                              </span>
+                              <span v-if="selectedClient.email" class="d-flex align-center gap-1 text-truncate">
+                                <VIcon icon="ri-mail-line" size="13" /> {{ selectedClient.email }}
+                              </span>
+                            </div>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div class="text-caption text-medium-emphasis font-italic">
+                            Seleccione un cliente para ver sus datos
+                          </div>
+                        </template>
+                      </VCol>
+
+                      <!-- Datos del Vehículo -->
+                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12" :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
+                        <VAvatar color="success" variant="tonal" size="38" class="rounded-lg shrink-0">
+                          <VIcon icon="ri-car-line" size="20" />
+                        </VAvatar>
+                        <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+                          <div class="d-flex align-center gap-2 flex-wrap">
+                            <VChip size="x-small" color="success" variant="flat" class="font-weight-bold font-mono">
+                              {{ selectedVehicle.license_plate }}
+                            </VChip>
+                            <span class="text-subtitle-2 font-weight-bold text-slate-800 text-truncate">
+                              {{ getVehicleBrandModel(selectedVehicle) }}
+                            </span>
+                            <span v-if="selectedVehicle.color" class="text-caption text-slate-500">
+                              • {{ selectedVehicle.color }}
+                            </span>
+                            <span v-if="selectedVehicle.year" class="text-caption text-slate-500">
+                              ({{ selectedVehicle.year }})
+                            </span>
+                          </div>
+
+                          <!-- Dueño diferente del cliente asignado -->
+                          <div v-if="isVehicleOwnerDifferentFromClient" class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
+                            <span class="text-caption text-amber-900 text-truncate" style="font-size: 0.75rem;">
+                              <VIcon icon="ri-user-shared-line" size="13" color="warning" class="me-1" />
+                              Dueño: <strong>{{ getVehicleOwnerName || 'Otro cliente' }}</strong>
+                            </span>
+                            <VBtn size="x-small" variant="text" color="warning" density="compact" class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
+                              Asignar
+                            </VBtn>
+                          </div>
+                        </div>
+                      </VCol>
+                    </VRow>
                   </div>
                 </VCol>
               </VRow>
