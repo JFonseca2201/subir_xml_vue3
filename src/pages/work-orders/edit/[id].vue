@@ -334,15 +334,13 @@ watch(() => selectedClient.value, async (newVal, oldVal) => {
       }
     }
 
-    // Asociar automáticamente los vehículos del cliente si no hay vehículo o si es de otro cliente
-    if (!selectedVehicle.value || (selectedVehicle.value.client_id && selectedVehicle.value.client_id !== newVal.id)) {
+    // Solo si aún no se ha seleccionado vehículo, auto-cargar si el cliente tiene 1 vehículo
+    if (!selectedVehicle.value) {
       try {
         const vRes = await $api('vehicles/search', { params: { client_id: newVal.id } })
         const clientVehicles = vRes?.data || vRes?.vehicles || (Array.isArray(vRes) ? vRes : [])
         if (clientVehicles.length === 1) {
           selectedVehicle.value = clientVehicles[0]
-        } else if (clientVehicles.length > 1 && selectedVehicle.value && selectedVehicle.value.client_id !== newVal.id) {
-          selectedVehicle.value = null
         }
       } catch (e) {
         console.warn('Error cargando vehículos del cliente:', e)
@@ -368,9 +366,9 @@ watch(() => selectedVehicle.value, async newVal => {
       }
     }
 
-    // Asociar automáticamente el cliente del vehículo
+    // Si aún no hay un cliente seleccionado en la orden, auto-asignar el dueño del vehículo
     const targetClientId = newVal.client_id || newVal.client?.id
-    if (targetClientId && (!selectedClient.value || selectedClient.value.id !== targetClientId)) {
+    if (targetClientId && !selectedClient.value) {
       if (newVal.client && (newVal.client.name || newVal.client.full_name)) {
         selectedClient.value = newVal.client
       } else {
@@ -386,6 +384,27 @@ watch(() => selectedVehicle.value, async newVal => {
     workOrder.value.vehicle_id = null
   }
 })
+
+const isVehicleOwnerDifferentFromClient = computed(() => {
+  if (!selectedVehicle.value || !selectedClient.value) return false
+  const vehicleClientId = selectedVehicle.value.client_id || selectedVehicle.value.client?.id
+  return !!(vehicleClientId && vehicleClientId !== selectedClient.value.id)
+})
+
+const getVehicleOwnerName = computed(() => {
+  if (!selectedVehicle.value) return ''
+  const owner = selectedVehicle.value.client
+  if (owner) {
+    return owner.full_name || (owner.name + (owner.surname ? ' ' + owner.surname : ''))
+  }
+  return ''
+})
+
+const setClientToVehicleOwner = () => {
+  if (selectedVehicle.value?.client) {
+    selectedClient.value = selectedVehicle.value.client
+  }
+}
 
 const isServiceItem = item => {
   if (!item) return false
@@ -805,7 +824,6 @@ onMounted(() => {
                       :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo'"
                       icon="ri-car-line"
                       :initial-item="selectedVehicle"
-                      :extra-params="workOrder.client_id ? { client_id: workOrder.client_id } : {}"
                       :rules="[() => (!hasServices || !!workOrder.vehicle_id) || 'Vehículo es requerido para servicios']"
                     >
                       <template #item="{ props, item }">
@@ -857,15 +875,29 @@ onMounted(() => {
                     <VAvatar color="success" variant="tonal" size="36" class="rounded-lg">
                       <VIcon icon="ri-car-line" size="20" />
                     </VAvatar>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1">
                       <div class="text-caption font-weight-bold text-slate-800 d-flex align-center gap-1.5">
                         <span>{{ getVehicleBrandModel(selectedVehicle) }}</span>
+                        <VChip v-if="selectedVehicle.license_plate" size="x-small" color="primary" variant="flat" class="font-weight-bold">
+                          {{ selectedVehicle.license_plate }}
+                        </VChip>
                       </div>
                       <div class="text-caption text-medium-emphasis d-flex align-center gap-1.5 mt-0.5" style="font-size: 0.75rem;">
                         <span>Color: {{ selectedVehicle.color || "Sin color" }}</span>
                         <span v-if="selectedVehicle.year" class="ms-1 text-slate-500">• Año: {{ selectedVehicle.year }}</span>
                       </div>
                     </div>
+                  </div>
+
+                  <!-- Banner informativo si el dueño del vehículo es diferente del cliente asignado a la orden/factura -->
+                  <div v-if="isVehicleOwnerDifferentFromClient" class="mt-2 pa-2 rounded-lg bg-amber-50 border-amber-200 border text-caption d-flex align-center justify-space-between flex-wrap gap-2">
+                    <div class="d-flex align-center gap-1 text-amber-900">
+                      <VIcon icon="ri-user-shared-line" color="warning" size="18" />
+                      <span><strong>Propietario del auto:</strong> {{ getVehicleOwnerName || 'Otro cliente' }} (Orden/Factura a: <strong>{{ selectedClient?.full_name || selectedClient?.name }}</strong>)</span>
+                    </div>
+                    <VBtn size="x-small" variant="tonal" color="warning" @click="setClientToVehicleOwner">
+                      Asignar al dueño
+                    </VBtn>
                   </div>
                 </VCol>
               </VRow>
