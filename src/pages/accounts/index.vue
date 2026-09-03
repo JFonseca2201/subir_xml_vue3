@@ -434,25 +434,31 @@ onMounted(() => {
           <tr>
             <th
               class="text-left py-4"
-              style="width: 90px;"
+              style="width: 80px;"
             >
               ID
             </th>
-            <th class="text-left py-4" style="min-width: 280px;">
+            <th class="text-left py-4" style="min-width: 250px;">
               NOMBRE DE LA CUENTA
             </th>
             <th
+              class="text-center py-4"
+              style="width: 130px;"
+            >
+              SISTEMA
+            </th>
+            <th
               class="text-left py-4"
-              style="width: 150px;"
+              style="width: 140px;"
             >
               TIPO
             </th>
-            <th class="text-left py-4" style="min-width: 240px;">
+            <th class="text-left py-4" style="min-width: 220px;">
               INSTITUCIÓN / BANCO
             </th>
             <th
               class="text-right py-4"
-              style="width: 180px;"
+              style="width: 170px;"
             >
               SALDO DISPONIBLE
             </th>
@@ -478,6 +484,9 @@ onMounted(() => {
             <td class="py-4">
               <div class="shimmer-line w-60" />
             </td>
+            <td class="py-4 text-center">
+              <div class="shimmer-chip mx-auto" />
+            </td>
             <td class="py-4">
               <div class="shimmer-chip" />
             </td>
@@ -500,7 +509,7 @@ onMounted(() => {
         <tbody v-else-if="!accounts.length">
           <tr>
             <td
-              colspan="6"
+              colspan="7"
               class="text-center text-medium-emphasis py-12"
             >
               <VAvatar
@@ -552,26 +561,32 @@ onMounted(() => {
                   />
                 </VAvatar>
                 <div class="d-flex flex-column text-left">
-                  <div class="d-flex align-center gap-2">
-                    <span class="text-body-2 font-weight-bold text-slate-900">
-                      {{ account.name }}
-                    </span>
-                    <VChip
-                      v-if="account.is_system"
-                      size="x-small"
-                      color="warning"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
-                      <VIcon start icon="ri-lock-2-line" size="12" />
-                      Sistema
-                    </VChip>
-                  </div>
-                  <span class="text-caption text-medium-emphasis">
+                  <span class="text-body-2 font-weight-bold text-slate-900">
+                    {{ account.name }}
+                  </span>
+                  <span class="text-caption text-medium-emphasis font-mono">
                     {{ account.code || `Cuenta #${account.id}` }}
                   </span>
                 </div>
               </div>
+            </td>
+
+            <!-- Sistema -->
+            <td class="py-3 text-center">
+              <VChip
+                v-if="account.is_system"
+                size="small"
+                color="warning"
+                variant="tonal"
+                class="font-weight-bold"
+              >
+                <VIcon start icon="ri-lock-2-line" size="13" />
+                Sistema
+              </VChip>
+              <span
+                v-else
+                class="text-caption text-disabled font-weight-medium"
+              >—</span>
             </td>
 
             <!-- Tipo -->
