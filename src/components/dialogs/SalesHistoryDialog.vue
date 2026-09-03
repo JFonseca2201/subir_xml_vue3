@@ -220,8 +220,20 @@ const generateSinglePDF = sale => {
         <VProgressLinear v-if="loading" indeterminate color="primary" class="position-absolute"
           style="top: 0; left: 0; right: 0; z-index: 10;" height="3" />
 
-        <!-- Summary Stats Banner (When data exists) -->
-        <div v-if="!loading && sales.length > 0"
+        <!-- Summary Stats Banner (Skeleton & Active) -->
+        <div v-if="loading"
+          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
+          <div class="d-flex align-center gap-2">
+            <div class="shimmer-chip" style="width: 110px; height: 26px; border-radius: 9999px;" />
+            <div class="shimmer-chip" style="width: 95px; height: 26px; border-radius: 9999px;" />
+          </div>
+          <div class="d-flex align-center gap-2">
+            <div class="shimmer-line" style="width: 140px; height: 14px;" />
+            <div class="shimmer-line" style="width: 70px; height: 20px;" />
+          </div>
+        </div>
+
+        <div v-else-if="sales.length > 0"
           class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
           <div class="d-flex align-center gap-2">
             <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
@@ -242,8 +254,44 @@ const generateSinglePDF = sale => {
 
         <!-- History Items List / Scroll Area -->
         <div class="pa-4 pa-sm-6 flex-grow-1 overflow-y-auto history-list-scroll">
+          <!-- Skeleton Loading State -->
+          <div v-if="loading" class="d-flex flex-column gap-3">
+            <VCard v-for="n in 3" :key="n" class="history-item-card rounded-xl border elevation-0">
+              <div class="d-flex flex-column flex-sm-row">
+                <!-- Left Tag / Type Column Skeleton -->
+                <div
+                  class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
+                  style="min-width: 150px;">
+                  <div class="shimmer-chip mb-2" style="width: 75px; height: 20px;" />
+                  <div class="shimmer-line mb-2" style="width: 90px; height: 16px;" />
+                  <div class="shimmer-line" style="width: 80px; height: 12px;" />
+                </div>
+
+                <!-- Middle Content Info Skeleton -->
+                <div class="pa-4 flex-grow-1 d-flex flex-column justify-center">
+                  <div class="shimmer-line mb-2" style="width: 120px; height: 11px;" />
+                  <div class="d-flex align-center gap-2">
+                    <div class="shimmer-button rounded-circle" style="width: 20px; height: 20px;" />
+                    <div class="shimmer-line" style="width: 55%; height: 16px;" />
+                  </div>
+                </div>
+
+                <!-- Right Side Skeleton -->
+                <div
+                  class="pa-4 d-flex flex-row flex-sm-column align-center justify-space-between justify-sm-center align-sm-end border-t border-sm-t-0 gap-2"
+                  style="min-width: 160px;">
+                  <div class="shimmer-line mb-2" style="width: 75px; height: 22px;" />
+                  <div class="d-flex align-center gap-2">
+                    <div class="shimmer-chip" style="width: 75px; height: 24px;" />
+                    <div class="shimmer-button rounded-lg" style="width: 28px; height: 28px;" />
+                  </div>
+                </div>
+              </div>
+            </VCard>
+          </div>
+
           <!-- Empty State -->
-          <div v-if="!loading && sales.length === 0"
+          <div v-else-if="sales.length === 0"
             class="d-flex flex-column align-center justify-center py-12 text-center">
             <VAvatar size="72" color="secondary" variant="tonal" class="mb-3 rounded-circle opacity-80">
               <VIcon icon="ri-inbox-2-line" size="36" />
@@ -348,7 +396,7 @@ const generateSinglePDF = sale => {
         </div>
 
         <!-- Pagination Controls -->
-        <div v-if="totalPages > 1" class="d-flex justify-center align-center py-3 bg-surface border-t"
+        <div v-if="totalPages > 1 && !loading" class="d-flex justify-center align-center py-3 bg-surface border-t"
           style="flex-shrink: 0;">
           <VPagination v-model="currentPage" :length="totalPages" rounded="circle" active-color="primary"
             density="compact" />
@@ -400,6 +448,41 @@ const generateSinglePDF = sale => {
     border-color: rgba(var(--v-theme-primary), 0.4) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 16px -4px rgba(var(--v-theme-primary), 0.15) !important;
+  }
+}
+
+.shimmer-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-chip {
+  width: 60px;
+  height: 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+.shimmer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 </style>
