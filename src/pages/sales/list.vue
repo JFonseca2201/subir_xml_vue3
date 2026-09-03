@@ -244,9 +244,11 @@ const formatDate = dateString => {
 
 const formatVehicleInfo = vehicle => {
   if (!vehicle) return '-'
-  const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
+  const brandVal = vehicle.brand?.name || vehicle.brand || vehicle.brand_id
+  const brandName = brandVal ? (getBrandNameById(brandVal) || brandVal) : ''
+  const details = [vehicle.model, vehicle.year].filter(Boolean).join(' ')
 
-  return `${brandName} ${vehicle.model || ''}`.trim()
+  return `${brandName} ${details}`.trim() || '-'
 }
 
 const getClientName = client => {
@@ -998,10 +1000,11 @@ onMounted(() => {
               <!-- Documento -->
               <td class="py-3">
                 <div class="d-flex flex-column gap-0.5">
-                  <div class="d-flex align-center gap-1">
+                  <div class="d-flex align-center gap-1.5">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                      size="15"
+                      size="16"
+                      class="me-1.5 flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
@@ -1033,8 +1036,8 @@ onMounted(() => {
 
               <!-- Cliente -->
               <td class="py-3">
-                <div class="d-flex align-center gap-2.5">
-                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg">
+                <div class="d-flex align-center gap-3">
+                  <VAvatar size="36" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span class="text-caption font-weight-bold">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
                   <div class="min-w-0">
@@ -1042,8 +1045,9 @@ onMounted(() => {
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis">
-                      {{ getClientPhone(item.client) }}
+                    <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis d-flex align-center mt-0.5">
+                      <VIcon icon="ri-phone-line" size="13" class="me-1.5 text-disabled flex-shrink-0" />
+                      <span>{{ getClientPhone(item.client) }}</span>
                     </div>
                   </div>
                 </div>
@@ -1053,10 +1057,10 @@ onMounted(() => {
               <td class="py-3">
                 <div v-if="item.vehicle" class="d-flex flex-column gap-0.5">
                   <div class="license-plate-badge align-self-start">
-                    {{ item.vehicle.plate || item.vehicle.license_plate }}
+                    {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() }}
                   </div>
-                  <div class="text-caption text-medium-emphasis text-truncate" style="max-width: 180px;">
-                    {{ item.vehicle.brand }} {{ item.vehicle.model }}
+                  <div class="text-caption text-medium-emphasis text-truncate text-uppercase font-weight-medium" style="max-width: 180px;" :title="formatVehicleInfo(item.vehicle)">
+                    {{ formatVehicleInfo(item.vehicle) }}
                   </div>
                 </div>
                 <span v-else class="text-disabled text-caption">—</span>
@@ -1064,9 +1068,10 @@ onMounted(() => {
 
               <!-- Fecha -->
               <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ formatDate(item.created_at) }}
-                </span>
+                <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                  <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-2 flex-shrink-0" />
+                  <span>{{ formatDate(item.created_at) }}</span>
+                </div>
               </td>
 
               <!-- Total -->

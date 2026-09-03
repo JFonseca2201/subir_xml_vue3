@@ -662,8 +662,8 @@ onMounted(() => {
 
               <!-- Fecha -->
               <td class="py-3">
-                <div class="d-flex align-center gap-1.5 text-body-2 text-medium-emphasis">
-                  <VIcon icon="ri-calendar-line" size="14" color="medium-emphasis" />
+                <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                  <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-2 flex-shrink-0" />
                   <span>{{ formatDate(item.date || item.created_at) }}</span>
                 </div>
               </td>

@@ -517,14 +517,15 @@ onMounted(() => {
               </div>
             </td>
 
-            <!-- Estado -->
-            <td class="text-center">
-              <VChip :color="parseInt(vehicle.status) === 1 ? 'success' : 'error'" size="small" variant="tonal"
-                class="font-weight-semibold">
-                <VIcon :icon="parseInt(vehicle.status) === 1 ? 'ri-checkbox-circle-fill' : 'ri-close-circle-fill'"
-                  size="14" class="me-1" />
-                {{ parseInt(vehicle.status) === 1 ? 'ACTIVO' : 'INACTIVO' }}
-              </VChip>
+            <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+            <td class="text-center py-3" style="white-space: nowrap;">
+              <div
+                class="status-pill-clean"
+                :class="parseInt(vehicle.status) === 1 ? 'status-paid' : 'status-pending'"
+              >
+                <span class="status-dot" />
+                <span>{{ parseInt(vehicle.status) === 1 ? 'Activo' : 'Inactivo' }}</span>
+              </div>
             </td>
 
             <!-- Acciones -->
@@ -648,5 +649,47 @@ onMounted(() => {
 
 .letter-spacing-1 {
   letter-spacing: 0.5px;
+}
+
+// Status Pills (Estilo listado de compras)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
 }
 </style>

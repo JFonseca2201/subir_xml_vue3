@@ -136,9 +136,25 @@ const formatCurrency = value => {
 
 const formatDate = dateString => {
   if (!dateString) return '-'
-  const [year, month, day] = dateString.split('T')[0].split('-')
+  try {
+    const cleanDate = String(dateString).split('T')[0].split(' ')[0]
+    const parts = cleanDate.split('-')
+    if (parts.length === 3) {
+      const [year, month, day] = parts
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+    }
 
-  return `${day}/${month}/${year}`
+    const d = new Date(dateString)
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const year = d.getFullYear()
+      return `${day}/${month}/${year}`
+    }
+  } catch (e) {
+    console.error('Error formatting date:', e)
+  }
+  return dateString
 }
 
 // Métricas computadas y filtros
@@ -386,10 +402,16 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ formatDate(item.created_at) }}
-                </span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="15"
+                    color="medium-emphasis"
+                    class="me-2 flex-shrink-0"
+                  />
+                  <span>{{ formatDate(item.created_at || item.date) }}</span>
+                </div>
               </td>
 
               <!-- Motivo -->
