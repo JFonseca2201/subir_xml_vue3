@@ -264,16 +264,110 @@ const loadVehicles = async () => {
   }
 }
 
+const selectedClient = ref(null)
+const selectedVehicle = ref(null)
+
+watch(() => selectedClient.value, async (newVal, oldVal) => {
+  if (newVal && newVal.id) {
+    sale.value.client_id = newVal.id
+    if (!newVal.email) {
+      try {
+        const res = await $api(`clients/${newVal.id}`)
+        const fullClient = res.client || res.data || res
+        if (fullClient && fullClient.email) {
+          selectedClient.value = { ...newVal, ...fullClient }
+        }
+      } catch (e) {
+        console.warn('Error fetching full client:', e)
+      }
+    }
+
+    // Asociar automáticamente los vehículos del cliente si no hay vehículo o si es de otro cliente
+    if (!selectedVehicle.value || (selectedVehicle.value.client_id && selectedVehicle.value.client_id !== newVal.id)) {
+      try {
+        const vRes = await $api('vehicles/search', { params: { client_id: newVal.id } })
+        const clientVehicles = vRes?.data || vRes?.vehicles || (Array.isArray(vRes) ? vRes : [])
+        if (clientVehicles.length === 1) {
+          selectedVehicle.value = clientVehicles[0]
+        } else if (clientVehicles.length > 1 && selectedVehicle.value && selectedVehicle.value.client_id !== newVal.id) {
+          selectedVehicle.value = null
+        }
+      } catch (e) {
+        console.warn('Error cargando vehículos del cliente:', e)
+      }
+    }
+  } else {
+    sale.value.client_id = null
+  }
+})
+
+watch(() => selectedVehicle.value, async newVal => {
+  if (newVal && newVal.id) {
+    sale.value.vehicle_id = newVal.id
+
+    if (!newVal.color) {
+      try {
+        const fullVehicle = await $api(`vehicles/${newVal.id}`)
+        if (fullVehicle && (fullVehicle.id || fullVehicle.vehicle?.id)) {
+          selectedVehicle.value = { ...newVal, ...(fullVehicle.vehicle || fullVehicle) }
+        }
+      } catch (e) {
+        console.warn('Error fetching full vehicle:', e)
+      }
+    }
+
+    // Asociar automáticamente el cliente del vehículo
+    const targetClientId = newVal.client_id || newVal.client?.id
+    if (targetClientId && (!selectedClient.value || selectedClient.value.id !== targetClientId)) {
+      if (newVal.client && (newVal.client.name || newVal.client.full_name)) {
+        selectedClient.value = newVal.client
+      } else {
+        try {
+          const res = await $api(`clients/${targetClientId}`)
+          selectedClient.value = res.client || res.data || res
+        } catch (e) {
+          console.warn('Error fetching client for vehicle:', e)
+        }
+      }
+    }
+  } else {
+    sale.value.vehicle_id = null
+  }
+})
+
+const isAssigningDefaultVehicle = ref(false)
+const assignDefaultVehicle = async () => {
+  isAssigningDefaultVehicle.value = true
+  try {
+    const params = {}
+    if (sale.value.client_id) {
+      params.client_id = sale.value.client_id
+    }
+    const res = await $api('vehicles/default', { params })
+    const defVehicle = res.vehicle || res.data || res
+    if (defVehicle && defVehicle.id) {
+      selectedVehicle.value = defVehicle
+      sale.value.vehicle_id = defVehicle.id
+      if (defVehicle.client_id && !sale.value.client_id) {
+        selectedClient.value = defVehicle.client
+      }
+      showNotification('Vehículo / Modelo por defecto asignado (Sin Placa)', 'info')
+    }
+  } catch (error) {
+    console.error('Error al asignar vehículo por defecto:', error)
+    showNotification('Error al obtener vehículo por defecto', 'error')
+  } finally {
+    isAssigningDefaultVehicle.value = false
+  }
+}
+
 const handleClientAdded = async clientData => {
   if (clientData) {
     const clientObj = clientData.client || clientData.data || clientData
 
     await loadClients()
 
-    const newId = clientObj.id
-
-    await nextTick()
-    sale.value.client_id = newId
+    selectedClient.value = clientObj
   }
 }
 
@@ -284,13 +378,7 @@ const handleVehicleAdded = async vehicleData => {
     await loadClients()
     await loadVehicles()
 
-    const newId = vehicle.id
-
-    await nextTick()
-    sale.value.vehicle_id = newId
-    if (vehicle.client_id && !sale.value.client_id) {
-      sale.value.client_id = vehicle.client_id
-    }
+    selectedVehicle.value = vehicle
   }
 }
 
@@ -727,61 +815,8 @@ watch(total, newTotal => {
   }
 })
 
-
-// Refs para almacenar el objeto completo seleccionado
-const selectedClient = ref(null)
-const selectedVehicle = ref(null)
-
-watch(() => selectedClient.value, async newVal => {
-  if (newVal && newVal.id) {
-    sale.value.client_id = newVal.id
-    if (!newVal.email) {
-      try {
-        const res = await $api(`clients/${newVal.id}`)
-        const fullClient = res.client || res.data || res
-        if (fullClient && fullClient.email) {
-          selectedClient.value = { ...newVal, ...fullClient }
-        }
-      } catch (e) {
-        console.warn('Error fetching full client:', e)
-      }
-    }
-  } else {
-    sale.value.client_id = null
-  }
-})
-
-watch(() => selectedVehicle.value, async newVal => {
-  if (newVal && newVal.id) {
-    sale.value.vehicle_id = newVal.id
-
-    if (!newVal.color) {
-      try {
-        const fullVehicle = await $api(`vehicles/${newVal.id}`)
-        if (fullVehicle && fullVehicle.id) {
-          selectedVehicle.value = { ...newVal, ...fullVehicle }
-        }
-      } catch (e) {
-        console.warn('Error fetching full vehicle:', e)
-      }
-    }
-
-    if (newVal.client_id && !sale.value.client_id) {
-      sale.value.client_id = newVal.client_id
-      if (newVal.client && newVal.client.email) {
-        selectedClient.value = newVal.client
-      } else {
-        try {
-          const res = await $api(`clients/${newVal.client_id}`)
-          selectedClient.value = res.client || res.data || res || newVal.client
-        } catch (e) {
-          selectedClient.value = newVal.client || null
-        }
-      }
-    }
-  } else {
-    sale.value.vehicle_id = null
-  }
+const hasServices = computed(() => {
+  return (sale.value.items || []).some(item => isServiceItem(item))
 })
 
 const getVehicleBrandModel = vehicle => {
@@ -818,6 +853,17 @@ const submitForm = async () => {
     validationErrorMessage.value = 'Debe seleccionar un cliente para continuar'
 
     return
+  }
+
+  // Validar vehículo si hay servicios
+  if (hasServices.value && !sale.value.vehicle_id) {
+    await assignDefaultVehicle()
+    if (!sale.value.vehicle_id) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'El comprobante incluye servicios y requiere un vehículo. Por favor seleccione uno o asigne el modelo por defecto (Sin Placa).'
+
+      return
+    }
   }
 
   // Validaciones fiscales para Facturas Electrónicas SRI
@@ -1036,6 +1082,10 @@ const saveDraft = async () => {
     return
   }
 
+  if (hasServices.value && !sale.value.vehicle_id) {
+    await assignDefaultVehicle()
+  }
+
   isSavingDraft.value = true
 
   try {
@@ -1097,6 +1147,17 @@ const dispatchSale = async () => {
     validationErrorMessage.value = 'Debe agregar al menos un producto o servicio'
 
     return
+  }
+
+  // Validar vehículo si hay servicios
+  if (hasServices.value && !sale.value.vehicle_id) {
+    await assignDefaultVehicle()
+    if (!sale.value.vehicle_id) {
+      showValidationError.value = true
+      validationErrorMessage.value = 'El comprobante incluye servicios y requiere un vehículo. Por favor seleccione uno o asigne el modelo por defecto (Sin Placa).'
+
+      return
+    }
   }
 
   // Validar stock solo si es producto físico (item_type == 1)
@@ -1654,9 +1715,10 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
-                      item-title="license_plate" label="Vehículo (Opcional)" icon="ri-car-line"
+                      item-title="license_plate" :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo (Opcional)'" icon="ri-car-line"
                       :initial-item="selectedVehicle"
-                      :extra-params="sale.client_id ? { client_id: sale.client_id } : {}">
+                      :extra-params="sale.client_id ? { client_id: sale.client_id } : {}"
+                      :rules="[() => (!hasServices || !!sale.vehicle_id) || 'Vehículo es requerido para servicios']">
                       <template #item="{ props, item }">
                         <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
@@ -1671,8 +1733,23 @@ onMounted(async () => {
                         </VListItem>
                       </template>
                     </VSearch>
-                    <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
-                      @click="isVehicleAddDialogVisible = true" />
+                    <div class="d-flex align-center gap-1">
+                      <VBtn
+                        v-if="!selectedVehicle"
+                        size="small"
+                        variant="tonal"
+                        color="warning"
+                        type="button"
+                        title="Asignar modelo por defecto (Sin Placa)"
+                        :loading="isAssigningDefaultVehicle"
+                        @click="assignDefaultVehicle"
+                      >
+                        <VIcon icon="ri-car-washing-line" class="me-1" size="16" />
+                        Sin Placa
+                      </VBtn>
+                      <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
+                        @click="isVehicleAddDialogVisible = true" />
+                    </div>
                   </div>
                   <div v-if="selectedVehicle"
                     class="mt-2 pa-2.5 bg-slate-50 rounded-lg border d-flex align-center gap-3">

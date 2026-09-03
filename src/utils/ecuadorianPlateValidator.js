@@ -8,6 +8,7 @@ const PATTERNS = {
   COMERCIAL: /^[A-Z]{3}-\d{3}$/,   // XYZ-999
   MOTO: /^[A-Z]{1}-\d{3}[A-Z]{1}$/, // A-123B
   ANTIGUA: /^\d{4}-[A-Z]{3}$/,    // 1234-ABC
+  GENERICO: /^(SIN-PLACA|SIN PLACA|S\/P|S\/P-[A-Z0-9]+|SP-\d{3,4})$/i,
 }
 
 /**
