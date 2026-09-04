@@ -902,13 +902,8 @@ onMounted(() => {
       </VCol>
     </VRow>
 
-    <!-- 1. Carga inicial general -->
-    <div v-if="isLoading" class="d-flex justify-center align-center pa-12">
-      <VProgressCircular indeterminate color="primary" size="64" />
-    </div>
-
-    <!-- 2. Form Skeleton loader inicial al cargar configuraciones -->
-    <div v-else-if="isLoadingConfig" class="d-flex flex-column gap-6">
+    <!-- 1. Form Skeleton loader inicial al cargar configuraciones -->
+    <div v-if="isLoadingConfig" class="d-flex flex-column gap-6">
       <VRow>
         <VCol cols="12">
           <VCard class="pa-6 rounded-xl border-light mb-6">
