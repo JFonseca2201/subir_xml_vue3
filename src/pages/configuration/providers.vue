@@ -29,7 +29,23 @@ const currentPage = ref(1)
 const totalPage = ref(1)
 const itemsPerPage = 10
 
+// Helper de estado del proveedor
+const isProviderActive = provider => {
+  if (!provider) return false
+  if (provider.is_active !== undefined && provider.is_active !== null) {
+    return provider.is_active === true || provider.is_active === 1 || String(provider.is_active) === '1'
+  }
+  if (provider.status !== undefined && provider.status !== null) {
+    return provider.status === 'active' || provider.status === 1 || String(provider.status) === '1' || provider.status === 'activo'
+  }
+  return true
+}
+
 // Métricas computadas
+const activeProvidersCount = computed(() => {
+  return list_providers.value.filter(p => isProviderActive(p)).length
+})
+
 const providersWithRucCount = computed(() => {
   return list_providers.value.filter(p => !!p.ruc).length
 })
@@ -49,17 +65,20 @@ const resetFilters = () => {
 }
 
 const formatDate = dateStr => {
-  if (!dateStr) return 'N/A'
+  if (!dateStr) return '-'
+  const clean = String(dateStr).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1]}/${parts[2]}`
+  }
   let d = new Date(dateStr)
   if (!isNaN(d.getTime())) {
-    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}/${m}/${day}`
   }
-  const normalized = dateStr.replace(/-/g, '/')
-  d = new Date(normalized)
-  if (!isNaN(d.getTime())) {
-    return d.toLocaleDateString('es-EC', { year: 'numeric', month: '2-digit', day: '2-digit' })
-  }
-  return 'N/A'
+  return dateStr
 }
 
 const list = async () => {
@@ -201,13 +220,13 @@ definePage({ meta: { permission: "settings" } })
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-store-2-line" size="24" />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Proveedores Registrados</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Total Proveedores</div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ list_providers.length }} <span class="text-caption text-disabled font-weight-regular">en página</span>
             </div>
@@ -215,23 +234,37 @@ definePage({ meta: { permission: "settings" } })
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-checkbox-circle-line" size="24" />
+          </VAvatar>
+          <div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">Proveedores Activos</div>
+            <div class="text-h6 font-weight-bold text-success">
+              {{ activeProvidersCount }} <span class="text-caption text-disabled font-weight-regular">activos</span>
+            </div>
+          </div>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-id-card-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Con RUC Identificado</div>
-            <div class="text-h6 font-weight-bold text-success">
+            <div class="text-h6 font-weight-bold text-info">
               {{ providersWithRucCount }} <span class="text-caption text-disabled font-weight-regular">proveedores</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+      <VCol cols="12" sm="6" md="3">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-phone-line" size="24" />
           </VAvatar>
           <div>
@@ -295,6 +328,7 @@ definePage({ meta: { permission: "settings" } })
             <td class="py-4" style="width: 150px;"><div class="shimmer-line w-75" /></td>
             <td class="py-4" style="width: 140px;"><div class="shimmer-line w-60" /></td>
             <td class="py-4"><div class="shimmer-line w-70" /></td>
+            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-50 mx-auto" /></td>
             <td class="py-4" style="width: 130px;"><div class="shimmer-line w-50" /></td>
             <td class="py-4 text-center" style="width: 130px;"><div class="shimmer-button rounded mx-auto" /></td>
           </tr>
@@ -335,17 +369,20 @@ definePage({ meta: { permission: "settings" } })
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
                 ID
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
                 Proveedor / Razón Social
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
                 RUC
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
                 Teléfono
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
                 Dirección
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+                Estado
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Fecha Reg.
@@ -396,6 +433,17 @@ definePage({ meta: { permission: "settings" } })
                   <span class="text-truncate" style="max-width: 240px;" :title="item.address">
                     {{ item.address || 'Sin dirección' }}
                   </span>
+                </div>
+              </td>
+
+              <!-- Estado -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="isProviderActive(item) ? 'status-paid' : 'status-pending'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ isProviderActive(item) ? 'Activo' : 'Inactivo' }}</span>
                 </div>
               </td>
 
@@ -508,5 +556,47 @@ definePage({ meta: { permission: "settings" } })
 
 .font-mono {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+/* Pastillas de Estado */
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
 }
 </style>

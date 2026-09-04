@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
@@ -11,6 +13,18 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
+
+const isProviderActive = computed(() => {
+  const p = props.providerSelected
+  if (!p) return false
+  if (p.is_active !== undefined && p.is_active !== null) {
+    return p.is_active === true || p.is_active === 1 || String(p.is_active) === '1'
+  }
+  if (p.status !== undefined && p.status !== null) {
+    return p.status === 'active' || p.status === 1 || String(p.status) === '1' || p.status === 'activo'
+  }
+  return true
+})
 
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
@@ -25,8 +39,8 @@ const closeDialog = () => {
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
     <VCard class="custom-dialog-card">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
+      <!-- Header Banner Info -->
+      <div class="custom-dialog-header-info">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -35,49 +49,61 @@ const closeDialog = () => {
           @click="closeDialog"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-building-4-line" />
+          <VIcon icon="ri-building-line" />
         </div>
         <h3 class="custom-dialog-title">
-          {{ props.provider?.company_name || 'Ficha del Proveedor' }}
+          Ficha del Proveedor
         </h3>
         <p class="custom-dialog-subtitle">
-          Información comercial y de contacto del proveedor
+          Información comercial registrada
         </p>
       </div>
 
       <!-- Content -->
-      <VCardText class="pa-5">
-        <div class="mb-5 d-flex align-center gap-4">
-          <VAvatar
-            size="64"
-            color="primary"
-            variant="tonal"
-            rounded
-          >
-            <span class="text-h4 font-weight-bold">{{ props.providerSelected.name ? props.providerSelected.name.charAt(0).toUpperCase() : 'P' }}</span>
-          </VAvatar>
-          <div>
-            <h3 class="text-h5 font-weight-bold mb-1">
-              {{ props.providerSelected.name || 'Sin nombre' }}
-            </h3>
-            <div class="d-flex align-center gap-1 text-medium-emphasis">
-              <VIcon
-                icon="ri-map-pin-line"
-                size="small"
-              />
-              <span>{{ props.providerSelected.address || 'Sin dirección' }}</span>
+      <VCardText class="pa-4">
+        <!-- Header con avatar y estado -->
+        <div class="d-flex align-center justify-space-between mb-4 pb-3 border-b flex-wrap gap-2">
+          <div class="d-flex align-center gap-3">
+            <VAvatar
+              size="52"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+            >
+              <span class="text-h5 font-weight-bold">{{ props.providerSelected.name ? props.providerSelected.name.charAt(0).toUpperCase() : 'P' }}</span>
+            </VAvatar>
+            <div>
+              <h3 class="text-h6 font-weight-bold mb-0 text-high-emphasis">
+                {{ props.providerSelected.name || 'Sin nombre' }}
+              </h3>
+              <div class="d-flex align-center gap-1 text-medium-emphasis text-caption mt-1">
+                <VIcon
+                  icon="ri-map-pin-line"
+                  size="14"
+                  class="text-disabled"
+                />
+                <span>{{ props.providerSelected.address || 'Sin dirección' }}</span>
+              </div>
             </div>
+          </div>
+
+          <div
+            class="status-pill-clean"
+            :class="isProviderActive ? 'status-paid' : 'status-pending'"
+          >
+            <span class="status-dot" />
+            <span>{{ isProviderActive ? 'Activo' : 'Inactivo' }}</span>
           </div>
         </div>
 
-        <VRow>
+        <VRow dense>
           <VCol
             cols="12"
             sm="6"
           >
             <VCard
               variant="outlined"
-              class="h-100 pa-4 rounded-lg d-flex align-center gap-3"
+              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
             >
               <VAvatar
                 color="info"
@@ -104,7 +130,7 @@ const closeDialog = () => {
           >
             <VCard
               variant="outlined"
-              class="h-100 pa-4 rounded-lg d-flex align-center gap-3"
+              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
             >
               <VAvatar
                 color="warning"
@@ -118,7 +144,7 @@ const closeDialog = () => {
                 <div class="text-caption text-medium-emphasis">
                   RUC
                 </div>
-                <div class="font-weight-bold text-body-1">
+                <div class="font-weight-bold text-body-1 font-mono">
                   {{ props.providerSelected.ruc || 'Sin RUC' }}
                 </div>
               </div>
@@ -131,7 +157,7 @@ const closeDialog = () => {
           >
             <VCard
               variant="outlined"
-              class="h-100 pa-4 rounded-lg d-flex align-center gap-3"
+              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
             >
               <VAvatar
                 color="primary"
@@ -158,7 +184,7 @@ const closeDialog = () => {
           >
             <VCard
               variant="outlined"
-              class="h-100 pa-4 rounded-lg d-flex align-center gap-3"
+              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
             >
               <VAvatar
                 color="info"
@@ -173,8 +199,9 @@ const closeDialog = () => {
                   Correo Electrónico
                 </div>
                 <div
-                  class="font-weight-bold text-body-1"
-                  style="word-break: break-all;"
+                  class="font-weight-bold text-body-1 text-truncate"
+                  style="max-width: 170px;"
+                  :title="props.providerSelected.email"
                 >
                   {{ props.providerSelected.email || 'Sin correo' }}
                 </div>
@@ -185,7 +212,7 @@ const closeDialog = () => {
           <VCol cols="12">
             <VCard
               variant="outlined"
-              class="pa-4 rounded-lg d-flex align-center gap-3"
+              class="pa-3.5 rounded-lg d-flex align-center gap-3"
             >
               <VAvatar
                 color="success"
@@ -229,3 +256,50 @@ const closeDialog = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+</style>

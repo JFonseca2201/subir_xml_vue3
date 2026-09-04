@@ -107,6 +107,8 @@ const store = async () => {
     formData.append('address', provider.value.address)
     formData.append('phone', provider.value.phone || '')
     formData.append('email', provider.value.email || '')
+    formData.append('is_active', '1')
+    formData.append('status', 'active')
 
     const resp = await $api('suppliers', {
       method: 'POST',

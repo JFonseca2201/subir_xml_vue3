@@ -27,7 +27,23 @@ const user_selected_delete = ref(null)
 const user_selected_view = ref(null)
 const viewLoading = ref(false)
 
+// Helper de estado del usuario
+const isUserActive = user => {
+  if (!user) return false
+  if (user.status !== undefined && user.status !== null) {
+    return String(user.status) === '1' || user.status === 1 || user.status === 'active' || user.status === true
+  }
+  if (user.is_active !== undefined && user.is_active !== null) {
+    return user.is_active === true || user.is_active === 1 || String(user.is_active) === '1'
+  }
+  return true
+}
+
 // Métricas computadas
+const activeUsersCount = computed(() => {
+  return list_users.value.filter(u => isUserActive(u)).length
+})
+
 const usersWithRoleCount = computed(() => {
   return list_users.value.filter(u => !!u.role?.name).length
 })
@@ -39,6 +55,21 @@ const hasActiveFilters = computed(() => {
 const resetFilters = () => {
   seachQuery.value = null
   list()
+}
+
+const formatDate = date => {
+  if (!date) return '-'
+  const clean = String(date).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1]}/${parts[2]}`
+  }
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return date
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}/${m}/${day}`
 }
 
 const normalizeAvatarUrl = avatar => {
@@ -229,13 +260,13 @@ onMounted(() => {
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-user-follow-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Usuarios Registrados</div>
-            <div class="text-h6 font-weight-bold text-high-emphasis">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Usuarios</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ list_users.length }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
             </div>
           </div>
@@ -243,28 +274,28 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="info" variant="tonal" rounded="lg">
-            <VIcon icon="ri-admin-line" size="24" />
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Con Rol Configurado</div>
-            <div class="text-h6 font-weight-bold text-info">
-              {{ usersWithRoleCount }} <span class="text-caption text-disabled font-weight-regular">usuarios</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Usuarios Activos</div>
+            <div class="text-h6 font-weight-bold text-success text-truncate">
+              {{ activeUsersCount }} <span class="text-caption text-disabled font-weight-regular">activos</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-lock-password-line" size="24" />
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-shield-keyhole-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Roles Disponibles</div>
-            <div class="text-h6 font-weight-bold text-warning">
-              {{ roles.length }} <span class="text-caption text-disabled font-weight-regular">roles activos</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Con Rol Asignado</div>
+            <div class="text-h6 font-weight-bold text-info text-truncate">
+              {{ usersWithRoleCount }} <span class="text-caption text-disabled font-weight-regular">usuarios</span>
             </div>
           </div>
         </VCard>
@@ -370,8 +401,11 @@ onMounted(() => {
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px;">
                 Rol de Acceso
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Fecha Reg.
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+                Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Acciones
@@ -428,8 +462,19 @@ onMounted(() => {
               <!-- Fecha -->
               <td class="py-3">
                 <span class="text-caption text-medium-emphasis">
-                  {{ user.created_at ? new Date(user.created_at).toLocaleDateString() : '-' }}
+                  {{ formatDate(user.created_at) }}
                 </span>
+              </td>
+
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="isUserActive(user) ? 'status-paid' : 'status-pending'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ isUserActive(user) ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -522,6 +567,48 @@ onMounted(() => {
   transition: background-color 0.15s ease;
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+// Status Pills (Estilo listado de clientes/empleados/socios)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
   }
 }
 </style>

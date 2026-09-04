@@ -31,7 +31,13 @@ const provider = ref({
   address: '',
   phone: '',
   email: '',
+  status: 'active',
 })
+
+const statusOptions = [
+  { title: 'Activo', value: 'active' },
+  { title: 'Inactivo', value: 'inactive' },
+]
 
 // Computed para mostrar ID con formato
 const formattedId = computed(() => {
@@ -79,12 +85,11 @@ const providerForm = ref(null)
 const loadProviderData = () => {
   if (!props.providerSelected) return
 
-  console.log('Proveedor seleccionado completo:', props.providerSelected)
-  console.log('Campos disponibles:', Object.keys(props.providerSelected))
-  console.log('ID:', props.providerSelected.id)
-  console.log('RUC:', props.providerSelected.ruc)
-  console.log('Nombre:', props.providerSelected.name)
-  console.log('Dirección:', props.providerSelected.address)
+  const isInactive = props.providerSelected.is_active === false || 
+                     props.providerSelected.is_active === 0 || 
+                     props.providerSelected.is_active === '0' ||
+                     props.providerSelected.status === 'inactive' || 
+                     props.providerSelected.status === '0'
 
   provider.value = {
     id: props.providerSelected.id,
@@ -93,9 +98,8 @@ const loadProviderData = () => {
     address: props.providerSelected.address || '',
     phone: props.providerSelected.phone || '',
     email: props.providerSelected.email || '',
+    status: isInactive ? 'inactive' : 'active',
   }
-
-  console.log('Datos del proveedor cargados:', provider.value)
 }
 
 /* ======================================================
@@ -123,6 +127,8 @@ const update = async () => {
     formData.append('address', provider.value.address)
     formData.append('phone', provider.value.phone || '')
     formData.append('email', provider.value.email || '')
+    formData.append('status', provider.value.status)
+    formData.append('is_active', provider.value.status === 'active' ? '1' : '0')
 
     const resp = await $api(`suppliers/${provider.value.id}`, {
       method: "POST",
@@ -133,7 +139,6 @@ const update = async () => {
       },
     })
 
-    console.log('Proveedor actualizado:', resp.supplier)
     emit('editProvider', resp.supplier)
     emit('update:isDialogVisible', false)
     showNotification('Proveedor actualizado con éxito', 'success')
@@ -309,6 +314,43 @@ watch(() => props.isDialogVisible, val => {
                 density="comfortable"
                 prepend-inner-icon="ri-mail-line"
               />
+            </VCol>
+
+            <!-- Estado -->
+            <VCol cols="12">
+              <VSelect
+                v-model="provider.status"
+                :items="statusOptions"
+                item-title="title"
+                item-value="value"
+                label="Estado"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-toggle-line"
+                hide-details="auto"
+                required
+              >
+                <template #item="{ props: itemProps, item }">
+                  <VListItem v-bind="itemProps">
+                    <template #prepend>
+                      <VBadge
+                        dot
+                        :color="item.raw.value === 'active' ? 'success' : 'error'"
+                        class="me-2"
+                      />
+                    </template>
+                  </VListItem>
+                </template>
+                <template #selection="{ item }">
+                  <div class="d-flex align-center gap-2">
+                    <VBadge
+                      dot
+                      :color="item.raw.value === 'active' ? 'success' : 'error'"
+                    />
+                    <span>{{ item.raw.title }}</span>
+                  </div>
+                </template>
+              </VSelect>
             </VCol>
           </VRow>
         </VForm>
