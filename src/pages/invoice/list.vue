@@ -210,6 +210,23 @@ const truncate = (text, length = 50) => {
     : text
 }
 
+const formatDate = dateString => {
+  if (!dateString) return '-'
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
+}
+
 onMounted(() => {
   config()
   list()
@@ -435,7 +452,7 @@ onMounted(() => {
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
                 N° Factura
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px;">
@@ -496,10 +513,11 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ invoice.issue_date ? new Date(invoice.issue_date).toISOString().slice(0, 10) : '-' }}
-                </span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(invoice.issue_date) }}</span>
+                </div>
               </td>
 
               <!-- Subtotal -->

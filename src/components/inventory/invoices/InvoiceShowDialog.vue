@@ -25,6 +25,23 @@ const bulkCategory = ref(null)
 const isBulkUpdating = ref(false)
 const { showNotification } = useGlobalToast()
 
+const formatDate = dateString => {
+  if (!dateString) return '-'
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
+}
+
 const isAllSelected = computed(() => {
   const productItems = filteredItems.value.filter(item => item.item_type === 1)
   if (productItems.length === 0) return false
@@ -313,7 +330,7 @@ onMounted(() => {
               size="14"
               class="me-1"
             />
-            <span><strong>Fecha:</strong> {{ invoice?.issue_date ? new Date(invoice.issue_date).toISOString().slice(0, 10) : '-' }}</span>
+            <span><strong>Fecha:</strong> {{ formatDate(invoice?.issue_date) }}</span>
           </div>
         </div>
 

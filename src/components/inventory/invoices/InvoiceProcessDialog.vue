@@ -20,6 +20,23 @@ const emit = defineEmits(['update:isDialogVisible', 'processSuccess'])
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 
+const formatDate = dateString => {
+  if (!dateString) return '-'
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
+}
+
 // State
 const paymentType = ref('credito')
 const partnerId = ref(null)
@@ -290,7 +307,7 @@ onMounted(() => {
                 Fecha
               </div>
               <div class="text-body-2 font-weight-medium">
-                {{ props.invoice.issue_date ? new Date(props.invoice.issue_date).toISOString().slice(0, 10) : '-' }}
+                {{ formatDate(props.invoice.issue_date) }}
               </div>
             </VCol>
             <VCol
