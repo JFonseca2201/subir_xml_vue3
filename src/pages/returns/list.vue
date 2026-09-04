@@ -141,7 +141,7 @@ const formatDate = dateString => {
     const parts = cleanDate.split('-')
     if (parts.length === 3) {
       const [year, month, day] = parts
-      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+      return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     }
 
     const d = new Date(dateString)
@@ -149,7 +149,7 @@ const formatDate = dateString => {
       const day = String(d.getDate()).padStart(2, '0')
       const month = String(d.getMonth() + 1).padStart(2, '0')
       const year = d.getFullYear()
-      return `${day}/${month}/${year}`
+      return `${year}/${month}/${day}`
     }
   } catch (e) {
     console.error('Error formatting date:', e)
@@ -355,25 +355,25 @@ onMounted(() => {
         <VTable hover class="returns-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Devolución
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Venta Orig.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 260px;">
                 Motivo / Causa
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Reembolso
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Tipo
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 110px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -381,7 +381,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in returns" :key="item?.id || index" class="return-table-row">
               <!-- N° Devolución -->
-              <td class="py-3">
+              <td class="py-3" style="white-space: nowrap;">
                 <div
                   class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
                   @click="viewReturn(item)"
@@ -391,7 +391,7 @@ onMounted(() => {
               </td>
 
               <!-- Venta Origen -->
-              <td class="py-3">
+              <td class="py-3" style="white-space: nowrap;">
                 <span
                   v-if="item.sale?.document_number"
                   class="font-mono font-weight-semibold text-high-emphasis text-body-2"
@@ -403,14 +403,14 @@ onMounted(() => {
 
               <!-- Fecha -->
               <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
                   <VIcon
                     icon="ri-calendar-line"
-                    size="15"
+                    size="16"
                     color="medium-emphasis"
-                    class="me-2 flex-shrink-0"
+                    class="me-1 flex-shrink-0"
                   />
-                  <span>{{ formatDate(item.created_at || item.date) }}</span>
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at || item.date) }}</span>
                 </div>
               </td>
 
@@ -422,14 +422,14 @@ onMounted(() => {
               </td>
 
               <!-- Reembolso -->
-              <td class="text-right py-3">
-                <span class="font-mono font-weight-bold text-body-1 text-error">
+              <td class="text-right py-3" style="white-space: nowrap;">
+                <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                   {{ formatCurrency(item.refund_amount) }}
                 </span>
               </td>
 
-              <!-- Tipo (Único chip tonal) -->
-              <td class="text-center py-3">
+              <!-- Tipo -->
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <VChip
                   :color="item.type === 'total' ? 'error' : 'warning'"
                   variant="tonal"

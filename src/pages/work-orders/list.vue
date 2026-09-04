@@ -378,8 +378,14 @@ const getClientInitials = client => {
 
 const getVehicleInfo = vehicle => {
   if (!vehicle) return 'N/A'
-  const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
-  return `${brandName} ${vehicle.model || ''}`.trim() || 'Vehículo sin modelo'
+  const brandVal = vehicle.brand?.name || vehicle.brand || vehicle.brand_id
+  const brandName = brandVal ? (getBrandNameById(brandVal) || brandVal) : ''
+  const model = (vehicle.model || '').trim()
+  const year = vehicle.year ? String(vehicle.year).trim() : ''
+  const hasYearInModel = year && model.includes(year)
+  const details = hasYearInModel ? model : [model, year].filter(Boolean).join(' ')
+
+  return `${brandName} ${details}`.trim() || 'Vehículo sin modelo'
 }
 
 const getTotalAmount = workOrder => {
@@ -387,14 +393,22 @@ const getTotalAmount = workOrder => {
   return workOrder.items.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0)
 }
 
-const formatDate = dateStr => {
-  if (!dateStr) return '-'
-  const d = new Date(dateStr.replace ? dateStr.replace(' ', 'T') : dateStr)
-  return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('es-EC', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+const formatDate = dateString => {
+  if (!dateString) return '-'
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    const [year, month, day] = parts
+    return `${year}/${month}/${day}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
 }
 
 // Formateador estándar de numeración
@@ -594,25 +608,25 @@ onMounted(() => {
         <VTable hover class="work-orders-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 N° Orden
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -620,7 +634,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="item in paginatedWorkOrders" :key="item.id" class="wo-table-row">
               <!-- N° Orden -->
-              <td class="py-3">
+              <td class="py-3" style="white-space: nowrap;">
                 <div
                   class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
                   title="Ver Secuencia e Historial de la Orden"
@@ -631,16 +645,16 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0">
-                    <span>{{ getClientInitials(item.client) }}</span>
+              <td class="py-3" style="max-width: 240px;">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0 flex-shrink-0">
+                    <span style="font-size: 0.8rem;">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0">
+                  <div class="min-w-0" style="max-width: 180px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono">
+                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
                       {{ item.client.n_document }}
                     </div>
                   </div>
@@ -649,34 +663,44 @@ onMounted(() => {
 
               <!-- Vehículo -->
               <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex flex-column gap-1">
-                  <div v-if="item.vehicle.license_plate" class="license-plate-badge d-inline-block" style="width: fit-content;">
-                    {{ item.vehicle.license_plate.toUpperCase() }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium">
-                    {{ getVehicleInfo(item.vehicle) }}
+                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-car-line" size="18" color="secondary" />
+                  </VAvatar>
+                  <div class="min-w-0" style="max-width: 250px;">
+                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'Sin placa'">
+                      {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium" :title="getVehicleInfo(item.vehicle)">
+                      {{ getVehicleInfo(item.vehicle) }}
+                    </div>
                   </div>
                 </div>
-                <span v-else class="text-caption text-disabled">Sin vehículo asignado</span>
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
+                    <VIcon icon="ri-car-line" size="18" />
+                  </VAvatar>
+                  <span>Sin vehículo</span>
+                </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis">
-                  <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-2 flex-shrink-0" />
-                  <span>{{ formatDate(item.date || item.created_at) }}</span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.date || item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Total -->
-              <td class="py-3 text-right">
+              <td class="py-3 text-right" style="white-space: nowrap;">
                 <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
                   ${{ getTotalAmount(item).toFixed(2) }}
                 </span>
               </td>
 
               <!-- Estado (Único chip tonal interactivo) -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <VChip
                   :color="statusColors[item.status]"
                   variant="tonal"
@@ -702,7 +726,7 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalles -->
                   <VBtn

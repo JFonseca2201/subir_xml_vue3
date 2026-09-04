@@ -285,15 +285,15 @@ const cleanAccountName = name => {
 }
 
 const formatDate = date => {
-  if (!date) return 'N/A'
+  if (!date) return '-'
   try {
-    const dStr = typeof date === 'string' ? date.split('T')[0] : date
+    const dStr = typeof date === 'string' ? date.split('T')[0].split(' ')[0] : String(date)
     const [year, month, day] = dStr.split('-')
-    if (year && month && day) return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+    if (year && month && day) return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     
     return dStr
   } catch (e) {
-    return 'N/A'
+    return date
   }
 }
 

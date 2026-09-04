@@ -116,32 +116,32 @@ const totalMovementsCount = computed(() => movements.value.length)
 
 // Funciones de formato
 const formatDate = date => {
-  if (!date) return 'N/A'
+  if (!date) return '-'
 
   try {
     if (typeof date === 'string' && date.includes('-')) {
-      const dateParts = date.split('T')[0]
+      const dateParts = date.split('T')[0].split(' ')[0]
       const [year, month, day] = dateParts.split('-')
 
       if (year && month && day) {
-        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`
+        return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
       }
     }
 
     const dateObj = new Date(date)
     if (isNaN(dateObj.getTime())) {
-      return 'Fecha inválida'
+      return date
     }
 
     const day = String(dateObj.getDate()).padStart(2, '0')
     const month = String(dateObj.getMonth() + 1).padStart(2, '0')
     const year = dateObj.getFullYear()
 
-    return `${day}/${month}/${year}`
+    return `${year}/${month}/${day}`
   } catch (error) {
     console.error('Error al formatear fecha:', error, date)
 
-    return 'Error fecha'
+    return String(date)
   }
 }
 

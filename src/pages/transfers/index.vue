@@ -184,16 +184,26 @@ const formatCurrency = value => {
 
 // Formatear Fecha corta
 const formatDate = dateString => {
-  if (!dateString) return 'N/A'
+  if (!dateString) return '-'
   try {
     const datePart = dateString.split('T')[0].split(' ')[0]
-    const [year, month, day] = datePart.split('-')
-    const date = new Date(year, month - 1, day)
+    const parts = datePart.split('-')
+    if (parts.length === 3) {
+      const [year, month, day] = parts
+      return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
+    }
 
-    return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })
+    const date = new Date(dateString)
+    if (!isNaN(date.getTime())) {
+      const y = date.getFullYear()
+      const m = String(date.getMonth() + 1).padStart(2, '0')
+      const d = String(date.getDate()).padStart(2, '0')
+      return `${y}/${m}/${d}`
+    }
   } catch (e) {
     return dateString
   }
+  return dateString
 }
 
 // Formatear fecha para encabezado de grupos

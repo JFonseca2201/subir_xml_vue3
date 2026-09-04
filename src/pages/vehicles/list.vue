@@ -463,7 +463,7 @@ onMounted(() => {
 
             <!-- Placa -->
             <td>
-              <div v-if="vehicle.license_plate" class="license-plate-badge">
+              <div v-if="vehicle.license_plate" class="font-mono font-weight-bold text-high-emphasis text-body-2">
                 {{ vehicle.license_plate.toUpperCase() }}
               </div>
               <VChip v-else color="warning" size="x-small" variant="tonal" class="font-weight-bold text-uppercase">

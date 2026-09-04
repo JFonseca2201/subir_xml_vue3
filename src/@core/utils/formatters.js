@@ -22,11 +22,21 @@ export const kFormatter = num => {
  * @param {string} value date to format
  * @param {Intl.DateTimeFormatOptions} formatting Intl object to format with
  */
-export const formatDate = (value, formatting = { month: 'short', day: 'numeric', year: 'numeric' }) => {
+export const formatDate = (value) => {
   if (!value)
     return value
   
-  return new Intl.DateTimeFormat('en-US', formatting).format(new Date(value))
+  const clean = String(value).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`
+  }
+  const date = new Date(value)
+  if (isNaN(date.getTime())) return String(value)
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}/${m}/${d}`
 }
 
 /**

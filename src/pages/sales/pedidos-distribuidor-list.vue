@@ -115,28 +115,29 @@ const formatCurrency = value => {
 const formatDate = dateString => {
   if (!dateString) return '-'
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return dateString
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const year = date.getFullYear()
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
 
-  return `${day}/${month}/${year} ${hours}:${minutes}`
+  return `${year}/${month}/${day} ${hours}:${minutes}`
 }
 
 const formatShortDate = dateString => {
   if (!dateString) return '-'
-  const cleanDateStr = dateString.split(' ')[0]
+  const cleanDateStr = dateString.split(' ')[0].split('T')[0]
   const parts = cleanDateStr.split('-')
   if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`
+    return `${parts[0]}/${parts[1]}/${parts[2]}`
   }
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return dateString
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const year = date.getFullYear()
-
-  return `${day}/${month}/${year}`
+  return `${year}/${month}/${day}`
 }
 
 const getStatusInfo = status => {
@@ -675,10 +676,11 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ formatDate(item.created_at) }}
-                </span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at) }}</span>
+                </div>
               </td>
 
               <!-- Distribuidor -->

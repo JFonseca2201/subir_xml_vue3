@@ -235,18 +235,30 @@ const confirmSendMail = async () => {
 
 const formatDate = dateString => {
   if (!dateString) return '-'
-
-  // Previene el desfase de zona horaria si viene en YYYY-MM-DD
-  const [year, month, day] = dateString.split('T')[0].split(' ')[0].split('-')
-
-  return `${day}/${month}/${year}`
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    const [year, month, day] = parts
+    return `${year}/${month}/${day}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
 }
 
 const formatVehicleInfo = vehicle => {
   if (!vehicle) return '-'
   const brandVal = vehicle.brand?.name || vehicle.brand || vehicle.brand_id
   const brandName = brandVal ? (getBrandNameById(brandVal) || brandVal) : ''
-  const details = [vehicle.model, vehicle.year].filter(Boolean).join(' ')
+  const model = (vehicle.model || '').trim()
+  const year = vehicle.year ? String(vehicle.year).trim() : ''
+  const hasYearInModel = year && model.includes(year)
+  const details = hasYearInModel ? model : [model, year].filter(Boolean).join(' ')
 
   return `${brandName} ${details}`.trim() || '-'
 }
@@ -969,28 +981,28 @@ onMounted(() => {
         <VTable hover class="sales-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 170px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px; min-width: 150px; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 100px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px; min-width: 80px; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 230px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 200px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -998,13 +1010,13 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in sales" :key="item?.id || index" class="sale-table-row">
               <!-- Documento -->
-              <td class="py-3">
+              <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
                   <div class="d-flex align-center gap-1.5">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
                       size="16"
-                      class="me-1.5 flex-shrink-0"
+                      class="me-1 flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
@@ -1023,7 +1035,7 @@ onMounted(() => {
               </td>
 
               <!-- OT Vinculada -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer"
                   :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
@@ -1035,19 +1047,22 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <span class="text-caption font-weight-bold">{{ getClientInitials(item.client) }}</span>
+              <td class="py-3" style="max-width: 240px;">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" style="max-width: 220px;"
+                  <div class="min-w-0" style="max-width: 180px;">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis d-flex align-center mt-0.5">
-                      <VIcon icon="ri-phone-line" size="13" class="me-1.5 text-disabled flex-shrink-0" />
-                      <span>{{ getClientPhone(item.client) }}</span>
+                    <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis d-flex align-center mt-0.5 text-truncate">
+                      <VIcon icon="ri-phone-line" size="13" class="me-1 text-disabled flex-shrink-0" />
+                      <span class="text-truncate">{{ getClientPhone(item.client) }}</span>
+                    </div>
+                    <div v-else-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
+                      {{ item.client.n_document }}
                     </div>
                   </div>
                 </div>
@@ -1055,27 +1070,37 @@ onMounted(() => {
 
               <!-- Vehículo -->
               <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex flex-column gap-0.5">
-                  <div class="license-plate-badge align-self-start">
-                    {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis text-truncate text-uppercase font-weight-medium" style="max-width: 180px;" :title="formatVehicleInfo(item.vehicle)">
-                    {{ formatVehicleInfo(item.vehicle) }}
+                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-car-line" size="18" color="secondary" />
+                  </VAvatar>
+                  <div class="min-w-0" style="max-width: 250px;">
+                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
+                      {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium" :title="formatVehicleInfo(item.vehicle)">
+                      {{ formatVehicleInfo(item.vehicle) }}
+                    </div>
                   </div>
                 </div>
-                <span v-else class="text-disabled text-caption">—</span>
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
+                    <VIcon icon="ri-car-line" size="18" />
+                  </VAvatar>
+                  <span>Sin vehículo</span>
+                </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis">
-                  <VIcon icon="ri-calendar-line" size="15" color="medium-emphasis" class="me-2 flex-shrink-0" />
-                  <span>{{ formatDate(item.created_at) }}</span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Total -->
-              <td class="text-right py-3">
+              <td class="text-right py-3" style="white-space: nowrap;">
                 <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                   ${{ parseFloat(item.total || 0).toFixed(2) }}
                 </span>
@@ -1103,7 +1128,7 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <div v-if="!isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                   <!-- Ver venta -->
                   <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"

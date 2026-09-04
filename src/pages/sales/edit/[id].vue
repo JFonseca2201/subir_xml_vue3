@@ -1568,16 +1568,16 @@ onMounted(() => {
                       <VCol cols="12" :sm="selectedVehicle ? 6 : 12" class="d-flex align-center gap-3">
                         <template v-if="selectedClient">
                           <VAvatar color="primary" variant="tonal" size="38" class="rounded-lg shrink-0">
-                            <VIcon icon="ri-user-3-line" size="20" />
+                            <VIcon icon="ri-id-card-line" size="20" />
                           </VAvatar>
                           <div class="d-flex flex-column overflow-hidden flex-grow-1">
                             <div class="d-flex align-center gap-2 flex-wrap">
-                              <span class="text-subtitle-2 font-weight-bold text-slate-800 text-truncate">
-                                {{ selectedClient.full_name || selectedClient.name }}
-                              </span>
-                              <VChip size="x-small" color="primary" variant="flat" class="font-weight-bold">
+                              <span class="font-mono font-weight-bold text-slate-800 text-body-2">
                                 {{ selectedClient.n_document || 'Sin Documento' }}
-                              </VChip>
+                              </span>
+                              <span v-if="selectedClient.type_client" class="text-caption text-medium-emphasis">
+                                • {{ selectedClient.type_client == 2 ? 'Empresa' : 'Persona Natural' }}
+                              </span>
                             </div>
                             <div class="d-flex align-center gap-3 mt-0.5 text-caption text-medium-emphasis flex-wrap">
                               <span v-if="selectedClient.phone" class="d-flex align-center gap-1">
@@ -1585,6 +1585,9 @@ onMounted(() => {
                               </span>
                               <span v-if="selectedClient.email" class="d-flex align-center gap-1 text-truncate">
                                 <VIcon icon="ri-mail-line" size="13" /> {{ selectedClient.email }}
+                              </span>
+                              <span v-if="selectedClient.address" class="d-flex align-center gap-1 text-truncate">
+                                <VIcon icon="ri-map-pin-line" size="13" /> {{ selectedClient.address }}
                               </span>
                             </div>
                           </div>
@@ -1598,21 +1601,21 @@ onMounted(() => {
 
                       <!-- Datos del Vehículo -->
                       <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12" :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
-                        <VAvatar color="success" variant="tonal" size="38" class="rounded-lg shrink-0">
-                          <VIcon icon="ri-car-line" size="20" />
+                        <VAvatar color="secondary" variant="tonal" size="38" class="rounded-lg shrink-0">
+                          <VIcon icon="ri-car-line" size="20" color="secondary" />
                         </VAvatar>
                         <div class="d-flex flex-column flex-grow-1 overflow-hidden">
                           <div class="d-flex align-center gap-2 flex-wrap">
-                            <VChip size="x-small" color="success" variant="flat" class="font-weight-bold font-mono">
+                            <span class="font-mono font-weight-bold text-slate-800 text-body-2">
                               {{ selectedVehicle.license_plate }}
-                            </VChip>
-                            <span class="text-subtitle-2 font-weight-bold text-slate-800 text-truncate">
-                              {{ getVehicleBrandModel(selectedVehicle) }}
+                            </span>
+                            <span class="text-body-2 text-slate-700 font-weight-medium text-truncate">
+                              • {{ getVehicleBrandModel(selectedVehicle) }}
                             </span>
                             <span v-if="selectedVehicle.color" class="text-caption text-slate-500">
                               • {{ selectedVehicle.color }}
                             </span>
-                            <span v-if="selectedVehicle.year" class="text-caption text-slate-500">
+                            <span v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)" class="text-caption text-slate-500">
                               ({{ selectedVehicle.year }})
                             </span>
                           </div>

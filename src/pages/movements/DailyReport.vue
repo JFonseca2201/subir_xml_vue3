@@ -11,23 +11,29 @@ const dateRange = ref({
 })
 
 const formatDate = date => {
-  if (!date) return 'N/A'
+  if (!date) return '-'
 
   try {
+    const clean = String(date).split('T')[0].split(' ')[0]
+    const parts = clean.split('-')
+    if (parts.length === 3) {
+      return `${parts[0]}/${parts[1].padStart(2, '0')}/${parts[2].padStart(2, '0')}`
+    }
+
     const dateObj = new Date(date)
     if (isNaN(dateObj.getTime())) {
-      return 'Fecha inválida'
+      return String(date)
     }
 
     const day = String(dateObj.getDate()).padStart(2, '0')
     const month = String(dateObj.getMonth() + 1).padStart(2, '0')
     const year = dateObj.getFullYear()
 
-    return `${day}/${month}/${year}`
+    return `${year}/${month}/${day}`
   } catch (error) {
     console.error('Error al formatear fecha:', error, date)
-    
-    return 'Error fecha'
+
+    return String(date)
   }
 }
 

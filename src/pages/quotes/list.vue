@@ -204,16 +204,32 @@ const confirmSendMail = async () => {
 
 const formatDate = dateString => {
   if (!dateString) return '-'
-  const [year, month, day] = dateString.split('T')[0].split(' ')[0].split('-')
-  
-  return `${day}/${month}/${year}`
+  const clean = String(dateString).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    const [year, month, day] = parts
+    return `${year}/${month}/${day}`
+  }
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}/${m}/${d}`
+  }
+  return dateString
 }
 
 const formatVehicleInfo = vehicle => {
   if (!vehicle) return '-'
-  const brandName = vehicle.brand ? getBrandNameById(vehicle.brand) : ''
-  
-  return `${brandName} ${vehicle.model || ''}`.trim()
+  const brandVal = vehicle.brand?.name || vehicle.brand || vehicle.brand_id
+  const brandName = brandVal ? (getBrandNameById(brandVal) || brandVal) : ''
+  const model = (vehicle.model || '').trim()
+  const year = vehicle.year ? String(vehicle.year).trim() : ''
+  const hasYearInModel = year && model.includes(year)
+  const details = hasYearInModel ? model : [model, year].filter(Boolean).join(' ')
+
+  return `${brandName} ${details}`.trim() || '-'
 }
 
 const getClientName = client => {
@@ -736,25 +752,25 @@ onMounted(() => {
         <VTable hover class="quotes-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
                 Cotización
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 210px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -762,7 +778,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in quotes" :key="item?.id || index" class="quote-table-row">
               <!-- N° Documento -->
-              <td class="py-3">
+              <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
                   <span class="text-caption font-weight-bold text-info text-uppercase">
                     Proforma
@@ -778,16 +794,16 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="info" variant="tonal" rounded="lg" class="font-weight-bold elevation-0">
-                    <span>{{ getClientInitials(item.client) }}</span>
+              <td class="py-3" style="max-width: 240px;">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0">
+                  <div class="min-w-0" style="max-width: 180px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono">
+                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
                       {{ item.client.n_document }}
                     </div>
                   </div>
@@ -796,26 +812,37 @@ onMounted(() => {
 
               <!-- Vehículo -->
               <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex flex-column gap-1">
-                  <div v-if="item.vehicle.license_plate" class="license-plate-badge d-inline-block" style="width: fit-content;">
-                    {{ item.vehicle.license_plate.toUpperCase() }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis text-uppercase font-weight-medium">
-                    {{ formatVehicleInfo(item.vehicle) }}
+                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-car-line" size="18" color="secondary" />
+                  </VAvatar>
+                  <div class="min-w-0" style="max-width: 250px;">
+                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'Sin placa'">
+                      {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium" :title="formatVehicleInfo(item.vehicle)">
+                      {{ formatVehicleInfo(item.vehicle) }}
+                    </div>
                   </div>
                 </div>
-                <span v-else class="text-caption text-disabled">—</span>
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
+                    <VIcon icon="ri-car-line" size="18" />
+                  </VAvatar>
+                  <span>Sin vehículo</span>
+                </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ formatDate(item.service_date || item.created_at) }}
-                </span>
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.service_date || item.created_at) }}</span>
+                </div>
               </td>
 
               <!-- Total -->
-              <td class="text-right py-3">
+              <td class="text-right py-3" style="white-space: nowrap;">
                 <span
                   class="font-mono font-weight-bold text-body-1 text-high-emphasis"
                   :class="isQuoteCanceled(item) ? 'text-decoration-line-through text-disabled' : ''"
@@ -825,7 +852,7 @@ onMounted(() => {
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <VChip
                   :color="isQuoteCanceled(item) ? 'error' : (item.converted_sale_id || item.converted_work_order_id ? 'success' : 'info')"
                   variant="tonal"
@@ -840,7 +867,7 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalle -->
                   <VBtn

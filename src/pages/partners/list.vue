@@ -125,8 +125,17 @@ const updatePartner = updatedPartner => {
 
 const formatDate = date => {
   if (!date) return '-'
+  const clean = String(date).split('T')[0].split(' ')[0]
+  const parts = clean.split('-')
+  if (parts.length === 3) {
+    return `${parts[0]}/${parts[1]}/${parts[2]}`
+  }
   const d = new Date(date)
-  return isNaN(d) ? '-' : new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  if (isNaN(d.getTime())) return date
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}/${m}/${day}`
 }
 
 const getPartnerInitials = name => {
