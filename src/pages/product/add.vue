@@ -6,6 +6,7 @@ import { $api } from '@/utils/api'
 import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import ProductExistenceCheckDialog from '@/components/inventory/product/ProductExistenceCheckDialog.vue'
+import { compressImage } from '@/utils/imageCompressor'
 
 const dropZoneRef = ref()
 const fileData = ref([])
@@ -147,27 +148,29 @@ const removeImage = index => {
   reset()
 }
 
-function onDrop(DroppedFiles) {
+async function onDrop(DroppedFiles) {
   if (fileData.value.length >= 1) {
     alert('Solo permite una imagen')
     
     return
   }
-  DroppedFiles?.forEach(file => {
-    if (file.type.slice(0, 6) !== 'image/') {
+  for (const rawFile of (DroppedFiles || [])) {
+    if (rawFile.type.slice(0, 6) !== 'image/') {
       alert('Solo se permiten archivos tipo imagen.')
 
       return
     }
     if (fileData.value.length < 1) {
+      const optimizedFile = await compressImage(rawFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 })
       fileData.value.push({
-        file,
-        url: createPreview(file),
+        file: optimizedFile,
+        url: createPreview(optimizedFile),
       })
     }
-  })
+  }
 }
-onChange(selectedFiles => {
+
+onChange(async selectedFiles => {
   if (fileData.value.length >= 1) {
     alert('Solo permite una imagen')
 
@@ -175,11 +178,12 @@ onChange(selectedFiles => {
   }
   if (!selectedFiles)
     return
-  for (const file of selectedFiles) {
+  for (const rawFile of selectedFiles) {
     if (fileData.value.length < 1) {
+      const optimizedFile = await compressImage(rawFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 })
       fileData.value.push({
-        file,
-        url: createPreview(file),
+        file: optimizedFile,
+        url: createPreview(optimizedFile),
       })
     }
   }

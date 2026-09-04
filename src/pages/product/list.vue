@@ -520,8 +520,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             <tr v-for="item in products" :key="item.id" class="product-table-row">
               <!-- Imagen -->
               <td class="text-center py-3">
-                <VAvatar v-if="item.imagen" :image="item.imagen" size="38" rounded="lg" class="cursor-pointer border"
-                  @click="openProductDialog(item)" />
+                <VAvatar v-if="item.imagen" size="38" rounded="lg" class="cursor-pointer border overflow-hidden"
+                  @click="openProductDialog(item)">
+                  <img :src="item.imagen" :alt="item.description" loading="lazy" decoding="async" class="w-100 h-100" style="object-fit: cover;" />
+                </VAvatar>
                 <VAvatar v-else color="primary" variant="tonal" size="38" rounded="lg" class="cursor-pointer"
                   @click="openProductDialog(item)">
                   <VIcon icon="ri-box-3-line" size="20" />

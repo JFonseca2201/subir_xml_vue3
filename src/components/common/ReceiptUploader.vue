@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onUnmounted } from 'vue'
+import { compressFiles } from '@/utils/imageCompressor'
 
 const props = defineProps({
   modelValue: {
@@ -20,7 +21,7 @@ const props = defineProps({
   },
   hint: {
     type: String,
-    default: 'Formatos admitidos: JPG, PNG, WEBP, PDF (Máx. 15MB por archivo)',
+    default: 'Formatos admitidos: JPG, PNG, WEBP, PDF (Optimización automática activada)',
   },
   compact: {
     type: Boolean,
@@ -45,11 +46,15 @@ const emit = defineEmits(['update:modelValue', 'error'])
 const fileInputRef = ref(null)
 const cameraInputRef = ref(null)
 const isDragging = ref(false)
+const isCompressing = ref(false)
 const previewList = ref([])
 
 // Diálogo de previsualización en grande
 const isPreviewOpen = ref(false)
 const previewItem = ref(null)
+
+// Caché de URLs para evitar churn de memoria
+const urlCache = new Map()
 
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 B'
@@ -59,16 +64,12 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-// Generar previews reactivas de los archivos
+// Generar previews de forma eficiente sin recrear blobs existentes
 const updatePreviews = files => {
-  // Liberar URLs anteriores de memoria
-  previewList.value.forEach(item => {
-    if (item.url && item.url.startsWith('blob:')) {
-      URL.revokeObjectURL(item.url)
-    }
-  })
+  const currentFiles = files || []
+  const activeKeys = new Set()
 
-  previewList.value = (files || []).map((item, index) => {
+  previewList.value = currentFiles.map((item, index) => {
     const fileObj = item?.file || item
     const rawName = fileObj?.name || item?.name || 'Archivo'
     const rawSize = fileObj?.size || item?.size || 0
@@ -78,10 +79,17 @@ const updatePreviews = files => {
     const isPdf = mimeType === 'application/pdf' || /\.pdf$/i.test(rawName)
 
     let url = null
-    if (fileObj instanceof File || fileObj instanceof Blob) {
+    const cacheKey = fileObj instanceof Blob ? `${rawName}_${rawSize}_${fileObj.lastModified || 0}` : (item?.url || item?.file_path || `${rawName}_${index}`)
+    activeKeys.add(cacheKey)
+
+    if (urlCache.has(cacheKey)) {
+      url = urlCache.get(cacheKey)
+    } else if (fileObj instanceof File || fileObj instanceof Blob) {
       url = URL.createObjectURL(fileObj)
+      urlCache.set(cacheKey, url)
     } else if (item?.url || item?.file_path) {
       url = item.url || item.file_path
+      urlCache.set(cacheKey, url)
     }
 
     const extension = rawName.split('.').pop().toUpperCase()
@@ -97,6 +105,16 @@ const updatePreviews = files => {
       extension,
     }
   })
+
+  // Limpiar URLs que ya no están activas
+  for (const [key, cachedUrl] of urlCache.entries()) {
+    if (!activeKeys.has(key)) {
+      if (cachedUrl && cachedUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(cachedUrl)
+      }
+      urlCache.delete(key)
+    }
+  }
 }
 
 watch(
@@ -104,20 +122,21 @@ watch(
   newFiles => {
     updatePreviews(newFiles)
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 onUnmounted(() => {
-  // Limpiar memoria
-  previewList.value.forEach(item => {
-    if (item.url && item.url.startsWith('blob:')) {
-      URL.revokeObjectURL(item.url)
+  // Limpiar toda la memoria al desmontar
+  for (const [, cachedUrl] of urlCache.entries()) {
+    if (cachedUrl && cachedUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(cachedUrl)
     }
-  })
+  }
+  urlCache.clear()
 })
 
-const handleFileSelection = rawFiles => {
-  if (props.disabled) return
+const handleFileSelection = async rawFiles => {
+  if (props.disabled || isCompressing.value) return
 
   const incomingFiles = Array.from(rawFiles)
   const validFiles = []
@@ -139,39 +158,58 @@ const handleFileSelection = rawFiles => {
     validFiles.push(file)
   }
 
-  const combined = [...props.modelValue, ...validFiles]
-  if (combined.length > props.maxFiles) {
-    emit('error', `Puedes adjuntar un máximo de ${props.maxFiles} comprobantes.`)
+  if (validFiles.length === 0) return
+
+  // Optimizar y comprimir imágenes en background
+  isCompressing.value = true
+  try {
+    const compressedFiles = await compressFiles(validFiles, {
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.82,
+    })
+
+    const combined = [...props.modelValue, ...compressedFiles]
+    if (combined.length > props.maxFiles) {
+      emit('error', `Puedes adjuntar un máximo de ${props.maxFiles} comprobantes.`)
+      emit('update:modelValue', combined.slice(0, props.maxFiles))
+    } else {
+      emit('update:modelValue', combined)
+    }
+  } catch (err) {
+    console.error('Error procesando archivos:', err)
+    const combined = [...props.modelValue, ...validFiles]
     emit('update:modelValue', combined.slice(0, props.maxFiles))
-  } else {
-    emit('update:modelValue', combined)
+  } finally {
+    isCompressing.value = false
   }
 }
 
-const onFilesChosen = event => {
-  if (event.target.files) {
-    handleFileSelection(event.target.files)
+const onFilesChosen = async event => {
+  if (event.target.files && event.target.files.length > 0) {
+    const files = event.target.files
+    await handleFileSelection(files)
     event.target.value = '' // Reset input
   }
 }
 
 const triggerFileInput = () => {
-  if (fileInputRef.value && !props.disabled) {
+  if (fileInputRef.value && !props.disabled && !isCompressing.value) {
     fileInputRef.value.click()
   }
 }
 
 const triggerCameraInput = () => {
-  if (cameraInputRef.value && !props.disabled) {
+  if (cameraInputRef.value && !props.disabled && !isCompressing.value) {
     cameraInputRef.value.click()
   }
 }
 
-const onDrop = event => {
+const onDrop = async event => {
   isDragging.value = false
-  if (props.disabled) return
+  if (props.disabled || isCompressing.value) return
   if (event.dataTransfer && event.dataTransfer.files) {
-    handleFileSelection(event.dataTransfer.files)
+    await handleFileSelection(event.dataTransfer.files)
   }
 }
 
@@ -249,7 +287,8 @@ const openPreview = item => {
           color="secondary"
           prepend-icon="ri-camera-line"
           class="camera-btn"
-          :disabled="disabled || modelValue.length >= maxFiles"
+          :disabled="disabled || isCompressing || modelValue.length >= maxFiles"
+          :loading="isCompressing"
           @click="triggerCameraInput"
         >
           Cámara
@@ -259,7 +298,8 @@ const openPreview = item => {
           variant="tonal"
           color="primary"
           prepend-icon="ri-upload-cloud-2-line"
-          :disabled="disabled || modelValue.length >= maxFiles"
+          :disabled="disabled || isCompressing || modelValue.length >= maxFiles"
+          :loading="isCompressing"
           @click="triggerFileInput"
         >
           Adjuntar
@@ -267,13 +307,25 @@ const openPreview = item => {
       </div>
     </div>
 
+    <!-- Banner de optimización en progreso -->
+    <VAlert
+      v-if="isCompressing"
+      type="info"
+      variant="tonal"
+      density="compact"
+      class="mb-2 text-caption font-weight-bold rounded-lg animate-pulse"
+      icon="ri-speed-up-line"
+    >
+      ⚡ Optimizando y comprimiendo fotos para carga instantánea...
+    </VAlert>
+
     <!-- Zona Drag & Drop cuando NO hay archivos -->
     <div
       v-if="modelValue.length === 0"
       class="drop-zone"
       :class="{
         'drop-zone-active': isDragging,
-        'drop-zone-disabled': disabled,
+        'drop-zone-disabled': disabled || isCompressing,
         'drop-zone-compact': compact,
       }"
       @dragover.prevent="isDragging = true"
@@ -337,6 +389,8 @@ const openPreview = item => {
           <img
             :src="item.url"
             :alt="item.name"
+            loading="lazy"
+            decoding="async"
             class="thumbnail-img"
           />
           <div class="thumbnail-overlay">

@@ -372,6 +372,8 @@
     "showNotification": true,
     "getApiBaseUrl": true,
     "usePermissions": true,
-    "refreshPermissionsUser": true
+    "refreshPermissionsUser": true,
+    "compressFiles": true,
+    "compressImage": true
   }
 }
