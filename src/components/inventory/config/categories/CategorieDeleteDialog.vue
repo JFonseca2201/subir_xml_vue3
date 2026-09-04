@@ -57,10 +57,6 @@ const deleteCategorie = async () => {
   }
 }
 
-onMounted(() => {
-  console.log(props.categorieSelected)
-})
-
 const onFormSubmit = () => {
   emit("update:isDialogVisible", false)
   emit("submit", userData.value)

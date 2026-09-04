@@ -1,6 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import NotificationToast from '@/components/common/NotificationToast.vue'
 import UnitDeleteConversionDialog from './UnitDeleteConversionDialog.vue'
@@ -16,8 +17,14 @@ const props = defineProps({
     default: null,
   },
   units: {
-    type: Object,
-    required: true,
+    type: [Array, Object],
+    required: false,
+    default: () => [],
+  },
+  listUnits: {
+    type: [Array, Object],
+    required: false,
+    default: () => [],
   },
 })
 
@@ -42,6 +49,83 @@ const conversionToDelete = ref(null)
 const notificationShow = ref(false)
 const notificationMessage = ref('')
 const notificationType = ref('success')
+
+const cleanFields = () => {
+  unit_to_id.value = null
+  unit_from_id.value = null
+  warning.value = null
+  error_exits.value = null
+  success.value = null
+}
+
+const onFormReset = () => {
+  cleanFields()
+  emit("update:isDialogVisible", false)
+}
+
+const dialogVisibleUpdate = val => {
+  emit("update:isDialogVisible", val)
+  if (!val) {
+    onFormReset()
+  }
+}
+
+// Cargar conversiones existentes de la unidad seleccionada
+const loadUnitConversions = async () => {
+  if (!props.unitSelected) return
+
+  isLoadingConversions.value = true
+  try {
+    const resp = await $api(`unit-conversions?unit_id=${props.unitSelected.id}`, {
+      method: "GET",
+      onResponseError({ response }) {
+        console.log('Error al cargar conversiones:', response._data?.error)
+      },
+    })
+
+    list_units_conversions.value = resp.unit_conversions || []
+  } catch (error) {
+    console.log(error)
+    list_units_conversions.value = []
+  } finally {
+    isLoadingConversions.value = false
+  }
+}
+
+// Cargar unidades desde props cuando el componente se monta
+const loadUnits = () => {
+  const incoming = (props.units && props.units.length) ? props.units : (props.listUnits || [])
+  list_units.value = Array.isArray(incoming) ? incoming : (incoming.data || [])
+}
+
+// Cargar unidades inmediatamente
+loadUnits()
+
+// Watch para actualizar las unidades cuando cambian los props
+watch([() => props.units, () => props.listUnits], ([newUnits, newListUnits]) => {
+  const incoming = (newUnits && newUnits.length) ? newUnits : (newListUnits || [])
+  list_units.value = Array.isArray(incoming) ? incoming : (incoming.data || [])
+}, { immediate: true })
+
+// Watch para cargar conversiones cuando cambia la unidad seleccionada
+watch(() => props.unitSelected, newUnit => {
+  if (newUnit) {
+    loadUnitConversions()
+  }
+}, { immediate: true })
+
+// Computed para filtrar unidades (excluir la unidad actual si hay unitSelected)
+const filteredUnits = computed(() => {
+  if (!list_units.value) return []
+
+  // Si hay unitSelected, excluir esa unidad del selector de destino
+  if (props.unitSelected) {
+    return list_units.value.filter(unit => unit.id !== props.unitSelected.id)
+  }
+
+  // Si no hay unitSelected, mostrar todas las unidades para el selector de destino
+  return list_units.value
+})
 
 const store = async () => {
   warning.value = null
@@ -78,13 +162,10 @@ const store = async () => {
       method: "POST",
       body: data,
       onResponseError({ response }) {
-        console.log('Error completo:', response._data)
-        console.log('Errors específicos:', response._data.errors)
-        error_exits.value = response._data.error
+        error_exits.value = response._data?.error
       },
     })
 
-    console.log(resp)
     if (resp.message == 403 || resp.status == 403) {
       error_exits.value = resp.message_text || resp.message || 'Error de permisos'
       showNotification(resp.message_text || resp.message || 'Error de permisos', 'error')
@@ -99,8 +180,6 @@ const store = async () => {
       warning.value = null
       error_exits.value = null
       success.value = null
-
-      //onFormReset();
     }
   } catch (error) {
     console.log(error)
@@ -110,84 +189,6 @@ const store = async () => {
     loader.stop()
   }
 }
-
-const cleanFields = () => {
-  unit_to_id.value = null
-  unit_from_id.value = null
-  warning.value = null
-  error_exits.value = null
-  success.value = null
-}
-
-const onFormReset = () => {
-  cleanFields
-  emit("update:isDialogVisible", false)
-}
-
-const dialogVisibleUpdate = val => {
-  emit("update:isDialogVisible", val)
-  if (!val) {
-    onFormReset()
-  }
-}
-
-// Cargar conversiones existentes de la unidad seleccionada
-const loadUnitConversions = async () => {
-  if (!props.unitSelected) return
-
-  isLoadingConversions.value = true
-  try {
-    const resp = await $api(`unit-conversions?unit_id=${props.unitSelected.id}`, {
-      method: "GET",
-      onResponseError({ response }) {
-        console.log('Error al cargar conversiones:', response._data.error)
-        showNotification('Error al cargar conversiones existentes', 'error')
-      },
-    })
-
-    console.log('Conversiones cargadas:', resp)
-    list_units_conversions.value = resp.unit_conversions || []
-  } catch (error) {
-    console.log(error)
-    list_units_conversions.value = []
-    showNotification('Error al cargar conversiones existentes', 'error')
-  } finally {
-    isLoadingConversions.value = false
-  }
-}
-
-// Cargar unidades desde props cuando el componente se monta
-const loadUnits = () => {
-  list_units.value = props.units || []
-}
-
-// Cargar unidades inmediatamente
-loadUnits()
-
-// Watch para actualizar las unidades cuando cambian los props
-watch(() => props.units, newUnits => {
-  list_units.value = newUnits || []
-}, { immediate: true })
-
-// Watch para cargar conversiones cuando cambia la unidad seleccionada
-watch(() => props.unitSelected, newUnit => {
-  if (newUnit) {
-    loadUnitConversions()
-  }
-}, { immediate: true })
-
-// Computed para filtrar unidades (excluir la unidad actual si hay unitSelected)
-const filteredUnits = computed(() => {
-  if (!list_units.value) return []
-
-  // Si hay unitSelected, excluir esa unidad del selector de destino
-  if (props.unitSelected) {
-    return list_units.value.filter(unit => unit.id !== props.unitSelected.id)
-  }
-
-  // Si no hay unitSelected, mostrar todas las unidades para el selector de destino
-  return list_units.value
-})
 
 // Función para abrir el diálogo de eliminar conversión
 const deleteConversion = conversion => {
@@ -204,12 +205,10 @@ const handleConversionDeleted = conversionId => {
 
 // Función para obtener el nombre de la unidad hacia la que se convierte
 const getUnitToName = conversion => {
-  // Intentar diferentes campos donde podría estar el nombre
   if (conversion.unit_to_name) return conversion.unit_to_name
   if (conversion.unit_to?.name) return conversion.unit_to.name
   if (conversion.unit?.name) return conversion.unit.name
 
-  // Si no encontramos el nombre, buscar en la lista de unidades por ID
   const unitTo = list_units.value.find(unit => unit.id === conversion.unit_to_id)
 
   return unitTo ? unitTo.name : 'Unidad desconocida'
@@ -225,7 +224,6 @@ const truncateText = (text, maxLength = 25) => {
 
 <template>
   <VDialog
-    scrollable
     max-width="600"
     :model-value="props.isDialogVisible"
     persistent

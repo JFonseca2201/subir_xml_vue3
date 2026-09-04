@@ -438,7 +438,7 @@ onMounted(() => {
       v-if="unit_selected_conversion && isUnitAddConversionDialogVisible"
       v-model:isDialogVisible="isUnitAddConversionDialogVisible"
       :unit-selected="unit_selected_conversion"
-      :list-units="list_units"
+      :units="list_units"
     />
   </div>
 </template>

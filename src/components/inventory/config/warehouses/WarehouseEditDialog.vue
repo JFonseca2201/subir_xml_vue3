@@ -61,10 +61,6 @@ const showNotification = (message, type = 'success') => {
   notificationShow.value = true
 }
 
-onMounted(() => {
-  console.log('Almacén seleccionado:', props.warehouseSelected)
-})
-
 const update = async () => {
   error_exist.value = null
   warning.value = null
