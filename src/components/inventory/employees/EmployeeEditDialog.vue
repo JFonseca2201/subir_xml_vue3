@@ -33,9 +33,15 @@ const employeeForm = ref({
   position: '',
   salary: 0,
   hired_at: null,
+  status: 'active',
 })
 
 const employeeFormRef = ref(null)
+
+const statusOptions = [
+  { label: 'Activo', value: 'active', color: 'success' },
+  { label: 'Inactivo', value: 'inactive', color: 'error' },
+]
 
 // Reglas de validación
 const requiredRule = v => !!v || 'Campo obligatorio'
@@ -151,6 +157,14 @@ const filterDigitsKey = event => {
 // Métodos
 const loadEmployeeData = () => {
   if (props.employee) {
+    const isActive = !props.employee.deleted_at && (
+      props.employee.status === undefined ||
+      props.employee.status === null ||
+      props.employee.status === 'active' ||
+      props.employee.status === 1 ||
+      props.employee.status === '1'
+    )
+
     employeeForm.value = {
       id: props.employee.id,
       identification: props.employee.identification,
@@ -161,6 +175,7 @@ const loadEmployeeData = () => {
       position: props.employee.position,
       salary: props.employee.salary,
       hired_at: props.employee.hired_at?.split(' ')[0] || null,
+      status: isActive ? 'active' : 'inactive',
     }
   }
 }
@@ -176,6 +191,7 @@ const resetEmployeeForm = () => {
     position: '',
     salary: 0,
     hired_at: null,
+    status: 'active',
   }
   if (employeeFormRef.value) {
     employeeFormRef.value.reset()
@@ -206,6 +222,8 @@ const updateEmployee = async () => {
         position: employeeForm.value.position.trim(),
         salary: parseFloat(employeeForm.value.salary),
         hired_at: employeeForm.value.hired_at,
+        status: employeeForm.value.status,
+        is_active: employeeForm.value.status === 'active',
       }),
     })
 
@@ -405,7 +423,7 @@ watch(() => props.employee, () => {
             <VRow>
               <VCol
                 cols="12"
-                md="6"
+                md="4"
               >
                 <VTextField
                   v-model="employeeForm.salary"
@@ -425,7 +443,7 @@ watch(() => props.employee, () => {
 
               <VCol
                 cols="12"
-                md="6"
+                md="4"
               >
                 <VTextField
                   v-model="employeeForm.hired_at"
@@ -438,6 +456,47 @@ watch(() => props.employee, () => {
                   type="date"
                   required
                 />
+              </VCol>
+
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VSelect
+                  v-model="employeeForm.status"
+                  :items="statusOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Estado Laboral"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="ri-toggle-line"
+                  hide-details="auto"
+                  required
+                >
+                  <template #selection="{ item }">
+                    <div class="d-flex align-center gap-2">
+                      <VBadge
+                        dot
+                        :color="item.raw.value === 'active' ? 'success' : 'error'"
+                        inline
+                      />
+                      <span class="font-weight-medium">{{ item.raw.label }}</span>
+                    </div>
+                  </template>
+                  <template #item="{ item, props: itemProps }">
+                    <VListItem v-bind="itemProps" :title="undefined">
+                      <template #prepend>
+                        <VBadge
+                          dot
+                          :color="item.raw.value === 'active' ? 'success' : 'error'"
+                          class="me-2"
+                        />
+                      </template>
+                      <VListItemTitle>{{ item.raw.label }}</VListItemTitle>
+                    </VListItem>
+                  </template>
+                </VSelect>
               </VCol>
             </VRow>
           </div>
