@@ -619,15 +619,13 @@ watch(
             </div>
 
             <div class="d-flex flex-column align-end gap-1">
-              <VChip
-                :color="typeColor"
-                variant="elevated"
-                class="font-weight-bold text-uppercase px-3"
-                size="small"
-                :prepend-icon="typeIcon"
+              <div
+                class="status-pill-clean"
+                :class="movementType === 'income' ? 'status-paid' : (movementType === 'expense' ? 'status-pending' : 'status-transfer')"
               >
-                {{ movementType === 'income' ? 'Ingreso' : (movementType === 'expense' ? 'Egreso' : 'Transferencia') }}
-              </VChip>
+                <span class="status-dot" />
+                <span>{{ movementType === 'income' ? 'Ingreso' : (movementType === 'expense' ? 'Egreso' : 'Transferencia') }}</span>
+              </div>
               <span class="text-caption text-medium-emphasis">
                 {{ formattedDate }}
               </span>
@@ -1044,7 +1042,7 @@ watch(
   </VDialog>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .attachment-card {
   transition: all 0.2s ease-in-out;
 }
@@ -1067,5 +1065,57 @@ watch(
 
 .attachment-card:hover .image-hover-overlay {
   opacity: 1;
+}
+
+// Status Pills (Estilo Socios Activo/Inactivo)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
 }
 </style>

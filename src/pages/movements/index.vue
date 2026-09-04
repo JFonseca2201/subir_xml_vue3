@@ -1538,46 +1538,35 @@ onMounted(() => {
               </td>
 
               <!-- Tipo (Ingreso vs Egreso) -->
-              <td class="py-3">
-                <VChip
+              <td class="py-3" style="white-space: nowrap;">
+                <div
                   v-if="movement.type === 0 || movement.type === 'income'"
-                  color="success"
-                  variant="tonal"
-                  size="small"
-                  prepend-icon="ri-arrow-down-circle-fill"
-                  class="font-weight-bold text-uppercase px-2.5"
+                  class="status-pill-clean status-paid"
                 >
-                  Ingreso
-                </VChip>
-                <VChip
+                  <span class="status-dot" />
+                  <span>Ingreso</span>
+                </div>
+                <div
                   v-else-if="movement.type === 1 || movement.type === 'expense'"
-                  color="error"
-                  variant="tonal"
-                  size="small"
-                  prepend-icon="ri-arrow-up-circle-fill"
-                  class="font-weight-bold text-uppercase px-2.5"
+                  class="status-pill-clean status-pending"
                 >
-                  Egreso
-                </VChip>
-                <VChip
+                  <span class="status-dot" />
+                  <span>Egreso</span>
+                </div>
+                <div
                   v-else-if="movement.type === 'transfer'"
-                  color="info"
-                  variant="tonal"
-                  size="small"
-                  prepend-icon="ri-arrow-left-right-line"
-                  class="font-weight-bold text-uppercase px-2.5"
+                  class="status-pill-clean status-transfer"
                 >
-                  Transferencia
-                </VChip>
-                <VChip
+                  <span class="status-dot" />
+                  <span>Transferencia</span>
+                </div>
+                <div
                   v-else
-                  color="secondary"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-bold text-uppercase px-2.5"
+                  class="status-pill-clean status-other"
                 >
-                  {{ movement.type }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ movement.type }}</span>
+                </div>
               </td>
 
               <!-- Descripción & Fecha -->
@@ -2035,7 +2024,7 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .sticky-header {
   position: sticky;
   top: 62px;
@@ -2155,6 +2144,68 @@ onMounted(() => {
   border-radius: 6px;
   border: 1.5px solid white;
   line-height: 1;
+}
+
+// Status Pills (Estilo Socios Activo/Inactivo)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-other {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
 }
 </style>
 
