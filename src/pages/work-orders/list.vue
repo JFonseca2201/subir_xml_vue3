@@ -257,6 +257,29 @@ const getDynamicLegend = workOrder => {
   return statusLabels[workOrder.status] || workOrder.status
 }
 
+const getStatusPillClass = workOrder => {
+  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) {
+    return 'status-paid'
+  }
+  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) {
+    return 'status-partial'
+  }
+
+  switch (workOrder.status) {
+    case 'ready':
+      return 'status-paid'
+    case 'in_progress':
+      return 'status-partial'
+    case 'received':
+      return 'status-transfer'
+    case 'delivered':
+      return 'status-paid'
+    case 'draft':
+    default:
+      return 'status-canceled'
+  }
+}
+
 const viewDetails = workOrder => {
   selectedWorkOrder.value = workOrder
   showDetailsDialog.value = true
@@ -699,30 +722,26 @@ onMounted(() => {
                 </span>
               </td>
 
-              <!-- Estado (Único chip tonal interactivo) -->
+              <!-- Estado (Píldora limpia estilo socios con punto) -->
               <td class="text-center py-3" style="white-space: nowrap;">
-                <VChip
-                  :color="statusColors[item.status]"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-bold text-uppercase cursor-pointer"
+                <div
+                  class="status-pill-clean"
+                  :class="[getStatusPillClass(item), item.status !== 'draft' ? 'cursor-pointer' : '']"
+                  title="Clic para ver secuencia de la orden"
                   @click="item.status !== 'draft' ? handleStatusClick(item) : null"
                 >
                   <VProgressCircular
                     v-if="loadingOrders === item.id"
                     indeterminate
-                    size="14"
-                    width="2"
-                    class="me-1"
+                    size="10"
+                    width="1.5"
                   />
-                  <VIcon
+                  <span
                     v-else
-                    :icon="getDynamicIcon(item)"
-                    size="14"
-                    class="me-1"
+                    class="status-dot"
                   />
-                  {{ getDynamicLegend(item) }}
-                </VChip>
+                  <span>{{ getDynamicLegend(item) }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -1082,5 +1101,83 @@ onMounted(() => {
 
 .hover-underline:hover {
   text-decoration: underline;
+}
+
+// Status Pills (Estilo Socios Activo/Inactivo con Punto)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
 }
 </style>
