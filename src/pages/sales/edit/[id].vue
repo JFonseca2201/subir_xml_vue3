@@ -63,7 +63,7 @@ const sale = ref({
   service_date: '',
   payment_status: '',
   is_credited: false,
-  payment_method: 'Efectivo',
+  payment_method: null,
   observations: '',
   technicians: [],
   subtotal: 0,
@@ -126,14 +126,7 @@ const onCreditChange = () => {
   } else {
     sale.value.payment_status = 'paid'
     if (paymentDistributions.value.length === 0 && total.value > 0) {
-      if (paymentDistributions.value.length === 0) {
-        const defaultAcc = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja')) || accounts.value[0]
-        paymentDistributions.value.push({
-          account_id: defaultAcc ? defaultAcc.id : null,
-          amount: total.value,
-          payment_method: 'Efectivo',
-        })
-      }
+      initializePaymentDistribution()
     }
   }
 }
@@ -149,12 +142,7 @@ watch(() => sale.value.payment_status, newStatus => {
       sale.value.is_credited = false
     }
     if (paymentDistributions.value.length === 0 && total.value > 0) {
-      const defaultAcc = accounts.value.find(acc => acc.type === 'cash' || acc.name?.toLowerCase().includes('caja')) || accounts.value[0]
-      paymentDistributions.value.push({
-        account_id: defaultAcc ? defaultAcc.id : null,
-        amount: total.value,
-        payment_method: 'Efectivo',
-      })
+      initializePaymentDistribution()
     }
   }
 })
@@ -226,12 +214,10 @@ const onDocumentTypeChange = async () => {
 // Inicializar con un pago distribuido cuando hay items
 const initializePaymentDistribution = () => {
   if (paymentDistributions.value.length === 0 && sale.value.items.length > 0) {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
-
     paymentDistributions.value.push({
-      account_id: cajaChica ? cajaChica.id : null,
-      amount: 0,
-      payment_method: 'Efectivo',
+      account_id: null,
+      amount: total.value,
+      payment_method: null,
     })
   }
 }
@@ -313,18 +299,14 @@ const getProductSku = productId => {
 
 // Gestión de pagos distribuidos
 const addPaymentDistribution = () => {
+  const rem = remainingAmount.value > 0 ? Number(remainingAmount.value.toFixed(2)) : 0
   const newPayment = {
     account_id: null,
-    amount: 0,
-    payment_method: 'Efectivo',
+    amount: rem,
+    payment_method: null,
   }
 
   paymentDistributions.value.push(newPayment)
-  if (newPayment.payment_method === 'Efectivo') {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
-
-    newPayment.account_id = cajaChica ? cajaChica.id : null
-  }
 }
 
 const removePaymentDistribution = index => {
@@ -335,20 +317,23 @@ const removePaymentDistribution = index => {
 
 // Asignar cuenta automáticamente según método de pago
 const onPaymentMethodChange = (dist, newMethod) => {
+  dist.payment_method = newMethod
   if (newMethod === 'Efectivo') {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
 
-    dist.account_id = cajaChica ? cajaChica.id : null
+    dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
   } else if (newMethod === 'Transferencia') {
+    dist.account_id = null
+  } else {
     dist.account_id = null
   }
 }
 
 const initializePaymentAccount = dist => {
-  if (dist.payment_method === 'Efectivo') {
-    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja'))
+  if (dist.payment_method === 'Efectivo' && !dist.account_id) {
+    const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
 
-    dist.account_id = cajaChica ? cajaChica.id : null
+    dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
   }
 }
 
@@ -914,6 +899,28 @@ const submitForm = async () => {
         validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
 
         return
+      }
+
+      // Validar que cada pago tenga un método de pago seleccionado y cuenta si es transferencia
+      for (let i = 0; i < paymentDistributions.value.length; i++) {
+        const dist = paymentDistributions.value[i]
+        if (!dist.payment_method) {
+          showValidationError.value = true
+          validationErrorMessage.value = `⚠️ Debe seleccionar el Tipo de Pago (Efectivo o Transferencia) para el Pago #${i + 1}`
+
+          return
+        }
+        if (dist.payment_method === 'Transferencia' && !dist.account_id) {
+          showValidationError.value = true
+          validationErrorMessage.value = `⚠️ Debe seleccionar la Cuenta Bancaria de destino para la Transferencia (Pago #${i + 1})`
+
+          return
+        }
+        // Asegurar cuenta para efectivo si no estaba asignada
+        if (dist.payment_method === 'Efectivo' && !dist.account_id) {
+          const cajaChica = accounts.value.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || accounts.value.find(acc => acc.type === 'cash')
+          dist.account_id = cajaChica ? cajaChica.id : (accounts.value[0]?.id || null)
+        }
       }
 
       if (totalDist > currentTotal + 0.01) {
@@ -2062,10 +2069,31 @@ onMounted(() => {
                     <div
                       v-for="(dist, index) in paymentDistributions"
                       :key="index"
-                      class="pa-3 mb-2 bg-slate-50 border rounded-lg"
+                      class="pa-3 mb-3 border rounded-xl"
+                      :class="!dist.payment_method ? 'bg-amber-50/40 border-warning' : (dist.payment_method === 'Transferencia' ? 'bg-blue-50/20 border-info' : 'bg-emerald-50/20 border-success')"
                     >
                       <div class="d-flex justify-space-between align-center mb-2">
-                        <span class="text-caption font-weight-bold text-slate-700">Pago #{{ index + 1 }}</span>
+                        <div class="d-flex align-center gap-2">
+                          <span class="text-caption font-weight-bold text-slate-800">Pago #{{ index + 1 }}</span>
+                          <VChip
+                            v-if="dist.payment_method"
+                            size="x-small"
+                            :color="dist.payment_method === 'Efectivo' ? 'success' : (dist.payment_method === 'Transferencia' ? 'info' : 'primary')"
+                            variant="tonal"
+                            class="font-weight-bold"
+                          >
+                            {{ dist.payment_method }}
+                          </VChip>
+                          <VChip
+                            v-else
+                            size="x-small"
+                            color="warning"
+                            variant="flat"
+                            class="font-weight-bold"
+                          >
+                            ⚠️ Sin método seleccionado
+                          </VChip>
+                        </div>
                         <VIcon
                           v-if="paymentDistributions.length > 1 && sale.status !== 'canceled'"
                           icon="ri-close-line"
@@ -2075,38 +2103,97 @@ onMounted(() => {
                           @click="removePaymentDistribution(index)"
                         />
                       </div>
+
+                      <!-- Botones de selección rápida y clara -->
+                      <div class="mb-2">
+                        <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
+                          Tipo de Pago <span class="text-error">*</span>
+                        </label>
+                        <div class="d-flex gap-2 mb-1">
+                          <VBtn
+                            size="small"
+                            :disabled="sale.status === 'canceled'"
+                            :variant="dist.payment_method === 'Efectivo' ? 'elevated' : 'outlined'"
+                            :color="dist.payment_method === 'Efectivo' ? 'success' : 'secondary'"
+                            prepend-icon="ri-money-dollar-circle-line"
+                            class="flex-grow-1 font-weight-bold text-caption rounded-lg"
+                            @click="onPaymentMethodChange(dist, 'Efectivo')"
+                          >
+                            Efectivo
+                          </VBtn>
+                          <VBtn
+                            size="small"
+                            :disabled="sale.status === 'canceled'"
+                            :variant="dist.payment_method === 'Transferencia' ? 'elevated' : 'outlined'"
+                            :color="dist.payment_method === 'Transferencia' ? 'info' : 'secondary'"
+                            prepend-icon="ri-bank-line"
+                            class="flex-grow-1 font-weight-bold text-caption rounded-lg"
+                            @click="onPaymentMethodChange(dist, 'Transferencia')"
+                          >
+                            Transferencia
+                          </VBtn>
+                        </div>
+                      </div>
+
                       <div class="d-flex flex-column gap-2">
+                        <!-- Dropdown para otros métodos si se necesita -->
                         <VSelect
+                          v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
                           v-model="dist.payment_method"
                           :disabled="sale.status === 'canceled'"
                           :items="paymentMethods"
                           item-title="title"
                           item-value="value"
-                          label="Forma"
+                          label="Forma de Pago *"
                           variant="outlined"
                           density="compact"
                           hide-details="auto"
                           @update:model-value="(val) => onPaymentMethodChange(dist, val)"
                         />
-                        <VSelect
-                          v-if="dist.payment_method === 'Transferencia'"
-                          v-model="dist.account_id"
-                          :disabled="sale.status === 'canceled'"
-                          :items="accounts"
-                          item-title="name"
-                          item-value="id"
-                          label="Cuenta"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                        />
+
+                        <!-- Si es transferencia, selector obligatorio de cuenta bancaria -->
+                        <div v-if="dist.payment_method === 'Transferencia'">
+                          <VSelect
+                            v-model="dist.account_id"
+                            :disabled="sale.status === 'canceled'"
+                            :items="accounts"
+                            item-title="name"
+                            item-value="id"
+                            label="Cuenta Bancaria Destino *"
+                            placeholder="Seleccione banco de destino..."
+                            variant="outlined"
+                            density="compact"
+                            color="info"
+                            prepend-inner-icon="ri-bank-line"
+                            :rules="[requiredRule]"
+                            hide-details="auto"
+                          />
+                        </div>
+
+                        <!-- Si es efectivo, confirmación de caja chica -->
+                        <div
+                          v-else-if="dist.payment_method === 'Efectivo'"
+                          class="text-caption text-success font-weight-medium d-flex align-center gap-1"
+                        >
+                          <VIcon icon="ri-checkbox-circle-fill" size="15" color="success" /> Ingresa a Caja Chica (Efectivo)
+                        </div>
+
+                        <!-- Si no ha seleccionado ningún método, alerta visual -->
+                        <div
+                          v-else
+                          class="text-caption text-warning font-weight-bold d-flex align-center gap-1"
+                        >
+                          <VIcon icon="ri-alert-fill" size="15" color="warning" /> Debe elegir Efectivo o Transferencia
+                        </div>
+
+                        <!-- Monto -->
                         <VTextField
                           v-model.number="dist.amount"
                           :disabled="sale.status === 'canceled'"
                           type="number"
                           min="0"
                           step="0.01"
-                          label="Monto"
+                          label="Monto *"
                           variant="outlined"
                           density="compact"
                           hide-details="auto"
@@ -2122,7 +2209,7 @@ onMounted(() => {
                       v-if="paymentDistributions.length > 0"
                       class="mt-2 text-caption text-right font-weight-bold"
                     >
-                      <div :class="remainingAmount < 0 ? 'text-error' : 'text-success'">
+                      <div :class="remainingAmount < -0.01 ? 'text-error' : 'text-success'">
                         Falta distribuir: ${{ remainingAmount.toFixed(2) }}
                       </div>
                     </div>
