@@ -546,9 +546,9 @@ onMounted(() => {
                             size="x-small"
                             variant="tonal"
                             color="secondary"
+                            prepend-icon="ri-folder-open-line"
                             class="font-weight-medium"
                           >
-                            <VIcon start icon="ri-folder-open-line" size="12" />
                             {{ movement.module }}
                           </VChip>
 
