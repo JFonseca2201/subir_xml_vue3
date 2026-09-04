@@ -101,7 +101,6 @@ const loadKardex = async () => {
       },
     })
 
-    console.log('Kardex product data:', resp)
     kardexData.value = {
       items: resp.data.items,
       itemsGrouped: resp.data.items_grouped,
@@ -231,7 +230,7 @@ definePage({ meta: { permission: 'kardex' } })
               variant="outlined"
               hide-details
               clearable
-              :loading="loading"
+              :loading="isLoading"
               @keyup.enter="applyFilters"
             />
           </VCol>
