@@ -1522,11 +1522,11 @@ onMounted(() => {
                   size="small"
                   color="primary"
                   variant="tonal"
+                  prepend-icon="ri-tools-line"
                   class="font-weight-bold cursor-pointer"
                   title="Número de Orden de Trabajo"
                   @click="openMovementNoteDialog(movement)"
                 >
-                  <VIcon start icon="ri-tools-line" size="13" />
                   {{ getMovementWorkOrderNumber(movement) }}
                 </VChip>
                 <span
@@ -1544,9 +1544,9 @@ onMounted(() => {
                   color="success"
                   variant="tonal"
                   size="small"
-                  class="font-weight-bold text-uppercase"
+                  prepend-icon="ri-arrow-down-circle-fill"
+                  class="font-weight-bold text-uppercase px-2.5"
                 >
-                  <VIcon start icon="ri-arrow-down-line" size="14" />
                   Ingreso
                 </VChip>
                 <VChip
@@ -1554,9 +1554,9 @@ onMounted(() => {
                   color="error"
                   variant="tonal"
                   size="small"
-                  class="font-weight-bold text-uppercase"
+                  prepend-icon="ri-arrow-up-circle-fill"
+                  class="font-weight-bold text-uppercase px-2.5"
                 >
-                  <VIcon start icon="ri-arrow-up-line" size="14" />
                   Egreso
                 </VChip>
                 <VChip
@@ -1564,9 +1564,9 @@ onMounted(() => {
                   color="info"
                   variant="tonal"
                   size="small"
-                  class="font-weight-bold text-uppercase"
+                  prepend-icon="ri-arrow-left-right-line"
+                  class="font-weight-bold text-uppercase px-2.5"
                 >
-                  <VIcon start icon="ri-arrow-left-right-line" size="14" />
                   Transferencia
                 </VChip>
                 <VChip
@@ -1574,7 +1574,7 @@ onMounted(() => {
                   color="secondary"
                   variant="tonal"
                   size="small"
-                  class="font-weight-bold text-uppercase"
+                  class="font-weight-bold text-uppercase px-2.5"
                 >
                   {{ movement.type }}
                 </VChip>

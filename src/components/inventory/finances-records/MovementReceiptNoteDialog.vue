@@ -88,9 +88,9 @@ const typeTitle = computed(() => {
 const typeIcon = computed(() => {
   switch (movementType.value) {
     case 'income':
-      return 'ri-add-circle-line'
+      return 'ri-arrow-down-circle-fill'
     case 'expense':
-      return 'ri-indeterminate-circle-line'
+      return 'ri-arrow-up-circle-fill'
     case 'transfer':
       return 'ri-arrow-left-right-line'
     default:
@@ -624,12 +624,8 @@ watch(
                 variant="elevated"
                 class="font-weight-bold text-uppercase px-3"
                 size="small"
+                :prepend-icon="typeIcon"
               >
-                <VIcon
-                  :icon="typeIcon"
-                  size="14"
-                  class="me-1"
-                />
                 {{ movementType === 'income' ? 'Ingreso' : (movementType === 'expense' ? 'Egreso' : 'Transferencia') }}
               </VChip>
               <span class="text-caption text-medium-emphasis">
