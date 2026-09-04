@@ -24,7 +24,13 @@ const editMember = ref({
   fullName: '',
   phone: '',
   address: '',
+  status: 'active',
 })
+
+const statusOptions = [
+  { label: 'Activo', value: 'active', color: 'success' },
+  { label: 'Inactivo', value: 'inactive', color: 'error' },
+]
 
 const formRef = ref(null)
 
@@ -110,12 +116,14 @@ const showNotification = (message, type = 'success') => {
 // Cargar datos iniciales
 watch(() => props.partnerSelected, val => {
   if (val) {
+    const isActive = val.is_active !== false && val.is_active !== 0 && val.is_active !== '0' && val.status !== 'inactive'
     editMember.value = {
       email: val.email || '',
       identification: val.identification || '',
       fullName: val.name || '',
       phone: val.phone || '',
       address: val.address || '',
+      status: isActive ? 'active' : 'inactive',
     }
   }
 }, { immediate: true })
@@ -174,6 +182,8 @@ const updatePartner = async () => {
       name: editMember.value.fullName,
       phone: editMember.value.phone,
       address: editMember.value.address,
+      status: editMember.value.status,
+      is_active: editMember.value.status === 'active',
     }
     console.log(data)
 
@@ -197,6 +207,7 @@ const updatePartner = async () => {
       email: editMember.value.email,
       phone: editMember.value.phone,
       address: editMember.value.address,
+      is_active: editMember.value.status === 'active',
       created_at: props.partnerSelected.created_at, // Mantener la fecha de creación original
     }
 
@@ -324,7 +335,10 @@ const updatePartner = async () => {
                 @input="e => { editMember.phone = e.target.value.replace(/\D/g, '').slice(0, 10) }"
               />
             </VCol>
-            <VCol cols="12">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <VTextField
                 v-model="editMember.address"
                 :rules="addressRules"
@@ -336,6 +350,46 @@ const updatePartner = async () => {
                 hide-details="auto"
                 required
               />
+            </VCol>
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <VSelect
+                v-model="editMember.status"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                label="Estado"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-toggle-line"
+                hide-details="auto"
+                required
+              >
+                <template #selection="{ item }">
+                  <div class="d-flex align-center gap-2">
+                    <VBadge
+                      dot
+                      :color="item.raw.value === 'active' ? 'success' : 'error'"
+                      inline
+                    />
+                    <span class="font-weight-medium">{{ item.raw.label }}</span>
+                  </div>
+                </template>
+                <template #item="{ item, props: itemProps }">
+                  <VListItem v-bind="itemProps" :title="undefined">
+                    <template #prepend>
+                      <VBadge
+                        dot
+                        :color="item.raw.value === 'active' ? 'success' : 'error'"
+                        class="me-2"
+                      />
+                    </template>
+                    <VListItemTitle>{{ item.raw.label }}</VListItemTitle>
+                  </VListItem>
+                </template>
+              </VSelect>
             </VCol>
             <VCol
               v-if="warning"

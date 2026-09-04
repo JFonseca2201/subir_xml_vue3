@@ -23,7 +23,23 @@ const isPartnerShowDialogVisible = ref(false)
 const isPartnerEditDialogVisible = ref(false)
 const isPartnerDeleteDialogVisible = ref(false)
 
+// Helper de estado del socio
+const isPartnerActive = partner => {
+  if (!partner) return false
+  if (partner.is_active !== undefined && partner.is_active !== null) {
+    return partner.is_active === true || partner.is_active === 1 || partner.is_active === '1'
+  }
+  if (partner.status !== undefined && partner.status !== null) {
+    return partner.status === 'active' || partner.status === 1 || partner.status === '1'
+  }
+  return true
+}
+
 // Métricas computadas
+const activePartnersCount = computed(() => {
+  return list_partners.value.filter(p => isPartnerActive(p)).length
+})
+
 const partnersWithPhoneCount = computed(() => {
   return list_partners.value.filter(p => !!p.phone).length
 })
@@ -181,13 +197,13 @@ onMounted(() => {
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-group-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Socios Registrados</div>
-            <div class="text-h6 font-weight-bold text-high-emphasis">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Socios</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ list_partners.length }} <span class="text-caption text-disabled font-weight-regular">en página</span>
             </div>
           </div>
@@ -195,28 +211,28 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
-            <VIcon icon="ri-phone-fill" size="24" />
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-user-follow-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Con Teléfono de Contacto</div>
-            <div class="text-h6 font-weight-bold text-success">
-              {{ partnersWithPhoneCount }} <span class="text-caption text-disabled font-weight-regular">registrados</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Socios Activos</div>
+            <div class="text-h6 font-weight-bold text-success text-truncate">
+              {{ activePartnersCount }} <span class="text-caption text-disabled font-weight-regular">activos</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-calendar-check-line" size="24" />
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-phone-fill" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Página Actual</div>
-            <div class="text-h6 font-weight-bold text-warning">
-              Página {{ currentPage }} <span class="text-caption text-disabled font-weight-regular">de {{ totalPage || 1 }}</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Con Teléfono</div>
+            <div class="text-h6 font-weight-bold text-warning text-truncate">
+              {{ partnersWithPhoneCount }} <span class="text-caption text-disabled font-weight-regular">contactables</span>
             </div>
           </div>
         </VCard>
@@ -328,6 +344,9 @@ onMounted(() => {
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Fecha Reg.
               </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+                Estado
+              </th>
               <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Acciones
               </th>
@@ -379,6 +398,17 @@ onMounted(() => {
                 <span class="text-caption text-medium-emphasis">
                   {{ formatDate(partner.created_at) }}
                 </span>
+              </td>
+
+              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="isPartnerActive(partner) ? 'status-paid' : 'status-pending'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ isPartnerActive(partner) ? 'Activo' : 'Inactivo' }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -478,5 +508,47 @@ onMounted(() => {
 
 .font-mono {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+// Status Pills (Estilo listado de clientes/empleados/compras)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
 }
 </style>

@@ -85,6 +85,16 @@ const formatCurrency = value => new Intl.NumberFormat('es-EC', {
   currency: 'USD',
 }).format(value || 0)
 
+const isPartnerActive = computed(() => {
+  if (partner.value.is_active !== undefined && partner.value.is_active !== null) {
+    return partner.value.is_active === true || partner.value.is_active === 1 || partner.value.is_active === '1'
+  }
+  if (partner.value.status !== undefined && partner.value.status !== null) {
+    return partner.value.status === 'active' || partner.value.status === 1 || partner.value.status === '1'
+  }
+  return true
+})
+
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
@@ -123,6 +133,18 @@ const closeDialog = () => {
 
         <!-- Metadata Pills en la Cabecera -->
         <div class="d-flex flex-wrap justify-center gap-2 mt-2">
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
+            :style="isPartnerActive ? 'background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);' : 'background: rgba(239, 68, 68, 0.25); color: #ffffff; border: 1px solid rgba(239, 68, 68, 0.5);'"
+          >
+            <VIcon
+              :icon="isPartnerActive ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+              size="14"
+              class="me-1"
+            />
+            <span>{{ isPartnerActive ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
             style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
