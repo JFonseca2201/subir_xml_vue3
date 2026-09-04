@@ -284,13 +284,13 @@ onMounted(() => {
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-roadster-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Vehículos Registrados</div>
-            <div class="text-h6 font-weight-bold text-high-emphasis">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Vehículos</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
             </div>
           </div>
@@ -298,30 +298,28 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Vehículos Activos</div>
-            <div class="text-h6 font-weight-bold text-success">
-              {{ activeVehiclesCount }} <span class="text-caption text-disabled font-weight-regular">en página
-                actual</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Vehículos Activos</div>
+            <div class="text-h6 font-weight-bold text-success text-truncate">
+              {{ activeVehiclesCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-car-washing-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Marcas en Taller</div>
-            <div class="text-h6 font-weight-bold text-warning">
-              {{ uniqueBrandsCount }} <span class="text-caption text-disabled font-weight-regular">marcas
-                distintas</span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Marcas en Taller</div>
+            <div class="text-h6 font-weight-bold text-warning text-truncate">
+              {{ uniqueBrandsCount }} <span class="text-caption text-disabled font-weight-regular">distintas</span>
             </div>
           </div>
         </VCard>

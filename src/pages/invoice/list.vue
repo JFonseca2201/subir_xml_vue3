@@ -282,13 +282,13 @@ onMounted(() => {
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-file-list-3-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Facturas</div>
-            <div class="text-h6 font-weight-bold text-high-emphasis">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Facturas</div>
+            <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">registradas</span>
             </div>
           </div>
@@ -296,13 +296,13 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-money-dollar-circle-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Comprado (Pág.)</div>
-            <div class="text-h6 font-weight-bold text-success font-mono">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Comprado (Pág.)</div>
+            <div class="text-h6 font-weight-bold text-success font-mono text-truncate">
               ${{ totalPurchasedInPage.toFixed(2) }}
             </div>
           </div>
@@ -310,13 +310,13 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="info" variant="tonal" rounded="lg">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
-          <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Facturas Procesadas</div>
-            <div class="text-h6 font-weight-bold text-info">
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Facturas Procesadas</div>
+            <div class="text-h6 font-weight-bold text-info text-truncate">
               {{ processedInvoicesCount }} <span class="text-caption text-disabled font-weight-regular">ingresadas</span>
             </div>
           </div>
