@@ -398,7 +398,10 @@ definePage({ meta: { permission: "settings" } })
       v-if="conversion_selected_delete && isUnitDeleteConversionDialogVisible"
       v-model:isDialogVisible="isUnitDeleteConversionDialogVisible"
       :conversion-selected="conversion_selected_delete"
+      :conversion="conversion_selected_delete"
+      :units="list_units"
       @delete-conversion="addDeleteConversion"
+      @conversion-deleted="addDeleteConversion"
     />
   </div>
 </template>

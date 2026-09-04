@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
+import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import NotificationToast from '@/components/common/NotificationToast.vue'
 
@@ -11,61 +12,81 @@ const props = defineProps({
   },
   conversion: {
     type: Object,
-    required: true,
+    required: false,
+    default: null,
+  },
+  conversionSelected: {
+    type: Object,
+    required: false,
+    default: null,
   },
   unitSelected: {
     type: Object,
-    required: true,
+    required: false,
+    default: null,
   },
   units: {
-    type: Object,
-    required: true,
+    type: [Array, Object],
+    required: false,
+    default: () => [],
+  },
+  listUnits: {
+    type: [Array, Object],
+    required: false,
+    default: () => [],
   },
 })
 
-const emit = defineEmits(["update:isDialogVisible", "conversionDeleted"])
+const emit = defineEmits([
+  "update:isDialogVisible",
+  "conversionDeleted",
+  "deleteConversion",
+])
 
 const loader = useLoaderStore()
+const { showNotification } = useGlobalToast()
+
+const currentConversion = computed(() => props.conversion || props.conversionSelected || {})
 
 // Variables para NotificationToast
 const notificationShow = ref(false)
 const notificationMessage = ref('')
 const notificationType = ref('success')
 
-const showNotification = (message, type = 'success') => {
-  notificationMessage.value = message
-  notificationType.value = type
-  notificationShow.value = true
-}
-
 // Función para obtener el nombre de la unidad hacia la que se convierte
 const getUnitToName = conversion => {
-  // Intentar diferentes campos donde podría estar el nombre
+  if (!conversion) return 'Unidad desconocida'
   if (conversion.unit_to_name) return conversion.unit_to_name
   if (conversion.unit_to?.name) return conversion.unit_to.name
   if (conversion.unit?.name) return conversion.unit.name
 
-  // Si no encontramos el nombre, buscar en la lista de unidades por ID
-  const unitTo = props.units.find(unit => unit.id === conversion.unit_to_id)
+  const unitsList = Array.isArray(props.units) ? props.units : (Array.isArray(props.listUnits) ? props.listUnits : [])
+  const unitTo = unitsList.find(unit => unit.id === conversion.unit_to_id)
   
   return unitTo ? unitTo.name : 'Unidad desconocida'
 }
 
 const deleteConversion = async () => {
+  const conv = currentConversion.value
+  if (!conv || !conv.id) {
+    showNotification('No se ha especificado la conversión a eliminar', 'error')
+    return
+  }
+
   loader.start()
   try {
-    await $api(`unit-conversions/${props.conversion.id}`, {
+    await $api(`unit-conversions/${conv.id}`, {
       method: "DELETE",
       onResponseError({ response }) {
-        console.log('Error al eliminar conversión:', response._data)
+        console.log('Error al eliminar conversión:', response._data?.error)
         showNotification('Error al eliminar conversión', 'error')
       },
     })
 
     showNotification('Conversión eliminada correctamente', 'success')
-    emit("conversionDeleted", props.conversion.id)
+    emit("conversionDeleted", conv.id)
+    emit("deleteConversion", conv)
     closeDialog()
-
   } catch (error) {
     console.log(error)
     showNotification('Error al eliminar conversión', 'error')
@@ -85,8 +106,6 @@ const dialogVisibleUpdate = val => {
 
 <template>
   <VDialog
-    scrollable
-    max-width="500"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="dialogVisibleUpdate"
