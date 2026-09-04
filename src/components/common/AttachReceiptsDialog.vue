@@ -82,9 +82,12 @@ onMounted(() => {
 watch(
   () => [props.isDialogVisible, props.attachableId, props.identifier],
   ([visible, id, ident]) => {
+    newFiles.value = []
     if (visible && (id || ident)) {
-      newFiles.value = []
+      existingAttachments.value = []
       fetchAttachments()
+    } else {
+      existingAttachments.value = []
     }
   },
   { immediate: true }
@@ -93,6 +96,7 @@ watch(
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
   newFiles.value = []
+  existingAttachments.value = []
 }
 
 // Guardar nuevos comprobantes

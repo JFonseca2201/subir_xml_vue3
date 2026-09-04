@@ -270,7 +270,7 @@ const paymentMethod = computed(() => {
 
 // ID para adjuntos
 const attachableData = computed(() => {
-  if (!props.movement) return { type: 'financial_movement', id: 0 }
+  if (!props.movement) return { type: 'financial_movement', id: 0, identifier: '-' }
   const m = props.movement
 
   let meta = m.metadata
@@ -279,40 +279,81 @@ const attachableData = computed(() => {
   }
 
   // 1. Si es Aporte de Capital
-  if (m.partner_id || m.partner_nombre || m.type === 'aporte') {
+  if (m.partner_id || m.partner_nombre || m.type === 'aporte' || m.movable_type?.includes('AporteCapital')) {
     return {
       type: 'aporte',
-      id: m.id,
+      id: m.movable_id || m.id,
       identifier: `APORTE-${String(m.id).padStart(5, '0')}`,
     }
   }
 
   // 2. Si es Pago / Adelanto de Empleado
-  if (m.employee_id || m.employee_name) {
-    const isPayment = m.type === 'payment' || m.referencia === 'employee_payment' || String(m.type).toLowerCase() === 'pago'
+  if (m.movable_type?.includes('EmployeePayment') || m.type === 'payment' || m.referencia === 'employee_payment' || String(m.type).toLowerCase() === 'pago') {
     return {
-      type: isPayment ? 'employee_payment' : 'employee_advance',
-      id: m.id,
+      type: 'employee_payment',
+      id: m.movable_id || m.id,
+      identifier: docNumber.value,
+    }
+  }
+
+  if (m.movable_type?.includes('EmployeeAdvance') || m.referencia === 'employee_advance') {
+    return {
+      type: 'employee_advance',
+      id: m.movable_id || m.id,
       identifier: docNumber.value,
     }
   }
 
   // 3. Si es Transferencia Interna
-  if (movementType.value === 'transfer') {
+  if (movementType.value === 'transfer' || m.movable_type?.includes('InternalTransfer')) {
     return {
       type: 'internal_transfer',
-      id: m.id,
+      id: m.movable_id || m.id,
       identifier: docNumber.value,
     }
   }
 
-  // 4. Movimientos Financieros Estándar (Ingreso / Egreso)
-  const finRecordId = meta?.finance_record_id || m.movable?.finance_record_id || m.movable?.finance_record?.id || m.movable?.financeRecord?.id || m.id
-  const type = (movementType.value === 'income' || movementType.value === 'expense' || m.type === 0 || m.type === 1 || m.type === '0' || m.type === '1') ? 'finance_record' : 'financial_movement'
+  // 4. Si es Venta
+  if (m.movable_type?.includes('Sale')) {
+    return {
+      type: 'sale',
+      id: m.movable_id || m.id,
+      identifier: docNumber.value,
+    }
+  }
 
+  // 5. Si es Orden de Trabajo
+  if (m.movable_type?.includes('WorkOrder')) {
+    return {
+      type: 'work_order',
+      id: m.movable_id || m.id,
+      identifier: docNumber.value,
+    }
+  }
+
+  // 6. Si es Factura / Compra
+  if (m.movable_type?.includes('Invoice')) {
+    return {
+      type: 'invoice',
+      id: m.movable_id || m.id,
+      identifier: docNumber.value,
+    }
+  }
+
+  // 7. Si es FinanceRecord (manual o PaymentDistribution)
+  const finRecordId = meta?.finance_record_id || m.movable?.finance_record_id || m.movable?.finance_record?.id || m.movable?.financeRecord?.id || (m.movable_type?.includes('FinanceRecord') ? m.movable_id : null)
+  if (finRecordId) {
+    return {
+      type: 'finance_record',
+      id: finRecordId,
+      identifier: docNumber.value,
+    }
+  }
+
+  // 8. Fallback a Financial Movement directo
   return {
-    type,
-    id: finRecordId,
+    type: 'financial_movement',
+    id: m.id,
     identifier: docNumber.value,
   }
 })

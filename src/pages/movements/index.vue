@@ -748,16 +748,90 @@ const getFirstImageUrl = movement => {
   return imgAtt ? getAttachmentUrl(imgAtt) : ''
 }
 
-const getMovementAttachableType = movement => {
-  if (!movement) return 'expense'
-  if (movement.type === 'transfer') return 'internal_transfer'
-  return (movement.type === 0 || movement.type === 'income') ? 'finance_record' : 'expense'
+const getMovementAttachableTarget = movement => {
+  if (!movement) return { type: 'financial_movement', id: 0 }
+
+  let metadata = movement.metadata
+  if (typeof metadata === 'string') {
+    try {
+      metadata = JSON.parse(metadata)
+    } catch (e) {
+      metadata = {}
+    }
+  }
+
+  // 1. Aporte de Capital
+  if (movement.partner_id || movement.partner_nombre || movement.type === 'aporte' || movement.movable_type?.includes('AporteCapital')) {
+    return {
+      type: 'aporte',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 2. Pago / Anticipo de Empleado
+  if (movement.movable_type?.includes('EmployeePayment') || movement.type === 'payment' || movement.referencia === 'employee_payment' || String(movement.type).toLowerCase() === 'pago') {
+    return {
+      type: 'employee_payment',
+      id: movement.movable_id || movement.id,
+    }
+  }
+  if (movement.movable_type?.includes('EmployeeAdvance') || movement.referencia === 'employee_advance') {
+    return {
+      type: 'employee_advance',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 3. Transferencia Interna
+  if (movement.type === 'transfer' || movement.movable_type?.includes('InternalTransfer')) {
+    return {
+      type: 'internal_transfer',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 4. Venta (Sale)
+  if (movement.movable_type?.includes('Sale')) {
+    return {
+      type: 'sale',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 5. Orden de Trabajo (WorkOrder)
+  if (movement.movable_type?.includes('WorkOrder')) {
+    return {
+      type: 'work_order',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 6. Factura / Compra (Invoice)
+  if (movement.movable_type?.includes('Invoice')) {
+    return {
+      type: 'invoice',
+      id: movement.movable_id || movement.id,
+    }
+  }
+
+  // 7. FinanceRecord (manual o PaymentDistribution)
+  const finRecordId = metadata?.finance_record_id || movement.movable?.finance_record_id || movement.movable?.finance_record?.id || movement.movable?.financeRecord?.id || (movement.movable_type?.includes('FinanceRecord') ? movement.movable_id : null)
+  if (finRecordId) {
+    return {
+      type: 'finance_record',
+      id: finRecordId,
+    }
+  }
+
+  // 8. Fallback a Financial Movement directo
+  return {
+    type: 'financial_movement',
+    id: movement.id,
+  }
 }
 
-const getMovementAttachableId = movement => {
-  if (!movement) return null
-  return getFinanceRecordId(movement) || movement.id
-}
+const getMovementAttachableType = movement => getMovementAttachableTarget(movement).type
+const getMovementAttachableId = movement => getMovementAttachableTarget(movement).id
 
 const openAttachDialog = movement => {
   selectedMovementReceipt.value = movement
