@@ -145,7 +145,6 @@ const loadKardex = async () => {
       },
     })
 
-    console.log('Kardex data:', resp)
     kardexData.value = resp.data
     showNotification('Kardex cargado correctamente', 'success')
   } catch (error) {
@@ -392,7 +391,7 @@ definePage({ meta: { permission: 'kardex' } })
           <VCol cols="12" sm="6" md="4">
             <VTextField v-model="search" label="Buscar por descripción o artículo"
               placeholder="Texto, nombre o SKU de artículo" prepend-inner-icon="ri-search-line" density="comfortable"
-              variant="outlined" hide-details clearable :loading="loading" @keyup.enter="applyFilters" />
+              variant="outlined" hide-details clearable :loading="isLoading" @keyup.enter="applyFilters" />
           </VCol>
 
           <!-- Tipo de Movimiento -->
