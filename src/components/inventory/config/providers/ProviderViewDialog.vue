@@ -8,14 +8,22 @@ const props = defineProps({
   },
   providerSelected: {
     type: Object,
-    required: true,
+    default: () => ({}),
   },
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
 
+const providerData = computed(() => props.providerSelected || {})
+
+const formattedCode = computed(() => {
+  const id = providerData.value.id
+  if (!id) return 'PROV-000'
+  return `PROV-${String(id).padStart(3, '0')}`
+})
+
 const isProviderActive = computed(() => {
-  const p = props.providerSelected
+  const p = providerData.value
   if (!p) return false
   if (p.is_active !== undefined && p.is_active !== null) {
     return p.is_active === true || p.is_active === 1 || String(p.is_active) === '1'
@@ -26,6 +34,22 @@ const isProviderActive = computed(() => {
   return true
 })
 
+const formatDate = dateStr => {
+  if (!dateStr) return 'Sin fecha'
+  const normalized = String(dateStr).replace(' ', 'T')
+  const d = new Date(normalized)
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString('es-EC', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+  return dateStr
+}
+
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
 }
@@ -35,12 +59,12 @@ const closeDialog = () => {
   <VDialog
     scrollable
     :model-value="props.isDialogVisible"
-    max-width="600px"
-    @update:model-value="val => emit('update:isDialogVisible', val)"
+    max-width="620px"
+    @update:model-value="closeDialog"
   >
-    <VCard class="custom-dialog-card">
-      <!-- Header Banner Info -->
-      <div class="custom-dialog-header-info">
+    <VCard class="custom-dialog-card rounded-xl overflow-hidden elevation-10">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -49,185 +73,144 @@ const closeDialog = () => {
           @click="closeDialog"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-building-line" />
+          <VIcon icon="ri-truck-line" />
         </div>
         <h3 class="custom-dialog-title">
           Ficha del Proveedor
         </h3>
         <p class="custom-dialog-subtitle">
-          Información comercial registrada
+          Información comercial y de contacto registrada
         </p>
       </div>
 
-      <!-- Content -->
-      <VCardText class="pa-4">
-        <!-- Header con avatar y estado -->
-        <div class="d-flex align-center justify-space-between mb-4 pb-3 border-b flex-wrap gap-2">
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              size="52"
-              color="primary"
-              variant="tonal"
-              rounded="lg"
-            >
-              <span class="text-h5 font-weight-bold">{{ props.providerSelected.name ? props.providerSelected.name.charAt(0).toUpperCase() : 'P' }}</span>
-            </VAvatar>
-            <div>
-              <h3 class="text-h6 font-weight-bold mb-0 text-high-emphasis">
-                {{ props.providerSelected.name || 'Sin nombre' }}
-              </h3>
-              <div class="d-flex align-center gap-1 text-medium-emphasis text-caption mt-1">
-                <VIcon
-                  icon="ri-map-pin-line"
-                  size="14"
-                  class="text-disabled"
-                />
-                <span>{{ props.providerSelected.address || 'Sin dirección' }}</span>
+      <!-- Main Content -->
+      <VCardText class="pa-4 pa-sm-6 dialog-body-content">
+        <!-- Hero Header del Proveedor -->
+        <div class="provider-hero-card pa-4 rounded-xl border mb-5 d-flex flex-column flex-sm-row align-center gap-4 bg-surface">
+          <VAvatar
+            size="64"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="elevation-1 flex-shrink-0"
+          >
+            <span class="text-h4 font-weight-bold text-uppercase">
+              {{ providerData.name ? providerData.name.trim().charAt(0) : 'P' }}
+            </span>
+          </VAvatar>
+
+          <div class="text-center text-sm-start flex-grow-1 min-w-0" style="width: 100%;">
+            <div class="d-flex flex-wrap align-center justify-center justify-sm-start gap-2 mb-1">
+              <span class="provider-code-chip">
+                {{ formattedCode }}
+              </span>
+              <div
+                class="status-pill-clean"
+                :class="isProviderActive ? 'status-paid' : 'status-pending'"
+              >
+                <span class="status-dot" />
+                <span>{{ isProviderActive ? 'Activo' : 'Inactivo' }}</span>
               </div>
             </div>
-          </div>
 
-          <div
-            class="status-pill-clean"
-            :class="isProviderActive ? 'status-paid' : 'status-pending'"
-          >
-            <span class="status-dot" />
-            <span>{{ isProviderActive ? 'Activo' : 'Inactivo' }}</span>
+            <h3 class="text-h6 font-weight-bold text-high-emphasis text-uppercase text-break mb-0">
+              {{ providerData.name || 'Sin Nombre Comercial' }}
+            </h3>
           </div>
         </div>
 
-        <VRow dense>
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VCard
-              variant="outlined"
-              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
-            >
-              <VAvatar
-                color="info"
-                variant="tonal"
-                rounded
-                size="40"
-              >
-                <VIcon icon="ri-hashtag" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Código
-                </div>
-                <div class="font-weight-bold text-body-1">
-                  PROV-{{ String(props.providerSelected.id).padStart(3, '0') }}
+        <!-- Grid de Información -->
+        <VRow dense class="gap-y-3">
+          <!-- RUC -->
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+              <div class="d-flex align-center gap-3">
+                <VAvatar color="info" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
+                  <VIcon icon="ri-file-list-3-line" size="22" />
+                </VAvatar>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">
+                    RUC / Identificación
+                  </div>
+                  <div class="font-weight-bold text-body-1 text-high-emphasis font-mono text-truncate" :title="providerData.ruc">
+                    {{ providerData.ruc || 'Sin RUC' }}
+                  </div>
                 </div>
               </div>
             </VCard>
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VCard
-              variant="outlined"
-              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
-            >
-              <VAvatar
-                color="warning"
-                variant="tonal"
-                rounded
-                size="40"
-              >
-                <VIcon icon="ri-file-list-3-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  RUC
-                </div>
-                <div class="font-weight-bold text-body-1 font-mono">
-                  {{ props.providerSelected.ruc || 'Sin RUC' }}
+          <!-- Teléfono -->
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+              <div class="d-flex align-center gap-3">
+                <VAvatar color="warning" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
+                  <VIcon icon="ri-phone-line" size="22" />
+                </VAvatar>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">
+                    Teléfono Comercial
+                  </div>
+                  <div class="font-weight-bold text-body-1 text-high-emphasis text-truncate" :title="providerData.phone">
+                    {{ providerData.phone || 'Sin teléfono' }}
+                  </div>
                 </div>
               </div>
             </VCard>
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VCard
-              variant="outlined"
-              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
-            >
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                rounded
-                size="40"
-              >
-                <VIcon icon="ri-phone-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Teléfono
-                </div>
-                <div class="font-weight-bold text-body-1">
-                  {{ props.providerSelected.phone || 'Sin teléfono' }}
+          <!-- Correo Electrónico -->
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+              <div class="d-flex align-center gap-3">
+                <VAvatar color="primary" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
+                  <VIcon icon="ri-mail-line" size="22" />
+                </VAvatar>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">
+                    Correo Electrónico
+                  </div>
+                  <div class="font-weight-bold text-body-2 text-high-emphasis text-truncate" :title="providerData.email">
+                    {{ providerData.email || 'Sin correo registrado' }}
+                  </div>
                 </div>
               </div>
             </VCard>
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-          >
-            <VCard
-              variant="outlined"
-              class="h-100 pa-3.5 rounded-lg d-flex align-center gap-3"
-            >
-              <VAvatar
-                color="info"
-                variant="tonal"
-                rounded
-                size="40"
-              >
-                <VIcon icon="ri-mail-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Correo Electrónico
-                </div>
-                <div
-                  class="font-weight-bold text-body-1 text-truncate"
-                  style="max-width: 170px;"
-                  :title="props.providerSelected.email"
-                >
-                  {{ props.providerSelected.email || 'Sin correo' }}
+          <!-- Fecha de Registro -->
+          <VCol cols="12" sm="6">
+            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+              <div class="d-flex align-center gap-3">
+                <VAvatar color="success" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
+                  <VIcon icon="ri-calendar-line" size="22" />
+                </VAvatar>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="text-caption text-medium-emphasis font-weight-medium">
+                    Fecha de Registro
+                  </div>
+                  <div class="font-weight-bold text-body-2 text-high-emphasis text-truncate" :title="formatDate(providerData.created_at)">
+                    {{ formatDate(providerData.created_at) }}
+                  </div>
                 </div>
               </div>
             </VCard>
           </VCol>
 
+          <!-- Dirección Comercial (Full Width) -->
           <VCol cols="12">
-            <VCard
-              variant="outlined"
-              class="pa-3.5 rounded-lg d-flex align-center gap-3"
-            >
-              <VAvatar
-                color="success"
-                variant="tonal"
-                rounded
-                size="40"
-              >
-                <VIcon icon="ri-calendar-line" />
-              </VAvatar>
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Fecha de Registro
-                </div>
-                <div class="font-weight-bold text-body-1">
-                  {{ props.providerSelected.created_at ? new Date(props.providerSelected.created_at).toLocaleDateString('es-EC', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha' }}
+            <VCard variant="outlined" class="info-metric-card pa-4 rounded-xl border">
+              <div class="d-flex align-start gap-3">
+                <VAvatar color="secondary" variant="tonal" rounded="lg" size="42" class="flex-shrink-0 mt-0.5">
+                  <VIcon icon="ri-map-pin-line" size="22" />
+                </VAvatar>
+                <div class="min-w-0 flex-grow-1">
+                  <div class="text-caption text-medium-emphasis font-weight-medium mb-0.5">
+                    Dirección Comercial
+                  </div>
+                  <div class="font-weight-medium text-body-2 text-high-emphasis text-break">
+                    {{ providerData.address || 'Sin dirección física registrada' }}
+                  </div>
                 </div>
               </div>
             </VCard>
@@ -237,16 +220,13 @@ const closeDialog = () => {
 
       <VDivider />
 
-      <!-- Actions -->
-      <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
+      <!-- Footer Actions -->
+      <VCardActions class="pa-4 d-flex justify-end align-center bg-surface">
         <VBtn
           color="secondary"
           variant="outlined"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-6 font-weight-semibold"
           height="40"
           @click="closeDialog"
         >
@@ -258,10 +238,100 @@ const closeDialog = () => {
 </template>
 
 <style scoped lang="scss">
+.custom-dialog-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.custom-dialog-header-primary {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.85) 100%) !important;
+  color: #ffffff !important;
+  padding: 1.75rem 1.5rem 1.5rem 1.5rem !important;
+  text-align: center !important;
+  position: relative !important;
+
+  .custom-dialog-close-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    color: #ffffff !important;
+    opacity: 0.9;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.18) !important;
+    }
+  }
+
+  .custom-dialog-avatar {
+    margin: 0 auto 0.75rem auto !important;
+    background-color: rgba(255, 255, 255, 0.22) !important;
+    border-radius: 1.125rem !important;
+    width: 60px !important;
+    height: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+
+    .v-icon {
+      color: #ffffff !important;
+      font-size: 2rem !important;
+    }
+  }
+
+  .custom-dialog-title {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .custom-dialog-subtitle {
+    font-size: 0.875rem !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+.provider-hero-card {
+  background-color: rgba(var(--v-theme-on-surface), 0.02) !important;
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.provider-code-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.info-metric-card {
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.04);
+  }
+}
+
 .font-mono {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
 }
 
+.text-break {
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}
+
+/* Pastillas de Estado */
 .status-pill-clean {
   display: inline-flex !important;
   align-items: center !important;
