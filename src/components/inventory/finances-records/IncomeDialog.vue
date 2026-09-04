@@ -126,6 +126,20 @@ onMounted(() => {
   loadAccounts()
 })
 
+const formatDateForInput = dateVal => {
+  if (!dateVal) return new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  if (typeof dateVal === 'string') {
+    return dateVal.split('T')[0].split(' ')[0]
+  }
+  try {
+    const d = new Date(dateVal)
+    if (!isNaN(d.getTime())) {
+      return d.toISOString().split('T')[0]
+    }
+  } catch (e) {}
+  return String(dateVal).substring(0, 10)
+}
+
 // Watch for editing movement
 watch(() => props.editingMovement, newVal => {
   if (newVal) {
@@ -154,7 +168,7 @@ watch(() => props.editingMovement, newVal => {
       work_order_number: newVal.work_order_number || '',
       invoice_number: newVal.invoice_number || '',
       description: newVal.description || '',
-      entry_date: newVal.entry_date || new Date().toISOString().split('T')[0],
+      entry_date: formatDateForInput(newVal.entry_date || newVal.movable?.entry_date || newVal.movable?.finance_record?.entry_date),
       payments: payments,
     }
   } else {

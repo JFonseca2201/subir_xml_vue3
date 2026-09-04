@@ -366,8 +366,10 @@ const editMovement = movement => {
   // Extraer datos del FinanceRecord si es un registro manual
   const finRecord = movement.movable?.finance_record || movement.movable?.financeRecord
   if (finRecord) {
-    movementForEdit.work_order_number = finRecord.work_order_number
-    movementForEdit.invoice_number = finRecord.invoice_number
+    movementForEdit.work_order_number = finRecord.work_order_number || movementForEdit.work_order_number
+    movementForEdit.invoice_number = finRecord.invoice_number || movementForEdit.invoice_number
+    movementForEdit.description = finRecord.description || movementForEdit.description
+    movementForEdit.entry_date = finRecord.entry_date || movementForEdit.entry_date
     if (finRecord.payment_distributions || finRecord.paymentDistributions) {
       movementForEdit.payment_distributions = finRecord.payment_distributions || finRecord.paymentDistributions
     }
@@ -661,32 +663,72 @@ const getAccountName = movement => {
   return cleanAccountName(fallbackName)
 }
 
-const getMovementDocNumber = movement => {
-  // 1. Verificar si existen propiedades directas
-  if (movement.work_order_number) return movement.work_order_number
-  if (movement.invoice_number) return movement.invoice_number
+const getMovementWorkOrderNumber = movement => {
+  if (!movement) return '-'
 
-  // 2. Verificar metadata
-  if (movement.metadata) {
-    const metadata = movement.metadata
-    const docNum = metadata.work_order || metadata.work_order_number || metadata.invoice || metadata.document_number || metadata.invoice_number
-    if (docNum) return docNum
+  if (movement.work_order_number) return movement.work_order_number
+
+  let metadata = movement.metadata
+  if (typeof metadata === 'string') {
+    try { metadata = JSON.parse(metadata) } catch (e) { metadata = {} }
+  }
+  if (metadata) {
+    if (metadata.work_order_number) return metadata.work_order_number
+    if (metadata.work_order) return metadata.work_order
+    if (metadata.ot_number) return metadata.ot_number
+    if (metadata.order_number) return metadata.order_number
   }
 
-  // 3. Verificar relación polimórfica movable
-  if (movement.movable) {
-    const movable = movement.movable
-    if (movable.finance_record) {
-      const fr = movable.finance_record
-      if (fr.work_order_number) return fr.work_order_number
-      if (fr.invoice_number) return fr.invoice_number
-    }
+  const movable = movement.movable
+  if (movable) {
     if (movable.work_order_number) return movable.work_order_number
-    if (movable.invoice_number) return movable.invoice_number
-    if (movable.document_number) return movable.document_number
+    if (movable.work_order?.number) return movable.work_order.number
+    if (movable.workOrder?.number) return movable.workOrder.number
+    if (movable.finance_record?.work_order_number) return movable.finance_record.work_order_number
+    if (movable.financeRecord?.work_order_number) return movable.financeRecord.work_order_number
   }
 
   return '-'
+}
+
+const getMovementInvoiceNumber = movement => {
+  if (!movement) return '-'
+
+  if (movement.invoice_number) return movement.invoice_number
+
+  let metadata = movement.metadata
+  if (typeof metadata === 'string') {
+    try { metadata = JSON.parse(metadata) } catch (e) { metadata = {} }
+  }
+  if (metadata) {
+    if (metadata.invoice_number) return metadata.invoice_number
+    if (metadata.invoice) return metadata.invoice
+    if (metadata.document_number) return metadata.document_number
+    if (metadata.factura) return metadata.factura
+  }
+
+  const movable = movement.movable
+  if (movable) {
+    if (movable.invoice_number) return movable.invoice_number
+    if (movable.document_number) return movable.document_number
+    if (movable.number) return movable.number
+    if (movable.finance_record?.invoice_number) return movable.finance_record.invoice_number
+    if (movable.financeRecord?.invoice_number) return movable.financeRecord.invoice_number
+  }
+
+  if (movement.type === 'transfer') {
+    return `TRANS-${String(movement.id || '').padStart(4, '0')}`
+  }
+
+  return `#${movement.id || '-'}`
+}
+
+const getMovementDocNumber = movement => {
+  const inv = getMovementInvoiceNumber(movement)
+  if (inv && inv !== '-') return inv
+  const wo = getMovementWorkOrderNumber(movement)
+  if (wo && wo !== '-') return wo
+  return `#${movement?.id || '-'}`
 }
 
 // --- NOTA DE MOVIMIENTO Y COMPROBANTES ---
@@ -1287,43 +1329,49 @@ onMounted(() => {
           <tr>
             <th
               class="text-left py-3"
-              style="width: 14%; min-width: 100px;"
+              style="width: 12%; min-width: 95px;"
             >
-              OT / FACTURA
+              N° FACTURA / DOC
             </th>
             <th
               class="text-left py-3"
-              style="width: 12%; min-width: 110px;"
+              style="width: 12%; min-width: 95px;"
+            >
+              ORDEN DE TRABAJO
+            </th>
+            <th
+              class="text-left py-3"
+              style="width: 10%; min-width: 100px;"
             >
               TIPO
             </th>
             <th
               class="text-left py-3"
-              style="width: 26%; min-width: 180px;"
+              style="width: 24%; min-width: 160px;"
             >
               DESCRIPCIÓN & FECHA
             </th>
             <th
               class="text-center py-3"
-              style="width: 12%; min-width: 110px;"
+              style="width: 11%; min-width: 100px;"
             >
               COMPROBANTE
             </th>
             <th
               class="text-left py-3"
-              style="width: 16%; min-width: 140px;"
+              style="width: 15%; min-width: 130px;"
             >
               CUENTA & MÉTODO
             </th>
             <th
               class="text-right py-3"
-              style="width: 10%; min-width: 90px;"
+              style="width: 8%; min-width: 85px;"
             >
               MONTO
             </th>
             <th
               class="text-center py-3"
-              style="width: 10%; min-width: 120px;"
+              style="width: 8%; min-width: 100px;"
             >
               ACCIONES
             </th>
@@ -1337,6 +1385,9 @@ onMounted(() => {
             :key="n"
             class="skeleton-row align-middle"
           >
+            <td class="py-4">
+              <div class="shimmer-line w-40" />
+            </td>
             <td class="py-4">
               <div class="shimmer-line w-40" />
             </td>
@@ -1370,7 +1421,7 @@ onMounted(() => {
         <tbody v-else-if="groupedMovements.length === 0">
           <tr>
             <td
-              colspan="7"
+              colspan="8"
               class="text-center py-12 text-medium-emphasis"
             >
               <VAvatar
@@ -1403,7 +1454,7 @@ onMounted(() => {
           >
             <!-- Fila de Encabezado por Fecha -->
             <tr class="transfer-date-header-row">
-              <td colspan="7">
+              <td colspan="8">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-2">
                   <div class="d-flex align-center gap-3">
                     <VAvatar
@@ -1453,14 +1504,36 @@ onMounted(() => {
               :key="movement.id"
               class="transfer-row"
             >
-              <!-- OT / Factura -->
+              <!-- N° Factura / Documento -->
               <td class="py-3">
                 <span
                   class="text-body-2 font-weight-black text-slate-900 cursor-pointer"
                   title="Clic para ver nota completa y comprobantes"
                   @click="openMovementNoteDialog(movement)"
                 >
-                  {{ getMovementDocNumber(movement) }}
+                  {{ getMovementInvoiceNumber(movement) }}
+                </span>
+              </td>
+
+              <!-- N° Orden de Trabajo -->
+              <td class="py-3">
+                <VChip
+                  v-if="getMovementWorkOrderNumber(movement) !== '-'"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="font-weight-bold cursor-pointer"
+                  title="Número de Orden de Trabajo"
+                  @click="openMovementNoteDialog(movement)"
+                >
+                  <VIcon start icon="ri-tools-line" size="13" />
+                  {{ getMovementWorkOrderNumber(movement) }}
+                </VChip>
+                <span
+                  v-else
+                  class="text-caption text-disabled"
+                >
+                  —
                 </span>
               </td>
 
