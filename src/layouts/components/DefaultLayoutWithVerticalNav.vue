@@ -4,7 +4,7 @@ import navItems from '@/navigation/vertical'
 import { useConfigStore } from '@core/stores/config'
 import { themeConfig, layoutConfig } from '@themeConfig'
 import { $api } from '@/utils/api'
-import { usePermissions } from '@/composables/usePermissions'
+import { usePermissions, refreshPermissionsUser } from '@/composables/usePermissions'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
