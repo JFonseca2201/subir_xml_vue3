@@ -384,7 +384,10 @@
       display: flex !important;
       flex-direction: column !important;
       max-height: calc(100vh - 2.5rem) !important;
+      border-radius: 20px !important;
       overflow: hidden !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--v-border-color), 0.08) !important;
+      background-color: rgb(var(--v-theme-surface)) !important;
 
       > .v-card-text {
         flex: 1 1 auto !important;
@@ -394,29 +397,160 @@
 
       > .v-card-actions {
         flex-shrink: 0 !important;
-        border-top: 1px solid rgba(var(--v-border-color), 0.12) !important;
+        border-top: 1px solid rgba(var(--v-border-color), 0.1) !important;
         background-color: rgb(var(--v-theme-surface)) !important;
+        padding: 1rem 1.5rem !important;
         z-index: 2;
       }
     }
   }
 }
 
-.dialog-header-banner {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.85) 100%) !important;
-  color: #ffffff !important;
-  padding: 1.25rem 1.5rem !important;
+.custom-dialog-card {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--v-border-color), 0.08) !important;
+}
 
-  .dialog-title {
-    color: #ffffff !important;
-    font-size: 1.15rem !important;
-    font-weight: 700 !important;
-    line-height: 1.3 !important;
+// Unified Dialog Headers System
+.custom-dialog-header-primary,
+.custom-dialog-header-danger,
+.custom-dialog-header-error,
+.custom-dialog-header-warning,
+.custom-dialog-header-info,
+.custom-dialog-header-success,
+.custom-dialog-header-secondary,
+.dialog-header-banner {
+  position: relative !important;
+  padding: 1.85rem 1.5rem 1.6rem 1.5rem !important;
+  text-align: center !important;
+  color: #ffffff !important;
+  overflow: hidden !important;
+
+  // Background gradients
+  &.custom-dialog-header-primary,
+  &.bg-primary {
+    background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%) !important;
   }
 
+  &.custom-dialog-header-danger,
+  &.custom-dialog-header-error,
+  &.bg-error {
+    background: linear-gradient(135deg, #EA5455 0%, #dc3545 100%) !important;
+  }
+
+  &.custom-dialog-header-warning,
+  &.bg-warning {
+    background: linear-gradient(135deg, #FF9F43 0%, #e67e22 100%) !important;
+  }
+
+  &.custom-dialog-header-success,
+  &.bg-success {
+    background: linear-gradient(135deg, #28C76F 0%, #10b981 100%) !important;
+  }
+
+  &.custom-dialog-header-info,
+  &.bg-info {
+    background: linear-gradient(135deg, #00CFE8 0%, #0284c7 100%) !important;
+  }
+
+  &.custom-dialog-header-secondary,
+  &.bg-secondary {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+  }
+
+  // Fallback for default dialog-header-banner or generic
+  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%);
+
+  // Ambient top shine
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+    filter: blur(16px);
+  }
+
+  .custom-dialog-close-btn {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 10px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 5 !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.32) !important;
+      border-color: rgba(255, 255, 255, 0.55) !important;
+      transform: scale(1.08) !important;
+    }
+  }
+
+  .custom-dialog-avatar {
+    margin: 0 auto 0.85rem auto !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 1.125rem !important;
+    width: 60px !important;
+    height: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    transition: transform 0.25s ease !important;
+
+    &:hover {
+      transform: scale(1.06);
+    }
+
+    .v-icon {
+      color: #ffffff !important;
+      font-size: 2rem !important;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  .custom-dialog-title,
+  .dialog-title {
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    margin-bottom: 0.3rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .custom-dialog-subtitle,
   .dialog-subtitle {
-    color: rgba(255, 255, 255, 0.85) !important;
-    font-size: 0.82rem !important;
+    font-size: 0.875rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
+    max-width: 540px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    opacity: 0.95;
   }
 }
 
@@ -431,7 +565,7 @@
 .user-dialog,
 .invoice-dialog {
   background-color: rgb(var(--v-theme-surface));
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
 }
 

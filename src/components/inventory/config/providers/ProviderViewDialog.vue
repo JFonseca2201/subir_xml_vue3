@@ -238,63 +238,6 @@ const closeDialog = () => {
 </template>
 
 <style scoped lang="scss">
-.custom-dialog-card {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
-}
-
-.custom-dialog-header-primary {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgba(var(--v-theme-primary), 0.85) 100%) !important;
-  color: #ffffff !important;
-  padding: 1.75rem 1.5rem 1.5rem 1.5rem !important;
-  text-align: center !important;
-  position: relative !important;
-
-  .custom-dialog-close-btn {
-    position: absolute !important;
-    top: 12px !important;
-    right: 12px !important;
-    color: #ffffff !important;
-    opacity: 0.9;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-
-    &:hover {
-      opacity: 1;
-      background-color: rgba(255, 255, 255, 0.18) !important;
-    }
-  }
-
-  .custom-dialog-avatar {
-    margin: 0 auto 0.75rem auto !important;
-    background-color: rgba(255, 255, 255, 0.22) !important;
-    border-radius: 1.125rem !important;
-    width: 60px !important;
-    height: 60px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-
-    .v-icon {
-      color: #ffffff !important;
-      font-size: 2rem !important;
-    }
-  }
-
-  .custom-dialog-title {
-    font-size: 1.35rem !important;
-    font-weight: 700 !important;
-    color: #ffffff !important;
-    margin-bottom: 0.25rem !important;
-    line-height: 1.25 !important;
-  }
-
-  .custom-dialog-subtitle {
-    font-size: 0.875rem !important;
-    color: rgba(255, 255, 255, 0.88) !important;
-    margin-bottom: 0 !important;
-  }
-}
-
 .provider-hero-card {
   background-color: rgba(var(--v-theme-on-surface), 0.02) !important;
   border-color: rgba(var(--v-border-color), 0.12) !important;
