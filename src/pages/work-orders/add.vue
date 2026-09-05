@@ -685,15 +685,6 @@ onMounted(async () => {
 
     <!-- Formulario Principal -->
     <VForm v-else ref="formRef" @submit.prevent>
-      <!-- Alerta de Validación -->
-      <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-6 rounded-xl" border="start" closable
-        @click:close="showValidationError = false">
-        <div class="d-flex align-center">
-          <VIcon icon="ri-error-warning-line" class="mr-2" />
-          <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
-        </div>
-      </VAlert>
-
       <VRow>
         <!-- Columna Izquierda (8 cols): Cliente, Vehículo y Productos/Servicios -->
         <VCol cols="12" lg="8">
@@ -1186,6 +1177,15 @@ onMounted(async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
+                <!-- Alerta de Validación encima del botón de guardar -->
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg" border="start" closable
+                  @click:close="showValidationError = false">
+                  <div class="d-flex align-center">
+                    <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
+                    <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
+                  </div>
+                </VAlert>
+
                 <VBtn block color="primary" variant="elevated" size="large" prepend-icon="ri-save-3-line"
                   class="font-weight-bold elevation-2" :loading="isSubmitting" @click="saveWorkOrder">
                   GUARDAR ORDEN

@@ -1505,7 +1505,7 @@ onMounted(async () => {
             </div>
             <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
               {{ sale.document_type === 'invoice' ? 'Emisión de comprobante fiscal electrónico autorizado por el SRI' :
-              'Crea un nuevo comprobante comercial de venta interno' }}
+                'Crea un nuevo comprobante comercial de venta interno' }}
             </p>
           </div>
         </div>
@@ -1559,15 +1559,6 @@ onMounted(async () => {
 
     <!-- Formulario Principal -->
     <VForm v-else ref="formRef" :disabled="isProcessing" @submit.prevent="submitForm">
-      <!-- Alerta de Validación -->
-      <VAlert v-if="showValidationError" color="error" variant="tonal" class="mb-6 rounded-xl" border="start" closable
-        @click:close="showValidationError = false">
-        <div class="d-flex align-center">
-          <VIcon icon="ri-error-warning-line" class="mr-2" />
-      <span class="text-body-2 font-weight-medium">{{ validationErrorMessage }}</span>
-        </div>
-      </VAlert>
-
       <VRow>
         <!-- Columna Izquierda (8 cols): Comprobante, Cliente y Productos/Servicios -->
         <VCol cols="12" lg="8">
@@ -1613,8 +1604,7 @@ onMounted(async () => {
                   @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
                   <div class="d-flex align-center gap-3">
                     <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
-                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40"
-                      class="transition-all">
+                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40" class="transition-all">
                       <VIcon icon="ri-file-text-line" size="22"
                         :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
                     </VAvatar>
@@ -1741,8 +1731,9 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
-                      item-title="license_plate" :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo (Opcional)'" icon="ri-car-line"
-                      :initial-item="selectedVehicle"
+                      item-title="license_plate"
+                      :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo (Opcional)'"
+                      icon="ri-car-line" :initial-item="selectedVehicle"
                       :rules="[() => (!hasServices || !!sale.vehicle_id) || 'Vehículo es requerido para servicios']">
                       <template #item="{ props, item }">
                         <VListItem v-bind="props" :title="item.raw.license_plate">
@@ -1759,16 +1750,9 @@ onMounted(async () => {
                       </template>
                     </VSearch>
                     <div class="d-flex align-center gap-1">
-                      <VBtn
-                        v-if="!selectedVehicle"
-                        size="small"
-                        variant="tonal"
-                        color="warning"
-                        type="button"
-                        title="Asignar modelo por defecto (Sin Placa)"
-                        :loading="isAssigningDefaultVehicle"
-                        @click="assignDefaultVehicle"
-                      >
+                      <VBtn v-if="!selectedVehicle" size="small" variant="tonal" color="warning" type="button"
+                        title="Asignar modelo por defecto (Sin Placa)" :loading="isAssigningDefaultVehicle"
+                        @click="assignDefaultVehicle">
                         <VIcon icon="ri-car-washing-line" class="me-1" size="16" />
                         Sin Placa
                       </VBtn>
@@ -1818,7 +1802,8 @@ onMounted(async () => {
                       </VCol>
 
                       <!-- Datos del Vehículo -->
-                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12" :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
+                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12"
+                        :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
                         <VAvatar color="secondary" variant="tonal" size="38" class="rounded-lg shrink-0">
                           <VIcon icon="ri-car-line" size="20" color="secondary" />
                         </VAvatar>
@@ -1833,18 +1818,22 @@ onMounted(async () => {
                             <span v-if="selectedVehicle.color" class="text-caption text-slate-500">
                               • {{ selectedVehicle.color }}
                             </span>
-                            <span v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)" class="text-caption text-slate-500">
+                            <span
+                              v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)"
+                              class="text-caption text-slate-500">
                               ({{ selectedVehicle.year }})
                             </span>
                           </div>
 
                           <!-- Dueño diferente del cliente asignado -->
-                          <div v-if="isVehicleOwnerDifferentFromClient" class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
+                          <div v-if="isVehicleOwnerDifferentFromClient"
+                            class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
                             <span class="text-caption text-amber-900 text-truncate" style="font-size: 0.75rem;">
                               <VIcon icon="ri-user-shared-line" size="13" color="warning" class="me-1" />
                               Dueño: <strong>{{ getVehicleOwnerName || 'Otro cliente' }}</strong>
                             </span>
-                            <VBtn size="x-small" variant="text" color="warning" density="compact" class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
+                            <VBtn size="x-small" variant="text" color="warning" density="compact"
+                              class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
                               Asignar
                             </VBtn>
                           </div>
@@ -2111,42 +2100,20 @@ onMounted(async () => {
                   </VAlert>
 
                   <template v-else>
-                    <div
-                      v-for="(dist, index) in paymentDistributions"
-                      :key="index"
-                      class="pa-3 mb-3 border rounded-xl"
-                      :class="!dist.payment_method ? 'bg-amber-50/40 border-warning' : (dist.payment_method === 'Transferencia' ? 'bg-blue-50/20 border-info' : 'bg-emerald-50/20 border-success')"
-                    >
+                    <div v-for="(dist, index) in paymentDistributions" :key="index" class="pa-3 mb-3 border rounded-xl"
+                      :class="!dist.payment_method ? 'bg-amber-50/40 border-warning' : (dist.payment_method === 'Transferencia' ? 'bg-blue-50/20 border-info' : 'bg-emerald-50/20 border-success')">
                       <div class="d-flex justify-space-between align-center mb-2">
                         <div class="d-flex align-center gap-2">
                           <span class="text-caption font-weight-bold text-slate-800">Pago #{{ index + 1 }}</span>
-                          <VChip
-                            v-if="dist.payment_method"
-                            size="x-small"
+                          <VChip v-if="dist.payment_method" size="x-small"
                             :color="dist.payment_method === 'Efectivo' ? 'success' : (dist.payment_method === 'Transferencia' ? 'info' : 'primary')"
-                            variant="tonal"
-                            class="font-weight-bold"
-                          >
+                            variant="tonal" class="font-weight-bold">
                             {{ dist.payment_method }}
                           </VChip>
-                          <VChip
-                            v-else
-                            size="x-small"
-                            color="warning"
-                            variant="flat"
-                            class="font-weight-bold animate-pulse"
-                          >
-                            ⚠️ Sin método seleccionado
-                          </VChip>
+
                         </div>
-                        <VIcon
-                          v-if="paymentDistributions.length > 1"
-                          icon="ri-close-line"
-                          color="error"
-                          class="cursor-pointer"
-                          size="18"
-                          @click="removePaymentDistribution(index)"
-                        />
+                        <VIcon v-if="paymentDistributions.length > 1" icon="ri-close-line" color="error"
+                          class="cursor-pointer" size="18" @click="removePaymentDistribution(index)" />
                       </div>
 
                       <!-- Botones de selección rápida y clara -->
@@ -2155,24 +2122,18 @@ onMounted(async () => {
                           Tipo de Pago <span class="text-error">*</span>
                         </label>
                         <div class="d-flex gap-2 mb-1">
-                          <VBtn
-                            size="small"
-                            :variant="dist.payment_method === 'Efectivo' ? 'elevated' : 'outlined'"
+                          <VBtn size="small" :variant="dist.payment_method === 'Efectivo' ? 'elevated' : 'outlined'"
                             :color="dist.payment_method === 'Efectivo' ? 'success' : 'secondary'"
                             prepend-icon="ri-money-dollar-circle-line"
                             class="flex-grow-1 font-weight-bold text-caption rounded-lg"
-                            @click="onPaymentMethodChange(dist, 'Efectivo')"
-                          >
+                            @click="onPaymentMethodChange(dist, 'Efectivo')">
                             Efectivo
                           </VBtn>
-                          <VBtn
-                            size="small"
+                          <VBtn size="small"
                             :variant="dist.payment_method === 'Transferencia' ? 'elevated' : 'outlined'"
                             :color="dist.payment_method === 'Transferencia' ? 'info' : 'secondary'"
-                            prepend-icon="ri-bank-line"
-                            class="flex-grow-1 font-weight-bold text-caption rounded-lg"
-                            @click="onPaymentMethodChange(dist, 'Transferencia')"
-                          >
+                            prepend-icon="ri-bank-line" class="flex-grow-1 font-weight-bold text-caption rounded-lg"
+                            @click="onPaymentMethodChange(dist, 'Transferencia')">
                             Transferencia
                           </VBtn>
                         </div>
@@ -2182,66 +2143,35 @@ onMounted(async () => {
                         <!-- Dropdown para otros métodos si se necesita -->
                         <VSelect
                           v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
-                          v-model="dist.payment_method"
-                          :items="paymentMethods"
-                          item-title="title"
-                          item-value="value"
-                          label="Forma de Pago *"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          @update:model-value="(val) => onPaymentMethodChange(dist, val)"
-                        />
+                          v-model="dist.payment_method" :items="paymentMethods" item-title="title" item-value="value"
+                          label="Forma de Pago *" variant="outlined" density="compact" hide-details="auto"
+                          @update:model-value="(val) => onPaymentMethodChange(dist, val)" />
 
                         <!-- Si es transferencia, selector obligatorio de cuenta bancaria -->
                         <div v-if="dist.payment_method === 'Transferencia'">
-                          <VSelect
-                            v-model="dist.account_id"
-                            :items="accounts"
-                            item-title="name"
-                            item-value="id"
-                            label="Cuenta Bancaria Destino *"
-                            placeholder="Seleccione banco de destino..."
-                            variant="outlined"
-                            density="compact"
-                            color="info"
-                            prepend-inner-icon="ri-bank-line"
-                            :rules="[requiredRule]"
-                            hide-details="auto"
-                          />
+                          <VSelect v-model="dist.account_id" :items="accounts" item-title="name" item-value="id"
+                            label="Cuenta Bancaria Destino *" placeholder="Seleccione banco de destino..."
+                            variant="outlined" density="compact" color="info" prepend-inner-icon="ri-bank-line"
+                            :rules="[requiredRule]" hide-details="auto" />
                         </div>
 
                         <!-- Si es efectivo, confirmación de caja chica -->
-                        <div
-                          v-else-if="dist.payment_method === 'Efectivo'"
-                          class="text-caption text-success font-weight-medium d-flex align-center gap-1"
-                        >
-                          <VIcon icon="ri-checkbox-circle-fill" size="15" color="success" /> Ingresa a Caja Chica (Efectivo)
+                        <div v-else-if="dist.payment_method === 'Efectivo'"
+                          class="text-caption text-success font-weight-medium d-flex align-center gap-1">
+                          <VIcon icon="ri-checkbox-circle-fill" size="15" color="success" /> Ingresa a Caja Chica
+                          (Efectivo)
                         </div>
 
                         <!-- Si no ha seleccionado ningún método, alerta visual -->
-                        <div
-                          v-else
-                          class="text-caption text-warning font-weight-bold d-flex align-center gap-1"
-                        >
+                        <div v-else class="text-caption text-warning font-weight-bold d-flex align-center gap-1">
                           <VIcon icon="ri-alert-fill" size="15" color="warning" /> Debe elegir Efectivo o Transferencia
                         </div>
 
                         <!-- Monto -->
-                        <VTextField
-                          v-model.number="dist.amount"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          label="Monto *"
-                          variant="outlined"
-                          density="compact"
-                          hide-details="auto"
-                          prefix="$"
-                          class="font-mono font-weight-bold"
-                          @input="handlePaymentAmountChange(dist, index)"
-                          @blur="handlePaymentAmountChange(dist, index)"
-                        />
+                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" label="Monto *"
+                          variant="outlined" density="compact" hide-details="auto" prefix="$"
+                          class="font-mono font-weight-bold" @input="handlePaymentAmountChange(dist, index)"
+                          @blur="handlePaymentAmountChange(dist, index)" />
                       </div>
                     </div>
 
@@ -2337,6 +2267,15 @@ onMounted(async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
+                <!-- Alerta de Validación encima del botón de guardar -->
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
+                  border="start" closable @click:close="showValidationError = false">
+                  <div class="d-flex align-center">
+                    <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
+                    <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
+                  </div>
+                </VAlert>
+
                 <VBtn block type="submit" color="primary" variant="elevated" size="large" prepend-icon="ri-save-3-line"
                   class="font-weight-bold elevation-2" :loading="isSubmitting" :disabled="isProcessing">
                   {{ sale.document_type === 'invoice' ? 'REGISTRAR FACTURA' : 'REGISTRAR NOTA DE VENTA' }}
@@ -2511,7 +2450,7 @@ onMounted(async () => {
               <span class="text-caption text-medium-emphasis font-weight-medium">VEHÍCULO</span>
               <span class="text-body-2 font-weight-semibold text-grey-darken-3">
                 {{ selectedVehicle.license_plate }} ({{ getBrandNameById(selectedVehicle.brand) }} {{
-                selectedVehicle.model
+                  selectedVehicle.model
                 }})
               </span>
             </div>
@@ -2529,37 +2468,34 @@ onMounted(async () => {
                 <span class="text-caption text-medium-emphasis font-weight-medium">TIPO DE PAGO</span>
                 <VChip
                   :color="sale.payment_status === 'pending' ? 'warning' : (sale.payment_method === 'Transferencia' ? 'info' : 'success')"
-                  size="small"
-                  variant="flat"
-                  class="font-weight-bold"
-                >
+                  size="small" variant="flat" class="font-weight-bold">
                   <VIcon
                     :icon="sale.payment_status === 'pending' ? 'ri-time-line' : (sale.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line')"
-                    size="14"
-                    class="me-1"
-                  />
+                    size="14" class="me-1" />
                   {{ computedPaymentMethodSummary }}
                 </VChip>
               </div>
 
               <!-- Desglose explícito de pagos -->
-              <div v-if="paymentDistributions.length > 0 && sale.payment_status !== 'pending'" class="bg-slate-50 pa-2.5 rounded-lg border mt-1">
-                <div v-for="(pd, i) in paymentDistributions" :key="i" class="d-flex justify-space-between align-center text-caption py-0.5">
+              <div v-if="paymentDistributions.length > 0 && sale.payment_status !== 'pending'"
+                class="bg-slate-50 pa-2.5 rounded-lg border mt-1">
+                <div v-for="(pd, i) in paymentDistributions" :key="i"
+                  class="d-flex justify-space-between align-center text-caption py-0.5">
                   <div class="d-flex align-center gap-1.5">
                     <VIcon
                       :icon="pd.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
-                      size="15"
-                      :color="pd.payment_method === 'Transferencia' ? 'info' : 'success'"
-                    />
+                      size="15" :color="pd.payment_method === 'Transferencia' ? 'info' : 'success'" />
                     <span class="font-weight-bold text-slate-800">{{ pd.payment_method || 'Sin método' }}</span>
-                    <span v-if="pd.payment_method === 'Transferencia' && pd.account_id" class="text-info font-weight-medium">
-                      — {{ accounts.find(a => a.id === pd.account_id)?.name || 'Banco' }}
+                    <span v-if="pd.payment_method === 'Transferencia' && pd.account_id"
+                      class="text-info font-weight-medium">
+                      — {{accounts.find(a => a.id === pd.account_id)?.name || 'Banco'}}
                     </span>
                     <span v-else-if="pd.payment_method === 'Efectivo'" class="text-medium-emphasis">
                       (Caja Chica)
                     </span>
                   </div>
-                  <span class="font-mono font-weight-bold text-slate-900">${{ Number(pd.amount || 0).toFixed(2) }}</span>
+                  <span class="font-mono font-weight-bold text-slate-900">${{ Number(pd.amount || 0).toFixed(2)
+                  }}</span>
                 </div>
               </div>
             </div>
