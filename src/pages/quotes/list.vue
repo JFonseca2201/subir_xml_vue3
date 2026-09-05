@@ -265,6 +265,45 @@ const isQuoteCanceled = quote => {
   return quote.status === 'canceled' || !!quote.deleted_at || !!quote.canceled_at
 }
 
+const getQuoteStatusPill = quote => {
+  if (!quote) return { class: 'status-canceled', text: 'Desconocido' }
+
+  if (isQuoteCanceled(quote)) {
+    return { class: 'status-pending', text: 'ANULADA' }
+  }
+
+  if (quote.converted_work_order_id || quote.converted_work_order) {
+    const otNum = quote.converted_work_order?.number ? ` #${quote.converted_work_order.number}` : ''
+    return { class: 'status-paid', text: `SELLADA - OT${otNum}` }
+  }
+
+  if (quote.converted_sale_id || quote.converted_sale) {
+    return { class: 'status-paid', text: 'SELLADA - VENTA' }
+  }
+
+  if (quote.status === 'completed') {
+    return { class: 'status-paid', text: 'SELLADA / ATENDIDA' }
+  }
+
+  return { class: 'status-quote', text: 'VIGENTE' }
+}
+
+const convertToWorkOrderDirect = quote => {
+  if (quote.converted_sale_id || quote.converted_work_order_id || quote.status === 'completed') {
+    showNotification('Esta cotización ya fue convertida y sellada', 'warning')
+    return
+  }
+  if (isQuoteCanceled(quote)) {
+    showNotification('No se puede convertir una cotización anulada', 'warning')
+    return
+  }
+
+  router.push({
+    path: '/work-orders/add',
+    query: { quote_id: quote.id },
+  })
+}
+
 // Acciones
 const viewQuote = async quote => {
   try {
@@ -851,19 +890,17 @@ onMounted(() => {
                 </span>
               </td>
 
-              <!-- Estado -->
+              <!-- Estado (Píldora limpia estilo socios con punto) -->
               <td class="text-center py-3" style="white-space: nowrap;">
-                <VChip
-                  :color="isQuoteCanceled(item) ? 'error' : (item.converted_sale_id || item.converted_work_order_id ? 'success' : 'info')"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-semibold text-uppercase cursor-pointer"
-                  :title="isQuoteCanceled(item) ? 'Clic para reactivar cotización' : 'Estado de cotización'"
+                <div
+                  class="status-pill-clean"
+                  :class="[getQuoteStatusPill(item).class, isQuoteCanceled(item) ? 'cursor-pointer' : '']"
+                  :title="isQuoteCanceled(item) ? 'Clic para reactivar cotización' : 'Estado de la cotización'"
                   @click="isQuoteCanceled(item) ? reactivateQuote(item) : null"
                 >
-                  <VIcon :icon="isQuoteCanceled(item) ? 'ri-close-circle-fill' : 'ri-file-list-3-line'" size="13" class="me-1" />
-                  {{ isQuoteCanceled(item) ? 'ANULADA' : (item.converted_sale_id || item.converted_work_order_id ? 'CONVERTIDA' : 'VIGENTE') }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ getQuoteStatusPill(item).text }}</span>
+                </div>
               </td>
 
               <!-- Acciones -->
@@ -879,20 +916,31 @@ onMounted(() => {
                     @click="viewQuote(item)"
                   />
 
-                  <!-- Convertir / Facturar -->
+                  <!-- Generar Orden de Trabajo Directa -->
                   <VBtn
-                    v-if="!item.converted_sale_id && !item.converted_work_order_id"
+                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    icon="ri-tools-line"
+                    title="Convertir a Orden de Trabajo"
+                    @click="convertToWorkOrderDirect(item)"
+                  />
+
+                  <!-- Facturar / Emitir Venta -->
+                  <VBtn
+                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
                     size="small"
                     color="success"
                     variant="tonal"
-                    icon="ri-exchange-dollar-line"
-                    title="Facturar o Generar Orden de Trabajo"
+                    icon="ri-shopping-cart-2-line"
+                    title="Facturar o Emitir Venta"
                     @click="openConvertDialog(item)"
                   />
 
                   <!-- Editar -->
                   <VBtn
-                    v-if="!item.converted_sale_id && !item.converted_work_order_id"
+                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
                     size="small"
                     color="warning"
                     variant="tonal"
@@ -1358,6 +1406,74 @@ onMounted(() => {
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+// Status Pills (Estilo Socios Activo/Inactivo con Punto)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-quote {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
   }
 }
 </style>

@@ -1,8 +1,11 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { getBrandNameById } from '@/data/vehicleBrands'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+
+const router = useRouter()
 
 const props = defineProps({
   isDialogVisible: {
@@ -457,10 +460,35 @@ const generateSinglePDF = sale => {
   const printWindow = window.open(pdfUrl, '_blank')
   if (printWindow) {
     printWindow.focus()
-    showNotification('PDF cargado exitosamente', 'success')
   } else {
     showNotification('Permite las ventanas emergentes para abrir el PDF', 'warning')
   }
+}
+
+const canConvertQuote = computed(() => {
+  return isQuote.value &&
+    !props.saleData?.converted_work_order_id &&
+    !props.saleData?.converted_sale_id &&
+    props.saleData?.status !== 'canceled' &&
+    props.saleData?.status !== 'completed'
+})
+
+const convertToWorkOrder = () => {
+  const quoteId = props.saleData?.id
+  closeDialog()
+  router.push({
+    path: '/work-orders/add',
+    query: { quote_id: quoteId },
+  })
+}
+
+const convertToSale = () => {
+  const quoteId = props.saleData?.id
+  closeDialog()
+  router.push({
+    path: '/sales/add',
+    query: { quote_id: quoteId },
+  })
 }
 </script>
 
@@ -954,6 +982,31 @@ const generateSinglePDF = sale => {
 
       <!-- Footer Actions Flotante y Moderno -->
       <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white flex-wrap sticky-dialog-footer">
+        <!-- Conversión Directa de Cotizaciones Activas -->
+        <VBtn
+          v-if="canConvertQuote"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-tools-line"
+          class="rounded-lg px-4 font-weight-bold elevation-2"
+          height="42"
+          @click="convertToWorkOrder"
+        >
+          Convertir a Orden de Trabajo
+        </VBtn>
+
+        <VBtn
+          v-if="canConvertQuote"
+          color="success"
+          variant="tonal"
+          prepend-icon="ri-shopping-cart-2-line"
+          class="rounded-lg px-4 font-weight-bold"
+          height="42"
+          @click="convertToSale"
+        >
+          Facturar Venta
+        </VBtn>
+
         <!-- Descargar XML (Facturas SRI) -->
         <VBtn v-if="isInvoice || saleData.sri_access_key" color="info" variant="outlined"
           prepend-icon="ri-file-code-line" class="rounded-lg px-4 font-weight-bold" height="42" @click="downloadXml">
@@ -966,8 +1019,8 @@ const generateSinglePDF = sale => {
           @click="downloadRide">
           Descargar RIDE
         </VBtn>
-        <VBtn v-else color="primary" variant="elevated" prepend-icon="ri-file-pdf-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2" height="42" @click="generateSinglePDF(props.saleData)">
+        <VBtn v-else color="secondary" variant="outlined" prepend-icon="ri-file-pdf-line"
+          class="rounded-lg px-5 font-weight-bold" height="42" @click="generateSinglePDF(props.saleData)">
           Ver PDF
         </VBtn>
 

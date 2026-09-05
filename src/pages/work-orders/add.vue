@@ -179,7 +179,12 @@ const saveWorkOrder = async () => {
       body: payload,
     })
 
-    showNotification('Orden de trabajo creada exitosamente', 'success')
+    const createdNumber = response?.data?.number || response?.workOrder?.number || workOrder.value.number
+    if (workOrder.value.quote_number || workOrder.value.quote_id) {
+      showNotification(`¡Orden de Trabajo #${createdNumber} creada exitosamente! La cotización #${workOrder.value.quote_number || workOrder.value.quote_id} ha sido sellada y atendida.`, 'success')
+    } else {
+      showNotification('Orden de trabajo creada exitosamente', 'success')
+    }
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
@@ -640,6 +645,32 @@ onMounted(async () => {
             @click="cancel">
             Volver al Lsitado
           </VBtn>
+        </div>
+      </div>
+    </VCard>
+
+    <!-- Banner de Conversión desde Cotización -->
+    <VCard
+      v-if="workOrder.quote_number || workOrder.quote_id"
+      class="mb-6 rounded-xl border elevation-0 pa-4"
+      style="background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-surface), 1) 100%); border-color: rgba(var(--v-theme-primary), 0.35) !important;"
+    >
+      <div class="d-flex align-center justify-space-between flex-wrap gap-3">
+        <div class="d-flex align-center gap-3">
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="40">
+            <VIcon icon="ri-file-shield-2-line" size="22" />
+          </VAvatar>
+          <div>
+            <div class="text-subtitle-2 font-weight-bold text-primary mb-0.5 d-flex align-center gap-2">
+              <span>⚡ Generando Orden de Trabajo desde Cotización #{{ workOrder.quote_number || workOrder.quote_id }}</span>
+              <VChip size="x-small" color="primary" variant="elevated" class="font-weight-bold">
+                EN CONVERSIÓN
+              </VChip>
+            </div>
+            <p class="text-caption text-medium-emphasis mb-0">
+              Los datos del cliente, vehículo, repuestos y servicios han sido precargados. Al guardar esta Orden de Trabajo, la cotización quedará automáticamente <strong>sellada y atendida</strong>.
+            </p>
+          </div>
         </div>
       </div>
     </VCard>
