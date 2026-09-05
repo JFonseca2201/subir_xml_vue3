@@ -25,6 +25,7 @@ const selectedClient = ref({})
 const isVehicleDialogVisible = ref(false)
 const selectedVehicle = ref({})
 const isMonthlySalesBreakdownOpen = ref(false)
+const activeTab = ref('finances')
 
 const kpis = ref({
   total_clients: 0,
@@ -943,8 +944,8 @@ const tecnicosOptions = computed(() => {
       class="position-relative"
       style="z-index: 1;"
     >
-      <!-- KPIs Section (Matching Mockup layout with system color cards) -->
-      <VRow class="mb-6">
+      <!-- KPIs Section (Compact & Sleek Layout) -->
+      <VRow class="mb-4" dense>
         <!-- KPI 1: Clientes -->
         <VCol
           cols="12"
@@ -953,18 +954,18 @@ const tecnicosOptions = computed(() => {
         >
           <VCard
             elevation="0"
-            class="pa-6 mock-card mock-card-gradient-1 h-100 d-flex flex-column justify-center align-center text-center"
+            class="pa-4 pa-sm-5 mock-card mock-card-gradient-1 h-100 d-flex flex-column justify-center align-center text-center"
           >
             <VIcon
               icon="ri-group-line"
-              size="48"
-              class="mb-3 text-white"
-              style="opacity: 0.9;"
+              size="36"
+              class="mb-2 text-white"
+              style="opacity: 0.95;"
             />
-            <div class="text-h3 font-weight-black text-white mb-2">
+            <div class="text-h4 font-weight-black text-white mb-1">
               {{ kpis.total_clients }}
             </div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">
+            <div class="text-caption text-white font-weight-bold text-uppercase mb-0 letter-spacing-1">
               Clientes Registrados
             </div>
           </VCard>
@@ -978,18 +979,18 @@ const tecnicosOptions = computed(() => {
         >
           <VCard
             elevation="0"
-            class="pa-6 mock-card mock-card-gradient-4 h-100 d-flex flex-column justify-center align-center text-center"
+            class="pa-4 pa-sm-5 mock-card mock-card-gradient-4 h-100 d-flex flex-column justify-center align-center text-center"
           >
             <VIcon
               icon="ri-car-line"
-              size="48"
-              class="mb-3 text-white"
-              style="opacity: 0.9;"
+              size="36"
+              class="mb-2 text-white"
+              style="opacity: 0.95;"
             />
-            <div class="text-h3 font-weight-black text-white mb-2">
+            <div class="text-h4 font-weight-black text-white mb-1">
               {{ kpis.total_vehicles }}
             </div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-0">
+            <div class="text-caption text-white font-weight-bold text-uppercase mb-0 letter-spacing-1">
               Vehículos Asociados
             </div>
           </VCard>
@@ -1003,25 +1004,25 @@ const tecnicosOptions = computed(() => {
         >
           <VCard
             elevation="0"
-            class="pa-6 mock-card mock-card-gradient-2 h-100 d-flex flex-column justify-center align-center text-center"
+            class="pa-4 pa-sm-5 mock-card mock-card-gradient-2 h-100 d-flex flex-column justify-center align-center text-center"
           >
             <VIcon
               icon="ri-wallet-3-line"
-              size="48"
-              class="mb-3 text-white"
-              style="opacity: 0.9;"
+              size="36"
+              class="mb-2 text-white"
+              style="opacity: 0.95;"
             />
-            <div class="text-h4 font-weight-black text-white mb-2">
+            <div class="text-h4 font-weight-black text-white mb-1">
               {{ formatCurrency(kpis.monthly_balance) }}
             </div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">
+            <div class="text-caption text-white font-weight-bold text-uppercase mb-1 letter-spacing-1">
               Balance Mensual
             </div>
             <div
-              class="text-caption text-white"
-              style="opacity: 0.9; line-height: 1.2;"
+              class="text-caption text-white opacity-85"
+              style="font-size: 0.72rem; line-height: 1.2;"
             >
-              VENTAS: {{ formatCurrency(kpis.monthly_sales) }}<br>GASTOS: {{ formatCurrency(kpis.monthly_expenses) }}
+              V: {{ formatCurrency(kpis.monthly_sales) }} | G: {{ formatCurrency(kpis.monthly_expenses) }}
             </div>
           </VCard>
         </VCol>
@@ -1034,748 +1035,539 @@ const tecnicosOptions = computed(() => {
         >
           <VCard
             elevation="0"
-            class="pa-6 mock-card mock-card-gradient-3 h-100 d-flex flex-column justify-center align-center text-center cursor-pointer"
+            class="pa-4 pa-sm-5 mock-card mock-card-gradient-3 h-100 d-flex flex-column justify-center align-center text-center cursor-pointer"
             @click="isStockDialogVisible = true"
           >
             <VIcon
               icon="ri-alert-line"
-              size="48"
-              class="mb-3 text-white"
-              style="opacity: 0.9;"
+              size="36"
+              class="mb-2 text-white"
+              style="opacity: 0.95;"
             />
-            <div class="text-h3 font-weight-black text-white mb-2">
+            <div class="text-h4 font-weight-black text-white mb-1">
               {{ kpis.low_stock_count }}
             </div>
-            <div class="text-subtitle-2 text-white font-weight-bold text-uppercase mb-1">
+            <div class="text-caption text-white font-weight-bold text-uppercase mb-1 letter-spacing-1">
               Stock Mínimo
             </div>
             <div
-              class="text-caption text-white"
-              style="opacity: 0.9;"
+              class="text-caption text-white opacity-85"
+              style="font-size: 0.72rem;"
             >
-              Alerta de productos
+              Click para ver alertas
             </div>
           </VCard>
         </VCol>
       </VRow>
 
-      <!-- Middle Section (Calendar & Wavy Chart) -->
-      <VRow class="mb-6">
-        <!-- Column 1: Calendar -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100 d-flex flex-column"
+      <!-- Segmented Module Navigator (Optimiza el alto y elimina el scroll infinito) -->
+      <div class="d-flex align-center justify-space-between flex-wrap gap-3 mb-4 mt-2">
+        <div class="dashboard-tabs-container pa-1 rounded-xl d-inline-flex bg-surface border">
+          <VBtn
+            :variant="activeTab === 'finances' ? 'elevated' : 'text'"
+            :color="activeTab === 'finances' ? 'primary' : 'default'"
+            size="small"
+            class="rounded-lg font-weight-bold dashboard-tab-btn"
+            prepend-icon="ri-line-chart-line"
+            @click="activeTab = 'finances'"
           >
-            <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center justify-space-between"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <div class="d-flex align-center gap-2">
-                <VIcon icon="ri-calendar-todo-line" />
-                <span>Mantenimiento Preventivo</span>
-              </div>
-              <VProgressCircular
-                v-if="isLoadingEvents"
-                indeterminate
-                size="16"
-                width="2"
-                color="primary"
-              />
-            </div>
-
-            <div class="calendar-widget">
-              <div class="d-flex justify-space-between align-center mb-4">
-                <VIcon
-                  icon="ri-arrow-left-s-line"
-                  class="cursor-pointer text-primary"
-                  @click="prevMonth"
-                />
-                <span class="font-weight-bold text-primary text-uppercase text-caption">{{ currentMonthName }}</span>
-                <VIcon
-                  icon="ri-arrow-right-s-line"
-                  class="cursor-pointer text-primary"
-                  @click="nextMonth"
-                />
-              </div>
-              <div class="calendar-grid">
-                <div
-                  v-for="w in daysOfWeek"
-                  :key="w"
-                  class="calendar-header-day"
-                >
-                  {{ w }}
-                </div>
-                <div
-                  v-for="(dayObj, idx) in calendarDays"
-                  :key="idx"
-                  class="calendar-day position-relative"
-                  :class="{
-                    'is-today': dayObj.isToday,
-                    'is-selected': dayObj.isSelected && !dayObj.isToday,
-                    'is-empty': !dayObj.day
-                  }"
-                  @click="selectDayObj(dayObj)"
-                >
-                  <span>{{ dayObj.day }}</span>
-                  <!-- Indicadores de eventos de mantenimiento -->
-                  <div
-                    v-if="dayObj.hasEvents"
-                    class="d-flex justify-center gap-1 position-absolute"
-                    style="bottom: 2px; left: 0; right: 0;"
-                  >
-                    <span
-                      v-for="(evt, eIdx) in dayObj.events.slice(0, 3)"
-                      :key="eIdx"
-                      class="rounded-circle"
-                      :style="{
-                        width: '5px',
-                        height: '5px',
-                        backgroundColor: evt.category_color === 'error' ? '#EA5455' :
-                          (evt.category_color === 'warning' ? '#FF9F43' :
-                          (evt.category_color === 'success' ? '#28C76F' :
-                          (evt.category_color === 'info' ? '#00CFE8' :
-                          (evt.category_color === 'deep-purple' ? '#7367F0' : '#7367F0'))))
-                      }"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Calendar Agenda Timeline Feed -->
-            <div
-              class="mt-4 pt-3 border-t flex-grow-1"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <div class="d-flex justify-space-between align-center mb-2">
-                <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate }}</span>
-                <VChip
-                  v-if="activeEvents.length > 0"
-                  size="x-small"
-                  color="primary"
-                  class="font-weight-black"
-                >
-                  {{ activeEvents.length }} servicio{{ activeEvents.length > 1 ? 's' : '' }}
-                </VChip>
-              </div>
-
-              <div
-                v-if="activeEvents.length === 0"
-                class="text-caption text-medium-emphasis text-center py-4 d-flex flex-column align-center justify-center"
-              >
-                <VIcon icon="ri-calendar-check-line" size="28" color="grey" class="mb-1" />
-                <span>Sin servicios proyectados para este día</span>
-              </div>
-              <div
-                v-else
-                class="d-flex flex-column gap-2"
-                style="max-height: 230px; overflow-y: auto;"
-              >
-                <div
-                  v-for="evt in activeEvents"
-                  :key="evt.id"
-                  class="d-flex justify-space-between align-center pa-2 rounded-lg elevation-1"
-                  style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
-                  :style="{ borderLeftColor: evt.category_color === 'error' ? '#EA5455' : (evt.category_color === 'warning' ? '#FF9F43' : (evt.category_color === 'success' ? '#28C76F' : (evt.category_color === 'deep-purple' ? '#7367F0' : '#7367F0'))) }"
-                >
-                  <div
-                    class="overflow-hidden cursor-pointer"
-                    style="max-width: 60%;"
-                    @click="openReminderDetails(evt)"
-                  >
-                    <div class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
-                      <VIcon :icon="evt.category_icon" size="14" :color="evt.category_color" />
-                      <span class="text-truncate">{{ evt.vehicle?.license_plate || 'Vehículo' }} • {{ evt.vehicle?.model || '' }}</span>
-                    </div>
-                    <div
-                      class="text-medium-emphasis text-truncate d-flex align-center gap-1"
-                      style="font-size: 0.68rem;"
-                    >
-                      <span class="font-weight-bold text-primary">{{ Number(evt.target_mileage).toLocaleString() }} KM</span>
-                      <span>-</span>
-                      <span class="text-truncate">{{ evt.client?.full_name || 'Cliente' }}</span>
-                    </div>
-                  </div>
-
-                  <div class="d-flex align-center gap-1">
-                    <!-- Botón WhatsApp -->
-                    <VBtn
-                      icon="ri-whatsapp-line"
-                      size="x-small"
-                      color="success"
-                      variant="tonal"
-                      title="Enviar recordatorio por WhatsApp"
-                      @click.stop="sendWhatsAppNotification(evt)"
-                    />
-
-                    <!-- Botón Correo -->
-                    <VBtn
-                      icon="ri-mail-send-line"
-                      size="x-small"
-                      color="primary"
-                      variant="tonal"
-                      :loading="isSendingAction"
-                      title="Enviar recordatorio por Correo"
-                      @click.stop="sendEmailNotification(evt)"
-                    />
-
-                    <!-- Botón Ver Detalles -->
-                    <VBtn
-                      icon="ri-eye-line"
-                      size="x-small"
-                      color="secondary"
-                      variant="text"
-                      title="Ver detalles"
-                      @click.stop="openReminderDetails(evt)"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- Column 2: Wavy double area chart -->
-        <VCol
-          cols="12"
-          md="8"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
+            Finanzas & Ventas
+          </VBtn>
+          <VBtn
+            :variant="activeTab === 'workshop' ? 'elevated' : 'text'"
+            :color="activeTab === 'workshop' ? 'primary' : 'default'"
+            size="small"
+            class="rounded-lg font-weight-bold dashboard-tab-btn"
+            prepend-icon="ri-tools-line"
+            @click="activeTab = 'workshop'"
           >
-            <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <VIcon icon="ri-line-chart-line" />
-              <span>Flujo de Caja YTD (Ingresos vs Egresos)</span>
-            </div>
-            <div class="pa-2">
-              <VueApexCharts
-                type="area"
-                height="325"
-                :options="wavyChartOptions"
-                :series="wavyChartSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- Extra Charts Section (Donut & Bar Chart) -->
-      <VRow class="mb-6">
-        <!-- Donut Chart: Ingresos vs Egresos -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100 d-flex flex-column"
+            Taller & Mantenimiento
+          </VBtn>
+          <VBtn
+            :variant="activeTab === 'purchases' ? 'elevated' : 'text'"
+            :color="activeTab === 'purchases' ? 'primary' : 'default'"
+            size="small"
+            class="rounded-lg font-weight-bold dashboard-tab-btn"
+            prepend-icon="ri-truck-line"
+            @click="activeTab = 'purchases'"
           >
-            <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <VIcon icon="ri-pie-chart-2-line" />
-              <span>Distribución Financiera Mensual</span>
-            </div>
-            <div class="pa-2 d-flex justify-center align-center flex-grow-1">
-              <VueApexCharts
-                type="donut"
-                height="250"
-                :options="donutChartOptions"
-                :series="donutChartSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
+            Proveedores & Compras
+          </VBtn>
+        </div>
 
-        <!-- Bar Chart: Top 5 Productos -->
-        <VCol
-          cols="12"
-          md="8"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <div class="d-flex align-center gap-2">
-                <VIcon icon="ri-bar-chart-horizontal-line" />
-                <span>Top 5 Productos Vendidos (Unidades)</span>
-              </div>
-              <VBtn
-                size="x-small"
-                variant="tonal"
-                color="primary"
-                class="font-weight-bold text-none"
-                prepend-icon="ri-list-ordered"
-                @click="isMonthlySalesBreakdownOpen = true"
-              >
-                Ver Ranking Completo
-              </VBtn>
-            </div>
-            <div class="pa-2">
-              <VueApexCharts
-                type="bar"
-                height="250"
-                :options="barChartOptions"
-                :series="barChartSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- Bottom Section (Feed list, progress meters, radial chart) -->
-      <VRow class="mb-6">
-        <!-- Feed Card: Top Sold Products -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100 d-flex flex-column justify-space-between"
-          >
-            <div>
-              <div
-                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-              >
-                <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-star-line" />
-                  <span>Productos Más Vendidos</span>
-                </div>
-                <VBtn
-                  size="x-small"
-                  variant="text"
-                  color="primary"
-                  class="font-weight-bold pa-0 text-none"
-                  @click="isMonthlySalesBreakdownOpen = true"
-                >
-                  Ver todos
-                </VBtn>
-              </div>
-              <div
-                v-if="topProducts.length === 0"
-                class="text-center py-6 text-medium-emphasis"
-              >
-                Sin registros de ventas en el mes.
-              </div>
-              <div v-else>
-                <div
-                  v-for="(prod, idx) in topProducts.slice(0, 3)"
-                  :key="idx"
-                  class="mb-4"
-                >
-                  <div class="d-flex justify-space-between align-center">
-                    <span
-                      class="font-weight-bold text-uppercase text-caption text-primary text-truncate"
-                      style="max-width: 70%;"
-                    >{{ prod.description }}</span>
-                    <span class="text-caption font-weight-bold text-high-emphasis">{{
-                      Number(prod.total_quantity).toLocaleString() }} u.</span>
-                  </div>
-                  <p
-                    class="text-caption text-medium-emphasis mb-0"
-                    style="font-size: 0.75rem;"
-                  >
-                    Monto mensual: {{
-                      formatCurrency(prod.total_revenue) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- Progress Meters Card -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div
-              class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-2 d-flex align-center gap-2"
-              style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-            >
-              <VIcon icon="ri-bar-chart-fill" />
-              <span>Rendimiento Operativo</span>
-            </div>
-
-            <div class="d-flex flex-column gap-5 mt-2">
-              <div>
-                <div class="d-flex justify-space-between text-caption mb-1">
-                  <span class="font-weight-bold">Eficiencia del Balance</span>
-                  <span class="text-primary font-weight-bold">{{ balancePercentage }}%</span>
-                </div>
-                <VProgressLinear
-                  v-model="balancePercentage"
-                  color="#7367F0"
-                  height="8"
-                  class="rounded"
-                />
-              </div>
-
-              <div>
-                <div class="d-flex justify-space-between text-caption mb-1">
-                  <span class="font-weight-bold">Registro de Clientes (Meta 100)</span>
-                  <span class="text-primary font-weight-bold">{{ clientsPercentage }}%</span>
-                </div>
-                <VProgressLinear
-                  v-model="clientsPercentage"
-                  color="#00CFE8"
-                  height="8"
-                  class="rounded"
-                />
-              </div>
-
-              <div>
-                <div class="d-flex justify-space-between text-caption mb-1">
-                  <span class="font-weight-bold">Vehículos Registrados (Meta 150)</span>
-                  <span class="text-primary font-weight-bold">{{ vehiclesPercentage }}%</span>
-                </div>
-                <VProgressLinear
-                  v-model="vehiclesPercentage"
-                  color="#28C76F"
-                  height="8"
-                  class="rounded"
-                />
-              </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- Radial Chart Card -->
-        <VCol
-          cols="12"
-          md="4"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100 d-flex flex-column justify-space-between align-center"
-          >
-            <div class="w-100">
-              <div
-                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-2 border-b pb-2 d-flex align-center gap-2 w-100"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-              >
-                <VIcon icon="ri-radar-line" />
-                <span>Progreso de Meta Mensual</span>
-              </div>
-            </div>
-
-            <div
-              class="d-flex justify-center align-center"
-              style="height: 180px; width: 100%;"
-            >
-              <VueApexCharts
-                type="radialBar"
-                height="200"
-                width="100%"
-                :options="radialChartOptions"
-                :series="radialChartSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
-
-      <!-- SECCIÓN: GESTIÓN DE COMPRAS Y PROVEEDORES -->
-      <div class="mt-8 mb-4">
-        <div class="d-flex justify-space-between align-center flex-wrap gap-2">
-          <div>
-            <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
-              <VIcon
-                icon="ri-truck-line"
-                color="primary"
-              />
-              Compras a Proveedores & Repuestos Adquiridos
-            </h2>
-            <p class="text-caption text-medium-emphasis mb-0">
-              Proveedores con mayor facturación y distribución de productos más comprados
-            </p>
-          </div>
-          <div class="d-flex gap-2">
-            <VBtn
-              size="small"
-              variant="tonal"
-              color="primary"
-              prepend-icon="ri-exchange-dollar-line"
-              to="/invoice/reconciliation"
-              class="font-weight-bold"
-            >
-              Conciliación
-            </VBtn>
-            <VBtn
-              size="small"
-              variant="elevated"
-              color="primary"
-              prepend-icon="ri-file-list-3-line"
-              to="/invoice/list"
-              class="font-weight-bold"
-            >
-              Ver Compras
-            </VBtn>
-          </div>
+        <div class="text-caption text-medium-emphasis d-none d-md-flex align-center gap-1 font-weight-medium">
+          <VIcon icon="ri-layout-grid-line" size="14" color="primary" />
+          <span>Vista Modular Optimizada</span>
         </div>
       </div>
 
-      <VRow class="mb-6">
-        <!-- Top Proveedores a los que más se les ha comprado -->
-        <VCol
-          cols="12"
-          lg="7"
-        >
-          <VCard
-            elevation="0"
-            class="pa-5 mock-card h-100 d-flex flex-column justify-space-between"
-          >
-            <div>
+      <!-- TAB 1: FINANZAS & VENTAS -->
+      <div v-show="activeTab === 'finances'" class="tab-content-fade">
+        <VRow class="mb-4" dense>
+          <!-- Flujo de caja YTD -->
+          <VCol cols="12" md="8">
+            <VCard elevation="0" class="pa-4 mock-card h-100">
               <div
-                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-3 d-flex justify-space-between align-center flex-wrap gap-2"
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-3 border-b pb-2 d-flex align-center gap-2"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <VIcon icon="ri-line-chart-line" />
+                <span>Flujo de Caja YTD (Ingresos vs Egresos)</span>
+              </div>
+              <div class="pa-1">
+                <VueApexCharts
+                  type="area"
+                  height="260"
+                  :options="wavyChartOptions"
+                  :series="wavyChartSeries"
+                />
+              </div>
+            </VCard>
+          </VCol>
+
+          <!-- Donut: Distribución Financiera -->
+          <VCol cols="12" md="4">
+            <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column">
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-3 border-b pb-2 d-flex align-center gap-2"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <VIcon icon="ri-pie-chart-2-line" />
+                <span>Distribución Mensual</span>
+              </div>
+              <div class="pa-1 d-flex justify-center align-center flex-grow-1">
+                <VueApexCharts
+                  type="donut"
+                  height="230"
+                  :options="donutChartOptions"
+                  :series="donutChartSeries"
+                />
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+
+        <VRow class="mb-4" dense>
+          <!-- Top 5 Productos Vendidos -->
+          <VCol cols="12" md="7">
+            <VCard elevation="0" class="pa-4 mock-card h-100">
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-3 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
                 style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
               >
                 <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-store-3-line" />
-                  <span>Top Proveedores con Mayor Facturación</span>
+                  <VIcon icon="ri-bar-chart-horizontal-line" />
+                  <span>Top 5 Productos Vendidos (Unidades)</span>
                 </div>
-                <VChip
-                  size="small"
-                  color="primary"
+                <VBtn
+                  size="x-small"
                   variant="tonal"
-                  class="font-weight-bold"
+                  color="primary"
+                  class="font-weight-bold text-none"
+                  prepend-icon="ri-list-ordered"
+                  @click="isMonthlySalesBreakdownOpen = true"
                 >
-                  Total: {{ formatCurrency(kpis.total_purchases_spent) }}
-                </VChip>
+                  Ranking Completo
+                </VBtn>
               </div>
-
-              <div
-                v-if="topSuppliers.length === 0"
-                class="text-center py-8 text-medium-emphasis"
-              >
-                <VIcon icon="ri-inbox-line" size="40" class="mb-2 text-disabled" />
-                <p class="text-caption mb-0">Sin compras registradas aún en el sistema.</p>
-              </div>
-
-              <div
-                v-else
-                class="d-flex flex-column gap-3"
-              >
-                <div
-                  v-for="(sup, idx) in topSuppliers"
-                  :key="sup.id"
-                  class="pa-3 rounded-xl border d-flex align-center justify-space-between flex-wrap gap-3 transition-all hover-elevate"
-                  style="background-color: rgba(var(--v-theme-surface), 1); border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-                >
-                  <!-- Rank + Info -->
-                  <div class="d-flex align-center gap-3 flex-grow-1" style="min-width: 220px;">
-                    <div
-                      class="supplier-rank-badge font-weight-black"
-                      :class="`rank-${idx + 1}`"
-                    >
-                      #{{ idx + 1 }}
-                    </div>
-
-                    <div class="overflow-hidden" style="max-width: 280px;">
-                      <div class="font-weight-bold text-subtitle-2 text-high-emphasis text-truncate" :title="sup.name">
-                        {{ sup.name }}
-                      </div>
-                      <div class="text-caption text-medium-emphasis d-flex align-center gap-2 mt-0.5">
-                        <span v-if="sup.ruc">RUC: <code class="text-primary">{{ sup.ruc }}</code></span>
-                        <span v-if="sup.last_purchase">• Última: {{ sup.last_purchase }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Invoices Count & Total -->
-                  <div class="d-flex align-center justify-space-between justify-sm-end gap-4" style="min-width: 200px;">
-                    <VChip
-                      size="x-small"
-                      color="secondary"
-                      variant="tonal"
-                      class="font-weight-medium"
-                    >
-                      {{ sup.invoices_count }} {{ sup.invoices_count === 1 ? 'factura' : 'facturas' }}
-                    </VChip>
-
-                    <div class="text-right" style="min-width: 110px;">
-                      <div class="font-weight-black text-subtitle-1 text-high-emphasis font-mono">
-                        {{ formatCurrency(sup.total) }}
-                      </div>
-                      <div class="d-flex align-center justify-end gap-1 text-caption text-medium-emphasis">
-                        <span class="font-weight-bold text-primary">{{ sup.percentage }}%</span>
-                        <span>del total</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Progress Linear -->
-                  <div class="w-100 mt-1">
-                    <VProgressLinear
-                      :model-value="sup.percentage"
-                      :color="idx === 0 ? '#7367F0' : (idx === 1 ? '#00CFE8' : (idx === 2 ? '#28C76F' : '#FF9F43'))"
-                      height="5"
-                      rounded
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- Pastel del Producto Más Comprado -->
-        <VCol
-          cols="12"
-          lg="5"
-        >
-          <VCard
-            elevation="0"
-            class="pa-5 mock-card h-100 d-flex flex-column justify-space-between"
-          >
-            <div>
-              <div
-                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-4 border-b pb-3 d-flex align-center gap-2"
-                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
-              >
-                <VIcon icon="ri-pie-chart-line" />
-                <span>Productos Más Comprados a Proveedores</span>
-              </div>
-              <p class="text-caption text-medium-emphasis mb-2">
-                Distribución por unidades adquiridas según facturas de compra
-              </p>
-
-              <div
-                v-if="topPurchasedProducts.length === 0"
-                class="text-center py-10 text-medium-emphasis"
-              >
-                <VIcon icon="ri-pie-chart-2-line" size="48" class="mb-2 text-disabled" />
-                <p class="text-caption mb-0">Sin ítems de compras procesados aún.</p>
-              </div>
-
-              <div
-                v-else
-                class="pa-2 d-flex justify-center align-center"
-              >
+              <div class="pa-1">
                 <VueApexCharts
-                  type="donut"
-                  height="330"
-                  width="100%"
-                  :options="purchasedProductsOptions"
-                  :series="purchasedProductsSeries"
+                  type="bar"
+                  height="220"
+                  :options="barChartOptions"
+                  :series="barChartSeries"
                 />
               </div>
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
+            </VCard>
+          </VCol>
 
-      <!-- Panel de Rendimiento de Taller (Órdenes de Trabajo) -->
-      <div class="mt-8 mb-4">
-        <h2 class="text-h5 font-weight-bold text-high-emphasis d-flex align-center gap-2">
-          <VIcon
-            icon="ri-tools-fill"
-            color="primary"
-          />
-          Rendimiento Operativo de Taller - Basado en OTs
-        </h2>
-        <p class="text-caption text-medium-emphasis">
-          Métricas de órdenes de trabajo y rendimiento del personal técnico
-        </p>
+          <!-- Rendimiento & Meta -->
+          <VCol cols="12" md="5">
+            <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between">
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-2 border-b pb-2 d-flex align-center gap-2"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <VIcon icon="ri-radar-line" />
+                <span>Rendimiento Operativo</span>
+              </div>
+
+              <div class="d-flex flex-column gap-3 my-auto py-2">
+                <div>
+                  <div class="d-flex justify-space-between text-caption mb-1">
+                    <span class="font-weight-bold">Eficiencia del Balance</span>
+                    <span class="text-primary font-weight-bold">{{ balancePercentage }}%</span>
+                  </div>
+                  <VProgressLinear
+                    v-model="balancePercentage"
+                    color="#7367F0"
+                    height="6"
+                    rounded
+                  />
+                </div>
+
+                <div>
+                  <div class="d-flex justify-space-between text-caption mb-1">
+                    <span class="font-weight-bold">Registro de Clientes (Meta 100)</span>
+                    <span class="text-info font-weight-bold">{{ clientsPercentage }}%</span>
+                  </div>
+                  <VProgressLinear
+                    v-model="clientsPercentage"
+                    color="#00CFE8"
+                    height="6"
+                    rounded
+                  />
+                </div>
+
+                <div>
+                  <div class="d-flex justify-space-between text-caption mb-1">
+                    <span class="font-weight-bold">Vehículos Registrados (Meta 150)</span>
+                    <span class="text-success font-weight-bold">{{ vehiclesPercentage }}%</span>
+                  </div>
+                  <VProgressLinear
+                    v-model="vehiclesPercentage"
+                    color="#28C76F"
+                    height="6"
+                    rounded
+                  />
+                </div>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
       </div>
 
-      <VRow class="mb-6">
-        <!-- OT Totales -->
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">
-              OTs Totales por Estado
-            </div>
-            <div class="text-h4 font-weight-black text-high-emphasis mb-4">
-              {{ otTotalesSeries.reduce((a, b) => a + b, 0) }} órdenes
-            </div>
-            <div class="pa-2 d-flex justify-center align-center">
-              <VueApexCharts
-                type="donut"
-                height="240"
-                width="100%"
-                :options="otTotalesOptions"
-                :series="otTotalesSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
+      <!-- TAB 2: TALLER & MANTENIMIENTO -->
+      <div v-show="activeTab === 'workshop'" class="tab-content-fade">
+        <VRow class="mb-4" dense>
+          <!-- Mantenimiento Preventivo (Calendario + Agenda) -->
+          <VCol cols="12" md="5">
+            <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column">
+              <div
+                class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-3 border-b pb-2 d-flex align-center justify-space-between"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <div class="d-flex align-center gap-2">
+                  <VIcon icon="ri-calendar-todo-line" />
+                  <span>Mantenimiento Preventivo</span>
+                </div>
+                <VProgressCircular
+                  v-if="isLoadingEvents"
+                  indeterminate
+                  size="16"
+                  width="2"
+                  color="primary"
+                />
+              </div>
 
-        <!-- SLA -->
-        <VCol
-          cols="12"
-          md="6"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
-              SLA de Cierre de Órdenes
-            </div>
-            <div class="text-caption text-medium-emphasis mb-4">
-              Tiempo en días hasta que la OT queda como Cerrada / Finalizada
-            </div>
-            <div class="pa-2 d-flex justify-center align-center mt-2">
-              <VueApexCharts
-                type="pie"
-                height="240"
-                width="100%"
-                :options="slaOptions"
-                :series="slaSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
+              <div class="calendar-widget">
+                <div class="d-flex justify-space-between align-center mb-3">
+                  <VIcon
+                    icon="ri-arrow-left-s-line"
+                    class="cursor-pointer text-primary"
+                    @click="prevMonth"
+                  />
+                  <span class="font-weight-bold text-primary text-uppercase text-caption">{{ currentMonthName }}</span>
+                  <VIcon
+                    icon="ri-arrow-right-s-line"
+                    class="cursor-pointer text-primary"
+                    @click="nextMonth"
+                  />
+                </div>
+                <div class="calendar-grid">
+                  <div
+                    v-for="w in daysOfWeek"
+                    :key="w"
+                    class="calendar-header-day"
+                  >
+                    {{ w }}
+                  </div>
+                  <div
+                    v-for="(dayObj, idx) in calendarDays"
+                    :key="idx"
+                    class="calendar-day position-relative"
+                    :class="{
+                      'is-today': dayObj.isToday,
+                      'is-selected': dayObj.isSelected && !dayObj.isToday,
+                      'is-empty': !dayObj.day
+                    }"
+                    @click="selectDayObj(dayObj)"
+                  >
+                    <span>{{ dayObj.day }}</span>
+                    <div
+                      v-if="dayObj.hasEvents"
+                      class="d-flex justify-center gap-1 position-absolute"
+                      style="bottom: 2px; left: 0; right: 0;"
+                    >
+                      <span
+                        v-for="(evt, eIdx) in dayObj.events.slice(0, 3)"
+                        :key="eIdx"
+                        class="rounded-circle"
+                        :style="{
+                          width: '4px',
+                          height: '4px',
+                          backgroundColor: evt.category_color === 'error' ? '#EA5455' :
+                            (evt.category_color === 'warning' ? '#FF9F43' :
+                            (evt.category_color === 'success' ? '#28C76F' :
+                            (evt.category_color === 'info' ? '#00CFE8' : '#7367F0')))
+                        }"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-        <!-- Cant de Servicios por Técnico -->
-        <VCol
-          cols="12"
-        >
-          <VCard
-            elevation="0"
-            class="pa-4 mock-card h-100"
-          >
-            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-4">
-              Cantidad de Servicios Asignados por Técnico
-            </div>
-            <div class="pa-2">
-              <VueApexCharts
-                type="bar"
-                height="300"
-                width="100%"
-                :options="tecnicosOptions"
-                :series="tecnicosSeries"
-              />
-            </div>
-          </VCard>
-        </VCol>
-      </VRow>
+              <!-- Agenda Feed -->
+              <div
+                class="mt-3 pt-2 border-t flex-grow-1"
+                style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+              >
+                <div class="d-flex justify-space-between align-center mb-2">
+                  <span class="text-caption font-weight-bold text-primary text-uppercase">Agenda: {{ formattedSelectedDate }}</span>
+                  <VChip
+                    v-if="activeEvents.length > 0"
+                    size="x-small"
+                    color="primary"
+                    class="font-weight-black"
+                  >
+                    {{ activeEvents.length }} servicio{{ activeEvents.length > 1 ? 's' : '' }}
+                  </VChip>
+                </div>
+
+                <div
+                  v-if="activeEvents.length === 0"
+                  class="text-caption text-medium-emphasis text-center py-3 d-flex flex-column align-center justify-center"
+                >
+                  <VIcon icon="ri-calendar-check-line" size="24" color="grey" class="mb-1" />
+                  <span>Sin servicios proyectados</span>
+                </div>
+                <div
+                  v-else
+                  class="d-flex flex-column gap-2 custom-slim-scroll"
+                  style="max-height: 180px; overflow-y: auto;"
+                >
+                  <div
+                    v-for="evt in activeEvents"
+                    :key="evt.id"
+                    class="d-flex justify-space-between align-center pa-2 rounded-lg elevation-1"
+                    style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
+                    :style="{ borderLeftColor: evt.category_color === 'error' ? '#EA5455' : (evt.category_color === 'warning' ? '#FF9F43' : (evt.category_color === 'success' ? '#28C76F' : '#7367F0')) }"
+                  >
+                    <div
+                      class="overflow-hidden cursor-pointer"
+                      style="max-width: 60%;"
+                      @click="openReminderDetails(evt)"
+                    >
+                      <div class="font-weight-bold text-caption text-high-emphasis d-flex align-center gap-1 text-truncate">
+                        <VIcon :icon="evt.category_icon" size="14" :color="evt.category_color" />
+                        <span class="text-truncate">{{ evt.vehicle?.license_plate || 'Vehículo' }}</span>
+                      </div>
+                      <div class="text-medium-emphasis text-truncate" style="font-size: 0.68rem;">
+                        <span class="font-weight-bold text-primary">{{ Number(evt.target_mileage).toLocaleString() }} KM</span> - {{ evt.client?.full_name || 'Cliente' }}
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-center gap-1">
+                      <VBtn
+                        icon="ri-whatsapp-line"
+                        size="x-small"
+                        color="success"
+                        variant="tonal"
+                        title="WhatsApp"
+                        @click.stop="sendWhatsAppNotification(evt)"
+                      />
+                      <VBtn
+                        icon="ri-mail-send-line"
+                        size="x-small"
+                        color="primary"
+                        variant="tonal"
+                        :loading="isSendingAction"
+                        title="Correo"
+                        @click.stop="sendEmailNotification(evt)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </VCard>
+          </VCol>
+
+          <!-- OT Totales + SLA -->
+          <VCol cols="12" md="7">
+            <VRow dense>
+              <VCol cols="12" sm="6">
+                <VCard elevation="0" class="pa-4 mock-card h-100">
+                  <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-1">
+                    OTs por Estado
+                  </div>
+                  <div class="text-h5 font-weight-black text-high-emphasis mb-2">
+                    {{ otTotalesSeries.reduce((a, b) => a + b, 0) }} órdenes
+                  </div>
+                  <div class="pa-1 d-flex justify-center align-center">
+                    <VueApexCharts
+                      type="donut"
+                      height="200"
+                      width="100%"
+                      :options="otTotalesOptions"
+                      :series="otTotalesSeries"
+                    />
+                  </div>
+                </VCard>
+              </VCol>
+
+              <VCol cols="12" sm="6">
+                <VCard elevation="0" class="pa-4 mock-card h-100">
+                  <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
+                    SLA de Cierre
+                  </div>
+                  <div class="text-caption text-medium-emphasis mb-2">
+                    Tiempo de resolución
+                  </div>
+                  <div class="pa-1 d-flex justify-center align-center">
+                    <VueApexCharts
+                      type="pie"
+                      height="200"
+                      width="100%"
+                      :options="slaOptions"
+                      :series="slaSeries"
+                    />
+                  </div>
+                </VCard>
+              </VCol>
+
+              <VCol cols="12" class="mt-2">
+                <VCard elevation="0" class="pa-4 mock-card">
+                  <div class="text-subtitle-2 font-weight-bold text-medium-emphasis mb-2">
+                    Servicios Asignados por Técnico
+                  </div>
+                  <div class="pa-1">
+                    <VueApexCharts
+                      type="bar"
+                      height="210"
+                      width="100%"
+                      :options="tecnicosOptions"
+                      :series="tecnicosSeries"
+                    />
+                  </div>
+                </VCard>
+              </VCol>
+            </VRow>
+          </VCol>
+        </VRow>
+      </div>
+
+      <!-- TAB 3: PROVEEDORES & COMPRAS -->
+      <div v-show="activeTab === 'purchases'" class="tab-content-fade">
+        <VRow class="mb-4" dense>
+          <!-- Top Proveedores con Mayor Facturación -->
+          <VCol cols="12" lg="7">
+            <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between">
+              <div>
+                <div
+                  class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-3 border-b pb-2 d-flex justify-space-between align-center flex-wrap gap-2"
+                  style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+                >
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-store-3-line" />
+                    <span>Top Proveedores por Facturación</span>
+                  </div>
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
+                    Total: {{ formatCurrency(kpis.total_purchases_spent) }}
+                  </VChip>
+                </div>
+
+                <div
+                  v-if="topSuppliers.length === 0"
+                  class="text-center py-8 text-medium-emphasis"
+                >
+                  <VIcon icon="ri-inbox-line" size="36" class="mb-2 text-disabled" />
+                  <p class="text-caption mb-0">Sin compras registradas aún.</p>
+                </div>
+
+                <div
+                  v-else
+                  class="d-flex flex-column gap-2.5 custom-slim-scroll"
+                  style="max-height: 380px; overflow-y: auto;"
+                >
+                  <div
+                    v-for="(sup, idx) in topSuppliers"
+                    :key="sup.id"
+                    class="pa-3 rounded-xl border d-flex align-center justify-space-between flex-wrap gap-2 hover-elevate"
+                    style="background-color: rgba(var(--v-theme-surface), 1); border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+                  >
+                    <div class="d-flex align-center gap-2.5 flex-grow-1" style="min-width: 180px;">
+                      <div
+                        class="supplier-rank-badge font-weight-black"
+                        :class="`rank-${idx + 1}`"
+                      >
+                        #{{ idx + 1 }}
+                      </div>
+                      <div class="overflow-hidden" style="max-width: 240px;">
+                        <div class="font-weight-bold text-caption text-high-emphasis text-truncate" :title="sup.name">
+                          {{ sup.name }}
+                        </div>
+                        <div class="text-caption text-medium-emphasis" style="font-size: 0.7rem;">
+                          {{ sup.invoices_count }} facturas • <span class="text-primary font-weight-bold">{{ sup.percentage }}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="text-right">
+                      <div class="font-weight-bold text-caption text-high-emphasis font-mono">
+                        {{ formatCurrency(sup.total) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </VCard>
+          </VCol>
+
+          <!-- Pastel de Productos Más Comprados -->
+          <VCol cols="12" lg="5">
+            <VCard elevation="0" class="pa-4 mock-card h-100 d-flex flex-column justify-space-between">
+              <div>
+                <div
+                  class="text-subtitle-2 font-weight-bold text-uppercase gradient-title mb-2 border-b pb-2 d-flex align-center gap-2"
+                  style="border-color: rgba(var(--v-theme-on-surface), 0.08) !important;"
+                >
+                  <VIcon icon="ri-pie-chart-line" />
+                  <span>Productos Más Comprados</span>
+                </div>
+                <p class="text-caption text-medium-emphasis mb-2">
+                  Distribución por unidades adquiridas a proveedores
+                </p>
+
+                <div
+                  v-if="topPurchasedProducts.length === 0"
+                  class="text-center py-8 text-medium-emphasis"
+                >
+                  <VIcon icon="ri-pie-chart-2-line" size="36" class="mb-2 text-disabled" />
+                  <p class="text-caption mb-0">Sin ítems registrados.</p>
+                </div>
+
+                <div
+                  v-else
+                  class="pa-1 d-flex justify-center align-center"
+                >
+                  <VueApexCharts
+                    type="donut"
+                    height="280"
+                    width="100%"
+                    :options="purchasedProductsOptions"
+                    :series="purchasedProductsSeries"
+                  />
+                </div>
+              </div>
+            </VCard>
+          </VCol>
+        </VRow>
+      </div>
     </div>
 
     <!-- Low Stock Alert Dialog -->
