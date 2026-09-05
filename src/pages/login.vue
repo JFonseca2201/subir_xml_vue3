@@ -122,9 +122,9 @@ const appBrandName = computed(() => {
       >
         <div class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
           <!-- Floating Feature Badges -->
-          <div class="showcase-floating-badge badge-top-right elevation-3">
+          <div class="showcase-floating-badge badge-top-right elevation-4">
             <div class="badge-icon-box bg-success-subtle text-success">
-              <VIcon icon="ri-shield-check-line" size="20" />
+              <VIcon icon="ri-shield-check-line" size="22" />
             </div>
             <div>
               <div class="badge-caption">FACTURACIÓN SRI</div>
@@ -132,9 +132,9 @@ const appBrandName = computed(() => {
             </div>
           </div>
 
-          <div class="showcase-floating-badge badge-bottom-left elevation-3">
+          <div class="showcase-floating-badge badge-bottom-left elevation-4">
             <div class="badge-icon-box bg-primary-subtle text-primary">
-              <VIcon icon="ri-tools-line" size="20" />
+              <VIcon icon="ri-tools-line" size="22" />
             </div>
             <div>
               <div class="badge-caption">CONTROL EN VIVO</div>
@@ -161,37 +161,37 @@ const appBrandName = computed(() => {
         </div>
       </VCol>
 
-      <!-- RIGHT COLUMN: Login Form Perfectly Centered -->
+      <!-- RIGHT COLUMN: Colorido con Fondo Color Primary -->
       <VCol
         cols="12"
         lg="4"
-        class="auth-card-v2 d-flex align-center justify-center pa-4 pa-sm-8"
+        class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8"
       >
-        <VCard
-          flat
-          :max-width="460"
-          class="auth-form-card w-100 pa-6 pa-sm-8 pa-md-10 rounded-2xl elevation-0"
-        >
+        <!-- Ambient Glow Orbs en el Sidebar -->
+        <div class="sidebar-glow-orb orb-1" />
+        <div class="sidebar-glow-orb orb-2" />
+
+        <div class="auth-form-container w-100 pa-6 pa-sm-8 pa-md-10 text-white z-index-2">
           <!-- Mobile Brand Logo -->
           <div class="d-flex d-lg-none align-center justify-center gap-3 mb-6 text-center">
-            <div class="brand-logo-container">
+            <div class="brand-logo-container-mobile">
               <VNodeRenderer :nodes="themeConfig.app.logo" />
             </div>
-            <h2 class="text-h5 font-weight-bold text-high-emphasis mb-0">
+            <h2 class="text-h5 font-weight-bold text-white mb-0">
               {{ appBrandName }}
             </h2>
           </div>
 
           <!-- Welcome Titles -->
-          <div class="mb-6">
-            <div class="system-status-chip mb-2 d-inline-flex align-center gap-1.5">
+          <div class="mb-6 text-center text-sm-start">
+            <div class="system-status-chip-white mb-2 d-inline-flex align-center gap-1.5">
               <span class="status-pulse-dot" />
               <span>PLATAFORMA ADMINISTRATIVA</span>
             </div>
-            <h1 class="text-h4 font-weight-bold text-high-emphasis mb-1">
-              Iniciar <span class="text-primary">Sesión</span>
+            <h1 class="text-h4 font-weight-black text-white mb-1">
+              Iniciar Sesión
             </h1>
-            <p class="text-body-2 text-medium-emphasis mb-0">
+            <p class="text-body-2 text-white opacity-90 mb-0">
               Ingresa tus credenciales para acceder al sistema
             </p>
           </div>
@@ -201,28 +201,36 @@ const appBrandName = computed(() => {
             <VRow dense class="gap-y-4">
               <!-- Email Input -->
               <VCol cols="12">
-                <div class="form-field-header mb-1">
-                  <span class="form-field-label">CORREO ELECTRÓNICO</span>
+                <div class="form-field-header mb-1.5">
+                  <span class="form-field-label-white">
+                    <VIcon icon="ri-mail-line" size="14" class="me-1" />
+                    CORREO ELECTRÓNICO
+                  </span>
                 </div>
                 <VTextField
                   v-model="form.email"
                   autofocus
                   placeholder="ejemplo@luxuryevys.com"
-                  variant="outlined"
-                  density="comfortable"
+                  bg-color="white"
                   color="primary"
-                  prepend-inner-icon="ri-mail-line"
-                  class="rounded-lg"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-user-3-line"
+                  class="auth-input-white rounded-xl"
+                  hide-details="auto"
                 />
               </VCol>
 
               <!-- Password Input -->
               <VCol cols="12">
-                <div class="d-flex justify-space-between align-center mb-1">
-                  <span class="form-field-label">CONTRASEÑA</span>
+                <div class="d-flex justify-space-between align-center mb-1.5">
+                  <span class="form-field-label-white">
+                    <VIcon icon="ri-lock-2-line" size="14" class="me-1" />
+                    CONTRASEÑA
+                  </span>
                   <a
                     href="#"
-                    class="text-caption text-primary font-weight-bold forgot-link"
+                    class="text-caption text-white font-weight-bold forgot-link-white"
                     @click.prevent
                   >
                     ¿Olvidaste tu contraseña?
@@ -231,26 +239,28 @@ const appBrandName = computed(() => {
                 <VTextField
                   v-model="form.password"
                   placeholder="••••••••••••"
-                  variant="outlined"
-                  density="comfortable"
+                  bg-color="white"
                   color="primary"
-                  prepend-inner-icon="ri-lock-2-line"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-key-2-line"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                  class="rounded-lg"
+                  class="auth-input-white rounded-xl"
+                  hide-details="auto"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
               </VCol>
 
               <!-- Remember Me -->
-              <VCol cols="12" class="pt-0">
+              <VCol cols="12" class="pt-1">
                 <VCheckbox
                   v-model="form.remember"
                   label="Mantener sesión iniciada"
-                  color="primary"
+                  color="white"
                   density="compact"
                   hide-details
-                  class="font-weight-medium"
+                  class="auth-checkbox-white"
                 />
               </VCol>
 
@@ -259,9 +269,9 @@ const appBrandName = computed(() => {
                 <VAlert
                   type="success"
                   color="success"
-                  variant="tonal"
+                  variant="elevated"
                   closable
-                  class="rounded-xl border"
+                  class="rounded-xl shadow-sm text-white"
                 >
                   {{ success_login }}
                 </VAlert>
@@ -271,43 +281,42 @@ const appBrandName = computed(() => {
                 <VAlert
                   type="error"
                   color="error"
-                  variant="tonal"
+                  variant="elevated"
                   closable
-                  class="rounded-xl border"
+                  class="rounded-xl shadow-sm text-white"
                 >
                   {{ error_login }}
                 </VAlert>
               </VCol>
 
-              <!-- Submit Button -->
-              <VCol cols="12" class="pt-2">
+              <!-- Submit Button (High-Contrast White Button) -->
+              <VCol cols="12" class="pt-3">
                 <VBtn
                   block
-                  size="large"
+                  size="x-large"
                   type="submit"
-                  color="primary"
-                  class="login-submit-button rounded-xl font-weight-bold"
+                  class="auth-submit-white-btn rounded-xl font-weight-black"
                   :loading="loader.loading"
                   :disabled="loader.loading"
-                  prepend-icon="ri-login-box-line"
                 >
-                  INGRESAR AL SISTEMA
+                  <span>INGRESAR AL SISTEMA</span>
+                  <VIcon icon="ri-arrow-right-line" class="ms-2 font-weight-bold" />
                 </VBtn>
               </VCol>
 
               <!-- Security Footer -->
-              <VCol cols="12" class="text-center mt-4">
-                <div class="d-inline-flex align-center gap-1.5 text-caption text-medium-emphasis mb-2">
-                  <VIcon icon="ri-shield-keyhole-line" size="14" color="success" />
+              <VCol cols="12" class="text-center mt-5">
+                <div class="d-inline-flex align-center gap-1.5 text-caption text-white opacity-90 mb-1 font-weight-medium">
+                  <VIcon icon="ri-shield-keyhole-line" size="14" color="white" />
                   <span>Conexión Encriptada SSL de 256 bits</span>
                 </div>
-                <div class="text-caption text-disabled">
+                <div class="text-caption text-white opacity-75">
                   © {{ new Date().getFullYear() }} {{ appBrandName }} • Todos los derechos reservados
                 </div>
               </VCol>
             </VRow>
           </VForm>
-        </VCard>
+        </div>
       </VCol>
     </VRow>
   </div>
@@ -320,6 +329,7 @@ const appBrandName = computed(() => {
   min-height: 100vh;
   position: relative;
   background-color: rgb(var(--v-theme-background));
+  overflow-x: hidden;
 }
 
 .auth-brand-floating {
@@ -330,17 +340,17 @@ const appBrandName = computed(() => {
   text-decoration: none;
   padding: 6px 14px;
   border-radius: 14px;
-  background-color: rgba(var(--v-theme-surface), 0.85);
+  background-color: rgba(var(--v-theme-surface), 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(var(--v-border-color), 0.14);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   transition: all 0.25s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.15);
-    border-color: rgba(var(--v-theme-primary), 0.3);
+    box-shadow: 0 8px 24px rgba(115, 103, 240, 0.2);
+    border-color: rgba(115, 103, 240, 0.4);
   }
 }
 
@@ -355,6 +365,18 @@ const appBrandName = computed(() => {
   color: #ffffff;
 }
 
+.brand-logo-container-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
 .brand-name-text {
   letter-spacing: -0.02em;
 }
@@ -365,9 +387,9 @@ const appBrandName = computed(() => {
 
 .auth-showcase-card {
   min-height: calc(100vh - 4rem);
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.06) 0%, rgba(var(--v-theme-primary), 0.02) 100%);
+  background: linear-gradient(135deg, rgba(115, 103, 240, 0.08) 0%, rgba(0, 207, 232, 0.04) 100%);
   border-radius: 28px;
-  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+  border: 1px solid rgba(115, 103, 240, 0.12);
   overflow: hidden;
 }
 
@@ -407,9 +429,9 @@ const appBrandName = computed(() => {
   }
 
   .badge-icon-box {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -437,31 +459,60 @@ const appBrandName = computed(() => {
   }
 }
 
-.auth-card-v2 {
+/* RIGHT COLUMN - VIBRANT PRIMARY THEMED BACKGROUND */
+.auth-primary-sidebar {
   min-height: 100vh;
-  background-color: rgb(var(--v-theme-surface));
-  border-left: 1px solid rgba(var(--v-border-color), 0.08);
+  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: -15px 0 45px rgba(115, 103, 240, 0.25);
 }
 
-.auth-form-card {
-  background-color: transparent !important;
+.sidebar-glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 1;
+
+  &.orb-1 {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, transparent 70%);
+    top: -80px;
+    right: -80px;
+  }
+
+  &.orb-2 {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(0, 207, 232, 0.3) 0%, transparent 70%);
+    bottom: -100px;
+    left: -100px;
+  }
 }
 
-.system-status-chip {
-  padding: 3px 10px;
-  background-color: rgba(var(--v-theme-primary), 0.1);
+.auth-form-container {
+  max-width: 440px;
+}
+
+.system-status-chip-white {
+  padding: 3px 12px;
+  background-color: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
   border-radius: 9999px;
-  color: rgb(var(--v-theme-primary));
+  color: #ffffff;
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 
   .status-pulse-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background-color: #28C76F;
-    box-shadow: 0 0 6px #28C76F;
+    box-shadow: 0 0 8px #28C76F;
     animation: pulse-badge 2s infinite;
   }
 }
@@ -476,34 +527,94 @@ const appBrandName = computed(() => {
   align-items: center;
 }
 
-.form-field-label {
+.form-field-label-white {
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  color: rgb(var(--v-theme-on-surface));
-  opacity: 0.75;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
 }
 
-.forgot-link {
+.forgot-link-white {
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 
   &:hover {
+    opacity: 1;
     text-decoration: underline;
-    opacity: 0.85;
   }
 }
 
-.login-submit-button {
-  height: 48px !important;
-  font-size: 0.92rem !important;
-  letter-spacing: 0.04em !important;
-  box-shadow: 0 6px 18px rgba(115, 103, 240, 0.35) !important;
+/* White Crisp Solo Input Fields */
+.auth-input-white {
+  .v-field {
+    border-radius: 12px !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+    color: #1e293b !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+    }
+  }
+
+  .v-field--focused {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .v-field__input {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    font-size: 0.92rem !important;
+
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .v-field__prepend-inner .v-icon,
+  .v-field__append-inner .v-icon {
+    color: #7367F0 !important;
+  }
+}
+
+.auth-checkbox-white {
+  .v-label {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    user-select: none;
+  }
+
+  .v-selection-control__input {
+    color: #ffffff !important;
+  }
+}
+
+/* White High-Contrast Submit Button */
+.auth-submit-white-btn {
+  background-color: #ffffff !important;
+  color: #5e50ee !important;
+  height: 50px !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 
   &:hover {
+    background-color: #f8fafc !important;
+    color: #4839eb !important;
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(115, 103, 240, 0.45) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   }
 }
 </style>
