@@ -683,33 +683,102 @@ onMounted(() => {
       @account-updated="onAccountUpdated"
     />
 
+    <!-- Dialog Eliminar Cuenta Estándar del Sistema -->
     <VDialog
       v-model="showDeleteDialog"
       scrollable
       max-width="500"
+      persistent
+      transition="dialog-bottom-transition"
     >
-      <VCard class="pa-4 rounded-xl border-thin">
-        <VCardTitle class="px-0 pt-0">
-          <div class="d-flex align-center gap-2">
-            <VIcon
-              color="error"
-              size="24"
-            >
-              ri-error-warning-line
-            </VIcon>
-            <span class="text-h6 font-weight-bold">Eliminar Cuenta</span>
+      <VCard class="custom-dialog-card elevation-12">
+        <!-- Header Banner Primary (Color del sistema) -->
+        <div class="custom-dialog-header-primary bg-primary text-white">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="loader.loading"
+            @click="closeDeleteDialog"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
           </div>
-        </VCardTitle>
-
-        <VCardText class="px-0 pb-4">
-          <p class="mb-1">
-            ¿Estás seguro de eliminar la cuenta <strong>"{{ accountToDelete?.name }}"</strong>?
+          <h3 class="custom-dialog-title">
+            Eliminar Cuenta
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción removerá la cuenta financiera seleccionada
           </p>
-          <span class="text-body-2 text-medium-emphasis">Esta acción no se puede deshacer.</span>
+        </div>
+
+        <VCardText class="pa-6">
+          <div class="text-center">
+            <!-- Account Avatar -->
+            <VAvatar
+              size="72"
+              color="primary"
+              variant="tonal"
+              class="mb-3"
+            >
+              <VIcon
+                :icon="accountToDelete?.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
+                size="36"
+              />
+            </VAvatar>
+
+            <!-- Account Info Summary -->
+            <div class="mb-2">
+              <h4 class="text-h6 font-weight-bold mb-1 text-high-emphasis text-uppercase">
+                {{ accountToDelete?.name || 'Cuenta sin nombre' }}
+              </h4>
+              <p class="text-caption text-medium-emphasis mb-3">
+                {{ accountToDelete?.type === 'bank' ? 'Cuenta Bancaria' : 'Caja / Efectivo' }}
+              </p>
+
+              <!-- Detalles en Card Plana -->
+              <div
+                class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+                style="background-color: #f8fafc;"
+              >
+                <div
+                  v-if="accountToDelete?.bank_name"
+                  class="d-flex justify-space-between align-center"
+                >
+                  <span class="text-caption text-medium-emphasis">Banco / Entidad:</span>
+                  <span class="text-caption font-weight-bold text-uppercase">{{ accountToDelete.bank_name }}</span>
+                </div>
+
+                <div
+                  v-if="accountToDelete?.account_number"
+                  class="d-flex justify-space-between align-center"
+                >
+                  <span class="text-caption text-medium-emphasis">Número de Cuenta:</span>
+                  <span class="text-caption font-mono font-weight-bold">{{ accountToDelete.account_number }}</span>
+                </div>
+
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Saldo Actual:</span>
+                  <span class="text-caption font-weight-bold text-primary font-mono">${{ parseFloat(accountToDelete?.current_balance || 0).toFixed(2) }}</span>
+                </div>
+              </div>
+
+              <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium">
+                <VIcon
+                  icon="ri-error-warning-line"
+                  size="16"
+                />
+                <span>Esta acción es irreversible y deshabilitará la cuenta.</span>
+              </div>
+            </div>
+          </div>
         </VCardText>
 
+        <VDivider />
+
         <VCardActions
-          class="px-0 pb-0 d-flex justify-end align-center gap-3"
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn
@@ -724,15 +793,15 @@ onMounted(() => {
             Cancelar
           </VBtn>
           <VBtn
-            color="error"
+            color="primary"
             variant="elevated"
             prepend-icon="ri-delete-bin-line"
-            class="rounded-lg px-6 font-weight-bold"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
             height="40"
             :loading="loader.loading"
             @click="confirmDeleteAccount"
           >
-            Eliminar
+            Eliminar Cuenta
           </VBtn>
         </VCardActions>
       </VCard>

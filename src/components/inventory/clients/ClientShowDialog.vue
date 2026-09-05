@@ -103,12 +103,13 @@ const closeDialog = () => {
 <template>
   <VDialog
     scrollable
-    max-width="700"
+    max-width="720"
     :model-value="props.isDialogVisible"
     persistent
+    transition="dialog-bottom-transition"
     @update:model-value="closeDialog"
   >
-    <VCard class="custom-dialog-card client-dialog-card pa-0 elevation-8">
+    <VCard class="custom-dialog-card client-dialog-card elevation-12">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
@@ -121,12 +122,51 @@ const closeDialog = () => {
         <div class="custom-dialog-avatar">
           <VIcon :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'" />
         </div>
-        <h3 class="custom-dialog-title">
-          Ficha del Cliente
+        <h3 class="custom-dialog-title text-capitalize">
+          {{ fullName || 'Ficha del Cliente' }}
         </h3>
-        <p class="custom-dialog-subtitle">
-          Información detallada y datos de contacto del cliente
+        <p class="custom-dialog-subtitle mb-2">
+          {{ isCompanyClient ? 'Información registrada de la persona jurídica' : 'Información detallada y datos de contacto' }}
         </p>
+
+        <!-- Header Pills -->
+        <div class="d-flex flex-wrap justify-center gap-2 mt-2">
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
+            :style="clientData?.state?.toString() === '1' ? 'background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);' : 'background: rgba(239, 68, 68, 0.25); color: #ffffff; border: 1px solid rgba(239, 68, 68, 0.5);'"
+          >
+            <VIcon
+              :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+              size="14"
+              class="me-1"
+            />
+            <span>{{ getStateLabel }}</span>
+          </div>
+
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              icon="ri-id-card-line"
+              size="14"
+              class="me-1"
+            />
+            <span><strong>{{ getDocumentTypeLabel }}:</strong> <span class="font-weight-bold ms-1">{{ clientData.n_document || '—' }}</span></span>
+          </div>
+
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              :icon="isCompanyClient ? 'ri-building-2-line' : 'ri-user-star-line'"
+              size="14"
+              class="me-1"
+            />
+            <span>{{ getClientTypeLabel }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Contenido principal -->
@@ -135,19 +175,19 @@ const closeDialog = () => {
         <div class="specs-container mb-6">
           <div class="spec-badge-card">
             <span class="spec-label">Documento</span>
-            <span class="spec-value">{{ getDocumentTypeLabel }}</span>
+            <span class="spec-value text-primary font-weight-bold">{{ getDocumentTypeLabel }}</span>
           </div>
           <div class="spec-badge-card">
             <span class="spec-label">Número</span>
-            <span class="spec-value">{{ clientData.n_document || 'N/A' }}</span>
+            <span class="spec-value font-weight-bold font-mono">{{ clientData.n_document || 'N/A' }}</span>
           </div>
           <div class="spec-badge-card">
             <span class="spec-label">Teléfono</span>
-            <span class="spec-value">{{ clientData.phone || 'N/A' }}</span>
+            <span class="spec-value font-weight-bold">{{ clientData.phone || 'N/A' }}</span>
           </div>
           <div class="spec-badge-card">
             <span class="spec-label">Tipo</span>
-            <span class="spec-value">{{ getClientTypeLabel }}</span>
+            <span class="spec-value font-weight-bold">{{ getClientTypeLabel }}</span>
           </div>
         </div>
 
@@ -161,14 +201,14 @@ const closeDialog = () => {
               class="pa-4 h-100 info-card-flat"
               variant="outlined"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-primary">
                 <VIcon
-                  icon="ri-user-3-line"
+                  :icon="isCompanyClient ? 'ri-building-line' : 'ri-user-3-line'"
                   color="primary"
                   class="me-2"
                   size="20"
                 />
-                Registro
+                {{ isCompanyClient ? 'Datos de Empresa' : 'Datos Personales' }}
               </VCardTitle>
 
               <VRow
@@ -177,16 +217,16 @@ const closeDialog = () => {
               >
                 <VCol cols="12">
                   <div class="text-caption text-medium-emphasis">
-                    Nombre / Razón Social
+                    {{ isCompanyClient ? 'Razón Social' : 'Nombre Completo' }}
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase">
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ fullName || 'No especificado' }}
                   </div>
                 </VCol>
 
                 <VCol cols="12">
                   <div class="text-caption text-medium-emphasis">
-                    Estado
+                    Estado en el Sistema
                   </div>
                   <div class="mt-1">
                     <VChip
@@ -195,6 +235,7 @@ const closeDialog = () => {
                       size="small"
                       class="font-weight-bold"
                     >
+                      <VIcon start :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'" size="14" />
                       {{ getStateLabel }}
                     </VChip>
                   </div>
@@ -206,7 +247,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       Género
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
                       {{ getGenderLabel }}
                     </div>
                   </VCol>
@@ -215,7 +256,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       F. Nacimiento
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
@@ -227,7 +268,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       Fecha Constitución
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3">
+                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
@@ -245,7 +286,7 @@ const closeDialog = () => {
               class="pa-4 h-100 info-card-flat"
               variant="outlined"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title">
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-warning">
                 <VIcon
                   icon="ri-map-pin-line"
                   color="warning"
@@ -263,7 +304,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Dirección Principal
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ clientData.address || 'No especificada' }}
                   </div>
                 </VCol>
@@ -272,7 +313,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Región
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ clientData.region || '-' }}
                   </div>
                 </VCol>
@@ -281,7 +322,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Provincia
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ clientData.provincia || '-' }}
                   </div>
                 </VCol>
@@ -290,7 +331,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Distrito
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase">
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
                     {{ clientData.distrito || '-' }}
                   </div>
                 </VCol>
@@ -301,20 +342,20 @@ const closeDialog = () => {
           <!-- Tarjeta de Contacto -->
           <VCol
             cols="12"
-            class="pt-4"
+            class="pt-3"
           >
             <VCard
-              class="pa-4 bg-grey-lighten-5 info-card-flat"
+              class="pa-4 info-card-flat"
               variant="outlined"
             >
-              <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-grey-darken-2">
+              <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-success">
                 <VIcon
                   icon="ri-contacts-line"
-                  color="grey-darken-2"
+                  color="success"
                   class="me-2"
                   size="18"
                 />
-                Contacto
+                Canales de Contacto Directo
               </VCardTitle>
 
               <VRow
@@ -326,12 +367,12 @@ const closeDialog = () => {
                   sm="6"
                 >
                   <div class="text-caption text-medium-emphasis">
-                    Teléfono Móvil
+                    Teléfono Móvil / WhatsApp
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3">
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
                     <VIcon
                       icon="ri-phone-line"
-                      size="14"
+                      size="15"
                       class="me-1 text-success"
                     />
                     {{ clientData.phone || 'No especificado' }}
@@ -345,10 +386,10 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Correo Electrónico
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-lowercase">
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-lowercase mt-0.5">
                     <VIcon
                       icon="ri-mail-line"
-                      size="14"
+                      size="15"
                       class="me-1 text-info"
                     />
                     {{ clientData.email || 'No especificado' }}

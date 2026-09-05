@@ -493,58 +493,80 @@ const convertToSale = () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="1140" transition="dialog-bottom-transition"
-    @update:model-value="closeDialog">
+  <VDialog
+    :model-value="props.isDialogVisible"
+    max-width="1140"
+    scrollable
+    transition="dialog-bottom-transition"
+    @update:model-value="closeDialog"
+  >
     <VCard class="sale-view-dialog-card rounded-xl overflow-hidden elevation-12">
-      <!-- Modern Radiant Header -->
-      <div class="sale-dialog-header">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="dialog-close-btn" @click="closeDialog" />
-
-        <div class="d-flex align-center gap-4 flex-wrap">
-          <div class="header-avatar-glow">
-            <VIcon :icon="documentTypeIcon" size="28" color="white" />
+      <!-- Modern Sleek Horizontal Header Banner -->
+      <div class="sale-dialog-header-banner">
+        <div class="header-left-group">
+          <div class="header-avatar-badge">
+            <VIcon :icon="documentTypeIcon" size="24" color="white" />
           </div>
 
-          <div class="flex-grow-1">
+          <div>
             <div class="d-flex align-center gap-2 flex-wrap">
-              <span class="text-caption font-weight-bold text-white-50 text-uppercase tracking-wider">
+              <span class="header-tag-label">
                 Comprobante de {{ getDocumentTypeLabel }}
               </span>
-              <VChip v-if="sriEnvironment" size="x-small"
-                :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'" variant="flat"
-                class="font-weight-bold text-white shadow-sm">
+              <VChip
+                v-if="sriEnvironment"
+                size="x-small"
+                :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'"
+                variant="flat"
+                class="font-weight-bold text-white shadow-sm"
+              >
                 <VIcon start icon="ri-shield-flash-line" size="11" />
                 {{ sriEnvironment }}
               </VChip>
             </div>
 
-            <h2 class="text-h5 font-weight-black text-white mt-0.5 tracking-tight d-flex align-center gap-2 flex-wrap">
-              <span>{{ isInvoice ? 'Factura' : 'Venta' }} #{{ formattedSequential }}</span>
+            <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
+              <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential }}</span>
             </h2>
           </div>
+        </div>
 
-          <!-- Header Badges -->
-          <div class="d-flex align-center gap-2 flex-wrap header-meta-pills">
-            <div class="glass-pill">
-              <VIcon icon="ri-calendar-event-line" size="15" class="me-1 text-white-70" />
-              <span class="text-caption text-white font-weight-medium">{{ formatDate(saleData.service_date) }}</span>
-            </div>
-
-            <div
-              v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
-              class="glass-pill glass-pill--ot">
-              <VIcon icon="ri-tools-line" size="15" class="me-1 text-amber-lighten-2" />
-              <span class="text-caption font-weight-bold text-white">
-                OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number }}
-              </span>
-            </div>
-
-            <VChip :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor" size="small" variant="flat"
-              class="font-weight-bold text-white elevation-2">
-              <VIcon start :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon" size="14" />
-              {{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}
-            </VChip>
+        <!-- Header Badges and Close Button -->
+        <div class="header-meta-group">
+          <div class="glass-header-pill">
+            <VIcon icon="ri-calendar-event-line" size="14" class="me-1 text-white-70" />
+            <span>{{ formatDate(saleData.service_date) }}</span>
           </div>
+
+          <div
+            v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
+            class="glass-header-pill"
+          >
+            <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
+            <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number }}</span>
+          </div>
+
+          <VChip
+            :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor"
+            size="small"
+            variant="flat"
+            class="font-weight-bold text-white elevation-2"
+          >
+            <VIcon
+              start
+              :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon"
+              size="14"
+            />
+            {{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}
+          </VChip>
+
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="header-close-button ms-1"
+            @click="closeDialog"
+          />
         </div>
       </div>
 
@@ -756,7 +778,7 @@ const convertToSale = () => {
                       <VIcon icon="ri-qr-code-line" size="15" /> Placa
                     </span>
                     <span class="detail-value">
-                      <span v-if="getVehicleLicensePlate" class="plate-badge">
+                      <span v-if="getVehicleLicensePlate" class="kardex-plate-badge">
                         {{ getVehicleLicensePlate }}
                       </span>
                       <span v-else class="text-medium-emphasis">—</span>
@@ -811,7 +833,7 @@ const convertToSale = () => {
                 </div>
 
                 <div v-if="hasPaymentDistributions" class="rounded-lg overflow-hidden border border-slate-200">
-                  <VTable density="compact" class="modern-flat-table">
+                  <VTable density="compact" class="app-data-table">
                     <thead>
                       <tr>
                         <th style="width: 50px;">
@@ -829,10 +851,14 @@ const convertToSale = () => {
                         <td class="text-medium-emphasis font-weight-medium">
                           {{ index + 1 }}
                         </td>
-                        <td class="font-weight-bold text-slate-800">
-                          <VChip size="x-small" variant="tonal" color="primary" class="font-weight-bold me-1">
+                        <td>
+                          <span
+                            class="status-pill-clean"
+                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'"
+                          >
+                            <span class="status-dot"></span>
                             {{ dist.payment_method }}
-                          </VChip>
+                          </span>
                         </td>
                         <td class="text-slate-700 font-weight-medium">
                           {{ dist.account?.name || `Cuenta ${dist.account_id}` }}
@@ -878,7 +904,7 @@ const convertToSale = () => {
             </div>
 
             <div v-if="saleData.details?.length" class="rounded-lg overflow-hidden border border-slate-200">
-              <VTable density="comfortable" class="modern-flat-table">
+              <VTable density="comfortable" class="app-data-table">
                 <thead>
                   <tr>
                     <th style="width: 48%;">
