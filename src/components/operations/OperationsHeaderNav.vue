@@ -13,104 +13,100 @@ const route = useRoute()
 
 const navItems = [
   {
+    id: 'dashboard',
+    title: 'Operaciones',
+    description: 'Resumen y movimientos',
+    icon: 'ri-dashboard-line',
+    route: '/operations',
+  },
+  {
     id: 'socios',
     title: 'Socios',
     description: 'Aportes de capital',
     icon: 'ri-group-line',
-    color: 'primary',
     route: '/aportes',
   },
   {
     id: 'nomina',
-    title: 'Gestión de pagos nómina',
-    description: 'Pagos y adelantos al personal',
+    title: 'Nómina',
+    description: 'Pagos y adelantos',
     icon: 'ri-user-3-line',
-    color: 'primary',
     route: '/finanzas/employee-expenses',
   },
   {
     id: 'transferencias',
-    title: 'Transferencias internas',
-    description: 'Transferencias entre cuentas',
+    title: 'Transferencias',
+    description: 'Cuentas y cajas',
     icon: 'ri-arrow-left-right-line',
-    color: 'primary',
     route: '/transfers',
   },
 ]
 
 const isCurrentActive = item => {
   if (props.activeTab && props.activeTab === item.id) return true
-  if (route.path.startsWith(item.route)) return true
-  
+  if (route.path === item.route || (item.route !== '/operations' && route.path.startsWith(item.route))) return true
+  if (item.id === 'dashboard' && route.path === '/operations') return true
+
   return false
 }
 
 const navigateTo = itemRoute => {
-  router.push(itemRoute)
+  if (route.path !== itemRoute) {
+    router.push(itemRoute)
+  }
 }
 </script>
 
 <template>
-  <div class="operations-header-nav mt-2 mt-sm-4 mb-5">
-    <!-- Encabezado Principal Sin Recuadro (Estilo Gestión de Cartera) -->
-    <div class="mb-6">
-      <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-        <VIcon
-          icon="ri-exchange-funds-line"
+  <VCard class="mb-5 rounded-xl border elevation-0 bg-surface operations-unified-header">
+    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center pa-4 gap-4">
+      <!-- Encabezado Principal -->
+      <div class="d-flex align-center gap-3">
+        <VAvatar
           color="primary"
-          class="me-2"
-          size="28"
-        />
-        Gestión de Operaciones
-      </h1>
-      <p class="text-medium-emphasis mb-0">
-        Control financiero integral para tu negocio
-      </p>
-    </div>
+          variant="tonal"
+          rounded="lg"
+          size="44"
+          class="elevation-0"
+        >
+          <VIcon
+            icon="ri-exchange-funds-line"
+            size="26"
+          />
+        </VAvatar>
+        <div>
+          <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 d-flex align-center gap-2">
+            Gestión de Operaciones
+          </h1>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            Control financiero integral para tu negocio
+          </p>
+        </div>
+      </div>
 
-    <!-- 3 Tarjetas de Acceso Rápido Compactas -->
-    <VRow dense>
-      <VCol
-        v-for="item in navItems"
-        :key="item.id"
-        cols="12"
-        sm="4"
-        md="4"
-      >
-        <VCard
-          elevation="1"
-          class="h-100 rounded-xl cursor-pointer transition-swing operation-nav-card"
-          :class="{
-            'active-nav-card': isCurrentActive(item),
-            'border-light': !isCurrentActive(item),
-          }"
-          hover
+      <!-- Barra de Pestañas / Navegación Unificada -->
+      <div class="d-flex align-center gap-2 flex-wrap">
+        <VBtn
+          v-for="item in navItems"
+          :key="item.id"
+          :color="isCurrentActive(item) ? 'primary' : 'secondary'"
+          :variant="isCurrentActive(item) ? 'elevated' : 'tonal'"
+          size="small"
+          class="font-weight-semibold rounded-lg text-none px-3"
+          :prepend-icon="item.icon"
           @click="navigateTo(item.route)"
         >
-          <VCardText class="d-flex flex-column align-center text-center pa-3 pa-sm-4">
-            <VAvatar
-              :color="item.color"
-              variant="tonal"
-              size="40"
-              class="mb-2"
-            >
-              <VIcon
-                :icon="item.icon"
-                size="20"
-              />
-            </VAvatar>
-            <div class="text-subtitle-2 font-weight-bold text-high-emphasis mb-1">
-              {{ item.title }}
-            </div>
-            <div
-              class="text-caption text-medium-emphasis"
-              style="font-size: 0.75rem !important; line-height: 1.2;"
-            >
-              {{ item.description }}
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
-    </VRow>
-  </div>
+          {{ item.title }}
+        </VBtn>
+      </div>
+    </div>
+  </VCard>
 </template>
+
+<style scoped lang="scss">
+.operations-unified-header {
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+</style>
+
