@@ -86,7 +86,7 @@ const authV2LoginIllustration = useGenerateImageVariant(
 const appBrandName = computed(() => {
   const raw = themeConfig.app?.title || 'LUXURY EVYS'
   if (raw.toUpperCase().includes('LUXURY EVYS')) return 'LUXURY EVYS'
-  
+
   return raw.length > 24 ? raw.substring(0, 22) + '...' : raw
 })
 </script>
@@ -94,10 +94,7 @@ const appBrandName = computed(() => {
 <template>
   <div class="auth-page-root">
     <!-- Desktop Top Left Brand Badge -->
-    <RouterLink
-      to="/"
-      class="auth-brand-floating d-none d-lg-flex align-center gap-3"
-    >
+    <RouterLink to="/" class="auth-brand-floating d-none d-lg-flex align-center gap-3">
       <div class="brand-logo-container">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
       </div>
@@ -111,16 +108,11 @@ const appBrandName = computed(() => {
       </div>
     </RouterLink>
 
-    <VRow
-      no-gutters
-      class="auth-wrapper"
-    >
+    <VRow no-gutters class="auth-wrapper">
       <!-- LEFT COLUMN: Showcase Visual -->
-      <VCol
-        lg="8"
-        class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column"
-      >
-        <div class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
+      <VCol lg="8" class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column">
+        <div
+          class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
           <!-- Floating Feature Badges -->
           <div class="showcase-floating-badge badge-top-right elevation-4">
             <div class="badge-icon-box bg-success-subtle text-success">
@@ -144,29 +136,17 @@ const appBrandName = computed(() => {
 
           <!-- Central Illustration -->
           <div class="d-flex align-center justify-center pa-6 z-index-2">
-            <VImg
-              :src="authV2LoginIllustration"
-              :max-width="560"
-              class="auth-main-illustration"
-              alt="Luxury Evys Dashboard"
-            />
+            <VImg :src="authV2LoginIllustration" :max-width="560" class="auth-main-illustration"
+              alt="Luxury Evys Dashboard" />
           </div>
 
           <!-- Bottom Footer Mask Graphic -->
-          <VImg
-            :src="authV2LoginMask"
-            class="auth-footer-mask"
-            alt="mask"
-          />
+          <VImg :src="authV2LoginMask" class="auth-footer-mask" alt="mask" />
         </div>
       </VCol>
 
       <!-- RIGHT COLUMN: Colorido con Fondo Color Primary -->
-      <VCol
-        cols="12"
-        lg="4"
-        class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8"
-      >
+      <VCol cols="12" lg="4" class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8">
         <!-- Ambient Glow Orbs en el Sidebar -->
         <div class="sidebar-glow-orb orb-1" />
         <div class="sidebar-glow-orb orb-2" />
@@ -184,10 +164,7 @@ const appBrandName = computed(() => {
 
           <!-- Welcome Titles -->
           <div class="mb-6 text-center text-sm-start">
-            <div class="system-status-chip-white mb-2 d-inline-flex align-center gap-1.5">
-              <span class="status-pulse-dot" />
-              <span>PLATAFORMA ADMINISTRATIVA</span>
-            </div>
+
             <h1 class="text-h4 font-weight-black text-white mb-1">
               Iniciar Sesión
             </h1>
@@ -207,18 +184,9 @@ const appBrandName = computed(() => {
                     CORREO ELECTRÓNICO
                   </span>
                 </div>
-                <VTextField
-                  v-model="form.email"
-                  autofocus
-                  placeholder="ejemplo@luxuryevys.com"
-                  bg-color="white"
-                  color="primary"
-                  variant="solo"
-                  density="comfortable"
-                  prepend-inner-icon="ri-user-3-line"
-                  class="auth-input-white rounded-xl"
-                  hide-details="auto"
-                />
+                <VTextField v-model="form.email" autofocus placeholder="ejemplo@luxuryevys.com" bg-color="white"
+                  color="primary" variant="solo" density="comfortable" prepend-inner-icon="ri-user-3-line"
+                  class="auth-input-white rounded-xl" hide-details="auto" />
               </VCol>
 
               <!-- Password Input -->
@@ -228,28 +196,16 @@ const appBrandName = computed(() => {
                     <VIcon icon="ri-lock-2-line" size="14" class="me-1" />
                     CONTRASEÑA
                   </span>
-                  <a
-                    href="#"
-                    class="text-caption text-white font-weight-bold forgot-link-white"
-                    @click.prevent
-                  >
+                  <a href="#" class="text-caption text-white font-weight-bold forgot-link-white" @click.prevent>
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>
-                <VTextField
-                  v-model="form.password"
-                  placeholder="••••••••••••"
-                  bg-color="white"
-                  color="primary"
-                  variant="solo"
-                  density="comfortable"
-                  prepend-inner-icon="ri-key-2-line"
+                <VTextField v-model="form.password" placeholder="••••••••••••" bg-color="white" color="primary"
+                  variant="solo" density="comfortable" prepend-inner-icon="ri-key-2-line"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                  class="auth-input-white rounded-xl"
-                  hide-details="auto"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
+                  class="auth-input-white rounded-xl" hide-details="auto"
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
               </VCol>
 
               <!-- Remember Me -->
@@ -258,6 +214,8 @@ const appBrandName = computed(() => {
                   v-model="form.remember"
                   label="Mantener sesión iniciada"
                   color="white"
+                  true-icon="ri-checkbox-fill"
+                  false-icon="ri-checkbox-blank-line"
                   density="compact"
                   hide-details
                   class="auth-checkbox-white"
@@ -266,47 +224,39 @@ const appBrandName = computed(() => {
 
               <!-- Alerts -->
               <VCol v-if="success_login" cols="12">
-                <VAlert
-                  type="success"
-                  color="success"
-                  variant="elevated"
-                  closable
-                  class="rounded-xl shadow-sm text-white"
-                >
+                <VAlert type="success" color="success" variant="elevated" closable
+                  class="rounded-xl shadow-sm text-white">
                   {{ success_login }}
                 </VAlert>
               </VCol>
 
               <VCol v-if="error_login" cols="12">
-                <VAlert
-                  type="error"
-                  color="error"
-                  variant="elevated"
-                  closable
-                  class="rounded-xl shadow-sm text-white"
-                >
+                <VAlert type="error" color="error" variant="elevated" closable class="rounded-xl shadow-sm text-white">
                   {{ error_login }}
                 </VAlert>
               </VCol>
 
-              <!-- Submit Button (High-Contrast White Button) -->
+              <!-- Submit Button (High-Contrast Solid White Button) -->
               <VCol cols="12" class="pt-3">
                 <VBtn
                   block
                   size="x-large"
                   type="submit"
-                  class="auth-submit-white-btn rounded-xl font-weight-black"
+                  color="white"
+                  variant="elevated"
+                  class="auth-submit-white-btn rounded-xl"
                   :loading="loader.loading"
                   :disabled="loader.loading"
                 >
-                  <span>INGRESAR AL SISTEMA</span>
-                  <VIcon icon="ri-arrow-right-line" class="ms-2 font-weight-bold" />
+                  <span class="btn-text-primary">INGRESAR AL SISTEMA</span>
+                  <VIcon icon="ri-arrow-right-line" class="ms-2 btn-icon-primary" />
                 </VBtn>
               </VCol>
 
               <!-- Security Footer -->
               <VCol cols="12" class="text-center mt-5">
-                <div class="d-inline-flex align-center gap-1.5 text-caption text-white opacity-90 mb-1 font-weight-medium">
+                <div
+                  class="d-inline-flex align-center gap-1.5 text-caption text-white opacity-90 mb-1 font-weight-medium">
                   <VIcon icon="ri-shield-keyhole-line" size="14" color="white" />
                   <span>Conexión Encriptada SSL de 256 bits</span>
                 </div>
@@ -439,6 +389,7 @@ const appBrandName = computed(() => {
     &.bg-success-subtle {
       background-color: rgba(40, 199, 111, 0.12);
     }
+
     &.bg-primary-subtle {
       background-color: rgba(115, 103, 240, 0.12);
     }
@@ -518,8 +469,17 @@ const appBrandName = computed(() => {
 }
 
 @keyframes pulse-badge {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
 }
 
 .form-field-header {
@@ -582,39 +542,76 @@ const appBrandName = computed(() => {
 }
 
 .auth-checkbox-white {
+  opacity: 1 !important;
+
   .v-label {
-    color: rgba(255, 255, 255, 0.95) !important;
-    font-size: 0.85rem;
-    font-weight: 600;
+    color: #ffffff !important;
+    opacity: 1 !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
     user-select: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
   .v-selection-control__input {
-    color: #ffffff !important;
+    .v-icon {
+      color: #ffffff !important;
+      opacity: 1 !important;
+      font-size: 1.35rem !important;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+    }
   }
 }
 
-/* White High-Contrast Submit Button */
+/* Solid White High-Contrast Submit Button */
 .auth-submit-white-btn {
   background-color: #ffffff !important;
-  color: #5e50ee !important;
-  height: 50px !important;
-  font-size: 0.95rem !important;
-  letter-spacing: 0.05em !important;
+  background: #ffffff !important;
+  height: 52px !important;
   border-radius: 14px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  opacity: 1 !important;
+
+  .v-btn__content {
+    color: #5e50ee !important;
+    font-weight: 900 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .btn-text-primary {
+    color: #5e50ee !important;
+    font-weight: 900 !important;
+  }
+
+  .btn-icon-primary {
+    color: #5e50ee !important;
+    font-size: 1.25rem !important;
+    font-weight: bold !important;
+    transition: transform 0.2s ease;
+  }
 
   &:hover {
-    background-color: #f8fafc !important;
-    color: #4839eb !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+
+    .btn-text-primary,
+    .btn-icon-primary,
+    .v-btn__content {
+      color: #4839eb !important;
+    }
+
+    .btn-icon-primary {
+      transform: translateX(4px);
+    }
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
   }
 }
 </style>
