@@ -379,7 +379,7 @@ onMounted(() => {
             <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
               ID
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
+            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px; min-width: 150px;">
               Placa
             </th>
             <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
@@ -403,8 +403,8 @@ onMounted(() => {
             <td class="py-4" style="width: 70px;">
               <div class="shimmer-line w-40" />
             </td>
-            <td class="py-4" style="width: 140px;">
-              <div class="shimmer-chip" style="width: 90px; height: 26px;" />
+            <td class="py-4" style="width: 160px;">
+              <div class="shimmer-chip" style="width: 110px; height: 32px;" />
             </td>
             <td class="py-4">
               <div class="shimmer-line w-75 mb-2" />
@@ -460,11 +460,11 @@ onMounted(() => {
             </td>
 
             <!-- Placa -->
-            <td>
-              <div v-if="vehicle.license_plate" class="font-mono font-weight-bold text-high-emphasis text-body-2">
-                {{ vehicle.license_plate.toUpperCase() }}
+            <td class="py-3">
+              <div v-if="vehicle.license_plate" class="vehicle-plate-badge font-mono">
+                <span class="plate-text">{{ vehicle.license_plate.toUpperCase() }}</span>
               </div>
-              <VChip v-else color="warning" size="x-small" variant="tonal" class="font-weight-bold text-uppercase">
+              <VChip v-else color="warning" size="small" variant="tonal" class="font-weight-bold text-uppercase">
                 Sin placa
               </VChip>
             </td>
@@ -594,20 +594,30 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-.license-plate-badge {
+.vehicle-plate-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 10px;
-  background: #ffffff;
-  color: #1a202c;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-weight: 800;
-  font-size: 0.85rem;
-  letter-spacing: 1.5px;
-  border: 2px solid #2d3748;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  padding: 5px 12px;
+  background-color: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #94a3b8;
+    background-color: #f1f5f9;
+  }
+}
+
+.plate-text {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: 0.07em !important;
+  line-height: 1.2 !important;
   text-transform: uppercase;
 }
 
