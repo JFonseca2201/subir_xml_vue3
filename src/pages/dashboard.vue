@@ -2080,7 +2080,239 @@ const tecnicosOptions = computed(() => {
   </VContainer>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+.dashboard-container {
+  position: relative;
+  overflow-x: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -10%;
+    width: 60vw;
+    height: 60vh;
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.12), transparent 70%);
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float-mesh 12s ease-in-out infinite alternate;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -10%;
+    width: 50vw;
+    height: 50vh;
+    background: radial-gradient(circle, rgba(var(--v-theme-info), 0.1), transparent 70%);
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+    animation: float-mesh 15s ease-in-out infinite alternate-reverse;
+  }
+}
+
+@keyframes float-mesh {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(50px, -50px) scale(1.1);
+  }
+}
+
+.dashboard-header-glow {
+  position: absolute;
+  top: -120px;
+  left: 5%;
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-primary), 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(60px);
+}
+
+.gradient-title {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-info)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+.mock-card {
+  border-radius: 20px !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(var(--v-theme-primary), 0.12) !important;
+    border-color: rgba(var(--v-theme-primary), 0.25) !important;
+  }
+}
+
+/* Premium Gradient KPI Cards */
+.mock-card-gradient-1 {
+  background: linear-gradient(135deg, #7367F0 0%, #CE9FFC 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 24px rgba(115, 103, 240, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 16px 32px rgba(115, 103, 240, 0.45) !important;
+  }
+}
+
+.mock-card-gradient-2 {
+  background: linear-gradient(135deg, #00CFE8 0%, #1A2980 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 24px rgba(0, 207, 232, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 16px 32px rgba(0, 207, 232, 0.45) !important;
+  }
+}
+
+.mock-card-gradient-3 {
+  background: linear-gradient(135deg, #FF9F43 0%, #FF5A5F 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 24px rgba(255, 159, 67, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 16px 32px rgba(255, 159, 67, 0.45) !important;
+  }
+}
+
+.mock-card-gradient-4 {
+  background: linear-gradient(135deg, #28C76F 0%, #81FBB8 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 10px 24px rgba(40, 199, 111, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 16px 32px rgba(40, 199, 111, 0.45) !important;
+  }
+}
+
+.mock-card-gradient-1::before,
+.mock-card-gradient-2::before,
+.mock-card-gradient-3::before,
+.mock-card-gradient-4::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  animation: rotate-bg 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate-bg {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Search Field Premium Styling */
+.search-field :deep(.v-field) {
+  border-radius: 24px !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08) !important;
+  transition: all 0.25s ease !important;
+}
+
+.search-field :deep(.v-field--focused) {
+  box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.15), 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.search-field :deep(.v-field__outline) {
+  display: none;
+}
+
+.search-results-dropdown {
+  backdrop-filter: blur(12px);
+}
+
+.search-result-item {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.08) !important;
+  }
+}
+
+/* Calendar Widget */
+.calendar-widget {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.calendar-header-day {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  color: rgb(var(--v-theme-on-surface));
+
+  &:hover:not(.is-empty) {
+    background-color: rgba(var(--v-theme-primary), 0.1);
+    transform: scale(1.1);
+  }
+
+  &.is-today {
+    background-color: rgba(var(--v-theme-primary), 0.15);
+    color: rgb(var(--v-theme-primary));
+    font-weight: 800;
+    border: 1.5px solid rgba(var(--v-theme-primary), 0.4);
+  }
+
+  &.is-selected {
+    background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(115, 103, 240, 0.4);
+    transform: scale(1.1);
+    font-weight: 700;
+  }
+
+  &.is-empty {
+    cursor: default;
+    visibility: hidden;
+  }
+}
+
+/* Ranking Badges */
 .supplier-rank-badge {
   width: 34px;
   height: 34px;
@@ -2117,11 +2349,45 @@ const tecnicosOptions = computed(() => {
 
 .hover-elevate {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  }
 }
 
-.hover-elevate:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+.pulse-warning {
+  box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7);
+  animation: pulse-warn 2s infinite;
+}
+
+@keyframes pulse-warn {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 179, 0, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 179, 0, 0);
+  }
+}
+
+@media (max-width: 600px) {
+  .calendar-day {
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+  .calendar-header-day {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+  .calendar-grid {
+    gap: 3px;
+  }
 }
 </style>
 

@@ -286,4 +286,274 @@ const appBrandName = computed(() => {
 
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth.scss";
+
+.auth-page-container {
+  min-height: 100vh;
+  background: #f8fafc;
+  position: relative;
+  overflow-x: hidden;
+}
+
+// Logo Badge Superior Flotante
+.auth-brand-link {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 20;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.auth-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.65rem 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(102, 108, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(102, 108, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+
+  .auth-brand-title {
+    color: #4347d4 !important;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.3px;
+  }
+}
+
+// Columna Izquierda: Hero Showcase
+.auth-illustration-wrapper {
+  background: radial-gradient(circle at 40% 40%, rgba(102, 108, 255, 0.09) 0%, rgba(99, 104, 255, 0.03) 60%, #f8fafc 100%);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+
+  .auth-hero-content {
+    max-width: 620px;
+    z-index: 2;
+  }
+
+  .auth-glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: 0.6;
+
+    &.auth-glow-1 {
+      width: 320px;
+      height: 320px;
+      background: rgba(102, 108, 255, 0.15);
+      top: 10%;
+      left: 15%;
+    }
+
+    &.auth-glow-2 {
+      width: 280px;
+      height: 280px;
+      background: rgba(80, 85, 232, 0.12);
+      bottom: 15%;
+      right: 15%;
+    }
+  }
+
+  .auth-illustration {
+    max-height: 400px;
+    width: auto;
+    max-width: 90%;
+    filter: drop-shadow(0 20px 40px rgba(102, 108, 255, 0.2));
+    transition: transform 0.4s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
+  }
+
+  .auth-footer-mask {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+}
+
+// Columna Derecha: Tarjeta de Acceso con degradado profundo
+.auth-primary-sidebar {
+  background: linear-gradient(165deg, #666CFF 0%, #4F54E5 45%, #3e42cb 100%) !important;
+  box-shadow: -10px 0 40px rgba(62, 66, 203, 0.3) !important;
+  color: #ffffff !important;
+  min-height: 100vh;
+  position: relative;
+  z-index: 10;
+
+  .auth-login-card {
+    background: transparent !important;
+  }
+
+  .auth-welcome-heading {
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+  }
+
+  .auth-highlight-name {
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .auth-form-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+    display: block;
+    text-transform: uppercase;
+  }
+
+  .auth-input {
+    .v-field {
+      border-radius: 12px !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+      color: #1e293b !important;
+      transition: all 0.25s ease;
+    }
+
+    .v-field--focused {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 8px 22px rgba(0, 0, 0, 0.18) !important;
+    }
+
+    .v-field__input {
+      font-size: 0.925rem !important;
+      font-weight: 500 !important;
+      color: #0f172a !important;
+    }
+  }
+
+  .auth-checkbox {
+    .v-label {
+      color: #ffffff !important;
+      opacity: 0.95;
+      font-size: 0.875rem;
+      font-weight: 600;
+      user-select: none;
+      padding-inline-start: 4px;
+    }
+
+    .v-selection-control__input {
+      color: #ffffff !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        font-size: 1.45rem !important;
+        opacity: 0.85;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    }
+
+    .v-selection-control--dirty {
+      .v-selection-control__input .v-icon {
+        color: #ffffff !important;
+        opacity: 1 !important;
+        transform: scale(1.1);
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+      }
+    }
+  }
+
+  .auth-forgot-link {
+    color: #ffffff !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // Botón de Envío Principal PRO
+  .auth-submit-btn {
+    background-color: #ffffff !important;
+    color: #4347d4 !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.5px;
+    border-radius: 12px !important;
+    height: 50px !important;
+    border: 2px solid transparent !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    position: relative;
+    overflow: hidden;
+
+    .v-icon {
+      font-size: 1.25rem;
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      transform: translateY(-3px) scale(1.015);
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.2) !important;
+
+      .v-icon {
+        transform: translateX(4px);
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(0.99);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3) !important;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-illustration-wrapper {
+    display: none !important;
+  }
+
+  .auth-wrapper {
+    flex-direction: column !important;
+  }
+
+  .auth-brand-link {
+    display: none !important;
+  }
+
+  .auth-primary-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1.25rem !important;
+
+    .auth-welcome-heading {
+      font-size: 1.85rem !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.5px !important;
+      text-align: left !important;
+    }
+
+    .auth-login-card {
+      padding: 0 !important;
+      max-width: 440px !important;
+      width: 100% !important;
+    }
+  }
+}
 </style>
