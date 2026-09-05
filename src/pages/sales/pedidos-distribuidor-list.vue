@@ -149,8 +149,19 @@ const getStatusInfo = status => {
     cancelado: { color: 'error', text: 'Cancelado', icon: 'ri-close-circle-line' },
   }
 
-
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
+}
+
+const getStatusClass = status => {
+  const map = {
+    completado: 'status-paid',
+    pendiente: 'status-partial',
+    por_confirmar: 'status-transfer',
+    draft: 'status-canceled',
+    cancelado: 'status-pending',
+  }
+
+  return map[status] || 'status-canceled'
 }
 
 const viewPedidoDetails = async pedido => {
@@ -714,21 +725,19 @@ onMounted(() => {
                 </span>
               </td>
 
-              <!-- Estado (Único chip tonal interactivo) -->
-              <td class="text-center py-3">
+              <!-- Estado (Pill limpia estilo Socios/Usuarios con punto) -->
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <VMenu close-on-content-click>
                   <template #activator="{ props }">
-                    <VChip
+                    <div
                       v-bind="props"
-                      :color="getStatusInfo(item.estado).color"
-                      variant="tonal"
-                      size="small"
-                      class="font-weight-bold text-uppercase cursor-pointer"
+                      class="status-pill-clean cursor-pointer"
+                      :class="getStatusClass(item.estado)"
                     >
-                      <VIcon :icon="getStatusInfo(item.estado).icon" size="13" class="me-1" />
-                      {{ getStatusInfo(item.estado).text }}
-                      <VIcon icon="ri-arrow-down-s-line" size="14" class="ms-1" />
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>{{ getStatusInfo(item.estado).text }}</span>
+                      <VIcon icon="ri-arrow-down-s-line" size="14" class="ms-0.5 opacity-70" />
+                    </div>
                   </template>
                   <VList density="compact" class="py-1 rounded-lg elevation-4 border">
                     <VListItem
@@ -843,36 +852,26 @@ onMounted(() => {
           <!-- Selector de Estado Elegante -->
           <VMenu close-on-content-click>
             <template #activator="{ props }">
-              <VChip
+              <div
                 v-bind="props"
-                size="small"
-                variant="flat"
-                class="cursor-pointer px-4 py-1"
-                style="background-color: #ffffff !important; color: #1f2937 !important; font-weight: 700; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"
+                class="status-pill-clean cursor-pointer shadow-sm"
+                :class="getStatusClass(selectedPedido.estado)"
               >
-                <div class="d-inline-flex align-center gap-1.5">
-                  <VIcon
-                    icon="ri-checkbox-blank-circle-fill"
-                    size="10"
-                    :color="getStatusInfo(selectedPedido.estado).color"
-                  />
-                  <span style="color: #1f2937 !important; font-weight: 700;">
-                    {{ getStatusInfo(selectedPedido.estado).text }}
-                  </span>
-                  <VIcon
-                    icon="ri-arrow-down-s-line"
-                    size="14"
-                    style="color: #6b7280 !important;"
-                  />
-                </div>
-              </VChip>
+                <span class="status-dot" />
+                <span>{{ getStatusInfo(selectedPedido.estado).text }}</span>
+                <VIcon
+                  icon="ri-arrow-down-s-line"
+                  size="14"
+                  class="ms-0.5 opacity-70"
+                />
+              </div>
             </template>
             <VList
               density="compact"
-              class="py-1"
+              class="py-1 rounded-lg elevation-4 border"
             >
               <VListItem
-                v-for="status in statusOptions"
+                v-for="status in statusOptions.filter(s => s.value !== 'all')"
                 :key="status.value"
                 @click="updateStatus(selectedPedido, status.value)"
               >
@@ -884,7 +883,7 @@ onMounted(() => {
                     size="18"
                   />
                 </template>
-                <VListItemTitle class="font-weight-medium text-caption">
+                <VListItemTitle class="font-weight-medium text-body-2">
                   {{ status.label }}
                 </VListItemTitle>
               </VListItem>
@@ -1302,6 +1301,84 @@ onMounted(() => {
 
 .hover-underline:hover {
   text-decoration: underline;
+}
+
+// Status Pills (Estilo Socios/Usuarios con Punto Indicador)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
 }
 
 .shimmer-circle {
