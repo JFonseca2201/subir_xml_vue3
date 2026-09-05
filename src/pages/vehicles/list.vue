@@ -461,8 +461,8 @@ onMounted(() => {
 
             <!-- Placa -->
             <td class="py-3">
-              <div v-if="vehicle.license_plate" class="vehicle-plate-badge font-mono">
-                <span class="plate-text">{{ vehicle.license_plate.toUpperCase() }}</span>
+              <div v-if="vehicle.license_plate" class="font-weight-bold text-high-emphasis text-uppercase text-body-2">
+                {{ vehicle.license_plate.toUpperCase() }}
               </div>
               <VChip v-else color="warning" size="small" variant="tonal" class="font-weight-bold text-uppercase">
                 Sin placa
@@ -472,12 +472,12 @@ onMounted(() => {
             <!-- Vehículo -->
             <td class="py-3">
               <div class="d-flex align-center gap-3">
-                <VAvatar size="40" rounded="lg" :color="getBrandColor(vehicle.brand)" variant="tonal"
+                <VAvatar size="36" rounded="lg" :color="getBrandColor(vehicle.brand)" variant="tonal"
                   class="elevation-0">
-                  <VIcon icon="ri-roadster-line" size="22" />
+                  <VIcon icon="ri-roadster-line" size="20" />
                 </VAvatar>
                 <div>
-                  <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                  <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2">
                     {{ getBrandNameById(vehicle.brand) || 'Sin marca' }} {{ vehicle.model || '' }}
                   </div>
                   <div class="d-flex align-center gap-1 text-caption text-medium-emphasis mt-0.5 flex-wrap">
@@ -594,33 +594,6 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
-.vehicle-plate-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 12px;
-  background-color: #f8fafc;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #94a3b8;
-    background-color: #f1f5f9;
-  }
-}
-
-.plate-text {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace !important;
-  font-size: 1.05rem !important;
-  font-weight: 800 !important;
-  color: #0f172a !important;
-  letter-spacing: 0.07em !important;
-  line-height: 1.2 !important;
-  text-transform: uppercase;
-}
-
 .vehicle-grid-card {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-color: rgba(var(--v-border-color), 0.12) !important;
