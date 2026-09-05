@@ -87,119 +87,112 @@ const appBrandName = computed(() => {
   const raw = themeConfig.app?.title || 'LUXURY EVYS'
   if (raw.toUpperCase().includes('LUXURY EVYS')) return 'LUXURY EVYS'
   
-  return raw.length > 22 ? raw.substring(0, 20) + '...' : raw
+  return raw.length > 24 ? raw.substring(0, 22) + '...' : raw
 })
 </script>
 
 <template>
-  <div class="auth-page-luxury">
-    <!-- Ambient Dynamic Glow Orbs -->
-    <div class="luxury-glow-orb orb-top-left" />
-    <div class="luxury-glow-orb orb-bottom-right" />
-    <div class="luxury-glow-orb orb-center" />
-
-    <!-- Top Left Brand Badge (Desktop) -->
+  <div class="auth-page-root">
+    <!-- Desktop Top Left Brand Badge -->
     <RouterLink
       to="/"
-      class="luxury-brand-badge d-none d-lg-flex"
+      class="auth-brand-floating d-none d-lg-flex align-center gap-3"
     >
-      <div class="brand-icon-wrapper">
+      <div class="brand-logo-container">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
       </div>
       <div class="d-flex flex-column">
-        <span class="brand-title">{{ appBrandName }}</span>
-        <span class="brand-subtitle">Gestión Integral Automotriz</span>
+        <span class="text-h6 font-weight-bold text-high-emphasis brand-name-text">
+          {{ appBrandName }}
+        </span>
+        <span class="text-caption text-medium-emphasis">
+          Gestión Automotriz & Facturación
+        </span>
       </div>
     </RouterLink>
 
     <VRow
       no-gutters
-      class="auth-luxury-wrapper"
+      class="auth-wrapper"
     >
-      <!-- LEFT HERO SHOWCASE (Ultra Pro Visuals) -->
+      <!-- LEFT COLUMN: Showcase Visual -->
       <VCol
-        lg="7"
-        xl="8"
-        class="d-none d-lg-flex align-center justify-center position-relative hero-showcase-column"
+        lg="8"
+        class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column"
       >
-        <!-- Decorative Floating Glass Cards -->
-        <div class="floating-glass-card card-top-right">
-          <div class="floating-card-icon bg-success-subtle text-success">
-            <VIcon icon="ri-shield-check-line" size="22" />
+        <div class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
+          <!-- Floating Feature Badges -->
+          <div class="showcase-floating-badge badge-top-right elevation-3">
+            <div class="badge-icon-box bg-success-subtle text-success">
+              <VIcon icon="ri-shield-check-line" size="20" />
+            </div>
+            <div>
+              <div class="badge-caption">FACTURACIÓN SRI</div>
+              <div class="badge-title">XML Homologado 100%</div>
+            </div>
           </div>
-          <div>
-            <div class="text-caption text-slate-400 font-weight-bold">FACTURACIÓN ELECTRÓNICA</div>
-            <div class="text-body-2 font-weight-bold text-white">XML & SRI 100% Homologado</div>
-          </div>
-        </div>
 
-        <div class="floating-glass-card card-bottom-left">
-          <div class="floating-card-icon bg-primary-subtle text-primary">
-            <VIcon icon="ri-speed-up-line" size="22" />
+          <div class="showcase-floating-badge badge-bottom-left elevation-3">
+            <div class="badge-icon-box bg-primary-subtle text-primary">
+              <VIcon icon="ri-tools-line" size="20" />
+            </div>
+            <div>
+              <div class="badge-caption">CONTROL EN VIVO</div>
+              <div class="badge-title">Taller, OTs & Kardex</div>
+            </div>
           </div>
-          <div>
-            <div class="text-caption text-slate-400 font-weight-bold">OPERACIONES EN VIVO</div>
-            <div class="text-body-2 font-weight-bold text-white">Taller & Kardex en Tiempo Real</div>
-          </div>
-        </div>
 
-        <!-- Central Illustration Container -->
-        <div class="d-flex flex-column align-center justify-center pa-10 z-index-2 w-100 text-center">
-          <div class="illustration-halo mb-6">
-            <img
+          <!-- Central Illustration -->
+          <div class="d-flex align-center justify-center pa-6 z-index-2">
+            <VImg
               :src="authV2LoginIllustration"
-              class="luxury-illustration"
-              alt="Luxury Evys Portal"
-            >
+              :max-width="560"
+              class="auth-main-illustration"
+              alt="Luxury Evys Dashboard"
+            />
           </div>
 
-          <div class="hero-text-block">
-            <h2 class="hero-headline">
-              Control Total de tu Taller Automotriz
-            </h2>
-            <p class="hero-subtext">
-              Administración avanzada de inventarios, órdenes de trabajo, ventas y facturación electrónica en un solo ecosistema.
-            </p>
-          </div>
+          <!-- Bottom Footer Mask Graphic -->
+          <VImg
+            :src="authV2LoginMask"
+            class="auth-footer-mask"
+            alt="mask"
+          />
         </div>
-
-        <!-- Footer Mask Illustration -->
-        <VImg
-          :src="authV2LoginMask"
-          class="auth-footer-mask-luxury"
-          alt="auth-mask"
-        />
       </VCol>
 
-      <!-- RIGHT LOGIN FORM (Deep Luxury Glass Panel) -->
+      <!-- RIGHT COLUMN: Login Form Perfectly Centered -->
       <VCol
         cols="12"
-        lg="5"
-        xl="4"
-        class="d-flex align-center justify-center position-relative login-form-column"
+        lg="4"
+        class="auth-card-v2 d-flex align-center justify-center pa-4 pa-sm-8"
       >
-        <div class="login-glass-container w-100 pa-6 pa-sm-10 pa-xl-12">
+        <VCard
+          flat
+          :max-width="460"
+          class="auth-form-card w-100 pa-6 pa-sm-8 pa-md-10 rounded-2xl elevation-0"
+        >
           <!-- Mobile Brand Logo -->
           <div class="d-flex d-lg-none align-center justify-center gap-3 mb-6 text-center">
-            <div class="brand-icon-wrapper-mobile">
+            <div class="brand-logo-container">
               <VNodeRenderer :nodes="themeConfig.app.logo" />
             </div>
-            <h2 class="text-h5 font-weight-bold text-white mb-0">
+            <h2 class="text-h5 font-weight-bold text-high-emphasis mb-0">
               {{ appBrandName }}
             </h2>
           </div>
 
-          <!-- Header Titles -->
-          <div class="mb-6 text-center text-sm-start">
-            <div class="welcome-chip mb-2 d-inline-flex">
-              <span class="status-dot-pulse" />
+          <!-- Welcome Titles -->
+          <div class="mb-6">
+            <div class="system-status-chip mb-2 d-inline-flex align-center gap-1.5">
+              <span class="status-pulse-dot" />
               <span>PLATAFORMA ADMINISTRATIVA</span>
             </div>
-            <h1 class="welcome-title text-h4 font-weight-black mb-1">
-              Iniciar <span class="gradient-text-accent">Sesión</span>
+            <h1 class="text-h4 font-weight-bold text-high-emphasis mb-1">
+              Iniciar <span class="text-primary">Sesión</span>
             </h1>
-            <p class="welcome-subtitle text-body-2 text-slate-300 mb-0">
-              Ingresa tus credenciales para acceder al panel de control
+            <p class="text-body-2 text-medium-emphasis mb-0">
+              Ingresa tus credenciales para acceder al sistema
             </p>
           </div>
 
@@ -208,32 +201,28 @@ const appBrandName = computed(() => {
             <VRow dense class="gap-y-4">
               <!-- Email Input -->
               <VCol cols="12">
-                <label class="luxury-input-label">
-                  <VIcon icon="ri-mail-line" size="14" class="me-1 text-primary-light" />
-                  CORREO ELECTRÓNICO
-                </label>
+                <div class="form-field-header mb-1">
+                  <span class="form-field-label">CORREO ELECTRÓNICO</span>
+                </div>
                 <VTextField
                   v-model="form.email"
                   autofocus
                   placeholder="ejemplo@luxuryevys.com"
                   variant="outlined"
                   density="comfortable"
-                  class="luxury-input"
                   color="primary"
-                  prepend-inner-icon="ri-user-3-line"
+                  prepend-inner-icon="ri-mail-line"
+                  class="rounded-lg"
                 />
               </VCol>
 
               <!-- Password Input -->
               <VCol cols="12">
                 <div class="d-flex justify-space-between align-center mb-1">
-                  <label class="luxury-input-label mb-0">
-                    <VIcon icon="ri-lock-2-line" size="14" class="me-1 text-primary-light" />
-                    CONTRASEÑA
-                  </label>
+                  <span class="form-field-label">CONTRASEÑA</span>
                   <a
-                    class="luxury-forgot-link"
                     href="#"
+                    class="text-caption text-primary font-weight-bold forgot-link"
                     @click.prevent
                   >
                     ¿Olvidaste tu contraseña?
@@ -244,29 +233,25 @@ const appBrandName = computed(() => {
                   placeholder="••••••••••••"
                   variant="outlined"
                   density="comfortable"
-                  class="luxury-input"
                   color="primary"
-                  prepend-inner-icon="ri-key-2-line"
+                  prepend-inner-icon="ri-lock-2-line"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                  class="rounded-lg"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
               </VCol>
 
               <!-- Remember Me -->
-              <VCol cols="12" class="pt-1 pb-1">
-                <div class="d-flex align-center justify-space-between">
-                  <VCheckbox
-                    v-model="form.remember"
-                    label="Mantener sesión iniciada"
-                    color="primary"
-                    true-icon="ri-checkbox-circle-fill"
-                    false-icon="ri-checkbox-blank-circle-line"
-                    hide-details
-                    density="compact"
-                    class="luxury-checkbox"
-                  />
-                </div>
+              <VCol cols="12" class="pt-0">
+                <VCheckbox
+                  v-model="form.remember"
+                  label="Mantener sesión iniciada"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                  class="font-weight-medium"
+                />
               </VCol>
 
               <!-- Alerts -->
@@ -274,9 +259,9 @@ const appBrandName = computed(() => {
                 <VAlert
                   type="success"
                   color="success"
-                  closable
                   variant="tonal"
-                  class="rounded-xl border shadow-sm"
+                  closable
+                  class="rounded-xl border"
                 >
                   {{ success_login }}
                 </VAlert>
@@ -286,42 +271,43 @@ const appBrandName = computed(() => {
                 <VAlert
                   type="error"
                   color="error"
-                  closable
                   variant="tonal"
-                  class="rounded-xl border shadow-sm"
+                  closable
+                  class="rounded-xl border"
                 >
                   {{ error_login }}
                 </VAlert>
               </VCol>
 
-              <!-- Submit Button Pro -->
+              <!-- Submit Button -->
               <VCol cols="12" class="pt-2">
                 <VBtn
                   block
-                  size="x-large"
+                  size="large"
                   type="submit"
-                  class="luxury-submit-btn"
+                  color="primary"
+                  class="login-submit-button rounded-xl font-weight-bold"
                   :loading="loader.loading"
                   :disabled="loader.loading"
+                  prepend-icon="ri-login-box-line"
                 >
-                  <span class="btn-text">INGRESAR AL SISTEMA</span>
-                  <VIcon icon="ri-arrow-right-line" class="btn-icon" />
+                  INGRESAR AL SISTEMA
                 </VBtn>
               </VCol>
 
               <!-- Security Footer -->
-              <VCol cols="12" class="text-center mt-6">
-                <div class="security-badge d-inline-flex align-center gap-1.5 mb-2">
-                  <VIcon icon="ri-shield-keyhole-line" size="14" class="text-success" />
+              <VCol cols="12" class="text-center mt-4">
+                <div class="d-inline-flex align-center gap-1.5 text-caption text-medium-emphasis mb-2">
+                  <VIcon icon="ri-shield-keyhole-line" size="14" color="success" />
                   <span>Conexión Encriptada SSL de 256 bits</span>
                 </div>
-                <div class="text-caption text-slate-400">
+                <div class="text-caption text-disabled">
                   © {{ new Date().getFullYear() }} {{ appBrandName }} • Todos los derechos reservados
                 </div>
               </VCol>
             </VRow>
           </VForm>
-        </div>
+        </VCard>
       </VCol>
     </VRow>
   </div>
@@ -330,462 +316,194 @@ const appBrandName = computed(() => {
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth.scss";
 
-.auth-page-luxury {
+.auth-page-root {
   min-height: 100vh;
-  background-color: #0b0f19;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(115, 103, 240, 0.2) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 207, 232, 0.15) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, rgba(11, 15, 25, 1) 100%);
   position: relative;
-  overflow-x: hidden;
-  display: flex;
-  align-items: stretch;
+  background-color: rgb(var(--v-theme-background));
 }
 
-.auth-luxury-wrapper {
-  min-height: 100vh;
-  width: 100%;
-}
-
-/* Ambient Glow Orbs */
-.luxury-glow-orb {
+.auth-brand-floating {
   position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  filter: blur(100px);
-  z-index: 1;
-
-  &.orb-top-left {
-    width: 450px;
-    height: 450px;
-    background: radial-gradient(circle, rgba(115, 103, 240, 0.3) 0%, rgba(115, 103, 240, 0) 70%);
-    top: -100px;
-    left: -100px;
-    animation: float-glow 8s ease-in-out infinite alternate;
-  }
-
-  &.orb-bottom-right {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(0, 207, 232, 0.25) 0%, rgba(0, 207, 232, 0) 70%);
-    bottom: -150px;
-    right: -150px;
-    animation: float-glow 10s ease-in-out infinite alternate-reverse;
-  }
-
-  &.orb-center {
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0) 70%);
-    top: 40%;
-    left: 45%;
-    animation: float-glow 12s ease-in-out infinite alternate;
-  }
-}
-
-@keyframes float-glow {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(30px, -30px) scale(1.1); }
-}
-
-/* Brand Link Top Left */
-.luxury-brand-badge {
-  position: absolute;
-  top: 28px;
-  left: 32px;
+  top: 2rem;
+  left: 2.5rem;
   z-index: 30;
   text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 18px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px 14px;
+  border-radius: 14px;
+  background-color: rgba(var(--v-theme-surface), 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
 
   &:hover {
     transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(115, 103, 240, 0.5);
-    box-shadow: 0 12px 36px rgba(115, 103, 240, 0.25);
-  }
-
-  .brand-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
-    color: white;
-  }
-
-  .brand-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    background: linear-gradient(135deg, #ffffff 0%, #dcd6ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .brand-subtitle {
-    font-size: 0.68rem;
-    color: rgba(255, 255, 255, 0.6);
-    font-weight: 600;
-    letter-spacing: 0.3px;
+    box-shadow: 0 8px 24px rgba(var(--v-theme-primary), 0.15);
+    border-color: rgba(var(--v-theme-primary), 0.3);
   }
 }
 
-/* Left Hero Showcase */
-.hero-showcase-column {
-  position: relative;
-  z-index: 5;
-  overflow: hidden;
-
-  .illustration-halo {
-    position: relative;
-    display: inline-block;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80%;
-      height: 80%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(115, 103, 240, 0.35) 0%, transparent 70%);
-      filter: blur(50px);
-      z-index: -1;
-    }
-  }
-
-  .luxury-illustration {
-    max-height: 380px;
-    width: auto;
-    max-width: 90%;
-    filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.5));
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-
-    &:hover {
-      transform: translateY(-6px) scale(1.02);
-    }
-  }
-
-  .hero-text-block {
-    max-width: 580px;
-
-    .hero-headline {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.25;
-      margin-bottom: 0.75rem;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-subtext {
-      font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.75);
-      line-height: 1.6;
-      margin-bottom: 0;
-    }
-  }
-
-  .auth-footer-mask-luxury {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    pointer-events: none;
-    opacity: 0.4;
-  }
-}
-
-/* Floating Glass Cards */
-.floating-glass-card {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(115, 103, 240, 0.2);
-  z-index: 10;
-  animation: float-card 6s ease-in-out infinite alternate;
-
-  &.card-top-right {
-    top: 15%;
-    right: 8%;
-    animation-delay: 0s;
-  }
-
-  &.card-bottom-left {
-    bottom: 15%;
-    left: 8%;
-    animation-delay: 3s;
-  }
-
-  .floating-card-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    flex-shrink: 0;
-
-    &.bg-success-subtle {
-      background: rgba(40, 199, 111, 0.15);
-      border: 1px solid rgba(40, 199, 111, 0.3);
-    }
-
-    &.bg-primary-subtle {
-      background: rgba(115, 103, 240, 0.15);
-      border: 1px solid rgba(115, 103, 240, 0.3);
-    }
-  }
-}
-
-@keyframes float-card {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-12px); }
-}
-
-/* Right Login Form Column */
-.login-form-column {
-  background: rgba(15, 23, 42, 0.82) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
-  z-index: 10;
-  min-height: 100vh;
-}
-
-.login-glass-container {
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.welcome-chip {
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  background: rgba(115, 103, 240, 0.15);
-  border: 1px solid rgba(115, 103, 240, 0.3);
-  border-radius: 20px;
-  color: #9e95f5;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-
-  .status-dot-pulse {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background-color: #28c76f;
-    box-shadow: 0 0 8px #28c76f;
-    animation: pulse-green 2s infinite;
-  }
-}
-
-@keyframes pulse-green {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-.welcome-title {
-  color: #ffffff;
-  letter-spacing: -0.5px;
-}
-
-.gradient-text-accent {
-  background: linear-gradient(135deg, #9e95f5 0%, #00cfe8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.welcome-subtitle {
-  line-height: 1.5;
-}
-
-.luxury-input-label {
-  display: flex;
-  align-items: center;
-  font-size: 0.73rem;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-}
-
-.text-primary-light {
-  color: #9e95f5 !important;
-}
-
-/* Luxury Input Field Overrides */
-.luxury-input {
-  .v-field {
-    border-radius: 14px !important;
-    background-color: rgba(30, 41, 59, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    color: #ffffff !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-    &:hover {
-      background-color: rgba(30, 41, 59, 0.85) !important;
-      border-color: rgba(115, 103, 240, 0.4) !important;
-    }
-  }
-
-  .v-field--focused {
-    background-color: rgba(15, 23, 42, 0.95) !important;
-    border-color: #7367f0 !important;
-    box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3) !important;
-    transform: translateY(-1px);
-  }
-
-  .v-field__input {
-    color: #ffffff !important;
-    font-size: 0.95rem !important;
-    font-weight: 500 !important;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.4) !important;
-    }
-  }
-
-  .v-field__prepend-inner .v-icon,
-  .v-field__append-inner .v-icon {
-    color: rgba(255, 255, 255, 0.6) !important;
-    transition: color 0.2s ease;
-  }
-
-  .v-field--focused .v-field__prepend-inner .v-icon {
-    color: #9e95f5 !important;
-  }
-}
-
-.luxury-forgot-link {
-  color: #9e95f5;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: #ffffff;
-    text-decoration: underline;
-    text-shadow: 0 0 8px rgba(158, 149, 245, 0.6);
-  }
-}
-
-.luxury-checkbox {
-  .v-label {
-    color: rgba(255, 255, 255, 0.85) !important;
-    font-size: 0.84rem;
-    font-weight: 600;
-    user-select: none;
-  }
-
-  .v-selection-control__input {
-    color: #7367f0 !important;
-  }
-}
-
-/* Luxury Submit Button */
-.luxury-submit-btn {
-  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%) !important;
-  color: #ffffff !important;
-  border-radius: 14px !important;
-  height: 52px !important;
-  font-weight: 800 !important;
-  font-size: 0.95rem !important;
-  letter-spacing: 0.8px;
-  box-shadow: 0 8px 24px rgba(115, 103, 240, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15) inset !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-    transition: left 0.6s ease;
-  }
-
-  .btn-text {
-    position: relative;
-    z-index: 2;
-  }
-
-  .btn-icon {
-    font-size: 1.25rem;
-    margin-left: 8px;
-    transition: transform 0.25s ease;
-    position: relative;
-    z-index: 2;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, #8277ff 0%, #6d60f9 50%, #5648f5 100%) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 14px 32px rgba(115, 103, 240, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.3) inset !important;
-
-    &::before {
-      left: 100%;
-    }
-
-    .btn-icon {
-      transform: translateX(4px);
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 6px 16px rgba(115, 103, 240, 0.35) !important;
-  }
-}
-
-.security-badge {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.brand-icon-wrapper-mobile {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
+.brand-logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7367F0 0%, #9E95F5 100%);
+  color: #ffffff;
 }
 
-@media (max-width: 960px) {
-  .login-form-column {
-    border-left: none;
-    box-shadow: none;
-    padding: 2rem 1rem !important;
+.brand-name-text {
+  letter-spacing: -0.02em;
+}
+
+.auth-showcase-column {
+  min-height: 100vh;
+}
+
+.auth-showcase-card {
+  min-height: calc(100vh - 4rem);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.06) 0%, rgba(var(--v-theme-primary), 0.02) 100%);
+  border-radius: 28px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+  overflow: hidden;
+}
+
+.auth-main-illustration {
+  transition: transform 0.4s ease;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.08));
+
+  &:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+.showcase-floating-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background-color: rgb(var(--v-theme-surface));
+  border-radius: 16px;
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  z-index: 10;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  &.badge-top-right {
+    top: 10%;
+    right: 8%;
+  }
+
+  &.badge-bottom-left {
+    bottom: 10%;
+    left: 8%;
+  }
+
+  .badge-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.bg-success-subtle {
+      background-color: rgba(40, 199, 111, 0.12);
+    }
+    &.bg-primary-subtle {
+      background-color: rgba(115, 103, 240, 0.12);
+    }
+  }
+
+  .badge-caption {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: rgb(var(--v-theme-on-surface));
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgb(var(--v-theme-on-surface));
+  }
+}
+
+.auth-card-v2 {
+  min-height: 100vh;
+  background-color: rgb(var(--v-theme-surface));
+  border-left: 1px solid rgba(var(--v-border-color), 0.08);
+}
+
+.auth-form-card {
+  background-color: transparent !important;
+}
+
+.system-status-chip {
+  padding: 3px 10px;
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border-radius: 9999px;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+
+  .status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #28C76F;
+    box-shadow: 0 0 6px #28C76F;
+    animation: pulse-badge 2s infinite;
+  }
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.form-field-header {
+  display: flex;
+  align-items: center;
+}
+
+.form-field-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.75;
+}
+
+.forgot-link {
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+}
+
+.login-submit-button {
+  height: 48px !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.04em !important;
+  box-shadow: 0 6px 18px rgba(115, 103, 240, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(115, 103, 240, 0.45) !important;
   }
 }
 </style>
