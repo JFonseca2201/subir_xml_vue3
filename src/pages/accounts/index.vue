@@ -259,14 +259,12 @@ onMounted(() => {
               <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                 Gestión de Cuentas y Cajas
               </h1>
-              <VChip
-                size="small"
-                color="primary"
-                variant="tonal"
-                class="font-weight-bold"
+              <div
+                class="status-pill-clean status-transfer"
               >
-                {{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}
-              </VChip>
+                <span class="status-dot" />
+                <span>{{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}</span>
+              </div>
             </div>
             <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
               Administración de cuentas bancarias, cajas chicas y saldos financieros
@@ -571,18 +569,15 @@ onMounted(() => {
               </div>
             </td>
 
-            <!-- Sistema -->
-            <td class="py-3 text-center">
-              <VChip
+              <!-- Sistema -->
+            <td class="py-3 text-center" style="white-space: nowrap;">
+              <div
                 v-if="account.is_system"
-                size="small"
-                color="warning"
-                variant="tonal"
-                class="font-weight-bold"
+                class="status-pill-clean status-partial"
               >
-                <VIcon start icon="ri-lock-2-line" size="13" />
-                Sistema
-              </VChip>
+                <span class="status-dot" />
+                <span>Sistema</span>
+              </div>
               <span
                 v-else
                 class="text-caption text-disabled font-weight-medium"
@@ -590,16 +585,14 @@ onMounted(() => {
             </td>
 
             <!-- Tipo -->
-            <td class="py-3">
-              <VChip
-                :color="account.type === 'bank' ? 'primary' : 'success'"
-                variant="tonal"
-                size="small"
-                class="font-weight-bold text-uppercase"
+            <td class="py-3" style="white-space: nowrap;">
+              <div
+                class="status-pill-clean"
+                :class="account.type === 'bank' ? 'status-transfer' : 'status-paid'"
               >
-                <VIcon start :icon="account.type === 'bank' ? 'ri-bank-card-line' : 'ri-cash-line'" size="14" />
-                {{ getTypeLabel(account.type) }}
-              </VChip>
+                <span class="status-dot" />
+                <span>{{ getTypeLabel(account.type) }}</span>
+              </div>
             </td>
 
             <!-- Banco -->
@@ -611,15 +604,13 @@ onMounted(() => {
                 <span class="text-body-2 font-weight-bold text-slate-900">
                   {{ account.bank_name }}
                 </span>
-                <VChip
+                <div
                   v-if="isBankGuayaquil(account)"
-                  color="info"
-                  variant="tonal"
-                  size="x-small"
-                  class="font-weight-bold"
+                  class="status-pill-clean status-transfer"
                 >
-                  Principal
-                </VChip>
+                  <span class="status-dot" />
+                  <span>Principal</span>
+                </div>
               </div>
               <span
                 v-else
@@ -661,16 +652,13 @@ onMounted(() => {
                     @click="deleteAccount(account)"
                   />
                 </template>
-                <VChip
+                <div
                   v-else
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  class="font-weight-medium"
+                  class="status-pill-clean status-canceled"
                 >
-                  <VIcon start icon="ri-shield-check-line" size="14" />
-                  Protegida
-                </VChip>
+                  <span class="status-dot" />
+                  <span>Protegida</span>
+                </div>
               </div>
             </td>
           </tr>
@@ -751,3 +739,83 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+<style scoped lang="scss">
+// Status Pills (Estilo Socios/Usuarios con Punto Indicador)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+</style>

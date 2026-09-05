@@ -511,9 +511,10 @@ onMounted(() => {
                         {{ day.date }}
                       </span>
                     </div>
-                    <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
-                      {{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos' }}
-                    </VChip>
+                    <div class="status-pill-clean status-transfer">
+                      <span class="status-dot" />
+                      <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos' }}</span>
+                    </div>
                   </div>
 
                   <!-- Filas de Movimiento -->
@@ -542,15 +543,12 @@ onMounted(() => {
                         </span>
 
                         <div class="d-flex align-center flex-wrap gap-2 text-caption text-medium-emphasis">
-                          <VChip
-                            size="x-small"
-                            variant="tonal"
-                            color="secondary"
-                            prepend-icon="ri-folder-open-line"
-                            class="font-weight-medium"
+                          <div
+                            class="status-pill-clean status-canceled"
                           >
-                            {{ movement.module }}
-                          </VChip>
+                            <span class="status-dot" />
+                            <span>{{ movement.module }}</span>
+                          </div>
 
                           <span class="opacity-40">•</span>
 
@@ -743,4 +741,84 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+// Status Pills (Estilo Socios/Usuarios con Punto Indicador)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+</style>
 

@@ -389,42 +389,27 @@ onMounted(() => {
                 <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                   Caja Diaria & Conciliación
                 </h1>
-                <VChip
+                <div
                   v-if="isSealed"
-                  color="error"
-                  variant="flat"
-                  size="small"
-                  class="font-weight-bold px-3 py-1"
+                  class="status-pill-clean status-pending"
                 >
-                  <VIcon start size="14">
-                    ri-lock-password-fill
-                  </VIcon>
-                  DÍA SELLADO (SOLO LECTURA)
-                </VChip>
-                <VChip
+                  <span class="status-dot" />
+                  <span>DÍA SELLADO (SOLO LECTURA)</span>
+                </div>
+                <div
                   v-else-if="alreadyCounted"
-                  color="success"
-                  variant="flat"
-                  size="small"
-                  class="font-weight-bold px-3 py-1"
+                  class="status-pill-clean status-paid"
                 >
-                  <VIcon start size="14">
-                    ri-checkbox-circle-fill
-                  </VIcon>
-                  REGISTRADO (EDICIÓN)
-                </VChip>
-                <VChip
+                  <span class="status-dot" />
+                  <span>REGISTRADO (EDICIÓN)</span>
+                </div>
+                <div
                   v-else
-                  color="warning"
-                  variant="tonal"
-                  size="small"
-                  class="font-weight-bold px-3 py-1"
+                  class="status-pill-clean status-partial"
                 >
-                  <VIcon start size="14">
-                    ri-time-line
-                  </VIcon>
-                  PENDIENTE POR ARCHIVAR
-                </VChip>
+                  <span class="status-dot" />
+                  <span>PENDIENTE POR ARCHIVAR</span>
+                </div>
               </div>
               <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
                 Cierre diario de control físico de dinero y conciliación bancaria
@@ -477,18 +462,13 @@ onMounted(() => {
                       Comparativa de Saldos
                     </span>
                   </div>
-                  <VChip
+                  <div
                     v-if="initialBalances.origin_date"
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    class="font-weight-semibold"
+                    class="status-pill-clean status-transfer"
                   >
-                    <VIcon start size="14">
-                      ri-history-line
-                    </VIcon>
-                    Arrastre del cierre: {{ initialBalances.origin_date }}
-                  </VChip>
+                    <span class="status-dot" />
+                    <span>Arrastre del cierre: {{ initialBalances.origin_date }}</span>
+                  </div>
                 </div>
               </template>
             </VCardItem>
@@ -1244,6 +1224,86 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+// Status Pills (Estilo Socios/Usuarios con Punto Indicador)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+</style>
 
 <route lang="yaml">
 meta:
