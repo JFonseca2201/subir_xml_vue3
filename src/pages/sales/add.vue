@@ -130,20 +130,49 @@ const requiredRule = v => (
   !(typeof v === 'number' && Number.isNaN(v))
 ) || 'Campo obligatorio'
 
-// Watch para cambiar estado de pago cuando es crédito
-const onCreditChange = () => {
-  sale.value.is_credited = !sale.value.is_credited
-  if (sale.value.is_credited) {
-    sale.value.payment_status = 'pending'
-    paymentDistributions.value = []
-    sale.value.payment_method = ''
-  } else {
-    sale.value.payment_status = 'paid'
-    if (paymentDistributions.value.length === 0 && total.value > 0) {
-      initializePaymentDistribution()
-    }
+// Pagos distribuidos
+const paymentDistributions = ref([])
+
+// Inicializar con un pago distribuido cuando sea al contado o cuando hay items
+const initializePaymentDistribution = () => {
+  if (!paymentDistributions.value || paymentDistributions.value.length === 0) {
+    const cajaChica = (accounts.value || []).find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || (accounts.value || []).find(acc => acc.type === 'cash')
+    paymentDistributions.value = [{
+      account_id: cajaChica ? cajaChica.id : (accounts.value?.[0]?.id || null),
+      amount: typeof total !== 'undefined' && total.value ? Number(total.value) : 0,
+      payment_method: 'Efectivo',
+    }]
   }
 }
+
+// Manejadores claros para Contado / Crédito
+const setContado = () => {
+  sale.value.is_credited = false
+  sale.value.payment_status = 'paid'
+  initializePaymentDistribution()
+}
+
+const setCredito = () => {
+  sale.value.is_credited = true
+  sale.value.payment_status = 'pending'
+  paymentDistributions.value = []
+  sale.value.payment_method = ''
+}
+
+const onCreditChange = () => {
+  if (sale.value.is_credited) {
+    setContado()
+  } else {
+    setCredito()
+  }
+}
+
+// Watcher reactivo: si no es crédito y la lista de pagos está vacía, auto-inicializar inmediatamente
+watch(() => sale.value.is_credited, isCredited => {
+  if (!isCredited && (!paymentDistributions.value || paymentDistributions.value.length === 0)) {
+    initializePaymentDistribution()
+  }
+})
 
 // Watch para cuando cambia el estado de pago directamente en el selector
 watch(() => sale.value.payment_status, newStatus => {
@@ -155,9 +184,7 @@ watch(() => sale.value.payment_status, newStatus => {
     if (newStatus === 'paid') {
       sale.value.is_credited = false
     }
-    if (paymentDistributions.value.length === 0 && total.value > 0) {
-      initializePaymentDistribution()
-    }
+    initializePaymentDistribution()
   }
 })
 
@@ -184,20 +211,6 @@ const onDocumentTypeChange = async () => {
     console.error('Error al obtener secuencial:', error)
   }
   sale.value.payment_status = sale.value.is_credited ? 'pending' : 'paid'
-}
-
-// Pagos distribuidos
-const paymentDistributions = ref([])
-
-// Inicializar con un pago distribuido cuando hay items
-const initializePaymentDistribution = () => {
-  if (paymentDistributions.value.length === 0) {
-    paymentDistributions.value.push({
-      account_id: null,
-      amount: total.value,
-      payment_method: null,
-    })
-  }
 }
 
 // Estado de diálogos y manejadores
@@ -1595,6 +1608,37 @@ onMounted(async () => {
 
             <VCardText class="pa-4 pa-sm-5 bg-white">
               <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
+                <!-- Opción Factura -->
+                <div
+                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
+                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                  @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
+                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
+                      <VIcon icon="ri-bill-line" size="22"
+                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-body-2 font-weight-bold"
+                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
+                        Factura Electrónica
+                      </div>
+                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
+                        Documento fiscal válido SRI
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-center gap-2">
+                    <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
+                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                      SRI Oficial
+                    </VChip>
+                    <VIcon
+                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
+                  </div>
+                </div>
                 <!-- Opción Nota de Venta -->
                 <div
                   class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
@@ -1627,37 +1671,7 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- Opción Factura -->
-                <div
-                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
-                  @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
-                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
-                      <VIcon icon="ri-bill-line" size="22"
-                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
-                    </VAvatar>
-                    <div>
-                      <div class="text-body-2 font-weight-bold"
-                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
-                        Factura Electrónica
-                      </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                        Documento fiscal válido SRI
-                      </div>
-                    </div>
-                  </div>
-                  <div class="d-flex align-center gap-2">
-                    <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
-                      SRI Oficial
-                    </VChip>
-                    <VIcon
-                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                      size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
-                  </div>
-                </div>
+
               </div>
             </VCardText>
           </VCard>
@@ -2026,175 +2040,172 @@ onMounted(async () => {
 
         <!-- Columna Derecha (4 cols): Pagos, Observaciones y Resumen Financiero -->
         <VCol cols="12" lg="4">
-          <div class="d-flex flex-column gap-6">
-            <!-- Tarjeta 4: Configuración de Pagos (si no es cotización) -->
+          <div class="d-flex flex-column gap-4">
+            <!-- Tarjeta 4: Condiciones de Pago (Elegante, Intuitiva y Compacta) -->
             <VCard v-if="sale.document_type !== 'quote'" class="rounded-xl border-light elevation-1 overflow-hidden">
-              <VCardItem class="bg-white py-3 px-4 border-b">
+              <VCardItem class="bg-white py-2.5 px-4 border-b">
                 <template #title>
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar size="36" color="success" variant="tonal" class="rounded-lg">
-                      <VIcon icon="ri-wallet-3-line" size="20" />
-                    </VAvatar>
-                    <div>
-                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Configuración de Pagos
-                      </h3>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Método y distribución del pago
-                      </p>
+                  <div class="d-flex align-center justify-space-between w-100">
+                    <div class="d-flex align-center gap-2">
+                      <VAvatar size="30" color="primary" variant="tonal" class="rounded-lg">
+                        <VIcon icon="ri-wallet-3-line" size="17" />
+                      </VAvatar>
+                      <div>
+                        <h3 class="text-subtitle-2 font-weight-bold text-slate-900 mb-0">
+                          Condiciones de Pago
+                        </h3>
+                      </div>
                     </div>
+                    <VBtn v-if="!sale.is_credited && paymentDistributions.length > 0" color="primary" variant="tonal"
+                      size="x-small" prepend-icon="ri-add-line" class="font-weight-bold px-2"
+                      @click="addPaymentDistribution">
+                      Dividir Pago
+                    </VBtn>
                   </div>
                 </template>
               </VCardItem>
 
-              <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
-                <div>
-                  <label class="text-caption font-weight-bold text-slate-800 mb-1 d-block">Estado del Pago</label>
-                  <VSelect v-model="sale.payment_status" :items="paymentStatuses" item-title="title" item-value="value"
-                    placeholder="Seleccionar estado" :rules="[requiredRule]" variant="outlined" density="comfortable"
-                    prepend-inner-icon="ri-flag-line" hide-details="auto" />
-                </div>
-
-                <VCard variant="tonal" color="primary" class="pa-3 rounded-xl cursor-pointer border"
-                  :class="sale.is_credited ? 'border-primary border' : 'opacity-80'" @click="onCreditChange">
-                  <div class="d-flex align-center gap-3">
-                    <VIcon :icon="sale.is_credited ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                      size="22" />
+              <VCardText class="pa-3 bg-white d-flex flex-column gap-3">
+                <!-- Selector Principal: Contado vs Crédito -->
+                <div class="d-flex gap-2">
+                  <div class="payment-mode-card flex-grow-1" :class="{ 'active-contado': !sale.is_credited }"
+                    @click="setContado">
+                    <div class="mode-icon-circle">
+                      <VIcon icon="ri-money-dollar-circle-line" size="18" />
+                    </div>
                     <div>
-                      <div class="text-body-2 font-weight-bold">
-                        Venta a crédito
-                      </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                        Pago diferido sin abono inmediato
-                      </div>
+                      <div class="mode-title">Al Contado</div>
+                      <div class="mode-subtitle">Cobro inmediato</div>
                     </div>
                   </div>
-                </VCard>
 
-                <!-- Distribución de Pagos -->
-                <div>
-                  <div class="d-flex justify-space-between align-center mb-2">
-                    <span class="text-caption font-weight-bold text-slate-800">Distribución de Pagos:</span>
-                    <VBtn v-if="sale.payment_status !== 'pending'" color="primary" variant="text" size="x-small"
-                      prepend-icon="ri-add-line" class="font-weight-bold" @click="addPaymentDistribution">
-                      Agregar Pago
+                  <div class="payment-mode-card flex-grow-1" :class="{ 'active-credito': sale.is_credited }"
+                    @click="setCredito">
+                    <div class="mode-icon-circle">
+                      <VIcon icon="ri-calendar-todo-line" size="18" />
+                    </div>
+                    <div>
+                      <div class="mode-title">A Crédito</div>
+                      <div class="mode-subtitle">Pago diferido</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mensaje cuando es a crédito -->
+                <div v-if="sale.is_credited"
+                  class="pa-3 rounded-xl bg-amber-50/80 border border-amber-200 d-flex align-start gap-2.5">
+                  <VIcon icon="ri-information-line" size="20" color="warning" class="mt-0.5 shrink-0" />
+                  <div>
+                    <div class="text-caption font-weight-bold text-amber-900">Venta registrada a crédito</div>
+                    <div class="text-caption text-amber-800" style="font-size: 0.72rem; line-height: 1.2;">
+                      Se emitirá con estado de pago pendiente como cuenta por cobrar.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Lista de Pagos cuando es al contado -->
+                <template v-else>
+                  <div v-if="paymentDistributions.length === 0" class="pa-3 text-center rounded-xl border bg-slate-50">
+                    <div class="text-caption text-medium-emphasis mb-2">No hay método de cobro seleccionado</div>
+                    <VBtn size="x-small" color="primary" variant="tonal" prepend-icon="ri-add-line"
+                      @click="initializePaymentDistribution">
+                      Agregar Cobro
                     </VBtn>
                   </div>
 
-                  <!-- Mensaje Informativo cuando el pago está Pendiente -->
-                  <VAlert v-if="sale.payment_status === 'pending'" type="warning" variant="tonal" density="compact"
-                    class="rounded-lg mb-2 text-caption" icon="ri-time-line">
-                    La venta se registrará como pago pendiente / crédito.
-                  </VAlert>
+                  <div v-for="(dist, index) in paymentDistributions" :key="index" class="payment-dist-card">
+                    <!-- Encabezado de pago si hay más de 1 -->
+                    <div v-if="paymentDistributions.length > 1"
+                      class="d-flex justify-space-between align-center pb-2 border-b">
+                      <span class="text-caption font-weight-bold text-slate-700">Pago #{{ index + 1 }}</span>
+                      <VBtn icon="ri-close-line" size="x-small" color="error" variant="text" title="Eliminar este pago"
+                        @click="removePaymentDistribution(index)" />
+                    </div>
 
-                  <template v-else>
-                    <div v-for="(dist, index) in paymentDistributions" :key="index" class="pa-3 mb-3 border rounded-xl"
-                      :class="!dist.payment_method ? 'bg-amber-50/40 border-warning' : (dist.payment_method === 'Transferencia' ? 'bg-blue-50/20 border-info' : 'bg-emerald-50/20 border-success')">
-                      <div class="d-flex justify-space-between align-center mb-2">
-                        <div class="d-flex align-center gap-2">
-                          <span class="text-caption font-weight-bold text-slate-800">Pago #{{ index + 1 }}</span>
-                          <VChip v-if="dist.payment_method" size="x-small"
-                            :color="dist.payment_method === 'Efectivo' ? 'success' : (dist.payment_method === 'Transferencia' ? 'info' : 'primary')"
-                            variant="tonal" class="font-weight-bold">
-                            {{ dist.payment_method }}
-                          </VChip>
-
-                        </div>
-                        <VIcon v-if="paymentDistributions.length > 1" icon="ri-close-line" color="error"
-                          class="cursor-pointer" size="18" @click="removePaymentDistribution(index)" />
+                    <!-- Métodos de pago tipo pastilla -->
+                    <div class="payment-methods-row">
+                      <div class="payment-method-pill" :class="{ 'active-cash': dist.payment_method === 'Efectivo' }"
+                        @click="onPaymentMethodChange(dist, 'Efectivo')">
+                        <VIcon icon="ri-money-dollar-circle-line" size="16" />
+                        <span>Efectivo</span>
                       </div>
 
-                      <!-- Botones de selección rápida y clara -->
-                      <div class="mb-2">
-                        <label class="text-caption font-weight-bold text-slate-700 mb-1 d-block">
-                          Tipo de Pago <span class="text-error">*</span>
-                        </label>
-                        <div class="d-flex gap-2 mb-1">
-                          <VBtn size="small" :variant="dist.payment_method === 'Efectivo' ? 'elevated' : 'outlined'"
-                            :color="dist.payment_method === 'Efectivo' ? 'success' : 'secondary'"
-                            prepend-icon="ri-money-dollar-circle-line"
-                            class="flex-grow-1 font-weight-bold text-caption rounded-lg"
-                            @click="onPaymentMethodChange(dist, 'Efectivo')">
-                            Efectivo
-                          </VBtn>
-                          <VBtn size="small"
-                            :variant="dist.payment_method === 'Transferencia' ? 'elevated' : 'outlined'"
-                            :color="dist.payment_method === 'Transferencia' ? 'info' : 'secondary'"
-                            prepend-icon="ri-bank-line" class="flex-grow-1 font-weight-bold text-caption rounded-lg"
-                            @click="onPaymentMethodChange(dist, 'Transferencia')">
-                            Transferencia
-                          </VBtn>
-                        </div>
+                      <div class="payment-method-pill"
+                        :class="{ 'active-transfer': dist.payment_method === 'Transferencia' }"
+                        @click="onPaymentMethodChange(dist, 'Transferencia')">
+                        <VIcon icon="ri-bank-line" size="16" />
+                        <span>Transferencia</span>
                       </div>
 
-                      <div class="d-flex flex-column gap-2">
-                        <!-- Dropdown para otros métodos si se necesita -->
-                        <VSelect
-                          v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
-                          v-model="dist.payment_method" :items="paymentMethods" item-title="title" item-value="value"
-                          label="Forma de Pago *" variant="outlined" density="compact" hide-details="auto"
-                          @update:model-value="(val) => onPaymentMethodChange(dist, val)" />
+                      <VMenu>
+                        <template #activator="{ props }">
+                          <div v-bind="props" class="payment-method-pill flex-grow-0 px-2.5"
+                            :class="{ 'active-other': dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia' }"
+                            title="Más opciones de pago">
+                            <VIcon icon="ri-more-fill" size="16" />
+                          </div>
+                        </template>
+                        <VList density="compact">
+                          <VListItem title="Tarjeta de Crédito" prepend-icon="ri-bank-card-line"
+                            @click="onPaymentMethodChange(dist, 'Tarjeta de Crédito')" />
+                          <VListItem title="Tarjeta de Débito" prepend-icon="ri-bank-card-2-line"
+                            @click="onPaymentMethodChange(dist, 'Tarjeta de Débito')" />
+                        </VList>
+                      </VMenu>
+                    </div>
 
-                        <!-- Si es transferencia, selector obligatorio de cuenta bancaria -->
-                        <div v-if="dist.payment_method === 'Transferencia'">
-                          <VSelect v-model="dist.account_id" :items="accounts" item-title="name" item-value="id"
-                            label="Cuenta Bancaria Destino *" placeholder="Seleccione banco de destino..."
-                            variant="outlined" density="compact" color="info" prepend-inner-icon="ri-bank-line"
-                            :rules="[requiredRule]" hide-details="auto" />
-                        </div>
+                    <!-- Etiqueta si seleccionó tarjeta -->
+                    <div
+                      v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
+                      class="text-caption font-weight-bold text-primary d-flex align-center gap-1.5 py-1 px-2.5 rounded-lg bg-indigo-50 border border-indigo-100">
+                      <VIcon icon="ri-checkbox-circle-fill" size="14" />
+                      <span>Método: {{ dist.payment_method }}</span>
+                    </div>
 
-                        <!-- Si es efectivo, confirmación de caja chica -->
-                        <div v-else-if="dist.payment_method === 'Efectivo'"
-                          class="text-caption text-success font-weight-medium d-flex align-center gap-1">
-                          <VIcon icon="ri-checkbox-circle-fill" size="15" color="success" /> Ingresa a Caja Chica
-                          (Efectivo)
-                        </div>
+                    <!-- Selector de Banco si es Transferencia -->
+                    <div v-if="dist.payment_method === 'Transferencia'" class="payment-bank-select-wrapper">
+                      <VSelect v-model="dist.account_id" :items="accounts" item-title="name" item-value="id"
+                        label="Banco de Destino *" placeholder="Seleccionar banco..." variant="outlined"
+                        density="compact" color="info" prepend-inner-icon="ri-bank-line" :rules="[requiredRule]"
+                        hide-details="auto" />
+                    </div>
 
-                        <!-- Si no ha seleccionado ningún método, alerta visual -->
-                        <div v-else class="text-caption text-warning font-weight-bold d-flex align-center gap-1">
-                          <VIcon icon="ri-alert-fill" size="15" color="warning" /> Debe elegir Efectivo o Transferencia
-                        </div>
-
-                        <!-- Monto -->
-                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" label="Monto *"
-                          variant="outlined" density="compact" hide-details="auto" prefix="$"
-                          class="font-mono font-weight-bold" @input="handlePaymentAmountChange(dist, index)"
+                    <!-- Fila de Monto a Cobrar -->
+                    <div class="payment-amount-row">
+                      <span class="text-caption font-weight-bold text-slate-700">Monto:</span>
+                      <div style="width: 140px;">
+                        <VTextField v-model.number="dist.amount" type="number" min="0" step="0.01" prefix="$"
+                          variant="outlined" density="compact" hide-details="auto" class="font-mono font-weight-bold"
+                          @input="handlePaymentAmountChange(dist, index)"
                           @blur="handlePaymentAmountChange(dist, index)" />
                       </div>
                     </div>
+                  </div>
 
-                    <div v-if="paymentDistributions.length > 0" class="mt-2 text-caption text-right font-weight-bold">
-                      <div :class="remainingAmount < -0.01 ? 'text-error' : 'text-success'">
-                        Falta distribuir: ${{ remainingAmount.toFixed(2) }}
-                      </div>
-                    </div>
-                  </template>
-                </div>
+                  <!-- Indicador de balance pendiente si existe -->
+                  <div v-if="paymentDistributions.length > 0 && Math.abs(remainingAmount) > 0.009"
+                    class="text-caption text-right font-weight-bold"
+                    :class="remainingAmount < 0 ? 'text-error' : 'text-primary'">
+                    {{ remainingAmount > 0 ? `Falta distribuir: $${remainingAmount.toFixed(2)}` : `Excedente:
+                    $${Math.abs(remainingAmount).toFixed(2)}` }}
+                  </div>
+                </template>
               </VCardText>
             </VCard>
 
-            <!-- Tarjeta 5: Observaciones y Notas -->
+            <!-- Tarjeta 5: Observaciones y Notas (Compacta) -->
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
-              <VCardItem class="bg-white py-3 px-4 border-b">
+              <VCardItem class="bg-white py-2 px-4 border-b">
                 <template #title>
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar size="36" color="secondary" variant="tonal" class="rounded-lg">
-                      <VIcon icon="ri-file-text-line" size="20" />
-                    </VAvatar>
-                    <div>
-                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Observaciones y Notas
-                      </h3>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Detalles adicionales del documento
-                      </p>
-                    </div>
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-file-text-line" size="17" class="text-medium-emphasis" />
+                    <span class="text-subtitle-2 font-weight-bold text-slate-800">Observaciones y Notas</span>
                   </div>
                 </template>
               </VCardItem>
-              <VCardText class="pa-4 bg-white">
+              <VCardText class="pa-3 bg-white">
                 <VTextarea v-model="sale.observations" placeholder="Notas o términos y condiciones adicionales..."
-                  variant="outlined" rows="3" density="comfortable" hide-details="auto" color="primary" />
+                  variant="outlined" rows="2" density="compact" hide-details="auto" color="primary" />
               </VCardText>
             </VCard>
 
@@ -2254,7 +2265,7 @@ onMounted(async () => {
 
               <VDivider />
 
-              <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
+              <VCardActions class="pa-4 bg-slate-50 sales-actions-container">
                 <!-- Alerta de Validación encima del botón de guardar -->
                 <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
                   border="start" closable @click:close="showValidationError = false">
@@ -2264,25 +2275,29 @@ onMounted(async () => {
                   </div>
                 </VAlert>
 
-                <VBtn block type="submit" color="primary" variant="elevated" size="large" prepend-icon="ri-save-3-line"
-                  class="font-weight-bold elevation-2" :loading="isSubmitting" :disabled="isProcessing">
-                  {{ sale.document_type === 'invoice' ? 'REGISTRAR FACTURA' : 'REGISTRAR NOTA DE VENTA' }}
-                </VBtn>
-
-                <VBtn block color="warning" variant="tonal" prepend-icon="ri-truck-line" class="font-weight-semibold"
-                  :loading="isDispatching" :disabled="isProcessing" @click.prevent="dispatchSale">
-                  Despachar (Pago Pendiente)
-                </VBtn>
-
-                <div class="d-flex gap-2 w-100">
-                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-draft-line"
-                    class="font-weight-semibold flex-grow-1" :loading="isSavingDraft" :disabled="isProcessing"
-                    @click.prevent="saveDraft">
+                <div class="action-btn-row">
+                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-draft-line" class="font-weight-semibold"
+                    :loading="isSavingDraft" :disabled="isProcessing" @click.prevent="saveDraft">
                     Borrador
                   </VBtn>
+
+                  <VBtn color="info" variant="tonal" prepend-icon="ri-truck-line"
+                    class="font-weight-semibold action-btn-dispatch" :loading="isDispatching" :disabled="isProcessing"
+                    @click.prevent="dispatchSale">
+                    Despachar sin pago
+                  </VBtn>
+                </div>
+
+                <div class="action-btn-row">
+
                   <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
                     :disabled="isProcessing" @click="router.push('/sales/list')">
                     Cancelar
+                  </VBtn>
+                  <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
+                    class="font-weight-bold elevation-2 action-btn-primary" :loading="isSubmitting"
+                    :disabled="isProcessing">
+                    {{ sale.document_type === 'invoice' ? 'CREAR FACTURA' : 'CREAR NOTA DE VENTA' }}
                   </VBtn>
                 </div>
               </VCardActions>

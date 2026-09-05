@@ -1151,14 +1151,14 @@ onMounted(() => {
                   class="font-weight-bold elevation-2" :loading="isLoading" @click="saveWorkOrder">
                   {{ originalStatus === 'draft' ? 'FINALIZAR ORDEN DE TRABAJO' : 'GUARDAR CAMBIOS' }}
                 </VBtn>
-                <div class="d-flex gap-2 w-100">
+                <div class="action-btn-row">
                   <VBtn v-if="originalStatus === 'draft'" color="secondary" variant="tonal"
-                    prepend-icon="ri-file-draft-line" class="font-weight-semibold flex-grow-1" :loading="isLoading"
+                    prepend-icon="ri-draft-line" class="font-weight-semibold" :loading="isLoading"
                     @click="saveDraft">
                     Actualizar Borrador
                   </VBtn>
                   <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
-                    :class="{ 'flex-grow-1': originalStatus !== 'draft' }" @click="cancel">
+                    @click="cancel">
                     Cancelar
                   </VBtn>
                 </div>

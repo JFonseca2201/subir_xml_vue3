@@ -1179,9 +1179,9 @@ onMounted(async () => {
                   class="font-weight-bold elevation-2" :loading="isSubmitting" @click="saveWorkOrder">
                   GUARDAR ORDEN
                 </VBtn>
-                <div class="d-flex gap-2 w-100">
-                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-file-draft-line"
-                    class="font-weight-semibold flex-grow-1" :loading="isSavingDraft" @click="saveDraft">
+                <div class="action-btn-row">
+                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-draft-line"
+                    class="font-weight-semibold" :loading="isSavingDraft" @click="saveDraft">
                     Borrador
                   </VBtn>
                   <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
