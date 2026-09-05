@@ -374,7 +374,6 @@ const assignDefaultVehicle = async () => {
       if (defVehicle.client_id && !sale.value.client_id) {
         selectedClient.value = defVehicle.client
       }
-      showNotification('Vehículo / Modelo por defecto asignado (Sin Placa)', 'info')
     }
   } catch (error) {
     console.error('Error al asignar vehículo por defecto:', error)
@@ -862,7 +861,7 @@ const submitForm = async () => {
     const { valid } = await formRef.value.validate()
     if (!valid) {
       showValidationError.value = true
-      validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+      validationErrorMessage.value = 'Complete todos los campos obligatorios.'
 
       return
     }
@@ -881,7 +880,7 @@ const submitForm = async () => {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
       showValidationError.value = true
-      validationErrorMessage.value = 'El comprobante incluye servicios y requiere un vehículo. Por favor seleccione uno o asigne el modelo por defecto (Sin Placa).'
+      validationErrorMessage.value = 'El comprobante incluye servicios y requiere asociar un vehículo.'
 
       return
     }
@@ -1197,7 +1196,7 @@ const dispatchSale = async () => {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
       showValidationError.value = true
-      validationErrorMessage.value = 'El comprobante incluye servicios y requiere un vehículo. Por favor seleccione uno o asigne el modelo por defecto (Sin Placa).'
+      validationErrorMessage.value = 'El comprobante incluye servicios y requiere asociar un vehículo.'
 
       return
     }
@@ -1478,8 +1477,7 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
-    <VProgressLinear v-if="isLoading" indeterminate color="primary" height="3" class="position-absolute"
-      style="top: 0; left: 0; right: 0; z-index: 10;" />
+
 
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
@@ -1731,10 +1729,8 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <div class="d-flex align-center gap-2" style="text-transform: uppercase;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
-                      item-title="license_plate"
-                      :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo (Opcional)'"
-                      icon="ri-car-line" :initial-item="selectedVehicle"
-                      :rules="[() => (!hasServices || !!sale.vehicle_id) || 'Vehículo es requerido para servicios']">
+                      item-title="license_plate" label="Vehículo (Opcional)" icon="ri-car-line"
+                      :initial-item="selectedVehicle">
                       <template #item="{ props, item }">
                         <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
@@ -1749,16 +1745,8 @@ onMounted(async () => {
                         </VListItem>
                       </template>
                     </VSearch>
-                    <div class="d-flex align-center gap-1">
-                      <VBtn v-if="!selectedVehicle" size="small" variant="tonal" color="warning" type="button"
-                        title="Asignar modelo por defecto (Sin Placa)" :loading="isAssigningDefaultVehicle"
-                        @click="assignDefaultVehicle">
-                        <VIcon icon="ri-car-washing-line" class="me-1" size="16" />
-                        Sin Placa
-                      </VBtn>
-                      <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
-                        @click="isVehicleAddDialogVisible = true" />
-                    </div>
+                    <VBtn color="success" variant="tonal" size="small" icon="ri-add-line"
+                      @click="isVehicleAddDialogVisible = true" />
                   </div>
                 </VCol>
 

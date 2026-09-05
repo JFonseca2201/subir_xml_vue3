@@ -136,7 +136,7 @@ const validateForm = async () => {
   if (hasServices.value && !workOrder.value.vehicle_id) {
     await assignDefaultVehicle()
     if (!workOrder.value.vehicle_id) {
-      validationErrorMessage.value = 'La orden contiene servicios y requiere un vehículo. Por favor seleccione uno o asigne el modelo por defecto (Sin Placa).'
+      validationErrorMessage.value = 'La orden contiene servicios y requiere asociar un vehículo.'
       showValidationError.value = true
 
       return false
@@ -384,7 +384,6 @@ const assignDefaultVehicle = async () => {
       if (defVehicle.client_id && !workOrder.value.client_id) {
         selectedClient.value = defVehicle.client
       }
-      showNotification('Vehículo / Modelo por defecto asignado (Sin Placa)', 'info')
     }
   } catch (error) {
     console.error('Error al asignar vehículo por defecto:', error)
@@ -756,8 +755,9 @@ onMounted(async () => {
                 <VCol cols="12" sm="6">
                   <div style="text-transform: uppercase;">
                     <VSearch v-model="selectedVehicle" :return-object="true" endpoint="vehicles/search"
-                      item-title="license_plate" :label="hasServices ? 'Vehículo * (Requerido por Servicio)' : 'Vehículo'" icon="ri-car-line" :initial-item="selectedVehicle"
-                      :rules="[() => (!hasServices || !!workOrder.vehicle_id) || 'Vehículo es requerido para servicios']">
+                      item-title="license_plate"
+                      label="Vehículo (Opcional)" icon="ri-car-line"
+                      :initial-item="selectedVehicle">
                       <template #item="{ props, item }">
                         <VListItem v-bind="props" :title="item.raw.license_plate">
                           <VListItemSubtitle class="mt-1 text-grey">
@@ -772,25 +772,10 @@ onMounted(async () => {
                         </VListItem>
                       </template>
                       <template #append>
-                        <div class="d-flex align-center gap-1">
-                          <VBtn
-                            v-if="!selectedVehicle"
-                            size="small"
-                            variant="tonal"
-                            color="warning"
-                            type="button"
-                            title="Asignar modelo por defecto (Sin Placa)"
-                            :loading="isAssigningDefaultVehicle"
-                            @click="assignDefaultVehicle"
-                          >
-                            <VIcon icon="ri-car-washing-line" class="me-1" size="16" />
-                            Sin Placa
-                          </VBtn>
-                          <VBtn icon size="small" variant="tonal" color="primary" type="button"
-                            @click="showVehicleDialog = true">
-                            <VIcon icon="ri-add-line" />
-                          </VBtn>
-                        </div>
+                        <VBtn icon size="small" variant="tonal" color="primary" type="button"
+                          @click="showVehicleDialog = true">
+                          <VIcon icon="ri-add-line" />
+                        </VBtn>
                       </template>
                     </VSearch>
                   </div>
@@ -836,7 +821,8 @@ onMounted(async () => {
                       </VCol>
 
                       <!-- Datos del Vehículo -->
-                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12" :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
+                      <VCol v-if="selectedVehicle" cols="12" :sm="selectedClient ? 6 : 12"
+                        :class="[selectedClient ? 'border-s-sm ps-sm-4 mt-2 mt-sm-0' : '', 'd-flex align-center gap-3']">
                         <VAvatar color="secondary" variant="tonal" size="38" class="rounded-lg shrink-0">
                           <VIcon icon="ri-car-line" size="20" color="secondary" />
                         </VAvatar>
@@ -851,18 +837,22 @@ onMounted(async () => {
                             <span v-if="selectedVehicle.color" class="text-caption text-slate-500">
                               • {{ selectedVehicle.color }}
                             </span>
-                            <span v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)" class="text-caption text-slate-500">
+                            <span
+                              v-if="selectedVehicle.year && !getVehicleBrandModel(selectedVehicle).includes(selectedVehicle.year)"
+                              class="text-caption text-slate-500">
                               ({{ selectedVehicle.year }})
                             </span>
                           </div>
 
                           <!-- Dueño diferente del cliente asignado -->
-                          <div v-if="isVehicleOwnerDifferentFromClient" class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
+                          <div v-if="isVehicleOwnerDifferentFromClient"
+                            class="d-flex align-center justify-space-between gap-2 mt-1 px-2 py-0.5 rounded border border-warning bg-amber-50">
                             <span class="text-caption text-amber-900 text-truncate" style="font-size: 0.75rem;">
                               <VIcon icon="ri-user-shared-line" size="13" color="warning" class="me-1" />
                               Dueño: <strong>{{ getVehicleOwnerName || 'Otro cliente' }}</strong>
                             </span>
-                            <VBtn size="x-small" variant="text" color="warning" density="compact" class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
+                            <VBtn size="x-small" variant="text" color="warning" density="compact"
+                              class="font-weight-bold text-none px-1" @click="setClientToVehicleOwner">
                               Asignar
                             </VBtn>
                           </div>
@@ -1143,8 +1133,7 @@ onMounted(async () => {
                         Resumen de la Orden
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        {{ workOrder.items.length }} {{ workOrder.items.length === 1 ? 'ítem agregado' :
-                          'ítems agregados' }}
+                        {{ workOrder.items.length }} {{ workOrder.items.length === 1 ? 'ítem agregado' : 'ítems agregados' }}
                       </p>
                     </div>
                   </div>
@@ -1178,8 +1167,8 @@ onMounted(async () => {
 
               <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
                 <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg" border="start" closable
-                  @click:close="showValidationError = false">
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
+                  border="start" closable @click:close="showValidationError = false">
                   <div class="d-flex align-center">
                     <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
                     <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
