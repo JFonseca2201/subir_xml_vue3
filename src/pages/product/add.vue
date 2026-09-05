@@ -525,6 +525,10 @@ const loadInitialData = async () => {
     warehouses.value = resp.data.warehouses || []
     suppliers.value = resp.data.suppliers || []
     brandOptions.value = resp.data.brands || []
+
+    if (!product.value.warehouse_id && warehouses.value.length > 0) {
+      product.value.warehouse_id = warehouses.value[0].id
+    }
   } catch (error) {
     showNotification('Error al cargar configuración de productos', 'error')
   } finally {

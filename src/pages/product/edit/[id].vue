@@ -348,6 +348,10 @@ const loadProduct = async () => {
       if (response.product.imagen) {
         fileData.value = [{ url: response.product.imagen, file: null }]
       }
+
+      if (!product.value.warehouse_id && response.product.warehouse?.id) {
+        product.value.warehouse_id = response.product.warehouse.id
+      }
     } else {
       showNotification('error', 'No se pudo cargar el producto')
       router.push('/product/list')
