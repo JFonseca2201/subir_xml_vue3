@@ -121,6 +121,7 @@ const saveService = async () => {
     discount_percentage: 0.00,
     stock: 0.00,
     item_type: 2, // Servicio / Mano de Obra
+    warehouse_id: 1, // Bodega 1 por defecto para servicios
     min_stock: 0.00,
     max_stock: 0.00,
     is_taxable: serviceForm.value.is_taxable ? 1 : 2,

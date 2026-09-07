@@ -552,7 +552,10 @@ const processXmlFile = async (file) => {
       const parsedItems = []
 
       detalles.forEach((det, idx) => {
-        const code = (det.codigoPrincipal || det.codigoInterno || det.codigoAuxiliar || `XML-${idx + 1}`).toString().trim().toUpperCase()
+        const primaryCode = (det.codigoPrincipal || det.codigoInterno || '').toString().trim().toUpperCase()
+        const auxCode = (det.codigoAuxiliar || '').toString().trim().toUpperCase()
+        const code = (primaryCode || auxCode || `XML-${idx + 1}`).toString().trim().toUpperCase()
+        const codeAux = (auxCode && auxCode !== '-') ? auxCode : (primaryCode ? `LE${primaryCode}` : (code ? `LE${code}` : ''))
         const description = (det.descripcion || 'Sin descripción').toString().trim()
         const qty = parseFloat(det.cantidad || 1)
         const unitPrice = parseFloat(det.precioUnitario || 0)
@@ -579,11 +582,12 @@ const processXmlFile = async (file) => {
         const itemType = isLogistics ? 2 : 1
 
         // Buscar si ya existe este producto en catálogo para heredar categoría y marca
-        const existingProd = products.value.find(p => p.sku === code || p.description?.toLowerCase() === description.toLowerCase())
+        const existingProd = products.value.find(p => p.sku === code || p.code_aux === codeAux || p.description?.toLowerCase() === description.toLowerCase())
 
         parsedItems.push({
           id: Date.now() + idx + Math.random(),
           code: code,
+          code_aux: codeAux,
           description: description,
           brand: itemType === 1 ? (existingProd?.brand || 'SM') : 'N/A',
           quantity: Number(qty.toFixed(2)),

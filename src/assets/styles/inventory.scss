@@ -14,6 +14,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -382,7 +383,7 @@
     flex-direction: column !important;
     margin: 1.25rem !important;
 
-    > .v-card {
+    >.v-card {
       display: flex !important;
       flex-direction: column !important;
       max-height: calc(100vh - 2.5rem) !important;
@@ -391,13 +392,13 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--v-border-color), 0.08) !important;
       background-color: rgb(var(--v-theme-surface)) !important;
 
-      > .v-card-text {
+      >.v-card-text {
         flex: 1 1 auto !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
       }
 
-      > .v-card-actions {
+      >.v-card-actions {
         flex-shrink: 0 !important;
         border-top: 1px solid rgba(var(--v-border-color), 0.1) !important;
         background-color: rgb(var(--v-theme-surface)) !important;
@@ -1166,6 +1167,7 @@
   0% {
     transform: translate(0, 0) scale(1);
   }
+
   100% {
     transform: translate(50px, -50px) scale(1.1);
   }
@@ -1480,10 +1482,12 @@
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.7);
   }
+
   70% {
     transform: scale(1);
     box-shadow: 0 0 0 10px rgba(255, 179, 0, 0);
   }
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(255, 179, 0, 0);
@@ -1495,10 +1499,12 @@
     font-size: 0.75rem;
     border-radius: 8px;
   }
+
   .calendar-header-day {
     font-size: 0.65rem;
     margin-bottom: 4px;
   }
+
   .calendar-grid {
     gap: 3px;
   }
@@ -1593,10 +1599,13 @@
 }
 
 @keyframes pulse-dot {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.25);
     opacity: 0.75;
@@ -1831,10 +1840,13 @@
 }
 
 @keyframes pulse-badge {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.4;
     transform: scale(0.85);
@@ -2155,7 +2167,7 @@
     gap: 10px;
     width: 100%;
 
-    > .v-btn {
+    >.v-btn {
       flex: 1 1 0 !important;
       min-width: 0 !important;
       font-weight: 600;
@@ -2232,16 +2244,14 @@
       left: 0;
       bottom: 0;
       right: 0;
-      background-image: linear-gradient(
-        -45deg,
-        rgba(255, 255, 255, 0.25) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgba(255, 255, 255, 0.25) 50%,
-        rgba(255, 255, 255, 0.25) 75%,
-        transparent 75%,
-        transparent
-      );
+      background-image: linear-gradient(-45deg,
+          rgba(255, 255, 255, 0.25) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.25) 50%,
+          rgba(255, 255, 255, 0.25) 75%,
+          transparent 75%,
+          transparent);
       background-size: 24px 24px;
       animation: sri-stripe-move 1.2s linear infinite;
     }
@@ -2252,6 +2262,7 @@
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 24px 0;
   }
@@ -2354,9 +2365,11 @@
   0% {
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
   }
@@ -2371,11 +2384,9 @@
     transform: scale(0.92);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
-
-
-
