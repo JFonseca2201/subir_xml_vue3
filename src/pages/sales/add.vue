@@ -10,6 +10,7 @@ import ClientFinalAddDialog from '@/components/inventory/clients/ClientFinalAddD
 import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompanyAddDialog.vue'
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
+import SriInvoiceProgressDialog from '@/components/inventory/sales/SriInvoiceProgressDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
@@ -33,6 +34,8 @@ const isProcessing = computed(() => isSubmitting.value || isSavingDraft.value ||
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 const isConfirmInvoiceDialogVisible = ref(false)
+const isSriProgressDialogVisible = ref(false)
+const sriSalePayload = ref({})
 const sriAmbiente = ref('1')
 
 const sriEnvironmentInfo = computed(() => {
@@ -1059,7 +1062,42 @@ const submitForm = async () => {
   }
 }
 
-// Ejecución real del registro de la venta o factura
+// Disparador de emisión con modal interactivo de progreso SRI
+const triggerInvoiceEmission = () => {
+  if (paymentDistributions.value.length > 0) {
+    const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length === 1) {
+      sale.value.payment_method = methods[0]
+    } else if (methods.length > 1) {
+      sale.value.payment_method = methods.join(', ')
+    }
+  }
+
+  const payload = {
+    ...sale.value,
+    subtotal: subtotal.value,
+    tax_amount: taxAmount.value,
+    total: total.value,
+  }
+
+  if (paymentDistributions.value.length > 0) {
+    payload.payment_distributions = paymentDistributions.value
+  }
+
+  sriSalePayload.value = payload
+  isConfirmInvoiceDialogVisible.value = false
+  isSriProgressDialogVisible.value = true
+}
+
+const handleSriCompleted = saleData => {
+  showNotification('Factura autorizada exitosamente por el SRI', 'success')
+}
+
+const handleSriError = errorMsg => {
+  console.error('Error en emisión SRI:', errorMsg)
+}
+
+// Ejecución real del registro de la venta o nota de venta
 const executeSaleSubmission = async () => {
   if (isSubmitting.value) return
   isSubmitting.value = true
@@ -2525,11 +2563,23 @@ onMounted(async () => {
             Cancelar
           </VBtn>
           <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" :loading="isSubmitting" size="large"
-            class="px-5 font-weight-bold" @click="executeSaleSubmission">
+            class="px-5 font-weight-bold" @click="triggerInvoiceEmission">
             Sí, emitir factura
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <!-- Modal de Progreso y Autorización SRI Animado -->
+    <SriInvoiceProgressDialog
+      v-model:is-dialog-visible="isSriProgressDialogVisible"
+      :sale-payload="sriSalePayload"
+      :client-name="selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname || ''}`.trim() || selectedClient.n_document) : 'Consumidor Final'"
+      :client-document="selectedClient?.n_document || ''"
+      :total-amount="total"
+      :sri-environment="sriAmbiente"
+      @completed="handleSriCompleted"
+      @error="handleSriError"
+    />
   </div>
 </template>
