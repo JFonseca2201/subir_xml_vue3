@@ -298,42 +298,29 @@ const formatCurrency = value => {
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
-      <!-- Header Banner Fijo -->
-      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="white"
-            variant="tonal"
-            size="38"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-indeterminate-circle-line"
-              color="white"
-              size="22"
-            />
-          </VAvatar>
-          <div>
-            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
-              {{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}
-            </div>
-            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
-              Registra o modifica un egreso financiero en el sistema
-            </div>
-          </div>
-        </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          color="white"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
         />
-      </VCardTitle>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-indeterminate-circle-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          {{ props.editingMovement ? 'Editar Egreso' : 'Nuevo Egreso' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Registra o modifica un egreso financiero en el sistema
+        </p>
+      </div>
 
       <!-- Cuerpo del Formulario con Scroll Interno -->
-      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
+      <VCardText class="pa-4" style="overflow-x: hidden;">
         <!-- Skeleton Loader mientras cargan datos -->
         <div v-if="isLoadingData" class="py-2">
           <VRow>
@@ -489,13 +476,16 @@ const formatCurrency = value => {
       <VDivider />
 
       <!-- Footer Fijo de Acciones -->
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-grey-lighten-5 flex-none">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-5 font-weight-medium"
-          height="38"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="props.isSaving"
           @click="closeDialog"
         >
@@ -504,9 +494,9 @@ const formatCurrency = value => {
         <VBtn
           color="primary"
           variant="elevated"
-          :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-3-line'"
+          :prepend-icon="props.editingMovement ? 'ri-refresh-line' : 'ri-save-line'"
           class="rounded-lg px-6 font-weight-bold"
-          height="38"
+          height="40"
           :loading="props.isSaving"
           :disabled="props.isSaving || totalToRegister <= 0 || (!props.editingMovement && receiptFiles.length === 0)"
           @click="saveExpense"

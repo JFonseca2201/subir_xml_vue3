@@ -6,7 +6,10 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 const { showNotification } = useGlobalToast()
 
 // Estado reactivo
-const isLoading = ref(false)
+const isRefreshing = ref(false)
+const isFiltering = ref(false)
+const isClearing = ref(false)
+const isTableLoading = ref(false)
 const search = ref('')
 const movimientoTipo = ref(null)
 const selectedRange = ref('mes_actual')
@@ -120,13 +123,17 @@ const onRangeChange = val => {
   if (start && end) {
     startDate.value = start
     endDate.value = end
-    loadKardex()
+    loadKardex('filter')
   }
 }
 
 // Cargar datos del kardex
-const loadKardex = async () => {
-  isLoading.value = true
+const loadKardex = async (action = 'refresh') => {
+  if (action === 'refresh') isRefreshing.value = true
+  else if (action === 'filter') isFiltering.value = true
+  else if (action === 'clear') isClearing.value = true
+
+  isTableLoading.value = true
   try {
     const params = {
       search: search.value,
@@ -151,13 +158,16 @@ const loadKardex = async () => {
     console.log(error)
     showNotification('Error al cargar el kardex', 'error')
   } finally {
-    isLoading.value = false
+    isRefreshing.value = false
+    isFiltering.value = false
+    isClearing.value = false
+    isTableLoading.value = false
   }
 }
 
 // Aplicar filtros
 const applyFilters = () => {
-  loadKardex()
+  loadKardex('filter')
 }
 
 // Limpiar filtros
@@ -172,7 +182,7 @@ const clearFilters = () => {
 
   startDate.value = formatDateYMD(firstDay)
   endDate.value = formatDateYMD(lastDay)
-  loadKardex()
+  loadKardex('clear')
 }
 
 // Formatear fecha para mostrar
@@ -357,7 +367,7 @@ onMounted(() => {
 
   startDate.value = formatDateYMD(firstDay)
   endDate.value = formatDateYMD(lastDay)
-  loadKardex()
+  loadKardex('initial')
 })
 
 definePage({ meta: { permission: 'kardex' } })
@@ -377,7 +387,13 @@ definePage({ meta: { permission: 'kardex' } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-refresh-line" :loading="isLoading" @click="loadKardex">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-refresh-line"
+          :loading="isRefreshing"
+          :disabled="isFiltering || isClearing"
+          @click="loadKardex('refresh')"
+        >
           Actualizar
         </VBtn>
       </div>
@@ -389,9 +405,17 @@ definePage({ meta: { permission: 'kardex' } })
         <VRow dense>
           <!-- Buscador -->
           <VCol cols="12" sm="6" md="4">
-            <VTextField v-model="search" label="Buscar por descripción o artículo"
-              placeholder="Texto, nombre o SKU de artículo" prepend-inner-icon="ri-search-line" density="comfortable"
-              variant="outlined" hide-details clearable :loading="isLoading" @keyup.enter="applyFilters" />
+            <VTextField
+              v-model="search"
+              label="Buscar por descripción o artículo"
+              placeholder="Texto, nombre o SKU de artículo"
+              prepend-inner-icon="ri-search-line"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              clearable
+              @keyup.enter="applyFilters"
+            />
           </VCol>
 
           <!-- Tipo de Movimiento -->
@@ -422,10 +446,23 @@ definePage({ meta: { permission: 'kardex' } })
 
           <!-- Botones de Acción -->
           <VCol cols="12" sm="12" md="4" class="d-flex align-center gap-2">
-            <VBtn color="primary" variant="elevated" :loading="isLoading" class="flex-grow-1" @click="applyFilters">
+            <VBtn
+              color="primary"
+              variant="elevated"
+              :loading="isFiltering"
+              :disabled="isRefreshing || isClearing"
+              class="flex-grow-1"
+              @click="applyFilters"
+            >
               Filtrar
             </VBtn>
-            <VBtn color="secondary" variant="outlined" :loading="isLoading" @click="clearFilters">
+            <VBtn
+              color="secondary"
+              variant="outlined"
+              :loading="isClearing"
+              :disabled="isRefreshing || isFiltering"
+              @click="clearFilters"
+            >
               Limpiar
             </VBtn>
           </VCol>
@@ -434,7 +471,7 @@ definePage({ meta: { permission: 'kardex' } })
     </VCard>
 
     <!-- Skeleton Loader para Kardex -->
-    <div v-if="isLoading" class="kardex-container">
+    <div v-if="isTableLoading" class="kardex-container">
       <div v-for="n in 2" :key="n" class="mb-6">
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
           <VCardText class="pa-4">

@@ -179,30 +179,25 @@ const timelineSteps = computed(() => {
     scrollable
     transition="dialog-bottom-transition"
   >
-    <VCard class="custom-dialog-card bg-white rounded-xl overflow-hidden elevation-8">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white pa-5 position-relative">
+    <VCard class="custom-dialog-card elevation-12">
+      <!-- Header Banner Primary (Estilo unificado del sistema) -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="custom-dialog-close-btn position-absolute"
-          style="top: 12px; right: 12px;"
+          class="custom-dialog-close-btn"
           @click="handleClose"
         />
-        <div class="d-flex align-center gap-3">
-          <VAvatar size="46" color="white" variant="tonal" rounded="lg" class="elevation-1">
-            <VIcon icon="ri-time-line" size="26" color="white" />
-          </VAvatar>
-          <div class="min-w-0">
-            <h3 class="text-h6 font-weight-bold text-white mb-0 text-truncate">
-              Secuencia de la Orden: {{ numeroOrden }}
-            </h3>
-            <p class="text-caption text-white opacity-90 mb-0 mt-0.5 text-truncate">
-              {{ vehiculoInfo }} <span v-if="clienteInfo">• {{ clienteInfo }}</span>
-            </p>
-          </div>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-time-line" />
         </div>
+        <h3 class="custom-dialog-title">
+          Secuencia de la Orden: {{ numeroOrden }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          {{ vehiculoInfo }} <span v-if="clienteInfo">• {{ clienteInfo }}</span>
+        </p>
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->
@@ -279,9 +274,11 @@ const timelineSteps = computed(() => {
         </div>
       </VCardText>
 
+      <VDivider />
+
       <!-- PIE DEL MODAL -->
       <VCardActions
-        class="pa-4 border-t bg-white d-flex justify-end align-center gap-3"
+        class="pa-4 bg-white d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

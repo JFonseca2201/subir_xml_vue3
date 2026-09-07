@@ -66,6 +66,11 @@ const isViewDialogVisible = ref(false)
 const selectedPedido = ref(null)
 const viewLoading = ref(false)
 
+// Modal Confirmar Eliminación
+const showDeleteDialog = ref(false)
+const pedidoToDelete = ref(null)
+const deleteLoading = ref(false)
+
 const loadPedidos = async () => {
   loading.value = true
   try {
@@ -235,37 +240,37 @@ const editPedido = pedido => {
   router.push(`/sales/pedidos-distribuidor?id=${pedido.id}`)
 }
 
-const deletePedido = async pedido => {
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: `Vas a eliminar el pedido #${String(pedido.id).padStart(5, '0')}. Esta acción no se puede deshacer.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#fb7578',
-    cancelButtonColor: '#90a4ae',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar',
-  })
+const deletePedido = pedido => {
+  pedidoToDelete.value = pedido
+  showDeleteDialog.value = true
+}
 
-  if (result.isConfirmed) {
-    loading.value = true
-    try {
-      const response = await $api(`pedidos-distribuidor/${pedido.id}`, {
-        method: 'DELETE',
-      })
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  pedidoToDelete.value = null
+}
 
-      if (response.success || response.status === 200) {
-        showNotification('Pedido eliminado exitosamente', 'success')
-        loadPedidos()
-      } else {
-        showNotification(response.message || 'Error al eliminar el pedido', 'error')
-      }
-    } catch (error) {
-      console.error('Error al eliminar pedido:', error)
-      showNotification('Error al eliminar el pedido', 'error')
-    } finally {
-      loading.value = false
+const confirmDeletePedido = async () => {
+  if (!pedidoToDelete.value) return
+
+  deleteLoading.value = true
+  try {
+    const response = await $api(`pedidos-distribuidor/${pedidoToDelete.value.id}`, {
+      method: 'DELETE',
+    })
+
+    if (response.success || response.status === 200) {
+      showNotification('Pedido eliminado exitosamente', 'success')
+      closeDeleteDialog()
+      loadPedidos()
+    } else {
+      showNotification(response.message || 'Error al eliminar el pedido', 'error')
     }
+  } catch (error) {
+    console.error('Error al eliminar pedido:', error)
+    showNotification('Error al eliminar el pedido', 'error')
+  } finally {
+    deleteLoading.value = false
   }
 }
 
@@ -1270,6 +1275,155 @@ onMounted(() => {
             @click="isRepuestosDialogVisible = false"
           >
             Cerrar
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <!-- Modal Confirmar Eliminación Estándar del Sistema -->
+    <VDialog
+      v-model="showDeleteDialog"
+      scrollable
+      max-width="500"
+      persistent
+      transition="dialog-bottom-transition"
+    >
+      <VCard v-if="pedidoToDelete" class="custom-dialog-card elevation-12">
+        <!-- Header Banner Primary (Color del sistema) -->
+        <div class="custom-dialog-header-primary bg-primary text-white">
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            :disabled="deleteLoading"
+            @click="closeDeleteDialog"
+          />
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
+          </div>
+          <h3 class="custom-dialog-title">
+            Eliminar Pedido
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción removerá el pedido a distribuidor seleccionado
+          </p>
+        </div>
+
+        <VCardText class="pa-6">
+          <div class="text-center">
+            <!-- Pedido Avatar -->
+            <VAvatar
+              size="72"
+              color="primary"
+              variant="tonal"
+              class="mb-3"
+            >
+              <VIcon
+                icon="ri-truck-line"
+                size="36"
+              />
+            </VAvatar>
+
+            <!-- Info Summary -->
+            <div class="mb-2">
+              <h4 class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+                ¿Eliminar este pedido a distribuidor?
+              </h4>
+              <p class="text-caption text-medium-emphasis mb-3">
+                Pedido <strong class="font-mono text-error font-weight-bold">#{{ String(pedidoToDelete.id).padStart(5, '0') }}</strong>
+              </p>
+
+              <!-- Detalles en Card Plana -->
+              <div
+                class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+                style="background-color: #f8fafc;"
+              >
+                <div v-if="pedidoToDelete.distribuidor?.name" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Distribuidor:</span>
+                  <span class="text-caption font-weight-bold text-slate-900 text-truncate" style="max-width: 220px;">
+                    {{ pedidoToDelete.distribuidor.name }}
+                  </span>
+                </div>
+
+                <div v-if="pedidoToDelete.distribuidor?.ruc" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">RUC:</span>
+                  <span class="text-caption font-mono font-weight-medium">
+                    {{ pedidoToDelete.distribuidor.ruc }}
+                  </span>
+                </div>
+
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Fecha:</span>
+                  <span class="text-caption font-mono font-weight-medium">
+                    {{ formatDate(pedidoToDelete.created_at) }}
+                  </span>
+                </div>
+
+                <div v-if="pedidoToDelete.usuario?.name" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Solicitado por:</span>
+                  <span class="text-caption font-weight-medium text-slate-800">
+                    {{ pedidoToDelete.usuario.name }}
+                  </span>
+                </div>
+
+                <div v-if="pedidoToDelete.estado" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Estado:</span>
+                  <div
+                    class="status-pill-clean"
+                    :class="getStatusClass(pedidoToDelete.estado)"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ getStatusInfo(pedidoToDelete.estado).text }}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Total del Pedido:</span>
+                  <span class="text-caption font-mono font-weight-bold text-primary">
+                    {{ formatCurrency(pedidoToDelete.total) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+                <VIcon
+                  icon="ri-error-warning-line"
+                  size="16"
+                />
+                <span>Esta acción es irreversible y no se puede deshacer.</span>
+              </div>
+            </div>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            :disabled="deleteLoading"
+            @click="closeDeleteDialog"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
+            height="40"
+            :loading="deleteLoading"
+            @click="confirmDeletePedido"
+          >
+            Confirmar Eliminación
           </VBtn>
         </VCardActions>
       </VCard>

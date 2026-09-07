@@ -6,7 +6,10 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 const { showNotification } = useGlobalToast()
 
 // Estado reactivo
-const isLoading = ref(false)
+const isRefreshing = ref(false)
+const isFiltering = ref(false)
+const isClearing = ref(false)
+const isTableLoading = ref(false)
 const search = ref('')
 const selectedRange = ref('anio_actual')
 const startDate = ref('')
@@ -78,13 +81,17 @@ const onRangeChange = val => {
   if (start && end) {
     startDate.value = start
     endDate.value = end
-    loadKardex()
+    loadKardex('filter')
   }
 }
 
 // Cargar datos
-const loadKardex = async () => {
-  isLoading.value = true
+const loadKardex = async (action = 'refresh') => {
+  if (action === 'refresh') isRefreshing.value = true
+  else if (action === 'filter') isFiltering.value = true
+  else if (action === 'clear') isClearing.value = true
+
+  isTableLoading.value = true
   try {
     const params = {
       search: search.value,
@@ -111,13 +118,16 @@ const loadKardex = async () => {
     console.log(error)
     showNotification('Error al cargar el kardex por producto', 'error')
   } finally {
-    isLoading.value = false
+    isRefreshing.value = false
+    isFiltering.value = false
+    isClearing.value = false
+    isTableLoading.value = false
   }
 }
 
 // Aplicar filtros
 const applyFilters = () => {
-  loadKardex()
+  loadKardex('filter')
 }
 
 // Limpiar filtros
@@ -131,7 +141,7 @@ const clearFilters = () => {
 
   startDate.value = formatDateYMD(firstDay)
   endDate.value = formatDateYMD(lastDay)
-  loadKardex()
+  loadKardex('clear')
 }
 
 // Formatear moneda
@@ -175,7 +185,7 @@ onMounted(() => {
 
   startDate.value = formatDateYMD(firstDay)
   endDate.value = formatDateYMD(lastDay)
-  loadKardex()
+  loadKardex('initial')
 })
 
 definePage({ meta: { permission: 'kardex' } })
@@ -203,8 +213,9 @@ definePage({ meta: { permission: 'kardex' } })
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"
-          :loading="isLoading"
-          @click="loadKardex"
+          :loading="isRefreshing"
+          :disabled="isFiltering || isClearing"
+          @click="loadKardex('refresh')"
         >
           Actualizar
         </VBtn>
@@ -230,7 +241,6 @@ definePage({ meta: { permission: 'kardex' } })
               variant="outlined"
               hide-details
               clearable
-              :loading="isLoading"
               @keyup.enter="applyFilters"
             />
           </VCol>
@@ -264,7 +274,8 @@ definePage({ meta: { permission: 'kardex' } })
             <VBtn
               color="primary"
               variant="elevated"
-              :loading="isLoading"
+              :loading="isFiltering"
+              :disabled="isRefreshing || isClearing"
               class="flex-grow-1"
               @click="applyFilters"
             >
@@ -273,7 +284,8 @@ definePage({ meta: { permission: 'kardex' } })
             <VBtn
               color="secondary"
               variant="outlined"
-              :loading="isLoading"
+              :loading="isClearing"
+              :disabled="isRefreshing || isFiltering"
               @click="clearFilters"
             >
               Limpiar
@@ -323,7 +335,7 @@ definePage({ meta: { permission: 'kardex' } })
 
     <!-- Tabla agrupada por mes -->
     <div
-      v-if="isLoading"
+      v-if="isTableLoading"
       class="text-center pa-8"
     >
       <VProgressCircular

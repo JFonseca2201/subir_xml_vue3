@@ -176,51 +176,39 @@ watch(() => show.value, newVal => {
     max-width="920"
     persistent
   >
-    <VCard class="rounded-xl overflow-hidden elevation-10 d-flex flex-column" style="max-height: 90vh;">
-      <!-- Header Banner Fijo -->
-      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="white"
-            variant="tonal"
-            size="38"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-arrow-left-right-line"
-              color="white"
-              size="22"
-            />
-          </VAvatar>
-          <div>
-            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
-              {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
-            </div>
-            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
-              Mueve fondos entre cuentas del sistema
-            </div>
-          </div>
-        </div>
+    <VCard class="custom-dialog-card">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          color="white"
+          class="custom-dialog-close-btn"
           :disabled="loading"
           @click="closeDialog"
         />
-      </VCardTitle>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-arrow-left-right-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          {{ isEditing ? 'Editar Transferencia' : 'Transferencia entre Cuentas' }}
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Mueve fondos entre cuentas del sistema
+        </p>
+      </div>
 
       <!-- Formulario con Scroll Interno -->
-      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
+      <VCardText class="pa-4" style="overflow-x: hidden;">
         <!-- Skeleton Loader mientras cargan datos -->
         <div v-if="isLoadingData" class="py-2">
-          <VRow>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+          <VRow class="ma-0">
+            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
+            <VCol cols="12" class="pa-2"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
           </VRow>
         </div>
 
@@ -229,10 +217,11 @@ watch(() => show.value, newVal => {
           ref="formRef"
           @submit.prevent="handleSubmit"
         >
-          <VRow dense>
+          <VRow class="ma-0">
             <VCol
               cols="12"
               md="6"
+              class="pa-2"
             >
               <VSelect
                 v-model="form.from_account_id"
@@ -242,14 +231,13 @@ watch(() => show.value, newVal => {
                 label="Cuenta Origen *"
                 placeholder="Desde dónde"
                 :rules="[v => !!v || 'Requerido']"
-                variant="outlined"
-                density="comfortable"
                 prepend-inner-icon="ri-bank-card-line"
               />
             </VCol>
             <VCol
               cols="12"
               md="6"
+              class="pa-2"
             >
               <VSelect
                 v-model="form.to_account_id"
@@ -259,14 +247,13 @@ watch(() => show.value, newVal => {
                 label="Cuenta Destino *"
                 placeholder="Hacia dónde"
                 :rules="[v => !!v || 'Requerido', v => v !== form.from_account_id || 'Debe ser diferente al origen']"
-                variant="outlined"
-                density="comfortable"
                 prepend-inner-icon="ri-bank-card-fill"
               />
             </VCol>
             <VCol
               cols="12"
               md="6"
+              class="pa-2"
             >
               <VTextField
                 v-model="form.amount"
@@ -275,33 +262,28 @@ watch(() => show.value, newVal => {
                 type="number"
                 prefix="$"
                 :rules="[v => !!v || 'Requerido', v => v > 0 || 'El monto debe ser mayor a 0']"
-                variant="outlined"
-                density="comfortable"
                 prepend-inner-icon="ri-money-dollar-circle-line"
               />
             </VCol>
             <VCol
               cols="12"
               md="6"
+              class="pa-2"
             >
               <VTextField
                 v-model="form.transfer_date"
                 label="Fecha *"
                 type="date"
                 :rules="[v => !!v || 'Requerido']"
-                variant="outlined"
-                density="comfortable"
                 prepend-inner-icon="ri-calendar-line"
               />
             </VCol>
-            <VCol cols="12">
+            <VCol cols="12" class="pa-2">
               <VTextarea
                 v-model="form.description"
                 label="Motivo / Descripción *"
                 placeholder="Ej. Reposición de caja chica..."
                 rows="2"
-                variant="outlined"
-                density="comfortable"
                 no-resize
                 :rules="[v => !!v || 'Requerido']"
               >
@@ -317,7 +299,7 @@ watch(() => show.value, newVal => {
             </VCol>
 
             <!-- Foto / Comprobante de la Transferencia -->
-            <VCol cols="12" class="mt-1">
+            <VCol cols="12" class="pa-2">
               <ReceiptUploader
                 v-model="receiptFiles"
                 label="Foto / Comprobante de la Transferencia"
@@ -335,14 +317,15 @@ watch(() => show.value, newVal => {
 
       <!-- Footer Fijo de Acciones -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-grey-lighten-5 flex-none"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-5 font-weight-medium"
-          height="38"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           :disabled="loading"
           @click="closeDialog"
         >
@@ -352,9 +335,9 @@ watch(() => show.value, newVal => {
         <VBtn
           color="primary"
           variant="elevated"
-          prepend-icon="ri-check-line"
+          prepend-icon="ri-save-line"
           class="rounded-lg px-6 font-weight-bold"
-          height="38"
+          height="40"
           :loading="loading"
           :disabled="loading || (!isEditing && receiptFiles.length === 0)"
           @click="handleSubmit"

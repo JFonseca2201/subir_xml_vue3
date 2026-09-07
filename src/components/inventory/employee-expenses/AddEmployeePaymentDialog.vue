@@ -357,72 +357,113 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VDialog v-model="show" scrollable max-width="880" persistent>
-    <VCard class="custom-dialog-card rounded-xl">
+  <VDialog
+    v-model="show"
+    scrollable
+    max-width="920"
+    persistent
+  >
+    <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white pa-5 d-flex align-center justify-space-between">
-        <div class="d-flex align-center gap-3">
-          <VAvatar color="white" variant="tonal" size="44" class="text-white">
-            <VIcon icon="ri-file-user-line" size="24" />
-          </VAvatar>
-          <div>
-            <h3 class="text-h6 font-weight-bold text-white mb-0">
-              Nuevo Pago de Nómina / Rol de Pagos
-            </h3>
-            <p class="text-caption text-white-70 mb-0">
-              Registra el sueldo mensual, deducción de adelantos y genera el rol oficial
-            </p>
-          </div>
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-file-user-line" />
         </div>
-        <VBtn icon="ri-close-line" variant="text" size="small" color="white" @click="closeDialog" />
+        <h3 class="custom-dialog-title">
+          Nuevo Pago de Nómina / Rol de Pagos
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Registra el sueldo mensual, deducción de adelantos y genera el rol oficial
+        </p>
       </div>
 
-      <!-- Formulario -->
-      <VCardText class="pa-6 bg-slate-50">
+      <VCardText class="pa-4" style="overflow-x: hidden;">
         <!-- Skeleton Loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-4">
-          <VRow>
-            <VCol cols="12" md="6">
+        <div v-if="isLoadingData" class="py-2">
+          <VRow class="ma-0">
+            <VCol cols="12" md="6" class="pa-2">
               <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol cols="12" md="6">
+            <VCol cols="12" md="6" class="pa-2">
               <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
             </VCol>
-            <VCol cols="12">
+            <VCol cols="12" class="pa-2">
               <VSkeletonLoader type="card" height="120" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12" md="6" class="pa-2">
+              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            </VCol>
+            <VCol cols="12" class="pa-2">
+              <VSkeletonLoader type="article" class="rounded-lg" />
             </VCol>
           </VRow>
         </div>
 
-        <VForm v-else ref="formRef" @submit.prevent="handleSubmit">
-          <VRow class="g-3">
+        <VForm
+          v-else
+          ref="formRef"
+          @submit.prevent="handleSubmit"
+        >
+          <VRow class="ma-0">
             <!-- 1. Selección de Empleado -->
-            <VCol cols="12" md="7">
-              <VSelect v-model="form.employee_id" :items="employees" item-title="display_title" item-value="id"
-                label="Empleado a Liquidar *" placeholder="Selecciona un empleado"
-                :rules="[v => !!v || 'Debes seleccionar un empleado']" variant="outlined" density="comfortable"
-                class="bg-white rounded-lg">
+            <VCol cols="12" md="6" class="pa-2">
+              <VSelect
+                v-model="form.employee_id"
+                :items="employees"
+                item-title="display_title"
+                item-value="id"
+                label="Empleado a Liquidar"
+                placeholder="Selecciona un empleado"
+                :rules="[v => !!v || 'Debes seleccionar un empleado']"
+                required
+              >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">ri-user-follow-line</VIcon>
+                  <VIcon color="primary" size="20">
+                    ri-user-follow-line
+                  </VIcon>
                 </template>
               </VSelect>
             </VCol>
 
             <!-- 2. Selección de Mes de Pago -->
-            <VCol cols="12" md="5">
-              <VSelect v-model="form.payment_month" :items="monthOptions" item-title="title" item-value="value"
-                label="Mes a Pagar / Liquidar *" placeholder="Selecciona el mes"
-                :rules="[v => !!v || 'Debes seleccionar el mes a pagar']" variant="outlined" density="comfortable"
-                class="bg-white rounded-lg" :loading="isCheckingMonth">
+            <VCol cols="12" md="6" class="pa-2">
+              <VSelect
+                v-model="form.payment_month"
+                :items="monthOptions"
+                item-title="title"
+                item-value="value"
+                label="Mes a Pagar / Liquidar"
+                placeholder="Selecciona el mes"
+                :rules="[v => !!v || 'Debes seleccionar el mes a pagar']"
+                :loading="isCheckingMonth"
+                required
+              >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">ri-calendar-check-line</VIcon>
+                  <VIcon color="primary" size="20">
+                    ri-calendar-check-line
+                  </VIcon>
                 </template>
               </VSelect>
             </VCol>
 
             <!-- ALERTA DE MES YA PAGADO (BLOQUEO) -->
-            <VCol v-if="monthPaidInfo?.is_paid" cols="12">
-              <VAlert type="error" variant="tonal" class="rounded-xl border border-error mb-2 elevation-1" prominent>
+            <VCol v-if="monthPaidInfo?.is_paid" cols="12" class="pa-2">
+              <VAlert
+                type="error"
+                variant="tonal"
+                class="rounded-xl border border-error mb-2 elevation-1"
+                prominent
+              >
                 <template #title>
                   <div class="d-flex align-center gap-2 font-weight-black text-subtitle-1">
                     <VIcon icon="ri-lock-2-line" size="22" />
@@ -450,7 +491,7 @@ onMounted(async () => {
             </VCol>
 
             <!-- DESGLOSE FINANCIERO (ROL DE PAGOS EN TIEMPO REAL) -->
-            <VCol v-if="form.employee_id && !monthPaidInfo?.is_paid" cols="12">
+            <VCol v-if="form.employee_id && !monthPaidInfo?.is_paid" cols="12" class="pa-2">
               <VCard class="pa-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
                   <div class="d-flex align-center gap-2">
@@ -460,31 +501,37 @@ onMounted(async () => {
                     </span>
                   </div>
                   <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
-                    {{monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month}}
+                    {{ monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month }}
                   </VChip>
                 </div>
 
                 <!-- 3 Tarjetas de Resumen KPI Interno -->
-                <VRow class="g-2 text-center mb-3">
-                  <VCol cols="12" sm="4">
+                <VRow class="ma-0 text-center mb-3">
+                  <VCol cols="12" sm="4" class="pa-1">
                     <div class="pa-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div class="text-caption text-medium-emphasis font-weight-medium">Sueldo Base (A)</div>
+                      <div class="text-caption text-medium-emphasis font-weight-medium">
+                        Sueldo Base (A)
+                      </div>
                       <div class="text-h6 font-weight-bold text-slate-800 mt-0.5">
                         {{ formatCurrency(baseSalary) }}
                       </div>
                     </div>
                   </VCol>
-                  <VCol cols="12" sm="4">
+                  <VCol cols="12" sm="4" class="pa-1">
                     <div class="pa-3 rounded-lg bg-red-lighten-5 border border-red-200">
-                      <div class="text-caption text-error font-weight-medium">Adelantos a Deducir (B)</div>
+                      <div class="text-caption text-error font-weight-medium">
+                        Adelantos a Deducir (B)
+                      </div>
                       <div class="text-h6 font-weight-bold text-error mt-0.5">
                         -{{ formatCurrency(totalPendingAdvances) }}
                       </div>
                     </div>
                   </VCol>
-                  <VCol cols="12" sm="4">
+                  <VCol cols="12" sm="4" class="pa-1">
                     <div class="pa-3 rounded-lg bg-green-lighten-5 border border-green-300">
-                      <div class="text-caption text-success font-weight-bold">Líquido a Pagar (A - B)</div>
+                      <div class="text-caption text-success font-weight-bold">
+                        Líquido a Pagar (A - B)
+                      </div>
                       <div class="text-h6 font-weight-black text-success mt-0.5">
                         {{ formatCurrency(form.amount) }}
                       </div>
@@ -499,19 +546,27 @@ onMounted(async () => {
                     Detalle de Adelantos que serán liquidados en este pago:
                   </div>
                   <div class="rounded-lg border border-slate-200 overflow-hidden">
-                    <VTable density="compact" class="text-caption">
+                    <VTable density="compact" class="text-caption" style="width: 100%;">
                       <thead>
                         <tr class="bg-slate-100">
-                          <th class="text-left font-weight-bold">Fecha</th>
-                          <th class="text-left font-weight-bold">Motivo / Descripción</th>
-                          <th class="text-right font-weight-bold">Monto</th>
+                          <th class="text-left font-weight-bold">
+                            Fecha
+                          </th>
+                          <th class="text-left font-weight-bold">
+                            Motivo / Descripción
+                          </th>
+                          <th class="text-right font-weight-bold">
+                            Monto
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="adv in pendingAdvances" :key="adv.id">
                           <td>{{ adv.advance_date }}</td>
                           <td>{{ adv.reason || adv.description || 'Adelanto de sueldo' }}</td>
-                          <td class="text-right font-weight-bold text-error">-${{ Number(adv.amount).toFixed(2) }}</td>
+                          <td class="text-right font-weight-bold text-error">
+                            -${{ Number(adv.amount).toFixed(2) }}
+                          </td>
                         </tr>
                       </tbody>
                     </VTable>
@@ -524,22 +579,38 @@ onMounted(async () => {
             </VCol>
 
             <!-- 3. Método de Pago y Cuenta -->
-            <VCol cols="12" md="6">
-              <VSelect v-model="form.payment_method" :items="paymentMethods" item-title="text" item-value="value"
-                label="Método de Pago *" placeholder="Selecciona método"
-                :rules="[v => !!v || 'El método de pago es requerido']" variant="outlined" density="comfortable"
-                class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid">
+            <VCol cols="12" md="6" class="pa-2">
+              <VSelect
+                v-model="form.payment_method"
+                :items="paymentMethods"
+                item-title="text"
+                item-value="value"
+                label="Método de Pago"
+                placeholder="Selecciona método de pago"
+                :rules="[v => !!v || 'El método de pago es requerido']"
+                :disabled="monthPaidInfo?.is_paid"
+                required
+              >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">ri-bank-card-line</VIcon>
+                  <VIcon color="primary" size="20">
+                    ri-bank-card-line
+                  </VIcon>
                 </template>
               </VSelect>
             </VCol>
 
-            <VCol cols="12" md="6">
-              <VSelect v-model="form.account_id" :items="filteredAccounts" item-value="id" item-title="display_name"
-                label="Cuenta de Salida *" placeholder="Selecciona la cuenta"
-                :rules="[v => !!v || 'La cuenta es requerida']" variant="outlined" density="comfortable"
-                class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid">
+            <VCol cols="12" md="6" class="pa-2">
+              <VSelect
+                v-model="form.account_id"
+                :items="filteredAccounts"
+                item-value="id"
+                item-title="display_name"
+                label="Cuenta de Salida"
+                placeholder="Selecciona cuenta"
+                :rules="[v => !!v || 'La cuenta es requerida']"
+                :disabled="monthPaidInfo?.is_paid"
+                required
+              >
                 <template #prepend-inner>
                   <VIcon color="primary" size="20">
                     {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
@@ -548,20 +619,26 @@ onMounted(async () => {
                 <template #item="{ props, item }">
                   <VListItem v-bind="props" :title="undefined">
                     <template #prepend>
-                      <VAvatar size="28" :color="item.raw.type === 'cash' ? 'success' : 'primary'" variant="tonal"
-                        class="me-2">
-                        <VIcon :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
-                          size="16" />
+                      <VAvatar
+                        size="30"
+                        :color="item.raw.type === 'cash' ? 'success' : 'primary'"
+                        variant="tonal"
+                        class="me-2"
+                      >
+                        <VIcon
+                          :icon="item.raw.type === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line'"
+                          size="18"
+                        />
                       </VAvatar>
                     </template>
-                    <VListItemTitle class="font-weight-medium text-body-2">
+                    <VListItemTitle class="font-weight-medium">
                       {{ item.raw.display_name }}
                     </VListItemTitle>
-                    <VListItemSubtitle class="text-caption">
-                      Saldo disponible: <span class="font-weight-bold"
-                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'">
-                        ${{ parseFloat(item.raw.saldo_actual || 0).toFixed(2) }}
-                      </span>
+                    <VListItemSubtitle class="text-caption mt-1">
+                      Saldo disponible: <span
+                        class="font-weight-bold"
+                        :class="item.raw.saldo_actual >= 0 ? 'text-success' : 'text-error'"
+                      >${{ parseFloat(item.raw.saldo_actual || 0).toFixed(2) }}</span>
                     </VListItemSubtitle>
                   </VListItem>
                 </template>
@@ -569,50 +646,85 @@ onMounted(async () => {
             </VCol>
 
             <!-- 4. Fecha de Pago y Referencia -->
-            <VCol cols="12" md="6">
-              <VTextField v-model="form.payment_date" label="Fecha de Emisión / Pago *" type="date" variant="outlined"
-                density="comfortable" class="bg-white rounded-lg" :rules="[v => !!v || 'La fecha es requerida']"
-                :disabled="monthPaidInfo?.is_paid" />
+            <VCol cols="12" md="6" class="pa-2">
+              <VTextField
+                v-model="form.payment_date"
+                label="Fecha de Emisión / Pago"
+                type="date"
+                :rules="[v => !!v || 'La fecha es requerida']"
+                :disabled="monthPaidInfo?.is_paid"
+                required
+              />
             </VCol>
 
-            <VCol cols="12" md="6">
-              <VTextField v-model="form.reference" label="Nº Documento / Transferencia (Opcional)"
-                placeholder="Ej. TRANS-98421" variant="outlined" density="comfortable" class="bg-white rounded-lg"
-                :disabled="monthPaidInfo?.is_paid">
+            <VCol cols="12" md="6" class="pa-2">
+              <VTextField
+                v-model="form.reference"
+                label="Nº Documento / Transferencia (Opcional)"
+                placeholder="Ej. TRANS-98421"
+                :disabled="monthPaidInfo?.is_paid"
+              >
                 <template #prepend-inner>
-                  <VIcon color="secondary" size="20">ri-hashtag</VIcon>
+                  <VIcon color="secondary" size="20">
+                    ri-hashtag
+                  </VIcon>
                 </template>
               </VTextField>
             </VCol>
 
             <!-- 5. Observaciones -->
-            <VCol cols="12">
-              <VTextarea v-model="form.description" label="Observaciones o Notas del Rol (Opcional)"
-                placeholder="Detalles adicionales sobre el pago del mes..." rows="2" variant="outlined"
-                density="comfortable" class="bg-white rounded-lg" :disabled="monthPaidInfo?.is_paid" />
+            <VCol cols="12" class="pa-2">
+              <VTextarea
+                v-model="form.description"
+                label="Observaciones o Notas del Rol (Opcional)"
+                placeholder="Detalles adicionales sobre el pago del mes..."
+                rows="2"
+                :disabled="monthPaidInfo?.is_paid"
+              />
             </VCol>
 
             <!-- 6. Adjuntar Comprobantes -->
-            <VCol cols="12">
-              <ReceiptUploader v-model="receiptFiles" title="Comprobante de Transferencia / Recibo (Opcional)"
-                subtitle="Adjunta fotos o archivos PDF del comprobante bancario" :max-files="3"
-                :disabled="monthPaidInfo?.is_paid" />
+            <VCol cols="12" class="pa-2">
+              <ReceiptUploader
+                v-model="receiptFiles"
+                label="Comprobante(s) de Pago / Rol (Foto / PDF)"
+                hint="Formatos admitidos: JPG, PNG, WEBP o PDF hasta 15MB"
+                :max-files="5"
+                :disabled="monthPaidInfo?.is_paid"
+              />
             </VCol>
           </VRow>
 
-          <!-- Acciones del Diálogo -->
-          <div class="d-flex justify-end align-center gap-3 mt-6 pt-3 border-t">
-            <VBtn color="secondary" variant="outlined" class="rounded-lg px-5 font-weight-medium" height="42"
-              @click="closeDialog">
+          <VDivider />
+
+          <VCardActions
+            class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+            style="position: sticky; bottom: 0; z-index: 2;"
+          >
+            <VBtn
+              color="secondary"
+              variant="outlined"
+              prepend-icon="ri-close-line"
+              class="rounded-lg px-6 font-weight-medium"
+              height="40"
+              @click="closeDialog"
+            >
               Cancelar
             </VBtn>
 
-            <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-check-line"
-              class="rounded-lg px-6 font-weight-bold elevation-2" height="42" :loading="loading"
-              :disabled="monthPaidInfo?.is_paid || isCheckingMonth">
+            <VBtn
+              color="primary"
+              variant="elevated"
+              type="submit"
+              prepend-icon="ri-save-line"
+              class="rounded-lg px-6 font-weight-bold"
+              height="40"
+              :loading="loading"
+              :disabled="loading || monthPaidInfo?.is_paid || isCheckingMonth"
+            >
               Guardar y Emitir Pago
             </VBtn>
-          </div>
+          </VCardActions>
         </VForm>
       </VCardText>
     </VCard>

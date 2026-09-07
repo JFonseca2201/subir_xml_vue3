@@ -43,6 +43,7 @@ const showDetailsDialog = ref(false)
 const loadingOrders = ref(null)
 const showDeleteDialog = ref(false)
 const workOrderToDelete = ref(null)
+const isDeleting = ref(false)
 
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -224,6 +225,7 @@ const deleteWorkOrder = workOrder => {
 const confirmDeleteWorkOrder = async () => {
   if (!workOrderToDelete.value) return
 
+  isDeleting.value = true
   try {
     await $api(`work-orders/${workOrderToDelete.value.id}`, {
       method: 'DELETE',
@@ -236,6 +238,8 @@ const confirmDeleteWorkOrder = async () => {
   } catch (error) {
     console.error('Error al eliminar orden de trabajo:', error)
     showNotification('Error al eliminar la orden de trabajo', 'error')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -871,145 +875,289 @@ onMounted(() => {
     <VDialog
       v-model="showDetailsDialog"
       scrollable
-      max-width="800"
+      max-width="820"
+      persistent
+      transition="dialog-bottom-transition"
     >
-      <VCard v-if="selectedWorkOrder" class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-        <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+      <VCard v-if="selectedWorkOrder" class="custom-dialog-card elevation-12">
+        <!-- Header Banner Primary (Estilo unificado del sistema) -->
+        <div class="custom-dialog-header-primary bg-primary text-white">
           <VBtn
             icon="ri-close-line"
             variant="text"
             size="small"
-            class="position-absolute"
-            style="top: 12px; right: 12px;"
+            class="custom-dialog-close-btn"
             @click="showDetailsDialog = false"
           />
-          <div class="d-flex align-center gap-3">
-            <VAvatar size="46" color="primary" variant="tonal" rounded="xl">
-              <VIcon icon="ri-file-list-3-line" size="24" />
-            </VAvatar>
-            <div>
-              <h3 class="custom-dialog-title">
-                Detalles de Orden {{ formatWorkOrderNumber(selectedWorkOrder.number, selectedWorkOrder.id) }}
-              </h3>
-              <p class="text-body-2 text-medium-emphasis mb-0">
-                Información técnica de servicios, repuestos y montos
-              </p>
-            </div>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-file-list-3-line" />
           </div>
+          <h3 class="custom-dialog-title">
+            Detalles de Orden {{ formatWorkOrderNumber(selectedWorkOrder.number, selectedWorkOrder.id) }}
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Información técnica de servicios, repuestos y montos asignados
+          </p>
         </div>
 
-        <VCardText class="pa-5">
-          <VRow dense class="mb-3">
-            <VCol cols="12" md="6">
-              <div class="text-caption text-medium-emphasis font-weight-medium">Cliente</div>
-              <div class="text-body-1 font-weight-bold text-high-emphasis">
-                {{ getClientName(selectedWorkOrder.client) }}
+        <VCardText class="pa-6">
+          <!-- Tarjetas Resumen de Cliente y Vehículo -->
+          <VRow dense class="mb-4">
+            <VCol cols="12" sm="6">
+              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+                <div class="d-flex align-center gap-2 mb-1.5">
+                  <VIcon icon="ri-user-3-line" size="18" color="primary" />
+                  <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Cliente</span>
+                </div>
+                <div class="text-body-1 font-weight-bold text-slate-900">
+                  {{ getClientName(selectedWorkOrder.client) }}
+                </div>
+                <div v-if="selectedWorkOrder.client?.n_document" class="text-caption text-medium-emphasis font-mono mt-0.5">
+                  Doc: {{ selectedWorkOrder.client.n_document }}
+                </div>
               </div>
             </VCol>
-            <VCol cols="12" md="6">
-              <div class="text-caption text-medium-emphasis font-weight-medium">Vehículo</div>
-              <div class="text-body-1 font-weight-bold text-high-emphasis">
-                {{ getVehicleInfo(selectedWorkOrder.vehicle) }}
-              </div>
-            </VCol>
-            <VCol cols="12" md="6">
-              <div class="text-caption text-medium-emphasis font-weight-medium">Kilometraje</div>
-              <div class="text-body-1 font-mono font-weight-bold">
-                {{ selectedWorkOrder.mileage || 'N/A' }} km
-              </div>
-            </VCol>
-            <VCol cols="12" md="6">
-              <div class="text-caption text-medium-emphasis font-weight-medium">Nivel de Combustible</div>
-              <div class="text-body-1 font-weight-bold">
-                {{ selectedWorkOrder.fuel_level || 'N/A' }}
+            <VCol cols="12" sm="6">
+              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+                <div class="d-flex align-center justify-space-between mb-1.5">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-car-line" size="18" color="primary" />
+                    <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Vehículo</span>
+                  </div>
+                  <span v-if="selectedWorkOrder.vehicle?.license_plate" class="license-plate-badge">
+                    {{ selectedWorkOrder.vehicle.license_plate.toUpperCase() }}
+                  </span>
+                </div>
+                <div class="text-body-1 font-weight-bold text-slate-900">
+                  {{ getVehicleInfo(selectedWorkOrder.vehicle) }}
+                </div>
+                <div class="d-flex align-center gap-3 text-caption text-medium-emphasis mt-1">
+                  <span>KM: <strong class="font-mono text-high-emphasis">{{ selectedWorkOrder.mileage || 'N/A' }}</strong></span>
+                  <span>•</span>
+                  <span>Combustible: <strong class="text-high-emphasis">{{ selectedWorkOrder.fuel_level || 'N/A' }}</strong></span>
+                </div>
               </div>
             </VCol>
           </VRow>
 
           <!-- Tabla de Items de la Orden -->
-          <div class="text-subtitle-2 font-weight-bold mb-2">Servicios y Repuestos Asignados</div>
-          <VTable density="compact" class="border rounded-lg mb-4">
-            <thead>
-              <tr class="bg-grey-lighten-5">
-                <th class="text-left py-2 font-weight-bold">Descripción</th>
-                <th class="text-center py-2 font-weight-bold" style="width: 80px;">Cant.</th>
-                <th class="text-right py-2 font-weight-bold" style="width: 110px;">P. Unit</th>
-                <th class="text-right py-2 font-weight-bold" style="width: 110px;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, idx) in (selectedWorkOrder.items || [])" :key="idx">
-                <td class="py-2">{{ item.description || item.product?.title || '-' }}</td>
-                <td class="py-2 text-center font-mono">{{ item.quantity || 1 }}</td>
-                <td class="py-2 text-right font-mono">${{ parseFloat(item.unit_price || item.price_unit || item.price || 0).toFixed(2) }}</td>
-                <td class="py-2 text-right font-mono font-weight-bold">${{ parseFloat(item.subtotal || ((item.quantity || 1) * (item.unit_price || 0))).toFixed(2) }}</td>
-              </tr>
-              <tr v-if="!selectedWorkOrder.items || !selectedWorkOrder.items.length">
-                <td colspan="4" class="text-center py-4 text-medium-emphasis">No hay items registrados en la orden</td>
-              </tr>
-            </tbody>
-          </VTable>
+          <div class="d-flex align-center justify-space-between mb-2">
+            <span class="text-subtitle-2 font-weight-bold text-slate-900 d-flex align-center gap-1.5">
+              <VIcon icon="ri-tools-line" size="18" color="primary" />
+              Servicios y Repuestos Asignados
+            </span>
+            <VChip size="small" variant="tonal" color="primary" class="font-weight-bold">
+              {{ (selectedWorkOrder.items || []).length }} ítem(s)
+            </VChip>
+          </div>
 
-          <div class="d-flex justify-end gap-3 align-center pa-2">
-            <span class="text-body-1 font-weight-medium">Total de la Orden:</span>
-            <span class="text-h6 font-weight-bold font-mono text-primary">${{ getTotalAmount(selectedWorkOrder).toFixed(2) }}</span>
+          <div class="rounded-xl border overflow-hidden mb-4">
+            <VTable density="comfortable">
+              <thead>
+                <tr class="bg-grey-lighten-5">
+                  <th class="text-left py-3 font-weight-bold text-uppercase text-caption">Descripción</th>
+                  <th class="text-center py-3 font-weight-bold text-uppercase text-caption" style="width: 90px;">Cant.</th>
+                  <th class="text-right py-3 font-weight-bold text-uppercase text-caption" style="width: 120px;">P. Unit</th>
+                  <th class="text-right py-3 font-weight-bold text-uppercase text-caption" style="width: 120px;">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in (selectedWorkOrder.items || [])" :key="idx" class="border-b">
+                  <td class="py-2.5 font-weight-medium text-body-2 text-slate-900">
+                    {{ item.description || item.product?.title || '-' }}
+                  </td>
+                  <td class="py-2.5 text-center font-mono text-body-2">
+                    {{ item.quantity || 1 }}
+                  </td>
+                  <td class="py-2.5 text-right font-mono text-body-2 text-medium-emphasis">
+                    ${{ parseFloat(item.unit_price || item.price_unit || item.price || 0).toFixed(2) }}
+                  </td>
+                  <td class="py-2.5 text-right font-mono font-weight-bold text-body-2 text-slate-900">
+                    ${{ parseFloat(item.subtotal || ((item.quantity || 1) * (item.unit_price || 0))).toFixed(2) }}
+                  </td>
+                </tr>
+                <tr v-if="!selectedWorkOrder.items || !selectedWorkOrder.items.length">
+                  <td colspan="4" class="text-center py-6 text-medium-emphasis">
+                    <VIcon icon="ri-inbox-line" size="24" class="d-block mx-auto mb-1 text-disabled" />
+                    No hay ítems registrados en la orden
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
+
+          <!-- Total de la Orden -->
+          <div class="pa-4 rounded-xl border d-flex justify-space-between align-center" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+            <div class="d-flex align-center gap-2.5">
+              <VAvatar size="38" color="primary" variant="tonal" class="rounded-lg">
+                <VIcon icon="ri-money-dollar-circle-line" size="22" color="primary" />
+              </VAvatar>
+              <div>
+                <div class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Total de la Orden</div>
+                <div class="text-caption text-medium-emphasis">Monto acumulado de servicios y repuestos</div>
+              </div>
+            </div>
+            <span class="text-h5 font-weight-black font-mono text-primary">
+              ${{ getTotalAmount(selectedWorkOrder).toFixed(2) }}
+            </span>
           </div>
         </VCardText>
 
         <VDivider />
 
-        <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end gap-2">
-          <VBtn color="secondary" variant="outlined" @click="showDetailsDialog = false">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            @click="showDetailsDialog = false"
+          >
             Cerrar
           </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-printer-line" @click="printPDF(selectedWorkOrder.id)">
-            Imprimir
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-printer-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
+            height="40"
+            @click="printPDF(selectedWorkOrder.id)"
+          >
+            Imprimir PDF
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <!-- Modal Confirmar Eliminación -->
+    <!-- Modal Confirmar Eliminación Estándar del Sistema -->
     <VDialog
       v-model="showDeleteDialog"
+      scrollable
       max-width="500"
+      persistent
+      transition="dialog-bottom-transition"
     >
-      <VCard v-if="workOrderToDelete" class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-        <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+      <VCard v-if="workOrderToDelete" class="custom-dialog-card elevation-12">
+        <!-- Header Banner Primary (Color del sistema) -->
+        <div class="custom-dialog-header-primary bg-primary text-white">
           <VBtn
             icon="ri-close-line"
             variant="text"
             size="small"
-            class="position-absolute"
-            style="top: 12px; right: 12px;"
+            class="custom-dialog-close-btn"
+            :disabled="isDeleting"
             @click="showDeleteDialog = false"
           />
-          <div class="d-flex align-center gap-3">
-            <VAvatar size="46" color="error" variant="tonal" rounded="xl">
-              <VIcon icon="ri-delete-bin-line" size="24" />
-            </VAvatar>
-            <div>
-              <h3 class="text-h6 font-weight-bold text-high-emphasis mb-0">
-                Eliminar Orden de Trabajo
-              </h3>
-              <p class="text-caption text-medium-emphasis mb-0">
-                Confirmación de baja de registro
-              </p>
-            </div>
+          <div class="custom-dialog-avatar">
+            <VIcon icon="ri-delete-bin-line" />
           </div>
+          <h3 class="custom-dialog-title">
+            Eliminar Orden de Trabajo
+          </h3>
+          <p class="custom-dialog-subtitle">
+            Esta acción removerá permanentemente la orden seleccionada
+          </p>
         </div>
 
-        <VCardText class="pa-5">
-          ¿Estás seguro de que deseas eliminar permanentemente la orden <strong class="font-mono text-error">{{ formatWorkOrderNumber(workOrderToDelete.number) }}</strong>?
+        <VCardText class="pa-6">
+          <div class="text-center">
+            <!-- Work Order Avatar -->
+            <VAvatar
+              size="72"
+              color="primary"
+              variant="tonal"
+              class="mb-3"
+            >
+              <VIcon
+                icon="ri-file-settings-line"
+                size="36"
+              />
+            </VAvatar>
+
+            <!-- Info Summary -->
+            <div class="mb-2">
+              <h4 class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+                ¿Eliminar permanentemente esta orden?
+              </h4>
+              <p class="text-caption text-medium-emphasis mb-3">
+                Orden <strong class="font-mono text-error font-weight-bold">{{ formatWorkOrderNumber(workOrderToDelete.number, workOrderToDelete.id) }}</strong>
+              </p>
+
+              <!-- Detalles en Card Plana -->
+              <div
+                class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+                style="background-color: #f8fafc;"
+              >
+                <div v-if="workOrderToDelete.client" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Cliente:</span>
+                  <span class="text-caption font-weight-bold text-slate-900 text-truncate" style="max-width: 220px;">
+                    {{ getClientName(workOrderToDelete.client) }}
+                  </span>
+                </div>
+
+                <div v-if="workOrderToDelete.vehicle" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Vehículo:</span>
+                  <span class="text-caption font-mono font-weight-bold text-primary">
+                    {{ workOrderToDelete.vehicle.license_plate ? workOrderToDelete.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
+                  </span>
+                </div>
+
+                <div class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Fecha:</span>
+                  <span class="text-caption font-mono font-weight-medium">
+                    {{ formatDate(workOrderToDelete.date || workOrderToDelete.created_at) }}
+                  </span>
+                </div>
+
+                <div v-if="workOrderToDelete.total" class="d-flex justify-space-between align-center">
+                  <span class="text-caption text-medium-emphasis">Total:</span>
+                  <span class="text-caption font-mono font-weight-bold text-slate-900">
+                    ${{ parseFloat(workOrderToDelete.total || 0).toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+                <VIcon
+                  icon="ri-error-warning-line"
+                  size="16"
+                />
+                <span>Esta acción es irreversible y eliminará todos los registros asociados.</span>
+              </div>
+            </div>
+          </div>
         </VCardText>
 
         <VDivider />
 
-        <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end gap-3">
-          <VBtn color="secondary" variant="outlined" @click="showDeleteDialog = false">
+        <VCardActions
+          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="40"
+            :disabled="isDeleting"
+            @click="showDeleteDialog = false"
+          >
             Cancelar
           </VBtn>
-          <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line" @click="confirmDeleteWorkOrder">
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
+            height="40"
+            :loading="isDeleting"
+            @click="confirmDeleteWorkOrder"
+          >
             Sí, Eliminar
           </VBtn>
         </VCardActions>
@@ -1019,17 +1167,34 @@ onMounted(() => {
     <!-- Modal PDF Preview -->
     <VDialog
       v-model="isPdfPreviewDialogVisible"
-      max-width="900"
+      max-width="960"
       scrollable
+      transition="dialog-bottom-transition"
     >
-      <VCard class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-        <div class="pa-4 bg-grey-lighten-5 border-b d-flex align-center justify-space-between">
-          <h3 class="text-h6 font-weight-bold mb-0">
-            {{ pdfPreviewTitle }}
-          </h3>
-          <VBtn icon="ri-close-line" variant="text" size="small" @click="isPdfPreviewDialogVisible = false" />
+      <VCard class="custom-dialog-card elevation-12">
+        <div class="custom-dialog-header-primary bg-primary text-white py-3 px-5 d-flex align-center justify-space-between position-relative">
+          <div class="d-flex align-center gap-3">
+            <VAvatar size="38" color="white" variant="tonal" class="rounded-lg">
+              <VIcon icon="ri-file-pdf-line" size="22" color="white" />
+            </VAvatar>
+            <div class="text-start">
+              <h3 class="text-subtitle-1 font-weight-bold text-white mb-0">
+                {{ pdfPreviewTitle }}
+              </h3>
+              <p class="text-caption text-white opacity-80 mb-0">
+                Vista previa del documento oficial para impresión
+              </p>
+            </div>
+          </div>
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="custom-dialog-close-btn"
+            @click="isPdfPreviewDialogVisible = false"
+          />
         </div>
-        <VCardText class="pa-0" style="height: 650px;">
+        <VCardText class="pa-0" style="height: 720px; overflow: hidden;">
           <iframe
             v-if="pdfPreviewUrl"
             :src="pdfPreviewUrl"
@@ -1038,6 +1203,19 @@ onMounted(() => {
             style="border: none;"
           />
         </VCardText>
+        <VDivider />
+        <VCardActions class="pa-3 px-5 d-flex justify-end align-center bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium"
+            height="38"
+            @click="isPdfPreviewDialogVisible = false"
+          >
+            Cerrar
+          </VBtn>
+        </VCardActions>
       </VCard>
     </VDialog>
 

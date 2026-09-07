@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import Swal from 'sweetalert2'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import InfoRepuestoFormDialog from '@/components/inforepuestos/InfoRepuestoFormDialog.vue'
 import InfoRepuestoDetailDialog from '@/components/inforepuestos/InfoRepuestoDetailDialog.vue'
+import InfoRepuestoDeleteDialog from '@/components/inforepuestos/InfoRepuestoDeleteDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 const { showNotification } = useGlobalToast()
@@ -52,7 +52,9 @@ const loadCategories = async () => {
 // Dialog states
 const isFormDialogOpen = ref(false)
 const isDetailDialogOpen = ref(false)
+const isDeleteDialogOpen = ref(false)
 const requestSelected = ref(null)
+const requestToDelete = ref(null)
 
 // Load requests from backend with pagination
 const loadRequests = async () => {
@@ -186,33 +188,14 @@ const openDetail = item => {
   isDetailDialogOpen.value = true
 }
 
-const deleteRequest = async item => {
-  const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: `Vas a eliminar el registro del vehículo ${item.brand} ${item.model}. Esta acción no se puede deshacer.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#fb7578',
-    cancelButtonColor: '#90a4ae',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar',
-  })
+const openDelete = item => {
+  requestToDelete.value = item
+  isDeleteDialogOpen.value = true
+}
 
-  if (result.isConfirmed) {
-    try {
-      const response = await $api(`spare-part-requests/${item.id}`, {
-        method: 'DELETE',
-      })
-
-      if (response && response.success) {
-        showNotification(response.message || 'Registro eliminado correctamente', 'success')
-        loadRequests()
-      }
-    } catch (error) {
-      console.error('Error al eliminar registro:', error)
-      showNotification('Error al eliminar el registro', 'error')
-    }
-  }
+const handleDeleteSuccess = () => {
+  loadCategories()
+  loadRequests()
 }
 
 onMounted(() => {
@@ -487,7 +470,7 @@ onMounted(() => {
                 variant="tonal"
                 icon="ri-delete-bin-line"
                 title="Eliminar Vehículo"
-                @click="deleteRequest(item)"
+                @click="openDelete(item)"
               />
             </div>
           </div>
@@ -620,6 +603,12 @@ onMounted(() => {
     <InfoRepuestoDetailDialog
       v-model:isDialogVisible="isDetailDialogOpen"
       :request-selected="requestSelected"
+    />
+
+    <InfoRepuestoDeleteDialog
+      v-model:isDialogVisible="isDeleteDialogOpen"
+      :request-selected="requestToDelete"
+      @delete-success="handleDeleteSuccess"
     />
   </div>
 </template>

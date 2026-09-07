@@ -163,93 +163,152 @@ const onFormReset = () => {
     scrollable
     :width="$vuetify.display.smAndDown ? 'auto' : 780"
     :model-value="props.isDialogVisible"
+    persistent
     transition="dialog-bottom-transition"
     @update:model-value="onFormReset"
   >
-    <VCard class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-      <!-- Cabecera Visual Amigable -->
-      <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+    <VCard class="custom-dialog-card role-dialog-card elevation-12">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="position-absolute"
-          style="top: 12px; right: 12px;"
+          class="custom-dialog-close-btn"
           @click="onFormReset"
         />
-
-        <div class="d-flex align-center gap-3">
-          <VAvatar size="50" color="warning" variant="tonal" rounded="xl" class="elevation-0 font-weight-bold">
-            <VIcon icon="ri-pencil-line" size="26" />
-          </VAvatar>
-
-          <div>
-            <h2 class="text-h5 font-weight-bold text-high-emphasis mb-0">
-              Editar Rol: {{ roleSelected?.name }}
-            </h2>
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              Modifica los permisos y accesos del perfil #{{ roleSelected?.id }}
-            </p>
-          </div>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-pencil-line" />
         </div>
+        <h3 class="custom-dialog-title text-capitalize">
+          Editar Rol: {{ roleSelected?.name }}
+        </h3>
+        <p class="custom-dialog-subtitle mb-2">
+          Modifica los permisos y accesos del perfil de seguridad
+        </p>
 
-        <!-- Indicador Dinámico de Permisos -->
-        <div class="mt-4 pa-3 rounded-lg bg-surface border d-flex align-center justify-space-between flex-wrap gap-2">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-checkbox-circle-fill" color="primary" size="20" />
-            <span class="text-body-2 font-weight-bold text-high-emphasis">
-              {{ permissions.length }} de {{ totalPermissionsCount }} permisos asignados
-            </span>
+        <!-- Header Pills -->
+        <div class="d-flex flex-wrap justify-center gap-2 mt-2">
+          <div
+            v-if="roleSelected?.id"
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              icon="ri-hashtag"
+              size="14"
+              class="me-1"
+            />
+            <span>ID #{{ roleSelected.id }}</span>
           </div>
 
-          <div class="d-flex align-center gap-2">
-            <VBtn size="x-small" variant="tonal" color="primary" class="font-weight-medium" @click="selectAll">
-              Seleccionar Todos
-            </VBtn>
-            <VBtn size="x-small" variant="text" color="error" class="font-weight-medium" @click="clearAll">
-              Limpiar
-            </VBtn>
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              icon="ri-checkbox-circle-fill"
+              size="14"
+              class="me-1"
+            />
+            <span>{{ permissions.length }} de {{ totalPermissionsCount }} permisos asignados</span>
           </div>
         </div>
       </div>
 
       <!-- Formulario y Permisos Scrollable -->
-      <VCardText class="pa-5" style="max-height: 520px;">
-        <VForm id="roleEditForm" @submit.prevent="update">
-          <!-- Input Nombre del Rol -->
-          <div class="mb-4">
-            <VTextField
-              v-model="name"
-              label="Nombre del Rol *"
-              placeholder="Ej: Administrador, Vendedor de Mostrador, Mecánico Líder..."
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="ri-shield-user-line"
-              color="primary"
-              hide-details="auto"
-              class="mb-3"
-            />
+      <VCardText class="pa-6">
+        <VForm
+          id="roleEditForm"
+          @submit.prevent="update"
+        >
+          <!-- Input Nombre del Rol y Buscador en Rejilla limpia -->
+          <VRow class="mb-2">
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="name"
+                label="Nombre del Rol *"
+                placeholder="Ej: Supervisor de Taller, Vendedor..."
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="ri-shield-user-line"
+                color="primary"
+                hide-details="auto"
+              />
+            </VCol>
 
-            <!-- Buscador interno de permisos -->
-            <VTextField
-              v-model="searchQuery"
-              label="Filtrar permisos..."
-              placeholder="Buscar por módulo o acción (ej: eliminar, ventas, autos)..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="compact"
-              hide-details
-              clearable
-            />
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="searchQuery"
+                placeholder="Filtrar permisos o módulos..."
+                prepend-inner-icon="ri-search-2-line"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+                clearable
+              />
+            </VCol>
+          </VRow>
+
+          <!-- Acciones Rápidas de Selección -->
+          <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-4 pa-3 bg-grey-lighten-5 rounded-lg border">
+            <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                icon="ri-information-line"
+                size="16"
+              />
+              <span>Modifica los permisos activando o desactivando los módulos correspondientes</span>
+            </div>
+
+            <div class="d-flex align-center gap-2">
+              <VBtn
+                size="small"
+                variant="tonal"
+                color="primary"
+                class="font-weight-medium"
+                prepend-icon="ri-checkbox-multiple-line"
+                @click="selectAll"
+              >
+                Marcar Todos
+              </VBtn>
+              <VBtn
+                size="small"
+                variant="outlined"
+                color="secondary"
+                class="font-weight-medium"
+                prepend-icon="ri-close-circle-line"
+                @click="clearAll"
+              >
+                Desmarcar Todos
+              </VBtn>
+            </div>
           </div>
 
           <!-- Alertas -->
-          <VAlert v-if="warning" color="warning" variant="tonal" closable class="mb-3">
+          <VAlert
+            v-if="warning"
+            color="warning"
+            variant="tonal"
+            closable
+            class="mb-3"
+          >
             <template #prepend><VIcon icon="ri-alert-line" /></template>
             {{ warning }}
           </VAlert>
 
-          <VAlert v-if="error_exist" color="error" variant="tonal" closable class="mb-3">
+          <VAlert
+            v-if="error_exist"
+            color="error"
+            variant="tonal"
+            closable
+            class="mb-3"
+          >
             <template #prepend><VIcon icon="ri-error-warning-line" /></template>
             {{ error_exist }}
           </VAlert>
@@ -259,15 +318,24 @@ const onFormReset = () => {
             <VCard
               v-for="(mod, index) in filteredModules"
               :key="'mod-edit-' + index"
-              class="rounded-xl border elevation-0 pa-4 bg-surface"
+              class="pa-4 info-card-flat"
+              variant="outlined"
             >
               <!-- Cabecera de Módulo -->
               <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-3">
                 <div class="d-flex align-center gap-2">
-                  <VAvatar size="28" :color="getModuleSelectedCount(mod) > 0 ? 'primary' : 'secondary'" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-folder-lock-line" size="16" />
+                  <VAvatar
+                    size="30"
+                    :color="getModuleSelectedCount(mod) > 0 ? 'primary' : 'secondary'"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-folder-lock-line"
+                      size="16"
+                    />
                   </VAvatar>
-                  <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
+                  <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
                     {{ mod.name }}
                   </span>
                   <VChip
@@ -287,7 +355,7 @@ const onFormReset = () => {
                   class="font-weight-medium"
                   @click="toggleModule(mod)"
                 >
-                  {{ isModuleFullySelected(mod) ? 'Desmarcar todo' : 'Marcar todo el módulo' }}
+                  {{ isModuleFullySelected(mod) ? 'Desmarcar todo' : 'Marcar módulo' }}
                 </VBtn>
               </div>
 
@@ -314,11 +382,16 @@ const onFormReset = () => {
       <VDivider />
 
       <!-- Footer con Acciones -->
-      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-space-between align-center">
+      <VCardActions
+        class="pa-4 bg-white d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"
-          class="rounded-lg px-5 font-weight-medium"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onFormReset"
         >
           Cancelar
@@ -330,7 +403,8 @@ const onFormReset = () => {
           color="primary"
           variant="elevated"
           prepend-icon="ri-save-3-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
         >

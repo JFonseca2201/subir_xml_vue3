@@ -100,75 +100,102 @@ const triggerEdit = () => {
 <template>
   <VDialog
     scrollable
-    :width="$vuetify.display.smAndDown ? 'auto' : 750"
+    :width="$vuetify.display.smAndDown ? 'auto' : 760"
     :model-value="props.isDialogVisible"
+    persistent
     transition="dialog-bottom-transition"
     @update:model-value="closeDialog"
   >
-    <VCard class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-      <!-- Cabecera Visual con Gradiente y Avatar -->
-      <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+    <VCard class="custom-dialog-card role-view-card elevation-12">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="position-absolute"
-          style="top: 12px; right: 12px;"
+          class="custom-dialog-close-btn"
           @click="closeDialog"
         />
-
-        <div class="d-flex align-center gap-4">
-          <VAvatar
-            size="56"
-            :color="getRoleColor(roleSelected.name)"
-            variant="tonal"
-            rounded="xl"
-            class="elevation-0 font-weight-bold"
-          >
-            <VIcon :icon="getRoleIcon(roleSelected.name)" size="30" />
-          </VAvatar>
-
-          <div class="flex-grow-1 min-w-0">
-            <div class="d-flex align-center gap-2 mb-1 flex-wrap">
-              <h2 class="text-h5 font-weight-bold text-high-emphasis text-uppercase mb-0">
-                {{ roleSelected.name }}
-              </h2>
-              <VChip
-                size="small"
-                :color="getRoleColor(roleSelected.name)"
-                variant="tonal"
-                class="font-weight-semibold text-uppercase"
-              >
-                ID #{{ roleSelected.id }}
-              </VChip>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              Registrado el {{ formatDate(roleSelected.created_at) }}
-            </p>
-          </div>
+        <div class="custom-dialog-avatar">
+          <VIcon :icon="getRoleIcon(roleSelected.name)" />
         </div>
+        <h3 class="custom-dialog-title text-capitalize">
+          {{ roleSelected.name }}
+        </h3>
+        <p class="custom-dialog-subtitle mb-2">
+          Detalle del perfil y matriz de permisos del sistema
+        </p>
 
-        <!-- Banner de Cobertura de Permisos -->
-        <div class="mt-4 pa-3 rounded-lg bg-surface border d-flex align-center justify-space-between flex-wrap gap-2">
-          <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-shield-check-line" color="primary" size="20" />
-            <span class="text-body-2 font-weight-bold text-high-emphasis">
-              {{ rolePermissions.length }} de {{ totalAvailablePermissions }} permisos habilitados
-            </span>
+        <!-- Header Pills -->
+        <div class="d-flex flex-wrap justify-center gap-2 mt-2">
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              icon="ri-hashtag"
+              size="14"
+              class="me-1"
+            />
+            <span>ID #{{ roleSelected.id }}</span>
           </div>
-          <div class="text-caption text-medium-emphasis font-weight-medium">
-            {{ Math.round((rolePermissions.length / (totalAvailablePermissions || 1)) * 100) }}% del sistema cubierto
+
+          <div
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
+            style="background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);"
+          >
+            <VIcon
+              icon="ri-shield-check-line"
+              size="14"
+              class="me-1"
+            />
+            <span>{{ rolePermissions.length }} de {{ totalAvailablePermissions }} permisos</span>
+          </div>
+
+          <div
+            v-if="roleSelected.created_at"
+            class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
+            <VIcon
+              icon="ri-calendar-line"
+              size="14"
+              class="me-1"
+            />
+            <span>Registrado: {{ formatDate(roleSelected.created_at) }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Filtros internos del modal -->
-      <div class="px-5 pt-4 pb-2 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3">
+      <!-- Contenido Principal -->
+      <VCardText class="pa-6">
+        <!-- Grid de Especificaciones Rápidas (Brochure Style) -->
+        <div class="specs-container mb-5">
+          <div class="spec-badge-card">
+            <span class="spec-label">Permisos</span>
+            <span class="spec-value text-primary font-weight-bold">{{ rolePermissions.length }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Total Sistema</span>
+            <span class="spec-value font-weight-bold">{{ totalAvailablePermissions }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Módulos</span>
+            <span class="spec-value font-weight-bold">{{ modulesWithStatus.filter(m => m.hasActive).length }} activos</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Cobertura</span>
+            <span class="spec-value text-success font-weight-bold">
+              {{ Math.round((rolePermissions.length / (totalAvailablePermissions || 1)) * 100) }}%
+            </span>
+          </div>
+        </div>
+
+        <!-- Barra de Búsqueda y Filtro de Módulos -->
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 mb-4">
           <VTextField
             v-model="searchQuery"
-            label="Buscar permiso o módulo..."
-            placeholder="Ej: ventas, facturación, eliminar..."
+            placeholder="Buscar permiso o módulo..."
             prepend-inner-icon="ri-search-2-line"
             density="compact"
             variant="outlined"
@@ -179,49 +206,70 @@ const triggerEdit = () => {
 
           <VSwitch
             v-model="filterOnlyActive"
-            label="Solo módulos con accesos"
+            label="Solo con accesos"
             color="primary"
             density="compact"
             hide-details
             class="flex-shrink-0"
           />
         </div>
-      </div>
 
-      <!-- Lista de Módulos Scrollable -->
-      <VCardText class="pa-5" style="max-height: 480px;">
-        <div v-if="!modulesWithStatus.length" class="text-center py-8 text-medium-emphasis">
-          <VAvatar size="54" color="grey-lighten-4" class="mb-3">
-            <VIcon size="28" icon="ri-search-eye-line" color="medium-emphasis" />
+        <!-- Listado de Módulos -->
+        <div
+          v-if="!modulesWithStatus.length"
+          class="text-center py-8 text-medium-emphasis"
+        >
+          <VAvatar
+            size="54"
+            color="grey-lighten-4"
+            class="mb-3"
+          >
+            <VIcon
+              size="28"
+              icon="ri-search-eye-line"
+              color="medium-emphasis"
+            />
           </VAvatar>
           <div class="text-subtitle-1 font-weight-bold">
             No se encontraron permisos coincidentes
           </div>
           <p class="text-caption text-disabled mb-0">
-            Intenta cambiar el filtro o desmarca "Solo módulos con accesos"
+            Intenta cambiar el filtro o desmarca "Solo con accesos"
           </p>
         </div>
 
-        <div v-else class="d-flex flex-column gap-3">
+        <div
+          v-else
+          class="d-flex flex-column gap-3"
+        >
           <VCard
             v-for="(mod, index) in modulesWithStatus"
             :key="'view-mod-' + index"
-            class="rounded-xl border elevation-0 pa-4"
-            :class="mod.hasActive ? 'bg-surface' : 'bg-grey-lighten-5 opacity-75'"
+            class="pa-4 info-card-flat"
+            variant="outlined"
+            :class="mod.hasActive ? '' : 'opacity-60 bg-grey-lighten-5'"
           >
             <!-- Cabecera del módulo -->
             <div class="d-flex align-center justify-space-between mb-2">
               <div class="d-flex align-center gap-2">
-                <VAvatar size="30" :color="mod.hasActive ? 'primary' : 'secondary'" variant="tonal" rounded="lg">
-                  <VIcon icon="ri-folder-keyhole-line" size="16" />
+                <VAvatar
+                  size="30"
+                  :color="mod.hasActive ? 'primary' : 'secondary'"
+                  variant="tonal"
+                  rounded="lg"
+                >
+                  <VIcon
+                    icon="ri-folder-keyhole-line"
+                    size="16"
+                  />
                 </VAvatar>
-                <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
+                <h4 class="text-subtitle-2 font-weight-bold text-high-emphasis mb-0">
                   {{ mod.name }}
                 </h4>
               </div>
 
               <VChip
-                size="small"
+                size="x-small"
                 :color="mod.hasActive ? 'success' : 'default'"
                 variant="tonal"
                 class="font-weight-semibold"
@@ -231,14 +279,18 @@ const triggerEdit = () => {
             </div>
 
             <!-- Permisos del módulo -->
-            <div class="d-flex flex-wrap gap-2 mt-3">
+            <div class="d-flex flex-wrap gap-2 mt-2">
               <template v-if="filterOnlyActive">
                 <div
                   v-for="(perm, pIdx) in mod.activePerms"
                   :key="'act-' + pIdx"
-                  class="d-flex align-center gap-1.5 px-3 py-1.5 rounded-lg border bg-grey-lighten-5 text-caption font-weight-medium text-high-emphasis"
+                  class="d-flex align-center gap-1.5 px-2.5 py-1 rounded-lg border bg-grey-lighten-5 text-caption font-weight-medium text-high-emphasis"
                 >
-                  <VIcon icon="ri-checkbox-circle-fill" size="14" color="success" />
+                  <VIcon
+                    icon="ri-checkbox-circle-fill"
+                    size="14"
+                    color="success"
+                  />
                   <span>{{ perm.name }}</span>
                 </div>
               </template>
@@ -247,7 +299,7 @@ const triggerEdit = () => {
                 <div
                   v-for="(perm, pIdx) in mod.allPerms"
                   :key="'all-' + pIdx"
-                  class="d-flex align-center gap-1.5 px-3 py-1.5 rounded-lg border text-caption font-weight-medium"
+                  class="d-flex align-center gap-1.5 px-2.5 py-1 rounded-lg border text-caption font-weight-medium"
                   :class="rolePermissions.includes(perm.permiso) ? 'bg-grey-lighten-5 text-high-emphasis' : 'bg-transparent text-disabled text-decoration-line-through'"
                 >
                   <VIcon
@@ -266,11 +318,16 @@ const triggerEdit = () => {
       <VDivider />
 
       <!-- Footer con Acciones -->
-      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-space-between align-center">
+      <VCardActions
+        class="pa-4 bg-white d-flex justify-space-between align-center"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"
-          class="rounded-lg px-5 font-weight-medium"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="closeDialog"
         >
           Cerrar
@@ -281,7 +338,8 @@ const triggerEdit = () => {
           color="primary"
           variant="elevated"
           prepend-icon="ri-pencil-line"
-          class="rounded-lg px-5 font-weight-bold"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           @click="triggerEdit"
         >
           Editar Permisos

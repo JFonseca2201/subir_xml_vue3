@@ -53,6 +53,14 @@ const notificationShow = ref(false)
 const notificationMessage = ref('')
 const notificationType = ref('success')
 
+// Nombre de la unidad base
+const unitBaseName = computed(() => {
+  if (props.unitSelected?.name) return props.unitSelected.name
+  if (currentConversion.value.unit?.name) return currentConversion.value.unit.name
+  if (currentConversion.value.unit_name) return currentConversion.value.unit_name
+  return 'Unidad Base'
+})
+
 // Función para obtener el nombre de la unidad hacia la que se convierte
 const getUnitToName = conversion => {
   if (!conversion) return 'Unidad desconocida'
@@ -62,7 +70,7 @@ const getUnitToName = conversion => {
 
   const unitsList = Array.isArray(props.units) ? props.units : (Array.isArray(props.listUnits) ? props.listUnits : [])
   const unitTo = unitsList.find(unit => unit.id === conversion.unit_to_id)
-  
+
   return unitTo ? unitTo.name : 'Unidad desconocida'
 }
 
@@ -107,12 +115,15 @@ const dialogVisibleUpdate = val => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
+    max-width="500"
+    scrollable
     persistent
+    transition="dialog-bottom-transition"
     @update:model-value="dialogVisibleUpdate"
   >
-    <VCard class="custom-dialog-card pa-0">
+    <VCard class="custom-dialog-card elevation-12">
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -127,22 +138,76 @@ const dialogVisibleUpdate = val => {
           Eliminar Conversión
         </h3>
         <p class="custom-dialog-subtitle">
-          Esta acción removerá la equivalencia entre unidades
+          Confirmación de eliminación de equivalencia
         </p>
       </div>
 
       <VCardText class="pa-6 pa-sm-8 text-center">
-        <h3 class="text-h6 text-center mb-4">
-          ¿Estás seguro de eliminar esta conversión?
+        <!-- Avatar y Título -->
+        <VAvatar
+          size="72"
+          color="error"
+          variant="tonal"
+          class="mb-3"
+        >
+          <VIcon
+            icon="ri-scales-3-line"
+            size="36"
+          />
+        </VAvatar>
+
+        <h3 class="text-h6 font-weight-bold text-high-emphasis mb-2">
+          ¿Eliminar esta regla de conversión?
         </h3>
-        <p class="text-body-2 text-medium-emphasis text-center mb-0">
-          Esta acción no se puede deshacer. La conversión será eliminada permanentemente del sistema.
-        </p>
+
+        <!-- Ficha Resumen de la Conversión -->
+        <div class="bg-grey-lighten-4 rounded-lg pa-4 mb-4 text-left border">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
+                icon="ri-arrow-left-right-line"
+              />
+              Equivalencia:
+            </span>
+            <span class="text-body-2 font-weight-bold text-primary font-mono">
+              1 {{ unitBaseName }} = {{ currentConversion.conversion_factor || currentConversion.factor || 1 }} {{ getUnitToName(currentConversion) }}
+            </span>
+          </div>
+
+          <div
+            v-if="currentConversion.id"
+            class="d-flex align-center justify-space-between"
+          >
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
+                icon="ri-hashtag"
+              />
+              ID Registro:
+            </span>
+            <span class="text-body-2 font-weight-medium text-high-emphasis">
+              #{{ currentConversion.id }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Alerta de Advertencia -->
+        <VAlert
+          type="error"
+          variant="tonal"
+          class="text-left text-caption pa-3 mb-0"
+        >
+          <template #prepend>
+            <VIcon icon="ri-error-warning-line" />
+          </template>
+          Esta acción removerá permanentemente la regla de conversión del sistema y no se podrá deshacer.
+        </VAlert>
       </VCardText>
 
       <VDivider />
 
-      <!-- 👉 Actions -->
+      <!-- Actions -->
       <VCardActions
         class="pa-4 d-flex justify-end align-center gap-3 bg-white"
         style="position: sticky; bottom: 0; z-index: 2;"
@@ -169,7 +234,7 @@ const dialogVisibleUpdate = val => {
           :disabled="loader.loading"
           @click="deleteConversion"
         >
-          Eliminar Conversión
+          Sí, Eliminar
         </VBtn>
       </VCardActions>
     </VCard>

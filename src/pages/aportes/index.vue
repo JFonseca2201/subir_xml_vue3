@@ -951,40 +951,31 @@ onMounted(() => {
     @updated="loadAportes"
   />
 
-  <!-- Diálogo Confirmar Eliminación (VDialog) -->
+  <!-- Diálogo Confirmar Eliminación Estándar del Sistema (VDialog) -->
   <VDialog
     v-model="showDeleteDialog"
     scrollable
     max-width="500"
+    persistent
+    transition="dialog-bottom-transition"
   >
-    <VCard class="custom-dialog-card rounded-xl">
-      <!-- Header Banner Danger -->
-      <div class="custom-dialog-header-danger bg-error text-white pa-4">
-        <div class="d-flex align-center justify-space-between mb-1">
-          <div class="d-flex align-center gap-2">
-            <VAvatar
-              color="white"
-              variant="tonal"
-              size="32"
-            >
-              <VIcon
-                color="white"
-                icon="ri-delete-bin-line"
-                size="18"
-              />
-            </VAvatar>
-            <h3 class="custom-dialog-title text-white font-weight-bold">
-              Eliminar Aporte
-            </h3>
-          </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            color="white"
-            @click="closeDeleteDialog"
-          />
+    <VCard class="custom-dialog-card elevation-12">
+      <!-- Header Banner Primary (Color del sistema) -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loader.loading"
+          @click="closeDeleteDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
         </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Aporte
+        </h3>
         <p class="custom-dialog-subtitle">
           Esta acción revertirá el saldo y no se puede deshacer
         </p>
@@ -992,26 +983,93 @@ onMounted(() => {
 
       <VCardText
         v-if="aporteToDelete"
-        class="pa-4"
+        class="pa-6"
       >
-        <div class="text-body-1 text-high-emphasis mb-3">
-          ¿Estás seguro de eliminar el aporte de <strong>{{ aporteToDelete.partner_nombre }}</strong> por
-          <strong class="text-error font-weight-bold">{{ formatCurrency(aporteToDelete.monto) }}</strong>?
-        </div>
+        <div class="text-center">
+          <!-- Aporte Avatar -->
+          <VAvatar
+            size="72"
+            color="primary"
+            variant="tonal"
+            class="mb-3"
+          >
+            <VIcon
+              icon="ri-hand-coin-line"
+              size="36"
+            />
+          </VAvatar>
 
-        <div class="text-caption text-medium-emphasis bg-error-tonal pa-3 rounded-lg border-error">
-          <VIcon
-            icon="ri-alert-line"
-            size="16"
-            color="error"
-            class="me-1"
-          />
-          Esta acción revertirá los fondos de la cuenta asociada y no se puede deshacer.
+          <!-- Aporte Info Summary -->
+          <div class="mb-2">
+            <h4 class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+              ¿Eliminar este aporte de capital?
+            </h4>
+            <p class="text-caption text-medium-emphasis mb-3">
+              Socio: <strong class="text-high-emphasis font-weight-bold">{{ aporteToDelete.partner_nombre }}</strong>
+            </p>
+
+            <!-- Detalles en Card Plana -->
+            <div
+              class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+              style="background-color: #f8fafc;"
+            >
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Socio Inversionista:</span>
+                <span class="text-caption font-weight-bold text-slate-900">
+                  {{ aporteToDelete.partner_nombre }}
+                </span>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Cuenta Receptora:</span>
+                <span class="text-caption font-weight-bold text-primary">
+                  {{ cleanAccountName(aporteToDelete.cuenta) }}
+                </span>
+              </div>
+
+              <div
+                v-if="aporteToDelete.metodo_pago"
+                class="d-flex justify-space-between align-center"
+              >
+                <span class="text-caption text-medium-emphasis">Método de Pago:</span>
+                <span class="text-caption text-medium-emphasis text-uppercase font-weight-medium">
+                  {{ aporteToDelete.metodo_pago }}
+                </span>
+              </div>
+
+              <div
+                v-if="aporteToDelete.descripcion"
+                class="d-flex justify-space-between align-center"
+              >
+                <span class="text-caption text-medium-emphasis">Descripción:</span>
+                <span class="text-caption text-high-emphasis text-truncate" style="max-width: 220px;">
+                  {{ aporteToDelete.descripcion }}
+                </span>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Monto Aportado:</span>
+                <span class="text-caption font-weight-bold text-success font-mono">
+                  +{{ formatCurrency(aporteToDelete.monto) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+              <VIcon
+                icon="ri-error-warning-line"
+                size="16"
+              />
+              <span>Esta acción revertirá los fondos de la cuenta asociada y no se puede deshacer.</span>
+            </div>
+          </div>
         </div>
       </VCardText>
 
+      <VDivider />
+
       <VCardActions
-        class="pa-4 pt-0 d-flex justify-end align-center gap-3"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
@@ -1020,7 +1078,7 @@ onMounted(() => {
           prepend-icon="ri-close-line"
           class="rounded-lg px-6 font-weight-medium"
           height="40"
-          :disabled="loading"
+          :disabled="loader.loading"
           @click="closeDeleteDialog"
         >
           Cancelar
@@ -1029,9 +1087,9 @@ onMounted(() => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold"
+          class="rounded-lg px-6 font-weight-bold elevation-2"
           height="40"
-          :loading="loading"
+          :loading="loader.loading"
           @click="confirmDeleteAporte"
         >
           Confirmar Eliminación

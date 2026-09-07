@@ -55,48 +55,126 @@ const onFormReset = () => {
     scrollable
     :model-value="props.isDialogVisible"
     max-width="500"
+    persistent
     transition="dialog-bottom-transition"
     @update:model-value="onFormReset"
   >
-    <VCard class="rounded-xl overflow-hidden border elevation-24 bg-surface">
-      <!-- Header Alerta Suave -->
-      <div class="pa-5 bg-grey-lighten-5 border-b position-relative">
+    <VCard class="custom-dialog-card elevation-12">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
           size="small"
-          class="position-absolute"
-          style="top: 12px; right: 12px;"
+          class="custom-dialog-close-btn"
           @click="onFormReset"
         />
-
-        <div class="d-flex align-center gap-3">
-          <VAvatar size="48" color="error" variant="tonal" rounded="xl">
-            <VIcon icon="ri-delete-bin-line" size="26" />
-          </VAvatar>
-
-          <div>
-            <h3 class="text-h6 font-weight-bold text-high-emphasis mb-0">
-              Eliminar Rol de Acceso
-            </h3>
-            <p class="text-caption text-medium-emphasis mb-0">
-              Confirmación de eliminación de perfil de seguridad
-            </p>
-          </div>
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-shield-keyhole-line" />
         </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Rol de Acceso
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Confirmación de eliminación de perfil de seguridad
+        </p>
       </div>
 
       <!-- Contenido -->
-      <VCardText class="pa-6">
-        <div class="text-body-1 text-high-emphasis mb-3">
-          ¿Estás seguro de que deseas eliminar permanentemente el rol <strong class="text-uppercase text-error">{{ props.roleSelected?.name }}</strong>?
+      <VCardText class="pa-6 pa-sm-8 text-center">
+        <!-- Avatar y Nombre -->
+        <VAvatar
+          size="72"
+          color="error"
+          variant="tonal"
+          class="mb-3"
+        >
+          <VIcon
+            icon="ri-delete-bin-line"
+            size="36"
+          />
+        </VAvatar>
+
+        <h3 class="text-h6 font-weight-bold text-high-emphasis text-uppercase mb-1">
+          {{ props.roleSelected?.name || 'Rol sin nombre' }}
+        </h3>
+
+        <div class="mb-4">
+          <VChip
+            size="small"
+            color="primary"
+            variant="tonal"
+            class="font-weight-medium"
+            prepend-icon="ri-hashtag"
+          >
+            ID #{{ props.roleSelected?.id }}
+          </VChip>
         </div>
 
-        <p class="text-caption text-medium-emphasis mb-0">
-          Los usuarios que tengan asignado este rol perderán los accesos y permisos correspondientes inmediatamente.
-        </p>
+        <!-- Ficha Resumen de Información -->
+        <div class="bg-grey-lighten-4 rounded-lg pa-4 mb-4 text-left border">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
+                icon="ri-shield-user-line"
+              />
+              Nombre del Rol:
+            </span>
+            <span class="text-body-2 font-weight-bold text-high-emphasis text-uppercase">
+              {{ props.roleSelected?.name || 'N/A' }}
+            </span>
+          </div>
 
-        <VAlert v-if="errorMessage" color="error" variant="tonal" closable class="mt-4">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
+                icon="ri-key-line"
+              />
+              Permisos Asignados:
+            </span>
+            <span class="text-body-2 font-weight-bold text-primary">
+              {{ props.roleSelected?.permissions_pluck?.length || props.roleSelected?.permissions?.length || 0 }} permisos
+            </span>
+          </div>
+
+          <div
+            v-if="props.roleSelected?.created_at"
+            class="d-flex align-center justify-space-between"
+          >
+            <span class="d-flex align-center gap-2 text-caption text-medium-emphasis">
+              <VIcon
+                size="16"
+                icon="ri-calendar-line"
+              />
+              Fecha de Registro:
+            </span>
+            <span class="text-body-2 font-weight-medium text-high-emphasis">
+              {{ String(props.roleSelected.created_at).split('T')[0] }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Alerta de Advertencia -->
+        <VAlert
+          type="error"
+          variant="tonal"
+          class="text-left text-caption pa-3 mb-0"
+        >
+          <template #prepend>
+            <VIcon icon="ri-error-warning-line" />
+          </template>
+          Los usuarios que tengan asignado este rol perderán inmediatamente sus accesos y privilegios en el sistema.
+        </VAlert>
+
+        <VAlert
+          v-if="errorMessage"
+          color="error"
+          variant="tonal"
+          closable
+          class="mt-3 text-left text-caption"
+        >
           {{ errorMessage }}
         </VAlert>
       </VCardText>
@@ -104,11 +182,16 @@ const onFormReset = () => {
       <VDivider />
 
       <!-- Footer de Acciones -->
-      <VCardActions class="pa-4 bg-grey-lighten-5 d-flex justify-end align-center gap-3">
+      <VCardActions
+        class="pa-4 bg-white d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
         <VBtn
           color="secondary"
           variant="outlined"
-          class="rounded-lg px-5 font-weight-medium"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
           @click="onFormReset"
         >
           Cancelar
@@ -118,7 +201,8 @@ const onFormReset = () => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold elevation-2"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="loader.loading"
           :disabled="loader.loading"
           @click="deleteRol"

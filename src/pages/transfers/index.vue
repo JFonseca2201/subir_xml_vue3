@@ -954,55 +954,119 @@ onMounted(() => {
     @transferred="onTransferred"
   />
 
-  <!-- Modal Confirmar Eliminación -->
+  <!-- Modal Confirmar Eliminación Estándar del Sistema -->
   <VDialog
     v-model="showDeleteDialog"
     scrollable
     max-width="500"
+    persistent
+    transition="dialog-bottom-transition"
   >
-    <VCard class="rounded-xl pa-2">
-      <VCardTitle class="pa-4 pb-2">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center gap-3">
-            <VAvatar
-              color="error"
-              variant="tonal"
-              size="40"
+    <VCard class="custom-dialog-card elevation-12">
+      <!-- Header Banner Primary (Color del sistema) -->
+      <div class="custom-dialog-header-primary bg-primary text-white">
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          :disabled="loader.loading"
+          @click="closeDeleteDialog"
+        />
+        <div class="custom-dialog-avatar">
+          <VIcon icon="ri-delete-bin-line" />
+        </div>
+        <h3 class="custom-dialog-title">
+          Eliminar Transferencia
+        </h3>
+        <p class="custom-dialog-subtitle">
+          Esta acción revertirá la transferencia de fondos entre cuentas
+        </p>
+      </div>
+
+      <VCardText class="pa-6">
+        <div class="text-center">
+          <!-- Transfer Avatar -->
+          <VAvatar
+            size="72"
+            color="primary"
+            variant="tonal"
+            class="mb-3"
+          >
+            <VIcon
+              icon="ri-arrow-left-right-line"
+              size="36"
+            />
+          </VAvatar>
+
+          <!-- Transfer Info Summary -->
+          <div class="mb-2">
+            <h4 class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+              ¿Eliminar esta transferencia?
+            </h4>
+            <p class="text-caption text-medium-emphasis mb-3">
+              Monto a revertir: <strong class="text-error font-weight-bold font-mono">{{ formatCurrency(transferToDelete?.amount) }}</strong>
+            </p>
+
+            <!-- Detalles en Card Plana -->
+            <div
+              class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+              style="background-color: #f8fafc;"
             >
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Cuenta Origen (Sale de):</span>
+                <span class="text-caption font-weight-bold text-error">
+                  {{ getAccountName(transferToDelete?.source_account) }}
+                </span>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Cuenta Destino (Ingresa a):</span>
+                <span class="text-caption font-weight-bold text-success">
+                  {{ getAccountName(transferToDelete?.destination_account) }}
+                </span>
+              </div>
+
+              <div
+                v-if="transferToDelete?.description"
+                class="d-flex justify-space-between align-center"
+              >
+                <span class="text-caption text-medium-emphasis">Descripción:</span>
+                <span class="text-caption text-high-emphasis text-truncate" style="max-width: 220px;">
+                  {{ transferToDelete.description }}
+                </span>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Fecha:</span>
+                <span class="text-caption font-mono font-weight-medium">
+                  {{ formatDate(transferToDelete?.transfer_date || transferToDelete?.created_at) }}
+                </span>
+              </div>
+
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption text-medium-emphasis">Monto Transferido:</span>
+                <span class="text-caption font-weight-bold text-primary font-mono">
+                  {{ formatCurrency(transferToDelete?.amount) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
               <VIcon
-                color="error"
-                icon="ri-delete-bin-line"
-                size="22"
+                icon="ri-error-warning-line"
+                size="16"
               />
-            </VAvatar>
-            <span class="text-h6 font-weight-bold text-high-emphasis">Eliminar Transferencia</span>
+              <span>Esta acción revertirá los fondos a sus cuentas de origen y destino originales.</span>
+            </div>
           </div>
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            @click="closeDeleteDialog"
-          />
-        </div>
-      </VCardTitle>
-      <VDivider class="my-2" />
-      <VCardText class="pa-4">
-        <div class="text-body-1 text-high-emphasis mb-2">
-          ¿Estás seguro de eliminar esta transferencia por
-          <strong class="text-error font-weight-bold">{{ formatCurrency(transferToDelete?.amount) }}</strong>?
-        </div>
-        <div class="text-caption text-medium-emphasis bg-error-tonal pa-3 rounded-lg border-error">
-          <VIcon
-            icon="ri-alert-line"
-            size="16"
-            color="error"
-            class="me-1"
-          />
-          Esta acción revertirá los fondos a sus cuentas de origen y destino originales.
         </div>
       </VCardText>
+
+      <VDivider />
+
       <VCardActions
-        class="pa-4 pt-0 d-flex justify-end align-center gap-3"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
@@ -1011,7 +1075,7 @@ onMounted(() => {
           prepend-icon="ri-close-line"
           class="rounded-lg px-6 font-weight-medium"
           height="40"
-          :disabled="loading"
+          :disabled="loader.loading"
           @click="closeDeleteDialog"
         >
           Cancelar
@@ -1020,9 +1084,9 @@ onMounted(() => {
           color="error"
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold"
+          class="rounded-lg px-6 font-weight-bold elevation-2"
           height="40"
-          :loading="loading"
+          :loading="loader.loading"
           @click="confirmDeleteTransfer"
         >
           Confirmar Eliminación

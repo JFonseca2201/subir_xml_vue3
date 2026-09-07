@@ -20,21 +20,6 @@ const partnerIdentification = computed(() => {
   return partner.value.identification || partner.value.dni || partner.value.n_document || partner.value.document_number || partner.value.ruc || partner.value.cedula || ''
 })
 
-const initials = computed(() => {
-  const parts = String(partner.value.name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-
-  if (!parts.length) return 'S'
-
-  return parts
-    .slice(0, 2)
-    .map(p => p[0])
-    .join('')
-    .toUpperCase()
-})
-
 const identificationType = computed(() => {
   const id = String(partnerIdentification.value || '').replace(/\D/g, '')
   if (id.length === 13) return { label: 'RUC', color: 'deep-purple' }
@@ -103,17 +88,18 @@ const closeDialog = () => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="640"
+    max-width="680"
     scrollable
+    persistent
+    transition="dialog-bottom-transition"
     @update:model-value="closeDialog"
   >
     <VCard
-      class="custom-dialog-card partner-view-card"
+      class="custom-dialog-card partner-dialog-card elevation-12"
       rounded="lg"
-      elevation="4"
     >
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary">
+      <div class="custom-dialog-header-primary bg-primary text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -124,15 +110,16 @@ const closeDialog = () => {
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-user-star-line" />
         </div>
-        <h3 class="custom-dialog-title">
+        <h3 class="custom-dialog-title text-capitalize">
           {{ partner.name || 'Ficha de Socio' }}
         </h3>
         <p class="custom-dialog-subtitle mb-2">
           Información detallada y capital acumulado del socio
         </p>
 
-        <!-- Metadata Pills en la Cabecera -->
+        <!-- Header Pills (Sin duplicar cédula) -->
         <div class="d-flex flex-wrap justify-center gap-2 mt-2">
+          <!-- Estado -->
           <div
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-bold"
             :style="isPartnerActive ? 'background: rgba(16, 185, 129, 0.25); color: #ffffff; border: 1px solid rgba(16, 185, 129, 0.5);' : 'background: rgba(239, 68, 68, 0.25); color: #ffffff; border: 1px solid rgba(239, 68, 68, 0.5);'"
@@ -145,231 +132,336 @@ const closeDialog = () => {
             <span>{{ isPartnerActive ? 'Activo' : 'Inactivo' }}</span>
           </div>
 
+          <!-- ID del Socio -->
           <div
+            v-if="partner.id"
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
           >
             <VIcon
-              icon="ri-id-card-line"
+              icon="ri-hashtag"
               size="14"
               class="me-1"
             />
-            <span><strong>{{ identificationType.label }}:</strong> <span class="font-mono font-weight-bold">{{ partnerIdentification || '—' }}</span></span>
+            <span>Socio #{{ partner.id }}</span>
           </div>
 
+          <!-- Fecha de Registro -->
           <div
             v-if="partner.created_at"
             class="d-inline-flex align-center px-3 py-1 rounded-pill text-caption font-weight-medium"
-            style="background: rgba(255, 255, 255, 0.18); color: #ffffff;"
+            style="background: rgba(255, 255, 255, 0.18); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.28);"
           >
             <VIcon
               icon="ri-calendar-line"
               size="14"
               class="me-1"
             />
-            <span><strong>Registrado:</strong> {{ formatDate(partner.created_at) }}</span>
+            <span>Registrado: {{ formatDate(partner.created_at) }}</span>
           </div>
         </div>
       </div>
 
-      <VCardText class="pa-5">
-        <!-- Resumen KPI Tiles -->
-        <VRow class="mb-5">
+      <!-- Contenido Principal -->
+      <VCardText class="pa-6">
+        <!-- Grid de Especificaciones Rápidas (Brochure Style) -->
+        <div class="specs-container mb-6">
+          <div class="spec-badge-card">
+            <span class="spec-label">Documento</span>
+            <span class="spec-value text-primary font-weight-bold">{{ identificationType.label }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Número</span>
+            <span class="spec-value font-weight-bold font-mono">{{ partnerIdentification || 'Sin documento' }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Teléfono</span>
+            <span class="spec-value font-weight-bold">{{ partner.phone || 'N/A' }}</span>
+          </div>
+          <div class="spec-badge-card">
+            <span class="spec-label">Capital Total</span>
+            <span
+              class="spec-value font-weight-bold"
+              :class="totalContributions ? 'text-success' : 'text-medium-emphasis'"
+            >
+              {{ totalContributions || '$0.00' }}
+            </span>
+          </div>
+        </div>
+
+        <VRow>
+          <!-- Tarjeta: Datos del Socio -->
           <VCol
             cols="12"
-            :sm="totalContributions ? 6 : 12"
+            md="6"
           >
-            <div class="kpi-tile">
-              <div class="d-flex align-center justify-space-between mb-1">
+            <VCard
+              class="pa-4 h-100 info-card-flat"
+              variant="outlined"
+            >
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-primary">
                 <VIcon
-                  icon="ri-id-card-line"
-                  size="24"
+                  icon="ri-user-3-line"
                   color="primary"
+                  class="me-2"
+                  size="20"
                 />
-                <VChip
-                  size="x-small"
-                  :color="identificationType.color"
-                  variant="tonal"
-                  class="font-weight-bold"
-                >
-                  {{ identificationType.label }}
-                </VChip>
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                Número de Identificación
-              </div>
-              <div class="text-h6 font-weight-bold text-high-emphasis font-mono mt-1">
-                {{ partnerIdentification || 'Sin documento' }}
-              </div>
-            </div>
+                Datos del Socio
+              </VCardTitle>
+
+              <VRow
+                no-gutters
+                class="gap-y-3"
+              >
+                <VCol cols="12">
+                  <div class="text-caption text-medium-emphasis">
+                    Nombre Completo / Razón Social
+                  </div>
+                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
+                    {{ partner.name || 'No especificado' }}
+                  </div>
+                </VCol>
+
+                <VCol cols="12">
+                  <div class="text-caption text-medium-emphasis">
+                    Estado en el Sistema
+                  </div>
+                  <div class="mt-1">
+                    <VChip
+                      :color="isPartnerActive ? 'success' : 'error'"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      <VIcon
+                        start
+                        :icon="isPartnerActive ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
+                        size="14"
+                      />
+                      {{ isPartnerActive ? 'Activo' : 'Inactivo' }}
+                    </VChip>
+                  </div>
+                </VCol>
+
+                <VCol cols="12">
+                  <div class="text-caption text-medium-emphasis">
+                    Fecha de Registro
+                  </div>
+                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
+                    {{ formatDate(partner.created_at) }}
+                  </div>
+                </VCol>
+              </VRow>
+            </VCard>
           </VCol>
+
+          <!-- Tarjeta: Ubicación y Domicilio -->
           <VCol
-            v-if="totalContributions"
             cols="12"
-            sm="6"
+            md="6"
           >
-            <div class="kpi-tile kpi-tile--accent">
-              <div class="d-flex align-center justify-space-between mb-1">
+            <VCard
+              class="pa-4 h-100 info-card-flat"
+              variant="outlined"
+            >
+              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-warning">
+                <VIcon
+                  icon="ri-map-pin-line"
+                  color="warning"
+                  class="me-2"
+                  size="20"
+                />
+                Ubicación y Domicilio
+              </VCardTitle>
+
+              <VRow
+                no-gutters
+                class="gap-y-3"
+              >
+                <VCol cols="12">
+                  <div class="text-caption text-medium-emphasis">
+                    Dirección Registrada
+                  </div>
+                  <div
+                    v-if="partner.address"
+                    class="address-box pa-3 rounded-lg mt-1.5 d-flex align-start"
+                  >
+                    <VIcon
+                      icon="ri-road-map-line"
+                      color="warning"
+                      size="18"
+                      class="me-2 mt-0.5 flex-shrink-0"
+                    />
+                    <span class="text-body-2 font-weight-medium text-grey-darken-3 text-uppercase">
+                      {{ partner.address }}
+                    </span>
+                  </div>
+                  <div
+                    v-else
+                    class="empty-address-box pa-4 rounded-lg mt-1.5 text-center"
+                  >
+                    <VIcon
+                      icon="ri-map-pin-line"
+                      size="24"
+                      color="grey-lighten-1"
+                      class="mb-1"
+                    />
+                    <div class="text-caption text-medium-emphasis">
+                      Sin dirección registrada
+                    </div>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCard>
+          </VCol>
+
+          <!-- Tarjeta: Canales de Contacto Directo -->
+          <VCol
+            cols="12"
+            class="pt-3"
+          >
+            <VCard
+              class="pa-4 info-card-flat"
+              variant="outlined"
+            >
+              <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-success">
+                <VIcon
+                  icon="ri-contacts-line"
+                  color="success"
+                  class="me-2"
+                  size="18"
+                />
+                Canales de Contacto Directo
+              </VCardTitle>
+
+              <VRow
+                no-gutters
+                class="gap-y-2"
+              >
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <div class="text-caption text-medium-emphasis">
+                    Teléfono Móvil / WhatsApp
+                  </div>
+                  <div class="mt-1">
+                    <a
+                      v-if="partner.phone"
+                      :href="`tel:${partner.phone}`"
+                      class="contact-link text-body-2 font-weight-bold text-success d-inline-flex align-center"
+                    >
+                      <VIcon
+                        icon="ri-phone-line"
+                        size="16"
+                        class="me-1.5 text-success"
+                      />
+                      {{ partner.phone }}
+                    </a>
+                    <span
+                      v-else
+                      class="text-body-2 text-medium-emphasis"
+                    >
+                      No registrado
+                    </span>
+                  </div>
+                </VCol>
+
+                <VCol
+                  cols="12"
+                  sm="6"
+                >
+                  <div class="text-caption text-medium-emphasis">
+                    Correo Electrónico
+                  </div>
+                  <div class="mt-1">
+                    <a
+                      v-if="partner.email"
+                      :href="`mailto:${partner.email}`"
+                      class="contact-link text-body-2 font-weight-bold text-info d-inline-flex align-center"
+                    >
+                      <VIcon
+                        icon="ri-mail-line"
+                        size="16"
+                        class="me-1.5 text-info"
+                      />
+                      {{ partner.email }}
+                    </a>
+                    <span
+                      v-else
+                      class="text-body-2 text-medium-emphasis"
+                    >
+                      No registrado
+                    </span>
+                  </div>
+                </VCol>
+              </VRow>
+            </VCard>
+          </VCol>
+
+          <!-- Tarjeta: Resumen de Aportaciones (si tiene) -->
+          <VCol
+            v-if="totalContributions || contributionsCount"
+            cols="12"
+            class="pt-3"
+          >
+            <VCard
+              class="pa-4 info-card-flat border-success-subtle"
+              variant="outlined"
+            >
+              <VCardTitle class="d-flex align-center pa-0 mb-3 section-title text-success">
                 <VIcon
                   icon="ri-funds-line"
-                  size="24"
                   color="success"
+                  class="me-2"
+                  size="18"
                 />
-                <VChip
-                  v-if="contributionsCount != null"
-                  size="x-small"
-                  color="success"
-                  variant="tonal"
-                  class="font-weight-bold"
+                Resumen de Aportaciones de Capital
+              </VCardTitle>
+
+              <VRow
+                no-gutters
+                class="align-center"
+              >
+                <VCol
+                  cols="12"
+                  sm="6"
                 >
-                  {{ contributionsCount }} {{ contributionsCount === 1 ? 'aporte' : 'aportes' }}
-                </VChip>
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                Capital Total Aportado
-              </div>
-              <div class="text-h6 font-weight-bold text-success mt-1">
-                {{ totalContributions }}
-              </div>
-            </div>
+                  <div class="text-caption text-medium-emphasis">
+                    Capital Total Acumulado
+                  </div>
+                  <div class="text-h6 font-weight-bold text-success mt-0.5">
+                    {{ totalContributions }}
+                  </div>
+                </VCol>
+                <VCol
+                  cols="12"
+                  sm="6"
+                  class="text-sm-end mt-2 mt-sm-0"
+                >
+                  <VChip
+                    v-if="contributionsCount != null"
+                    color="success"
+                    variant="tonal"
+                    class="font-weight-bold"
+                    size="small"
+                  >
+                    <VIcon
+                      start
+                      icon="ri-hand-coin-line"
+                      size="14"
+                    />
+                    {{ contributionsCount }} {{ contributionsCount === 1 ? 'aporte registrado' : 'aportes registrados' }}
+                  </VChip>
+                </VCol>
+              </VRow>
+            </VCard>
           </VCol>
         </VRow>
-
-        <!-- Contacto -->
-        <div class="section-panel mb-4">
-          <div class="section-title">
-            <VAvatar
-              size="36"
-              color="info"
-              variant="tonal"
-              class="me-3"
-            >
-              <VIcon
-                icon="ri-contacts-line"
-                size="20"
-              />
-            </VAvatar>
-            <div>
-              <div class="text-subtitle-1 font-weight-bold">
-                Datos de Identidad y Contacto
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                Información del socio
-              </div>
-            </div>
-          </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">
-                <VIcon
-                  icon="ri-id-card-line"
-                  size="16"
-                />
-                {{ identificationType.label }}
-              </span>
-              <span class="info-value font-mono font-weight-bold text-high-emphasis">
-                {{ partnerIdentification || '—' }}
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">
-                <VIcon
-                  icon="ri-mail-line"
-                  size="16"
-                />
-                Correo
-              </span>
-              <span class="info-value">
-                <a
-                  v-if="partner.email"
-                  :href="`mailto:${partner.email}`"
-                  class="contact-link"
-                >{{ partner.email }}</a>
-                <span
-                  v-else
-                  class="text-medium-emphasis"
-                >—</span>
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">
-                <VIcon
-                  icon="ri-phone-line"
-                  size="16"
-                />
-                Teléfono
-              </span>
-              <span class="info-value">
-                <a
-                  v-if="partner.phone"
-                  :href="`tel:${partner.phone}`"
-                  class="contact-link"
-                >{{ partner.phone }}</a>
-                <span
-                  v-else
-                  class="text-medium-emphasis"
-                >—</span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dirección -->
-        <div class="section-panel">
-          <div class="section-title">
-            <VAvatar
-              size="36"
-              color="success"
-              variant="tonal"
-              class="me-3"
-            >
-              <VIcon
-                icon="ri-map-pin-line"
-                size="20"
-              />
-            </VAvatar>
-            <div>
-              <div class="text-subtitle-1 font-weight-bold">
-                Ubicación
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                Dirección registrada
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="partner.address"
-            class="address-block"
-          >
-            <VIcon
-              icon="ri-road-map-line"
-              size="20"
-              color="success"
-              class="me-2 flex-shrink-0"
-            />
-            <span class="text-body-2">{{ partner.address }}</span>
-          </div>
-          <div
-            v-else
-            class="empty-hint pa-4 text-center"
-          >
-            <VIcon
-              icon="ri-map-pin-line"
-              size="32"
-              color="grey-lighten-1"
-              class="mb-2"
-            />
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              Sin dirección registrada
-            </p>
-          </div>
-        </div>
       </VCardText>
 
+      <!-- Footer con botones -->
       <VDivider />
-
       <VCardActions
         class="pa-4 d-flex justify-end align-center gap-3 bg-white"
         style="position: sticky; bottom: 0; z-index: 2;"
@@ -388,3 +480,30 @@ const closeDialog = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.address-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.empty-address-box {
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+}
+
+.contact-link {
+  text-decoration: none;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+}
+
+.border-success-subtle {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background-color: rgba(16, 185, 129, 0.02) !important;
+}
+</style>

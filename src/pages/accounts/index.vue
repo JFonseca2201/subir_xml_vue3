@@ -199,21 +199,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    v-if="!canAccessTreasury"
-    class="d-flex justify-center align-center"
-    style="height: 400px"
-  >
-    <VCard
-      class="pa-8 text-center rounded-xl border-thin"
-      elevation="8"
-      max-width="450"
-    >
-      <VIcon
-        size="64"
-        color="error"
-        class="mb-4"
-      >
+  <div v-if="!canAccessTreasury" class="d-flex justify-center align-center" style="height: 400px">
+    <VCard class="pa-8 text-center rounded-xl border-thin" elevation="8" max-width="450">
+      <VIcon size="64" color="error" class="mb-4">
         ri-lock-line
       </VIcon>
       <h3 class="text-h5 mb-2 font-weight-bold">
@@ -222,46 +210,27 @@ onMounted(() => {
       <p class="text-body-1 text-medium-emphasis mb-6">
         No tienes los permisos necesarios para acceder a la gestión de cartera.
       </p>
-      <VBtn
-        color="primary"
-        class="text-none"
-        elevation="2"
-        prepend-icon="ri-arrow-left-line"
-        @click="router.push('/dashboard')"
-      >
+      <VBtn color="primary" class="text-none" elevation="2" prepend-icon="ri-arrow-left-line"
+        @click="router.push('/dashboard')">
         Volver al Dashboard
       </VBtn>
     </VCard>
   </div>
 
-  <div
-    v-else
-    class="pa-4 pa-sm-6 account-management-page"
-  >
+  <div v-else class="pa-4 pa-sm-6 account-management-page">
     <!-- Encabezado Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-bank-line"
-              size="24"
-            />
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+            <VIcon icon="ri-bank-line" size="24" />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2">
               <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                 Gestión de Cuentas y Cajas
               </h1>
-              <div
-                class="status-pill-clean status-transfer"
-              >
+              <div class="status-pill-clean status-transfer">
                 <span class="status-dot" />
                 <span>{{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}</span>
               </div>
@@ -273,23 +242,10 @@ onMounted(() => {
         </div>
 
         <div class="d-flex align-center gap-3">
-          <VBtn
-            title="Actualizar cuentas"
-            variant="tonal"
-            color="secondary"
-            icon="ri-refresh-line"
-            size="small"
-            :loading="loading"
-            @click="loadAccounts"
-          />
-          <VBtn
-            color="primary"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2"
-            @click="openAccountDialog"
-          >
+          <VBtn title="Actualizar cuentas" variant="tonal" color="secondary" icon="ri-refresh-line" size="small"
+            :loading="loading" @click="loadAccounts" />
+          <VBtn color="primary" variant="elevated" size="small" prepend-icon="ri-add-circle-line"
+            class="font-weight-semibold elevation-2" @click="openAccountDialog">
             Nueva Cuenta
           </VBtn>
         </div>
@@ -299,15 +255,8 @@ onMounted(() => {
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5">
       <!-- Saldo Total Acumulado -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
@@ -320,32 +269,16 @@ onMounted(() => {
                 Suma consolidada de todas las cuentas
               </span>
             </div>
-            <VAvatar
-              color="primary"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-money-dollar-circle-line"
-                color="white"
-              />
+            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-money-dollar-circle-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Cuentas -->
-      <VCol
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="6" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
@@ -358,55 +291,30 @@ onMounted(() => {
                 Cuentas y cajas registradas
               </span>
             </div>
-            <VAvatar
-              color="success"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-bank-card-line"
-                color="white"
-              />
+            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-bank-card-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
       </VCol>
 
       <!-- Cuentas Activas -->
-      <VCol
-        cols="12"
-        sm="12"
-        md="4"
-      >
-        <VCard
-          class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card"
-          elevation="0"
-        >
+      <VCol cols="12" sm="12" md="4">
+        <VCard class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card" elevation="0">
           <div class="d-flex align-center justify-space-between">
             <div>
               <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
                 Cuentas Activas
               </span>
               <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
-                {{ accounts.filter(acc => Boolean(acc.is_active)).length }}
+                {{accounts.filter(acc => Boolean(acc.is_active)).length}}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
                 Habilitadas para operaciones
               </span>
             </div>
-            <VAvatar
-              color="info"
-              variant="elevated"
-              size="42"
-              class="elevation-2 kpi-avatar"
-            >
-              <VIcon
-                size="24"
-                icon="ri-checkbox-circle-line"
-                color="white"
-              />
+            <VAvatar color="info" variant="elevated" size="42" class="elevation-2 kpi-avatar">
+              <VIcon size="24" icon="ri-checkbox-circle-line" color="white" />
             </VAvatar>
           </div>
         </VCard>
@@ -415,67 +323,39 @@ onMounted(() => {
 
     <!-- Contenedor Principal (Tabla) -->
     <VCard class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
-      <VProgressLinear
-        v-if="loading"
-        indeterminate
-        color="primary"
-        height="3"
-        class="position-absolute"
-        style="top: 0; left: 0; right: 0; z-index: 10;"
-      />
+      <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+        style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-      <VTable
-        hover
-        class="transfer-table text-no-wrap overflow-x-auto"
-      >
+      <VTable hover class="transfer-table text-no-wrap">
         <thead>
           <tr>
-            <th
-              class="text-left py-4"
-              style="width: 80px;"
-            >
+            <th class="text-left py-4" style="width: 70px;">
               ID
             </th>
-            <th class="text-left py-4" style="min-width: 250px;">
+            <th class="text-left py-4">
               NOMBRE DE LA CUENTA
             </th>
-            <th
-              class="text-center py-4"
-              style="width: 130px;"
-            >
+            <th class="text-center py-4" style="width: 110px;">
               SISTEMA
             </th>
-            <th
-              class="text-left py-4"
-              style="width: 140px;"
-            >
+            <th class="text-left py-4" style="width: 120px;">
               TIPO
             </th>
-            <th class="text-left py-4" style="min-width: 220px;">
+            <th class="text-left py-4">
               INSTITUCIÓN / BANCO
             </th>
-            <th
-              class="text-right py-4"
-              style="width: 170px;"
-            >
+            <th class="text-right py-4" style="width: 160px;">
               SALDO DISPONIBLE
             </th>
-            <th
-              class="text-center py-4"
-              style="width: 130px;"
-            >
+            <th class="text-center py-4" style="width: 110px;">
               ACCIONES
             </th>
           </tr>
         </thead>
-        
+
         <!-- Cargando (Skeleton Rows) -->
         <tbody v-if="loading">
-          <tr
-            v-for="n in 5"
-            :key="n"
-            class="skeleton-row align-middle"
-          >
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
             <td class="py-4">
               <div class="shimmer-line w-40" />
             </td>
@@ -506,21 +386,9 @@ onMounted(() => {
         <!-- Sin resultados -->
         <tbody v-else-if="!accounts.length">
           <tr>
-            <td
-              colspan="7"
-              class="text-center text-medium-emphasis py-12"
-            >
-              <VAvatar
-                size="64"
-                color="primary"
-                variant="tonal"
-                class="mb-3"
-              >
-                <VIcon
-                  size="32"
-                  color="primary"
-                  icon="ri-bank-line"
-                />
+            <td colspan="7" class="text-center text-medium-emphasis py-12">
+              <VAvatar size="64" color="primary" variant="tonal" class="mb-3">
+                <VIcon size="32" color="primary" icon="ri-bank-line" />
               </VAvatar>
               <div class="text-h6 font-weight-bold text-high-emphasis">
                 No se encontraron cuentas
@@ -534,11 +402,7 @@ onMounted(() => {
 
         <!-- Datos Reales -->
         <tbody v-else>
-          <tr
-            v-for="account in accounts"
-            :key="account.id"
-            class="transfer-row"
-          >
+          <tr v-for="account in accounts" :key="account.id" class="transfer-row">
             <!-- ID -->
             <td class="font-weight-bold text-slate-700">
               #{{ account.id }}
@@ -547,16 +411,9 @@ onMounted(() => {
             <!-- Nombre -->
             <td class="py-3">
               <div class="d-flex align-center gap-3">
-                <VAvatar
-                  size="36"
-                  :color="account.type === 'bank' ? 'primary' : 'success'"
-                  variant="tonal"
-                  class="rounded-lg shrink-0"
-                >
-                  <VIcon
-                    :icon="account.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
-                    size="20"
-                  />
+                <VAvatar size="36" :color="account.type === 'bank' ? 'primary' : 'success'" variant="tonal"
+                  class="rounded-lg shrink-0">
+                  <VIcon :icon="account.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'" size="20" />
                 </VAvatar>
                 <div class="d-flex flex-column text-left">
                   <span class="text-body-2 font-weight-bold text-slate-900">
@@ -569,27 +426,18 @@ onMounted(() => {
               </div>
             </td>
 
-              <!-- Sistema -->
+            <!-- Sistema -->
             <td class="py-3 text-center" style="white-space: nowrap;">
-              <div
-                v-if="account.is_system"
-                class="status-pill-clean status-partial"
-              >
+              <div v-if="account.is_system" class="status-pill-clean status-partial">
                 <span class="status-dot" />
                 <span>Sistema</span>
               </div>
-              <span
-                v-else
-                class="text-caption text-disabled font-weight-medium"
-              >—</span>
+              <span v-else class="text-caption text-disabled font-weight-medium">—</span>
             </td>
 
             <!-- Tipo -->
             <td class="py-3" style="white-space: nowrap;">
-              <div
-                class="status-pill-clean"
-                :class="account.type === 'bank' ? 'status-transfer' : 'status-paid'"
-              >
+              <div class="status-pill-clean" :class="account.type === 'bank' ? 'status-transfer' : 'status-paid'">
                 <span class="status-dot" />
                 <span>{{ getTypeLabel(account.type) }}</span>
               </div>
@@ -597,33 +445,22 @@ onMounted(() => {
 
             <!-- Banco -->
             <td class="py-3">
-              <div
-                v-if="account.bank_name"
-                class="d-flex align-center gap-2"
-              >
+              <div v-if="account.bank_name" class="d-flex align-center gap-2">
                 <span class="text-body-2 font-weight-bold text-slate-900">
                   {{ account.bank_name }}
                 </span>
-                <div
-                  v-if="isBankGuayaquil(account)"
-                  class="status-pill-clean status-transfer"
-                >
+                <div v-if="isBankGuayaquil(account)" class="status-pill-clean status-transfer">
                   <span class="status-dot" />
                   <span>Principal</span>
                 </div>
               </div>
-              <span
-                v-else
-                class="text-caption text-medium-emphasis"
-              >No especificado</span>
+              <span v-else class="text-caption text-medium-emphasis">No especificado</span>
             </td>
 
             <!-- Saldo Actual -->
             <td class="py-3 text-right">
-              <span
-                class="text-subtitle-1 font-weight-black"
-                :class="parseFloat(account.saldo_actual) >= 0 ? 'text-success' : 'text-error'"
-              >
+              <span class="text-subtitle-1 font-weight-black"
+                :class="parseFloat(account.saldo_actual) >= 0 ? 'text-success' : 'text-error'">
                 {{ formatCurrency(account.saldo_actual || 0) }}
               </span>
             </td>
@@ -632,30 +469,13 @@ onMounted(() => {
             <td class="py-3 text-center">
               <div class="d-flex align-center justify-center gap-1">
                 <template v-if="!account.is_system">
-                  <VBtn
-                    icon="ri-pencil-line"
-                    variant="tonal"
-                    size="small"
-                    color="warning"
-                    class="action-btn"
-                    title="Editar Cuenta"
-                    @click="openEditDialog(account)"
-                  />
+                  <VBtn icon="ri-pencil-line" variant="tonal" size="small" color="warning" class="action-btn"
+                    title="Editar Cuenta" @click="openEditDialog(account)" />
 
-                  <VBtn
-                    icon="ri-delete-bin-line"
-                    variant="tonal"
-                    size="small"
-                    color="error"
-                    class="action-btn"
-                    title="Eliminar Cuenta"
-                    @click="deleteAccount(account)"
-                  />
+                  <VBtn icon="ri-delete-bin-line" variant="tonal" size="small" color="error" class="action-btn"
+                    title="Eliminar Cuenta" @click="deleteAccount(account)" />
                 </template>
-                <div
-                  v-else
-                  class="status-pill-clean status-canceled"
-                >
+                <div v-else class="status-pill-clean status-canceled">
                   <span class="status-dot" />
                   <span>Protegida</span>
                 </div>
@@ -670,38 +490,24 @@ onMounted(() => {
       <!-- Pie de Página -->
       <VCardActions class="justify-start pa-4 bg-grey-lighten-5">
         <div class="text-caption text-slate-700 font-weight-medium">
-          Mostrando <strong class="text-primary font-weight-bold">{{ accounts.length }}</strong> cuentas registradas en el sistema
+          Mostrando <strong class="text-primary font-weight-bold">{{ accounts.length }}</strong> cuentas registradas en
+          el
+          sistema
         </div>
       </VCardActions>
     </VCard>
 
     <!-- Diálogos -->
-    <AccountFormDialog
-      v-model="showAccountDialog"
-      :account-data="editingAccount"
-      @account-created="onAccountCreated"
-      @account-updated="onAccountUpdated"
-    />
+    <AccountFormDialog v-model="showAccountDialog" :account-data="editingAccount" @account-created="onAccountCreated"
+      @account-updated="onAccountUpdated" />
 
     <!-- Dialog Eliminar Cuenta Estándar del Sistema -->
-    <VDialog
-      v-model="showDeleteDialog"
-      scrollable
-      max-width="500"
-      persistent
-      transition="dialog-bottom-transition"
-    >
+    <VDialog v-model="showDeleteDialog" scrollable max-width="500" persistent transition="dialog-bottom-transition">
       <VCard class="custom-dialog-card elevation-12">
         <!-- Header Banner Primary (Color del sistema) -->
         <div class="custom-dialog-header-primary bg-primary text-white">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn"
-            :disabled="loader.loading"
-            @click="closeDeleteDialog"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            :disabled="loader.loading" @click="closeDeleteDialog" />
           <div class="custom-dialog-avatar">
             <VIcon icon="ri-delete-bin-line" />
           </div>
@@ -716,16 +522,9 @@ onMounted(() => {
         <VCardText class="pa-6">
           <div class="text-center">
             <!-- Account Avatar -->
-            <VAvatar
-              size="72"
-              color="primary"
-              variant="tonal"
-              class="mb-3"
-            >
-              <VIcon
-                :icon="accountToDelete?.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
-                size="36"
-              />
+            <VAvatar size="72" color="primary" variant="tonal" class="mb-3">
+              <VIcon :icon="accountToDelete?.type === 'bank' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
+                size="36" />
             </VAvatar>
 
             <!-- Account Info Summary -->
@@ -738,37 +537,27 @@ onMounted(() => {
               </p>
 
               <!-- Detalles en Card Plana -->
-              <div
-                class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
-                style="background-color: #f8fafc;"
-              >
-                <div
-                  v-if="accountToDelete?.bank_name"
-                  class="d-flex justify-space-between align-center"
-                >
+              <div class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
+                style="background-color: #f8fafc;">
+                <div v-if="accountToDelete?.bank_name" class="d-flex justify-space-between align-center">
                   <span class="text-caption text-medium-emphasis">Banco / Entidad:</span>
                   <span class="text-caption font-weight-bold text-uppercase">{{ accountToDelete.bank_name }}</span>
                 </div>
 
-                <div
-                  v-if="accountToDelete?.account_number"
-                  class="d-flex justify-space-between align-center"
-                >
+                <div v-if="accountToDelete?.account_number" class="d-flex justify-space-between align-center">
                   <span class="text-caption text-medium-emphasis">Número de Cuenta:</span>
                   <span class="text-caption font-mono font-weight-bold">{{ accountToDelete.account_number }}</span>
                 </div>
 
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-caption text-medium-emphasis">Saldo Actual:</span>
-                  <span class="text-caption font-weight-bold text-primary font-mono">${{ parseFloat(accountToDelete?.current_balance || 0).toFixed(2) }}</span>
+                  <span class="text-caption font-weight-bold text-primary font-mono">${{
+                    parseFloat(accountToDelete?.current_balance || 0).toFixed(2) }}</span>
                 </div>
               </div>
 
               <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium">
-                <VIcon
-                  icon="ri-error-warning-line"
-                  size="16"
-                />
+                <VIcon icon="ri-error-warning-line" size="16" />
                 <span>Esta acción es irreversible y deshabilitará la cuenta.</span>
               </div>
             </div>
@@ -777,30 +566,16 @@ onMounted(() => {
 
         <VDivider />
 
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            :disabled="loader.loading"
-            @click="closeDeleteDialog"
-          >
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium" height="40" :disabled="loader.loading"
+            @click="closeDeleteDialog">
             Cancelar
           </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            prepend-icon="ri-delete-bin-line"
-            class="rounded-lg px-6 font-weight-bold elevation-2"
-            height="40"
-            :loading="loader.loading"
-            @click="confirmDeleteAccount"
-          >
+          <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2" height="40" :loading="loader.loading"
+            @click="confirmDeleteAccount">
             Eliminar Cuenta
           </VBtn>
         </VCardActions>
