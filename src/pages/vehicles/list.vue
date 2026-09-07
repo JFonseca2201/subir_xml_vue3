@@ -356,7 +356,7 @@ onMounted(() => {
             </VCol>
 
             <VCol cols="12" sm="4" md="3">
-              <VSelect v-model="searchForm.brand" :items="brandOptions" item-title="title" item-value="value"
+              <VAutocomplete v-model="searchForm.brand" :items="brandOptions" item-title="title" item-value="value"
                 label="Marca" placeholder="Todas" clearable hide-details variant="outlined" density="comfortable"
                 color="primary" prepend-inner-icon="ri-shield-star-line" />
             </VCol>

@@ -104,8 +104,61 @@ const isClientFinalDialogVisible = ref(false)
 const isClientCompanyDialogVisible = ref(false)
 const isVehicleDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
+const isManualProductDialogVisible = ref(false)
 
+// Manual Product Form State
+const manualFormRef = ref(null)
+const manualProduct = ref({
+  description: '',
+  sku: '',
+  quantity: 1,
+  price: '',
+  discount: 0,
+  type: 'product',
+})
 
+const resetManualProductForm = () => {
+  manualProduct.value = {
+    description: '',
+    sku: '',
+    quantity: 1,
+    price: '',
+    discount: 0,
+    type: 'product',
+  }
+  manualFormRef.value?.resetValidation()
+}
+
+const openManualProductDialog = () => {
+  resetManualProductForm()
+  isManualProductDialogVisible.value = true
+}
+
+const addManualItem = async () => {
+  const { valid } = await manualFormRef.value?.validate()
+  if (!valid) return
+
+  const desc = (manualProduct.value.description || '').trim()
+  if (!desc) {
+    showNotification('La descripción del producto es requerida', 'warning')
+    return
+  }
+
+  quote.value.items.push({
+    product_id: null,
+    description: desc,
+    sku: manualProduct.value.sku ? manualProduct.value.sku.trim().toUpperCase() : 'MANUAL',
+    quantity: Number(manualProduct.value.quantity) || 1,
+    price: Number(manualProduct.value.price) || 0,
+    discount: Number(manualProduct.value.discount) || 0,
+    type: manualProduct.value.type || 'product',
+    is_manual: true,
+  })
+
+  showNotification('Producto manual agregado a la cotización', 'success')
+  isManualProductDialogVisible.value = false
+  resetManualProductForm()
+}
 
 const selectedProductTemp = ref(null)
 
@@ -154,7 +207,8 @@ const addCustomService = serviceData => {
     price: parseFloat(serviceData.price) || 0,
     discount: 0,
     type: 'service',
-    sku: '',
+    sku: 'EXPRESS',
+    is_manual: true,
   })
   showNotification('Servicio personalizado agregado', 'success')
 }
@@ -673,7 +727,7 @@ onMounted(async () => {
           <!-- Búsqueda y Agregar Items -->
           <VCard class="elevation-2 mb-6">
             <VCardText class="pa-6">
-              <div class="d-flex align-center justify-space-between mb-4">
+              <div class="d-flex align-center justify-space-between mb-4 flex-wrap gap-2">
                 <h3 class="text-h6 font-weight-bold mb-0 d-flex align-center">
                   <VIcon
                     icon="ri-shopping-cart-line"
@@ -682,15 +736,27 @@ onMounted(async () => {
                   />
                   Servicios y Repuestos
                 </h3>
-                <VBtn
-                  color="primary"
-                  size="small"
-                  variant="text"
-                  prepend-icon="ri-add-line"
-                  @click="isAddServiceDialogVisible = true"
-                >
-                  Servicio Personalizado
-                </VBtn>
+                <div class="d-flex align-center gap-2">
+                  <VBtn
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="ri-add-circle-line"
+                    class="font-weight-medium"
+                    @click="openManualProductDialog"
+                  >
+                    + Producto Manual
+                  </VBtn>
+                  <VBtn
+                    color="secondary"
+                    size="small"
+                    variant="text"
+                    prepend-icon="ri-tools-line"
+                    @click="isAddServiceDialogVisible = true"
+                  >
+                    Servicio Express
+                  </VBtn>
+                </div>
               </div>
 
               <VSearch
@@ -771,9 +837,29 @@ onMounted(async () => {
                     :key="index"
                   >
                     <td class="text-left font-weight-medium">
-                      {{ item.description }}
-                      <div class="text-caption text-medium-emphasis">
-                        {{ item.sku || 'Sin Código' }}
+                      <div v-if="item.product_id" class="d-flex flex-column">
+                        <span>{{ item.description }}</span>
+                        <div class="text-caption text-medium-emphasis">
+                          {{ item.sku || 'Sin Código' }}
+                        </div>
+                      </div>
+                      <div v-else class="d-flex flex-column gap-1 py-1">
+                        <div class="d-flex align-center gap-2">
+                          <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                            {{ item.type === 'service' ? 'Servicio Manual' : 'Producto Manual' }}
+                          </VChip>
+                          <span v-if="item.sku && item.sku !== 'MANUAL'" class="text-caption text-medium-emphasis font-weight-medium">
+                            Ref: {{ item.sku }}
+                          </span>
+                        </div>
+                        <VTextField
+                          v-model="item.description"
+                          placeholder="Descripción del producto manual..."
+                          variant="underlined"
+                          density="compact"
+                          hide-details
+                          class="font-weight-medium mt-1"
+                        />
                       </div>
                     </td>
                     <td class="text-center">
@@ -962,6 +1048,137 @@ onMounted(async () => {
       v-model:isDialogVisible="isAddServiceDialogVisible"
       @add-service="addCustomService"
     />
+
+    <!-- Modal de Producto / Ítem Manual -->
+    <VDialog
+      v-model="isManualProductDialogVisible"
+      max-width="540"
+      persistent
+    >
+      <VCard class="rounded-xl overflow-hidden elevation-10">
+        <VCardTitle class="pa-4 bg-primary d-flex align-center justify-space-between text-white">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-file-add-line" size="22" color="white" />
+            <span class="font-weight-bold text-subtitle-1 text-white">Agregar Producto Manual a Cotización</span>
+          </div>
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            color="white"
+            density="compact"
+            @click="isManualProductDialogVisible = false"
+          />
+        </VCardTitle>
+
+        <VCardText class="pa-5">
+          <VForm
+            ref="manualFormRef"
+            @submit.prevent="addManualItem"
+          >
+            <VRow dense>
+              <VCol cols="12">
+                <VTextField
+                  v-model="manualProduct.description"
+                  label="Descripción del Producto o Repuesto *"
+                  placeholder="Ej. Batería Bosch 75Ah, Pastillas Especiales..."
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[v => !!v || 'La descripción es obligatoria']"
+                  autofocus
+                />
+              </VCol>
+
+              <VCol cols="12" sm="6">
+                <VTextField
+                  v-model="manualProduct.sku"
+                  label="Código / Referencia (Opcional)"
+                  placeholder="Ej. BOSCH-75"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <VCol cols="12" sm="6">
+                <VSelect
+                  v-model="manualProduct.type"
+                  label="Tipo de Ítem"
+                  :items="[
+                    { title: 'Producto / Repuesto', value: 'product' },
+                    { title: 'Servicio / Mano de Obra', value: 'service' }
+                  ]"
+                  item-title="title"
+                  item-value="value"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+
+              <VCol cols="12" sm="4">
+                <VTextField
+                  v-model.number="manualProduct.quantity"
+                  type="number"
+                  min="1"
+                  label="Cantidad *"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[v => (Number(v) > 0) || 'Debe ser mayor a 0']"
+                />
+              </VCol>
+
+              <VCol cols="12" sm="4">
+                <VTextField
+                  v-model.number="manualProduct.price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  prefix="$"
+                  label="PVP Unitario ($) *"
+                  placeholder="0.00"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[v => (v !== '' && v !== null && Number(v) >= 0) || 'Precio obligatorio']"
+                />
+              </VCol>
+
+              <VCol cols="12" sm="4">
+                <VTextField
+                  v-model.number="manualProduct.discount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  prefix="$"
+                  label="Descuento ($)"
+                  placeholder="0.00"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </VCol>
+            </VRow>
+          </VForm>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-4 bg-grey-lighten-4 d-flex justify-end gap-2">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            class="rounded-lg px-4"
+            @click="isManualProductDialogVisible = false"
+          >
+            Cancelar
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            class="rounded-lg px-6 font-weight-bold"
+            @click="addManualItem"
+          >
+            Agregar Ítem
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
