@@ -11,6 +11,8 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import SriInvoiceProgressDialog from '@/components/inventory/sales/SriInvoiceProgressDialog.vue'
+import WorkOrderImportDialog from '@/components/inventory/sales/WorkOrderImportDialog.vue'
+import SaleInvoiceConfirmDialog from '@/components/inventory/sales/SaleInvoiceConfirmDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
@@ -38,38 +40,6 @@ const isSriProgressDialogVisible = ref(false)
 const sriSalePayload = ref({})
 const sriAmbiente = ref('1')
 
-const sriEnvironmentInfo = computed(() => {
-  const isProd = String(sriAmbiente.value) === '2'
-  return {
-    isProd,
-    type: isProd ? '2' : '1',
-    text: isProd ? 'PRODUCCIÓN' : 'PRUEBAS',
-    color: isProd ? 'success' : 'warning',
-    icon: isProd ? 'ri-shield-check-line' : 'ri-test-tube-line',
-    desc: isProd
-      ? 'Ambiente Oficial de Producción del SRI (con validez tributaria real).'
-      : 'Ambiente de Pruebas y Certificación del SRI (sin validez tributaria).',
-  }
-})
-
-const computedPaymentMethodSummary = computed(() => {
-  if (sale.value.payment_status === 'pending' || sale.value.is_credited) {
-    return 'Crédito / Pendiente'
-  }
-  if (paymentDistributions.value && paymentDistributions.value.length > 0) {
-    const summaryList = paymentDistributions.value.map(d => {
-      if (!d.payment_method) return 'Sin seleccionar'
-      if (d.payment_method === 'Transferencia' && d.account_id) {
-        const acc = accounts.value.find(a => a.id === d.account_id)
-        return acc ? `Transferencia — ${acc.name}` : 'Transferencia'
-      }
-      return d.payment_method
-    })
-    const unique = [...new Set(summaryList)]
-    return unique.join(', ')
-  }
-  return sale.value.payment_method || 'Sin seleccionar'
-})
 
 // Opciones
 const documentTypes = [
@@ -249,31 +219,6 @@ const isClientCompanyAddDialogVisible = ref(false)
 const isVehicleAddDialogVisible = ref(false)
 const isWorkOrderImportDialogVisible = ref(false)
 const isAddServiceDialogVisible = ref(false)
-const readyWorkOrders = ref([])
-const isLoadingWorkOrders = ref(false)
-const workOrderSearchQuery = ref('')
-
-const filteredWorkOrders = computed(() => {
-  if (!workOrderSearchQuery.value) return readyWorkOrders.value
-
-  const query = workOrderSearchQuery.value.toLowerCase().trim()
-
-  return readyWorkOrders.value.filter(order => {
-    const idMatch = String(order.id).includes(query)
-    const clientName = `${order.client?.name || ''} ${order.client?.surname || ''}`.toLowerCase()
-    const clientDoc = String(order.client?.n_document || '').toLowerCase()
-    const licensePlate = String(order.vehicle?.license_plate || '').toLowerCase()
-    const brand = String(order.vehicle?.brand || '').toLowerCase()
-    const model = String(order.vehicle?.model || '').toLowerCase()
-
-    return idMatch ||
-      clientName.includes(query) ||
-      clientDoc.includes(query) ||
-      licensePlate.includes(query) ||
-      brand.includes(query) ||
-      model.includes(query)
-  })
-})
 
 const loadClients = async () => {
   try {
@@ -464,20 +409,6 @@ const handleServiceAdded = async newService => {
   }
 }
 
-// Función para cargar órdenes listas para facturar
-const loadReadyWorkOrders = async () => {
-  isLoadingWorkOrders.value = true
-  try {
-    const response = await $api('work-orders/ready-to-invoice')
-
-    readyWorkOrders.value = response.data || []
-  } catch (error) {
-    console.error('Error al cargar órdenes listas:', error)
-    showNotification('Error al cargar las órdenes listas para facturar', 'error')
-  } finally {
-    isLoadingWorkOrders.value = false
-  }
-}
 
 // Función para seleccionar una orden de trabajo
 const applyWorkOrderTechnicians = workOrder => {
@@ -543,7 +474,6 @@ const selectWorkOrder = async workOrder => {
 
 // Abrir diálogo de importación de órdenes de trabajo
 const openWorkOrderImportDialog = () => {
-  loadReadyWorkOrders()
   isWorkOrderImportDialogVisible.value = true
 }
 
@@ -2375,226 +2305,16 @@ onMounted(async () => {
       :client-selected-id="sale.client_id" @add-vehicle="handleVehicleAdded" />
 
     <!-- Diálogo de importación de orden de trabajo -->
-    <VDialog v-model="isWorkOrderImportDialogVisible" scrollable max-width="800px">
-      <VCard class="custom-dialog-card">
-        <!-- Header Banner Primary -->
-        <div class="custom-dialog-header-primary">
-          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
-            @click="isWorkOrderImportDialogVisible = false" />
-          <div class="custom-dialog-avatar">
-            <VIcon icon="ri-file-download-line" />
-          </div>
-          <h3 class="custom-dialog-title">
-            Importar Orden de Trabajo
-          </h3>
-          <p class="custom-dialog-subtitle">
-            Selecciona una orden de trabajo finalizada para facturarla
-          </p>
-        </div>
-        <VCardText class="pa-4">
-          <div v-if="isLoadingWorkOrders" class="text-center pa-8">
-            <VProgressCircular indeterminate color="primary" size="48" />
-            <p class="mt-4">
-              Cargando órdenes listas para facturar...
-            </p>
-          </div>
-          <div v-else-if="readyWorkOrders.length === 0" class="text-center pa-8">
-            <VIcon icon="ri-file-list-3-line" size="64" color="grey-lighten-1" />
-            <p class="mt-4 text-grey">
-              No hay órdenes de trabajo listas para facturar.
-            </p>
-          </div>
-          <div v-else>
-            <VTextField v-model="workOrderSearchQuery" placeholder="Buscar orden (placa, cliente, #)..."
-              prepend-inner-icon="ri-search-line" variant="outlined" density="compact" class="mb-4" hide-details
-              clearable />
-            <div class="border rounded-lg overflow-x-auto">
-              <VTable density="comfortable" hover>
-                <thead>
-                  <tr>
-                    <th>OT #</th>
-                    <th>Cliente</th>
-                    <th>Vehículo</th>
-                    <th>Fecha Ingreso</th>
-                    <th class="text-right">
-                      Acción
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="order in filteredWorkOrders" :key="order.id">
-                    <td class="font-weight-medium">
-                      OT-{{ order.id }}
-                    </td>
-                    <td>
-                      {{ order.client?.name }} {{ order.client?.surname }}<br><small class="text-grey">{{
-                        order.client?.n_document }}</small>
-                    </td>
-                    <td>
-                      {{ order.vehicle?.license_plate }}<br><small class="text-grey">{{
-                        getBrandNameById(order.vehicle?.brand) }} {{
-                          order.vehicle?.model }}</small>
-                    </td>
-                    <td>
-                      {{ order.entry_date ? (order.entry_date.includes(':') ? new Date(order.entry_date.replace(' ',
-                        'T')) :
-                        new Date(order.entry_date.replace(/-/g, '/'))).toLocaleDateString() : 'N/A' }}
-                    </td>
-                    <td class="text-right">
-                      <VBtn color="primary" size="small" variant="elevated" @click="selectWorkOrder(order)">
-                        Importar
-                      </VBtn>
-                    </td>
-                  </tr>
-                </tbody>
-              </VTable>
-            </div>
-          </div>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium" height="40" @click="isWorkOrderImportDialogVisible = false">
-            Cerrar
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <WorkOrderImportDialog v-model:is-dialog-visible="isWorkOrderImportDialogVisible" @select-order="selectWorkOrder" />
 
-    <!-- Dialog para agregar servicio express -->
     <!-- Dialog para agregar servicio express -->
     <AddServiceDialog :is-dialog-visible="isAddServiceDialogVisible"
       @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
 
     <!-- Diálogo de confirmación para Factura -->
-    <VDialog v-model="isConfirmInvoiceDialogVisible" max-width="540px" persistent>
-      <VCard class="custom-dialog-card rounded-xl overflow-hidden elevation-10">
-        <!-- Header Banner Primary -->
-        <div class="custom-dialog-header-primary pa-5 text-center position-relative"
-          style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white;">
-          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn position-absolute"
-            style="top: 12px; right: 12px; color: white;" :disabled="isSubmitting"
-            @click="isConfirmInvoiceDialogVisible = false" />
-          <div class="mx-auto mb-3 d-flex align-center justify-center rounded-circle"
-            style="width: 64px; height: 64px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);">
-            <VIcon icon="ri-bill-line" size="36" color="white" />
-          </div>
-          <h3 class="text-h5 font-weight-bold text-white mb-1">
-            ¿Estás seguro que deseas realizar esta "FACTURA"?
-          </h3>
-          <p class="text-caption text-white opacity-90 mb-0">
-            Se emitirá el comprobante electrónico fiscal con autorización ante el SRI.
-          </p>
-        </div>
-
-        <VCardText class="pa-5 bg-grey-lighten-5">
-          <!-- Resumen de Factura -->
-          <VCard class="pa-4 rounded-lg border border-light elevation-0 mb-4 bg-white">
-            <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
-              <span class="text-caption text-medium-emphasis font-weight-medium">CLIENTE</span>
-              <span class="text-body-2 font-weight-bold text-grey-darken-4 text-right">
-                {{ selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname
-                  ||
-                  ''}`.trim() || selectedClient.n_document) : 'Consumidor Final' }}
-              </span>
-            </div>
-
-            <div v-if="selectedClient?.n_document" class="d-flex justify-space-between align-center pb-2 border-b mb-3">
-              <span class="text-caption text-medium-emphasis font-weight-medium">RUC / CÉDULA</span>
-              <span class="text-body-2 font-weight-semibold text-primary">
-                {{ selectedClient.n_document }}
-              </span>
-            </div>
-
-            <div v-if="selectedVehicle" class="d-flex justify-space-between align-center pb-2 border-b mb-3">
-              <span class="text-caption text-medium-emphasis font-weight-medium">VEHÍCULO</span>
-              <span class="text-body-2 font-weight-semibold text-grey-darken-3">
-                {{ selectedVehicle.license_plate }} ({{ getBrandNameById(selectedVehicle.brand) }} {{
-                  selectedVehicle.model
-                }})
-              </span>
-            </div>
-
-            <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
-              <span class="text-caption text-medium-emphasis font-weight-medium">AMBIENTE SRI</span>
-              <VChip :color="sriEnvironmentInfo.color" size="small" variant="flat" class="font-weight-bold px-2.5">
-                <VIcon :icon="sriEnvironmentInfo.icon" size="14" class="me-1" />
-                {{ sriEnvironmentInfo.text }}
-              </VChip>
-            </div>
-
-            <!-- Tipo de Pago Simple (1 método o Crédito) -->
-            <div v-if="paymentDistributions.length <= 1 || sale.payment_status === 'pending'"
-              class="d-flex justify-space-between align-center pb-2 border-b mb-3">
-              <span class="text-caption text-medium-emphasis font-weight-medium">TIPO DE PAGO</span>
-              <VChip
-                :color="sale.payment_status === 'pending' ? 'warning' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'info' : 'success')"
-                size="small" variant="flat" class="font-weight-bold px-2.5">
-                <VIcon
-                  :icon="sale.payment_status === 'pending' ? 'ri-time-line' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line')"
-                  size="14" class="me-1" />
-                {{ computedPaymentMethodSummary }}
-              </VChip>
-            </div>
-
-            <!-- Desglose de Pagos Múltiples (solo si está dividido en 2 o más métodos) -->
-            <div v-else class="d-flex flex-column pb-2 border-b mb-3">
-              <div class="d-flex justify-space-between align-center mb-1.5">
-                <span class="text-caption text-medium-emphasis font-weight-medium">FORMA DE PAGO</span>
-                <VChip color="primary" size="small" variant="tonal" class="font-weight-bold px-2">
-                  <VIcon icon="ri-split-cells-horizontal" size="14" class="me-1" />
-                  Pago Dividido ({{ paymentDistributions.length }})
-                </VChip>
-              </div>
-
-              <div class="bg-slate-50 pa-2.5 rounded-lg border">
-                <div v-for="(pd, i) in paymentDistributions" :key="i"
-                  class="d-flex justify-space-between align-center text-caption py-0.5"
-                  :class="{ 'border-b pb-1 mb-1': i < paymentDistributions.length - 1 }">
-                  <div class="d-flex align-center gap-1.5">
-                    <VIcon
-                      :icon="pd.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
-                      size="15" :color="pd.payment_method === 'Transferencia' ? 'info' : 'success'" />
-                    <span class="font-weight-bold text-slate-800">{{ pd.payment_method || 'Sin método' }}</span>
-                    <span v-if="pd.payment_method === 'Transferencia' && pd.account_id"
-                      class="text-info font-weight-medium">
-                      — {{ accounts.find(a => a.id === pd.account_id)?.name || 'Banco' }}
-                    </span>
-                  </div>
-                  <span class="font-mono font-weight-bold text-slate-900">${{ Number(pd.amount || 0).toFixed(2) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex justify-space-between align-center pt-1">
-              <span class="text-subtitle-1 font-weight-bold text-grey-darken-3">TOTAL A FACTURAR</span>
-              <span class="text-h5 font-weight-black text-primary">
-                ${{ total.toFixed(2) }}
-              </span>
-            </div>
-          </VCard>
-
-          <VAlert :type="sriEnvironmentInfo.isProd ? 'warning' : 'info'" variant="tonal" density="compact"
-            class="rounded-lg mb-0 text-caption font-weight-medium" :icon="sriEnvironmentInfo.icon">
-            <strong>Ambiente SRI: {{ sriEnvironmentInfo.text }}</strong> — {{ sriEnvironmentInfo.desc }}
-          </VAlert>
-        </VCardText>
-
-        <VDivider />
-
-        <VCardActions class="pa-4 d-flex justify-end gap-3 bg-white">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" :disabled="isSubmitting"
-            @click="isConfirmInvoiceDialogVisible = false">
-            Cancelar
-          </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" :loading="isSubmitting" size="large"
-            class="px-5 font-weight-bold" @click="triggerInvoiceEmission">
-            Sí, emitir factura
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <SaleInvoiceConfirmDialog v-model:is-dialog-visible="isConfirmInvoiceDialogVisible" :client="selectedClient"
+      :vehicle="selectedVehicle" :sale="sale" :payment-distributions="paymentDistributions" :accounts="accounts"
+      :total="total" :sri-environment="sriAmbiente" :is-submitting="isSubmitting" @confirm="triggerInvoiceEmission" />
 
     <!-- Modal de Progreso y Autorización SRI Animado -->
     <SriInvoiceProgressDialog v-model:is-dialog-visible="isSriProgressDialogVisible" :sale-payload="sriSalePayload"

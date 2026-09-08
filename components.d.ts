@@ -111,11 +111,15 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SaleDeleteDialog: typeof import('./src/components/inventory/sales/SaleDeleteDialog.vue')['default']
+    SaleInvoiceConfirmDialog: typeof import('./src/components/inventory/sales/SaleInvoiceConfirmDialog.vue')['default']
+    SaleMailDialog: typeof import('./src/components/inventory/sales/SaleMailDialog.vue')['default']
+    SalePaymentDialog: typeof import('./src/components/inventory/sales/SalePaymentDialog.vue')['default']
     SalesHistoryDialog: typeof import('./src/components/dialogs/SalesHistoryDialog.vue')['default']
     SaleViewDialog: typeof import('./src/components/inventory/sales/SaleViewDialog.vue')['default']
     ScrollToTop: typeof import('./src/@core/components/ScrollToTop.vue')['default']
     ShareProjectDialog: typeof import('./src/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./src/@core/components/Shortcuts.vue')['default']
+    SriErrorDialog: typeof import('./src/components/inventory/sales/SriErrorDialog.vue')['default']
     SriInvoiceProgressDialog: typeof import('./src/components/inventory/sales/SriInvoiceProgressDialog.vue')['default']
     SriStatusDialog: typeof import('./src/components/inventory/sales/SriStatusDialog.vue')['default']
     TheCustomizer: typeof import('./src/@core/components/TheCustomizer.vue')['default']
@@ -143,6 +147,7 @@ declare module 'vue' {
     WarehouseAddDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseAddDialog.vue')['default']
     WarehouseDeleteDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseDeleteDialog.vue')['default']
     WarehouseEditDialog: typeof import('./src/components/inventory/config/warehouses/WarehouseEditDialog.vue')['default']
+    WorkOrderImportDialog: typeof import('./src/components/inventory/sales/WorkOrderImportDialog.vue')['default']
     WorkOrderTimelineDialog: typeof import('./src/components/dialogs/WorkOrderTimelineDialog.vue')['default']
   }
 }

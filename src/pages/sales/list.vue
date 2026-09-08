@@ -8,6 +8,9 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
+import SalePaymentDialog from '@/components/inventory/sales/SalePaymentDialog.vue'
+import SaleMailDialog from '@/components/inventory/sales/SaleMailDialog.vue'
+import SriErrorDialog from '@/components/inventory/sales/SriErrorDialog.vue'
 import CreditNoteDialog from '@/components/inventory/sales/CreditNoteDialog.vue'
 import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
@@ -863,13 +866,8 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          variant="tonal"
-          color="info"
-          prepend-icon="ri-wifi-line"
-          class="font-weight-medium"
-          @click="isSriStatusDialogVisible = true"
-        >
+        <VBtn variant="tonal" color="info" prepend-icon="ri-wifi-line" class="font-weight-medium"
+          @click="isSriStatusDialogVisible = true">
           Estado SRI
         </VBtn>
         <VBtn v-if="can('export_data') || can('list_sale')" variant="tonal" color="secondary"
@@ -1036,28 +1034,35 @@ onMounted(() => {
         <VTable hover class="sales-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px; min-width: 150px; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 160px; min-width: 150px; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px; min-width: 80px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 90px; min-width: 80px; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 220px; min-width: 180px; max-width: 240px;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
+              <th class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1070,8 +1075,7 @@ onMounted(() => {
                   <div class="d-flex align-center gap-1.5">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                      size="16"
-                      class="me-1 flex-shrink-0"
+                      size="16" class="me-1 flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
@@ -1105,18 +1109,21 @@ onMounted(() => {
               <td class="py-3" style="max-width: 240px;">
                 <div class="d-flex align-center gap-2">
                   <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client) }}</span>
+                    <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client)
+                    }}</span>
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 180px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="getClientPhone(item.client)" class="text-caption text-medium-emphasis d-flex align-center mt-0.5 text-truncate">
+                    <div v-if="getClientPhone(item.client)"
+                      class="text-caption text-medium-emphasis d-flex align-center mt-0.5 text-truncate">
                       <VIcon icon="ri-phone-line" size="13" class="me-1 text-disabled flex-shrink-0" />
                       <span class="text-truncate">{{ getClientPhone(item.client) }}</span>
                     </div>
-                    <div v-else-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
+                    <div v-else-if="item.client?.n_document"
+                      class="text-caption text-medium-emphasis font-mono text-truncate">
                       {{ item.client.n_document }}
                     </div>
                   </div>
@@ -1130,16 +1137,19 @@ onMounted(() => {
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 250px;">
-                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
+                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                     </div>
-                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium" :title="formatVehicleInfo(item.vehicle)">
+                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium"
+                      :title="formatVehicleInfo(item.vehicle)">
                       {{ formatVehicleInfo(item.vehicle) }}
                     </div>
                   </div>
                 </div>
                 <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg"
+                    class="elevation-0 flex-shrink-0 opacity-40">
                     <VIcon icon="ri-car-line" size="18" />
                   </VAvatar>
                   <span>Sin vehículo</span>
@@ -1148,9 +1158,11 @@ onMounted(() => {
 
               <!-- Fecha -->
               <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                  style="white-space: nowrap;">
                   <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at) }}</span>
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
+                    formatDate(item.created_at) }}</span>
                 </div>
               </td>
 
@@ -1200,43 +1212,25 @@ onMounted(() => {
                           @click="generateSinglePDF(item)" />
                         <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
                           class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                        
+
                         <!-- Acciones SRI para Facturas -->
                         <template v-if="item.document_type === 'invoice'">
                           <VDivider class="my-1" />
-                          <VListItem
-                            v-if="item.sri_status !== 'AUTORIZADA'"
-                            prepend-icon="ri-refresh-line"
-                            title="Sincronizar con SRI"
-                            class="text-primary text-body-2"
-                            @click="syncSriStatus(item)"
-                          />
-                          <VListItem
-                            v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
-                            prepend-icon="ri-send-plane-line"
-                            title="Reintentar Envío SRI"
-                            class="text-warning text-body-2"
-                            @click="resendSri(item)"
-                          />
-                          <VListItem
-                            v-if="item.sri_status === 'AUTORIZADA' || item.xml_path"
-                            prepend-icon="ri-file-code-line"
-                            title="Descargar XML SRI"
-                            class="text-info text-body-2"
-                            @click="downloadXml(item)"
-                          />
-                          <VListItem
-                            v-if="item.sri_status === 'AUTORIZADA'"
-                            prepend-icon="ri-file-shield-2-line"
-                            title="Descargar RIDE SRI"
-                            class="text-success text-body-2"
-                            @click="downloadRide(item)"
-                          />
+                          <VListItem v-if="item.sri_status !== 'AUTORIZADA'" prepend-icon="ri-refresh-line"
+                            title="Sincronizar con SRI" class="text-primary text-body-2" @click="syncSriStatus(item)" />
+                          <VListItem v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
+                            prepend-icon="ri-send-plane-line" title="Reintentar Envío SRI"
+                            class="text-warning text-body-2" @click="resendSri(item)" />
+                          <VListItem v-if="item.sri_status === 'AUTORIZADA' || item.xml_path"
+                            prepend-icon="ri-file-code-line" title="Descargar XML SRI" class="text-info text-body-2"
+                            @click="downloadXml(item)" />
+                          <VListItem v-if="item.sri_status === 'AUTORIZADA'" prepend-icon="ri-file-shield-2-line"
+                            title="Descargar RIDE SRI" class="text-success text-body-2" @click="downloadRide(item)" />
                         </template>
 
                         <VDivider v-if="item.document_type !== 'invoice'" class="my-1" />
-                        <VListItem v-if="item.document_type !== 'invoice'" prepend-icon="ri-pencil-line" title="Editar Venta" class="text-warning text-body-2"
-                          @click="editSale(item)" />
+                        <VListItem v-if="item.document_type !== 'invoice'" prepend-icon="ri-pencil-line"
+                          title="Editar Venta" class="text-warning text-body-2" @click="editSale(item)" />
                         <VListItem prepend-icon="ri-close-circle-line" title="Anular Venta"
                           class="text-error text-body-2" @click="cancelSale(item)" />
                       </VList>
@@ -1257,7 +1251,8 @@ onMounted(() => {
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong
-              class="text-high-emphasis">{{ totalItems }}</strong> ventas
+              class="text-high-emphasis">{{
+                totalItems }}</strong> ventas
           </div>
           <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
             @update:model-value="loadSales" />
@@ -1274,214 +1269,23 @@ onMounted(() => {
 
 
     <!-- Payment Dialog -->
-    <VDialog v-model="isPaymentDialogVisible" scrollable max-width="450">
-      <VCard class="custom-dialog-card">
-        <!-- Header Banner Primary -->
-        <div class="custom-dialog-header-primary">
-          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
-            @click="isPaymentDialogVisible = false" />
-          <div class="custom-dialog-avatar">
-            <VIcon icon="ri-secure-payment-line" />
-          </div>
-          <h3 class="custom-dialog-title">
-            Registrar Pago
-          </h3>
-          <p class="custom-dialog-subtitle">
-            Selecciona el método de pago para la venta
-          </p>
-        </div>
-
-        <VCardText class="pa-4">
-          <div class="mb-4">
-            <div class="d-flex justify-space-between align-center mb-1">
-              <span class="text-body-2 text-medium-emphasis">Documento:</span>
-              <span class="font-weight-medium text-grey-darken-4">{{ selectedSale?.document_number }}</span>
-            </div>
-            <div class="d-flex justify-space-between align-center">
-              <span class="text-body-2 text-medium-emphasis">Total a Pagar:</span>
-              <span class="text-subtitle-1 font-weight-bold text-success">{{ formatCurrency(selectedSale?.total)
-              }}</span>
-            </div>
-          </div>
-
-          <VSelect v-model="paymentForm.payment_method" :items="paymentMethodOptions" item-title="title"
-            item-value="value" label="Método de Pago" variant="outlined" density="compact" color="primary"
-            class="mb-2" />
-
-          <VCheckbox v-model="paymentForm.convert_to_invoice" label="Convertir a Factura" class="mt-2" color="primary"
-            density="compact" hide-details />
-        </VCardText>
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium" height="40" @click="isPaymentDialogVisible = false">
-            Cancelar
-          </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-check-line" class="rounded-lg px-6 font-weight-bold"
-            height="40" @click="registerPayment">
-            Confirmar Pago
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <SalePaymentDialog v-model:is-dialog-visible="isPaymentDialogVisible" :sale="selectedSale"
+      @payment-registered="loadSales" />
 
     <!-- Mail Confirmation Dialog -->
-    <VDialog v-model="isMailDialogVisible" scrollable max-width="480">
-      <VCard class="custom-dialog-card">
-        <!-- Header Banner Primary -->
-        <div class="custom-dialog-header-primary">
-          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
-            @click="isMailDialogVisible = false" />
-          <div class="custom-dialog-avatar">
-            <VIcon icon="ri-mail-send-line" />
-          </div>
-          <h3 class="custom-dialog-title">
-            Confirmar Envío
-          </h3>
-          <p class="custom-dialog-subtitle">
-            Se enviará el documento por correo electrónico
-          </p>
-        </div>
-
-        <VCardText class="pa-6">
-          <div class="text-center mb-6">
-            <p class="text-body-2 text-medium-emphasis mb-2">
-              ¿Estás seguro de enviar este documento a:
-            </p>
-            <div class="text-h6 font-weight-bold text-grey-darken-4 mb-1">
-              {{ getClientName(mailSaleSelected?.client) }}
-            </div>
-            <div class="d-flex align-center justify-center text-body-2"
-              :class="mailSaleSelected?.client?.email ? 'text-medium-emphasis' : 'text-error font-weight-medium'">
-              <VIcon :icon="mailSaleSelected?.client?.email ? 'ri-mail-line' : 'ri-error-warning-line'" size="16"
-                class="mr-2" />
-              {{ mailSaleSelected?.client?.email || 'El cliente no tiene correo registrado' }}
-            </div>
-          </div>
-
-          <!-- Tarjeta interna de detalles -->
-          <VCard variant="tonal" color="primary" class="rounded-lg border-opacity-25">
-            <VCardText class="pa-4 d-flex justify-space-between align-center">
-              <div class="d-flex flex-column">
-                <span class="text-caption font-weight-bold text-primary text-uppercase mb-1"
-                  style="letter-spacing: 0.5px;">Documento</span>
-                <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-file-text-line" size="18" color="primary" />
-                  <span class="font-weight-bold text-grey-darken-4 text-subtitle-1">{{ mailSaleSelected?.document_number
-                  }}</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <VChip size="small" :color="getDocumentTypeInfo(mailSaleSelected?.document_type)?.color"
-                  variant="elevated" elevation="1" class="font-weight-medium text-capitalize px-3">
-                  {{ getDocumentTypeInfo(mailSaleSelected?.document_type)?.text }}
-                </VChip>
-              </div>
-            </VCardText>
-          </VCard>
-        </VCardText>
-
-        <VDivider class="border-opacity-25" />
-
-        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium" height="40" :disabled="isMailSending"
-            @click="isMailDialogVisible = false">
-            Cancelar
-          </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-send-plane-fill"
-            class="rounded-lg px-6 font-weight-bold" height="40" :loading="isMailSending"
-            :disabled="!mailSaleSelected?.client?.email" @click="confirmSendMail">
-            Enviar Ahora
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <SaleMailDialog v-model:is-dialog-visible="isMailDialogVisible" :sale-selected="mailSaleSelected" />
 
     <!-- Diálogo Modal para Errores SRI -->
-    <VDialog v-model="sriErrorDialogVisible" max-width="620">
-      <VCard class="rounded-xl border border-error border-opacity-25 overflow-hidden">
-        <VCardItem class="bg-error-lighten-5 pa-4">
-          <template #prepend>
-            <VIcon icon="ri-alert-line" color="error" size="28" />
-          </template>
-          <VCardTitle class="text-h6 font-weight-bold text-error">
-            Detalle de Respuesta SRI
-          </VCardTitle>
-          <VCardSubtitle v-if="selectedSaleForSriError?.document_number" class="text-caption text-medium-emphasis">
-            Factura {{ selectedSaleForSriError.document_number }}
-          </VCardSubtitle>
-        </VCardItem>
-        <VCardText class="pa-5">
-          <p class="text-body-2 text-medium-emphasis mb-3">
-            El Servicio de Rentas Internas (SRI) retornó la siguiente observación al procesar este comprobante:
-          </p>
-          <div
-            class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border mb-4">
-            {{ selectedSriError }}
-          </div>
-
-          <VAlert
-            v-if="isSriNetworkError"
-            type="warning"
-            variant="tonal"
-            border="start"
-            class="rounded-lg"
-          >
-            <template #prepend>
-              <VIcon icon="ri-wifi-off-line" />
-            </template>
-            <div class="text-caption">
-              <strong>Posible Caída del Servidor SRI:</strong> Este error indica problemas de conectividad o tiempo de espera agotado con los servidores del SRI. Puedes verificar el estado actual de los Web Services y reintentar el envío una vez que el SRI esté operativo.
-            </div>
-          </VAlert>
-        </VCardText>
-        <VDivider />
-        <VCardActions class="pa-4 d-flex justify-space-between flex-wrap gap-2 bg-white">
-          <VBtn
-            color="info"
-            variant="tonal"
-            prepend-icon="ri-wifi-line"
-            @click="isSriStatusDialogVisible = true"
-          >
-            Verificar Servidores SRI
-          </VBtn>
-          <div class="d-flex gap-2">
-            <VBtn color="secondary" variant="outlined" @click="sriErrorDialogVisible = false">
-              Cerrar
-            </VBtn>
-            <VBtn
-              v-if="selectedSaleForSriError && !isSaleCanceled(selectedSaleForSriError)"
-              color="info"
-              variant="tonal"
-              prepend-icon="ri-refresh-line"
-              @click="syncSriStatus(selectedSaleForSriError); sriErrorDialogVisible = false"
-            >
-              Consultar Autorización SRI
-            </VBtn>
-            <VBtn
-              v-if="selectedSaleForSriError && !isSaleCanceled(selectedSaleForSriError)"
-              color="primary"
-              variant="elevated"
-              prepend-icon="ri-restart-line"
-              @click="resendSri(selectedSaleForSriError); sriErrorDialogVisible = false"
-            >
-              Reenviar al SRI
-            </VBtn>
-          </div>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <SriErrorDialog v-model:is-dialog-visible="sriErrorDialogVisible" :error-msg="selectedSriError"
+      :sale="selectedSaleForSriError" @verify-sri="isSriStatusDialogVisible = true" @sync-status="syncSriStatus"
+      @resend="resendSri" />
 
     <!-- Diálogo para Emitir Nota de Crédito SRI -->
     <CreditNoteDialog :is-dialog-visible="isCreditNoteDialogVisible" :sale-selected="selectedSaleForCreditNote"
       @update:is-dialog-visible="isCreditNoteDialogVisible = $event" @credit-note-created="handleCreditNoteCreated" />
 
     <!-- Diálogo para Verificar Estado de Servidores SRI -->
-    <SriStatusDialog
-      v-model:is-dialog-visible="isSriStatusDialogVisible"
-    />
+    <SriStatusDialog v-model:is-dialog-visible="isSriStatusDialogVisible" />
   </div>
 </template>
 
