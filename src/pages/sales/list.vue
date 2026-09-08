@@ -9,6 +9,7 @@ import { useLoaderStore } from '@/stores/loader'
 import SaleViewDialog from '@/components/inventory/sales/SaleViewDialog.vue'
 import SaleDeleteDialog from '@/components/inventory/sales/SaleDeleteDialog.vue'
 import CreditNoteDialog from '@/components/inventory/sales/CreditNoteDialog.vue'
+import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 
@@ -30,6 +31,7 @@ const isViewDialogVisible = ref(false)
 const isDeleteDialogVisible = ref(false)
 const isPaymentDialogVisible = ref(false)
 const isCreditNoteDialogVisible = ref(false)
+const isSriStatusDialogVisible = ref(false)
 const selectedSaleForCreditNote = ref(null)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
@@ -458,8 +460,8 @@ const editSale = sale => {
 
     return
   }
-  if (sale.document_type === 'invoice' && sale.sri_status === 'AUTORIZADA') {
-    showNotification('Esta factura ya fue autorizada por el SRI y no se puede editar', 'warning')
+  if (sale.document_type === 'invoice') {
+    showNotification('Las facturas electrónicas ya creadas no pueden ser modificadas', 'warning')
 
     return
   }
@@ -510,6 +512,25 @@ const generatePDF = async () => {
 // ── SRI Helpers & Acciones ──────────────────────────────────────────────
 const sriErrorDialogVisible = ref(false)
 const selectedSriError = ref('')
+const selectedSaleForSriError = ref(null)
+
+const isSriNetworkError = computed(() => {
+  if (!selectedSriError.value) return false
+  const err = selectedSriError.value.toLowerCase()
+  return (
+    err.includes('curl') ||
+    err.includes('timeout') ||
+    err.includes('timed out') ||
+    err.includes('conexión') ||
+    err.includes('conexion') ||
+    err.includes('503') ||
+    err.includes('502') ||
+    err.includes('504') ||
+    err.includes('fuera de servicio') ||
+    err.includes('servidor') ||
+    err.includes('connection refused')
+  )
+})
 
 const getSriStatusInfo = status => {
   const map = {
@@ -523,8 +544,9 @@ const getSriStatusInfo = status => {
   return map[status] || { color: 'grey', text: status || 'SRI Pendiente', icon: 'ri-question-line' }
 }
 
-const openSriErrorDialog = errorMsg => {
+const openSriErrorDialog = (errorMsg, sale = null) => {
   selectedSriError.value = errorMsg || 'Sin detalle de error registrado por el SRI.'
+  selectedSaleForSriError.value = sale
   sriErrorDialogVisible.value = true
 }
 
@@ -817,6 +839,15 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+        <VBtn
+          variant="tonal"
+          color="info"
+          prepend-icon="ri-wifi-line"
+          class="font-weight-medium"
+          @click="isSriStatusDialogVisible = true"
+        >
+          Estado SRI
+        </VBtn>
         <VBtn v-if="can('export_data') || can('list_sale')" variant="tonal" color="secondary"
           prepend-icon="ri-file-pdf-line" class="font-weight-medium" :loading="pdfLoading" @click="generatePDF">
           Exportar PDF
@@ -1120,7 +1151,7 @@ onMounted(() => {
                   <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
                     class="sri-badge-clean" :class="`sri-${item.sri_status.toLowerCase()}`"
                     :title="item.sri_error_message || item.sri_error ? `Error SRI: ${item.sri_error_message || item.sri_error}` : `Estado SRI: ${item.sri_status}`"
-                    @click="item.sri_status === 'DEVUELTA' ? openSriErrorDialog(item.sri_error_message || item.sri_error) : null">
+                    @click="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : null">
                     <span class="sri-dot" />
                     <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
                   </div>
@@ -1145,8 +1176,8 @@ onMounted(() => {
                           @click="generateSinglePDF(item)" />
                         <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF"
                           class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                        <VDivider class="my-1" />
-                        <VListItem prepend-icon="ri-pencil-line" title="Editar Venta" class="text-warning text-body-2"
+                        <VDivider v-if="item.document_type !== 'invoice'" class="my-1" />
+                        <VListItem v-if="item.document_type !== 'invoice'" prepend-icon="ri-pencil-line" title="Editar Venta" class="text-warning text-body-2"
                           @click="editSale(item)" />
                         <VListItem prepend-icon="ri-close-circle-line" title="Anular Venta"
                           class="text-error text-body-2" @click="cancelSale(item)" />
@@ -1311,30 +1342,67 @@ onMounted(() => {
     </VDialog>
 
     <!-- Diálogo Modal para Errores SRI -->
-    <VDialog v-model="sriErrorDialogVisible" max-width="600">
+    <VDialog v-model="sriErrorDialogVisible" max-width="620">
       <VCard class="rounded-xl border border-error border-opacity-25 overflow-hidden">
         <VCardItem class="bg-error-lighten-5 pa-4">
           <template #prepend>
             <VIcon icon="ri-alert-line" color="error" size="28" />
           </template>
           <VCardTitle class="text-h6 font-weight-bold text-error">
-            Detalle del Respuesta SRI
+            Detalle de Respuesta SRI
           </VCardTitle>
+          <VCardSubtitle v-if="selectedSaleForSriError?.document_number" class="text-caption text-medium-emphasis">
+            Factura {{ selectedSaleForSriError.document_number }}
+          </VCardSubtitle>
         </VCardItem>
-        <VCardText class="pa-6">
+        <VCardText class="pa-5">
           <p class="text-body-2 text-medium-emphasis mb-3">
             El Servicio de Rentas Internas (SRI) retornó la siguiente observación al procesar este comprobante:
           </p>
           <div
-            class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border">
+            class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border mb-4">
             {{ selectedSriError }}
           </div>
+
+          <VAlert
+            v-if="isSriNetworkError"
+            type="warning"
+            variant="tonal"
+            border="start"
+            class="rounded-lg"
+          >
+            <template #prepend>
+              <VIcon icon="ri-wifi-off-line" />
+            </template>
+            <div class="text-caption">
+              <strong>Posible Caída del Servidor SRI:</strong> Este error indica problemas de conectividad o tiempo de espera agotado con los servidores del SRI. Puedes verificar el estado actual de los Web Services y reintentar el envío una vez que el SRI esté operativo.
+            </div>
+          </VAlert>
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-4 d-flex justify-end bg-white">
-          <VBtn color="secondary" variant="tonal" @click="sriErrorDialogVisible = false">
-            Cerrar
+        <VCardActions class="pa-4 d-flex justify-space-between flex-wrap gap-2 bg-white">
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-wifi-line"
+            @click="isSriStatusDialogVisible = true"
+          >
+            Verificar Servidores SRI
           </VBtn>
+          <div class="d-flex gap-2">
+            <VBtn color="secondary" variant="outlined" @click="sriErrorDialogVisible = false">
+              Cerrar
+            </VBtn>
+            <VBtn
+              v-if="selectedSaleForSriError && !isSaleCanceled(selectedSaleForSriError)"
+              color="primary"
+              variant="elevated"
+              prepend-icon="ri-restart-line"
+              @click="resendSri(selectedSaleForSriError); sriErrorDialogVisible = false"
+            >
+              Reenviar al SRI
+            </VBtn>
+          </div>
         </VCardActions>
       </VCard>
     </VDialog>
@@ -1342,6 +1410,11 @@ onMounted(() => {
     <!-- Diálogo para Emitir Nota de Crédito SRI -->
     <CreditNoteDialog :is-dialog-visible="isCreditNoteDialogVisible" :sale-selected="selectedSaleForCreditNote"
       @update:is-dialog-visible="isCreditNoteDialogVisible = $event" @credit-note-created="handleCreditNoteCreated" />
+
+    <!-- Diálogo para Verificar Estado de Servidores SRI -->
+    <SriStatusDialog
+      v-model:is-dialog-visible="isSriStatusDialogVisible"
+    />
   </div>
 </template>
 

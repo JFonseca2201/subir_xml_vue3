@@ -3,6 +3,7 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
 
 const props = defineProps({
   isDialogVisible: {
@@ -12,6 +13,18 @@ const props = defineProps({
   salePayload: {
     type: Object,
     default: () => ({}),
+  },
+  saleId: {
+    type: [Number, String],
+    default: null,
+  },
+  endpoint: {
+    type: String,
+    default: null,
+  },
+  method: {
+    type: String,
+    default: null,
   },
   clientName: {
     type: String,
@@ -39,39 +52,43 @@ const { showNotification } = useGlobalToast()
 // Estados del proceso
 const progressPercent = ref(0)
 const currentStepIndex = ref(0)
-const processStatus = ref('processing') // 'processing' | 'success' | 'error' | 'warning'
-const statusMessage = ref('Iniciando procesamiento de la factura...')
+const processStatus = ref('processing') // 'processing' | 'sri_offline' | 'success' | 'error'
+const statusMessage = ref('Comprobando estado de los servidores del SRI...')
 const errorMessage = ref('')
 const responseData = ref(null)
 const timerInterval = ref(null)
 const autoRedirectTimer = ref(null)
 const countdownSeconds = ref(3)
 
+// Diagnóstico previo del SRI
+const sriDiagnostic = ref(null)
+const isDetailsDialogVisible = ref(false)
+
 const isProd = computed(() => String(props.sriEnvironment) === '2' || props.sriEnvironment === 'PRODUCCIÓN')
 
 const steps = [
   {
     id: 1,
-    title: 'Estructuración del Comprobante',
+    title: 'Conectividad Web Services SRI',
+    desc: 'Comprobación de disponibilidad de los servidores fiscales del SRI',
+    icon: 'ri-wifi-line',
+  },
+  {
+    id: 2,
+    title: 'Estructuración y Validación',
     desc: 'Validación de cliente, ítems, desglose de impuestos e inventario',
     icon: 'ri-file-code-line',
   },
   {
-    id: 2,
+    id: 3,
     title: 'Firma Electrónica XML',
     desc: 'Cifrado y firmado digital del XML con certificado criptográfico PKCS#12',
     icon: 'ri-shield-keyhole-line',
   },
   {
-    id: 3,
-    title: 'Transmisión Web Services SRI',
-    desc: 'Envío seguro SOAP a los servidores del Servicio de Rentas Internas',
-    icon: 'ri-cloud-upload-line',
-  },
-  {
     id: 4,
-    title: 'Autorización Tributaria SRI',
-    desc: 'Recepción del estado fiscal y generación de clave de acceso oficial',
+    title: 'Transmisión y Autorización SRI',
+    desc: 'Envío SOAP y consulta de estado tributario oficial',
     icon: 'ri-shield-check-line',
   },
 ]
@@ -84,8 +101,8 @@ const formatCurrency = val => {
 }
 
 const startProgressAnimation = () => {
-  progressPercent.value = 5
-  currentStepIndex.value = 0
+  progressPercent.value = 25
+  currentStepIndex.value = 1
   processStatus.value = 'processing'
   statusMessage.value = 'Estructurando comprobante y validando cálculos tributarios...'
   errorMessage.value = ''
@@ -101,33 +118,76 @@ const startProgressAnimation = () => {
       return
     }
 
-    if (progressPercent.value < 28) {
-      progressPercent.value += 2.5
-      currentStepIndex.value = 0
-      statusMessage.value = 'Estructurando comprobante y validando cálculos tributarios...'
-    } else if (progressPercent.value < 58) {
+    if (progressPercent.value < 48) {
       progressPercent.value += 2
       currentStepIndex.value = 1
-      statusMessage.value = 'Firmando digitalmente el XML con certificado electrónico...'
-    } else if (progressPercent.value < 82) {
-      progressPercent.value += 1.5
+      statusMessage.value = 'Estructurando comprobante y validando cálculos tributarios...'
+    } else if (progressPercent.value < 75) {
+      progressPercent.value += 1.8
       currentStepIndex.value = 2
-      statusMessage.value = 'Transmitiendo comprobante a los servidores SOAP del SRI...'
+      statusMessage.value = 'Firmando digitalmente el XML con certificado electrónico...'
     } else if (progressPercent.value < 94) {
       progressPercent.value += 0.8
       currentStepIndex.value = 3
-      statusMessage.value = 'Consultando estado de validación y autorización del SRI...'
+      statusMessage.value = 'Transmitiendo comprobante y consultando autorización SRI...'
     }
   }, 180)
 }
 
-// Ejecutar la llamada real a la API
+// Ejecutar la llamada real a la API con comprobación previa del SRI
 const executeSriEmission = async () => {
+  if (timerInterval.value) clearInterval(timerInterval.value)
+  if (autoRedirectTimer.value) clearInterval(autoRedirectTimer.value)
+
+  progressPercent.value = 12
+  currentStepIndex.value = 0
+  processStatus.value = 'processing'
+  statusMessage.value = 'Comprobando conectividad con los servidores del SRI...'
+  errorMessage.value = ''
+  sriDiagnostic.value = null
+  responseData.value = null
+  countdownSeconds.value = 3
+
+  // ── FASE 1: Comprobación previa del estado del SRI ──
+  try {
+    const amb = props.sriEnvironment ? (String(props.sriEnvironment) === '2' ? 2 : 1) : 1
+    const checkResponse = await $api('sri/check-status', {
+      params: { ambiente: amb },
+    })
+
+    const health = checkResponse?.data
+    if (health) {
+      sriDiagnostic.value = health
+      const recepcionOnline = health.services?.recepcion?.online !== false
+      const isDown = !health.online || !recepcionOnline || health.status === 'FUERA_DE_SERVICIO' || health.status === 'CAIDO'
+
+      if (isDown) {
+        if (timerInterval.value) clearInterval(timerInterval.value)
+        processStatus.value = 'sri_offline'
+        progressPercent.value = 100
+        statusMessage.value = 'No es posible generar la factura por problemas en el SRI'
+        errorMessage.value = health.message || 'Los servidores del SRI no están disponibles o se encuentran fuera de servicio en este momento. La emisión fue detenida para proteger tu comprobante.'
+        emit('error', errorMessage.value)
+        return
+      }
+    }
+  } catch (checkErr) {
+    console.warn('Error en sondeo previo del SRI:', checkErr)
+  }
+
+  // ── FASE 2: Servidores listos, estructuración y emisión ──
+  currentStepIndex.value = 1
+  progressPercent.value = 25
+  statusMessage.value = 'Servidores SRI operativos. Estructurando comprobante...'
+
   startProgressAnimation()
 
   try {
-    const response = await $api('sales', {
-      method: 'POST',
+    const targetUrl = props.endpoint || (props.saleId ? `sales/${props.saleId}` : 'sales')
+    const targetMethod = props.method || (props.saleId ? 'PUT' : 'POST')
+
+    const response = await $api(targetUrl, {
+      method: targetMethod,
       body: props.salePayload,
     })
 
@@ -291,13 +351,13 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Cuerpo del Proceso -->
-      <VCardText class="pa-6 bg-slate-50">
+      <VCardText class="pa-6 bg-surface">
         <!-- ESTADO: PROCESANDO -->
         <template v-if="processStatus === 'processing'">
           <!-- Barra de Progreso Dinámica -->
           <div class="sri-progress-bar-container mb-5">
             <div class="d-flex align-center justify-space-between mb-1">
-              <span class="text-caption font-weight-bold text-slate-700 d-flex align-center gap-1.5">
+              <span class="text-caption font-weight-bold d-flex align-center gap-1.5 text-high-emphasis">
                 <VProgressCircular indeterminate size="14" width="2" color="primary" />
                 {{ statusMessage }}
               </span>
@@ -311,7 +371,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="d-flex align-center justify-space-between text-caption text-medium-emphasis mt-1">
-              <span>Fase {{ currentStepIndex + 1 }} de 4</span>
+              <span>Fase {{ currentStepIndex + 1 }} de 4: {{ steps[currentStepIndex]?.title }}</span>
               <span>Conexión Cifrada SSL / TLS 1.3</span>
             </div>
           </div>
@@ -354,6 +414,81 @@ onBeforeUnmount(() => {
           </div>
         </template>
 
+        <!-- ESTADO: SRI FUERA DE SERVICIO (BLOQUEO PREVIO POR FALLA DEL SRI) -->
+        <template v-else-if="processStatus === 'sri_offline'">
+          <div class="sri-offline-state">
+            <!-- Barra de Progreso Detenida en Error -->
+            <div class="sri-progress-bar-container mb-4">
+              <div class="d-flex align-center justify-space-between mb-1">
+                <span class="text-caption font-weight-bold text-error d-flex align-center gap-1.5">
+                  <VIcon icon="ri-wifi-off-line" color="error" size="18" />
+                  No es posible generar la factura por problemas en el SRI
+                </span>
+                <span class="text-subtitle-2 font-weight-black text-error font-mono">
+                  SRI INACTIVO
+                </span>
+              </div>
+
+              <div class="progress-track-wrapper">
+                <div class="progress-track-fill is-sri-error" style="width: 100%;" />
+              </div>
+
+              <div class="d-flex align-center justify-space-between text-caption text-error font-weight-medium mt-1">
+                <span>Fase 1: Verificación de Servidores SRI</span>
+                <span>Emisión pausada por seguridad</span>
+              </div>
+            </div>
+
+            <!-- Card de Diagnóstico y Explicación -->
+            <div class="sri-offline-card pa-4 rounded-xl border mb-4">
+              <div class="d-flex align-start gap-3 mb-3">
+                <div class="sri-offline-icon-circle flex-shrink-0">
+                  <VIcon icon="ri-cloud-off-line" size="26" color="error" />
+                </div>
+                <div>
+                  <h4 class="text-subtitle-1 font-weight-bold text-error mb-1">
+                    Servidores de Web Services del SRI no funcionales
+                  </h4>
+                  <p class="text-body-2 text-high-emphasis opacity-90 mb-0">
+                    El sistema comprobó la disponibilidad del SRI antes de crear la factura y detectó que los servidores se encuentran caídos o no responden. Para proteger tu facturación y evitar comprobantes rechazados, la emisión ha sido detenida.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Endpoints State -->
+              <div class="d-flex flex-column gap-2 mb-3">
+                <div class="d-flex align-center justify-space-between pa-2.5 rounded-lg border bg-surface text-caption">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-upload-cloud-2-line" size="16" color="primary" />
+                    <span class="font-weight-medium">Recepción (RecepcionComprobantesOffline):</span>
+                  </div>
+                  <VChip size="x-small" :color="sriDiagnostic?.services?.recepcion?.online ? 'success' : 'error'" variant="flat" class="font-weight-bold">
+                    {{ sriDiagnostic?.services?.recepcion?.status_label || (sriDiagnostic?.services?.recepcion?.online ? 'Operativo' : 'Sin Conexión') }}
+                  </VChip>
+                </div>
+
+                <div class="d-flex align-center justify-space-between pa-2.5 rounded-lg border bg-surface text-caption">
+                  <div class="d-flex align-center gap-2">
+                    <VIcon icon="ri-shield-check-line" size="16" color="success" />
+                    <span class="font-weight-medium">Autorización (AutorizacionComprobantesOffline):</span>
+                  </div>
+                  <VChip size="x-small" :color="sriDiagnostic?.services?.autorizacion?.online ? 'success' : 'error'" variant="flat" class="font-weight-bold">
+                    {{ sriDiagnostic?.services?.autorizacion?.status_label || (sriDiagnostic?.services?.autorizacion?.online ? 'Operativo' : 'Sin Conexión') }}
+                  </VChip>
+                </div>
+              </div>
+
+              <!-- Tip informativo -->
+              <div class="info-safety-box pa-3 rounded-lg border d-flex align-start gap-2.5">
+                <VIcon icon="ri-shield-check-line" size="18" color="success" class="flex-shrink-0 mt-0.5" />
+                <div class="text-caption text-high-emphasis opacity-90">
+                  <strong>Tus datos están intactos:</strong> Los ítems, productos y montos ingresados permanecen guardados en el formulario de venta. Puedes esperar a que el SRI se restablezca y pulsar <strong>Reintentar Emisión</strong>, o <strong>Cerrar</strong> para emitir como Nota de Venta si es urgente.
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- ESTADO: ÉXITO (AUTORIZADA) -->
         <template v-else-if="processStatus === 'success'">
           <div class="sri-success-celebration text-center py-4">
@@ -362,7 +497,7 @@ onBeforeUnmount(() => {
               <VIcon icon="ri-checkbox-circle-fill" size="48" />
             </div>
 
-            <h3 class="text-h5 font-weight-bold text-slate-800 mb-1">
+            <h3 class="text-h5 font-weight-bold text-high-emphasis mb-1">
               ¡Factura Generada y Autorizada!
             </h3>
             <p class="text-body-2 text-medium-emphasis mb-4">
@@ -370,8 +505,7 @@ onBeforeUnmount(() => {
             </p>
 
             <!-- Card de Resumen de la Factura -->
-            <div class="pa-4 rounded-xl border mb-4 text-start bg-white"
-              style="box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);">
+            <div class="pa-4 rounded-xl border mb-4 text-start bg-surface elevation-1">
               <div v-if="responseData?.document_number || responseData?.sequential"
                 class="d-flex justify-space-between align-center pb-2 border-b mb-2">
                 <span class="text-caption text-medium-emphasis font-weight-medium">SECUENCIAL FACTURA</span>
@@ -381,10 +515,9 @@ onBeforeUnmount(() => {
               </div>
 
               <div v-if="responseData?.sri_access_key" class="d-flex flex-column pb-2 border-b mb-2">
-                <span class="text-caption text-medium-emphasis font-weight-medium mb-1">CLAVE DE ACCESO SRI (49
-                  DÍGITOS)</span>
+                <span class="text-caption text-medium-emphasis font-weight-medium mb-1">CLAVE DE ACCESO SRI (49 DÍGITOS)</span>
                 <span
-                  class="text-caption font-mono font-weight-bold text-slate-700 pa-1.5 rounded bg-slate-50 border text-break"
+                  class="text-caption font-mono font-weight-bold pa-1.5 rounded bg-background border text-break"
                   style="font-size: 0.72rem !important; word-break: break-all;">
                   {{ responseData?.sri_access_key }}
                 </span>
@@ -411,7 +544,7 @@ onBeforeUnmount(() => {
           </div>
         </template>
 
-        <!-- ESTADO: ERROR -->
+        <!-- ESTADO: ERROR GENERAL -->
         <template v-else-if="processStatus === 'error'">
           <div class="text-center py-4">
             <div class="d-inline-flex align-center justify-center rounded-circle mb-3"
@@ -440,12 +573,27 @@ onBeforeUnmount(() => {
       <VDivider />
 
       <!-- Acciones Inferiores -->
-      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white">
+      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-surface">
         <template v-if="processStatus === 'processing'">
           <span class="text-caption text-medium-emphasis me-auto d-flex align-center gap-1.5">
             <VIcon icon="ri-information-line" size="15" color="primary" />
             Por favor, no cierres esta ventana mientras el SRI autoriza.
           </span>
+        </template>
+
+        <template v-else-if="processStatus === 'sri_offline'">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" @click="closeDialog">
+            Cerrar / Modificar
+          </VBtn>
+          <VBtn color="info" variant="tonal" prepend-icon="ri-wifi-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" @click="isDetailsDialogVisible = true">
+            Diagnóstico SRI
+          </VBtn>
+          <VBtn color="primary" variant="elevated" prepend-icon="ri-refresh-line"
+            class="rounded-lg px-6 font-weight-bold" height="40" @click="retryEmission">
+            Reintentar Emisión
+          </VBtn>
         </template>
 
         <template v-else-if="processStatus === 'success'">
@@ -464,6 +612,10 @@ onBeforeUnmount(() => {
             class="rounded-lg px-5 font-weight-medium" height="40" @click="closeDialog">
             Cerrar y Revisar
           </VBtn>
+          <VBtn color="info" variant="tonal" prepend-icon="ri-wifi-line"
+            class="rounded-lg px-5 font-weight-medium" height="40" @click="isDetailsDialogVisible = true">
+            Diagnóstico SRI
+          </VBtn>
           <VBtn color="primary" variant="elevated" prepend-icon="ri-refresh-line"
             class="rounded-lg px-6 font-weight-bold" height="40" @click="retryEmission">
             Reintentar Emisión
@@ -471,5 +623,38 @@ onBeforeUnmount(() => {
         </template>
       </VCardActions>
     </VCard>
+
+    <!-- Diálogo Modal de Diagnóstico SRI Detallado -->
+    <SriStatusDialog
+      v-model:is-dialog-visible="isDetailsDialogVisible"
+      :initial-ambiente="props.sriEnvironment"
+    />
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.progress-track-fill.is-sri-error {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.45) !important;
+}
+
+.sri-offline-card {
+  background: rgba(var(--v-theme-error), 0.05);
+  border-color: rgba(var(--v-theme-error), 0.3) !important;
+}
+
+.sri-offline-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-safety-box {
+  background: rgba(var(--v-theme-surface), 0.7);
+  border-color: rgba(var(--v-border-color), 0.15) !important;
+}
+</style>

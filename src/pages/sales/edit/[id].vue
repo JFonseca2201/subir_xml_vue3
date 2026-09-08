@@ -6,6 +6,7 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { getBrandNameById } from '@/data/vehicleBrands.js'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
+import SriInvoiceProgressDialog from '@/components/inventory/sales/SriInvoiceProgressDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
 
 const router = useRouter()
@@ -19,11 +20,21 @@ const isDocumentNumberLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
 const isDispatching = ref(false)
+const isSriProgressDialogVisible = ref(false)
+const sriSalePayload = ref({})
+const sriAmbiente = ref('1')
+const originalDocumentType = ref('')
+const originalDocumentNumber = ref('')
+const originalServiceDate = ref('')
+
+const isOriginalInvoice = computed(() => {
+  return originalDocumentType.value === 'invoice'
+})
 const isAuthorizedInvoice = computed(() => {
-  return sale.value.document_type === 'invoice' && sale.value.sri_status === 'AUTORIZADA'
+  return originalDocumentType.value === 'invoice' && sale.value.sri_status === 'AUTORIZADA'
 })
 const isReadOnly = computed(() => {
-  return sale.value.status === 'canceled' || isAuthorizedInvoice.value
+  return sale.value.status === 'canceled' || isOriginalInvoice.value
 })
 const isProcessing = computed(() => loader.loading || isDispatching.value || isReadOnly.value)
 
@@ -471,10 +482,6 @@ watch(total, (newTotal, oldTotal) => {
 })
 
 // Computed para verificar si es cotización
-const originalDocumentType = ref('')
-const originalDocumentNumber = ref('')
-const originalServiceDate = ref('')
-
 const isQuote = computed(() => {
   return sale.value.document_type === 'quote'
 })
@@ -641,7 +648,21 @@ const loadSaleData = async () => {
 
     originalDocumentType.value = saleData.document_type
     originalDocumentNumber.value = saleData.document_number
-    originalServiceDate.value = saleData.service_date ? saleData.service_date.split('T')[0] : ''
+
+    const formatDateForInput = dateVal => {
+      if (!dateVal) return ''
+      const str = String(dateVal).trim()
+      if (str.includes('T')) return str.split('T')[0]
+      if (str.includes(' ')) return str.split(' ')[0]
+      if (str.length >= 10) return str.substring(0, 10)
+      return str
+    }
+
+    const initialDate = formatDateForInput(saleData.service_date) ||
+      formatDateForInput(saleData.created_at) ||
+      new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+
+    originalServiceDate.value = initialDate
 
     sale.value = {
       document_type: saleData.document_type,
@@ -649,7 +670,7 @@ const loadSaleData = async () => {
       client_id: saleData.client_id,
       vehicle_id: saleData.vehicle_id,
       mileage: saleData.mileage,
-      service_date: saleData.service_date ? saleData.service_date.split('T')[0] : '',
+      service_date: initialDate,
       payment_status: saleData.payment_status,
       is_credited: saleData.is_credited,
       payment_method: saleData.payment_method,
@@ -710,19 +731,32 @@ const loadSaleData = async () => {
     if (sale.value.document_type !== 'quote' && saleData.finance_record) {
       const financeRecord = saleData.finance_record
 
-      if (financeRecord && financeRecord.payment_distributions) {
+      if (financeRecord && financeRecord.payment_distributions && financeRecord.payment_distributions.length > 0) {
         paymentDistributions.value = financeRecord.payment_distributions.map(pd => ({
           account_id: pd.account_id,
-          amount: pd.amount,
+          amount: parseFloat(pd.amount) || 0,
           payment_method: pd.payment_method,
         }))
       } else {
         // Si no hay pagos distribuidos, inicializar con uno vacío
         initializePaymentDistribution()
       }
+
+      if (saleData.payment_status === 'paid' && paymentDistributions.value.length === 1) {
+        paymentDistributions.value[0].amount = total.value
+      }
     } else if (sale.value.document_type !== 'quote' && sale.value.items.length > 0) {
       // Inicializar pagos distribuidos si no es cotización
       initializePaymentDistribution()
+    }
+
+    try {
+      const sucursalRes = await $api('configuracion-facturacion')
+      if (sucursalRes?.sucursal?.ambiente) {
+        sriAmbiente.value = String(sucursalRes.sucursal.ambiente)
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar ambiente SRI:', e)
     }
 
   } catch (error) {
@@ -736,6 +770,12 @@ const loadSaleData = async () => {
 
 // Guardar como Borrador
 const saveDraft = async () => {
+  if (isOriginalInvoice.value) {
+    showNotification('Las facturas electrónicas ya creadas no pueden ser modificadas', 'warning')
+
+    return
+  }
+
   showValidationError.value = false
   validationErrorMessage.value = ''
 
@@ -793,8 +833,8 @@ const saveDraft = async () => {
 
 // Envío del formulario
 const submitForm = async () => {
-  if (isAuthorizedInvoice.value) {
-    showNotification('Esta factura ya fue autorizada por el SRI y no puede ser modificada', 'warning')
+  if (isOriginalInvoice.value) {
+    showNotification('Las facturas electrónicas ya creadas no pueden ser modificadas', 'warning')
     return
   }
 
@@ -963,31 +1003,38 @@ const submitForm = async () => {
     }
   }
 
+  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length === 1) {
+      sale.value.payment_method = methods[0]
+    } else if (methods.length > 1) {
+      sale.value.payment_method = methods.join(', ')
+    }
+  }
+
+  const payload = {
+    ...sale.value,
+    subtotal: subtotal.value,
+    tax_amount: taxAmount.value,
+    total: total.value,
+    items: sale.value.items,
+  }
+
+  // Enviar pagos distribuidos solo si no es cotización
+  if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
+    payload.payment_distributions = paymentDistributions.value
+  }
+
+  // Si el comprobante es o se convierte a Factura Electrónica, abrir SriInvoiceProgressDialog
+  if (sale.value.document_type === 'invoice') {
+    sriSalePayload.value = payload
+    isSriProgressDialogVisible.value = true
+    return
+  }
+
   loader.start()
 
   try {
-    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
-      const methods = [...new Set(paymentDistributions.value.map(d => d.payment_method).filter(Boolean))]
-      if (methods.length === 1) {
-        sale.value.payment_method = methods[0]
-      } else if (methods.length > 1) {
-        sale.value.payment_method = methods.join(', ')
-      }
-    }
-
-    const payload = {
-      ...sale.value,
-      subtotal: subtotal.value,
-      tax_amount: taxAmount.value,
-      total: total.value,
-      items: sale.value.items,
-    }
-
-    // Enviar pagos distribuidos solo si no es cotización
-    if (sale.value.document_type !== 'quote' && paymentDistributions.value.length > 0) {
-      payload.payment_distributions = paymentDistributions.value
-    }
-
     const response = await $api(`sales/${route.params.id}`, {
       method: 'PUT',
       body: payload,
@@ -1008,6 +1055,15 @@ const submitForm = async () => {
   } finally {
     loader.stop()
   }
+}
+
+const handleSriCompleted = saleData => {
+  showNotification('Factura electrónica emitida y autorizada exitosamente por el SRI', 'success')
+  router.push('/sales/list')
+}
+
+const handleSriError = errorMsg => {
+  console.error('Error en emisión SRI:', errorMsg)
 }
 
 const dispatchSale = async () => {
@@ -1118,20 +1174,27 @@ onMounted(() => {
       </VRow>
     </div>
 
-    <!-- Alerta de Factura Autorizada -->
-    <VAlert v-if="isAuthorizedInvoice" type="info" variant="tonal" class="mb-6 rounded-xl border-info border-2"
-      icon="ri-shield-check-line">
-      <div class="text-subtitle-1 font-weight-bold text-info">
-        Factura Electrónica Autorizada por el SRI
-      </div>
-      <div class="text-body-2">
-        Esta factura ya fue autorizada por el Servicio de Rentas Internas (SRI) y cuenta con validez tributaria oficial.
-        Por normativa legal, no se pueden realizar modificaciones sobre este documento.
-      </div>
-    </VAlert>
+    <!-- Contenido cuando ya cargó -->
+    <template v-else>
+      <!-- Alerta de Factura No Modificable (solo facturas originalmente creadas) -->
+      <VAlert v-if="isOriginalInvoice" type="warning" variant="tonal" class="mb-6 rounded-xl border-warning border-2"
+        icon="ri-shield-keyhole-line">
+        <div class="text-subtitle-1 font-weight-bold text-warning">
+          Factura Electrónica No Modificable
+        </div>
+        <div class="text-body-2">
+          Las facturas electrónicas ya creadas no pueden ser modificadas por normativa tributaria del SRI (secuencial asignado y clave de acceso generada).
+          Si el comprobante fue rechazado o devuelto, debe reintentar su envío desde el listado de ventas. Si requiere corregir valores o anular, gestione una Nota de Crédito o anulación según corresponda.
+        </div>
+        <div class="mt-3">
+          <VBtn color="warning" variant="outlined" size="small" prepend-icon="ri-arrow-left-line" to="/sales/list">
+            Volver al Listado de Ventas
+          </VBtn>
+        </div>
+      </VAlert>
 
-    <!-- Formulario Principal -->
-    <VForm v-else ref="formRef" :disabled="isProcessing" @submit.prevent="submitForm">
+      <!-- Formulario Principal -->
+      <VForm v-else ref="formRef" :disabled="isProcessing" @submit.prevent="submitForm">
       <VRow>
         <!-- Columna Izquierda (8 cols): Comprobante, Cliente y Productos/Servicios -->
         <VCol cols="12" lg="8">
@@ -2004,7 +2067,22 @@ onMounted(() => {
         </VCol>
       </VRow>
     </VForm>
+  </template>
     <AddServiceDialog :is-dialog-visible="isAddServiceDialogVisible"
       @update:is-dialog-visible="isAddServiceDialogVisible = $event" @service-added="handleServiceAdded" />
+
+    <!-- Modal de Progreso y Autorización SRI Animado en Edición / Conversión -->
+    <SriInvoiceProgressDialog
+      v-model:is-dialog-visible="isSriProgressDialogVisible"
+      :sale-id="route.params.id"
+      :sale-payload="sriSalePayload"
+      :client-name="selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname || ''}`.trim() || selectedClient.n_document) : 'Consumidor Final'"
+      :client-document="selectedClient?.n_document || ''"
+      :total-amount="total"
+      :sri-environment="sriAmbiente"
+      method="PUT"
+      @completed="handleSriCompleted"
+      @error="handleSriError"
+    />
   </div>
 </template>
