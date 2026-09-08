@@ -126,6 +126,33 @@ const totalDifference = computed(() => {
   return grandTotal.value - initialBalances.value.total
 })
 
+// Helper functions for denomination steppers
+const incrementBill = denom => {
+  if (saving.value || loading.value || isSealed.value) return
+  payload.value.cash_details.bills[denom] = (parseInt(payload.value.cash_details.bills[denom]) || 0) + 1
+}
+
+const decrementBill = denom => {
+  if (saving.value || loading.value || isSealed.value) return
+  const current = parseInt(payload.value.cash_details.bills[denom]) || 0
+  if (current > 0) {
+    payload.value.cash_details.bills[denom] = current - 1
+  }
+}
+
+const incrementCoin = denom => {
+  if (saving.value || loading.value || isSealed.value) return
+  payload.value.cash_details.coins[denom] = (parseInt(payload.value.cash_details.coins[denom]) || 0) + 1
+}
+
+const decrementCoin = denom => {
+  if (saving.value || loading.value || isSealed.value) return
+  const current = parseInt(payload.value.cash_details.coins[denom]) || 0
+  if (current > 0) {
+    payload.value.cash_details.coins[denom] = current - 1
+  }
+}
+
 // Currency formatter
 const formatCurrency = value => {
   return new Intl.NumberFormat('es-EC', {
@@ -757,45 +784,80 @@ onMounted(() => {
               <VRow>
                 <!-- Columna Billetes -->
                 <VCol cols="12" sm="6" class="border-right-divider pr-sm-4">
-                  <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                    <VIcon icon="ri-bill-line" color="primary" size="18" />
-                    <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Billetes</span>
+                  <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+                    <div class="d-flex align-center gap-2">
+                      <VIcon icon="ri-bill-line" color="primary" size="18" />
+                      <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Billetes</span>
+                    </div>
+                    <span class="text-caption font-mono font-weight-bold text-primary">
+                      {{ formatCurrency(totalBills) }}
+                    </span>
                   </div>
-                  <table class="w-100 table-cash text-uppercase">
+                  <table class="w-100 table-cash">
                     <thead>
                       <tr>
-                        <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
+                        <th class="text-left py-2 text-slate-500 text-caption font-weight-bold">
                           Denom.
                         </th>
-                        <th class="text-center py-1 text-slate-500 text-caption font-weight-bold" style="width: 110px;">
-                          Cant.
+                        <th class="text-center py-2 text-slate-500 text-caption font-weight-bold" style="width: 130px;">
+                          Cantidad
                         </th>
-                        <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
+                        <th class="text-right py-2 text-slate-500 text-caption font-weight-bold">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="denom in billsList" :key="`bill-${denom}`">
-                        <td class="py-2 text-body-1 font-weight-medium">
-                          <VChip variant="tonal" size="small" color="primary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
-                            ${{ denom }}
-                          </VChip>
+                      <tr
+                        v-for="denom in billsList"
+                        :key="`bill-${denom}`"
+                        class="cash-row"
+                        :class="{ 'row-active': (parseInt(payload.cash_details.bills[denom]) || 0) > 0 }"
+                      >
+                        <td class="py-1.5">
+                          <div class="bill-badge">
+                            <VIcon icon="ri-bill-line" size="13" class="me-1 opacity-70" />
+                            <span>${{ denom }}</span>
+                          </div>
                         </td>
-                        <td class="py-1">
-                          <div class="d-flex align-center justify-center">
+                        <td class="py-1.5 text-center">
+                          <div class="cash-stepper" :class="{ 'has-qty': (parseInt(payload.cash_details.bills[denom]) || 0) > 0 }">
+                            <button
+                              type="button"
+                              class="stepper-btn"
+                              title="Restar 1"
+                              :disabled="saving || loading || isSealed || (parseInt(payload.cash_details.bills[denom]) || 0) <= 0"
+                              @click="decrementBill(denom)"
+                            >
+                              <VIcon icon="ri-subtract-line" size="13" />
+                            </button>
                             <input
                               v-model.number="payload.cash_details.bills[denom]"
                               type="number"
                               min="0"
-                              class="cash-qty-input"
+                              class="stepper-input"
+                              placeholder="0"
                               :disabled="saving || loading || isSealed"
                               @focus="$event.target.select()"
                             >
+                            <button
+                              type="button"
+                              class="stepper-btn"
+                              title="Sumar 1"
+                              :disabled="saving || loading || isSealed"
+                              @click="incrementBill(denom)"
+                            >
+                              <VIcon icon="ri-add-line" size="13" />
+                            </button>
                           </div>
                         </td>
-                        <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
-                          {{ formatCurrency(denom * (parseInt(payload.cash_details.bills[denom]) || 0)) }}
+                        <td class="py-1.5 text-right">
+                          <span
+                            class="font-mono"
+                            :class="(parseInt(payload.cash_details.bills[denom]) || 0) > 0 ? 'font-weight-black text-primary text-body-2' : 'font-weight-medium text-slate-400 text-caption'"
+                          >
+                            {{ formatCurrency(denom * (parseInt(payload.cash_details.bills[denom]) || 0)) }}
+                          </span>
                         </td>
                       </tr>
                     </tbody>
@@ -804,45 +866,80 @@ onMounted(() => {
 
                 <!-- Columna Monedas -->
                 <VCol cols="12" sm="6" class="pl-sm-4">
-                  <div class="d-flex align-center gap-2 mb-3 pb-2 border-b">
-                    <VIcon icon="ri-coins-line" color="secondary" size="18" />
-                    <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Monedas</span>
+                  <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+                    <div class="d-flex align-center gap-2">
+                      <VIcon icon="ri-copper-coin-line" color="warning" size="18" />
+                      <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Monedas</span>
+                    </div>
+                    <span class="text-caption font-mono font-weight-bold text-warning-darken-1" style="color: #d97706;">
+                      {{ formatCurrency(totalCoins) }}
+                    </span>
                   </div>
-                  <table class="w-100 table-cash text-uppercase">
+                  <table class="w-100 table-cash">
                     <thead>
                       <tr>
-                        <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">
+                        <th class="text-left py-2 text-slate-500 text-caption font-weight-bold">
                           Denom.
                         </th>
-                        <th class="text-center py-1 text-slate-500 text-caption font-weight-bold" style="width: 110px;">
-                          Cant.
+                        <th class="text-center py-2 text-slate-500 text-caption font-weight-bold" style="width: 130px;">
+                          Cantidad
                         </th>
-                        <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">
+                        <th class="text-right py-2 text-slate-500 text-caption font-weight-bold">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="denom in coinsList" :key="`coin-${denom}`">
-                        <td class="py-2 text-body-1 font-weight-medium">
-                          <VChip variant="tonal" size="small" color="secondary" class="font-weight-bold font-mono px-2" style="width: 55px; justify-content: center;">
-                            ${{ denom }}
-                          </VChip>
+                      <tr
+                        v-for="denom in coinsList"
+                        :key="`coin-${denom}`"
+                        class="cash-row"
+                        :class="{ 'row-active': (parseInt(payload.cash_details.coins[denom]) || 0) > 0 }"
+                      >
+                        <td class="py-1.5">
+                          <div class="coin-badge">
+                            <VIcon icon="ri-copper-coin-line" size="13" class="me-1 opacity-70" />
+                            <span>${{ denom }}</span>
+                          </div>
                         </td>
-                        <td class="py-1">
-                          <div class="d-flex align-center justify-center">
+                        <td class="py-1.5 text-center">
+                          <div class="cash-stepper coin-stepper" :class="{ 'has-qty': (parseInt(payload.cash_details.coins[denom]) || 0) > 0 }">
+                            <button
+                              type="button"
+                              class="stepper-btn"
+                              title="Restar 1"
+                              :disabled="saving || loading || isSealed || (parseInt(payload.cash_details.coins[denom]) || 0) <= 0"
+                              @click="decrementCoin(denom)"
+                            >
+                              <VIcon icon="ri-subtract-line" size="13" />
+                            </button>
                             <input
                               v-model.number="payload.cash_details.coins[denom]"
                               type="number"
                               min="0"
-                              class="cash-qty-input"
+                              class="stepper-input"
+                              placeholder="0"
                               :disabled="saving || loading || isSealed"
                               @focus="$event.target.select()"
                             >
+                            <button
+                              type="button"
+                              class="stepper-btn"
+                              title="Sumar 1"
+                              :disabled="saving || loading || isSealed"
+                              @click="incrementCoin(denom)"
+                            >
+                              <VIcon icon="ri-add-line" size="13" />
+                            </button>
                           </div>
                         </td>
-                        <td class="py-2 text-right font-weight-bold font-mono text-slate-900">
-                          {{ formatCurrency(parseFloat(denom) * (parseInt(payload.cash_details.coins[denom]) || 0)) }}
+                        <td class="py-1.5 text-right">
+                          <span
+                            class="font-mono"
+                            :class="(parseInt(payload.cash_details.coins[denom]) || 0) > 0 ? 'font-weight-black text-slate-900 text-body-2' : 'font-weight-medium text-slate-400 text-caption'"
+                          >
+                            {{ formatCurrency(parseFloat(denom) * (parseInt(payload.cash_details.coins[denom]) || 0)) }}
+                          </span>
                         </td>
                       </tr>
                     </tbody>
@@ -1301,6 +1398,132 @@ onMounted(() => {
 
   .status-dot {
     background-color: #94a3b8 !important;
+  }
+}
+
+// Denomination Badges & Stepper UI
+.bill-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12) 0%, rgba(var(--v-theme-primary), 0.05) 100%);
+  color: rgb(var(--v-theme-primary));
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+.coin-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+.cash-row {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:hover {
+    background-color: #f8fafc;
+  }
+
+  &.row-active {
+    background-color: rgba(var(--v-theme-primary), 0.04);
+  }
+}
+
+.cash-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 34px;
+  width: 120px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+  }
+
+  &:focus-within {
+    border-color: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.12);
+    background: #ffffff;
+  }
+
+  &.has-qty {
+    border-color: rgba(var(--v-theme-primary), 0.45);
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  &.coin-stepper.has-qty {
+    border-color: #f59e0b;
+  }
+
+  .stepper-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--v-theme-primary), 0.1);
+      color: rgb(var(--v-theme-primary));
+    }
+
+    &:active:not(:disabled) {
+      background: rgba(var(--v-theme-primary), 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+  }
+
+  .stepper-input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+    padding: 0 2px;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
   }
 }
 </style>

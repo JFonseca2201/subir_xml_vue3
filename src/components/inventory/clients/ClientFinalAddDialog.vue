@@ -233,24 +233,38 @@ const generateFullName = () => {
 }
 
 const isCheckingDocument = ref(false)
+const lastCheckedDocument = ref('')
 let checkDocAbortController = null
 
-const checkDocument = async () => {
+const checkDocument = async (force = false) => {
   const doc = (clientForm.value.n_document || '').trim()
-  if (!doc) return
+  if (!doc) {
+    isDocumentChecked.value = false
+    isClientExisting.value = false
+    matchedClient.value = null
+    lastCheckedDocument.value = ''
+    return
+  }
+
+  // Evitar consultas repetidas si el documento no ha cambiado salvo forzado
+  if (doc === lastCheckedDocument.value && isDocumentChecked.value && force !== true) {
+    return
+  }
+
+  const type = Number(clientForm.value.type_document)
+  if (type === 1 && !validateEcuadorianCedula(doc)) return
+  if (type === 2 && !validateEcuadorianRUC(doc)) return
+  if (type === 3 && doc.length < 4) return
 
   if (checkDocAbortController) {
     checkDocAbortController.abort()
   }
   checkDocAbortController = new AbortController()
 
-  const type = Number(clientForm.value.type_document)
-  if (type === 1 && !validateEcuadorianCedula(doc)) return
-  if (type === 2 && !validateEcuadorianRUC(doc)) return
-  if (type === 3 && doc.length < 5) return
-
   isCheckingDocument.value = true
   loading.value = true
+  lastCheckedDocument.value = doc
+
   try {
     const resp = await $api('clients', { 
       params: { search: doc },
@@ -260,19 +274,17 @@ const checkDocument = async () => {
 
     const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim())
     if (match) {
-      showNotification('Cliente encontrado en la base de datos', 'info')
+      showNotification('Cliente existente encontrado', 'info')
       isClientExisting.value = true
       matchedClient.value = match
 
       let fetchedName = match.name || ''
       let fetchedSurname = match.surname || ''
 
-      // Si el backend solo tiene full_name pero no name/surname (datos antiguos)
       if (!fetchedName && !fetchedSurname && match.full_name) {
         const parts = match.full_name.trim().split(' ')
         if (parts.length >= 2) {
           const mid = Math.ceil(parts.length / 2)
-
           fetchedName = parts.slice(0, mid).join(' ')
           fetchedSurname = parts.slice(mid).join(' ')
         } else {
@@ -283,7 +295,7 @@ const checkDocument = async () => {
 
       clientForm.value.name = fetchedName
       clientForm.value.surname = fetchedSurname
-      clientForm.value.full_name = match.full_name || ''
+      clientForm.value.full_name = match.full_name || `${fetchedName} ${fetchedSurname}`.trim()
       clientForm.value.phone = match.phone || ''
       clientForm.value.email = match.email || ''
       clientForm.value.gender = match.gender ? match.gender.toString() : ''
@@ -306,24 +318,22 @@ const checkDocument = async () => {
   }
 }
 
-const debouncedCheckDocument = useDebounceFn(() => {
-  checkDocument()
-}, 350)
+// Seleccionar cliente existente
+const selectExistingClient = () => {
+  if (!matchedClient.value) return
+  success.value = 'Cliente seleccionado'
+  showNotification('Cliente seleccionado', 'success')
+  setTimeout(() => {
+    emit('update:isDialogVisible', false)
+    emit('add-client-final', matchedClient.value)
+    resetForm()
+  }, 25)
+}
 
-// Guardar cliente
+// Guardar cliente nuevo
 const saveClient = async () => {
   if (isClientExisting.value && matchedClient.value) {
-    success.value = 'Cliente seleccionado'
-    showNotification('Cliente seleccionado', 'success')
-    setTimeout(() => {
-      emit('update:isDialogVisible', false)
-      emit('addClientFinal', matchedClient.value)
-      emit('add-client-final', matchedClient.value)
-      emit('client-added', matchedClient.value)
-      emit('clientAdded', matchedClient.value)
-      resetForm()
-    }, 25)
-    
+    selectExistingClient()
     return
   }
   if (clientForm.value.n_document) {
@@ -345,17 +355,12 @@ const saveClient = async () => {
   success.value = ''
 
   try {
-    console.log('Datos del cliente a guardar:', clientForm.value)
-
-    // Convertir campos a strings para validación del backend
     const clientData = {
       ...clientForm.value,
       type_client: clientForm.value.type_client.toString(),
       type_document: clientForm.value.type_document.toString(),
       state: clientForm.value.state.toString(),
     }
-
-    console.log('Datos corregidos para enviar:', clientData)
 
     const resp = await $api("clients", {
       method: "POST",
@@ -366,23 +371,14 @@ const saveClient = async () => {
       },
     })
 
-    console.log('Respuesta del servidor:', resp)
-
     if (resp.status === 200 || resp.status === 201) {
       success.value = 'Cliente guardado correctamente'
       showNotification('Cliente guardado correctamente', 'success')
 
-
-
-      // Cerrar diálogo después de un momento
       setTimeout(() => {
         emit('update:isDialogVisible', false)
 
-
-        // Emitir datos actualizados con todos los campos necesarios
-        // Usar los datos de la respuesta del servidor si están disponibles
         const serverData = resp.data || resp.client || resp
-
         const updatedData = {
           ...serverData,
           id: serverData?.id || serverData?.client?.id,
@@ -398,13 +394,7 @@ const saveClient = async () => {
           address: serverData?.address || clientForm.value.address || '',
         }
 
-        console.log('Datos emitidos:', updatedData)
-        emit('addClientFinal', updatedData)
         emit('add-client-final', updatedData)
-        emit('client-added', updatedData)
-        emit('clientAdded', updatedData)
-
-        // Limpiar formulario después de emitir los datos
         resetForm()
       }, 25)
     } else {
@@ -432,7 +422,7 @@ const resetForm = () => {
     type_document: 1,
     n_document: '',
     birth_date: '',
-    user_id: 1, // ID de usuario por defecto (no nulo)
+    user_id: 1,
     sucursale_id: 1,
     state: 1,
     gender: '',
@@ -448,6 +438,7 @@ const resetForm = () => {
   isDocumentChecked.value = false
   isClientExisting.value = false
   matchedClient.value = null
+  lastCheckedDocument.value = ''
 
   if (formRef.value) {
     formRef.value.resetValidation()
@@ -478,9 +469,11 @@ const watchSurname = ref(() => {
 })
 
 watch(() => clientForm.value.n_document, newVal => {
-  isDocumentChecked.value = false
-  isClientExisting.value = false
-  matchedClient.value = null
+  if (newVal !== lastCheckedDocument.value) {
+    isDocumentChecked.value = false
+    isClientExisting.value = false
+    matchedClient.value = null
+  }
 
   if (newVal) {
     const cleanDoc = newVal.replace(/[\s-]/g, '')
@@ -491,11 +484,6 @@ watch(() => clientForm.value.n_document, newVal => {
       if ([6, 9].includes(thirdDigit) && type !== 2) {
         clientForm.value.type_document = 2 // RUC
       }
-    }
-
-    const requiredLen = type === 1 ? 10 : (type === 2 ? 13 : null)
-    if (requiredLen && cleanDoc.length === requiredLen) {
-      debouncedCheckDocument()
     }
   }
 })
@@ -538,7 +526,6 @@ const districts = ref([])
 const loadRegions = async () => {
   try {
     const resp = await $api('geographic/regions', { method: 'GET' })
-
     regions.value = resp
   } catch (e) {
     console.error(e)
@@ -549,7 +536,6 @@ watch(() => clientForm.value.ubigeo_region, async newVal => {
   if (newVal) {
     try {
       const resp = await $api(`geographic/provinces/${newVal}`, { method: 'GET' })
-
       provinces.value = resp
       clientForm.value.region = regions.value.find(r => r.id === newVal)?.name || ''
     } catch (e) {
@@ -568,7 +554,6 @@ watch(() => clientForm.value.ubigeo_provincia, async newVal => {
   if (newVal) {
     try {
       const resp = await $api(`geographic/cities/${newVal}`, { method: 'GET' })
-
       districts.value = resp
       clientForm.value.provincia = provinces.value.find(p => p.id === newVal)?.name || ''
     } catch (e) {
@@ -599,12 +584,12 @@ onMounted(() => {
 <template>
   <VDialog
     scrollable
-    max-width="800"
+    max-width="820"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="custom-dialog-card pa-0">
+    <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden">
       <!-- 👉 Header Banner Primary -->
       <div class="custom-dialog-header-primary">
         <VBtn
@@ -621,11 +606,11 @@ onMounted(() => {
           Nuevo Cliente Final
         </h3>
         <p class="custom-dialog-subtitle">
-          Registro de un nuevo cliente final
+          Registro de un nuevo cliente persona natural
         </p>
       </div>
 
-      <VCardText class="pa-sm-8 pa-4">
+      <VCardText class="pa-sm-6 pa-4">
         <!-- 👉 Form -->
         <VForm
           id="clientFinalAddForm"
@@ -633,154 +618,174 @@ onMounted(() => {
           @submit.prevent="saveClient"
         >
           <VRow>
-            <!-- 👉 Datos Personales -->
-            <VCol cols="12">
-              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-                Datos Personales
-              </h5>
+            <!-- 👉 Sección 1: Identificación y Documento -->
+            <VCol cols="12" class="pb-1">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-shield-user-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  1. Identificación
+                </span>
+              </div>
             </VCol>
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.type_document"
                 :items="typeDocumentOptions"
                 item-title="title"
                 item-value="value"
-                label="Tipo de Documento *"
+                label="Tipo Documento *"
                 prepend-inner-icon="ri-file-text-line"
+                density="compact"
+                variant="outlined"
                 required
-                clearable
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="8" class="py-2">
               <VTextField
                 v-model="clientForm.n_document"
                 label="Número de Documento *"
-                placeholder="Ingrese número de documento"
+                placeholder="Ingrese documento y busque con 🔍 o Enter"
                 prepend-inner-icon="ri-numbers-line"
+                append-inner-icon="ri-search-line"
                 :rules="rules.n_document"
+                density="compact"
+                variant="outlined"
                 required
                 clearable
                 :maxlength="documentMaxLength"
-                :loading="loading"
+                :loading="isCheckingDocument"
                 @keypress="filterDocumentKey"
-                @blur="checkDocument"
-                @keyup.enter="checkDocument"
+                @blur="checkDocument(false)"
+                @keyup.enter="checkDocument(true)"
+                @click:append-inner="checkDocument(true)"
               />
-              <div
-                v-if="!isDocumentChecked"
-                class="text-caption text-warning mt-1 ms-1 d-flex align-center gap-1"
+            </VCol>
+
+            <!-- 👉 Banner de Cliente Existente -->
+            <VCol v-if="isClientExisting && matchedClient" cols="12" class="py-1">
+              <VAlert
+                type="info"
+                variant="tonal"
+                border="start"
+                class="rounded-lg mb-2 pa-3"
               >
-                <VIcon
-                  icon="ri-error-warning-line"
-                  size="14"
-                />
-                Digite el documento completo para habilitar el formulario.
-              </div>
-              <div
-                v-else-if="isClientExisting"
-                class="text-caption text-info mt-1 ms-1 d-flex align-center gap-1"
-              >
-                <VIcon
-                  icon="ri-checkbox-circle-line"
-                  size="14"
-                />
-                Cliente existente cargado. Pulse "Guardar" para seleccionarlo.
+                <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between gap-3">
+                  <div>
+                    <div class="font-weight-bold text-body-1 text-primary d-flex align-center gap-1">
+                      <VIcon icon="ri-checkbox-circle-fill" size="18" color="success" />
+                      Cliente ya registrado en el sistema
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-0.5">
+                      <strong>{{ matchedClient.full_name || matchedClient.name }}</strong> &bull; CI/RUC: {{ matchedClient.n_document }} &bull; Telf: {{ matchedClient.phone || 'S/N' }}
+                    </div>
+                  </div>
+                  <VBtn
+                    color="primary"
+                    variant="elevated"
+                    size="small"
+                    prepend-icon="ri-user-shared-line"
+                    class="font-weight-bold flex-shrink-0"
+                    @click="selectExistingClient"
+                  >
+                    Usar este Cliente
+                  </VBtn>
+                </div>
+              </VAlert>
+            </VCol>
+
+            <VCol v-else-if="!isDocumentChecked && !clientForm.n_document" cols="12" class="py-0">
+              <div class="text-caption text-medium-emphasis ms-1 mb-2 d-flex align-center gap-1">
+                <VIcon icon="ri-information-line" size="14" color="info" />
+                Ingresa el número de documento para verificar si el cliente ya existe o registrarlo.
               </div>
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12"><VDivider class="my-1" /></VCol>
+
+            <!-- 👉 Sección 2: Datos Personales -->
+            <VCol cols="12" class="pb-1 pt-2">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-user-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  2. Datos Personales
+                </span>
+              </div>
+            </VCol>
+
+            <VCol cols="12" sm="6" class="py-2">
               <VTextField
                 v-model="clientForm.name"
                 label="Nombres *"
-                placeholder="Ingrese nombres"
+                placeholder="Ej: Juan Carlos"
                 prepend-inner-icon="ri-user-3-line"
                 :rules="rules.name"
+                density="compact"
+                variant="outlined"
                 required
                 clearable
                 maxlength="100"
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
                 @input="generateFullName"
                 @keypress="filterTextKey"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="6" class="py-2">
               <VTextField
                 v-model="clientForm.surname"
                 label="Apellidos *"
-                placeholder="Ingrese apellidos"
+                placeholder="Ej: Pérez Rodríguez"
                 prepend-inner-icon="ri-user-3-line"
                 :rules="rules.surname"
+                density="compact"
+                variant="outlined"
                 required
                 clearable
                 maxlength="100"
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
                 @input="generateFullName"
                 @keypress="filterTextKey"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="6" class="py-2">
               <VTextField
                 v-model="clientForm.phone"
-                label="Teléfono"
-                placeholder="Ingrese teléfono"
+                label="Teléfono Móvil"
+                placeholder="Ej: 0991234567"
                 prepend-inner-icon="ri-phone-line"
                 :rules="rules.phone"
+                density="compact"
+                variant="outlined"
                 clearable
                 maxlength="10"
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
                 @keypress="filterPhoneKey"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="6" class="py-2">
               <VTextField
                 v-model="clientForm.email"
-                label="Email"
-                placeholder="Ingrese email"
+                label="Correo Electrónico"
+                placeholder="cliente@ejemplo.com"
                 prepend-inner-icon="ri-mail-line"
                 :rules="rules.email"
+                density="compact"
+                variant="outlined"
                 clearable
                 maxlength="100"
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="6" class="py-2">
               <VSelect
                 v-model="clientForm.gender"
                 :items="genderOptions"
@@ -789,136 +794,120 @@ onMounted(() => {
                 label="Género"
                 prepend-inner-icon="ri-user-settings-line"
                 placeholder="Seleccione género"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="6" class="py-2">
               <VTextField
                 v-model="clientForm.birth_date"
                 label="Fecha de Nacimiento"
                 type="date"
                 prepend-inner-icon="ri-calendar-event-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
               />
             </VCol>
 
-            <VDivider class="my-6" />
+            <VCol cols="12"><VDivider class="my-1" /></VCol>
 
-            <!-- 👉 Ubicación -->
-            <VCol cols="12">
-              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-                Ubicación
-              </h5>
+            <!-- 👉 Sección 3: Ubicación y Dirección -->
+            <VCol cols="12" class="pb-1 pt-2">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-map-pin-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  3. Dirección y Ubicación
+                </span>
+              </div>
             </VCol>
 
-            <VCol
-              cols="12"
-              class="mb-3"
-            >
+            <VCol cols="12" class="py-2">
               <VTextField
                 v-model="clientForm.address"
-                label="Dirección"
-                placeholder="Ingrese dirección completa"
-                prepend-inner-icon="ri-map-pin-line"
+                label="Dirección Domiciliaria"
+                placeholder="Calle principal, número y secundaria"
+                prepend-inner-icon="ri-map-pin-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_region"
                 :items="regions"
                 item-title="name"
                 item-value="id"
                 label="Región"
-                placeholder="Seleccione Región"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_provincia"
                 :items="provinces"
                 item-title="name"
                 item-value="id"
                 label="Provincia"
-                placeholder="Seleccione Provincia"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled || !clientForm.ubigeo_region"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting || !clientForm.ubigeo_region"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_distrito"
                 :items="districts"
                 item-title="name"
                 item-value="id"
                 label="Cantón / Ciudad"
-                placeholder="Seleccione Cantón / Ciudad"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                :disabled="fieldsDisabled || !clientForm.ubigeo_provincia"
-                :loading="loading"
+                :disabled="fieldsDisabled || isClientExisting || !clientForm.ubigeo_provincia"
               />
             </VCol>
 
-            <VDivider class="my-4" />
-
-
-
             <!-- 👉 Alerts -->
-            <VCol
-              v-if="error"
-              cols="12"
-            >
+            <VCol v-if="error" cols="12">
               <VAlert
                 type="error"
                 variant="tonal"
                 closable
+                class="rounded-lg"
                 @click:close="error = ''"
               >
                 {{ error }}
               </VAlert>
             </VCol>
 
-            <VCol
-              v-if="success"
-              cols="12"
-            >
+            <VCol v-if="success" cols="12">
               <VAlert
                 type="success"
                 variant="tonal"
                 closable
+                class="rounded-lg"
                 @click:close="success = ''"
               >
                 {{ success }}
@@ -932,14 +921,14 @@ onMounted(() => {
 
       <!-- 👉 Fixed Bottom Actions -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-5 font-weight-medium"
           height="40"
           :disabled="loading"
           @click="closeDialog"
@@ -947,7 +936,22 @@ onMounted(() => {
           Cancelar
         </VBtn>
 
+        <!-- 👉 Botón cuando el cliente YA EXISTE -->
         <VBtn
+          v-if="isClientExisting && matchedClient"
+          color="info"
+          variant="elevated"
+          prepend-icon="ri-user-shared-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          @click="selectExistingClient"
+        >
+          Seleccionar Cliente
+        </VBtn>
+
+        <!-- 👉 Botón Guardar SOLO si el cliente NO existe -->
+        <VBtn
+          v-else
           type="submit"
           form="clientFinalAddForm"
           color="primary"
@@ -956,7 +960,7 @@ onMounted(() => {
           class="rounded-lg px-6 font-weight-bold"
           height="40"
           :loading="loading"
-          :disabled="loading"
+          :disabled="fieldsDisabled || isCheckingDocument"
         >
           Guardar Cliente
         </VBtn>

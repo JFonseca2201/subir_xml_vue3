@@ -120,17 +120,16 @@ const closeDialog = () => {
 <template>
   <VDialog
     scrollable
-    max-width="680"
+    max-width="720"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"
   >
     <VCard
-      class="custom-dialog-card vehicle-dialog-card pa-0 elevation-8"
-      style="overflow: hidden;"
+      class="custom-dialog-card vehicle-dialog-card pa-0 rounded-xl overflow-hidden elevation-10"
     >
       <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -139,7 +138,7 @@ const closeDialog = () => {
           @click="closeDialog"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-car-line" />
+          <VIcon :icon="getVehicleIcon" />
         </div>
         <h3 class="custom-dialog-title">
           Ficha del Vehículo
@@ -147,261 +146,185 @@ const closeDialog = () => {
         <p class="custom-dialog-subtitle mb-1">
           {{ getBrandName }} {{ vehicleData.model || '' }} ({{ vehicleData.year || 'N/A' }})
         </p>
-        <div
-          v-if="vehicleData.license_plate"
-          class="header-plate-pill"
-        >
-          <VIcon
-            icon="ri-roadster-line"
-            size="13"
-            class="me-1"
-          />
-          <span>{{ vehicleData.license_plate.toUpperCase() }}</span>
-        </div>
       </div>
 
       <!-- Contenido principal -->
-      <VCardText class="pa-6">
-        <!-- Grid de Especificaciones Rápidas con Placa -->
-        <div class="vehicle-specs-container mb-6">
-          <div class="spec-badge-card highlight-plate">
-            <span class="spec-label">Placa</span>
-            <span class="spec-value text-uppercase font-weight-bold">
-              <span
-                v-if="vehicleData.license_plate"
-                class="plate-code"
-              >
-                {{ vehicleData.license_plate.toUpperCase() }}
-              </span>
-              <span
-                v-else
-                class="text-medium-emphasis"
-              >Sin Placa</span>
-            </span>
+      <VCardText class="pa-sm-6 pa-4">
+        <!-- Hero: Placa Ecuatoriana + Estado -->
+        <div class="d-flex flex-wrap align-center justify-space-between gap-3 pa-4 mb-4 rounded-xl border bg-surface" style="border-color: rgba(var(--v-theme-primary), 0.15) !important;">
+          <div class="d-flex align-center gap-3">
+            <!-- Placa Ecuatoriana Realista -->
+            <div class="ecuador-hero-plate">
+              <div class="plate-top">
+                <span class="stripe-y"></span>
+                <span class="stripe-b"></span>
+                <span class="stripe-r"></span>
+                <span class="country-text">ECUADOR</span>
+              </div>
+              <div class="plate-code">
+                {{ vehicleData.license_plate ? vehicleData.license_plate.toUpperCase() : 'SIN PLACA' }}
+              </div>
+            </div>
+
+            <div>
+              <div class="text-h6 font-weight-bold text-high-emphasis">
+                {{ getBrandName }} {{ vehicleData.model || '' }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ getVehicleTypeLabel }} • Año {{ vehicleData.year || 'N/A' }}
+              </div>
+            </div>
           </div>
-          <div class="spec-badge-card">
-            <span class="spec-label">Marca</span>
-            <span class="spec-value text-uppercase font-weight-bold">{{ getBrandName }}</span>
+
+          <div class="d-flex align-center gap-2">
+            <VChip
+              :color="getVehicleStatus.color"
+              variant="elevated"
+              size="small"
+              class="font-weight-bold text-uppercase px-3"
+            >
+              <VBadge dot :color="getVehicleStatus.color === 'success' ? '#ffffff' : '#ffffff'" inline class="me-1" />
+              {{ getVehicleStatus.label }}
+            </VChip>
           </div>
-          <div class="spec-badge-card">
-            <span class="spec-label">Tipo</span>
-            <span class="spec-value text-uppercase font-weight-bold">{{ getVehicleTypeLabel }}</span>
+        </div>
+
+        <!-- Grid de Métricas Rápidas -->
+        <div class="vehicle-metrics-grid mb-4">
+          <div class="metric-box">
+            <VIcon icon="ri-building-line" size="18" class="text-primary mb-1" />
+            <span class="metric-label">Marca</span>
+            <span class="metric-val text-uppercase">{{ getBrandName }}</span>
           </div>
-          <div class="spec-badge-card">
-            <span class="spec-label">Color</span>
-            <span class="spec-value text-uppercase d-flex align-center justify-center gap-1.5 font-weight-bold">
+
+          <div class="metric-box">
+            <VIcon icon="ri-car-line" size="18" class="text-info mb-1" />
+            <span class="metric-label">Tipo</span>
+            <span class="metric-val text-uppercase">{{ getVehicleTypeLabel }}</span>
+          </div>
+
+          <div class="metric-box">
+            <VIcon icon="ri-calendar-line" size="18" class="text-warning mb-1" />
+            <span class="metric-label">Año Fab.</span>
+            <span class="metric-val">{{ vehicleData.year || 'N/A' }}</span>
+          </div>
+
+          <div class="metric-box">
+            <VIcon icon="ri-palette-line" size="18" class="text-error mb-1" />
+            <span class="metric-label">Color</span>
+            <span class="metric-val text-uppercase d-flex align-center justify-center gap-1.5">
               <span
-                class="color-indicator-circle"
+                class="color-dot-small"
                 :style="{ backgroundColor: getColorHex(vehicleData.color) }"
               />
               {{ vehicleData.color || 'N/A' }}
             </span>
           </div>
-          <div class="spec-badge-card">
-            <span class="spec-label">Estado</span>
-            <span class="spec-value">
-              <VChip
-                :color="getVehicleStatus.color"
-                variant="tonal"
-                size="x-small"
-                class="font-weight-bold px-2 py-0.5"
-                style="height: auto;"
-              >
-                {{ getVehicleStatus.label }}
-              </VChip>
-            </span>
+
+          <div class="metric-box">
+            <VIcon icon="ri-dashboard-3-line" size="18" class="text-success mb-1" />
+            <span class="metric-label">Uso</span>
+            <span class="metric-val text-capitalize">{{ vehicleData.usage_type || 'Particular' }}</span>
           </div>
         </div>
 
         <VRow>
-          <!-- Tarjeta de Especificaciones Técnicas y Sistema (Consolidada) -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100 info-card-flat"
-              variant="outlined"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-primary">
-                <VIcon
-                  icon="ri-information-line"
-                  color="primary"
-                  class="me-2"
-                  size="20"
-                />
-                Especificaciones
-              </VCardTitle>
+          <!-- Tarjeta de Especificaciones Técnicas -->
+          <VCol cols="12" md="6" class="py-2">
+            <VCard class="pa-4 h-100 rounded-lg border info-card-flat" variant="flat">
+              <div class="d-flex align-center gap-2 mb-3 text-primary font-weight-bold text-subtitle-2 text-uppercase">
+                <VIcon icon="ri-file-info-line" size="18" />
+                Especificaciones del Registro
+              </div>
 
-              <VRow
-                no-gutters
-                class="gap-y-3"
-              >
-                <VCol cols="12">
-                  <div class="text-caption text-medium-emphasis">
-                    Modelo Completo
-                  </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
-                    {{ vehicleData.model || 'No especificado' }}
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">
-                    Placa / Matrícula
-                  </div>
-                  <div class="text-body-2 font-weight-bold text-primary text-uppercase mt-0.5">
-                    {{ vehicleData.license_plate ? vehicleData.license_plate.toUpperCase() : 'Sin placa' }}
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">
-                    Año Fab.
-                  </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
-                    {{ vehicleData.year || 'N/A' }}
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">
-                    ID Vehículo
-                  </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
-                    #{{ vehicleData.id }}
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">
-                    Fecha Registro
-                  </div>
-                  <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+              <div class="d-flex flex-column gap-2 text-body-2">
+                <div class="d-flex justify-space-between py-1 border-b">
+                  <span class="text-medium-emphasis">ID de Registro:</span>
+                  <span class="font-weight-bold font-mono">#{{ vehicleData.id }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1 border-b">
+                  <span class="text-medium-emphasis">Modelo:</span>
+                  <span class="font-weight-semibold text-uppercase">{{ vehicleData.model || 'No especificado' }}</span>
+                </div>
+                <div class="d-flex justify-space-between py-1 border-b">
+                  <span class="text-medium-emphasis">Fecha Registro:</span>
+                  <span class="font-weight-medium">
                     {{ vehicleData.created_at ? new Date(vehicleData.created_at).toLocaleDateString() : 'N/A' }}
-                  </div>
-                </VCol>
-
-                <VCol cols="6">
-                  <div class="text-caption text-medium-emphasis">
-                    Última Modif.
-                  </div>
-                  <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+                  </span>
+                </div>
+                <div class="d-flex justify-space-between py-1">
+                  <span class="text-medium-emphasis">Última Modificación:</span>
+                  <span class="font-weight-medium">
                     {{ vehicleData.updated_at ? new Date(vehicleData.updated_at).toLocaleDateString() : 'N/A' }}
-                  </div>
-                </VCol>
-              </VRow>
+                  </span>
+                </div>
+              </div>
             </VCard>
           </VCol>
 
           <!-- Tarjeta de Observaciones -->
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VCard
-              class="pa-4 h-100 info-card-flat"
-              variant="outlined"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-success">
-                <VIcon
-                  icon="ri-file-text-line"
-                  color="success"
-                  class="me-2"
-                  size="20"
-                />
-                Observaciones
-              </VCardTitle>
-              <div class="desc-box text-pre-wrap text-body-2 text-grey-darken-3">
-                {{ vehicleData.description || 'Sin observaciones registradas para este vehículo.' }}
+          <VCol cols="12" md="6" class="py-2">
+            <VCard class="pa-4 h-100 rounded-lg border info-card-flat" variant="flat">
+              <div class="d-flex align-center gap-2 mb-3 text-success font-weight-bold text-subtitle-2 text-uppercase">
+                <VIcon icon="ri-chat-check-line" size="18" />
+                Observaciones y Notas
+              </div>
+              <div
+                class="pa-3 rounded-lg text-body-2"
+                style="background: rgba(var(--v-theme-on-surface), 0.03); min-height: 110px; line-height: 1.5; white-space: pre-wrap;"
+              >
+                {{ vehicleData.description || 'Sin observaciones adicionales registradas para este vehículo.' }}
               </div>
             </VCard>
           </VCol>
 
           <!-- Tarjeta de Información del Propietario / Cliente -->
-          <VCol
-            cols="12"
-            class="pt-4"
-          >
-            <VCard
-              class="pa-4 info-card-flat"
-              variant="outlined"
-            >
-              <VCardTitle class="d-flex align-center pa-0 mb-4 section-title text-secondary">
-                <VIcon
-                  icon="ri-user-line"
-                  color="secondary"
-                  class="me-2"
-                  size="20"
-                />
+          <VCol cols="12" class="py-2">
+            <VCard class="pa-4 rounded-lg border info-card-flat" variant="flat">
+              <div class="d-flex align-center gap-2 mb-3 text-secondary font-weight-bold text-subtitle-2 text-uppercase">
+                <VIcon icon="ri-user-star-line" size="18" />
                 Información del Propietario
-              </VCardTitle>
+              </div>
 
               <div v-if="vehicleData.client">
-                <VRow>
-                  <VCol
-                    cols="12"
-                    sm="6"
-                    class="py-1"
-                  >
-                    <div class="text-caption text-medium-emphasis">
-                      Nombre Completo
+                <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3 pa-3 rounded-lg" style="background: rgba(var(--v-theme-primary), 0.04);">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar size="40" color="primary" variant="tonal" class="rounded-circle">
+                      <VIcon size="22" icon="ri-user-3-line" />
+                    </VAvatar>
+                    <div>
+                      <div class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase">
+                        {{ vehicleData.client.full_name || `${vehicleData.client.name || ''} ${vehicleData.client.surname || ''}`.trim() || 'N/A' }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Cliente Registrado
+                      </div>
                     </div>
-                    <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
-                      {{ vehicleData.client.full_name || `${vehicleData.client.name || ''} ${vehicleData.client.surname || ''}`.trim() || 'N/A' }}
+                  </div>
+
+                  <div class="d-flex flex-wrap align-center gap-2">
+                    <VChip size="small" variant="tonal" color="primary" class="font-weight-medium">
+                      <VIcon start size="14" icon="ri-id-card-line" />
+                      Doc: {{ vehicleData.client.n_document || 'N/A' }}
+                    </VChip>
+                    <VChip v-if="vehicleData.client.phone" size="small" variant="tonal" color="secondary" class="font-weight-medium">
+                      <VIcon start size="14" icon="ri-phone-line" />
+                      {{ vehicleData.client.phone }}
+                    </VChip>
+                  </div>
+                </div>
+
+                <VRow no-gutters class="pt-1">
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis">
+                      {{ vehicleData.client.email || 'No registrado' }}
                     </div>
                   </VCol>
 
-                  <VCol
-                    cols="12"
-                    sm="6"
-                    class="py-1"
-                  >
-                    <div class="text-caption text-medium-emphasis">
-                      Identificación (DNI / RUC)
-                    </div>
-                    <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
-                      {{ vehicleData.client.n_document || 'N/A' }}
-                    </div>
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    sm="6"
-                    class="py-1"
-                  >
-                    <div class="text-caption text-medium-emphasis">
-                      Teléfono / Celular
-                    </div>
-                    <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
-                      {{ vehicleData.client.phone || 'N/A' }}
-                    </div>
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    sm="6"
-                    class="py-1"
-                  >
-                    <div class="text-caption text-medium-emphasis">
-                      Correo Electrónico
-                    </div>
-                    <div
-                      class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5"
-                      style="word-break: break-all;"
-                    >
-                      {{ vehicleData.client.email || 'N/A' }}
-                    </div>
-                  </VCol>
-
-                  <VCol
-                    cols="12"
-                    class="py-1"
-                  >
-                    <div class="text-caption text-medium-emphasis">
-                      Dirección Domiciliaria
-                    </div>
-                    <div class="text-body-2 font-weight-medium text-grey-darken-3 mt-0.5">
+                  <VCol cols="12" sm="6" class="py-1">
+                    <div class="text-caption text-medium-emphasis">Dirección Domiciliaria</div>
+                    <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ vehicleData.client.address || 'No registrada' }}
                     </div>
                   </VCol>
@@ -409,8 +332,10 @@ const closeDialog = () => {
               </div>
               <div
                 v-else
-                class="text-body-2 text-medium-emphasis pa-4 text-center bg-grey-lighten-5 rounded border border-dashed"
+                class="text-body-2 text-medium-emphasis pa-4 text-center rounded-lg border border-dashed"
+                style="background: rgba(var(--v-theme-on-surface), 0.02);"
               >
+                <VIcon icon="ri-user-unfollow-line" size="24" class="mb-1 text-grey" /><br>
                 Este vehículo no tiene un propietario asociado en el sistema.
               </div>
             </VCard>
@@ -421,7 +346,7 @@ const closeDialog = () => {
       <!-- Footer con botones -->
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
@@ -440,122 +365,101 @@ const closeDialog = () => {
 </template>
 
 <style scoped>
-.vehicle-specs-container {
+.ecuador-hero-plate {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2.5px solid #0f172a;
+  border-radius: 8px;
+  padding: 4px 16px 3px 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  min-width: 140px;
+}
+
+.plate-top {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 2px;
+}
+
+.stripe-y { width: 4px; height: 8px; background: #facc15; border-radius: 1px; }
+.stripe-b { width: 4px; height: 8px; background: #2563eb; border-radius: 1px; }
+.stripe-r { width: 4px; height: 8px; background: #dc2626; border-radius: 1px; }
+
+.country-text {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #1e293b;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.plate-code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 19px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+
+.vehicle-metrics-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
-@media (max-width: 600px) {
-  .vehicle-specs-container {
+@media (max-width: 680px) {
+  .vehicle-metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.header-plate-pill {
-  display: inline-flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.highlight-plate {
-  border-color: rgba(var(--v-theme-primary), 0.3) !important;
-  background: rgba(var(--v-theme-primary), 0.04) !important;
-}
-
-.plate-code {
-  color: rgb(var(--v-theme-primary));
-  letter-spacing: 0.5px;
-}
-
-.ecuadorian-plate {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  border: 2px solid #0f172a;
-  border-radius: 6px;
-  padding: 4px 16px 2px 16px;
-  display: inline-flex;
+.metric-box {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: 
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    0 6px 10px -2px rgba(0,0,0,0.12), 
-    0 2px 6px -2px rgba(0,0,0,0.08);
-  min-width: 125px;
   text-align: center;
+  transition: transform 0.2s ease;
 }
 
-.ecuadorian-plate::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(to right, #ffcc00 50%, #00247d 50%, #00247d 75%, #cf142b 75%);
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+.metric-box:hover {
+  transform: translateY(-2px);
 }
 
-.plate-top-text {
-  font-size: 9px;
-  font-weight: 800;
-  color: #475569;
-  letter-spacing: 2.5px;
-  line-height: 1;
-  margin-top: 3px;
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 2px;
-  font-family: system-ui, -apple-system, sans-serif;
 }
 
-.plate-number {
-  font-family: 'Lucida Console', Monaco, monospace;
-  font-weight: 900;
-  font-size: 18px;
-  color: #020617;
-  letter-spacing: 1.5px;
-  line-height: 1.2;
+.metric-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(var(--v-theme-on-surface), 0.9);
 }
 
-.border-bottom-light {
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.color-indicator-circle {
-  width: 12px;
-  height: 12px;
+.color-dot-small {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
   display: inline-block;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.desc-box {
-  background-color: #fafafa;
-  border: 1px dashed #e0e0e0;
-  padding: 12px;
-  border-radius: 6px;
-  min-height: 125px;
-  line-height: 1.5;
 }
 
 .info-card-flat {
-  border-color: #e0e0e0 !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-}
-
-.section-title {
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  border-color: rgba(var(--v-theme-on-surface), 0.1) !important;
+  background: rgba(var(--v-theme-on-surface), 0.015);
 }
 </style>

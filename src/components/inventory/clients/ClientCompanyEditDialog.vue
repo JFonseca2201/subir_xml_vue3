@@ -375,12 +375,12 @@ onMounted(() => {
 <template>
   <VDialog
     scrollable
-    max-width="800"
+    max-width="820"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="custom-dialog-card elevation-24">
+    <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
         <VBtn
@@ -401,9 +401,7 @@ onMounted(() => {
         </p>
       </div>
 
-      <VCardText class="pa-6 pa-sm-8">
-        <VDivider class="mb-6" />
-
+      <VCardText class="pa-sm-6 pa-4">
         <!-- Form -->
         <VForm
           id="clientCompanyEditForm"
@@ -411,240 +409,243 @@ onMounted(() => {
           @submit.prevent="updateClient"
         >
           <VRow>
-            <!-- Datos de la Empresa -->
-            <VCol cols="12">
-              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-                Datos de la Empresa
-              </h5>
+            <!-- 👉 Sección 1: Identificación Tributaria y Estado -->
+            <VCol cols="12" class="pb-1 pt-1">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-id-card-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  1. Identificación Tributaria y Estado
+                </span>
+              </div>
             </VCol>
 
-            <VCol
-              cols="12"
-              md="12"
-              class="mb-3"
-            >
-              <VTextField
-                v-model="clientForm.full_name"
-                label="Nombre Completo *"
-                placeholder="Ingrese nombre completo de la empresa"
-                prepend-inner-icon="ri-building-2-line"
-                :rules="rules.full_name"
-                required
-                clearable
-                class="v-input--density-comfortable"
-                maxlength="255"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.type_document"
                 :items="typeDocumentOptions"
                 item-title="title"
                 item-value="value"
                 label="Tipo de Documento *"
-                prepend-inner-icon="ri-file-text-line"
-                required
-                clearable
-                class="v-input--density-comfortable"
+                prepend-inner-icon="ri-article-line"
+                density="compact"
+                variant="outlined"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VTextField
                 v-model="clientForm.n_document"
-                label="Número de Documento *"
-                placeholder="Ingrese número de RUC (13 dígitos)"
-                prepend-inner-icon="ri-numbers-line"
+                label="Número de RUC *"
+                placeholder="13 dígitos (ej: 0991234567001)"
+                prepend-inner-icon="ri-fingerprint-line"
                 :rules="rules.n_document"
-                required
+                density="compact"
+                variant="outlined"
                 clearable
-                class="v-input--density-comfortable"
                 :maxlength="documentMaxLength"
                 @keypress="filterDocumentKey"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
-              <VTextField
-                v-model="clientForm.phone"
-                label="Teléfono"
-                placeholder="Ingrese teléfono"
-                prepend-inner-icon="ri-phone-line"
-                :rules="rules.phone"
-                clearable
-                class="v-input--density-comfortable"
-                maxlength="10"
-                @keypress="filterPhoneKey"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
-              <VTextField
-                v-model="clientForm.email"
-                label="Email"
-                placeholder="Ingrese email"
-                prepend-inner-icon="ri-mail-line"
-                :rules="rules.email"
-                clearable
-                class="v-input--density-comfortable"
-                maxlength="100"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
-              <VTextField
-                v-model="clientForm.birth_date"
-                label="Fecha de Constitución"
-                type="date"
-                prepend-inner-icon="ri-calendar-event-line"
-                clearable
-                class="v-input--density-comfortable"
-              />
-            </VCol>
-
-            <VCol
-              cols="12"
-              md="6"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.state"
                 :items="stateOptions"
                 item-title="title"
                 item-value="value"
-                label="Estado"
+                label="Estado de la Empresa *"
                 prepend-inner-icon="ri-toggle-line"
-                placeholder="Seleccione estado"
+                density="compact"
+                variant="outlined"
+              >
+                <template #selection="{ item }">
+                  <VChip
+                    :color="item.raw.value === 1 ? 'success' : 'error'"
+                    size="small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
+                    {{ item.title }}
+                  </VChip>
+                </template>
+                <template #item="{ props: itemProps, item }">
+                  <VListItem v-bind="itemProps">
+                    <template #prepend>
+                      <VBadge
+                        dot
+                        :color="item.raw.value === 1 ? 'success' : 'error'"
+                        inline
+                        class="me-2"
+                      />
+                    </template>
+                  </VListItem>
+                </template>
+              </VSelect>
+            </VCol>
+
+            <VCol cols="12"><VDivider class="my-1" /></VCol>
+
+            <!-- 👉 Sección 2: Datos de la Empresa -->
+            <VCol cols="12" class="pb-1 pt-2">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-building-2-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  2. Datos de la Empresa
+                </span>
+              </div>
+            </VCol>
+
+            <VCol cols="12" class="py-2">
+              <VTextField
+                v-model="clientForm.full_name"
+                label="Razón Social / Nombre Completo *"
+                placeholder="Ej: Corporación Favorita C.A."
+                prepend-inner-icon="ri-building-line"
+                :rules="rules.full_name"
+                density="compact"
+                variant="outlined"
                 clearable
-                class="v-input--density-comfortable"
+                maxlength="255"
               />
             </VCol>
 
-            <VDivider class="my-6" />
-
-            <!-- Contacto y Ubicación -->
-            <VCol cols="12">
-              <h5 class="text-h5 font-weight-bold mb-3 text-primary">
-                Contacto y Ubicación
-              </h5>
+            <VCol cols="12" sm="4" class="py-2">
+              <VTextField
+                v-model="clientForm.phone"
+                label="Teléfono Corporativo"
+                placeholder="0991234567"
+                prepend-inner-icon="ri-phone-line"
+                :rules="rules.phone"
+                density="compact"
+                variant="outlined"
+                clearable
+                maxlength="10"
+                @keypress="filterPhoneKey"
+              />
             </VCol>
 
-            <VCol
-              cols="12"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
+              <VTextField
+                v-model="clientForm.email"
+                label="Correo Electrónico"
+                placeholder="empresa@correo.com"
+                prepend-inner-icon="ri-mail-line"
+                :rules="rules.email"
+                density="compact"
+                variant="outlined"
+                clearable
+                maxlength="100"
+              />
+            </VCol>
+
+            <VCol cols="12" sm="4" class="py-2">
+              <VTextField
+                v-model="clientForm.birth_date"
+                label="Fecha de Constitución"
+                type="date"
+                prepend-inner-icon="ri-calendar-event-line"
+                density="compact"
+                variant="outlined"
+                clearable
+              />
+            </VCol>
+
+            <VCol cols="12"><VDivider class="my-1" /></VCol>
+
+            <!-- 👉 Sección 3: Dirección y Ubicación -->
+            <VCol cols="12" class="pb-1 pt-2">
+              <div class="d-flex align-center gap-2 mb-2">
+                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
+                  <VIcon size="16" icon="ri-map-pin-line" />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                  3. Dirección y Ubicación Fiscal
+                </span>
+              </div>
+            </VCol>
+
+            <VCol cols="12" class="py-2">
               <VTextField
                 v-model="clientForm.address"
-                label="Dirección"
-                placeholder="Ingrese dirección completa"
-                prepend-inner-icon="ri-map-pin-line"
+                label="Dirección Fiscal"
+                placeholder="Av. Principal, Edificio, Oficina / Local"
+                prepend-inner-icon="ri-map-pin-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                class="v-input--density-comfortable"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_region"
                 :items="regions"
                 item-title="name"
                 item-value="id"
                 label="Región"
-                placeholder="Seleccione Región"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
-                class="v-input--density-comfortable"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_provincia"
                 :items="provinces"
                 item-title="name"
                 item-value="id"
                 label="Provincia"
-                placeholder="Seleccione Provincia"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
                 :disabled="!clientForm.ubigeo_region"
-                class="v-input--density-comfortable"
               />
             </VCol>
 
-            <VCol
-              cols="12"
-              md="4"
-              class="mb-3"
-            >
+            <VCol cols="12" sm="4" class="py-2">
               <VSelect
                 v-model="clientForm.ubigeo_distrito"
                 :items="districts"
                 item-title="name"
                 item-value="id"
                 label="Cantón / Ciudad"
-                placeholder="Seleccione Cantón / Ciudad"
+                placeholder="Seleccione"
                 prepend-inner-icon="ri-map-2-line"
+                density="compact"
+                variant="outlined"
                 clearable
                 :disabled="!clientForm.ubigeo_provincia"
-                class="v-input--density-comfortable"
               />
             </VCol>
 
-            <VDivider class="my-6" />
-
             <!-- Alerts -->
-            <VCol
-              v-if="error"
-              cols="12"
-            >
+            <VCol v-if="error" cols="12">
               <VAlert
                 type="error"
                 variant="tonal"
                 closable
+                class="rounded-lg"
                 @click:close="error = ''"
               >
                 {{ error }}
               </VAlert>
             </VCol>
 
-            <VCol
-              v-if="success"
-              cols="12"
-            >
+            <VCol v-if="success" cols="12">
               <VAlert
                 type="success"
                 variant="tonal"
                 closable
+                class="rounded-lg"
                 @click:close="success = ''"
               >
                 {{ success }}
@@ -657,14 +658,14 @@ onMounted(() => {
       <VDivider />
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-5 font-weight-medium"
           height="40"
           :disabled="loading"
           @click="closeDialog"

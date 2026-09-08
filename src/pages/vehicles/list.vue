@@ -145,6 +145,7 @@ const loadVehicles = async () => {
         console.error('Error de respuesta del servidor:', response)
       },
       onRequestError({ error }) {
+        if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
         console.error('Error de solicitud:', error)
       },
     })

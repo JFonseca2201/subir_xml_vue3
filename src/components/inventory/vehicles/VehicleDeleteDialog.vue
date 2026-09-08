@@ -103,14 +103,14 @@ const cancelDelete = () => {
   <VDialog
     scrollable
     :model-value="props.isDialogVisible"
-    max-width="500"
+    max-width="520"
     persistent
     :closable="!loader.loading"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
-    <VCard class="custom-dialog-card elevation-8">
-      <!-- Header Banner Primary -->
-      <div class="custom-dialog-header-primary bg-primary text-white">
+    <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden elevation-10">
+      <!-- Header Banner Danger -->
+      <div class="custom-dialog-header-danger bg-error text-white">
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -120,98 +120,52 @@ const cancelDelete = () => {
           @click="emit('update:isDialogVisible', false)"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-car-line" />
+          <VIcon icon="ri-delete-bin-2-line" />
         </div>
         <h3 class="custom-dialog-title">
           Eliminar Vehículo
         </h3>
         <p class="custom-dialog-subtitle">
-          Esta acción removerá el vehículo del historial del taller
+          Esta acción removerá el vehículo de la base de datos
         </p>
       </div>
 
       <!-- Content -->
-      <VCardText class="pa-4">
-        <div class="text-center">
-          <!-- Avatar -->
-          <VAvatar
-            size="80"
-            color="error"
-            variant="tonal"
-            class="mb-4"
-          >
-            <VIcon
-              :icon="getVehicleIcon"
-              size="40"
-            />
-          </VAvatar>
+      <VCardText class="pa-sm-6 pa-4">
+        <div class="d-flex flex-column align-center text-center">
+          <!-- Placa Ecuatoriana Estilizada -->
+          <div class="ecuador-delete-plate mb-3">
+            <div class="plate-top">
+              <span class="stripe-y"></span>
+              <span class="stripe-b"></span>
+              <span class="stripe-r"></span>
+              <span class="country-text">ECUADOR</span>
+            </div>
+            <div class="plate-code">
+              {{ props.vehicleSelected?.license_plate || 'SIN PLACA' }}
+            </div>
+          </div>
 
-          <!-- Vehicle Info -->
-          <div class="mb-4">
-            <h4 class="text-h6 font-weight-bold mb-2">
-              {{ props.vehicleSelected?.license_plate || 'Vehículo sin placa' }}
-            </h4>
+          <h4 class="text-h6 font-weight-bold text-high-emphasis mb-1">
+            {{ props.vehicleSelected?.brand || '' }} {{ props.vehicleSelected?.model || '' }}
+          </h4>
+          <p class="text-caption text-medium-emphasis mb-4">
+            {{ getVehicleTypeLabel }} • Año {{ props.vehicleSelected?.year || 'N/A' }}
+          </p>
 
-            <div class="d-flex flex-column gap-1">
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-car-line"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>Tipo:</strong> {{ getVehicleTypeLabel }}
-                </span>
-              </div>
-
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-building-line"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>Marca:</strong> {{ props.vehicleSelected?.brand || 'Sin marca' }}
-                </span>
-              </div>
-
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-settings-line"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>Modelo:</strong> {{ props.vehicleSelected?.model || 'Sin modelo' }}
-                </span>
-              </div>
-
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-calendar-line"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>Año:</strong> {{ props.vehicleSelected?.year || 'No especificado' }}
-                </span>
-              </div>
-
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-palette-line"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>Color:</strong> {{ props.vehicleSelected?.color || 'No especificado' }}
-                </span>
-              </div>
-
-              <div class="d-flex align-center justify-center gap-2">
-                <VIcon
-                  icon="ri-hashtag"
-                  size="16"
-                />
-                <span class="text-body-2">
-                  <strong>ID:</strong> {{ props.vehicleSelected?.id || 'Sin ID' }}
-                </span>
-              </div>
+          <!-- Resumen del Vehículo en Tarjeta -->
+          <div class="w-100 pa-3 rounded-lg border mb-4 text-start" style="background: rgba(var(--v-theme-on-surface), 0.02);">
+            <div class="d-flex justify-space-between py-1 border-b text-body-2">
+              <span class="text-medium-emphasis">ID Vehículo:</span>
+              <span class="font-weight-bold font-mono">#{{ props.vehicleSelected?.id || 'N/A' }}</span>
+            </div>
+            <div class="d-flex justify-space-between py-1 border-b text-body-2">
+              <span class="text-medium-emphasis">Color:</span>
+              <span class="font-weight-semibold text-capitalize">{{ props.vehicleSelected?.color || 'No especificado' }}</span>
+            </div>
+            <div v-if="props.vehicleSelected?.client" class="d-flex justify-space-between py-1 text-body-2">
+              <span class="text-medium-emphasis">Propietario:</span>
+              <span class="font-weight-semibold">{{ props.vehicleSelected.client.full_name || 'N/A' }}</span>
             </div>
           </div>
 
@@ -219,14 +173,11 @@ const cancelDelete = () => {
           <VAlert
             type="warning"
             variant="tonal"
-            class="mb-4"
-            icon="ri-alert-line"
+            class="rounded-lg text-start w-100"
+            icon="ri-error-warning-line"
           >
-            <div class="text-body-2">
-              <strong>¿Está seguro de eliminar este vehículo?</strong>
-              <br>
-              Esta acción es permanente y no se puede deshacer. Podría afectar registros asociados como
-              facturas o servicios.
+            <div class="text-caption font-weight-medium">
+              <strong>Advertencia:</strong> Esta acción no se puede deshacer. Se desvinculará este vehículo de futuros registros del taller.
             </div>
           </VAlert>
         </div>
@@ -236,20 +187,21 @@ const cancelDelete = () => {
 
       <!-- Actions -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
           variant="outlined"
           color="secondary"
           prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-5 font-weight-medium"
           height="40"
           :disabled="loader.loading"
           @click="emit('update:isDialogVisible', false)"
         >
           Cancelar
         </VBtn>
+
         <VBtn
           color="error"
           variant="elevated"
@@ -266,3 +218,47 @@ const cancelDelete = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.ecuador-delete-plate {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid #0f172a;
+  border-radius: 8px;
+  padding: 3px 14px 2px 14px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  min-width: 120px;
+}
+
+.plate-top {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 2px;
+}
+
+.stripe-y { width: 3px; height: 6px; background: #facc15; border-radius: 1px; }
+.stripe-b { width: 3px; height: 6px; background: #2563eb; border-radius: 1px; }
+.stripe-r { width: 3px; height: 6px; background: #dc2626; border-radius: 1px; }
+
+.country-text {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #1e293b;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.plate-code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 1.5px;
+  line-height: 1.1;
+}
+</style>

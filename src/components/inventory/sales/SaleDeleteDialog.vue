@@ -85,7 +85,6 @@ const formatCurrency = value => {
   }).format(value || 0)
 }
 
-// Computed para obtener colores
 const getStatusColor = computed(() => {
   const colors = {
     completed: 'success',
@@ -284,7 +283,7 @@ const cancelDelete = () => {
           <VAlert
             type="warning"
             variant="tonal"
-            class="mt-4"
+            class="mt-4 text-start"
             border="start"
           >
             <template #prepend>

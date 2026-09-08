@@ -217,7 +217,18 @@ const updateStatus = async (workOrderId, newStatus) => {
   }
 }
 
+const hasSriAuthorizedInvoice = workOrder => {
+  if (!workOrder) return false
+  const sale = workOrder.sale
+  if (!sale) return false
+  return sale.document_type === 'invoice' && ['AUTORIZADA', 'AUTORIZADO'].includes(sale.sri_status)
+}
+
 const deleteWorkOrder = workOrder => {
+  if (hasSriAuthorizedInvoice(workOrder)) {
+    showNotification('No se puede eliminar la orden de trabajo porque tiene una factura autorizada por el SRI.', 'error')
+    return
+  }
   workOrderToDelete.value = workOrder
   showDeleteDialog.value = true
 }
@@ -225,10 +236,20 @@ const deleteWorkOrder = workOrder => {
 const confirmDeleteWorkOrder = async () => {
   if (!workOrderToDelete.value) return
 
+  if (hasSriAuthorizedInvoice(workOrderToDelete.value)) {
+    showNotification('No se puede eliminar una orden de trabajo con factura autorizada por el SRI', 'error')
+    showDeleteDialog.value = false
+    return
+  }
+
   isDeleting.value = true
   try {
     await $api(`work-orders/${workOrderToDelete.value.id}`, {
       method: 'DELETE',
+      onResponseError({ response }) {
+        const errorMsg = response?._data?.message || 'Error al eliminar la orden de trabajo'
+        showNotification(errorMsg, 'error')
+      },
     })
 
     showNotification('Orden de trabajo eliminada exitosamente', 'success')
@@ -237,7 +258,6 @@ const confirmDeleteWorkOrder = async () => {
     loadWorkOrders()
   } catch (error) {
     console.error('Error al eliminar orden de trabajo:', error)
-    showNotification('Error al eliminar la orden de trabajo', 'error')
   } finally {
     isDeleting.value = false
   }
@@ -835,9 +855,9 @@ onMounted(() => {
                           class="text-primary font-weight-medium"
                           @click="updateStatus(item.id, 'delivered')"
                         />
-                        <VDivider v-if="can('delete_sale')" class="my-1" />
+                        <VDivider v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)" class="my-1" />
                         <VListItem
-                          v-if="can('delete_sale')"
+                          v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)"
                           prepend-icon="ri-delete-bin-line"
                           title="Eliminar Orden"
                           class="text-error font-weight-medium"
@@ -1121,7 +1141,25 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center">
+              <VAlert
+                v-if="hasSriAuthorizedInvoice(workOrderToDelete)"
+                type="error"
+                variant="tonal"
+                class="mt-4 text-start rounded-lg"
+                border="start"
+              >
+                <template #prepend>
+                  <VIcon icon="ri-shield-cross-line" />
+                </template>
+                <div class="text-caption font-weight-medium">
+                  <strong>Factura Autorizada por el SRI:</strong> Esta orden de trabajo ya cuenta con una factura autorizada por el SRI. Por regulaciones fiscales y tributarias, no puede ser eliminada.
+                </div>
+              </VAlert>
+
+              <div
+                v-else
+                class="mt-4 d-flex align-center justify-center gap-1 text-error text-caption font-weight-medium text-center"
+              >
                 <VIcon
                   icon="ri-error-warning-line"
                   size="16"
@@ -1147,9 +1185,10 @@ onMounted(() => {
             :disabled="isDeleting"
             @click="showDeleteDialog = false"
           >
-            Cancelar
+            {{ hasSriAuthorizedInvoice(workOrderToDelete) ? 'Cerrar' : 'Cancelar' }}
           </VBtn>
           <VBtn
+            v-if="!hasSriAuthorizedInvoice(workOrderToDelete)"
             color="error"
             variant="elevated"
             prepend-icon="ri-delete-bin-line"
