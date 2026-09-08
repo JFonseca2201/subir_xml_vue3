@@ -717,7 +717,8 @@ onMounted(async () => {
                       <tr v-if="filteredReplacements.length === 0">
                         <td colspan="5" class="text-center py-8 text-medium-emphasis">
                           <VIcon icon="ri-search-line" size="40" color="grey-lighten-1" class="mb-2" /><br>
-                          {{ searchReplacementQuery ? 'No se encontraron repuestos con ese término de búsqueda.' : 'No hay repuestos pendientes de reposición.' }}
+                          {{ searchReplacementQuery ? 'No se encontraron repuestos con ese término de búsqueda.' :
+                            'No hay repuestos pendientes de reposición.' }}
                         </td>
                       </tr>
                     </tbody>
