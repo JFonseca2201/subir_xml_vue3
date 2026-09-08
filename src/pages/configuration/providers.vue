@@ -206,13 +206,8 @@ definePage({ meta: { permission: "settings" } })
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          v-if="can('register_supplier')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
-          @click="isProviderAddDialogVisible = true"
-        >
+        <VBtn v-if="can('register_supplier')" color="primary" prepend-icon="ri-add-line"
+          class="elevation-2 font-weight-bold" @click="isProviderAddDialogVisible = true">
           Nuevo Proveedor
         </VBtn>
       </div>
@@ -256,7 +251,8 @@ definePage({ meta: { permission: "settings" } })
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Con RUC Identificado</div>
             <div class="text-h6 font-weight-bold text-info">
-              {{ providersWithRucCount }} <span class="text-caption text-disabled font-weight-regular">proveedores</span>
+              {{ providersWithRucCount }} <span
+                class="text-caption text-disabled font-weight-regular">proveedores</span>
             </div>
           </div>
         </VCard>
@@ -270,7 +266,8 @@ definePage({ meta: { permission: "settings" } })
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">Con Teléfono Comercial</div>
             <div class="text-h6 font-weight-bold text-warning">
-              {{ providersWithPhoneCount }} <span class="text-caption text-disabled font-weight-regular">contactos</span>
+              {{ providersWithPhoneCount }} <span
+                class="text-caption text-disabled font-weight-regular">contactos</span>
             </div>
           </div>
         </VCard>
@@ -286,33 +283,18 @@ definePage({ meta: { permission: "settings" } })
             <span>Filtros de Búsqueda</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
         <VRow dense class="gap-y-3">
           <VCol cols="12">
-            <VTextField
-              v-model="searchQuery"
-              label="Buscar proveedor"
-              placeholder="Nombre, RUC, teléfono o dirección..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="isLoading"
-            />
+            <VTextField v-model="searchQuery" label="Buscar proveedor"
+              placeholder="Nombre, RUC, teléfono o dirección..." prepend-inner-icon="ri-search-2-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
+              :loading="isLoading" />
           </VCol>
         </VRow>
       </VCardText>
@@ -323,24 +305,39 @@ definePage({ meta: { permission: "settings" } })
       <VTable>
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4" style="width: 150px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-60" /></td>
-            <td class="py-4"><div class="shimmer-line w-70" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-50 mx-auto" /></td>
-            <td class="py-4" style="width: 130px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4 text-center" style="width: 130px;"><div class="shimmer-button rounded mx-auto" /></td>
+            <td class="py-4" style="width: 70px;">
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-75 mb-2" />
+              <div class="shimmer-line w-40" />
+            </td>
+            <td class="py-4" style="width: 150px;">
+              <div class="shimmer-line w-75" />
+            </td>
+            <td class="py-4" style="width: 140px;">
+              <div class="shimmer-line w-60" />
+            </td>
+            <td class="py-4">
+              <div class="shimmer-line w-70" />
+            </td>
+            <td class="py-4" style="width: 120px;">
+              <div class="shimmer-line w-50 mx-auto" />
+            </td>
+            <td class="py-4" style="width: 130px;">
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4 text-center" style="width: 130px;">
+              <div class="shimmer-button rounded mx-auto" />
+            </td>
           </tr>
         </tbody>
       </VTable>
     </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!list_providers || list_providers.length === 0"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
+    <VCard v-else-if="!list_providers || list_providers.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
       <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
         <VIcon size="38" icon="ri-truck-line" />
       </VAvatar>
@@ -351,10 +348,12 @@ definePage({ meta: { permission: "settings" } })
         Intenta ajustar los criterios de búsqueda o registra un nuevo proveedor en el sistema.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
-        <VBtn v-if="can('register_supplier')" color="primary" prepend-icon="ri-add-line" @click="isProviderAddDialogVisible = true">
+        <VBtn v-if="can('register_supplier')" color="primary" prepend-icon="ri-add-line"
+          @click="isProviderAddDialogVisible = true">
           Nuevo Proveedor
         </VBtn>
       </div>
@@ -400,12 +399,13 @@ definePage({ meta: { permission: "settings" } })
 
               <!-- Proveedor con Avatar -->
               <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar color="warning" variant="tonal" size="38" rounded="lg" class="elevation-0">
-                    <VIcon icon="ri-building-line" size="22" />
+                <div class="d-flex align-center">
+                  <VAvatar color="primary" variant="tonal" size="36" rounded="lg" class="elevation-0 flex-shrink-0 me-4">
+                    <VIcon icon="ri-store-2-line" size="20" />
                   </VAvatar>
-                  <div>
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate" style="max-width: 260px;" :title="item.name">
+                  <div class="min-w-0">
+                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate"
+                      style="max-width: 280px;" :title="item.name">
                       {{ item.name }}
                     </div>
                   </div>
@@ -438,10 +438,7 @@ definePage({ meta: { permission: "settings" } })
 
               <!-- Estado -->
               <td class="text-center py-3" style="white-space: nowrap;">
-                <div
-                  class="status-pill-clean"
-                  :class="isProviderActive(item) ? 'status-paid' : 'status-pending'"
-                >
+                <div class="status-pill-clean" :class="isProviderActive(item) ? 'status-paid' : 'status-pending'">
                   <span class="status-dot" />
                   <span>{{ isProviderActive(item) ? 'Activo' : 'Inactivo' }}</span>
                 </div>
@@ -457,32 +454,12 @@ definePage({ meta: { permission: "settings" } })
               <!-- Acciones -->
               <td class="text-center">
                 <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha de Proveedor"
-                    @click="viewItem(item)"
-                  />
-                  <VBtn
-                    v-if="can('edit_supplier')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Proveedor"
-                    @click="editItem(item)"
-                  />
-                  <VBtn
-                    v-if="can('delete_supplier')"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Proveedor"
-                    @click="deleteItem(item)"
-                  />
+                  <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha de Proveedor"
+                    @click="viewItem(item)" />
+                  <VBtn v-if="can('edit_supplier')" size="small" color="warning" variant="tonal" icon="ri-pencil-line"
+                    title="Editar Proveedor" @click="editItem(item)" />
+                  <VBtn v-if="can('delete_supplier')" size="small" color="error" variant="tonal"
+                    icon="ri-delete-bin-line" title="Eliminar Proveedor" @click="deleteItem(item)" />
                 </div>
               </td>
             </tr>
@@ -496,43 +473,25 @@ definePage({ meta: { permission: "settings" } })
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_providers.length }}</strong> proveedores registrados
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPage"
-            rounded="circle"
-            :total-visible="7"
-            color="primary"
-            @update:model-value="list"
-          />
+          <VPagination v-model="currentPage" :length="totalPage" rounded="circle" :total-visible="7" color="primary"
+            @update:model-value="list" />
         </div>
       </VCard>
     </div>
 
     <!-- DIÁLOGOS -->
-    <ProviderAddDialog
-      v-model:isDialogVisible="isProviderAddDialogVisible"
-      @add-provider="addNewProvider"
-    />
+    <ProviderAddDialog v-model:isDialogVisible="isProviderAddDialogVisible" @add-provider="addNewProvider" />
 
-    <ProviderViewDialog
-      v-if="provider_selected_view && isProviderViewDialogVisible"
-      v-model:isDialogVisible="isProviderViewDialogVisible"
-      :provider-selected="provider_selected_view"
-    />
+    <ProviderViewDialog v-if="provider_selected_view && isProviderViewDialogVisible"
+      v-model:isDialogVisible="isProviderViewDialogVisible" :provider-selected="provider_selected_view" />
 
-    <ProviderEditDialog
-      v-if="provider_selected_edit && isProviderEditDialogVisible"
-      v-model:isDialogVisible="isProviderEditDialogVisible"
-      :provider-selected="provider_selected_edit"
-      @update-provider="addEditProvider"
-    />
+    <ProviderEditDialog v-if="provider_selected_edit && isProviderEditDialogVisible"
+      v-model:isDialogVisible="isProviderEditDialogVisible" :provider-selected="provider_selected_edit"
+      @update-provider="addEditProvider" />
 
-    <ProviderDeleteDialog
-      v-if="provider_selected_delete && isProviderDeleteDialogVisible"
-      v-model:isDialogVisible="isProviderDeleteDialogVisible"
-      :provider-selected="provider_selected_delete"
-      @delete-provider="addDeleteProvider"
-    />
+    <ProviderDeleteDialog v-if="provider_selected_delete && isProviderDeleteDialogVisible"
+      v-model:isDialogVisible="isProviderDeleteDialogVisible" :provider-selected="provider_selected_delete"
+      @delete-provider="addDeleteProvider" />
   </div>
 </template>
 
@@ -549,6 +508,7 @@ definePage({ meta: { permission: "settings" } })
 
 .provider-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }

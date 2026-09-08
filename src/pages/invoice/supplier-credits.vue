@@ -149,10 +149,10 @@ const getStatusBadge = (status) => {
 const getSourceTypeBadge = (type) => {
   const map = {
     overpayment: { color: 'primary', text: 'Saldo a Favor' },
-    credit_note: { color: 'amber-darken-2', text: 'Nota de Crédito' },
-    manual_adjustment: { color: 'purple', text: 'Ajuste Manual' },
+    credit_note: { color: 'warning', text: 'Nota de Crédito' },
+    manual_adjustment: { color: 'info', text: 'Ajuste Manual' },
   }
-  return map[type] || { color: 'grey', text: type }
+  return map[type] || { color: 'secondary', text: type }
 }
 
 // Abrir diálogo de reembolso
@@ -373,11 +373,16 @@ onMounted(() => {
               <!-- Tipo & Referencia -->
               <td class="py-3 px-4">
                 <div class="d-flex align-center gap-2 mb-1">
-                  <VChip size="x-small" :color="getSourceTypeBadge(item.source_type).color" class="font-weight-bold">
+                  <VChip
+                    size="x-small"
+                    variant="tonal"
+                    :color="getSourceTypeBadge(item.source_type).color"
+                    class="font-weight-bold"
+                  >
                     {{ getSourceTypeBadge(item.source_type).text }}
                   </VChip>
                 </div>
-                <div class="text-caption font-weight-medium text-grey-darken-3">
+                <div class="text-caption font-mono font-weight-medium text-grey-darken-3">
                   {{ item.reference_number || 'Sin ref.' }}
                 </div>
               </td>
@@ -403,15 +408,14 @@ onMounted(() => {
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-3 px-4">
-                <VChip
-                  size="small"
-                  :color="getStatusBadge(item.status).color"
-                  class="font-weight-bold"
+              <td class="text-center py-3 px-4" style="white-space: nowrap;">
+                <div
+                  class="status-pill-clean"
+                  :class="`status-${item.status}`"
                 >
-                  <VIcon :icon="getStatusBadge(item.status).icon" start size="14" />
-                  {{ getStatusBadge(item.status).text }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ getStatusBadge(item.status).text }}</span>
+                </div>
               </td>
 
               <!-- Fecha -->
@@ -424,28 +428,24 @@ onMounted(() => {
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver Usos -->
                   <VBtn
-                    variant="text"
-                    icon
+                    variant="tonal"
+                    icon="ri-history-line"
                     size="small"
                     color="info"
                     title="Ver Historial de Cruces"
                     @click="openUsagesDialog(item)"
-                  >
-                    <VIcon icon="ri-history-line" size="18" />
-                  </VBtn>
+                  />
 
                   <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
                   <VBtn
                     v-if="Number(item.remaining_balance) > 0"
-                    variant="text"
-                    icon
+                    variant="tonal"
+                    icon="ri-refund-2-line"
                     size="small"
                     color="success"
                     title="Reembolsar a Cuenta Bancaria"
                     @click="openRefundDialog(item)"
-                  >
-                    <VIcon icon="ri-refund-2-line" size="18" />
-                  </VBtn>
+                  />
                 </div>
               </td>
             </tr>
@@ -630,6 +630,78 @@ onMounted(() => {
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+  }
+}
+
+/* Pastillas de Estado */
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-available {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partially_used {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-fully_used, .status-liquidated {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
+}
+
+.status-refunded {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
   }
 }
 </style>

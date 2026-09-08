@@ -1196,9 +1196,9 @@ onMounted(async () => {
 
               <VDivider />
 
-              <VCardActions class="pa-4 bg-slate-50 d-flex flex-column gap-2">
+              <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
                 <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-1 rounded-lg"
                   border="start" closable @click:close="showValidationError = false">
                   <div class="d-flex align-center">
                     <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
@@ -1206,17 +1206,42 @@ onMounted(async () => {
                   </div>
                 </VAlert>
 
-                <VBtn block color="primary" variant="elevated" size="large" prepend-icon="ri-save-3-line"
-                  class="font-weight-bold elevation-2" :loading="isSubmitting" @click="saveWorkOrder">
-                  GUARDAR ORDEN
+                <VBtn
+                  block
+                  color="primary"
+                  variant="elevated"
+                  height="44"
+                  prepend-icon="ri-save-3-line"
+                  class="rounded-lg font-weight-bold elevation-2 text-none"
+                  style="font-size: 0.95rem; letter-spacing: 0.3px;"
+                  :loading="isSubmitting"
+                  @click="saveWorkOrder"
+                >
+                  Guardar Orden
                 </VBtn>
-                <div class="action-btn-row">
-                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-draft-line"
-                    class="font-weight-semibold" :loading="isSavingDraft" @click="saveDraft">
+                
+                <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
+                  <VBtn
+                    color="secondary"
+                    variant="tonal"
+                    height="38"
+                    prepend-icon="ri-draft-line"
+                    class="rounded-lg font-weight-semibold text-none"
+                    style="flex: 1;"
+                    :loading="isSavingDraft"
+                    @click="saveDraft"
+                  >
                     Borrador
                   </VBtn>
-                  <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
-                    @click="cancel">
+                  <VBtn
+                    color="secondary"
+                    variant="outlined"
+                    height="38"
+                    prepend-icon="ri-close-line"
+                    class="rounded-lg font-weight-medium text-none"
+                    style="flex: 1;"
+                    @click="cancel"
+                  >
                     Cancelar
                   </VBtn>
                 </div>

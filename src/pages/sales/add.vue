@@ -61,7 +61,7 @@ const computedPaymentMethodSummary = computed(() => {
       if (!d.payment_method) return 'Sin seleccionar'
       if (d.payment_method === 'Transferencia' && d.account_id) {
         const acc = accounts.value.find(a => a.id === d.account_id)
-        return `Transferencia (${acc ? acc.name : 'Banco'})`
+        return acc ? `Transferencia — ${acc.name}` : 'Transferencia'
       }
       return d.payment_method
     })
@@ -136,22 +136,49 @@ const requiredRule = v => (
 // Pagos distribuidos
 const paymentDistributions = ref([])
 
-// Inicializar con un pago distribuido cuando sea al contado o cuando hay items
+// Inicializar con un pago distribuido cuando sea al contado o cuando hay items (sin método seleccionado por defecto)
 const initializePaymentDistribution = () => {
   if (!paymentDistributions.value || paymentDistributions.value.length === 0) {
-    const cajaChica = (accounts.value || []).find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || (accounts.value || []).find(acc => acc.type === 'cash')
     paymentDistributions.value = [{
-      account_id: cajaChica ? cajaChica.id : (accounts.value?.[0]?.id || null),
+      account_id: null,
       amount: typeof total !== 'undefined' && total.value ? Number(total.value) : 0,
-      payment_method: 'Efectivo',
+      payment_method: null,
     }]
   }
 }
+
+// Sincronizar cuenta de Efectivo cuando carguen las cuentas si ya se seleccionó Efectivo
+watch(accounts, newAccounts => {
+  if (newAccounts && newAccounts.length > 0 && paymentDistributions.value && paymentDistributions.value.length > 0) {
+    const cajaChica = newAccounts.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || newAccounts.find(acc => acc.type === 'cash')
+    const defId = cajaChica ? cajaChica.id : (newAccounts[0]?.id || null)
+    paymentDistributions.value.forEach(dist => {
+      if (dist.payment_method === 'Efectivo' && !dist.account_id) {
+        dist.account_id = defId
+      }
+    })
+  }
+}, { immediate: true, deep: true })
+
+// Sincronizar sale.payment_method con las distribuciones
+watch(paymentDistributions, newDists => {
+  if (!sale.value.is_credited && newDists && newDists.length > 0) {
+    const methods = [...new Set(newDists.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length === 1) {
+      sale.value.payment_method = methods[0]
+    } else if (methods.length > 1) {
+      sale.value.payment_method = methods.join(', ')
+    } else {
+      sale.value.payment_method = null
+    }
+  }
+}, { deep: true })
 
 // Manejadores claros para Contado / Crédito
 const setContado = () => {
   sale.value.is_credited = false
   sale.value.payment_status = 'paid'
+  sale.value.payment_method = null
   initializePaymentDistribution()
 }
 
@@ -159,7 +186,7 @@ const setCredito = () => {
   sale.value.is_credited = true
   sale.value.payment_status = 'pending'
   paymentDistributions.value = []
-  sale.value.payment_method = ''
+  sale.value.payment_method = 'Crédito / Pendiente'
 }
 
 const onCreditChange = () => {
@@ -182,7 +209,7 @@ watch(() => sale.value.payment_status, newStatus => {
   if (newStatus === 'pending') {
     sale.value.is_credited = true
     paymentDistributions.value = []
-    sale.value.payment_method = ''
+    sale.value.payment_method = 'Crédito / Pendiente'
   } else {
     if (newStatus === 'paid') {
       sale.value.is_credited = false
@@ -1645,71 +1672,53 @@ onMounted(async () => {
             </VCardItem>
 
             <VCardText class="pa-4 pa-sm-5 bg-white">
-              <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
+              <div class="doc-type-cards-grid">
                 <!-- Opción Factura -->
-                <div
-                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                  :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                <div class="doc-type-card" :class="{ 'active-invoice': sale.document_type === 'invoice' }"
                   @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
-                      :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
-                      <VIcon icon="ri-bill-line" size="22"
-                        :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
-                    </VAvatar>
+                    <div class="doc-type-icon-wrapper invoice-icon">
+                      <VIcon icon="ri-bill-line" size="22" />
+                    </div>
                     <div>
-                      <div class="text-body-2 font-weight-bold"
-                        :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
-                        Factura Electrónica
-                      </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                        Documento fiscal válido SRI
-                      </div>
+                      <div class="doc-type-title">Factura Electrónica</div>
+                      <div class="doc-type-desc">Documento fiscal válido SRI</div>
                     </div>
                   </div>
                   <div class="d-flex align-center gap-2">
-                    <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                      :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                    <span class="doc-type-badge badge-sri">
+                      <VIcon icon="ri-shield-check-line" size="12" class="me-1" />
                       SRI Oficial
-                    </VChip>
-                    <VIcon
-                      :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                      size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
+                    </span>
+                    <div class="doc-type-radio" :class="{ 'radio-active-invoice': sale.document_type === 'invoice' }">
+                      <VIcon :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'"
+                        size="20" />
+                    </div>
                   </div>
                 </div>
+
                 <!-- Opción Nota de Venta -->
-                <div
-                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                  :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
+                <div class="doc-type-card" :class="{ 'active-sale-note': sale.document_type === 'sale_note' }"
                   @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
                   <div class="d-flex align-center gap-3">
-                    <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
-                      :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40" class="transition-all">
-                      <VIcon icon="ri-file-text-line" size="22"
-                        :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
-                    </VAvatar>
+                    <div class="doc-type-icon-wrapper note-icon">
+                      <VIcon icon="ri-file-text-line" size="22" />
+                    </div>
                     <div>
-                      <div class="text-body-2 font-weight-bold"
-                        :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'">
-                        Nota de Venta
-                      </div>
-                      <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                        Comprobante comercial interno
-                      </div>
+                      <div class="doc-type-title">Nota de Venta</div>
+                      <div class="doc-type-desc">Comprobante comercial interno</div>
                     </div>
                   </div>
                   <div class="d-flex align-center gap-2">
-                    <VChip size="x-small" :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
-                      :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                    <span class="doc-type-badge badge-internal">
                       Interno
-                    </VChip>
-                    <VIcon
-                      :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                      size="20" :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'" />
+                    </span>
+                    <div class="doc-type-radio" :class="{ 'radio-active-note': sale.document_type === 'sale_note' }">
+                      <VIcon :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'"
+                        size="20" />
+                    </div>
                   </div>
                 </div>
-
-
               </div>
             </VCardText>
           </VCard>
@@ -1972,92 +1981,93 @@ onMounted(async () => {
 
               <!-- Tabla de items -->
               <div v-if="sale.items.length > 0" class="rounded-xl border overflow-hidden">
-                <VTable class="custom-items-table text-no-wrap">
+                <table class="custom-sales-items-table">
                   <thead>
                     <tr class="bg-slate-50 text-caption font-weight-bold">
-                      <th class="text-left font-weight-bold text-slate-700" style="min-width: 250px;">
-                        Ítem / Descripción
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
-                        Cantidad
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 140px;">
-                        Precio Unit.
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 120px;">
-                        Descuento
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
-                        Subtotal
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 60px;">
-                        Acciones
-                      </th>
+                      <th class="text-left th-desc">Ítem / Descripción</th>
+                      <th class="text-center th-qty">Cant.</th>
+                      <th class="text-center th-price">P.V.P</th>
+                      <th class="text-center th-discount">Desc. $</th>
+                      <th class="text-right th-subtotal">Subtotal</th>
+                      <th class="text-center th-actions">Acc.</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in sale.items" :key="index" class="hover-row">
-                      <td>
-                        <div class="d-flex align-center gap-3 py-1">
-                          <VAvatar size="36" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
-                            class="rounded-lg">
-                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="18" />
+                    <tr v-for="(item, index) in sale.items" :key="index" class="sales-item-row">
+                      <!-- Columna Descripción -->
+                      <td class="td-desc">
+                        <div class="d-flex align-center gap-2 py-1">
+                          <VAvatar size="28" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
+                            class="rounded-lg flex-shrink-0">
+                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="14" />
                           </VAvatar>
-                          <div class="flex-grow-1">
-                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                              placeholder="Descripción del ítem..." class="font-weight-bold text-slate-900" />
-                            <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
-                              <span class="text-uppercase font-weight-bold"
-                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
-                                style="font-size: 0.65rem;">
+                          <div class="desc-content-col">
+                            <input v-model="item.description" type="text" placeholder="Descripción del ítem..."
+                              class="item-title-input" :title="item.description" />
+                            <div class="item-meta-row mt-0.5">
+                              <span class="meta-tag" :class="isServiceItem(item) ? 'tag-service' : 'tag-product'">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="stock-tag"
+                              <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="meta-stock"
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }">
-                                <VIcon icon="ri-stack-line" size="12" class="mr-1" />
-                                {{ getProductStock(item.product_id, item) }} en stock
+                                {{ getProductStock(item.product_id, item) }} stock
                               </span>
-                              <span v-if="getProductSku(item.product_id) || item.sku"
-                                class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                              <span v-if="getProductSku(item.product_id) || item.sku" class="meta-sku font-mono">
                                 {{ getProductSku(item.product_id) || item.sku }}
                               </span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td class="text-center">
-                        <div class="d-inline-flex align-center qty-selector">
-                          <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
-                            class="qty-btn" size="small" @click="item.quantity--" />
-                          <input v-model.number="item.quantity" type="number" min="1" max="99"
-                            class="qty-input font-mono font-weight-bold"
-                            @input="item.quantity > 99 ? item.quantity = 99 : null"
-                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null">
-                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
-                            class="qty-btn" size="small" @click="item.quantity < 99 ? item.quantity++ : null" />
+
+                      <!-- Columna Cantidad -->
+                      <td class="td-qty text-center">
+                        <div class="qty-stepper-mini">
+                          <button type="button" class="qty-mini-btn" :disabled="item.quantity <= 1"
+                            @click="item.quantity--">
+                            <VIcon icon="ri-subtract-line" size="12" />
+                          </button>
+                          <span class="qty-mini-val font-mono">{{ item.quantity }}</span>
+                          <button type="button" class="qty-mini-btn" :disabled="item.quantity >= 99"
+                            @click="item.quantity++">
+                            <VIcon icon="ri-add-line" size="12" />
+                          </button>
                         </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.price" type="number" density="compact" variant="plain"
-                          hide-details min="0" step="0.01" prefix="$" :rules="[requiredRule, positiveNumberRule]"
-                          class="font-weight-bold text-slate-800 font-mono" />
+
+                      <!-- Columna Precio Unitario -->
+                      <td class="td-price text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input v-model.number="item.price" type="number" min="0" step="0.01"
+                            class="cell-number-input font-mono font-weight-bold text-slate-800" placeholder="0.00" />
+                        </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.discount" type="number" density="compact" variant="plain"
-                          hide-details min="0" step="0.01" prefix="$" class="font-weight-medium text-error font-mono" />
+
+                      <!-- Columna Descuento -->
+                      <td class="td-discount text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input v-model.number="item.discount" type="number" min="0" step="0.01"
+                            class="cell-number-input font-mono font-weight-medium text-error" placeholder="0.00" />
+                        </div>
                       </td>
-                      <td class="text-center">
-                        <span class="text-body-1 font-weight-black text-success font-mono">
-                          ${{ ((item.quantity * item.price) - item.discount).toFixed(2) }}
+
+                      <!-- Columna Subtotal -->
+                      <td class="td-subtotal text-right">
+                        <span class="font-mono font-weight-black text-success" style="font-size: 0.88rem;">
+                          ${{ ((item.quantity * item.price) - (item.discount || 0)).toFixed(2) }}
                         </span>
                       </td>
-                      <td class="text-center">
-                        <VBtn icon="ri-delete-bin-line" size="small" color="error" variant="text" class="delete-btn"
-                          @click="removeItem(index)" />
+
+                      <!-- Columna Acciones -->
+                      <td class="td-actions text-center">
+                        <VBtn icon="ri-delete-bin-line" size="x-small" color="error" variant="text"
+                          class="delete-item-btn" @click="removeItem(index)" />
                       </td>
                     </tr>
                   </tbody>
-                </VTable>
+                </table>
               </div>
 
               <!-- Estado Vacío -->
@@ -2192,6 +2202,13 @@ onMounted(async () => {
                       </VMenu>
                     </div>
 
+                    <!-- Indicador si no ha seleccionado método de pago -->
+                    <div v-if="!dist.payment_method"
+                      class="text-caption text-info font-weight-medium d-flex align-center gap-1.5 py-1 px-2.5 rounded-lg bg-red-50 border border-red-100">
+                      <VIcon icon="ri-error-warning-line" size="14" color="info" />
+                      <span>Seleccione un método de pago</span>
+                    </div>
+
                     <!-- Etiqueta si seleccionó tarjeta -->
                     <div
                       v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
@@ -2303,9 +2320,9 @@ onMounted(async () => {
 
               <VDivider />
 
-              <VCardActions class="pa-4 bg-slate-50 sales-actions-container">
+              <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
                 <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-1 rounded-lg"
                   border="start" closable @click:close="showValidationError = false">
                   <div class="d-flex align-center">
                     <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
@@ -2313,29 +2330,32 @@ onMounted(async () => {
                   </div>
                 </VAlert>
 
-                <div class="action-btn-row">
-                  <VBtn color="secondary" variant="tonal" prepend-icon="ri-draft-line" class="font-weight-semibold"
-                    :loading="isSavingDraft" :disabled="isProcessing" @click.prevent="saveDraft">
+                <!-- Botón Principal Prominente -->
+                <VBtn type="submit" block color="primary" variant="elevated" height="44" prepend-icon="ri-save-3-line"
+                  class="rounded-lg font-weight-bold elevation-2 text-none"
+                  style="font-size: 0.95rem; letter-spacing: 0.3px;" :loading="isSubmitting" :disabled="isProcessing">
+                  {{ sale.document_type === 'invoice' ? 'Crear Factura' : 'Crear Nota de Venta' }}
+                </VBtn>
+
+                <!-- Botón Despachar sin Pago -->
+                <VBtn v-if="sale.document_type !== 'quote'" block color="info" variant="tonal" height="38"
+                  prepend-icon="ri-truck-line" class="rounded-lg font-weight-semibold text-none"
+                  :loading="isDispatching" :disabled="isProcessing" @click.prevent="dispatchSale">
+                  Despachar sin pago (Pendiente)
+                </VBtn>
+
+                <!-- Fila de Acciones Secundarias Equilibradas -->
+                <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
+                  <VBtn color="secondary" variant="tonal" height="38" prepend-icon="ri-draft-line"
+                    class="rounded-lg font-weight-semibold text-none" style="flex: 1;" :loading="isSavingDraft"
+                    :disabled="isProcessing" @click.prevent="saveDraft">
                     Borrador
                   </VBtn>
 
-                  <VBtn color="info" variant="tonal" prepend-icon="ri-truck-line"
-                    class="font-weight-semibold action-btn-dispatch" :loading="isDispatching" :disabled="isProcessing"
-                    @click.prevent="dispatchSale">
-                    Despachar sin pago
-                  </VBtn>
-                </div>
-
-                <div class="action-btn-row">
-
-                  <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
-                    :disabled="isProcessing" @click="router.push('/sales/list')">
+                  <VBtn color="secondary" variant="outlined" height="38" prepend-icon="ri-close-line"
+                    class="rounded-lg font-weight-medium text-none" style="flex: 1;" :disabled="isProcessing"
+                    @click="router.push('/sales/list')">
                     Cancelar
-                  </VBtn>
-                  <VBtn type="submit" color="primary" variant="elevated" prepend-icon="ri-save-3-line"
-                    class="font-weight-bold elevation-2 action-btn-primary" :loading="isSubmitting"
-                    :disabled="isProcessing">
-                    {{ sale.document_type === 'invoice' ? 'CREAR FACTURA' : 'CREAR NOTA DE VENTA' }}
                   </VBtn>
                 </div>
               </VCardActions>
@@ -2504,24 +2524,34 @@ onMounted(async () => {
               </VChip>
             </div>
 
-            <div class="d-flex flex-column pb-2 border-b mb-3">
-              <div class="d-flex justify-space-between align-center mb-1">
-                <span class="text-caption text-medium-emphasis font-weight-medium">TIPO DE PAGO</span>
-                <VChip
-                  :color="sale.payment_status === 'pending' ? 'warning' : (sale.payment_method === 'Transferencia' ? 'info' : 'success')"
-                  size="small" variant="flat" class="font-weight-bold">
-                  <VIcon
-                    :icon="sale.payment_status === 'pending' ? 'ri-time-line' : (sale.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line')"
-                    size="14" class="me-1" />
-                  {{ computedPaymentMethodSummary }}
+            <!-- Tipo de Pago Simple (1 método o Crédito) -->
+            <div v-if="paymentDistributions.length <= 1 || sale.payment_status === 'pending'"
+              class="d-flex justify-space-between align-center pb-2 border-b mb-3">
+              <span class="text-caption text-medium-emphasis font-weight-medium">TIPO DE PAGO</span>
+              <VChip
+                :color="sale.payment_status === 'pending' ? 'warning' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'info' : 'success')"
+                size="small" variant="flat" class="font-weight-bold px-2.5">
+                <VIcon
+                  :icon="sale.payment_status === 'pending' ? 'ri-time-line' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line')"
+                  size="14" class="me-1" />
+                {{ computedPaymentMethodSummary }}
+              </VChip>
+            </div>
+
+            <!-- Desglose de Pagos Múltiples (solo si está dividido en 2 o más métodos) -->
+            <div v-else class="d-flex flex-column pb-2 border-b mb-3">
+              <div class="d-flex justify-space-between align-center mb-1.5">
+                <span class="text-caption text-medium-emphasis font-weight-medium">FORMA DE PAGO</span>
+                <VChip color="primary" size="small" variant="tonal" class="font-weight-bold px-2">
+                  <VIcon icon="ri-split-cells-horizontal" size="14" class="me-1" />
+                  Pago Dividido ({{ paymentDistributions.length }})
                 </VChip>
               </div>
 
-              <!-- Desglose explícito de pagos -->
-              <div v-if="paymentDistributions.length > 0 && sale.payment_status !== 'pending'"
-                class="bg-slate-50 pa-2.5 rounded-lg border mt-1">
+              <div class="bg-slate-50 pa-2.5 rounded-lg border">
                 <div v-for="(pd, i) in paymentDistributions" :key="i"
-                  class="d-flex justify-space-between align-center text-caption py-0.5">
+                  class="d-flex justify-space-between align-center text-caption py-0.5"
+                  :class="{ 'border-b pb-1 mb-1': i < paymentDistributions.length - 1 }">
                   <div class="d-flex align-center gap-1.5">
                     <VIcon
                       :icon="pd.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line'"
@@ -2529,14 +2559,10 @@ onMounted(async () => {
                     <span class="font-weight-bold text-slate-800">{{ pd.payment_method || 'Sin método' }}</span>
                     <span v-if="pd.payment_method === 'Transferencia' && pd.account_id"
                       class="text-info font-weight-medium">
-                      — {{accounts.find(a => a.id === pd.account_id)?.name || 'Banco'}}
-                    </span>
-                    <span v-else-if="pd.payment_method === 'Efectivo'" class="text-medium-emphasis">
-                      (Caja Chica)
+                      — {{ accounts.find(a => a.id === pd.account_id)?.name || 'Banco' }}
                     </span>
                   </div>
-                  <span class="font-mono font-weight-bold text-slate-900">${{ Number(pd.amount || 0).toFixed(2)
-                  }}</span>
+                  <span class="font-mono font-weight-bold text-slate-900">${{ Number(pd.amount || 0).toFixed(2) }}</span>
                 </div>
               </div>
             </div>
@@ -2571,15 +2597,9 @@ onMounted(async () => {
     </VDialog>
 
     <!-- Modal de Progreso y Autorización SRI Animado -->
-    <SriInvoiceProgressDialog
-      v-model:is-dialog-visible="isSriProgressDialogVisible"
-      :sale-payload="sriSalePayload"
+    <SriInvoiceProgressDialog v-model:is-dialog-visible="isSriProgressDialogVisible" :sale-payload="sriSalePayload"
       :client-name="selectedClient ? (selectedClient.full_name || `${selectedClient.name || ''} ${selectedClient.surname || ''}`.trim() || selectedClient.n_document) : 'Consumidor Final'"
-      :client-document="selectedClient?.n_document || ''"
-      :total-amount="total"
-      :sri-environment="sriAmbiente"
-      @completed="handleSriCompleted"
-      @error="handleSriError"
-    />
+      :client-document="selectedClient?.n_document || ''" :total-amount="total" :sri-environment="sriAmbiente"
+      @completed="handleSriCompleted" @error="handleSriError" />
   </div>
 </template>

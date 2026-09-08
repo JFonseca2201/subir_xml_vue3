@@ -127,17 +127,43 @@ const formatDate = dateString => {
   return `${day}/${month}/${year}`
 }
 
-// Inicializar con un pago distribuido cuando sea al contado o cuando hay items
+// Inicializar con un pago distribuido cuando sea al contado o cuando hay items (sin método seleccionado por defecto)
 const initializePaymentDistribution = () => {
   if (!paymentDistributions.value || paymentDistributions.value.length === 0) {
-    const cajaChica = (accounts.value || []).find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || (accounts.value || []).find(acc => acc.type === 'cash')
     paymentDistributions.value = [{
-      account_id: cajaChica ? cajaChica.id : (accounts.value?.[0]?.id || null),
+      account_id: null,
       amount: typeof total !== 'undefined' && total.value ? Number(total.value) : 0,
-      payment_method: 'Efectivo',
+      payment_method: null,
     }]
   }
 }
+
+// Sincronizar cuenta de Efectivo cuando carguen las cuentas si ya se seleccionó Efectivo
+watch(accounts, newAccounts => {
+  if (newAccounts && newAccounts.length > 0 && paymentDistributions.value && paymentDistributions.value.length > 0) {
+    const cajaChica = newAccounts.find(acc => acc.id === 1 || acc.name?.toLowerCase().includes('caja')) || newAccounts.find(acc => acc.type === 'cash')
+    const defId = cajaChica ? cajaChica.id : (newAccounts[0]?.id || null)
+    paymentDistributions.value.forEach(dist => {
+      if (dist.payment_method === 'Efectivo' && !dist.account_id) {
+        dist.account_id = defId
+      }
+    })
+  }
+}, { immediate: true, deep: true })
+
+// Sincronizar sale.payment_method con las distribuciones
+watch(paymentDistributions, newDists => {
+  if (!sale.value.is_credited && newDists && newDists.length > 0) {
+    const methods = [...new Set(newDists.map(d => d.payment_method).filter(Boolean))]
+    if (methods.length === 1) {
+      sale.value.payment_method = methods[0]
+    } else if (methods.length > 1) {
+      sale.value.payment_method = methods.join(', ')
+    } else {
+      sale.value.payment_method = null
+    }
+  }
+}, { deep: true })
 
 // Watch para cambiar estado de pago cuando es crédito
 // Manejadores claros para Contado / Crédito
@@ -145,6 +171,7 @@ const setContado = () => {
   if (sale.value.status === 'canceled') return
   sale.value.is_credited = false
   sale.value.payment_status = 'paid'
+  sale.value.payment_method = null
   initializePaymentDistribution()
 }
 
@@ -153,7 +180,7 @@ const setCredito = () => {
   sale.value.is_credited = true
   sale.value.payment_status = 'pending'
   paymentDistributions.value = []
-  sale.value.payment_method = ''
+  sale.value.payment_method = 'Crédito / Pendiente'
 }
 
 const onCreditChange = () => {
@@ -176,7 +203,7 @@ watch(() => sale.value.payment_status, newStatus => {
   if (newStatus === 'pending') {
     sale.value.is_credited = true
     paymentDistributions.value = []
-    sale.value.payment_method = ''
+    sale.value.payment_method = 'Crédito / Pendiente'
   } else {
     if (newStatus === 'paid') {
       sale.value.is_credited = false
@@ -1219,148 +1246,142 @@ onMounted(() => {
             </VCardItem>
 
             <VCardText class="pa-4 pa-sm-5 bg-white">
-              <!-- Selector Unido cuando el original es Nota de Venta -->
+              <!-- Selector cuando el original es Nota de Venta -->
               <div v-if="originalDocumentType === 'sale_note'" class="mb-5">
-                <label class="text-caption font-weight-bold text-slate-800 mb-2 d-block">Tipo de Comprobante</label>
-                <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
+                <div class="doc-type-cards-grid">
                   <!-- Opción Nota de Venta -->
                   <div
-                    class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                    :class="sale.document_type === 'sale_note' ? 'doc-type-selected-success' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
+                    class="doc-type-card"
+                    :class="{ 'active-sale-note': sale.document_type === 'sale_note' }"
+                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
+                  >
                     <div class="d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'sale_note' ? 'flat' : 'tonal'" size="40"
-                        class="transition-all">
-                        <VIcon icon="ri-file-text-line" size="22"
-                          :color="sale.document_type === 'sale_note' ? 'white' : 'grey-darken-1'" />
-                      </VAvatar>
+                      <div class="doc-type-icon-wrapper note-icon">
+                        <VIcon icon="ri-file-text-line" size="22" />
+                      </div>
                       <div>
-                        <div class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey-darken-3'">
-                          Nota de Venta
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                          Comprobante comercial actual
-                        </div>
+                        <div class="doc-type-title">Nota de Venta</div>
+                        <div class="doc-type-desc">Comprobante comercial actual</div>
                       </div>
                     </div>
                     <div class="d-flex align-center gap-2">
-                      <VChip size="x-small" :color="sale.document_type === 'sale_note' ? 'success' : 'grey'"
-                        :variant="sale.document_type === 'sale_note' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                      <span class="doc-type-badge badge-internal">
                         Actual
-                      </VChip>
-                      <VIcon
-                        :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20" :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-1'" />
+                      </span>
+                      <div class="doc-type-radio" :class="{ 'radio-active-note': sale.document_type === 'sale_note' }">
+                        <VIcon :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'" size="20" />
+                      </div>
                     </div>
                   </div>
 
                   <!-- Opción Factura -->
                   <div
-                    class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                    :class="sale.document_type === 'invoice' ? 'doc-type-selected-primary' : 'doc-type-unselected'"
-                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
+                    class="doc-type-card"
+                    :class="{ 'active-invoice': sale.document_type === 'invoice' }"
+                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
+                  >
                     <div class="d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-3'"
-                        :variant="sale.document_type === 'invoice' ? 'flat' : 'tonal'" size="40" class="transition-all">
-                        <VIcon icon="ri-bill-line" size="22"
-                          :color="sale.document_type === 'invoice' ? 'white' : 'grey-darken-1'" />
-                      </VAvatar>
+                      <div class="doc-type-icon-wrapper invoice-icon">
+                        <VIcon icon="ri-bill-line" size="22" />
+                      </div>
                       <div>
-                        <div class="text-body-2 font-weight-bold"
-                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey-darken-3'">
-                          Factura Electrónica
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.75rem;">
-                          Convertir y autorizar con el SRI
-                        </div>
+                        <div class="doc-type-title">Factura Electrónica</div>
+                        <div class="doc-type-desc">Convertir y autorizar con el SRI</div>
                       </div>
                     </div>
                     <div class="d-flex align-center gap-2">
-                      <VChip size="x-small" :color="sale.document_type === 'invoice' ? 'primary' : 'grey'"
-                        :variant="sale.document_type === 'invoice' ? 'tonal' : 'outlined'" class="font-weight-bold">
+                      <span class="doc-type-badge badge-sri">
+                        <VIcon icon="ri-shield-check-line" size="12" class="me-1" />
                         SRI Oficial
-                      </VChip>
-                      <VIcon
-                        :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                        size="20" :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-1'" />
+                      </span>
+                      <div class="doc-type-radio" :class="{ 'radio-active-invoice': sale.document_type === 'invoice' }">
+                        <VIcon :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'" size="20" />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- Selector cuando el original es Cotización -->
-              <VRow v-else-if="originalDocumentType === 'quote'" class="mb-4">
-                <VCol cols="12" sm="4">
-                  <VCard :disabled="sale.status === 'canceled'"
-                    :class="sale.document_type === 'quote' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-xl elevation-0" variant="outlined"
-                    @click="sale.document_type = 'quote'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'quote' ? 'primary' : 'grey-lighten-2'" size="36">
-                        <VIcon icon="ri-file-text-line" :color="sale.document_type === 'quote' ? 'white' : 'grey'"
-                          size="18" />
-                      </VAvatar>
+              <div v-else-if="originalDocumentType === 'quote'" class="mb-5">
+                <div class="doc-type-cards-grid">
+                  <!-- Cotización -->
+                  <div
+                    class="doc-type-card"
+                    :class="{ 'active-quote': sale.document_type === 'quote' }"
+                    @click="sale.document_type = 'quote'; onDocumentTypeChange()"
+                  >
+                    <div class="d-flex align-center gap-3">
+                      <div class="doc-type-icon-wrapper quote-icon">
+                        <VIcon icon="ri-file-list-2-line" size="22" />
+                      </div>
                       <div>
-                        <div class="font-weight-bold text-body-2"
-                          :class="sale.document_type === 'quote' ? 'text-primary' : 'text-grey'">
-                          Cotización
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                          Presupuesto
-                        </div>
+                        <div class="doc-type-title">Cotización</div>
+                        <div class="doc-type-desc">Presupuesto original</div>
                       </div>
                     </div>
-                  </VCard>
-                </VCol>
+                    <div class="d-flex align-center gap-2">
+                      <span class="doc-type-badge badge-internal">
+                        Presupuesto
+                      </span>
+                      <div class="doc-type-radio" :class="{ 'radio-active-quote': sale.document_type === 'quote' }">
+                        <VIcon :icon="sale.document_type === 'quote' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'" size="20" />
+                      </div>
+                    </div>
+                  </div>
 
-                <VCol cols="12" sm="4">
-                  <VCard :disabled="sale.status === 'canceled'"
-                    :class="sale.document_type === 'sale_note' ? 'border-success border-2 bg-success-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-xl elevation-0" variant="outlined"
-                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'sale_note' ? 'success' : 'grey-lighten-2'" size="36">
-                        <VIcon icon="ri-file-list-3-line" :color="sale.document_type === 'sale_note' ? 'white' : 'grey'"
-                          size="18" />
-                      </VAvatar>
+                  <!-- Nota de Venta -->
+                  <div
+                    class="doc-type-card"
+                    :class="{ 'active-sale-note': sale.document_type === 'sale_note' }"
+                    @click="sale.document_type = 'sale_note'; onDocumentTypeChange()"
+                  >
+                    <div class="d-flex align-center gap-3">
+                      <div class="doc-type-icon-wrapper note-icon">
+                        <VIcon icon="ri-file-text-line" size="22" />
+                      </div>
                       <div>
-                        <div class="font-weight-bold text-body-2"
-                          :class="sale.document_type === 'sale_note' ? 'text-success' : 'text-grey'">
-                          Nota de Venta
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                          Venta comercial
-                        </div>
+                        <div class="doc-type-title">Nota de Venta</div>
+                        <div class="doc-type-desc">Facturación interna</div>
                       </div>
                     </div>
-                  </VCard>
-                </VCol>
+                    <div class="d-flex align-center gap-2">
+                      <span class="doc-type-badge badge-internal">
+                        Interno
+                      </span>
+                      <div class="doc-type-radio" :class="{ 'radio-active-note': sale.document_type === 'sale_note' }">
+                        <VIcon :icon="sale.document_type === 'sale_note' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'" size="20" />
+                      </div>
+                    </div>
+                  </div>
 
-                <VCol cols="12" sm="4">
-                  <VCard :disabled="sale.status === 'canceled'"
-                    :class="sale.document_type === 'invoice' ? 'border-primary border-2 bg-primary-lighten-5' : 'border-opacity-25'"
-                    class="cursor-pointer rounded-xl elevation-0" variant="outlined"
-                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()">
-                    <div class="pa-3 d-flex align-center gap-3">
-                      <VAvatar :color="sale.document_type === 'invoice' ? 'primary' : 'grey-lighten-2'" size="36">
-                        <VIcon icon="ri-bill-line" :color="sale.document_type === 'invoice' ? 'white' : 'grey'"
-                          size="18" />
-                      </VAvatar>
+                  <!-- Factura Electrónica -->
+                  <div
+                    class="doc-type-card"
+                    :class="{ 'active-invoice': sale.document_type === 'invoice' }"
+                    @click="sale.document_type = 'invoice'; onDocumentTypeChange()"
+                  >
+                    <div class="d-flex align-center gap-3">
+                      <div class="doc-type-icon-wrapper invoice-icon">
+                        <VIcon icon="ri-bill-line" size="22" />
+                      </div>
                       <div>
-                        <div class="font-weight-bold text-body-2"
-                          :class="sale.document_type === 'invoice' ? 'text-primary' : 'text-grey'">
-                          Factura
-                        </div>
-                        <div class="text-caption text-medium-emphasis" style="font-size: 0.72rem;">
-                          Oficial SRI
-                        </div>
+                        <div class="doc-type-title">Factura Electrónica</div>
+                        <div class="doc-type-desc">Oficial con SRI</div>
                       </div>
                     </div>
-                  </VCard>
-                </VCol>
-              </VRow>
+                    <div class="d-flex align-center gap-2">
+                      <span class="doc-type-badge badge-sri">
+                        <VIcon icon="ri-shield-check-line" size="12" class="me-1" />
+                        SRI Oficial
+                      </span>
+                      <div class="doc-type-radio" :class="{ 'radio-active-invoice': sale.document_type === 'invoice' }">
+                        <VIcon :icon="sale.document_type === 'invoice' ? 'ri-checkbox-circle-fill' : 'ri-circle-line'" size="20" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <!-- Fila 1: Número de documento y Fecha -->
               <VRow>
@@ -1607,93 +1628,95 @@ onMounted(() => {
 
               <!-- Tabla de items -->
               <div v-if="sale.items.length > 0" class="rounded-xl border overflow-hidden">
-                <VTable class="custom-items-table text-no-wrap">
+                <table class="custom-sales-items-table">
                   <thead>
                     <tr class="bg-slate-50 text-caption font-weight-bold">
-                      <th class="text-left font-weight-bold text-slate-700" style="min-width: 250px;">
-                        Ítem / Descripción
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
-                        Cantidad
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 140px;">
-                        Precio Unit.
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 120px;">
-                        Descuento
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
-                        Subtotal
-                      </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 60px;">
-                        Acciones
-                      </th>
+                      <th class="text-left th-desc">Ítem / Descripción</th>
+                      <th class="text-center th-qty">Cantidad</th>
+                      <th class="text-center th-price">Precio Unit.</th>
+                      <th class="text-center th-discount">Descuento</th>
+                      <th class="text-right th-subtotal">Subtotal</th>
+                      <th class="text-center th-actions">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, index) in sale.items" :key="index" class="hover-row">
-                      <td>
-                        <div class="d-flex align-center gap-3 py-1">
-                          <VAvatar size="36" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
-                            class="rounded-lg">
-                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="18" />
+                    <tr v-for="(item, index) in sale.items" :key="index" class="sales-item-row">
+                      <!-- Columna Descripción -->
+                      <td class="td-desc">
+                        <div class="d-flex align-center gap-2 py-1">
+                          <VAvatar size="28" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
+                            class="rounded-lg flex-shrink-0">
+                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="14" />
                           </VAvatar>
-                          <div class="flex-grow-1">
-                            <VTextField v-model="item.description" :disabled="sale.status === 'canceled'"
-                              density="compact" variant="plain" hide-details placeholder="Descripción del ítem..."
-                              class="font-weight-bold text-slate-900" />
-                            <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
-                              <span class="text-uppercase font-weight-bold"
-                                :class="isServiceItem(item) ? 'text-primary' : 'text-secondary'"
-                                style="font-size: 0.65rem;">
+                          <div class="desc-content-col">
+                            <input v-model="item.description" :disabled="sale.status === 'canceled'" type="text"
+                              placeholder="Descripción del ítem..." class="item-title-input" :title="item.description" />
+                            <div class="item-meta-row mt-0.5">
+                              <span class="meta-tag" :class="isServiceItem(item) ? 'tag-service' : 'tag-product'">
                                 {{ isServiceItem(item) ? 'Servicio' : 'Producto' }}
                               </span>
-                              <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="stock-tag"
+                              <span v-if="!isServiceItem(item) && sale.document_type !== 'quote'" class="meta-stock"
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }">
-                                <VIcon icon="ri-stack-line" size="12" class="mr-1" />
-                                {{ getProductStock(item.product_id, item) }} en stock
+                                {{ getProductStock(item.product_id, item) }} stock
+                              </span>
+                              <span v-if="getProductSku(item.product_id) || item.sku" class="meta-sku font-mono">
+                                {{ getProductSku(item.product_id) || item.sku }}
                               </span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td class="text-center">
-                        <div class="d-inline-flex align-center qty-selector">
-                          <VBtn icon="ri-subtract-line" variant="text" color="primary"
-                            :disabled="item.quantity <= 1 || sale.status === 'canceled'" class="qty-btn" size="small"
-                            @click="item.quantity--" />
-                          <input v-model.number="item.quantity" type="number" min="1" max="99"
-                            :disabled="sale.status === 'canceled'" class="qty-input font-mono font-weight-bold"
-                            @input="item.quantity > 99 ? item.quantity = 99 : null"
-                            @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null">
-                          <VBtn icon="ri-add-line" variant="text" color="primary"
-                            :disabled="item.quantity >= 99 || sale.status === 'canceled'" class="qty-btn" size="small"
-                            @click="item.quantity < 99 ? item.quantity++ : null" />
+
+                      <!-- Columna Cantidad -->
+                      <td class="td-qty text-center">
+                        <div class="qty-stepper-mini">
+                          <button type="button" class="qty-mini-btn"
+                            :disabled="item.quantity <= 1 || sale.status === 'canceled'" @click="item.quantity--">
+                            <VIcon icon="ri-subtract-line" size="12" />
+                          </button>
+                          <span class="qty-mini-val font-mono">{{ item.quantity }}</span>
+                          <button type="button" class="qty-mini-btn"
+                            :disabled="item.quantity >= 99 || sale.status === 'canceled'" @click="item.quantity++">
+                            <VIcon icon="ri-add-line" size="12" />
+                          </button>
                         </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.price" :disabled="sale.status === 'canceled'" type="number"
-                          density="compact" variant="plain" hide-details min="0" step="0.01" prefix="$"
-                          :rules="[requiredRule, positiveNumberRule]"
-                          class="font-weight-bold text-slate-800 font-mono" />
+
+                      <!-- Columna Precio Unitario -->
+                      <td class="td-price text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input v-model.number="item.price" :disabled="sale.status === 'canceled'" type="number"
+                            min="0" step="0.01" class="cell-number-input font-mono font-weight-bold text-slate-800"
+                            placeholder="0.00" />
+                        </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.discount" :disabled="sale.status === 'canceled'" type="number"
-                          density="compact" variant="plain" hide-details min="0" step="0.01" prefix="$"
-                          class="font-weight-medium text-error font-mono" />
+
+                      <!-- Columna Descuento -->
+                      <td class="td-discount text-center">
+                        <div class="cell-input-wrapper">
+                          <span class="cell-prefix">$</span>
+                          <input v-model.number="item.discount" :disabled="sale.status === 'canceled'" type="number"
+                            min="0" step="0.01" class="cell-number-input font-mono font-weight-medium text-error"
+                            placeholder="0.00" />
+                        </div>
                       </td>
-                      <td class="text-center">
-                        <span class="text-body-1 font-weight-black text-success font-mono">
-                          ${{ ((item.quantity * item.price) - item.discount).toFixed(2) }}
+
+                      <!-- Columna Subtotal -->
+                      <td class="td-subtotal text-right">
+                        <span class="font-mono font-weight-black text-success" style="font-size: 0.88rem;">
+                          ${{ ((item.quantity * item.price) - (item.discount || 0)).toFixed(2) }}
                         </span>
                       </td>
-                      <td class="text-center">
-                        <VBtn :disabled="sale.status === 'canceled'" icon="ri-delete-bin-line" size="small"
-                          color="error" variant="text" class="delete-btn" @click="removeItem(index)" />
+
+                      <!-- Columna Acciones -->
+                      <td class="td-actions text-center">
+                        <VBtn :disabled="sale.status === 'canceled'" icon="ri-delete-bin-line" size="x-small"
+                          color="error" variant="text" class="delete-item-btn" @click="removeItem(index)" />
                       </td>
                     </tr>
                   </tbody>
-                </VTable>
+                </table>
               </div>
 
               <!-- Estado Vacío -->
@@ -1878,6 +1901,15 @@ onMounted(() => {
                       </VMenu>
                     </div>
 
+                    <!-- Indicador si no ha seleccionado método de pago -->
+                    <div
+                      v-if="!dist.payment_method && sale.status !== 'canceled'"
+                      class="text-caption text-error font-weight-medium d-flex align-center gap-1.5 py-1 px-2.5 rounded-lg bg-red-50 border border-red-100"
+                    >
+                      <VIcon icon="ri-error-warning-line" size="14" color="error" />
+                      <span>Seleccione un método de pago para este cobro</span>
+                    </div>
+
                     <!-- Etiqueta si seleccionó tarjeta -->
                     <div
                       v-if="dist.payment_method && dist.payment_method !== 'Efectivo' && dist.payment_method !== 'Transferencia'"
@@ -2025,9 +2057,9 @@ onMounted(() => {
 
               <VDivider />
 
-              <VCardActions class="pa-4 bg-slate-50 sales-actions-container">
+              <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
                 <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-2 rounded-lg"
+                <VAlert v-if="showValidationError" color="error" variant="tonal" class="w-100 mb-1 rounded-lg"
                   border="start" closable @click:close="showValidationError = false">
                   <div class="d-flex align-center">
                     <VIcon icon="ri-error-warning-line" class="mr-2" size="20" />
@@ -2035,29 +2067,65 @@ onMounted(() => {
                   </div>
                 </VAlert>
 
-                <div class="action-btn-row">
-                  <VBtn type="submit" :disabled="sale.status === 'canceled' || isProcessing" color="primary"
-                    variant="elevated" prepend-icon="ri-save-3-line" class="font-weight-bold elevation-2 action-btn-primary"
-                    :loading="loader.loading && !isDispatching">
-                    {{ sale.status === 'draft' ? 'FINALIZAR VENTA' : 'GUARDAR CAMBIOS' }}
-                  </VBtn>
+                <!-- Botón Principal Prominente -->
+                <VBtn
+                  type="submit"
+                  block
+                  :disabled="sale.status === 'canceled' || isProcessing"
+                  color="primary"
+                  variant="elevated"
+                  height="44"
+                  prepend-icon="ri-save-3-line"
+                  class="rounded-lg font-weight-bold elevation-2 text-none"
+                  style="font-size: 0.95rem; letter-spacing: 0.3px;"
+                  :loading="loader.loading && !isDispatching"
+                >
+                  {{ sale.status === 'draft' ? 'Finalizar Venta' : 'Guardar Cambios' }}
+                </VBtn>
 
-                  <VBtn v-if="sale.document_type !== 'quote'" color="info" variant="tonal"
-                    prepend-icon="ri-truck-line" class="font-weight-semibold action-btn-dispatch" :loading="isDispatching"
-                    :disabled="isProcessing" @click.prevent="dispatchSale">
-                    Despachar (Pago Pendiente)
-                  </VBtn>
-                </div>
+                <!-- Botón Despachar sin Pago -->
+                <VBtn
+                  v-if="sale.document_type !== 'quote' && sale.status !== 'canceled'"
+                  block
+                  color="info"
+                  variant="tonal"
+                  height="38"
+                  prepend-icon="ri-truck-line"
+                  class="rounded-lg font-weight-semibold text-none"
+                  :loading="isDispatching"
+                  :disabled="isProcessing"
+                  @click.prevent="dispatchSale"
+                >
+                  Despachar (Pago Pendiente)
+                </VBtn>
 
-                <div class="action-btn-row">
-                  <VBtn v-if="sale.status === 'draft' && sale.document_type !== 'quote'" color="secondary"
-                    variant="tonal" prepend-icon="ri-draft-line" class="font-weight-semibold"
-                    :loading="loader.loading && !isDispatching" :disabled="isProcessing" @click.prevent="saveDraft">
-                    Actualizar Borrador
-                  </VBtn>
-                  <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line" class="font-weight-medium"
+                <!-- Fila de Acciones Secundarias Equilibradas -->
+                <div class="d-flex align-center gap-2 w-100 mt-1" style="gap: 8px;">
+                  <VBtn
+                    v-if="sale.status === 'draft' && sale.document_type !== 'quote'"
+                    color="secondary"
+                    variant="tonal"
+                    height="38"
+                    prepend-icon="ri-draft-line"
+                    class="rounded-lg font-weight-semibold text-none"
+                    style="flex: 1;"
+                    :loading="loader.loading && !isDispatching"
                     :disabled="isProcessing"
-                    @click="router.push(sale.document_type === 'quote' ? '/quotes/list' : '/sales/list')">
+                    @click.prevent="saveDraft"
+                  >
+                    Borrador
+                  </VBtn>
+
+                  <VBtn
+                    color="secondary"
+                    variant="outlined"
+                    height="38"
+                    prepend-icon="ri-close-line"
+                    class="rounded-lg font-weight-medium text-none"
+                    style="flex: 1;"
+                    :disabled="isProcessing"
+                    @click="router.push(sale.document_type === 'quote' ? '/quotes/list' : '/sales/list')"
+                  >
                     Cancelar
                   </VBtn>
                 </div>

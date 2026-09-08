@@ -483,14 +483,14 @@ onMounted(() => {
 
               <!-- Proveedor -->
               <td class="py-3">
-                <div class="d-flex align-center gap-2.5">
-                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-store-2-line" size="18" />
+                <div class="d-flex align-center">
+                  <VAvatar size="36" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 me-4">
+                    <VIcon icon="ri-store-2-line" size="20" />
                   </VAvatar>
                   <div class="min-w-0">
                     <div
                       class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                      style="max-width: 240px;"
+                      style="max-width: 260px;"
                       :title="invoice.supplier?.name || 'Proveedor no registrado'"
                     >
                       {{ invoice.supplier?.name || 'Proveedor no registrado' }}

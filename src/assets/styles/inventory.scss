@@ -2390,3 +2390,409 @@
     opacity: 1;
   }
 }
+
+// ==========================================================================
+// 8. SALES & INVOICE DOCUMENT TYPE CARDS & ITEMS TABLE SYSTEM
+// ==========================================================================
+
+// Document Type Selector Cards Grid (Factura, Nota de Venta, Cotización)
+.doc-type-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.doc-type-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+
+  &:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  &.active-invoice {
+    background: linear-gradient(135deg, #ffffff 0%, #f5f7ff 100%);
+    border-color: #6366f1;
+    box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.2), 0 2px 4px rgba(99, 102, 241, 0.08);
+
+    .invoice-icon {
+      background-color: #6366f1;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+
+    .doc-type-title {
+      color: #4338ca;
+    }
+
+    .radio-active-invoice {
+      color: #6366f1;
+    }
+
+    .doc-type-badge.badge-sri {
+      background-color: #e0e7ff;
+      color: #4338ca;
+    }
+  }
+
+  &.active-sale-note {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    border-color: #10b981;
+    box-shadow: 0 4px 16px -2px rgba(16, 185, 129, 0.2), 0 2px 4px rgba(16, 185, 129, 0.08);
+
+    .note-icon {
+      background-color: #10b981;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    .doc-type-title {
+      color: #047857;
+    }
+
+    .radio-active-note {
+      color: #10b981;
+    }
+
+    .doc-type-badge.badge-internal {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+  }
+
+  &.active-quote {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    border-color: #0284c7;
+    box-shadow: 0 4px 16px -2px rgba(2, 132, 199, 0.2), 0 2px 4px rgba(2, 132, 199, 0.08);
+
+    .quote-icon {
+      background-color: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    .doc-type-title {
+      color: #0369a1;
+    }
+
+    .radio-active-quote {
+      color: #0284c7;
+    }
+
+    .doc-type-badge.badge-internal {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+  }
+}
+
+.doc-type-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f5f9;
+  color: #64748b;
+  transition: all 0.22s ease;
+  flex-shrink: 0;
+}
+
+.doc-type-title {
+  font-size: 0.925rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+  transition: color 0.2s ease;
+}
+
+.doc-type-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.doc-type-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+
+  &.badge-sri {
+    background-color: #e0e7ff;
+    color: #4338ca;
+  }
+
+  &.badge-internal {
+    background-color: #e2e8f0;
+    color: #475569;
+  }
+}
+
+.doc-type-radio {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+// Compact Sales Items Table
+.custom-sales-items-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background-color: #ffffff;
+
+  thead tr th {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.4px;
+    padding: 9px 4px;
+    border-bottom: 1px solid #e2e8f0;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .th-desc {
+    width: auto;
+    padding-left: 12px;
+  }
+
+  .th-qty {
+    width: 68px;
+  }
+
+  .th-price {
+    width: 74px;
+  }
+
+  .th-discount {
+    width: 72px;
+  }
+
+  .th-subtotal {
+    width: 76px;
+    padding-right: 6px;
+  }
+
+  .th-actions {
+    width: 48px;
+    padding-right: 12px;
+    text-align: center;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #f8fafc;
+    }
+
+    td {
+      padding: 6px 4px;
+      vertical-align: middle;
+    }
+
+    .td-desc {
+      padding-left: 12px;
+    }
+
+    .td-subtotal {
+      padding-right: 6px;
+    }
+
+    .td-actions {
+      padding-right: 12px;
+      text-align: center;
+    }
+  }
+}
+
+.desc-content-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-title-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+  padding: 1px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:focus {
+    background-color: #f1f5f9;
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+}
+
+.item-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+
+  .meta-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+
+    &.tag-service {
+      color: #6366f1;
+    }
+
+    &.tag-product {
+      color: #0284c7;
+    }
+  }
+
+  .meta-stock {
+    font-size: 0.62rem;
+    color: #64748b;
+    background-color: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 4px;
+
+    &.stock-low {
+      color: #dc2626;
+      background-color: #fef2f2;
+    }
+  }
+
+  .meta-sku {
+    font-size: 0.62rem;
+    color: #94a3b8;
+  }
+}
+
+.qty-stepper-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  padding: 1px;
+  gap: 1px;
+}
+
+.qty-mini-btn {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #4f46e5;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.qty-mini-val {
+  min-width: 14px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.cell-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 2px 4px;
+  transition: all 0.15s ease;
+  width: 100%;
+  max-width: 68px;
+
+  &:focus-within {
+    border-color: #6366f1;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  }
+
+  .cell-prefix {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-right: 2px;
+    user-select: none;
+  }
+
+  .cell-number-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.78rem;
+    padding: 0;
+    min-width: 0;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    -moz-appearance: textfield;
+  }
+}
+
+.delete-item-btn {
+  opacity: 0.7;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
