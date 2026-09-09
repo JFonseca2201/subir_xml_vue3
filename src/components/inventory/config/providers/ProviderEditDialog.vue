@@ -18,7 +18,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'editProvider'])
+const emit = defineEmits(['update:isDialogVisible', 'editProvider', 'updateProvider'])
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -133,19 +133,25 @@ const update = async () => {
     const resp = await $api(`suppliers/${provider.value.id}`, {
       method: "POST",
       body: formData,
-      onResponseError({ response }) {
-        console.error('Error del servidor:', response._data)
-        showNotification('Error al actualizar el proveedor', 'error')
-      },
     })
 
-    emit('editProvider', resp.supplier)
+    const updatedSupplier = resp?.supplier || resp?.data || {
+      ...provider.value,
+      id: provider.value.id,
+      name: provider.value.name.toUpperCase(),
+      address: provider.value.address ? provider.value.address.toUpperCase() : '',
+      is_active: provider.value.status === 'active',
+      status: provider.value.status,
+    }
+
+    emit('editProvider', updatedSupplier)
+    emit('updateProvider', updatedSupplier)
     emit('update:isDialogVisible', false)
     showNotification('Proveedor actualizado con éxito', 'success')
 
   } catch (error) {
     console.error('Error al actualizar proveedor:', error)
-    showNotification('Error al actualizar el proveedor', 'error')
+    showNotification(error, 'error')
   } finally {
     loader.stop()
   }

@@ -69,4 +69,41 @@ export const $api = ofetch.create({
       options.headers.Authorization = `Bearer ${accessToken}`
     }
   },
+  async onResponseError({ response }) {
+    if (response?._data) {
+      const data = response._data
+      let specificMessage = null
+
+      // Extract specific validation message from backend errors dictionary
+      if (data.errors && typeof data.errors === 'object') {
+        const errorValues = Object.values(data.errors)
+        for (const val of errorValues) {
+          if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') {
+            specificMessage = val[0]
+            break
+          } else if (typeof val === 'string') {
+            specificMessage = val
+            break
+          }
+        }
+      }
+
+      const genericMessages = [
+        'The given data was invalid.',
+        'Error de validación',
+        'Datos inválidos',
+        'Errores de validación.',
+        'Datos de entrada no válidos.',
+      ]
+
+      if (specificMessage) {
+        if (!data.message || genericMessages.includes(String(data.message).trim())) {
+          data.message = specificMessage
+        }
+        data.error = data.message || specificMessage
+      } else if (data.message && typeof data.message === 'string') {
+        data.error = data.message
+      }
+    }
+  },
 }) 

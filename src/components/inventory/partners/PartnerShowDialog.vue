@@ -228,17 +228,12 @@ const closeDialog = () => {
                   </div>
                   <div class="mt-1">
                     <VChip
-                      :color="isPartnerActive ? 'success' : 'error'"
-                      variant="tonal"
                       size="small"
-                      class="font-weight-bold"
+                      class="status-pill-clean font-weight-bold"
+                      :class="isPartnerActive ? 'status-paid' : 'status-pending'"
                     >
-                      <VIcon
-                        start
-                        :icon="isPartnerActive ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'"
-                        size="14"
-                      />
-                      {{ isPartnerActive ? 'Activo' : 'Inactivo' }}
+                      <span class="status-dot" />
+                      <span>{{ isPartnerActive ? 'Activo' : 'Inactivo' }}</span>
                     </VChip>
                   </div>
                 </VCol>

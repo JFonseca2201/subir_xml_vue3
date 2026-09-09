@@ -81,8 +81,10 @@ const formatDate = dateStr => {
   return dateStr
 }
 
-const list = async () => {
-  isLoading.value = true
+const list = async (silent = false) => {
+  if (!silent) {
+    isLoading.value = true
+  }
   try {
     const params = {
       page: currentPage.value,
@@ -115,43 +117,67 @@ const list = async () => {
     console.log(error)
     showNotification('Error al cargar la lista de proveedores', 'error')
   } finally {
-    isLoading.value = false
-  }
-}
-
-const addNewProvider = newProvider => {
-  const providerToSave = {
-    ...newProvider,
-    name: newProvider.name ? newProvider.name.toUpperCase() : '',
-    address: newProvider.address ? newProvider.address.toUpperCase() : '',
-  }
-  list_providers.value.unshift(providerToSave)
-  showNotification('Proveedor agregado correctamente', 'success')
-}
-
-const addEditProvider = editProvider => {
-  const index = list_providers.value.findIndex(provider => provider.id == editProvider.id)
-  if (index != -1) {
-    list_providers.value[index] = {
-      ...editProvider,
-      name: editProvider.name ? editProvider.name.toUpperCase() : '',
-      address: editProvider.address ? editProvider.address.toUpperCase() : '',
+    if (!silent) {
+      isLoading.value = false
     }
-    showNotification('Proveedor actualizado correctamente', 'success')
-  } else {
-    list()
   }
 }
 
-const addDeleteProvider = deletedProvider => {
-  if (!deletedProvider || !deletedProvider.id) return
-  const index = list_providers.value.findIndex(provider => provider.id == deletedProvider.id)
-  if (index !== -1) {
-    list_providers.value.splice(index, 1)
-    showNotification('Proveedor eliminado correctamente', 'success')
-  } else {
-    list()
+const addNewProvider = async newProvider => {
+  if (newProvider) {
+    const isInactive = newProvider.is_active === false || 
+                       newProvider.is_active === 0 || 
+                       newProvider.is_active === '0' ||
+                       newProvider.status === 'inactive'
+
+    const providerToSave = {
+      ...newProvider,
+      name: newProvider.name ? newProvider.name.toUpperCase() : '',
+      address: newProvider.address ? newProvider.address.toUpperCase() : '',
+      is_active: !isInactive,
+      status: isInactive ? 'inactive' : 'active',
+      created_at: newProvider.created_at || new Date().toISOString(),
+    }
+
+    list_providers.value.unshift(providerToSave)
+    list_providers.value = [...list_providers.value]
   }
+  currentPage.value = 1
+  await list(true)
+}
+
+const addEditProvider = async editProvider => {
+  if (editProvider && editProvider.id) {
+    const index = list_providers.value.findIndex(p => String(p.id) === String(editProvider.id))
+    if (index !== -1) {
+      const isInactive = editProvider.is_active === false || 
+                         editProvider.is_active === 0 || 
+                         editProvider.is_active === '0' ||
+                         editProvider.status === 'inactive'
+
+      list_providers.value[index] = {
+        ...list_providers.value[index],
+        ...editProvider,
+        name: editProvider.name ? editProvider.name.toUpperCase() : list_providers.value[index].name,
+        address: editProvider.address ? editProvider.address.toUpperCase() : list_providers.value[index].address,
+        is_active: !isInactive,
+        status: isInactive ? 'inactive' : 'active',
+      }
+      list_providers.value = [...list_providers.value]
+    }
+  }
+  await list(true)
+}
+
+const addDeleteProvider = async deletedProvider => {
+  if (deletedProvider && deletedProvider.id) {
+    const index = list_providers.value.findIndex(p => String(p.id) === String(deletedProvider.id))
+    if (index !== -1) {
+      list_providers.value.splice(index, 1)
+      list_providers.value = [...list_providers.value]
+    }
+  }
+  await list(true)
 }
 
 const viewItem = item => {
@@ -481,18 +507,35 @@ definePage({ meta: { permission: "settings" } })
     </div>
 
     <!-- DIÁLOGOS -->
-    <ProviderAddDialog v-model:isDialogVisible="isProviderAddDialogVisible" @add-provider="addNewProvider" />
+    <ProviderAddDialog
+      v-model:isDialogVisible="isProviderAddDialogVisible"
+      @add-provider="addNewProvider"
+      @addProvider="addNewProvider"
+    />
 
-    <ProviderViewDialog v-if="provider_selected_view && isProviderViewDialogVisible"
-      v-model:isDialogVisible="isProviderViewDialogVisible" :provider-selected="provider_selected_view" />
+    <ProviderViewDialog
+      v-if="provider_selected_view && isProviderViewDialogVisible"
+      v-model:isDialogVisible="isProviderViewDialogVisible"
+      :provider-selected="provider_selected_view"
+    />
 
-    <ProviderEditDialog v-if="provider_selected_edit && isProviderEditDialogVisible"
-      v-model:isDialogVisible="isProviderEditDialogVisible" :provider-selected="provider_selected_edit"
-      @update-provider="addEditProvider" />
+    <ProviderEditDialog
+      v-if="provider_selected_edit && isProviderEditDialogVisible"
+      v-model:isDialogVisible="isProviderEditDialogVisible"
+      :provider-selected="provider_selected_edit"
+      @edit-provider="addEditProvider"
+      @editProvider="addEditProvider"
+      @update-provider="addEditProvider"
+      @updateProvider="addEditProvider"
+    />
 
-    <ProviderDeleteDialog v-if="provider_selected_delete && isProviderDeleteDialogVisible"
-      v-model:isDialogVisible="isProviderDeleteDialogVisible" :provider-selected="provider_selected_delete"
-      @delete-provider="addDeleteProvider" />
+    <ProviderDeleteDialog
+      v-if="provider_selected_delete && isProviderDeleteDialogVisible"
+      v-model:isDialogVisible="isProviderDeleteDialogVisible"
+      :provider-selected="provider_selected_delete"
+      @delete-provider="addDeleteProvider"
+      @deleteProvider="addDeleteProvider"
+    />
   </div>
 </template>
 

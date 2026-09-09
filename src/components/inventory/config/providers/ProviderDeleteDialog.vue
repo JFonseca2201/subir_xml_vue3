@@ -14,7 +14,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'deleteProvider'])
+const emit = defineEmits(['update:isDialogVisible', 'deleteProvider', 'delete-provider'])
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -36,36 +36,18 @@ const deleteProvider = async () => {
   try {
     const resp = await $api(`suppliers/${props.providerSelected.id}`, {
       method: 'DELETE',
-      onResponseError({ response }) {
-        console.error('Error del servidor:', response._data)
-
-        const errorMessage = response._data?.message || 'Error al eliminar el proveedor'
-
-        showNotification(errorMessage, 'error')
-      },
     })
 
-    console.log('Proveedor eliminado del servidor:', resp.supplier || resp)
-        
-    // Emitir el proveedor eliminado (usar el original si no hay respuesta)
-    const deletedProvider = resp.supplier || props.providerSelected
+    const deletedProvider = resp?.supplier || props.providerSelected
 
     emit('deleteProvider', deletedProvider)
+    emit('delete-provider', deletedProvider)
     emit('update:isDialogVisible', false)
     showNotification('Proveedor eliminado con éxito', 'success')
 
   } catch (error) {
     console.error('Error al eliminar proveedor:', error)
-        
-    // Si hay error de red o servidor, pero el proveedor fue eliminado del backend
-    // aún así eliminarlo de la lista local
-    if (props.providerSelected) {
-      emit('deleteProvider', props.providerSelected)
-      emit('update:isDialogVisible', false)
-      showNotification('Proveedor eliminado (verificar en servidor)', 'warning')
-    } else {
-      showNotification('Error al eliminar el proveedor', 'error')
-    }
+    showNotification(error, 'error')
   } finally {
     loader.stop()
   }

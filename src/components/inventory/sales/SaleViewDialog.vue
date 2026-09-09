@@ -612,12 +612,14 @@ const convertToSale = () => {
                       {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
                     </div>
                   </div>
-                  <div>
-                    <VChip :color="isInvoice && sriStatus ? sriStatusColor : getPaymentStatusColor" size="small"
-                      variant="tonal" class="font-weight-bold">
-                      {{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}
+                    <VChip
+                      size="small"
+                      class="status-pill-clean font-weight-bold"
+                      :class="`status-${isInvoice && sriStatus ? (sriStatus === 'AUTORIZADA' ? 'paid' : 'pending') : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`"
+                    >
+                      <span class="status-dot" />
+                      <span>{{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}</span>
                     </VChip>
-                  </div>
                 </div>
               </div>
             </VCol>

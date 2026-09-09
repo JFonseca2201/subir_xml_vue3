@@ -246,13 +246,13 @@ const generateSinglePDF = sale => {
         <div v-else-if="sales.length > 0"
           class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
           <div class="d-flex align-center gap-2">
-            <VChip size="small" color="primary" variant="tonal" class="font-weight-bold px-3">
-              <VIcon icon="ri-file-list-3-line" size="14" class="me-1.5" />
-              {{ sales.length }} {{ sales.length === 1 ? 'Transacción' : 'Transacciones' }}
+            <VChip size="small" class="status-pill-clean status-primary font-weight-bold">
+              <span class="status-dot" />
+              <span>{{ sales.length }} {{ sales.length === 1 ? 'Transacción' : 'Transacciones' }}</span>
             </VChip>
-            <VChip size="small" color="success" variant="tonal" class="font-weight-bold px-3">
-              <VIcon icon="ri-checkbox-circle-line" size="14" class="me-1.5" />
-              {{ paidCount }} Pagadas
+            <VChip size="small" class="status-pill-clean status-paid font-weight-bold">
+              <span class="status-dot" />
+              <span>{{ paidCount }} Pagadas</span>
             </VChip>
           </div>
 
@@ -326,9 +326,13 @@ const generateSinglePDF = sale => {
                 <div
                   class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
                   style="min-width: 150px;">
-                  <VChip size="x-small" :color="getDocumentTypeColor(sale.document_type, isSaleCanceled(sale))" variant="tonal"
-                    class="font-weight-bold text-uppercase mb-1 px-2.5">
-                    {{ getDocumentType(sale.document_type) }}
+                  <VChip
+                    size="x-small"
+                    class="status-pill-clean mb-1 font-weight-bold"
+                    :class="isSaleCanceled(sale) ? 'status-canceled' : (sale.document_type === 'invoice' ? 'status-info' : 'status-primary')"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ getDocumentType(sale.document_type) }}</span>
                   </VChip>
                   <span class="text-subtitle-2 font-weight-bold text-high-emphasis"
                     :class="{ 'text-decoration-line-through text-disabled': isSaleCanceled(sale) }">
@@ -383,12 +387,13 @@ const generateSinglePDF = sale => {
                   </div>
 
                   <div class="d-flex align-center gap-2">
-                    <VChip size="small" :color="getStatusColor(sale)" variant="tonal"
-                      class="font-weight-bold text-uppercase px-2.5">
-                      <VIcon
-                        :icon="isSaleCanceled(sale) ? 'ri-close-circle-line' : (sale.payment_status === 'paid' ? 'ri-check-line' : 'ri-time-line')"
-                        size="14" class="me-1" />
-                      {{ getStatusText(sale) }}
+                    <VChip
+                      size="small"
+                      class="status-pill-clean font-weight-bold"
+                      :class="`status-${isSaleCanceled(sale) ? 'canceled' : (sale.payment_status || 'pending')}`"
+                    >
+                      <span class="status-dot" />
+                      <span>{{ getStatusText(sale) }}</span>
                     </VChip>
 
                     <VBtn v-if="!isSaleCanceled(sale)" icon size="x-small" color="error" variant="tonal" class="rounded-lg"

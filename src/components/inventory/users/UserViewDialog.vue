@@ -175,30 +175,19 @@ const closeDialog = () => {
             
             <div class="d-flex justify-center gap-2">
               <VChip
-                :color="statusColor"
-                variant="tonal"
                 size="small"
-                class="font-weight-medium px-2.5"
+                class="status-pill-clean font-weight-bold"
+                :class="statusColor === 'success' ? 'status-paid' : 'status-pending'"
               >
-                <VIcon
-                  :icon="statusIcon"
-                  size="14"
-                  class="me-1"
-                />
-                {{ statusLabel }}
+                <span class="status-dot" />
+                <span>{{ statusLabel }}</span>
               </VChip>
               <VChip
-                color="primary"
-                variant="tonal"
                 size="small"
-                class="font-weight-medium px-2.5"
+                class="status-pill-clean status-primary font-weight-bold"
               >
-                <VIcon
-                  icon="ri-shield-user-line"
-                  size="14"
-                  class="me-1"
-                />
-                {{ roleName }}
+                <span class="status-dot" />
+                <span>{{ roleName }}</span>
               </VChip>
             </div>
           </div>

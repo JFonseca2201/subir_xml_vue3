@@ -178,13 +178,12 @@ const closeDialog = () => {
 
           <div class="d-flex align-center gap-2">
             <VChip
-              :color="getVehicleStatus.color"
-              variant="elevated"
               size="small"
-              class="font-weight-bold text-uppercase px-3"
+              class="status-pill-clean font-weight-bold text-uppercase"
+              :class="getVehicleStatus.color === 'success' ? 'status-paid' : 'status-pending'"
             >
-              <VBadge dot :color="getVehicleStatus.color === 'success' ? '#ffffff' : '#ffffff'" inline class="me-1" />
-              {{ getVehicleStatus.label }}
+              <span class="status-dot" />
+              <span>{{ getVehicleStatus.label }}</span>
             </VChip>
           </div>
         </div>

@@ -14,7 +14,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'addProvider'])
+const emit = defineEmits(['update:isDialogVisible', 'addProvider', 'add-provider'])
 
 const loader = useLoaderStore()
 const { showNotification } = useGlobalToast()
@@ -113,21 +113,30 @@ const store = async () => {
     const resp = await $api('suppliers', {
       method: 'POST',
       body: formData,
-      onResponseError({ response }) {
-        console.error('Error del servidor:', response._data)
-        showNotification('Error al crear el proveedor', 'error')
-      },
     })
 
-    console.log('Proveedor creado:', resp.supplier)
-    emit('addProvider', resp.supplier)
+    const createdSupplier = resp?.supplier || resp?.data || {
+      id: realId.replace('prov00', ''),
+      name: provider.value.name.toUpperCase(),
+      ruc: provider.value.ruc,
+      tax_id: provider.value.ruc,
+      address: provider.value.address ? provider.value.address.toUpperCase() : '',
+      phone: provider.value.phone || '',
+      email: provider.value.email || '',
+      is_active: true,
+      status: 'active',
+      created_at: new Date().toISOString(),
+    }
+
+    emit('addProvider', createdSupplier)
+    emit('add-provider', createdSupplier)
     emit('update:isDialogVisible', false)
     showNotification('Proveedor creado con éxito', 'success')
     onFormReset()
 
   } catch (error) {
     console.error('Error al crear proveedor:', error)
-    showNotification('Error al crear el proveedor', 'error')
+    showNotification(error, 'error')
   } finally {
     loader.stop()
   }

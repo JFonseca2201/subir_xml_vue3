@@ -374,6 +374,7 @@
     "usePermissions": true,
     "refreshPermissionsUser": true,
     "compressFiles": true,
-    "compressImage": true
+    "compressImage": true,
+    "extractErrorMessage": true
   }
 }

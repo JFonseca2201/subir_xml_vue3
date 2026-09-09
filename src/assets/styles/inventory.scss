@@ -3281,13 +3281,120 @@
 }
 
 // ============================================================================
-// 11. DIALOG CHIPS & BADGES REFINEMENT (GLOBAL FIX FOR VDIALOG VCHIPS)
+// 11. STATUS PILLS & DIALOG VCHIPS (ESTILO SOCIOS CON PUNTO / PASTEL)
 // ============================================================================
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: all 0.2s ease-in-out !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    min-width: 6px !important;
+    min-height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+  }
+}
+
+// Variantes de estado estilo socios
+.status-paid,
+.status-active,
+.status-success {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending,
+.status-inactive,
+.status-error {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-partial,
+.status-warning {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-info,
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-primary,
+.status-quote {
+  background-color: #f5f3ff !important;
+  color: #6d28d9 !important;
+  border: 1px solid #ddd6fe !important;
+
+  .status-dot {
+    background-color: #8b5cf6 !important;
+  }
+}
+
+.status-other {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
+}
+
+// Adaptación para VChip en VDialogs adoptando la estética de socios
 .v-dialog,
 .custom-dialog-card {
   .v-chip {
     .v-chip__content {
       overflow: visible !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
     }
 
     .v-icon--start,
@@ -3304,6 +3411,85 @@
 
     &.font-weight-bold {
       font-weight: 700 !important;
+    }
+
+    // Cuando el VChip lleva la clase status-pill-clean
+    &.status-pill-clean {
+      height: 26px !important;
+      min-height: 26px !important;
+      padding: 0 10px !important;
+
+      .v-chip__underlay {
+        display: none !important;
+      }
+
+      &.v-chip--size-x-small {
+        height: 22px !important;
+        min-height: 22px !important;
+        padding: 0 8px !important;
+        font-size: 0.68rem !important;
+
+        .status-dot {
+          width: 5px !important;
+          height: 5px !important;
+          min-width: 5px !important;
+          min-height: 5px !important;
+        }
+      }
+    }
+
+    // Para chips tonales en diálogos: aplicar estética pastel y borde de socios
+    &.v-chip--variant-tonal:not(.status-pill-clean) {
+      border-radius: 9999px !important;
+      font-weight: 700 !important;
+
+      &.text-success,
+      &[class*="success"] {
+        background-color: #ecfdf5 !important;
+        color: #065f46 !important;
+        border: 1px solid #a7f3d0 !important;
+        .v-icon { color: #10b981 !important; }
+      }
+
+      &.text-error,
+      &[class*="error"] {
+        background-color: #fef2f2 !important;
+        color: #991b1b !important;
+        border: 1px solid #fecaca !important;
+        .v-icon { color: #ef4444 !important; }
+      }
+
+      &.text-warning,
+      &[class*="warning"] {
+        background-color: #fffbeb !important;
+        color: #92400e !important;
+        border: 1px solid #fde68a !important;
+        .v-icon { color: #f59e0b !important; }
+      }
+
+      &.text-info,
+      &[class*="info"] {
+        background-color: #eff6ff !important;
+        color: #1e40af !important;
+        border: 1px solid #bfdbfe !important;
+        .v-icon { color: #3b82f6 !important; }
+      }
+
+      &.text-primary,
+      &[class*="primary"] {
+        background-color: #f5f3ff !important;
+        color: #6d28d9 !important;
+        border: 1px solid #ddd6fe !important;
+        .v-icon { color: #8b5cf6 !important; }
+      }
+
+      &.text-secondary,
+      &[class*="secondary"] {
+        background-color: #f1f5f9 !important;
+        color: #475569 !important;
+        border: 1px solid #cbd5e1 !important;
+        .v-icon { color: #94a3b8 !important; }
+      }
     }
   }
 }
