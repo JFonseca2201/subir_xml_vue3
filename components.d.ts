@@ -98,6 +98,8 @@ declare module 'vue' {
     PaymentProvidersDialog: typeof import('./src/components/dialogs/PaymentProvidersDialog.vue')['default']
     PricingPlanDialog: typeof import('./src/components/dialogs/PricingPlanDialog.vue')['default']
     ProductExistenceCheckDialog: typeof import('./src/components/inventory/product/ProductExistenceCheckDialog.vue')['default']
+    ProductQuickEditDialog: typeof import('./src/components/inventory/product/ProductQuickEditDialog.vue')['default']
+    ProductStockDialog: typeof import('./src/components/inventory/product/ProductStockDialog.vue')['default']
     ProviderAddDialog: typeof import('./src/components/inventory/config/providers/ProviderAddDialog.vue')['default']
     ProviderDeleteDialog: typeof import('./src/components/inventory/config/providers/ProviderDeleteDialog.vue')['default']
     ProviderEditDialog: typeof import('./src/components/inventory/config/providers/ProviderEditDialog.vue')['default']

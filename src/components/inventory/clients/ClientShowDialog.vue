@@ -233,9 +233,9 @@ const closeDialog = () => {
                       :color="getStateColor"
                       variant="tonal"
                       size="small"
-                      class="font-weight-bold"
+                      class="font-weight-bold px-2.5"
                     >
-                      <VIcon start :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'" size="14" />
+                      <VIcon :icon="clientData?.state?.toString() === '1' ? 'ri-checkbox-circle-line' : 'ri-close-circle-line'" size="14" class="me-1" />
                       {{ getStateLabel }}
                     </VChip>
                   </div>

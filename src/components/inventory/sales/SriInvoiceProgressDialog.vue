@@ -525,8 +525,8 @@ onBeforeUnmount(() => {
 
               <div class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis font-weight-medium">ESTADO FISCAL</span>
-                <VChip color="success" size="small" variant="flat" class="font-weight-bold">
-                  <VIcon start icon="ri-shield-check-line" size="14" />
+                <VChip color="success" size="small" variant="flat" class="font-weight-bold px-3">
+                  <VIcon icon="ri-shield-check-line" size="14" class="me-1" />
                   AUTORIZADA
                 </VChip>
               </div>

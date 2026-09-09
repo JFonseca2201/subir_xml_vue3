@@ -155,6 +155,16 @@ const getDocumentType = type => {
   }
 }
 
+const getDocumentTypeColor = (type, isCanceled) => {
+  if (isCanceled) return 'error'
+  switch (type) {
+    case 'invoice': return 'primary'
+    case 'sale_note': return 'secondary'
+    case 'ticket': return 'info'
+    default: return 'primary'
+  }
+}
+
 const handleCardClick = sale => {
   if (isSaleCanceled(sale)) {
     Swal.fire({
@@ -236,12 +246,12 @@ const generateSinglePDF = sale => {
         <div v-else-if="sales.length > 0"
           class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
           <div class="d-flex align-center gap-2">
-            <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
-              <VIcon start icon="ri-file-list-3-line" size="14" />
+            <VChip size="small" color="primary" variant="tonal" class="font-weight-bold px-3">
+              <VIcon icon="ri-file-list-3-line" size="14" class="me-1.5" />
               {{ sales.length }} {{ sales.length === 1 ? 'Transacción' : 'Transacciones' }}
             </VChip>
-            <VChip size="small" color="success" variant="tonal" class="font-weight-bold">
-              <VIcon start icon="ri-checkbox-circle-line" size="14" />
+            <VChip size="small" color="success" variant="tonal" class="font-weight-bold px-3">
+              <VIcon icon="ri-checkbox-circle-line" size="14" class="me-1.5" />
               {{ paidCount }} Pagadas
             </VChip>
           </div>
@@ -316,8 +326,8 @@ const generateSinglePDF = sale => {
                 <div
                   class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
                   style="min-width: 150px;">
-                  <VChip size="x-small" :color="isSaleCanceled(sale) ? 'error' : 'primary'" variant="tonal"
-                    class="font-weight-bold text-uppercase mb-1">
+                  <VChip size="x-small" :color="getDocumentTypeColor(sale.document_type, isSaleCanceled(sale))" variant="tonal"
+                    class="font-weight-bold text-uppercase mb-1 px-2.5">
                     {{ getDocumentType(sale.document_type) }}
                   </VChip>
                   <span class="text-subtitle-2 font-weight-bold text-high-emphasis"
@@ -374,10 +384,10 @@ const generateSinglePDF = sale => {
 
                   <div class="d-flex align-center gap-2">
                     <VChip size="small" :color="getStatusColor(sale)" variant="tonal"
-                      class="font-weight-bold text-uppercase">
-                      <VIcon start
+                      class="font-weight-bold text-uppercase px-2.5">
+                      <VIcon
                         :icon="isSaleCanceled(sale) ? 'ri-close-circle-line' : (sale.payment_status === 'paid' ? 'ri-check-line' : 'ri-time-line')"
-                        size="13" />
+                        size="14" class="me-1" />
                       {{ getStatusText(sale) }}
                     </VChip>
 

@@ -303,12 +303,12 @@ const closeDialog = () => {
                   </div>
 
                   <div class="d-flex flex-wrap align-center gap-2">
-                    <VChip size="small" variant="tonal" color="primary" class="font-weight-medium">
-                      <VIcon start size="14" icon="ri-id-card-line" />
+                    <VChip size="small" variant="tonal" color="primary" class="font-weight-medium px-2.5">
+                      <VIcon size="14" icon="ri-id-card-line" class="me-1" />
                       Doc: {{ vehicleData.client.n_document || 'N/A' }}
                     </VChip>
-                    <VChip v-if="vehicleData.client.phone" size="small" variant="tonal" color="secondary" class="font-weight-medium">
-                      <VIcon start size="14" icon="ri-phone-line" />
+                    <VChip v-if="vehicleData.client.phone" size="small" variant="tonal" color="secondary" class="font-weight-medium px-2.5">
+                      <VIcon size="14" icon="ri-phone-line" class="me-1" />
                       {{ vehicleData.client.phone }}
                     </VChip>
                   </div>

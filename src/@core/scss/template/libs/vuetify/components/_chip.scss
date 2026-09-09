@@ -3,7 +3,18 @@
   line-height: 1.25rem !important;
 
   .v-chip__content {
-    overflow: hidden;
+    overflow: visible;
+  }
+
+  // Prevent start/end icons from clipping or touching borders
+  .v-icon--start {
+    margin-inline-start: 0 !important;
+    margin-inline-end: 4px !important;
+  }
+
+  .v-icon--end {
+    margin-inline-start: 4px !important;
+    margin-inline-end: 0 !important;
   }
 
   &:not(.v-chip--variant-elevated) {
@@ -27,6 +38,26 @@
     --v-activated-opacity: 0.08;
   }
 
+  &.v-chip--size-x-small {
+    --v-chip-height: 20px !important;
+
+    font-size: 11px !important;
+    padding-block: 0 !important;
+    padding-inline: 6px 8px !important;
+
+    .v-chip__prepend {
+      .v-icon--start {
+        font-size: 0.85rem !important;
+        margin-inline: 0 3px !important;
+      }
+    }
+
+    .v-icon--start {
+      font-size: 0.85rem !important;
+      margin-inline: 0 3px !important;
+    }
+  }
+
   &.v-chip--size-small {
     --v-chip-height: 24px !important;
 
@@ -37,7 +68,7 @@
     .v-chip__prepend {
       .v-icon--start {
         font-size: 1rem;
-        margin-inline: -4px 4px;
+        margin-inline: 0 4px !important;
       }
 
       .v-avatar {
@@ -45,14 +76,14 @@
       }
 
       .v-avatar--start {
-        margin-inline: -4px 4px;
+        margin-inline: 0 4px !important;
       }
     }
 
     .v-chip__append {
       .v-icon--end {
         font-size: 1rem;
-        margin-inline: 4px -4px;
+        margin-inline: 4px 0 !important;
       }
 
       .v-avatar {

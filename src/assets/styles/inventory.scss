@@ -2880,3 +2880,430 @@
     background-color: #ef4444 !important;
   }
 }
+
+// ==========================================================================
+// 10. PRODUCT QUICK EDIT DIALOG & MOBILE INVENTORY STYLES
+// ==========================================================================
+
+.product-quick-dialog-card {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22) !important;
+
+  .product-quick-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%) !important;
+    position: relative;
+    padding: 1.25rem 1.5rem;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 80px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(14px);
+    }
+
+    .custom-dialog-close-btn {
+      position: absolute !important;
+      top: 14px !important;
+      right: 14px !important;
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.18) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      border-radius: 10px !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      z-index: 5 !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.32) !important;
+        border-color: rgba(255, 255, 255, 0.55) !important;
+        transform: scale(1.08) !important;
+      }
+    }
+  }
+
+  .product-mini-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+
+// Dialog Segmented Nav Pills
+.quick-edit-nav-pills {
+  display: flex;
+  gap: 6px;
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-pill-item {
+    flex: 1;
+    min-width: fit-content;
+    text-align: center;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 9px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    user-select: none;
+
+    &:hover {
+      color: #1e293b;
+      background-color: rgba(255, 255, 255, 0.6);
+    }
+
+    &.active {
+      background-color: #ffffff;
+      color: rgb(var(--v-theme-primary));
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+// Touch Stepper Controls for Mobile Stock Editing
+.quick-stock-stepper-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  transition: border-color 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
+
+  .stock-current-display {
+    text-align: center;
+    padding: 0.5rem 0;
+
+    .stock-big-number {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1.1;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+  }
+
+  .quick-stepper-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .quick-stepper-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+}
+
+// Quick Preset Adjustment Pills
+.quick-adjustment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+
+  .adj-chip {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Consolas', 'Monaco', monospace;
+    transition: all 0.15s ease;
+    user-select: none;
+    border: 1px solid transparent;
+
+    &.adj-plus {
+      background-color: #ecfdf5;
+      color: #065f46;
+      border-color: #a7f3d0;
+
+      &:hover {
+        background-color: #d1fae5;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    &.adj-minus {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+
+      &:hover {
+        background-color: #fee2e2;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+// Real-time Price Calculation Summary Box
+.price-calc-summary-box {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.84rem;
+    color: #64748b;
+
+    &.calc-highlight {
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+      margin-top: 4px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1e293b;
+
+      .calc-final-price {
+        color: #16a34a;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 1.15rem;
+      }
+    }
+  }
+}
+
+// Quick Dialog Card Sections
+.quick-edit-section {
+  padding: 1.15rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.85rem;
+
+    .section-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .section-title-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+  }
+}
+
+// Mobile Product Cards in list.vue (for screens < 960px or < 768px)
+.mobile-product-card {
+  background-color: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover,
+  &:active {
+    border-color: rgba(var(--v-theme-primary), 0.35);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  }
+
+  .mobile-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .mobile-card-thumb {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid #e2e8f0;
+  }
+
+  .mobile-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.25;
+    margin-bottom: 3px;
+  }
+
+  .mobile-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  .mobile-card-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 0.85rem 0;
+    padding: 0.65rem 0.85rem;
+    background-color: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+
+    .stat-col {
+      display: flex;
+      flex-direction: column;
+
+      .stat-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.03em;
+        margin-bottom: 2px;
+      }
+
+      .stat-val {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+    }
+  }
+
+  .mobile-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0.4rem;
+
+    .btn-quick-edit {
+      flex: 1;
+      font-weight: 700;
+      border-radius: 10px;
+      letter-spacing: 0.01em;
+      text-transform: none;
+      height: 38px;
+    }
+  }
+}
+
+// Responsive Dialog Behavior for Mobile Devices
+@media (max-width: 600px) {
+  .product-quick-dialog-card {
+    border-radius: 18px !important;
+
+    .v-card-text {
+      padding: 1rem !important;
+    }
+
+    .v-card-actions {
+      padding: 0.85rem 1rem !important;
+    }
+  }
+
+  .quick-stock-stepper-box {
+    padding: 0.75rem;
+
+    .quick-stepper-btn {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+    }
+  }
+}
+
+// ============================================================================
+// 11. DIALOG CHIPS & BADGES REFINEMENT (GLOBAL FIX FOR VDIALOG VCHIPS)
+// ============================================================================
+.v-dialog,
+.custom-dialog-card {
+  .v-chip {
+    .v-chip__content {
+      overflow: visible !important;
+    }
+
+    .v-icon--start,
+    .v-chip__prepend .v-icon--start {
+      margin-inline-start: 0 !important;
+      margin-inline-end: 5px !important;
+    }
+
+    .v-icon--end,
+    .v-chip__append .v-icon--end {
+      margin-inline-start: 5px !important;
+      margin-inline-end: 0 !important;
+    }
+
+    &.font-weight-bold {
+      font-weight: 700 !important;
+    }
+  }
+}

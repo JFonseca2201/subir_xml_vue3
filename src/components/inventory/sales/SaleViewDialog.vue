@@ -518,9 +518,9 @@ const convertToSale = () => {
                 size="x-small"
                 :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'"
                 variant="flat"
-                class="font-weight-bold text-white shadow-sm"
+                class="font-weight-bold text-white shadow-sm px-2"
               >
-                <VIcon start icon="ri-shield-flash-line" size="11" />
+                <VIcon icon="ri-shield-flash-line" size="12" class="me-1" />
                 {{ sriEnvironment }}
               </VChip>
             </div>
@@ -550,12 +550,12 @@ const convertToSale = () => {
             :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor"
             size="small"
             variant="flat"
-            class="font-weight-bold text-white elevation-2"
+            class="font-weight-bold text-white elevation-2 px-3"
           >
             <VIcon
-              start
               :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon"
               size="14"
+              class="me-1"
             />
             {{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}
           </VChip>

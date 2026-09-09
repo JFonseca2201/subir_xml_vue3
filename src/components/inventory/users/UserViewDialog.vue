@@ -178,11 +178,12 @@ const closeDialog = () => {
                 :color="statusColor"
                 variant="tonal"
                 size="small"
-                class="font-weight-medium"
+                class="font-weight-medium px-2.5"
               >
                 <VIcon
-                  start
                   :icon="statusIcon"
+                  size="14"
+                  class="me-1"
                 />
                 {{ statusLabel }}
               </VChip>
@@ -190,11 +191,12 @@ const closeDialog = () => {
                 color="primary"
                 variant="tonal"
                 size="small"
-                class="font-weight-medium"
+                class="font-weight-medium px-2.5"
               >
                 <VIcon
-                  start
                   icon="ri-shield-user-line"
+                  size="14"
+                  class="me-1"
                 />
                 {{ roleName }}
               </VChip>
