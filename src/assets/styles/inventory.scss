@@ -2808,3 +2808,75 @@
     transform: scale(1.1);
   }
 }
+
+// ==========================================================================
+// 9. MODERN TABLES & PROVIDERS STYLES
+// ==========================================================================
+.providers-modern-table,
+.products-modern-table {
+  overflow-x: auto;
+}
+
+.provider-table-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.kpi-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+/* Pastillas de Estado (Status Pills) */
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}

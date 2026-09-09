@@ -302,32 +302,32 @@ definePage({ meta: { permission: "settings" } })
 
     <!-- ESTADO DE CARGA -->
     <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
+      <VTable class="providers-modern-table overflow-x-auto">
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
             <td class="py-4" style="width: 70px;">
               <div class="shimmer-line w-40" />
             </td>
-            <td class="py-4">
+            <td class="py-4" style="min-width: 240px;">
               <div class="shimmer-line w-75 mb-2" />
               <div class="shimmer-line w-40" />
             </td>
             <td class="py-4" style="width: 150px;">
               <div class="shimmer-line w-75" />
             </td>
-            <td class="py-4" style="width: 140px;">
+            <td class="py-4" style="width: 130px;">
               <div class="shimmer-line w-60" />
             </td>
-            <td class="py-4">
+            <td class="py-4" style="min-width: 220px;">
               <div class="shimmer-line w-70" />
             </td>
-            <td class="py-4" style="width: 120px;">
+            <td class="py-4 text-center" style="width: 120px;">
               <div class="shimmer-line w-50 mx-auto" />
             </td>
             <td class="py-4" style="width: 130px;">
               <div class="shimmer-line w-50" />
             </td>
-            <td class="py-4 text-center" style="width: 130px;">
+            <td class="py-4 text-center" style="width: 120px;">
               <div class="shimmer-button rounded mx-auto" />
             </td>
           </tr>
@@ -374,7 +374,7 @@ definePage({ meta: { permission: "settings" } })
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
                 RUC
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Teléfono
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
@@ -386,26 +386,27 @@ definePage({ meta: { permission: "settings" } })
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px;">
                 Fecha Reg.
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in list_providers" :key="item.id" class="provider-table-row">
-              <td class="font-weight-bold text-disabled">
+              <td class="font-weight-bold text-disabled py-3">
                 #{{ item.id }}
               </td>
 
               <!-- Proveedor con Avatar -->
               <td class="py-3">
                 <div class="d-flex align-center">
-                  <VAvatar color="primary" variant="tonal" size="36" rounded="lg" class="elevation-0 flex-shrink-0 me-4">
+                  <VAvatar color="primary" variant="tonal" size="36" rounded="lg"
+                    class="elevation-0 flex-shrink-0 me-3">
                     <VIcon icon="ri-store-2-line" size="20" />
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate"
-                      style="max-width: 280px;" :title="item.name">
+                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate"
+                      style="max-width: 250px;" :title="item.name">
                       {{ item.name }}
                     </div>
                   </div>
@@ -414,7 +415,7 @@ definePage({ meta: { permission: "settings" } })
 
               <!-- RUC (Monoespaciado sin chip) -->
               <td class="py-3">
-                <span class="font-weight-bold text-high-emphasis font-mono">
+                <span class="font-weight-bold text-high-emphasis font-mono text-body-2">
                   {{ item.ruc || 'Sin RUC' }}
                 </span>
               </td>
@@ -430,7 +431,7 @@ definePage({ meta: { permission: "settings" } })
               <td class="py-3">
                 <div class="d-flex align-center gap-1.5 text-medium-emphasis text-body-2">
                   <VIcon icon="ri-map-pin-line" size="16" class="text-disabled flex-shrink-0" />
-                  <span class="text-truncate" style="max-width: 240px;" :title="item.address">
+                  <span class="text-truncate" style="max-width: 230px;" :title="item.address">
                     {{ item.address || 'Sin dirección' }}
                   </span>
                 </div>
@@ -452,7 +453,7 @@ definePage({ meta: { permission: "settings" } })
               </td>
 
               <!-- Acciones -->
-              <td class="text-center">
+              <td class="text-center py-3">
                 <div class="d-flex justify-center align-center gap-1">
                   <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha de Proveedor"
                     @click="viewItem(item)" />
@@ -496,67 +497,5 @@ definePage({ meta: { permission: "settings" } })
 </template>
 
 <style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.provider-table-row {
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-/* Pastillas de Estado */
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
+// Los estilos de esta vista se encuentran centralizados en src/assets/styles/inventory.scss
 </style>

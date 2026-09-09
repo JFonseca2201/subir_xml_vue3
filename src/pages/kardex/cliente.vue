@@ -1011,10 +1011,16 @@ onMounted(() => {
     </div>
 
     <!-- Paginación -->
-    <div v-if="totalPages > 1" class="d-flex justify-center align-center py-4">
-      <VPagination v-model="currentPage" :length="totalPages" rounded="circle" active-color="primary"
-        density="comfortable" />
-    </div>
+    <VCard v-if="totalPages > 1" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="text-body-2 text-medium-emphasis">
+          Mostrando <strong class="text-high-emphasis">{{ transactions.length }}</strong> de <strong
+            class="text-high-emphasis">{{ totalItems }}</strong> comprobantes
+        </div>
+        <VPagination v-model="currentPage" :length="totalPages" rounded="circle" active-color="primary"
+          density="comfortable" :total-visible="7" />
+      </div>
+    </VCard>
   </div>
 </template>
 
