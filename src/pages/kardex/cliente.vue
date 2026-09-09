@@ -294,7 +294,11 @@ const onVehicleSelected = vehicle => {
 
 // Filtrar por vehículo desde chip del cliente
 const selectClientVehicle = v => {
-  selectedVehicle.value = v
+  if (selectedVehicle.value?.id === v?.id) {
+    selectedVehicle.value = null
+  } else {
+    selectedVehicle.value = v
+  }
   currentPage.value = 1
   loadKardex()
 }
@@ -412,11 +416,25 @@ const getDocTypeColor = type => {
   return 'secondary'
 }
 
+const getDocTypeIcon = type => {
+  if (type === 'invoice') return 'ri-file-shield-2-line'
+  if (type === 'sale_note') return 'ri-file-paper-2-line'
+  if (type === 'quote') return 'ri-file-list-3-line'
+  return 'ri-file-text-line'
+}
+
 const getStatusColor = status => {
   if (status === 'paid') return 'success'
-  if (status === 'pending') return 'warning'
-  if (status === 'partial') return 'info'
+  if (status === 'partial') return 'warning'
+  if (status === 'pending') return 'error'
   return 'secondary'
+}
+
+const getStatusIcon = status => {
+  if (status === 'paid') return 'ri-checkbox-circle-line'
+  if (status === 'partial') return 'ri-time-line'
+  if (status === 'pending') return 'ri-error-warning-line'
+  return 'ri-question-line'
 }
 
 const getStatusLabel = status => {
@@ -424,6 +442,24 @@ const getStatusLabel = status => {
   if (status === 'pending') return 'Pendiente'
   if (status === 'partial') return 'Parcial'
   return status?.toUpperCase() || 'N/A'
+}
+
+// Helper de clase para estado estilo socio / ventas (status-pill-clean)
+const getStatusPillClass = tx => {
+  if (isSaleCanceled(tx)) return 'status-canceled'
+  if (tx.document_type === 'quote') return 'status-quote'
+  if (tx.payment_status === 'paid') return 'status-paid'
+  if (tx.payment_status === 'partial') return 'status-partial'
+  return 'status-pending'
+}
+
+// Helper de texto para estado estilo socio / ventas
+const getStatusPillText = tx => {
+  if (isSaleCanceled(tx)) return 'Anulada'
+  if (tx.document_type === 'quote') return 'Cotización'
+  if (tx.payment_status === 'paid') return 'Pagado'
+  if (tx.payment_status === 'partial') return 'Parcial'
+  return 'Pendiente'
 }
 
 // Observadores de filtros
@@ -449,12 +485,7 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon
-            icon="ri-user-search-line"
-            color="primary"
-            class="me-2"
-            size="32"
-          />
+          <VIcon icon="ri-user-search-line" color="primary" class="me-2" size="32" />
           Kardex por Cliente & Vehículo
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -463,29 +494,14 @@ onMounted(() => {
       </div>
 
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
-        <VBtn
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          @click="resetFilters"
-        >
+        <VBtn variant="tonal" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
           Limpiar Filtros
         </VBtn>
-        <VBtn
-          variant="outlined"
-          color="error"
-          prepend-icon="ri-file-pdf-2-line"
-          :loading="isLoading"
-          @click="exportKardexPDF"
-        >
+        <VBtn variant="outlined" color="error" prepend-icon="ri-file-pdf-2-line" :loading="isLoading"
+          @click="exportKardexPDF">
           Exportar Reporte PDF
         </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-refresh-line"
-          :loading="isLoading"
-          @click="loadKardex"
-        >
+        <VBtn color="primary" prepend-icon="ri-refresh-line" :loading="isLoading" @click="loadKardex">
           Actualizar
         </VBtn>
       </div>
@@ -495,32 +511,16 @@ onMounted(() => {
     <VCard class="rounded-xl border elevation-0 mb-6 overflow-hidden">
       <div class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3">
         <div class="d-flex align-center gap-2">
-          <VIcon
-            icon="ri-equalizer-line"
-            color="primary"
-            size="20"
-          />
+          <VIcon icon="ri-equalizer-line" color="primary" size="20" />
           <span class="font-weight-bold text-subtitle-1">Criterios de Búsqueda & Filtrado</span>
         </div>
 
         <!-- Botones Expandir / Contraer Detalles -->
         <div class="d-flex align-center gap-2">
-          <VBtn
-            size="x-small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="ri-arrow-down-s-line"
-            @click="expandAll"
-          >
+          <VBtn size="x-small" variant="tonal" color="primary" prepend-icon="ri-arrow-down-s-line" @click="expandAll">
             Expandir Todos
           </VBtn>
-          <VBtn
-            size="x-small"
-            variant="tonal"
-            color="secondary"
-            prepend-icon="ri-arrow-up-s-line"
-            @click="collapseAll"
-          >
+          <VBtn size="x-small" variant="tonal" color="secondary" prepend-icon="ri-arrow-up-s-line" @click="collapseAll">
             Contraer Todos
           </VBtn>
         </div>
@@ -529,60 +529,29 @@ onMounted(() => {
       <VCardText class="pa-4 pa-sm-6">
         <VRow dense>
           <!-- Selector de Cliente (Cédula, RUC, Nombre) -->
-          <VCol
-            cols="12"
-            md="6"
-            lg="4"
-          >
+          <VCol cols="12" md="6" lg="4">
             <label class="text-caption font-weight-bold text-uppercase text-primary mb-1 d-flex align-center gap-1">
               <VIcon icon="ri-user-3-line" size="14" color="primary" />
               1. Buscar por Cliente / RUC / Cédula
             </label>
-            <VAutocomplete
-              v-model="selectedClient"
-              :items="clientOptions"
-              :custom-filter="filterClient"
-              item-title="full_name"
-              item-value="id"
-              return-object
-              placeholder="Escribe Cédula, RUC o Nombre..."
-              prepend-inner-icon="ri-user-3-line"
-              density="comfortable"
-              variant="outlined"
-              clearable
-              :loading="isSearchingClients"
-              hide-details
+            <VAutocomplete v-model="selectedClient" :items="clientOptions" :custom-filter="filterClient"
+              item-title="full_name" item-value="id" return-object placeholder="Escribe Cédula, RUC o Nombre..."
+              prepend-inner-icon="ri-user-3-line" density="comfortable" variant="outlined" clearable
+              :loading="isSearchingClients" hide-details
               @update:search="val => val && val.length > 0 && debouncedFetchClients(val)"
-              @update:model-value="onClientSelected"
-            >
+              @update:model-value="onClientSelected">
               <template #item="{ props: itemProps, item }">
-                <VListItem
-                  v-bind="itemProps"
-                  :title="item.raw.full_name"
-                  :subtitle="`C.I / RUC: ${item.raw.n_document || 'S/N'} • Tel: ${item.raw.phone || 'S/N'}`"
-                >
+                <VListItem v-bind="itemProps" :title="item.raw.full_name"
+                  :subtitle="`C.I / RUC: ${item.raw.n_document || 'S/N'} • Tel: ${item.raw.phone || 'S/N'}`">
                   <template #prepend>
-                    <VAvatar
-                      size="32"
-                      color="primary"
-                      variant="tonal"
-                      class="me-2 font-weight-bold"
-                    >
+                    <VAvatar size="32" color="primary" variant="tonal" class="me-2 font-weight-bold">
                       {{ item.raw.full_name?.charAt(0) || 'C' }}
                     </VAvatar>
                   </template>
                   <template #append>
-                    <VChip
-                      v-if="item.raw.vehicles_count"
-                      size="x-small"
-                      color="info"
-                      variant="tonal"
-                    >
-                      <VIcon
-                        start
-                        icon="ri-car-line"
-                        size="12"
-                      />
+                    <VChip v-if="item.raw.vehicles_count" size="small" color="primary" variant="tonal"
+                      class="font-weight-bold">
+                      <VIcon start icon="ri-car-line" size="14" />
                       {{ item.raw.vehicles_count }}
                     </VChip>
                   </template>
@@ -592,38 +561,21 @@ onMounted(() => {
           </VCol>
 
           <!-- Selector de Vehículo / Placa -->
-          <VCol
-            cols="12"
-            md="6"
-            lg="4"
-          >
+          <VCol cols="12" md="6" lg="4">
             <label class="text-caption font-weight-bold text-uppercase text-success mb-1 d-flex align-center gap-1">
               <VIcon icon="ri-car-line" size="14" color="success" />
               2. Buscar por Vehículo / Placa Automotriz
             </label>
-            <VAutocomplete
-              v-model="selectedVehicle"
-              :items="vehicleOptions"
-              :custom-filter="filterVehicle"
-              item-title="license_plate"
-              item-value="id"
-              return-object
-              placeholder="Escribe Placa (Ej. ABC-1234)..."
-              prepend-inner-icon="ri-car-line"
-              density="comfortable"
-              variant="outlined"
-              clearable
-              :loading="isSearchingVehicles"
-              hide-details
+            <VAutocomplete v-model="selectedVehicle" :items="vehicleOptions" :custom-filter="filterVehicle"
+              item-title="license_plate" item-value="id" return-object placeholder="Escribe Placa (Ej. ABC-1234)..."
+              prepend-inner-icon="ri-car-line" density="comfortable" variant="outlined" clearable
+              :loading="isSearchingVehicles" hide-details
               @update:search="val => val && val.length > 0 && debouncedFetchVehicles(val)"
-              @update:model-value="onVehicleSelected"
-            >
+              @update:model-value="onVehicleSelected">
               <template #item="{ props: itemProps, item }">
-                <VListItem
-                  v-bind="itemProps"
+                <VListItem v-bind="itemProps"
                   :title="`${getBrandNameById(item.raw.brand)} ${item.raw.model || ''} (${item.raw.year || 'S/A'})`.trim()"
-                  :subtitle="item.raw.client ? `Dueño: ${item.raw.client.full_name} (${item.raw.client.n_document || ''})` : 'Sin dueño asignado'"
-                >
+                  :subtitle="item.raw.client ? `Dueño: ${item.raw.client.full_name} (${item.raw.client.n_document || ''})` : 'Sin dueño asignado'">
                   <template #prepend>
                     <span class="kardex-plate-badge kardex-plate-badge--sm me-2">
                       {{ item.raw.license_plate }}
@@ -635,123 +587,67 @@ onMounted(() => {
           </VCol>
 
           <!-- Rango de Fechas -->
-          <VCol
-            cols="12"
-            md="6"
-            lg="4"
-          >
-            <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-1 d-flex align-center gap-1">
+          <VCol cols="12" md="6" lg="4">
+            <label
+              class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-1 d-flex align-center gap-1">
               <VIcon icon="ri-calendar-event-line" size="14" />
               Rango de Fechas
             </label>
-            <VSelect
-              v-model="selectedRange"
-              :items="rangeOptions"
-              item-title="title"
-              item-value="value"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              prepend-inner-icon="ri-calendar-event-line"
-              @update:model-value="loadKardex"
-            />
+            <VSelect v-model="selectedRange" :items="rangeOptions" item-title="title" item-value="value"
+              density="comfortable" variant="outlined" hide-details prepend-inner-icon="ri-calendar-event-line"
+              @update:model-value="loadKardex" />
           </VCol>
 
           <!-- Búsqueda de Texto Libre (Repuestos / OTs / Notas) -->
-          <VCol
-            cols="12"
-            md="6"
-            lg="4"
-            class="mt-3"
-          >
+          <VCol cols="12" md="6" lg="4" class="mt-3">
             <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-1 d-block">
               🔍 Búsqueda de Repuesto, Servicio u OT
             </label>
-            <VTextField
-              v-model="searchQuery"
-              placeholder="Ej. amortiguador, alineación, OT-001..."
-              density="comfortable"
-              variant="outlined"
-              prepend-inner-icon="ri-search-2-line"
-              hide-details
-              clearable
-              @keyup.enter="loadKardex"
-            />
+            <VTextField v-model="searchQuery" placeholder="Ej. amortiguador, alineación, OT-001..."
+              density="comfortable" variant="outlined" prepend-inner-icon="ri-search-2-line" hide-details clearable
+              @keyup.enter="loadKardex" />
           </VCol>
 
           <!-- Tipo de Comprobante -->
-          <VCol
-            cols="12"
-            sm="6"
-            lg="4"
-            class="mt-3"
-          >
+          <VCol cols="12" sm="6" lg="4" class="mt-3">
             <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-1 d-block">
               📄 Tipo de Comprobante
             </label>
-            <VSelect
-              v-model="selectedDocType"
-              :items="[
-                { title: 'Todos los Comprobantes', value: 'all' },
-                { title: 'Facturas Electrónicas', value: 'invoice' },
-                { title: 'Notas de Venta / Recibos', value: 'sale_note' },
-              ]"
-              item-title="title"
-              item-value="value"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              prepend-inner-icon="ri-file-list-3-line"
-            />
+            <VSelect v-model="selectedDocType" :items="[
+              { title: 'Todos los Comprobantes', value: 'all' },
+              { title: 'Facturas Electrónicas', value: 'invoice' },
+              { title: 'Notas de Venta / Recibos', value: 'sale_note' },
+            ]" item-title="title" item-value="value" density="comfortable" variant="outlined" hide-details
+              prepend-inner-icon="ri-file-list-3-line" />
           </VCol>
 
           <!-- Estado de Pago -->
-          <VCol
-            cols="12"
-            sm="6"
-            lg="4"
-            class="mt-3"
-          >
+          <VCol cols="12" sm="6" lg="4" class="mt-3">
             <label class="text-caption font-weight-bold text-uppercase text-medium-emphasis mb-1 d-block">
               💳 Estado de Pago
             </label>
-            <VSelect
-              v-model="selectedPaymentStatus"
-              :items="[
-                { title: 'Todos los Estados', value: 'all' },
-                { title: 'Totalmente Pagados', value: 'paid' },
-                { title: 'Con Saldo Parcial (Abonado)', value: 'partial' },
-                { title: 'Con Saldo Pendiente (Total)', value: 'pending' },
-              ]"
-              item-title="title"
-              item-value="value"
-              density="comfortable"
-              variant="outlined"
-              hide-details
-              prepend-inner-icon="ri-money-dollar-circle-line"
-            />
+            <VSelect v-model="selectedPaymentStatus" :items="[
+              { title: 'Todos los Estados', value: 'all' },
+              { title: 'Totalmente Pagados', value: 'paid' },
+              { title: 'Con Saldo Parcial (Abonado)', value: 'partial' },
+              { title: 'Con Saldo Pendiente (Total)', value: 'pending' },
+            ]" item-title="title" item-value="value" density="comfortable" variant="outlined" hide-details
+              prepend-inner-icon="ri-money-dollar-circle-line" />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- Fichas Perfil (Si hay Vehículo o Cliente Seleccionado) -->
-    <VRow
-      v-if="vehicleProfile || clientProfile"
-      class="mb-6"
-    >
+    <VRow v-if="vehicleProfile || clientProfile" class="mb-6">
       <!-- Ficha de Vehículo Seleccionado -->
-      <VCol
-        v-if="vehicleProfile"
-        cols="12"
-        :md="clientProfile ? 6 : 12"
-      >
+      <VCol v-if="vehicleProfile" cols="12" :md="clientProfile ? 6 : 12">
         <div class="kardex-profile-card h-100">
-          <div class="profile-header-banner d-flex align-center justify-space-between flex-wrap gap-2">
+          <div class="profile-header-banner d-flex align-center justify-space-between flex-wrap gap-3">
             <div class="d-flex align-center gap-3">
-              <span class="kardex-plate-badge kardex-plate-badge--lg">
-                {{ vehicleProfile.license_plate }}
-              </span>
+              <VAvatar size="42" color="primary" variant="tonal" class="rounded-lg">
+                <VIcon icon="ri-car-fill" size="24" color="primary" />
+              </VAvatar>
               <div>
                 <h3 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-0">
                   {{ getBrandNameById(vehicleProfile.brand) }} {{ vehicleProfile.model }}
@@ -761,19 +657,15 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <VChip
-              size="small"
-              color="primary"
-              variant="tonal"
-              class="font-weight-bold"
-            >
-              <VIcon
-                start
-                icon="ri-speed-up-line"
-                size="14"
-              />
-              {{ vehicleProfile.last_mileage ? `${vehicleProfile.last_mileage.toLocaleString()} km` : 'Km s/n' }}
-            </VChip>
+            <div class="d-flex align-center gap-3">
+              <span class="kardex-plate-badge kardex-plate-badge--lg">
+                {{ vehicleProfile.license_plate }}
+              </span>
+              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+                <VIcon start icon="ri-speed-up-line" size="14" />
+                {{ vehicleProfile.last_mileage ? `${vehicleProfile.last_mileage.toLocaleString()} km` : 'Km s/n' }}
+              </VChip>
+            </div>
           </div>
 
           <div class="pa-4 d-flex flex-wrap gap-4 align-center justify-space-between bg-surface">
@@ -786,11 +678,7 @@ onMounted(() => {
             <div v-if="vehicleProfile.client?.phone">
               <span class="text-caption text-medium-emphasis d-block">Teléfono de Contacto:</span>
               <span class="font-weight-medium text-body-2 font-mono">
-                <VIcon
-                  icon="ri-phone-line"
-                  size="14"
-                  class="me-1"
-                />
+                <VIcon icon="ri-phone-line" size="14" class="me-1" />
                 {{ vehicleProfile.client.phone }}
               </span>
             </div>
@@ -799,20 +687,11 @@ onMounted(() => {
       </VCol>
 
       <!-- Ficha de Cliente Seleccionado -->
-      <VCol
-        v-if="clientProfile"
-        cols="12"
-        :md="vehicleProfile ? 6 : 12"
-      >
+      <VCol v-if="clientProfile" cols="12" :md="vehicleProfile ? 6 : 12">
         <div class="kardex-profile-card h-100">
           <div class="profile-header-banner d-flex align-center justify-space-between flex-wrap gap-2">
             <div class="d-flex align-center gap-3">
-              <VAvatar
-                size="44"
-                color="primary"
-                variant="elevated"
-                class="font-weight-black text-white"
-              >
+              <VAvatar size="44" color="primary" variant="elevated" class="font-weight-black text-white">
                 {{ clientProfile.full_name?.charAt(0) || 'C' }}
               </VAvatar>
               <div>
@@ -824,18 +703,9 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <VChip
-              v-if="clientProfile.phone"
-              size="small"
-              color="success"
-              variant="tonal"
-              class="font-mono"
-            >
-              <VIcon
-                start
-                icon="ri-phone-line"
-                size="14"
-              />
+            <VChip v-if="clientProfile.phone" size="small" color="primary" variant="tonal"
+              class="font-mono font-weight-medium">
+              <VIcon start icon="ri-phone-line" size="14" />
               {{ clientProfile.phone }}
             </VChip>
           </div>
@@ -845,31 +715,15 @@ onMounted(() => {
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase d-block mb-2">
               Vehículos Registrados:
             </span>
-            <div
-              v-if="clientProfile.vehicles && clientProfile.vehicles.length"
-              class="d-flex flex-wrap gap-2"
-            >
-              <VChip
-                v-for="veh in clientProfile.vehicles"
-                :key="veh.id"
-                size="small"
-                :color="selectedVehicle?.id === veh.id ? 'primary' : 'default'"
-                :variant="selectedVehicle?.id === veh.id ? 'elevated' : 'outlined'"
-                class="cursor-pointer font-weight-bold"
-                @click="selectClientVehicle(veh)"
-              >
-                <VIcon
-                  start
-                  icon="ri-car-line"
-                  size="14"
-                />
+            <div v-if="clientProfile.vehicles && clientProfile.vehicles.length" class="d-flex flex-wrap gap-2">
+              <VChip v-for="veh in clientProfile.vehicles" :key="veh.id" size="small"
+                :color="selectedVehicle?.id === veh.id ? 'primary' : 'secondary'" variant="tonal"
+                class="cursor-pointer font-weight-bold" @click="selectClientVehicle(veh)">
+                <VIcon start icon="ri-car-line" size="14" />
                 {{ veh.license_plate }} ({{ getBrandNameById(veh.brand) }} {{ veh.model }})
               </VChip>
             </div>
-            <span
-              v-else
-              class="text-caption text-disabled"
-            >
+            <span v-else class="text-caption text-disabled">
               Sin vehículos registrados directamente
             </span>
           </div>
@@ -880,54 +734,31 @@ onMounted(() => {
     <!-- Métricas & KPIs de Kardex -->
     <VRow class="mb-6">
       <!-- Total Facturado -->
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
+      <VCol cols="12" sm="6" lg="3">
         <VCard class="kardex-stat-widget pa-4 elevation-0">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Total Facturado</span>
-            <VAvatar
-              size="38"
-              color="primary"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-file-list-3-line"
-                size="20"
-              />
+            <VAvatar size="38" color="primary" variant="tonal" class="rounded-lg">
+              <VIcon icon="ri-file-list-3-line" size="20" />
             </VAvatar>
           </div>
           <div class="text-h5 font-weight-black text-high-emphasis mb-1">
             {{ formatCurrency(metrics.total_facturado) }}
           </div>
           <span class="text-caption text-medium-emphasis">
-            En {{ metrics.total_transacciones }} {{ metrics.total_transacciones === 1 ? 'comprobante' : 'comprobantes' }}
+            En {{ metrics.total_transacciones }} {{ metrics.total_transacciones === 1 ? 'comprobante' : 'comprobantes'
+            }}
           </span>
         </VCard>
       </VCol>
 
       <!-- Total Pagado -->
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
+      <VCol cols="12" sm="6" lg="3">
         <VCard class="kardex-stat-widget pa-4 elevation-0">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-caption font-weight-bold text-uppercase text-success">Total Cobrado</span>
-            <VAvatar
-              size="38"
-              color="success"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-checkbox-circle-line"
-                size="20"
-              />
+            <VAvatar size="38" color="success" variant="tonal" class="rounded-lg">
+              <VIcon icon="ri-checkbox-circle-line" size="20" />
             </VAvatar>
           </div>
           <div class="text-h5 font-weight-black text-success mb-1">
@@ -940,24 +771,12 @@ onMounted(() => {
       </VCol>
 
       <!-- Saldo Pendiente -->
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
+      <VCol cols="12" sm="6" lg="3">
         <VCard class="kardex-stat-widget pa-4 elevation-0">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-caption font-weight-bold text-uppercase text-warning">Saldo Pendiente</span>
-            <VAvatar
-              size="38"
-              color="warning"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-time-line"
-                size="20"
-              />
+            <VAvatar size="38" color="warning" variant="tonal" class="rounded-lg">
+              <VIcon icon="ri-time-line" size="20" />
             </VAvatar>
           </div>
           <div class="text-h5 font-weight-black text-warning mb-1">
@@ -970,24 +789,12 @@ onMounted(() => {
       </VCol>
 
       <!-- Desglose Repuestos vs Servicios -->
-      <VCol
-        cols="12"
-        sm="6"
-        lg="3"
-      >
+      <VCol cols="12" sm="6" lg="3">
         <VCard class="kardex-stat-widget pa-4 elevation-0">
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-caption font-weight-bold text-uppercase text-info">Repuestos & Servicios</span>
-            <VAvatar
-              size="38"
-              color="info"
-              variant="tonal"
-              class="rounded-lg"
-            >
-              <VIcon
-                icon="ri-tools-line"
-                size="20"
-              />
+            <VAvatar size="38" color="info" variant="tonal" class="rounded-lg">
+              <VIcon icon="ri-tools-line" size="20" />
             </VAvatar>
           </div>
           <div class="d-flex justify-space-between align-baseline mb-1">
@@ -1005,61 +812,35 @@ onMounted(() => {
     <!-- Lista de Transacciones y Movimientos -->
     <div class="d-flex flex-column gap-4 mb-6">
       <!-- Empty State -->
-      <VCard
-        v-if="!isLoading && transactions.length === 0"
-        class="rounded-xl border pa-12 text-center elevation-0"
-      >
-        <VAvatar
-          size="72"
-          color="secondary"
-          variant="tonal"
-          class="mb-3 rounded-circle"
-        >
-          <VIcon
-            icon="ri-inbox-2-line"
-            size="36"
-          />
+      <VCard v-if="!isLoading && transactions.length === 0" class="rounded-xl border pa-12 text-center elevation-0">
+        <VAvatar size="72" color="secondary" variant="tonal" class="mb-3 rounded-circle">
+          <VIcon icon="ri-inbox-2-line" size="36" />
         </VAvatar>
         <h4 class="text-h6 font-weight-bold text-high-emphasis mb-1">
           Sin registros para los filtros seleccionados
         </h4>
-        <p
-          class="text-body-2 text-medium-emphasis mb-0 mx-auto"
-          style="max-width: 420px;"
-        >
-          No se encontraron facturas o notas de venta con los criterios indicados. Intenta cambiar el cliente o vehículo seleccionado.
+        <p class="text-body-2 text-medium-emphasis mb-0 mx-auto" style="max-width: 420px;">
+          No se encontraron facturas o notas de venta con los criterios indicados. Intenta cambiar el cliente o vehículo
+          seleccionado.
         </p>
       </VCard>
 
       <!-- Transacciones -->
-      <VCard
-        v-for="tx in transactions"
-        :key="tx.id"
-        class="kardex-tx-card elevation-0"
-      >
+      <VCard v-for="tx in transactions" :key="tx.id" class="kardex-tx-card elevation-0">
         <div class="d-flex flex-column flex-md-row align-stretch">
           <!-- Columna Izquierda: Documento y Fecha -->
-          <div
-            class="tx-tag-col pa-4 d-flex flex-column justify-center align-start align-md-center"
-            style="min-width: 170px;"
-          >
-            <VChip
-              size="small"
-              :color="getDocTypeColor(tx.document_type)"
-              variant="tonal"
-              class="font-weight-bold text-uppercase mb-1"
-            >
+          <div class="tx-tag-col pa-4 d-flex flex-column justify-center align-start align-md-center"
+            style="min-width: 170px;">
+            <div class="doc-type-badge-mini mb-1"
+              :class="tx.document_type === 'invoice' ? 'doc-factura' : (tx.document_type === 'sale_note' ? 'doc-nota_venta' : 'doc-cotizacion')">
+              <VIcon :icon="getDocTypeIcon(tx.document_type)" size="12" class="me-1" />
               {{ getDocTypeLabel(tx.document_type) }}
-            </VChip>
+            </div>
             <span class="text-subtitle-2 font-weight-black text-high-emphasis font-mono">
               {{ tx.document_number }}
             </span>
             <span class="text-caption text-medium-emphasis mt-1 d-flex align-center">
-              <VIcon
-                icon="ri-calendar-line"
-                size="13"
-                class="me-1"
-              />
+              <VIcon icon="ri-calendar-line" size="13" class="me-1" />
               {{ tx.date_formatted }}
             </span>
           </div>
@@ -1084,11 +865,7 @@ onMounted(() => {
               <div v-if="tx.client">
                 <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold d-block">Cliente</span>
                 <div class="d-flex align-center gap-1 mt-0.5">
-                  <VIcon
-                    icon="ri-user-3-line"
-                    size="15"
-                    color="primary"
-                  />
+                  <VIcon icon="ri-user-3-line" size="15" color="primary" />
                   <span class="font-weight-bold text-body-2 text-high-emphasis">
                     {{ tx.client.full_name }}
                   </span>
@@ -1099,40 +876,31 @@ onMounted(() => {
               <div v-if="tx.mileage">
                 <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold d-block">Kilometraje</span>
                 <span class="font-weight-bold text-body-2 text-high-emphasis font-mono mt-0.5 d-block">
-                  <VIcon
-                    icon="ri-speed-up-line"
-                    size="14"
-                    class="me-1"
-                  />
+                  <VIcon icon="ri-speed-up-line" size="14" class="me-1" />
                   {{ parseInt(tx.mileage).toLocaleString() }} km
                 </span>
               </div>
 
               <!-- Orden de Trabajo -->
               <div v-if="tx.work_order_number">
-                <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold d-block">Orden de Trabajo</span>
-                <VChip
-                  size="x-small"
-                  color="info"
-                  variant="outlined"
-                  class="font-weight-bold font-mono mt-0.5"
-                >
+                <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold d-block">Orden de
+                  Trabajo</span>
+                <span
+                  class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded d-inline-block mt-0.5 cursor-pointer"
+                  title="Orden de Trabajo">
                   OT #{{ tx.work_order_number }}
-                </VChip>
+                </span>
               </div>
             </div>
 
             <!-- Botón para expandir ítems -->
             <div class="mt-2">
-              <VBtn
-                size="x-small"
-                variant="text"
-                color="primary"
-                class="px-1"
+              <VBtn size="x-small" variant="text" color="primary" class="px-1"
                 :prepend-icon="isExpanded(tx.id) ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                @click="toggleExpand(tx.id)"
-              >
-                {{ isExpanded(tx.id) ? 'Ocultar Detalle' : `Ver ${tx.details.length} ${tx.details.length === 1 ? 'ítem' : 'ítems'} detallados` }}
+                @click="toggleExpand(tx.id)">
+                {{ isExpanded(tx.id) ? 'Ocultar Detalle' : `Ver ${tx.details.length} ${tx.details.length === 1 ? 'ítem'
+                  :
+                  'ítems'} detallados` }}
               </VBtn>
             </div>
           </div>
@@ -1140,8 +908,7 @@ onMounted(() => {
           <!-- Columna Derecha: Total, Pagado, Saldo & PDF -->
           <div
             class="pa-4 d-flex flex-row flex-md-column align-center justify-space-between justify-md-center align-md-end border-t border-md-t-0 border-md-s gap-2"
-            style="min-width: 200px;"
-          >
+            style="min-width: 200px;">
             <div class="text-right">
               <div class="d-flex justify-space-between justify-md-end gap-3 align-baseline">
                 <span class="text-caption text-medium-emphasis text-uppercase">Total:</span>
@@ -1156,66 +923,36 @@ onMounted(() => {
                 </span>
               </div>
               <div class="d-flex justify-space-between justify-md-end gap-3 align-baseline text-caption">
-                <span :class="tx.due_amount > 0 ? 'text-warning font-weight-bold' : 'text-medium-emphasis'">Saldo:</span>
-                <span :class="tx.due_amount > 0 ? 'text-warning font-weight-bold font-mono' : 'text-medium-emphasis font-mono'">
+                <span
+                  :class="tx.due_amount > 0 ? 'text-warning font-weight-bold' : 'text-medium-emphasis'">Saldo:</span>
+                <span
+                  :class="tx.due_amount > 0 ? 'text-warning font-weight-bold font-mono' : 'text-medium-emphasis font-mono'">
                   {{ formatCurrency(tx.due_amount) }}
                 </span>
               </div>
             </div>
 
             <div class="d-flex align-center gap-2 mt-1">
-              <VChip
-                size="small"
-                :color="getStatusColor(tx.payment_status)"
-                variant="tonal"
-                class="font-weight-bold text-uppercase"
-              >
-                {{ getStatusLabel(tx.payment_status) }}
-              </VChip>
+              <!-- Estado estilo socios / ventas con punto indicador -->
+              <div class="status-pill-clean" :class="getStatusPillClass(tx)">
+                <span class="status-dot" />
+                <span>{{ getStatusPillText(tx) }}</span>
+              </div>
 
-              <VBtn
-                v-if="!isSaleCanceled(tx)"
-                icon
-                size="small"
-                color="error"
-                variant="tonal"
-                class="rounded-lg"
-                title="Ver y descargar PDF"
-                @click.stop="openPDF(tx)"
-              >
-                <VIcon
-                  icon="ri-file-pdf-2-line"
-                  size="18"
-                />
-                <VTooltip
-                  activator="parent"
-                  location="top"
-                >
+              <VBtn icon size="small" color="error" variant="tonal" class="rounded-lg" title="Ver y descargar PDF"
+                @click.stop="openPDF(tx)">
+                <VIcon icon="ri-file-pdf-2-line" size="18" />
+                <VTooltip activator="parent" location="top">
                   Descargar Comprobante
                 </VTooltip>
               </VBtn>
-              <VChip
-                v-else
-                size="small"
-                color="error"
-                variant="flat"
-                class="font-weight-bold cursor-pointer"
-                title="Clic para más información"
-                @click.stop="openPDF(tx)"
-              >
-                <VIcon start icon="ri-close-circle-line" size="14" />
-                ANULADA
-              </VChip>
             </div>
           </div>
         </div>
 
         <!-- Detalle Desplegable de Repuestos y Servicios -->
         <VExpandTransition>
-          <div
-            v-if="isExpanded(tx.id)"
-            class="pa-4 bg-grey-lighten-5 border-t"
-          >
+          <div v-if="isExpanded(tx.id)" class="pa-4 bg-grey-lighten-5 border-t">
             <div class="kardex-nested-table bg-surface">
               <VTable density="compact">
                 <thead>
@@ -1238,19 +975,13 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr
-                    v-for="detail in tx.details"
-                    :key="detail.id"
-                  >
+                  <tr v-for="detail in tx.details" :key="detail.id">
                     <td>
-                      <VChip
-                        size="x-small"
-                        :color="detail.tipo === 'servicio' ? 'primary' : 'success'"
-                        variant="tonal"
-                        class="font-weight-bold text-uppercase"
-                      >
-                        {{ detail.tipo }}
-                      </VChip>
+                      <div class="status-pill-clean"
+                        :class="detail.tipo === 'servicio' ? 'status-transfer' : 'status-paid'">
+                        <span class="status-dot" />
+                        <span>{{ detail.tipo }}</span>
+                      </div>
                     </td>
                     <td class="font-mono text-caption font-weight-medium">
                       {{ detail.sku || '—' }}
@@ -1280,17 +1011,134 @@ onMounted(() => {
     </div>
 
     <!-- Paginación -->
-    <div
-      v-if="totalPages > 1"
-      class="d-flex justify-center align-center py-4"
-    >
-      <VPagination
-        v-model="currentPage"
-        :length="totalPages"
-        rounded="circle"
-        active-color="primary"
-        density="comfortable"
-      />
+    <div v-if="totalPages > 1" class="d-flex justify-center align-center py-4">
+      <VPagination v-model="currentPage" :length="totalPages" rounded="circle" active-color="primary"
+        density="comfortable" />
     </div>
   </div>
 </template>
+
+<style lang="scss">
+// Status Pills (Estilo Socios Activo/Inactivo con Punto)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-quote {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  .status-dot {
+    background-color: #0ea5e9 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-other {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
+}
+
+// Document Type Badges
+.doc-type-badge-mini {
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+
+  &.doc-factura {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+  }
+
+  &.doc-nota_venta {
+    background-color: #faf5ff !important;
+    color: #7e22ce !important;
+    border: 1px solid #e9d5ff !important;
+  }
+
+  &.doc-cotizacion {
+    background-color: #fff7ed !important;
+    color: #c2410c !important;
+    border: 1px solid #fed7aa !important;
+  }
+}
+</style>

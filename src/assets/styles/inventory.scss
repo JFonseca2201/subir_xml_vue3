@@ -370,6 +370,18 @@
   border-radius: 6px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+
+  &--lg {
+    font-size: 1.15rem;
+    font-weight: 900;
+    padding: 4px 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    color: #0f172a;
+    border: 2px solid #0f172a;
+    border-radius: 8px;
+    letter-spacing: 0.12em;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+  }
 }
 
 // ==========================================================================
