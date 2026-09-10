@@ -388,6 +388,34 @@ const downloadRide = async () => {
 }
 
 const isResending = ref(false)
+const isSyncingSri = ref(false)
+
+const syncSriStatus = async () => {
+  if (!props.saleData?.id) return
+  isSyncingSri.value = true
+  try {
+    showNotification('Consultando estado en el SRI...', 'info')
+    const response = await $api(`sales/${props.saleData.id}/sri/estado`)
+    if (response?.success && response?.data) {
+      const status = response.data.sri_status
+      if (status === 'AUTORIZADA') {
+        showNotification('¡Factura AUTORIZADA exitosamente por el SRI!', 'success')
+      } else if (status === 'RECHAZADA' || status === 'DEVUELTA') {
+        showNotification(`Factura ${status} por el SRI: ${response.data.sri_error || ''}`, 'warning')
+      } else {
+        showNotification(`Estado actual en SRI: ${status}`, 'info')
+      }
+      emit('refresh')
+    } else {
+      showNotification(response?.message || 'Error al consultar estado SRI', 'error')
+    }
+  } catch (err) {
+    showNotification('Error al conectar con el servicio SRI', 'error')
+  } finally {
+    isSyncingSri.value = false
+  }
+}
+
 const resendSri = async () => {
   if (!props.saleData?.id) return
   isResending.value = true
@@ -397,6 +425,7 @@ const resendSri = async () => {
     })
     if (response?.success) {
       showNotification(response.message || 'Factura reenviada al SRI correctamente', 'success')
+      emit('refresh')
     } else {
       showNotification(response?.message || 'Error al reenviar al SRI', 'warning')
     }
@@ -493,13 +522,8 @@ const convertToSale = () => {
 </script>
 
 <template>
-  <VDialog
-    :model-value="props.isDialogVisible"
-    max-width="1140"
-    scrollable
-    transition="dialog-bottom-transition"
-    @update:model-value="closeDialog"
-  >
+  <VDialog :model-value="props.isDialogVisible" max-width="1140" scrollable transition="dialog-bottom-transition"
+    @update:model-value="closeDialog">
     <VCard class="sale-view-dialog-card rounded-xl overflow-hidden elevation-12">
       <!-- Modern Sleek Horizontal Header Banner -->
       <div class="sale-dialog-header-banner">
@@ -513,20 +537,17 @@ const convertToSale = () => {
               <span class="header-tag-label">
                 Comprobante de {{ getDocumentTypeLabel }}
               </span>
-              <VChip
-                v-if="sriEnvironment"
-                size="x-small"
-                :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'"
-                variant="flat"
-                class="font-weight-bold text-white shadow-sm px-2"
-              >
+              <VChip v-if="sriEnvironment" size="x-small"
+                :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'" variant="flat"
+                class="font-weight-bold text-white shadow-sm px-2">
                 <VIcon icon="ri-shield-flash-line" size="12" class="me-1" />
                 {{ sriEnvironment }}
               </VChip>
             </div>
 
             <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
-              <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential }}</span>
+              <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential
+                }}</span>
             </h2>
           </div>
         </div>
@@ -540,33 +561,20 @@ const convertToSale = () => {
 
           <div
             v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
-            class="glass-header-pill"
-          >
+            class="glass-header-pill">
             <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
-            <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number }}</span>
+            <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
+              }}</span>
           </div>
 
-          <VChip
-            :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor"
-            size="small"
-            variant="flat"
-            class="font-weight-bold text-white elevation-2 px-3"
-          >
-            <VIcon
-              :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon"
-              size="14"
-              class="me-1"
-            />
+          <VChip :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor" size="small" variant="flat"
+            class="font-weight-bold text-white elevation-2 px-3">
+            <VIcon :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon" size="14" class="me-1" />
             {{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}
           </VChip>
 
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="header-close-button ms-1"
-            @click="closeDialog"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-button ms-1"
+            @click="closeDialog" />
         </div>
       </div>
 
@@ -612,14 +620,11 @@ const convertToSale = () => {
                       {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
                     </div>
                   </div>
-                    <VChip
-                      size="small"
-                      class="status-pill-clean font-weight-bold"
-                      :class="`status-${isInvoice && sriStatus ? (sriStatus === 'AUTORIZADA' ? 'paid' : 'pending') : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`"
-                    >
-                      <span class="status-dot" />
-                      <span>{{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}</span>
-                    </VChip>
+                  <VChip size="small" class="status-pill-clean font-weight-bold"
+                    :class="`status-${isInvoice && sriStatus ? (sriStatus === 'AUTORIZADA' ? 'paid' : 'pending') : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`">
+                    <span class="status-dot" />
+                    <span>{{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}</span>
+                  </VChip>
                 </div>
               </div>
             </VCol>
@@ -685,20 +690,25 @@ const convertToSale = () => {
               </div>
             </div>
 
-            <div class="d-flex align-center gap-2 flex-wrap justify-end">
-              <VBtn v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'" size="small"
-                variant="outlined" color="warning" :loading="isResending" prepend-icon="ri-refresh-line"
-                class="font-weight-bold rounded-lg" @click="resendSri">
-                Reintentar SRI
-              </VBtn>
+            <VBtn v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'" size="small"
+              variant="outlined" color="info" :loading="isSyncingSri" :disabled="isResending"
+              prepend-icon="ri-refresh-line" class="font-weight-bold rounded-lg" @click="syncSriStatus">
+              Sincronizar con SRI
+            </VBtn>
 
-              <VBtn size="small" variant="flat" :color="copiedKey ? 'success' : 'primary'"
-                :prepend-icon="copiedKey ? 'ri-check-line' : 'ri-file-copy-line'"
-                class="copy-key-btn rounded-lg text-white font-weight-bold px-3" @click="copyAccessKey">
-                {{ copiedKey ? '¡Copiada!' : 'Copiar Clave' }}
-              </VBtn>
-            </div>
+            <VBtn v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'" size="small"
+              variant="outlined" color="warning" :loading="isResending" :disabled="isSyncingSri"
+              prepend-icon="ri-restart-line" class="font-weight-bold rounded-lg" @click="resendSri">
+              Reenviar al SRI
+            </VBtn>
+
+            <VBtn size="small" variant="flat" :color="copiedKey ? 'success' : 'primary'"
+              :prepend-icon="copiedKey ? 'ri-check-line' : 'ri-file-copy-line'"
+              class="copy-key-btn rounded-lg text-white font-weight-bold px-3" @click="copyAccessKey">
+              {{ copiedKey ? '¡Copiada!' : 'Copiar Clave' }}
+            </VBtn>
           </div>
+
 
           <!-- Cliente y Vehículo -->
           <VRow class="mb-5">
@@ -854,10 +864,8 @@ const convertToSale = () => {
                           {{ index + 1 }}
                         </td>
                         <td>
-                          <span
-                            class="status-pill-clean"
-                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'"
-                          >
+                          <span class="status-pill-clean"
+                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'">
                             <span class="status-dot"></span>
                             {{ dist.payment_method }}
                           </span>
@@ -980,13 +988,13 @@ const convertToSale = () => {
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">Subtotal</span>
                   <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displaySubtotal)
-                    }}</span>
+                  }}</span>
                 </div>
 
                 <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">IVA (15%)</span>
                   <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displayTaxAmount)
-                    }}</span>
+                  }}</span>
                 </div>
 
                 <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center mb-2 text-error">
@@ -1011,27 +1019,13 @@ const convertToSale = () => {
       <!-- Footer Actions Flotante y Moderno -->
       <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white flex-wrap sticky-dialog-footer">
         <!-- Conversión Directa de Cotizaciones Activas -->
-        <VBtn
-          v-if="canConvertQuote"
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-tools-line"
-          class="rounded-lg px-4 font-weight-bold elevation-2"
-          height="42"
-          @click="convertToWorkOrder"
-        >
+        <VBtn v-if="canConvertQuote" color="primary" variant="elevated" prepend-icon="ri-tools-line"
+          class="rounded-lg px-4 font-weight-bold elevation-2" height="42" @click="convertToWorkOrder">
           Convertir a Orden de Trabajo
         </VBtn>
 
-        <VBtn
-          v-if="canConvertQuote"
-          color="success"
-          variant="tonal"
-          prepend-icon="ri-shopping-cart-2-line"
-          class="rounded-lg px-4 font-weight-bold"
-          height="42"
-          @click="convertToSale"
-        >
+        <VBtn v-if="canConvertQuote" color="success" variant="tonal" prepend-icon="ri-shopping-cart-2-line"
+          class="rounded-lg px-4 font-weight-bold" height="42" @click="convertToSale">
           Facturar Venta
         </VBtn>
 

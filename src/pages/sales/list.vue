@@ -599,8 +599,15 @@ const downloadRide = async item => {
   }
 }
 
+const sriSyncingIds = ref(new Set())
+const sriResendingIds = ref(new Set())
+
+const isSriSyncing = id => sriSyncingIds.value.has(id)
+const isSriResending = id => sriResendingIds.value.has(id)
+
 const syncSriStatus = async item => {
   if (!item || item.document_type !== 'invoice') return
+  sriSyncingIds.value = new Set(sriSyncingIds.value).add(item.id)
   try {
     showNotification('Consultando estado en el SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/estado`)
@@ -620,11 +627,18 @@ const syncSriStatus = async item => {
   } catch (error) {
     console.error('Error al sincronizar estado SRI:', error)
     showNotification('Error al conectar con el servicio SRI', 'error')
+  } finally {
+    const updated = new Set(sriSyncingIds.value)
+    updated.delete(item.id)
+    sriSyncingIds.value = updated
   }
 }
 
 const resendSri = async item => {
+  if (!item) return
+  sriResendingIds.value = new Set(sriResendingIds.value).add(item.id)
   try {
+    showNotification('Reenviando comprobante al SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/reenviar`, { method: 'POST' })
     if (response?.success) {
       showNotification('Factura encolada para reenvío al SRI', 'success')
@@ -634,7 +648,23 @@ const resendSri = async item => {
     }
   } catch (error) {
     showNotification('Error al solicitar reenvío al SRI', 'error')
+  } finally {
+    const updated = new Set(sriResendingIds.value)
+    updated.delete(item.id)
+    sriResendingIds.value = updated
   }
+}
+
+const handleSriErrorSync = async sale => {
+  if (!sale) return
+  await syncSriStatus(sale)
+  sriErrorDialogVisible.value = false
+}
+
+const handleSriErrorResend = async sale => {
+  if (!sale) return
+  await resendSri(sale)
+  sriErrorDialogVisible.value = false
 }
 
 const showCanceledDocAlert = docNumber => {
@@ -1185,11 +1215,22 @@ onMounted(() => {
 
                   <!-- Estado SRI (Solo para facturas activas) -->
                   <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
-                    class="sri-badge-clean cursor-pointer" :class="`sri-${item.sri_status.toLowerCase()}`"
+                    class="sri-badge-clean cursor-pointer position-relative d-inline-flex align-center"
+                    :class="[
+                      `sri-${item.sri_status.toLowerCase()}`,
+                      { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
+                    ]"
                     :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
-                    @click="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null)">
-                    <span class="sri-dot" />
-                    <span>{{ getSriStatusInfo(item.sri_status).text }}</span>
+                    @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))">
+                    <VProgressCircular
+                      v-if="isSriSyncing(item.id) || isSriResending(item.id)"
+                      indeterminate
+                      size="11"
+                      width="1.8"
+                      class="me-1 text-primary"
+                    />
+                    <span v-else class="sri-dot" />
+                    <span>{{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' : getSriStatusInfo(item.sri_status).text) }}</span>
                   </div>
                 </div>
               </td>
@@ -1205,7 +1246,7 @@ onMounted(() => {
                   <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
                     <VIcon icon="ri-more-2-line" size="18" />
                     <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="210">
+                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
                         <VListItem prepend-icon="ri-printer-line" title="Imprimir Ticket" class="text-info text-body-2"
                           @click="printSale(item.id)" />
                         <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2"
@@ -1216,11 +1257,32 @@ onMounted(() => {
                         <!-- Acciones SRI para Facturas -->
                         <template v-if="item.document_type === 'invoice'">
                           <VDivider class="my-1" />
-                          <VListItem v-if="item.sri_status !== 'AUTORIZADA'" prepend-icon="ri-refresh-line"
-                            title="Sincronizar con SRI" class="text-primary text-body-2" @click="syncSriStatus(item)" />
-                          <VListItem v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
-                            prepend-icon="ri-send-plane-line" title="Reintentar Envío SRI"
-                            class="text-warning text-body-2" @click="resendSri(item)" />
+                          <VListItem
+                            v-if="item.sri_status !== 'AUTORIZADA'"
+                            prepend-icon="ri-refresh-line"
+                            :title="isSriSyncing(item.id) ? 'Sincronizando con SRI...' : 'Sincronizar con SRI'"
+                            :disabled="isSriSyncing(item.id) || isSriResending(item.id)"
+                            class="text-primary text-body-2"
+                            @click="syncSriStatus(item)"
+                          >
+                            <template v-if="isSriSyncing(item.id)" #append>
+                              <VProgressCircular indeterminate size="15" width="2" color="primary" />
+                            </template>
+                          </VListItem>
+
+                          <VListItem
+                            v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
+                            prepend-icon="ri-send-plane-line"
+                            :title="isSriResending(item.id) ? 'Reenviando al SRI...' : 'Reenviar al SRI'"
+                            :disabled="isSriSyncing(item.id) || isSriResending(item.id)"
+                            class="text-warning text-body-2"
+                            @click="resendSri(item)"
+                          >
+                            <template v-if="isSriResending(item.id)" #append>
+                              <VProgressCircular indeterminate size="15" width="2" color="warning" />
+                            </template>
+                          </VListItem>
+
                           <VListItem v-if="item.sri_status === 'AUTORIZADA' || item.xml_path"
                             prepend-icon="ri-file-code-line" title="Descargar XML SRI" class="text-info text-body-2"
                             @click="downloadXml(item)" />
@@ -1262,7 +1324,7 @@ onMounted(() => {
 
     <!-- Dialogs -->
     <SaleViewDialog v-if="isViewDialogVisible" v-model:is-dialog-visible="isViewDialogVisible" :sale-data="selectedSale"
-      :loading="viewLoading" />
+      :loading="viewLoading" @refresh="loadSales" />
 
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />
@@ -1276,9 +1338,16 @@ onMounted(() => {
     <SaleMailDialog v-model:is-dialog-visible="isMailDialogVisible" :sale-selected="mailSaleSelected" />
 
     <!-- Diálogo Modal para Errores SRI -->
-    <SriErrorDialog v-model:is-dialog-visible="sriErrorDialogVisible" :error-msg="selectedSriError"
-      :sale="selectedSaleForSriError" @verify-sri="isSriStatusDialogVisible = true" @sync-status="syncSriStatus"
-      @resend="resendSri" />
+    <SriErrorDialog
+      v-model:is-dialog-visible="sriErrorDialogVisible"
+      :error-msg="selectedSriError"
+      :sale="selectedSaleForSriError"
+      :is-syncing="selectedSaleForSriError ? isSriSyncing(selectedSaleForSriError.id) : false"
+      :is-resending="selectedSaleForSriError ? isSriResending(selectedSaleForSriError.id) : false"
+      @verify-sri="isSriStatusDialogVisible = true"
+      @sync-status="handleSriErrorSync"
+      @resend="handleSriErrorResend"
+    />
 
     <!-- Diálogo para Emitir Nota de Crédito SRI -->
     <CreditNoteDialog :is-dialog-visible="isCreditNoteDialogVisible" :sale-selected="selectedSaleForCreditNote"

@@ -345,8 +345,15 @@ const saveClient = async () => {
       method: "POST",
       body: clientData,
       onResponseError({ response }) {
-        error.value = response._data?.message || 'Error al guardar empresa'
-        console.error('Error response:', response._data)
+        const errorData = response._data
+        let errorMsg = errorData?.message
+        if (!errorMsg || errorMsg === 'Error de validación') {
+          if (errorData?.errors && typeof errorData.errors === 'object') {
+            errorMsg = Object.values(errorData.errors).flat().join(' | ')
+          }
+        }
+        error.value = errorMsg || 'Error al guardar empresa'
+        console.error('Error response:', errorData)
       },
     })
 
@@ -380,10 +387,19 @@ const saveClient = async () => {
       error.value = resp.message || 'Error al guardar empresa'
       showNotification(resp.message || 'Error al guardar empresa', 'error')
     }
-  } catch (error) {
-    console.error('Error al guardar empresa:', error)
-    error.value = 'Error al guardar empresa. Intente nuevamente.'
-    showNotification('Error al guardar empresa. Intente nuevamente.', 'error')
+  } catch (err) {
+    console.error('Error al guardar empresa:', err)
+    if (!error.value) {
+      const respData = err?.data || err?.response?._data
+      let errText = respData?.message
+      if (!errText || errText === 'Error de validación') {
+        if (respData?.errors && typeof respData.errors === 'object') {
+          errText = Object.values(respData.errors).flat().join(' | ')
+        }
+      }
+      error.value = errText || err?.message || 'Error al guardar empresa. Intente nuevamente.'
+    }
+    showNotification(error.value, 'error')
   } finally {
     loading.value = false
   }

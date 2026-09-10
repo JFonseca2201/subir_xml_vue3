@@ -14,6 +14,14 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  isSyncing: {
+    type: Boolean,
+    default: false,
+  },
+  isResending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits([
@@ -44,6 +52,7 @@ const isSriNetworkError = computed(() => {
 const isSaleCanceled = computed(() => props.sale?.status === 'canceled')
 
 const closeDialog = () => {
+  if (props.isSyncing || props.isResending) return
   emit('update:isDialogVisible', false)
 }
 
@@ -52,16 +61,14 @@ const onVerifySri = () => {
 }
 
 const onSyncStatus = () => {
-  if (props.sale) {
+  if (props.sale && !props.isSyncing && !props.isResending) {
     emit('sync-status', props.sale)
-    closeDialog()
   }
 }
 
 const onResend = () => {
-  if (props.sale) {
+  if (props.sale && !props.isSyncing && !props.isResending) {
     emit('resend', props.sale)
-    closeDialog()
   }
 }
 </script>
@@ -108,20 +115,45 @@ const onResend = () => {
       <VDivider />
 
       <VCardActions class="pa-4 d-flex justify-space-between flex-wrap gap-2 bg-white">
-        <VBtn color="info" variant="tonal" prepend-icon="ri-wifi-line" @click="onVerifySri">
+        <VBtn
+          color="info"
+          variant="tonal"
+          prepend-icon="ri-wifi-line"
+          :disabled="isSyncing || isResending"
+          @click="onVerifySri"
+        >
           Verificar Servidores SRI
         </VBtn>
 
         <div class="d-flex gap-2">
-          <VBtn color="secondary" variant="outlined" @click="closeDialog">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            :disabled="isSyncing || isResending"
+            @click="closeDialog"
+          >
             Cerrar
           </VBtn>
-          <VBtn v-if="sale && !isSaleCanceled" color="info" variant="tonal" prepend-icon="ri-refresh-line"
-            @click="onSyncStatus">
+          <VBtn
+            v-if="sale && !isSaleCanceled"
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-refresh-line"
+            :loading="isSyncing"
+            :disabled="isResending"
+            @click="onSyncStatus"
+          >
             Consultar Autorización SRI
           </VBtn>
-          <VBtn v-if="sale && !isSaleCanceled" color="primary" variant="elevated" prepend-icon="ri-restart-line"
-            @click="onResend">
+          <VBtn
+            v-if="sale && !isSaleCanceled"
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-restart-line"
+            :loading="isResending"
+            :disabled="isSyncing"
+            @click="onResend"
+          >
             Reenviar al SRI
           </VBtn>
         </div>

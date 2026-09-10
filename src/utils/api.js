@@ -77,23 +77,27 @@ export const $api = ofetch.create({
       // Extract specific validation message from backend errors dictionary
       if (data.errors && typeof data.errors === 'object') {
         const errorValues = Object.values(data.errors)
+        const messages = []
         for (const val of errorValues) {
-          if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') {
-            specificMessage = val[0]
-            break
+          if (Array.isArray(val)) {
+            messages.push(...val.filter(v => typeof v === 'string'))
           } else if (typeof val === 'string') {
-            specificMessage = val
-            break
+            messages.push(val)
           }
+        }
+        if (messages.length > 0) {
+          specificMessage = messages.join(' | ')
         }
       }
 
       const genericMessages = [
         'The given data was invalid.',
         'Error de validación',
+        'Error de validación.',
         'Datos inválidos',
         'Errores de validación.',
         'Datos de entrada no válidos.',
+        'Error en el servidor',
       ]
 
       if (specificMessage) {

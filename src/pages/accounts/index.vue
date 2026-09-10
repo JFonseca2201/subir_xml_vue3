@@ -102,12 +102,98 @@ const getTypeLabel = type => {
   return type === 'bank' ? 'Banco' : 'Caja'
 }
 
-// Verificar si es Banco Guayaquil (ID 3)
+// Verificar si es Banco Guayaquil
 const isBankGuayaquil = account => {
-  return account.id === 3 && account.bank_name?.toLowerCase().includes('guayaquil')
+  const bankName = (account?.bank_name || '').toLowerCase()
+  const name = (account?.name || '').toLowerCase()
+  const code = (account?.code || '').toLowerCase()
+  return bankName.includes('guayaquil') || name.includes('guayaquil') || code.includes('bga')
 }
 
-// Obtener clase CSS para resaltar Banco Guayaquil
+// Verificar si es Banco Pichincha
+const isBankPichincha = account => {
+  const bankName = (account?.bank_name || '').toLowerCase()
+  const name = (account?.name || '').toLowerCase()
+  const code = (account?.code || '').toLowerCase()
+  return bankName.includes('pichincha') || name.includes('pichincha') || code.includes('bpich') || code.includes('pich')
+}
+
+// Verificar si es Efectivo / Caja
+const isCashAccount = account => {
+  const type = (account?.type || '').toLowerCase().trim()
+  const bankName = (account?.bank_name || '').toLowerCase().trim()
+  const name = (account?.name || '').toLowerCase().trim()
+
+  // Si tiene un banco identificado (Pichincha / Guayaquil) o tipo explícito banco sin ser efectivo, no es cash
+  if (isBankPichincha(account) || isBankGuayaquil(account)) {
+    return false
+  }
+
+  if (type === 'bank' && !bankName.includes('efectivo') && !name.includes('efectivo')) {
+    return false
+  }
+
+  if (type === 'cash' || type === 'caja' || type === 'efectivo') {
+    return true
+  }
+
+  if (bankName.includes('efectivo') || name.includes('caja chica') || (name.includes('efectivo') && !name.includes('transferencia'))) {
+    return true
+  }
+
+  return false
+}
+
+// Obtener variante de diseño según tipo y entidad (Efectivo verde dólar con billete, Pichincha amarillo, Guayaquil púrpura/rosa)
+const getAccountVariant = account => {
+  if (parseFloat(account?.saldo_actual || 0) < 0) {
+    return 'negative'
+  }
+
+  // 1. Banco Guayaquil (Púrpura / Rosa)
+  if (isBankGuayaquil(account)) {
+    return 'guayaquil'
+  }
+
+  // 2. Banco Pichincha (Amarillo)
+  if (isBankPichincha(account)) {
+    return 'pichincha'
+  }
+
+  // 3. Efectivo / Cash (Verde del Dólar)
+  if (isCashAccount(account)) {
+    return 'cash'
+  }
+
+  // 4. Otras transferencias / Bancos (Azul)
+  if ((account?.type || '').toLowerCase() === 'bank' || account?.bank_name) {
+    return 'transfer'
+  }
+
+  return 'cash'
+}
+
+// Obtener etiqueta descriptiva para el distintivo de saldo
+const getAccountBalanceTag = account => {
+  const variant = getAccountVariant(account)
+  if (variant === 'guayaquil') return 'B. Guayaquil'
+  if (variant === 'pichincha') return 'B. Pichincha'
+  if (variant === 'cash') return 'Efectivo / Cash'
+  if (variant === 'transfer') return account.bank_name || 'Transferencia'
+  return 'Saldo'
+}
+
+// Obtener ícono para el distintivo de saldo (ícono de billete para efectivo)
+const getAccountBalanceIcon = account => {
+  const variant = getAccountVariant(account)
+  if (variant === 'cash') return 'ri-bill-line'
+  if (variant === 'guayaquil') return 'ri-bank-card-line'
+  if (variant === 'pichincha') return 'ri-bank-line'
+  if (variant === 'transfer') return 'ri-bank-line'
+  return 'ri-error-warning-line'
+}
+
+// Obtener clase CSS para resaltar fila si aplica
 const getRowClass = account => {
   return isBankGuayaquil(account) ? 'bg-blue-lighten-4' : ''
 }
@@ -457,12 +543,26 @@ onMounted(() => {
               <span v-else class="text-caption text-medium-emphasis">No especificado</span>
             </td>
 
-            <!-- Saldo Actual -->
+            <!-- Saldo Actual con Distintivo Efectivo / Pichincha / Guayaquil / Transferencia -->
             <td class="py-3 text-right">
-              <span class="text-subtitle-1 font-weight-black"
-                :class="parseFloat(account.saldo_actual) >= 0 ? 'text-success' : 'text-error'">
-                {{ formatCurrency(account.saldo_actual || 0) }}
-              </span>
+              <div class="d-inline-flex flex-column align-end">
+                <div
+                  class="balance-card-pill"
+                  :class="`balance-${getAccountVariant(account)}`"
+                >
+                  <div class="balance-tag">
+                    <VIcon
+                      :icon="getAccountBalanceIcon(account)"
+                      size="14"
+                      class="me-1"
+                    />
+                    <span>{{ getAccountBalanceTag(account) }}</span>
+                  </div>
+                  <span class="balance-number">
+                    {{ formatCurrency(account.saldo_actual || 0) }}
+                  </span>
+                </div>
+              </div>
             </td>
 
             <!-- Acciones -->
@@ -660,6 +760,117 @@ onMounted(() => {
 
   .status-dot {
     background-color: #94a3b8 !important;
+  }
+}
+
+// Balance Card Pill (Distintivo Saldo Disponible - Efectivo vs Pichincha vs Guayaquil vs Transferencia)
+.balance-card-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 6px 12px;
+  border-radius: 10px;
+  min-width: 140px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  .balance-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .balance-number {
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-family: inherit;
+  }
+
+  // 1. Efectivo / Cash: Verde del Dólar (Forest Money Green auténtico)
+  &.balance-cash {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border: 1px solid #6ee7b7 !important;
+    color: #065f46 !important;
+
+    .balance-tag {
+      color: #047857 !important;
+    }
+
+    .balance-number {
+      color: #064e3b !important;
+    }
+  }
+
+  // 2. Banco Pichincha: Amarillo Institucional / Sun Gold
+  &.balance-pichincha {
+    background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+    border: 1px solid #facc15;
+    color: #854d0e;
+
+    .balance-tag {
+      color: #a16207;
+    }
+
+    .balance-number {
+      color: #713f12;
+    }
+  }
+
+  // 3. Banco Guayaquil: Púrpura Medio Rosa / Magenta Corporativo
+  &.balance-guayaquil {
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+    border: 1px solid #f472b6;
+    color: #9d174d;
+
+    .balance-tag {
+      color: #db2777;
+    }
+
+    .balance-number {
+      color: #831843;
+    }
+  }
+
+  // 4. Otras Transferencias / Bancos: Azul elegante / Indigo profesional
+  &.balance-transfer {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+
+    .balance-tag {
+      color: #2563eb;
+    }
+
+    .balance-number {
+      color: #1e3a8a;
+    }
+  }
+
+  // 5. Saldo negativo: Rojo suave / Alerta
+  &.balance-negative {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+
+    .balance-tag {
+      color: #dc2626;
+    }
+
+    .balance-number {
+      color: #991b1b;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
   }
 }
 </style>
