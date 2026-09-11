@@ -75,9 +75,9 @@ const router = createRouter({
         },
       ],
     ].map(route => {
-      // Forzar navActiveLink para subpáginas de operaciones
-      const opsPaths = ['/finanzas/employee-expenses', '/finanzas/aportes', '/transfers']
-      const opsNames = ['finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index']
+      // Forzar navActiveLink para subpáginas y página de operaciones
+      const opsPaths = ['/operations', '/finanzas/operaciones', '/finanzas/employee-expenses', '/finanzas/aportes', '/transfers']
+      const opsNames = ['operations', 'operations-index', 'finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index']
 
       if (opsNames.includes(route.name) || opsPaths.includes(route.path)) {
         route.meta = { ...route.meta, navActiveLink: 'operations-index' }

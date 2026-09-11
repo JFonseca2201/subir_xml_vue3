@@ -379,16 +379,16 @@ const formatCurrency = value => {
 // Helper de estados de OT
 const getWorkOrderStatusProps = status => {
   switch (status) {
-  case 'ready':
-  case 'delivered':
-    return { label: 'Listo p/ Facturar', colorClass: 'status-paid', dotColor: '#10b981', icon: 'ri-checkbox-circle-line' }
-  case 'in_progress':
-    return { label: 'En Progreso', colorClass: 'status-partial', dotColor: '#f59e0b', icon: 'ri-tools-line' }
-  case 'received':
-  case 'diagnosis':
-    return { label: 'Recibido', colorClass: 'status-transfer', dotColor: '#3b82f6', icon: 'ri-file-list-3-line' }
-  default:
-    return { label: status || 'Borrador', colorClass: 'status-canceled', dotColor: '#94a3b8', icon: 'ri-draft-line' }
+    case 'ready':
+    case 'delivered':
+      return { label: 'Listo p/ Facturar', colorClass: 'status-paid', dotColor: '#10b981', icon: 'ri-checkbox-circle-line' }
+    case 'in_progress':
+      return { label: 'En Progreso', colorClass: 'status-partial', dotColor: '#f59e0b', icon: 'ri-tools-line' }
+    case 'received':
+    case 'diagnosis':
+      return { label: 'Recibido', colorClass: 'status-transfer', dotColor: '#3b82f6', icon: 'ri-file-list-3-line' }
+    default:
+      return { label: status || 'Borrador', colorClass: 'status-canceled', dotColor: '#94a3b8', icon: 'ri-draft-line' }
   }
 }
 
@@ -456,23 +456,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="operations-dashboard-page">
+  <div class="pa-4 pa-sm-6 operations-dashboard-page">
     <!-- Pantalla de Bloqueo -->
-    <div
-      v-if="!canAccessOperations"
-      class="d-flex justify-center align-center"
-      style="height: 400px"
-    >
-      <VCard
-        class="pa-6 text-center"
-        elevation="4"
-        rounded="xl"
-      >
-        <VIcon
-          size="64"
-          color="error"
-          class="mb-4"
-        >
+    <div v-if="!canAccessOperations" class="d-flex justify-center align-center" style="height: 400px">
+      <VCard class="pa-6 text-center" elevation="4" rounded="xl">
+        <VIcon size="64" color="error" class="mb-4">
           ri-lock-line
         </VIcon>
         <h3 class="text-h5 mb-2">
@@ -481,11 +469,7 @@ onMounted(() => {
         <p class="text-medium-emphasis">
           No tienes permisos para acceder a la gestión de operaciones.
         </p>
-        <VBtn
-          color="primary"
-          class="mt-4"
-          @click="router.push('/dashboard')"
-        >
+        <VBtn color="primary" class="mt-4" @click="router.push('/dashboard')">
           Volver al Dashboard
         </VBtn>
       </VCard>
@@ -555,14 +539,12 @@ onMounted(() => {
                 </div>
               </div>
               <div>
-                <div
-                  class="kpi-value"
-                  :class="financialSummary.currentBalance >= 0 ? 'text-primary' : 'text-rose'"
-                >
+                <div class="kpi-value" :class="financialSummary.currentBalance >= 0 ? 'text-primary' : 'text-rose'">
                   {{ formatCurrency(financialSummary.currentBalance) }}
                 </div>
                 <div class="d-flex align-center gap-1 mt-1 text-caption text-slate-500 font-weight-medium">
-                  <VIcon :icon="financialSummary.currentBalance >= 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'" size="13" />
+                  <VIcon :icon="financialSummary.currentBalance >= 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"
+                    size="13" />
                   <span>Diferencia acumulada</span>
                 </div>
               </div>
@@ -572,10 +554,8 @@ onMounted(() => {
 
         <!-- Órdenes de Trabajo Activas -->
         <VCol cols="12" sm="6" lg="3">
-          <VCard
-            class="kpi-metric-card kpi-workorders border elevation-0 rounded-2xl h-100 cursor-pointer"
-            @click="router.push('/work-orders')"
-          >
+          <VCard class="kpi-metric-card kpi-workorders border elevation-0 rounded-2xl h-100 cursor-pointer"
+            @click="router.push('/work-orders')">
             <div class="pa-4 d-flex flex-column justify-space-between h-100">
               <div class="d-flex align-center justify-space-between mb-3">
                 <span class="kpi-label">Órdenes de Trabajo</span>
@@ -604,104 +584,69 @@ onMounted(() => {
         </VCol>
       </VRow>
 
-      <!-- Layout Principal: 2 Columnas -->
+      <!-- Layout Principal: Movimientos Recientes a Pantalla Completa -->
       <VRow>
-        <!-- Columna Izquierda: Movimientos Recientes & Flujo -->
-        <VCol cols="12" lg="8">
+        <VCol cols="12">
           <VCard elevation="0" class="border rounded-2xl h-100 position-relative overflow-hidden bg-white">
-            <VProgressLinear
-              v-if="loading"
-              indeterminate
-              color="primary"
-              height="3"
-              class="position-absolute"
-              style="top: 0; left: 0; right: 0; z-index: 10;"
-            />
+            <VProgressLinear v-if="loading" indeterminate color="primary" height="3" class="position-absolute"
+              style="top: 0; left: 0; right: 0; z-index: 10;" />
 
-            <!-- Encabezado de la Tarjeta de Movimientos -->
-            <div class="pa-4 pa-sm-5 border-b d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-3">
+            <!-- Encabezado de la Tarjeta de Movimientos (Estándar de Sistema idéntico a Ingresos y Gastos) -->
+            <div class="pa-3 pa-sm-4 border-b d-flex align-center justify-space-between flex-wrap gap-4">
               <div class="d-flex align-center gap-3">
-                <div class="section-icon-box">
-                  <VIcon icon="ri-history-line" size="22" color="primary" />
-                </div>
+                <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
+                  <VIcon icon="ri-history-line" size="24" />
+                </VAvatar>
                 <div>
                   <div class="d-flex align-center gap-2">
-                    <h2 class="text-h6 font-weight-bold text-slate-900 mb-0">
+                    <h2 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                       Movimientos Recientes
                     </h2>
-                    <span class="badge-count">
-                      {{ rawMovementsList.length }} registros
-                    </span>
+                    <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
+                      {{ rawMovementsList.length }} {{ rawMovementsList.length === 1 ? 'registro' : 'registros' }}
+                    </VChip>
                   </div>
-                  <p class="text-caption text-slate-500 mb-0">
+                  <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
                     Historial cronológico de ingresos, egresos y facturación
                   </p>
                 </div>
               </div>
 
-              <div class="d-flex align-center gap-2 w-100 w-sm-auto">
-                <VBtn
-                  color="success"
-                  prepend-icon="ri-file-pdf-line"
-                  :loading="pdfLoading"
-                  size="small"
-                  variant="flat"
-                  class="font-weight-semibold rounded-lg flex-grow-1 flex-sm-grow-0"
-                  @click="generatePDF"
-                >
-                  Generar PDF
+              <!-- Acciones a la derecha idénticas a las cabeceras de sistema -->
+              <div class="d-flex align-center gap-3 flex-wrap ms-auto">
+                <VBtn color="secondary" variant="tonal" size="small" prepend-icon="ri-file-pdf-line"
+                  class="font-weight-semibold" :loading="pdfLoading" @click="generatePDF">
+                  Exportar PDF
                 </VBtn>
 
-                <VBtn
-                  icon
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  class="rounded-lg"
-                  title="Actualizar datos"
-                  @click="dashboardOptions"
-                >
+                <VBtn icon size="small" variant="tonal" color="secondary" class="rounded-lg" title="Actualizar datos"
+                  @click="dashboardOptions">
                   <VIcon icon="ri-refresh-line" size="18" />
                 </VBtn>
               </div>
             </div>
 
             <!-- Barra de Filtros y Búsqueda de Movimientos -->
-            <div class="px-4 py-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-3">
+            <div
+              class="px-4 py-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-3">
               <!-- Filtros de Segmento -->
               <div class="movement-filter-pills d-flex align-center">
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'all' }"
-                  @click="movementFilter = 'all'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'all' }"
+                  @click="movementFilter = 'all'">
                   Todos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'income' }"
-                  @click="movementFilter = 'income'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'income' }"
+                  @click="movementFilter = 'income'">
                   <span class="pill-dot dot-income" />
                   Ingresos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'expense' }"
-                  @click="movementFilter = 'expense'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'expense' }"
+                  @click="movementFilter = 'expense'">
                   <span class="pill-dot dot-expense" />
                   Egresos
                 </button>
-                <button
-                  type="button"
-                  class="filter-pill-btn"
-                  :class="{ active: movementFilter === 'transfer' }"
-                  @click="movementFilter = 'transfer'"
-                >
+                <button type="button" class="filter-pill-btn" :class="{ active: movementFilter === 'transfer' }"
+                  @click="movementFilter = 'transfer'">
                   <span class="pill-dot dot-transfer" />
                   Transferencias
                 </button>
@@ -709,16 +654,9 @@ onMounted(() => {
 
               <!-- Input de Búsqueda Rápida -->
               <div class="movement-search-input">
-                <VTextField
-                  v-model="movementSearch"
-                  density="compact"
-                  variant="outlined"
-                  placeholder="Buscar movimiento, OT, placa..."
-                  prepend-inner-icon="ri-search-line"
-                  hide-details
-                  clearable
-                  class="search-field"
-                />
+                <VTextField v-model="movementSearch" density="compact" variant="outlined"
+                  placeholder="Buscar movimiento, OT, placa..." prepend-inner-icon="ri-search-line" hide-details
+                  clearable class="search-field" />
               </div>
             </div>
 
@@ -726,11 +664,7 @@ onMounted(() => {
             <div class="pa-0">
               <!-- Skeleton Loader -->
               <div v-if="loading" class="pa-4">
-                <div
-                  v-for="n in 5"
-                  :key="n"
-                  class="pa-3 mb-2 border rounded-xl d-flex align-center gap-3 shimmer-row"
-                >
+                <div v-for="n in 5" :key="n" class="pa-3 mb-2 border rounded-xl d-flex align-center gap-3 shimmer-row">
                   <div class="shimmer-circle" />
                   <div class="flex-grow-1">
                     <div class="shimmer-line w-50 mb-2" />
@@ -741,10 +675,7 @@ onMounted(() => {
               </div>
 
               <!-- Sin Resultados -->
-              <div
-                v-else-if="filteredGroupedMovements.length === 0"
-                class="pa-10 text-center text-slate-500"
-              >
+              <div v-else-if="filteredGroupedMovements.length === 0" class="pa-10 text-center text-slate-500">
                 <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
                   <VIcon icon="ri-folder-open-line" size="32" />
                 </VAvatar>
@@ -752,31 +683,21 @@ onMounted(() => {
                   No se encontraron movimientos
                 </h3>
                 <p class="text-body-2 text-slate-500 mt-1 max-w-sm mx-auto">
-                  {{ movementSearch ? 'No hay registros que coincidan con la búsqueda.' : 'No hay movimientos registrados para este período.' }}
+                  {{ movementSearch ? 'No hay registros que coincidan con la búsqueda.' :
+                    'No hay movimientos registrados para este período.' }}
                 </p>
-                <VBtn
-                  v-if="movementSearch || movementFilter !== 'all'"
-                  size="small"
-                  variant="tonal"
-                  color="primary"
-                  class="mt-2"
-                  @click="movementSearch = ''; movementFilter = 'all'"
-                >
+                <VBtn v-if="movementSearch || movementFilter !== 'all'" size="small" variant="tonal" color="primary"
+                  class="mt-2" @click="movementSearch = ''; movementFilter = 'all'">
                   Limpiar Filtros
                 </VBtn>
               </div>
 
               <!-- Lista de Movimientos Agrupada -->
-              <div
-                v-else
-                class="overflow-y-auto movements-scroll-container pa-4 pa-sm-5"
-              >
-                <template
-                  v-for="day in filteredGroupedMovements"
-                  :key="day.dateKey"
-                >
+              <div v-else class="overflow-y-auto movements-scroll-container pa-4 pa-sm-5">
+                <template v-for="(day, dayIdx) in filteredGroupedMovements" :key="day.dateKey">
                   <!-- Cabecera de Fecha Separada y Espaciosa -->
-                  <div class="operations-date-header d-flex align-center justify-space-between px-3 py-2 mb-3 mt-2">
+                  <div class="operations-date-header d-flex align-center justify-space-between px-4 py-2.5 mb-3.5"
+                    :class="dayIdx === 0 ? 'mt-1' : 'mt-6'">
                     <div class="d-flex align-center gap-2">
                       <VIcon icon="ri-calendar-event-line" size="16" class="text-primary" />
                       <span class="text-caption font-weight-bold text-uppercase text-slate-800 tracking-wider">
@@ -786,16 +707,10 @@ onMounted(() => {
 
                     <div class="d-flex align-center gap-2">
                       <!-- Balance del día -->
-                      <span
-                        v-if="day.totalIncome > 0"
-                        class="day-subtotal day-subtotal-income"
-                      >
+                      <span v-if="day.totalIncome > 0" class="day-subtotal day-subtotal-income">
                         +{{ formatCurrency(day.totalIncome) }}
                       </span>
-                      <span
-                        v-if="day.totalExpense > 0"
-                        class="day-subtotal day-subtotal-expense"
-                      >
+                      <span v-if="day.totalExpense > 0" class="day-subtotal day-subtotal-expense">
                         -{{ formatCurrency(day.totalExpense) }}
                       </span>
                       <div class="status-pill-clean status-transfer">
@@ -806,36 +721,31 @@ onMounted(() => {
                   </div>
 
                   <!-- Tarjetas de Movimiento Espaciosas -->
-                  <div
-                    v-for="movement in day.movements"
-                    :key="movement.id"
-                    class="operations-movement-item d-flex align-center justify-space-between gap-4 pa-4 mb-3 rounded-xl border bg-white"
-                  >
+                  <div v-for="movement in day.movements" :key="movement.id"
+                    class="operations-movement-item d-flex align-center justify-space-between gap-4 mb-3.5 rounded-xl border bg-white">
                     <!-- Izquierda: Avatar Icono + Información -->
-                    <div class="d-flex align-center gap-3.5 overflow-hidden flex-grow-1">
-                      <div
-                        class="movement-direction-avatar shrink-0"
-                        :class="`avatar-${movement.type}`"
-                      >
+                    <div class="d-flex align-center gap-4 overflow-hidden flex-grow-1">
+                      <div class="movement-direction-avatar shrink-0" :class="`avatar-${movement.type}`">
                         <VIcon
                           :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                          size="20"
-                        />
+                          size="18" />
                       </div>
 
                       <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
                         <!-- Línea 1: Título claro y espacioso -->
-                        <div class="d-flex align-center flex-wrap gap-2 mb-2">
+                        <div class="movement-title-row d-flex align-center flex-wrap gap-2 mb-2.5">
                           <span class="text-body-1 font-weight-bold text-slate-900">
                             {{ movement.displayTitle }}
                           </span>
-                          <span v-if="movement.displaySubtitle" class="text-caption text-slate-500 font-weight-semibold text-truncate" style="max-width: 320px;">
+                          <span v-if="movement.displaySubtitle"
+                            class="text-caption text-slate-500 font-weight-medium text-truncate"
+                            style="max-width: 340px;">
                             · {{ movement.displaySubtitle }}
                           </span>
                         </div>
 
-                        <!-- Línea 2: Badges ordenados con amplio espacio -->
-                        <div class="d-flex align-center flex-wrap gap-2.5 text-caption">
+                        <!-- Línea 2: Badges ordenados con amplio espacio y diseño sobrio -->
+                        <div class="movement-badges-row d-flex align-center flex-wrap gap-2 text-caption">
                           <!-- Módulo Origen -->
                           <span class="status-pill-clean status-canceled">
                             <span class="status-dot" />
@@ -843,35 +753,27 @@ onMounted(() => {
                           </span>
 
                           <!-- Badge de Orden de Trabajo si existe -->
-                          <span
-                            v-if="movement.workOrderNumber"
-                            class="ot-chip-badge d-inline-flex align-center gap-1"
-                            title="Orden de Trabajo Asociada"
-                          >
+                          <span v-if="movement.workOrderNumber" class="ot-chip-badge d-inline-flex align-center gap-1"
+                            title="Orden de Trabajo Asociada">
                             <VIcon icon="ri-tools-line" size="12" />
                             <span>{{ movement.workOrderNumber }}</span>
                           </span>
 
                           <!-- Badge de Placa Vehicular si existe -->
-                          <span
-                            v-if="movement.licensePlate"
-                            class="license-plate-badge"
-                            title="Vehículo"
-                          >
+                          <span v-if="movement.licensePlate" class="license-plate-badge" title="Vehículo">
                             {{ movement.licensePlate.toUpperCase() }}
                           </span>
 
                           <!-- Método de Pago / Banco Específico -->
-                          <span
-                            class="payment-method-chip d-inline-flex align-center gap-1"
-                            :class="movement.methodInfo.badgeClass"
-                          >
+                          <span class="payment-method-chip d-inline-flex align-center gap-1"
+                            :class="movement.methodInfo.badgeClass">
                             <VIcon :icon="movement.methodInfo.icon" size="13" />
                             <span>{{ movement.methodInfo.label }}</span>
                           </span>
 
                           <!-- Hora -->
-                          <span class="text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
+                          <span
+                            class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium ps-1">
                             <VIcon icon="ri-time-line" size="13" />
                             {{ movement.time }}
                           </span>
@@ -880,11 +782,9 @@ onMounted(() => {
                     </div>
 
                     <!-- Derecha: Monto Destacado con Holgura -->
-                    <div class="text-right shrink-0 ps-3">
-                      <span
-                        class="text-h6 font-weight-black amount-display"
-                        :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
-                      >
+                    <div class="text-right shrink-0 ps-5">
+                      <span class="text-h6 font-weight-bold amount-display"
+                        :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')">
                         {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
                         {{ formatCurrency(movement.amount) }}
                       </span>
@@ -892,266 +792,6 @@ onMounted(() => {
                   </div>
                 </template>
               </div>
-            </div>
-          </VCard>
-        </VCol>
-
-        <!-- Columna Derecha: Órdenes de Trabajo en Curso & Cajas -->
-        <VCol cols="12" lg="4" class="d-flex flex-column gap-5">
-          <!-- Widget: Órdenes de Trabajo en Operación -->
-          <VCard elevation="0" class="border rounded-2xl bg-white overflow-hidden">
-            <!-- Header del Widget de OTs -->
-            <div class="pa-4 border-b d-flex align-center justify-space-between">
-              <div class="d-flex align-center gap-2.5">
-                <div class="ot-widget-icon">
-                  <VIcon icon="ri-tools-fill" size="18" color="indigo" />
-                </div>
-                <div>
-                  <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                    Órdenes de Trabajo
-                  </h3>
-                  <span class="text-caption text-slate-500">Operaciones de taller</span>
-                </div>
-              </div>
-
-              <VBtn
-                size="small"
-                variant="text"
-                color="primary"
-                append-icon="ri-arrow-right-s-line"
-                class="text-caption font-weight-bold pa-1"
-                to="/work-orders"
-              >
-                Ver todas
-              </VBtn>
-            </div>
-
-            <!-- Filtros de OTs en widget -->
-            <div class="px-4 py-2 bg-slate-50 border-b d-flex align-center gap-2">
-              <button
-                type="button"
-                class="ot-filter-btn"
-                :class="{ active: workOrderFilter === 'all' }"
-                @click="workOrderFilter = 'all'"
-              >
-                Todas ({{ activeWorkOrders.length }})
-              </button>
-              <button
-                type="button"
-                class="ot-filter-btn"
-                :class="{ active: workOrderFilter === 'in_progress' }"
-                @click="workOrderFilter = 'in_progress'"
-              >
-                En Taller ({{ workOrdersStats.in_progress || 0 }})
-              </button>
-              <button
-                type="button"
-                class="ot-filter-btn"
-                :class="{ active: workOrderFilter === 'ready' }"
-                @click="workOrderFilter = 'ready'"
-              >
-                Por Facturar ({{ workOrdersStats.ready_to_invoice || 0 }})
-              </button>
-            </div>
-
-            <!-- Lista de Órdenes de Trabajo -->
-            <div class="pa-3 ot-widget-scroll">
-              <div
-                v-if="filteredActiveWorkOrders.length === 0"
-                class="pa-6 text-center text-slate-400"
-              >
-                <VIcon icon="ri-tools-line" size="28" class="mb-1 text-slate-300" />
-                <p class="text-caption mb-0">No hay órdenes de trabajo activas</p>
-              </div>
-
-              <div
-                v-for="wo in filteredActiveWorkOrders"
-                :key="wo.id"
-                class="ot-card-item pa-3 mb-2 rounded-xl border d-flex flex-column gap-2"
-              >
-                <div class="d-flex align-center justify-space-between">
-                  <!-- OT Number y Status -->
-                  <div class="d-flex align-center gap-2">
-                    <span class="ot-number-badge">
-                      {{ wo.number?.startsWith('OT-') ? wo.number : `OT-${wo.number || '---'}` }}
-                    </span>
-
-                    <span
-                      class="status-pill-clean"
-                      :class="getWorkOrderStatusProps(wo.status).colorClass"
-                    >
-                      <span class="status-dot" />
-                      <span>{{ getWorkOrderStatusProps(wo.status).label }}</span>
-                    </span>
-                  </div>
-
-                  <!-- Monto Calculado -->
-                  <span class="font-weight-black text-body-2 text-slate-900">
-                    {{ formatCurrency(wo.calculated_total || 0) }}
-                  </span>
-                </div>
-
-                <!-- Cliente y Vehículo -->
-                <div class="d-flex align-center justify-space-between text-caption">
-                  <div class="text-truncate text-slate-700 font-weight-medium" style="max-width: 170px;">
-                    <VIcon icon="ri-user-line" size="13" class="me-1 text-slate-400" />
-                    {{ wo.client?.full_name || `${wo.client?.name || ''} ${wo.client?.surname || ''}`.trim() || 'Cliente' }}
-                  </div>
-
-                  <span
-                    v-if="wo.vehicle?.license_plate"
-                    class="license-plate-badge"
-                  >
-                    {{ wo.vehicle.license_plate.toUpperCase() }}
-                  </span>
-                </div>
-
-                <!-- Botones de Acción de la OT -->
-                <div class="d-flex align-center justify-end gap-2 pt-1 border-t mt-1">
-                  <!-- Si está lista, botón Facturar directo -->
-                  <VBtn
-                    v-if="['ready', 'delivered'].includes(wo.status) && !wo.sale"
-                    size="x-small"
-                    color="success"
-                    variant="flat"
-                    prepend-icon="ri-file-add-line"
-                    class="font-weight-bold rounded-lg"
-                    :to="`/sales/add?work_order_id=${wo.id}`"
-                  >
-                    Facturar
-                  </VBtn>
-
-                  <!-- Botón Ver/Editar OT -->
-                  <VBtn
-                    size="x-small"
-                    color="secondary"
-                    variant="tonal"
-                    prepend-icon="ri-eye-line"
-                    class="font-weight-semibold rounded-lg"
-                    :to="`/work-orders/edit/${wo.id}`"
-                  >
-                    Ver OT
-                  </VBtn>
-                </div>
-              </div>
-            </div>
-          </VCard>
-
-          <!-- Tarjeta: Disponibilidad de Cajas y Bancos -->
-          <VCard elevation="0" class="border rounded-2xl bg-white overflow-hidden">
-            <div class="pa-4 border-b d-flex align-center justify-space-between">
-              <div class="d-flex align-center gap-2.5">
-                <div class="account-widget-icon">
-                  <VIcon icon="ri-bank-card-fill" size="18" color="cyan" />
-                </div>
-                <div>
-                  <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                    Cuentas & Cajas
-                  </h3>
-                  <span class="text-caption text-slate-500">Saldos disponibles actuales</span>
-                </div>
-              </div>
-
-              <VBtn
-                size="small"
-                variant="text"
-                color="primary"
-                append-icon="ri-arrow-right-s-line"
-                class="text-caption font-weight-bold pa-1"
-                to="/accounts"
-              >
-                Cuentas
-              </VBtn>
-            </div>
-
-            <div class="pa-3">
-              <div
-                v-for="acc in accounts.slice(0, 4)"
-                :key="acc.id"
-                class="d-flex align-center justify-space-between pa-2.5 mb-2 rounded-xl bg-slate-50 border"
-              >
-                <div class="d-flex align-center gap-2.5 overflow-hidden">
-                  <div
-                    class="account-type-indicator"
-                    :class="acc.type === 'bank' ? 'acc-bank' : 'acc-cash'"
-                  >
-                    <VIcon :icon="acc.type === 'bank' ? 'ri-bank-line' : 'ri-bill-line'" size="16" />
-                  </div>
-                  <div class="text-truncate">
-                    <div class="text-body-2 font-weight-bold text-slate-900 text-truncate">
-                      {{ acc.name }}
-                    </div>
-                    <div class="text-caption text-slate-400">
-                      {{ acc.bank_name || (acc.type === 'cash' ? 'Caja Efectivo' : 'Bancaria') }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="text-right shrink-0 ps-2">
-                  <span class="text-body-2 font-weight-black text-slate-900">
-                    {{ formatCurrency(acc.saldo_actual || acc.balance || 0) }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Última Transferencia Resumen -->
-              <div
-                v-if="financialSummary.lastTransfer && financialSummary.lastTransfer.amount > 0"
-                class="mt-3 pa-3 rounded-xl bg-info-tonal border-info d-flex align-center justify-space-between"
-              >
-                <div class="d-flex align-center gap-2">
-                  <VIcon icon="ri-arrow-left-right-line" color="info" size="18" />
-                  <div>
-                    <div class="text-caption text-info font-weight-bold text-uppercase">
-                      Última Transferencia
-                    </div>
-                    <div class="text-caption text-slate-500">
-                      {{ financialSummary.lastTransfer.date }}
-                    </div>
-                  </div>
-                </div>
-                <span class="text-subtitle-2 font-weight-black text-info">
-                  {{ formatCurrency(financialSummary.lastTransfer.amount) }}
-                </span>
-              </div>
-            </div>
-          </VCard>
-
-          <!-- Acciones Rápidas Operativas -->
-          <VCard elevation="0" class="border rounded-2xl bg-white pa-4">
-            <h4 class="text-caption font-weight-bold text-slate-400 text-uppercase tracking-wider mb-3">
-              Acciones Rápidas
-            </h4>
-            <div class="d-flex flex-column gap-2">
-              <VBtn
-                color="primary"
-                variant="tonal"
-                prepend-icon="ri-tools-line"
-                class="justify-start rounded-xl font-weight-semibold"
-                to="/work-orders/add"
-              >
-                Nueva Orden de Trabajo
-              </VBtn>
-
-              <VBtn
-                color="secondary"
-                variant="tonal"
-                prepend-icon="ri-arrow-left-right-line"
-                class="justify-start rounded-xl font-weight-semibold"
-                @click="isTransferDialogVisible = true"
-              >
-                Transferencia Interna
-              </VBtn>
-
-              <VBtn
-                color="secondary"
-                variant="tonal"
-                prepend-icon="ri-user-star-line"
-                class="justify-start rounded-xl font-weight-semibold"
-                @click="isAporteDialogVisible = true"
-              >
-                Registrar Aporte de Socio
-              </VBtn>
             </div>
           </VCard>
         </VCol>
@@ -1388,136 +1028,9 @@ onMounted(() => {
   }
 }
 
-// Movements Scroll & Items
-.movements-scroll-container {
-  max-height: 640px;
-  background-color: #f8fafc;
-}
-
-.operations-date-header {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-}
-
-.day-subtotal {
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 6px;
-
-  &.day-subtotal-income {
-    background-color: #ecfdf5;
-    color: #047857;
-  }
-
-  &.day-subtotal-expense {
-    background-color: #fff1f2;
-    color: #be123c;
-  }
-}
-
-.operations-movement-item {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07) !important;
-    border-color: #cbd5e1 !important;
-  }
-}
-
-.movement-direction-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &.avatar-income {
-    background-color: #ecfdf5;
-    color: #059669;
-  }
-
-  &.avatar-expense {
-    background-color: #fff1f2;
-    color: #e11d48;
-  }
-
-  &.avatar-transfer {
-    background-color: #eff6ff;
-    color: #2563eb;
-  }
-}
-
-.amount-display {
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-}
-
-// OT Badge en Movimientos
-.ot-chip-badge {
-  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-  color: #4338ca;
-  border: 1px solid #c7d2fe;
-  padding: 3px 9px;
-  border-radius: 7px;
-  font-size: 0.74rem;
-  font-weight: 800;
-  font-family: 'Consolas', 'Monaco', monospace;
-  box-shadow: 0 1px 2px rgba(67, 56, 202, 0.06);
-}
-
-.license-plate-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-weight: 800;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  border: 1.5px solid #0f172a;
-  border-radius: 5px;
-  line-height: 1.2;
-}
-
-// Badges de Métodos de Pago
-.payment-method-chip {
-  padding: 3px 10px;
-  border-radius: 7px;
-  font-size: 0.74rem;
-  font-weight: 700;
-
-  &.method-badge-cash {
-    background-color: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
-  }
-
-  &.method-badge-pichincha {
-    background-color: #fef3c7;
-    color: #b45309;
-    border: 1px solid #fde68a;
-  }
-
-  &.method-badge-guayaquil {
-    background-color: #fdf2f8;
-    color: #c026d3;
-    border: 1px solid #fbcfe8;
-  }
-
-  &.method-badge-transfer {
-    background-color: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #bfdbfe;
-  }
-}
+// Movements Scroll & Items:
+// Los estilos completos, espaciado generoso y paleta sobria de los movimientos
+// se encuentran centralizados en src/assets/styles/inventory.scss (Sección 13)
 
 // OT Widget Cards
 .ot-filter-btn {
@@ -1663,3 +1176,8 @@ onMounted(() => {
   border-radius: 4px;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  navActiveLink: 'operations-index'
+</route>

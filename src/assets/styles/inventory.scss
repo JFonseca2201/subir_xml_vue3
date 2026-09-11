@@ -3493,3 +3493,542 @@
     }
   }
 }
+
+// ============================================================================
+// 12. ENCABEZADO Y PESTAÑAS DE OPERACIONES (OPERATIONS UNIFIED HEADER & TABS)
+// Centralización completa de estilos para OperationsHeaderNav.vue
+// ============================================================================
+
+// 12.1 Contenedor del Encabezado, Avatar y Decoraciones
+.operations-unified-header {
+  background: #ffffff !important;
+  border-color: rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02) !important;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.header-gradient-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 50%, #06b6d4 100%);
+  z-index: 1;
+}
+
+.header-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.header-main-avatar {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3) !important;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.04);
+  }
+}
+
+.header-pulse-beacon {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background-color: #10b981;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.live-date-pill {
+  padding: 3px 10px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+// 12.2 Sistema de Navegación por Pestañas Estilo Navegador (Browser Tabs)
+.operations-browser-tabs,
+.operations-tabbed-container,
+.operations-continuous-menu,
+.operations-header-nav-menu,
+.operations-segmented-container {
+  display: inline-flex !important;
+  align-items: flex-end !important;
+  flex-wrap: nowrap !important;
+  background-color: #eef2f7 !important; // Fondo suave azul-grisáceo de la barra de pestañas
+  border: 1px solid #d5dee9 !important; // Borde perimetral continuo
+  border-radius: 12px !important;
+  padding: 4px 6px 0 6px !important;
+  height: 44px !important;
+  box-sizing: border-box !important; // Fija la altura total en 44px para evitar separación en la base
+  position: relative !important;
+  overflow: visible !important;
+  max-width: 100% !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  user-select: none !important;
+
+  // Divisor vertical sutil entre pestañas inactivas (estilo Chrome / Edge)
+  .operations-tab-divider,
+  .operations-tab-separator,
+  .operations-menu-separator {
+    width: 1px !important;
+    height: 16px !important;
+    background-color: #cbd5e1 !important;
+    margin: 0 3px !important;
+    align-self: center !important;
+    flex-shrink: 0 !important;
+    user-select: none !important;
+    pointer-events: none !important;
+    opacity: 0.8 !important;
+  }
+
+  // Pestañas individuales (Tabs)
+  .operations-browser-tab,
+  .operations-tab-item,
+  .operations-menu-item,
+  .operations-header-nav-item,
+  .segmented-tab-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 0 16px !important;
+    height: 33px !important;
+    border: none !important;
+    border-radius: 8px 8px 0 0 !important; // Esquinas superiores redondeadas estilo navegador
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #475569 !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    position: relative !important;
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+
+    &:focus-visible {
+      outline: 2px solid rgba(79, 70, 229, 0.35) !important;
+      outline-offset: -2px !important;
+    }
+
+    .operations-tab-icon,
+    .operations-menu-icon,
+    .tab-icon {
+      color: #64748b !important;
+      font-size: 1.05rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      transition: color 0.15s ease !important;
+    }
+
+    .operations-tab-label,
+    .operations-menu-label,
+    .tab-label {
+      letter-spacing: -0.01em !important;
+      line-height: 1.25 !important;
+    }
+
+    // Hover sobre pestaña inactiva: sombreado suave redondeado
+    &:hover:not(.is-active) {
+      color: #0f172a !important;
+      background-color: rgba(255, 255, 255, 0.65) !important;
+
+      .operations-tab-icon,
+      .operations-menu-icon,
+      .tab-icon {
+        color: #334155 !important;
+      }
+    }
+
+    // Pestaña activa: fondo del color de fondo de la página, esquinas superiores redondeadas, sin línea inferior
+    &.is-active {
+      background-color: #f7f7f9 !important;
+      background-color: rgb(var(--v-theme-background)) !important; // Mismo color de fondo de la aplicación
+      color: #0f172a !important;
+      font-weight: 600 !important;
+      height: 42px !important; // Conecta directamente con la base del riel
+      margin-bottom: -1px !important; // Desciende para cubrir exactamente la línea/borde inferior del contenedor
+      padding: 0 18px !important;
+      border-radius: 10px 10px 0 0 !important;
+      border-top: 1px solid rgba(213, 222, 233, 0.9) !important;
+      border-left: 1px solid rgba(213, 222, 233, 0.9) !important;
+      border-right: 1px solid rgba(213, 222, 233, 0.9) !important;
+      border-bottom: none !important;
+      box-shadow: 0 -2px 6px rgba(15, 23, 42, 0.04) !important;
+      z-index: 10 !important;
+      position: relative !important;
+
+      // Parche inferior con el color de fondo exacto que borra al 100% la línea del riel debajo de la pestaña activa
+      &::after {
+        content: '' !important;
+        position: absolute !important;
+        bottom: -2px !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 4px !important;
+        background-color: #f7f7f9 !important;
+        background-color: rgb(var(--v-theme-background)) !important;
+        z-index: 25 !important;
+      }
+
+      .operations-tab-icon,
+      .operations-menu-icon,
+      .tab-icon {
+        color: #4f46e5 !important; // Ícono con acento elegante
+      }
+
+      .operations-tab-label,
+      .operations-menu-label,
+      .tab-label {
+        color: #0f172a !important;
+      }
+    }
+  }
+}
+
+// Adaptación responsive para pantallas móviles
+@media (max-width: 640px) {
+  .operations-browser-tabs,
+  .operations-tabbed-container,
+  .operations-continuous-menu,
+  .operations-header-nav-menu,
+  .operations-segmented-container {
+    overflow-x: auto !important;
+    padding: 3px 4px 0 4px !important;
+    height: 38px !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+
+    .operations-tab-divider,
+    .operations-tab-separator,
+    .operations-menu-separator {
+      margin: 0 1px !important;
+      height: 13px !important;
+    }
+
+    .operations-browser-tab,
+    .operations-tab-item,
+    .operations-menu-item,
+    .operations-header-nav-item,
+    .segmented-tab-btn {
+      padding: 0 10px !important;
+      font-size: 0.78rem !important;
+      height: 29px !important;
+      gap: 5px !important;
+
+      .operations-tab-icon,
+      .operations-menu-icon,
+      .tab-icon {
+        font-size: 0.9rem !important;
+      }
+
+      &.is-active {
+        height: 36px !important;
+        margin-bottom: -1px !important;
+        padding: 0 12px !important;
+        background-color: #f7f7f9 !important;
+        background-color: rgb(var(--v-theme-background)) !important;
+
+        &::after {
+          content: '' !important;
+          position: absolute !important;
+          bottom: -2px !important;
+          left: 0 !important;
+          right: 0 !important;
+          height: 4px !important;
+          background-color: #f7f7f9 !important;
+          background-color: rgb(var(--v-theme-background)) !important;
+          z-index: 25 !important;
+        }
+      }
+    }
+  }
+}
+
+// ==========================================================================
+// 13. OPERATIONAL MOVEMENTS & RECENT TRANSACTIONS FEED
+// Espaciado generoso, sobrio y refinado para el flujo de caja y movimientos
+// ==========================================================================
+
+// Encabezado de la tarjeta principal de movimientos: Distribución amplia y equilibrada
+.operations-card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+
+  .section-icon-box {
+    width: 42px !important;
+    height: 42px !important;
+    background-color: #eef2ff !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .badge-count {
+    padding: 2.5px 9px !important;
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 9999px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+  }
+
+  // Botón Generar PDF: Elegante, sobrio y con acento profesional
+  .header-pdf-btn {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.01em !important;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.15) !important;
+    transition: all 0.15s ease !important;
+
+    &:hover {
+      background-color: #059669 !important;
+      box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25) !important;
+    }
+  }
+
+  // Botón Actualizar: Sutil y limpio
+  .header-refresh-btn {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.15s ease !important;
+
+    &:hover {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+  }
+}
+
+// Contenedor con scroll suave para la lista de movimientos
+.movements-scroll-container {
+  max-height: 640px !important;
+  background-color: #f8fafc !important;
+  scroll-behavior: smooth !important;
+}
+
+// Cabecera de fecha: Separación amplia entre días distintos y diseño sobrio
+.operations-date-header {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  padding: 10px 16px !important;
+  margin-bottom: 14px !important;
+  transition: background-color 0.2s ease !important;
+
+  .v-icon {
+    color: #6366f1 !important;
+  }
+
+  // Subtotal diario
+  .day-subtotal {
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    padding: 3px 9px !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+
+    &.day-subtotal-income {
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+      border: 1px solid #a7f3d0 !important;
+    }
+
+    &.day-subtotal-expense {
+      background-color: #fff1f2 !important;
+      color: #be123c !important;
+      border: 1px solid #fecdd3 !important;
+    }
+  }
+}
+
+// Tarjeta individual de movimiento: Espaciosa, sobria y limpia
+.operations-movement-item {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  margin-bottom: 14px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  // Dirección y Avatar del movimiento (Ingreso / Egreso / Transferencia)
+  .movement-direction-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    transition: transform 0.15s ease !important;
+
+    &.avatar-income {
+      background-color: #f0fdf4 !important;
+      color: #16a34a !important;
+      border: 1px solid #dcfce7 !important;
+    }
+
+    &.avatar-expense {
+      background-color: #fef2f2 !important;
+      color: #dc2626 !important;
+      border: 1px solid #fee2e2 !important;
+    }
+
+    &.avatar-transfer {
+      background-color: #f0f9ff !important;
+      color: #0284c7 !important;
+      border: 1px solid #e0f2fe !important;
+    }
+  }
+
+  // Título y subtítulo
+  .movement-title-row {
+    margin-bottom: 9px !important;
+    line-height: 1.35 !important;
+  }
+
+  // Fila de Badges: Separada, ordenada y con chips uniformes sobrios
+  .movement-badges-row {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  // Módulo origen (VENTA, COMPRA, etc.)
+  .status-pill-clean {
+    height: 24px !important;
+    padding: 2.5px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.72rem !important;
+    box-sizing: border-box !important;
+  }
+
+  // Badge de Orden de Trabajo (OT)
+  .ot-chip-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background-color: #f5f3ff !important;
+    color: #5b21b6 !important;
+    border: 1px solid #e9d5ff !important;
+    padding: 2.5px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    font-family: 'Consolas', 'Monaco', monospace !important;
+    letter-spacing: 0.02em !important;
+    height: 24px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+  }
+
+  // Badge de Placa: Sobrio y elegante con borde slate suave (sin borde negro grueso)
+  .license-plate-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2.5px 8px !important;
+    background-color: #f8fafc !important;
+    color: #334155 !important;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-weight: 600 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.04em !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    height: 24px !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+  }
+
+  // Badges de Método de Pago / Banco: Tonos suaves, sobrios y ejecutivos
+  .payment-method-chip {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2.5px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    height: 24px !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+
+    &.method-badge-cash {
+      background-color: #f0fdf4 !important;
+      color: #166534 !important;
+      border: 1px solid #dcfce7 !important;
+    }
+
+    &.method-badge-pichincha {
+      background-color: #fefce8 !important;
+      color: #854d0e !important;
+      border: 1px solid #fef08a !important;
+    }
+
+    &.method-badge-guayaquil {
+      background-color: #faf5ff !important;
+      color: #7e22ce !important;
+      border: 1px solid #f3e8ff !important;
+    }
+
+    &.method-badge-transfer {
+      background-color: #eff6ff !important;
+      color: #0369a1 !important;
+      border: 1px solid #dbeafe !important;
+    }
+  }
+
+  // Hora
+  .movement-time-chip {
+    color: #64748b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-size: 0.72rem !important;
+    font-weight: 500 !important;
+    padding-left: 2px !important;
+  }
+
+  // Visualización del Monto
+  .amount-display {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    white-space: nowrap !important;
+  }
+}
