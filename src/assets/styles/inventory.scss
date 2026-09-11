@@ -3764,33 +3764,174 @@
 // Espaciado generoso, sobrio y refinado para el flujo de caja y movimientos
 // ==========================================================================
 
+// Colores y Tipografía Semántica de Operaciones
+.text-emerald {
+  color: #059669 !important;
+}
+
+.text-rose {
+  color: #e11d48 !important;
+}
+
+.text-indigo {
+  color: #4f46e5 !important;
+}
+
+.bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+// KPI Metric Cards
+.kpi-metric-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+
+  &.kpi-income::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+
+  &.kpi-expense::before {
+    background: linear-gradient(90deg, #f43f5e, #e11d48);
+  }
+
+  &.kpi-balance::before {
+    background: linear-gradient(90deg, #4f46e5, #3b82f6);
+  }
+
+  &.kpi-workorders::before {
+    background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  }
+}
+
+.kpi-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.kpi-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.kpi-icon-income {
+    background-color: #ecfdf5;
+    color: #059669;
+  }
+
+  &.kpi-icon-expense {
+    background-color: #fff1f2;
+    color: #e11d48;
+  }
+
+  &.kpi-icon-balance {
+    background-color: #eff6ff;
+    color: #3b82f6;
+  }
+
+  &.kpi-icon-ot {
+    background-color: #f5f3ff;
+    color: #7c3aed;
+  }
+}
+
+.ot-badge-mini {
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  &.ot-badge-progress {
+    background-color: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
+
+  &.ot-badge-ready {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+  }
+}
+
+// Icon Boxes & Badges
+.section-icon-box {
+  width: 42px;
+  height: 42px;
+  background-color: #eef2ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ot-widget-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #eef2ff;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-widget-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #ecfeff;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-count {
+  padding: 2.5px 9px !important;
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9999px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
 // Encabezado de la tarjeta principal de movimientos: Distribución amplia y equilibrada
 .operations-card-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: 100% !important;
-
-  .section-icon-box {
-    width: 42px !important;
-    height: 42px !important;
-    background-color: #eef2ff !important;
-    border-radius: 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .badge-count {
-    padding: 2.5px 9px !important;
-    background-color: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 9999px !important;
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-  }
 
   // Botón Generar PDF: Elegante, sobrio y con acento profesional
   .header-pdf-btn {
@@ -3820,6 +3961,70 @@
       color: #0f172a !important;
       border-color: #cbd5e1 !important;
     }
+  }
+}
+
+// Filtros y Búsqueda de Movimientos
+.movement-filter-pills {
+  background-color: #e2e8f0;
+  padding: 3px;
+  border-radius: 10px;
+  gap: 2px;
+}
+
+.filter-pill-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+
+  &:hover:not(.active) {
+    color: #1e293b;
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+
+  &.active {
+    background-color: #ffffff;
+    color: #0f172a;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+
+    &.dot-income {
+      background-color: #10b981;
+    }
+
+    &.dot-expense {
+      background-color: #ef4444;
+    }
+
+    &.dot-transfer {
+      background-color: #3b82f6;
+    }
+  }
+}
+
+.movement-search-input {
+  min-width: 240px;
+
+  .search-field :deep(.v-field),
+  .search-field .v-field {
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem;
   }
 }
 
@@ -3956,7 +4161,7 @@
     box-sizing: border-box !important;
   }
 
-  // Badge de Placa: Sobrio y elegante con borde slate suave (sin borde negro grueso)
+  // Badge de Placa: Sobrio y elegante con borde slate suave
   .license-plate-badge {
     display: inline-flex !important;
     align-items: center !important;
@@ -3975,7 +4180,7 @@
     box-sizing: border-box !important;
   }
 
-  // Badges de Método de Pago / Banco: Tonos suaves, sobrios y ejecutivos
+  // Badges de Método de Pago / Banco
   .payment-method-chip {
     display: inline-flex !important;
     align-items: center !important;
@@ -4031,4 +4236,148 @@
     letter-spacing: -0.01em !important;
     white-space: nowrap !important;
   }
+}
+
+// Work Orders Widget & Filter Buttons
+.ot-filter-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+
+  &.active {
+    background-color: #ffffff;
+    color: #4f46e5;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.ot-widget-scroll {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.ot-card-item {
+  background-color: #ffffff;
+  border-color: #f1f5f9 !important;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #cbd5e1 !important;
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.ot-number-badge {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 800;
+  font-size: 0.78rem;
+  color: #1e293b;
+}
+
+// Status Pills Globales
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 8px !important;
+  border-radius: 9999px !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 5px !important;
+    height: 5px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+// Indicadores de Tipo de Cuenta
+.account-type-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.acc-bank {
+    background-color: #eff6ff;
+    color: #2563eb;
+  }
+
+  &.acc-cash {
+    background-color: #ecfdf5;
+    color: #059669;
+  }
+}
+
+// Shimmer Loader
+.shimmer-row {
+  background: #f8fafc;
+}
+
+.shimmer-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e2e8f0;
+}
+
+.shimmer-line {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 4px;
 }
