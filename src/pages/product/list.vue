@@ -300,11 +300,14 @@ const handleProductUpdated = updatedProduct => {
   }
 }
 
-const downloadExcel = () => {
-  console.log('Descargar Excel')
+const buildQueryParams = () => {
+  const token = localStorage.getItem('token') || ''
   let query_params = ""
+  if (token) {
+    query_params += "&token=" + encodeURIComponent(token)
+  }
   if (searchForm.value.search) {
-    query_params += "&search=" + searchForm.value.search
+    query_params += "&search=" + encodeURIComponent(searchForm.value.search)
   }
   if (searchForm.value.categorie_id) {
     query_params += "&categorie_id=" + searchForm.value.categorie_id
@@ -315,8 +318,22 @@ const downloadExcel = () => {
   if (searchForm.value.unit_id) {
     query_params += "&unit_id=" + searchForm.value.unit_id
   }
+  return query_params
+}
 
-  window.open(getApiBaseUrl() + "products-excel?z=1" + query_params, '_blank')
+const downloadExcelCategory = () => {
+  console.log('Descargar Excel por Categoría')
+  window.open(getApiBaseUrl() + "products-excel?format=category&z=1" + buildQueryParams(), '_blank')
+}
+
+const downloadExcelStandard = () => {
+  console.log('Descargar Excel Formato Estándar')
+  window.open(getApiBaseUrl() + "products-excel?format=standard&z=1" + buildQueryParams(), '_blank')
+}
+
+const downloadPdf = () => {
+  console.log('Descargar PDF por Categoría')
+  window.open(getApiBaseUrl() + "products-pdf?z=1" + buildQueryParams(), '_blank')
 }
 
 
@@ -366,16 +383,46 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           prepend-icon="ri-upload-2-line" class="font-weight-medium" @click="importProducts">
           Importar Excel
         </VBtn>
-        <VBtn v-if="can('export_data') || can('list_product')" color="secondary" variant="tonal"
-          prepend-icon="ri-download-2-line" class="font-weight-medium" @click="downloadExcel">
-          Exportar Excel
-        </VBtn>
+
+        <!-- Menú Desplegable de Exportación y Reportes -->
+        <VMenu location="bottom end" transition="scale-transition">
+          <template #activator="{ props }">
+            <VBtn
+              v-if="can('export_data') || can('list_product')"
+              v-bind="props"
+              color="secondary"
+              variant="tonal"
+              prepend-icon="ri-download-2-line"
+              append-icon="ri-arrow-down-s-line"
+              class="font-weight-medium"
+            >
+              Exportar / Reportes
+            </VBtn>
+          </template>
+          <VList density="comfortable" class="py-2" elevation="6" rounded="lg" min-width="280">
+            <VListItem prepend-icon="ri-file-pdf-2-line" class="text-error font-weight-medium cursor-pointer" @click="downloadPdf">
+              <VListItemTitle class="font-weight-bold">Reporte PDF</VListItemTitle>
+              <VListItemSubtitle class="text-caption">Por categorías con métricas y subtotales</VListItemSubtitle>
+            </VListItem>
+            <VDivider class="my-1" />
+            <VListItem prepend-icon="ri-file-excel-2-line" class="text-success font-weight-medium cursor-pointer" @click="downloadExcelCategory">
+              <VListItemTitle class="font-weight-bold">Excel por Categorías</VListItemTitle>
+              <VListItemSubtitle class="text-caption">Organizado por categorías con subtotales</VListItemSubtitle>
+            </VListItem>
+            <VListItem prepend-icon="ri-table-line" class="text-primary font-weight-medium cursor-pointer" @click="downloadExcelStandard">
+              <VListItemTitle class="font-weight-bold">Excel Estándar / Plantilla</VListItemTitle>
+              <VListItemSubtitle class="text-caption">Formato base para importar o editar productos</VListItemSubtitle>
+            </VListItem>
+          </VList>
+        </VMenu>
+
         <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" to="/product/add"
           class="elevation-2 font-weight-bold">
           Agregar Producto
         </VBtn>
       </div>
     </div>
+
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow class="mb-4" dense>
