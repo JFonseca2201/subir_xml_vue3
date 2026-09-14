@@ -129,6 +129,16 @@ const validateForm = async () => {
   if (!workOrder.value.client_id) {
     validationErrorMessage.value = 'Debe seleccionar un cliente'
     showValidationError.value = true
+    showNotification('Debe seleccionar un cliente', 'warning')
+
+    return false
+  }
+
+  // Validar que haya al menos un producto o servicio
+  if (!workOrder.value.items || workOrder.value.items.length === 0) {
+    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio a la orden de trabajo.'
+    showValidationError.value = true
+    showNotification('Debe agregar al menos un producto o servicio a la orden de trabajo', 'warning')
 
     return false
   }
@@ -145,6 +155,7 @@ const validateForm = async () => {
 
   return true
 }
+
 
 const saveWorkOrder = async () => {
   if (!(await validateForm())) {
@@ -213,7 +224,16 @@ const saveDraft = async () => {
     return
   }
 
+  if (!workOrder.value.items || workOrder.value.items.length === 0) {
+    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio para guardar el borrador.'
+    showValidationError.value = true
+    showNotification('Debe agregar al menos un producto o servicio a la orden de trabajo', 'warning')
+
+    return
+  }
+
   isSavingDraft.value = true
+
 
   const payload = { ...workOrder.value, is_draft: true }
 
@@ -269,6 +289,37 @@ const onVehicleAdded = async newVehicle => {
   showVehicleDialog.value = false
 }
 
+const clientVehicles = ref([])
+const isLoadingClientVehicles = ref(false)
+const showVehicleSuggestionDialog = ref(false)
+
+const fetchClientVehicles = async clientId => {
+  if (!clientId) {
+    clientVehicles.value = []
+    showVehicleSuggestionDialog.value = false
+    return
+  }
+  isLoadingClientVehicles.value = true
+  try {
+    const vRes = await $api('vehicles/search', { params: { client_id: clientId } })
+    clientVehicles.value = vRes?.data || vRes?.vehicles || (Array.isArray(vRes) ? vRes : [])
+    if (clientVehicles.value.length > 1 && !selectedVehicle.value) {
+      showVehicleSuggestionDialog.value = true
+    }
+  } catch (e) {
+    console.warn('Error cargando vehículos del cliente:', e)
+    clientVehicles.value = []
+  } finally {
+    isLoadingClientVehicles.value = false
+  }
+}
+
+const selectSuggestedVehicle = veh => {
+  selectedVehicle.value = veh
+  showVehicleSuggestionDialog.value = false
+}
+
+
 watch(() => selectedClient.value, async (newVal, oldVal) => {
   if (newVal && newVal.id) {
     workOrder.value.client_id = newVal.id
@@ -284,22 +335,14 @@ watch(() => selectedClient.value, async (newVal, oldVal) => {
       }
     }
 
-    // Solo si aún no se ha seleccionado vehículo, auto-cargar si el cliente tiene 1 vehículo
-    if (!selectedVehicle.value) {
-      try {
-        const vRes = await $api('vehicles/search', { params: { client_id: newVal.id } })
-        const clientVehicles = vRes?.data || vRes?.vehicles || (Array.isArray(vRes) ? vRes : [])
-        if (clientVehicles.length === 1) {
-          selectedVehicle.value = clientVehicles[0]
-        }
-      } catch (e) {
-        console.warn('Error cargando vehículos del cliente:', e)
-      }
-    }
+    // Cargar sugerencias de vehículos del cliente (únicamente sugerir, no auto-asignar)
+    await fetchClientVehicles(newVal.id)
   } else {
     workOrder.value.client_id = null
+    clientVehicles.value = []
   }
 })
+
 
 watch(() => selectedVehicle.value, async newVal => {
   if (newVal && newVal.id) {
@@ -810,7 +853,62 @@ onMounted(async () => {
                       </template>
                     </VSearch>
                   </div>
+
+                  <!-- Sugerencias de Vehículos del Cliente cuando no se ha escogido un vehículo -->
+                  <div
+                    v-if="!selectedVehicle && clientVehicles.length > 0"
+                    class="mt-2.5 pa-3 rounded-xl border bg-slate-50 d-flex flex-column gap-2"
+                    style="border-color: rgba(var(--v-theme-primary), 0.3) !important;"
+                  >
+                    <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                      <div class="d-flex align-center gap-1.5 text-caption font-weight-bold text-primary">
+                        <VIcon icon="ri-lightbulb-line" size="16" color="primary" />
+                        <span>Vehículo(s) registrado(s) del cliente:</span>
+                      </div>
+                      <VBtn
+                        v-if="clientVehicles.length > 1"
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        prepend-icon="ri-list-check"
+                        class="font-weight-medium"
+                        @click="showVehicleSuggestionDialog = true"
+                      >
+                        Ver lista ({{ clientVehicles.length }})
+                      </VBtn>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 align-center">
+                      <VCard
+                        v-for="veh in clientVehicles"
+                        :key="veh.id"
+                        class="pa-2 px-3 rounded-lg border bg-white cursor-pointer transition-all hover-elevate d-flex align-center gap-2 elevation-1"
+                        style="border-color: #cbd5e1 !important;"
+                        @click="selectSuggestedVehicle(veh)"
+                      >
+                        <VAvatar size="28" color="primary" variant="tonal" rounded="sm">
+                          <VIcon icon="ri-car-fill" size="16" />
+                        </VAvatar>
+                        <div class="d-flex flex-column">
+                          <div class="d-flex align-center gap-1.5">
+                            <span class="font-mono font-weight-bold text-slate-900 text-body-2">
+                              {{ veh.license_plate }}
+                            </span>
+                            <span v-if="veh.brand || veh.model" class="text-caption font-weight-medium text-slate-700">
+                              • {{ getVehicleBrandModel(veh) }}
+                            </span>
+                          </div>
+                          <div v-if="veh.color || veh.year" class="text-caption text-medium-emphasis" style="font-size: 11px;">
+                            <span v-if="veh.year">Año {{ veh.year }}</span>
+                            <span v-if="veh.color" class="ms-1">• Color {{ veh.color }}</span>
+                          </div>
+                        </div>
+                      </VCard>
+                    </div>
+                  </div>
                 </VCol>
+
+
 
                 <!-- Panel Unificado y Elegante de Resumen Cliente / Vehículo (Sin redundancia) -->
                 <VCol v-if="selectedClient || selectedVehicle" cols="12" class="pt-0">
@@ -1107,17 +1205,19 @@ onMounted(async () => {
               </div>
 
               <!-- Estado Vacío -->
-              <div v-else class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed">
-                <VAvatar color="primary" variant="tonal" size="64" class="mb-3">
-                  <VIcon icon="ri-shopping-bag-3-line" size="32" />
+              <div v-else class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed transition-all"
+                :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-error bg-red-50' : ''">
+                <VAvatar :color="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'error' : 'primary'" variant="tonal" size="64" class="mb-3">
+                  <VIcon :icon="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'ri-error-warning-line' : 'ri-shopping-bag-3-line'" size="32" />
                 </VAvatar>
-                <div class="text-subtitle-1 font-weight-bold text-slate-900">
-                  No hay productos o servicios agregados
+                <div class="text-subtitle-1 font-weight-bold" :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'text-error' : 'text-slate-900'">
+                  {{ showValidationError && (!workOrder.items || workOrder.items.length === 0) ? '¡Debe agregar al menos un producto o servicio!' : 'No hay productos o servicios agregados' }}
                 </div>
                 <div class="text-body-2 text-medium-emphasis mt-1">
                   Usa el buscador para agregar ítems o crea un producto/servicio temporal.
                 </div>
               </div>
+
             </VCardText>
           </VCard>
         </VCol>
@@ -1266,5 +1366,89 @@ onMounted(async () => {
 
     <!-- Dialog para agregar servicio express -->
     <AddServiceDialog v-model:isDialogVisible="showAddServiceDialog" @service-added="handleServiceAdded" />
+
+    <!-- Diálogo para escoger vehículo cuando el cliente tiene múltiples vehículos -->
+    <VDialog v-model="showVehicleSuggestionDialog" max-width="520" scrollable>
+      <VCard class="rounded-xl border elevation-4">
+        <VCardItem class="bg-slate-50 py-3 px-4 border-b">
+          <template #title>
+            <div class="d-flex align-center gap-3">
+              <VAvatar size="36" color="primary" variant="tonal" class="rounded-lg">
+                <VIcon icon="ri-car-line" size="20" />
+              </VAvatar>
+              <div>
+                <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                  Vehículos Registrados del Cliente
+                </h3>
+                <p class="text-caption text-medium-emphasis mb-0">
+                  Selecciona el vehículo que ingresa al taller
+                </p>
+              </div>
+            </div>
+          </template>
+          <template #append>
+            <VBtn icon="ri-close-line" variant="text" size="small" @click="showVehicleSuggestionDialog = false" />
+          </template>
+        </VCardItem>
+
+        <VCardText class="pa-4 bg-white" style="max-height: 420px;">
+          <div v-if="selectedClient" class="mb-3 text-caption text-slate-700 bg-slate-100 pa-2.5 rounded-lg border d-flex align-center gap-2">
+            <VIcon icon="ri-user-line" size="16" color="primary" />
+            <div>
+              Cliente: <strong>{{ selectedClient.full_name || selectedClient.name }}</strong>
+              <span class="ms-1 text-disabled">({{ clientVehicles.length }} vehículos encontrados)</span>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-2.5">
+            <VCard
+              v-for="veh in clientVehicles"
+              :key="veh.id"
+              class="pa-3 rounded-xl border bg-white cursor-pointer transition-all hover-elevate d-flex align-center justify-space-between elevation-1"
+              style="border-color: #cbd5e1 !important;"
+              @click="selectSuggestedVehicle(veh)"
+            >
+              <div class="d-flex align-center gap-3">
+                <VAvatar size="40" color="primary" variant="tonal" class="rounded-lg">
+                  <VIcon icon="ri-car-fill" size="22" />
+                </VAvatar>
+                <div>
+                  <div class="d-flex align-center gap-2">
+                    <span class="font-mono font-weight-bold text-slate-900 text-body-2">
+                      {{ veh.license_plate }}
+                    </span>
+                    <VChip size="x-small" color="primary" variant="tonal" class="font-weight-medium">
+                      {{ getBrandNameById(veh.brand?.name || veh.brand || veh.brand_id) }}
+                    </VChip>
+                  </div>
+                  <div class="text-caption text-slate-700 font-weight-medium mt-0.5">
+                    {{ veh.model || 'Sin modelo especificado' }}
+                  </div>
+                  <div class="d-flex align-center gap-2 mt-0.5 text-caption text-medium-emphasis" style="font-size: 11px;">
+                    <span v-if="veh.year">Año: {{ veh.year }}</span>
+                    <span v-if="veh.color">• Color: {{ veh.color }}</span>
+                  </div>
+                </div>
+              </div>
+              <VBtn size="small" variant="tonal" color="primary" append-icon="ri-check-line" class="font-weight-bold">
+                Elegir
+              </VBtn>
+            </VCard>
+          </div>
+        </VCardText>
+
+        <VDivider />
+
+        <VCardActions class="pa-3 px-4 bg-slate-50 d-flex justify-space-between flex-wrap gap-2">
+          <VBtn variant="text" color="primary" size="small" prepend-icon="ri-add-line" @click="showVehicleSuggestionDialog = false; showVehicleDialog = true">
+            Registrar Nuevo Vehículo
+          </VBtn>
+          <VBtn variant="tonal" color="secondary" size="small" @click="showVehicleSuggestionDialog = false">
+            Continuar sin vehículo
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
+
