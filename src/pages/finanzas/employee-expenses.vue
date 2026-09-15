@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import AddEmployeeAdvanceDialog from '@/components/inventory/employee-expenses/AddEmployeeAdvanceDialog.vue'
@@ -101,7 +101,7 @@ const headers = [
   { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '140px', minWidth: '130px' },
   { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '110px', minWidth: '100px' },
   { title: 'FECHA', key: 'raw_date', sortable: true, width: '110px', minWidth: '105px' },
-  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '90px', minWidth: '85px' },
+  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '130px', minWidth: '120px' },
 ]
 
 // Functions
@@ -284,8 +284,51 @@ const filteredExpenses = computed(() => {
   if (selectedType.value === 'payments') filtered = filtered.filter(e => e.type === 'payment')
   if (selectedType.value === 'advances') filtered = filtered.filter(e => e.type === 'advance')
 
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase().trim()
+    filtered = filtered.filter(e => {
+      const empName = (e.employee_name || '').toLowerCase()
+      const desc = (e.description || e.reason || '').toLowerCase()
+      const acc = (e.account_name || '').toLowerCase()
+      const date = (e.date || '').toLowerCase()
+      const month = formatMonthLabel(e.payment_month || '').toLowerCase()
+      const typeStr = e.type === 'payment' ? 'pago rol liquidacion' : 'adelanto anticipo'
+      const amount = String(e.amount || '')
+      return (
+        empName.includes(q) ||
+        desc.includes(q) ||
+        acc.includes(q) ||
+        date.includes(q) ||
+        month.includes(q) ||
+        typeStr.includes(q) ||
+        amount.includes(q)
+      )
+    })
+  }
+
   return filtered
 })
+
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+const totalPages = computed(() => Math.ceil(filteredExpenses.value.length / itemsPerPage.value) || 1)
+
+const paginatedExpenses = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return filteredExpenses.value.slice(start, start + itemsPerPage.value)
+})
+
+watch([searchQuery, selectedType], () => {
+  currentPage.value = 1
+})
+
+const getEmployeeInitials = name => {
+  if (!name || name === 'N/A') return 'EM'
+  const parts = String(name).trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
 
 onMounted(() => {
   if (canAccessEmployeeExpenses.value) {
@@ -318,361 +361,436 @@ onMounted(() => {
     <!-- Encabezado de Navegación de Operaciones -->
     <OperationsHeaderNav active-tab="nomina" />
 
-    <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+    <!-- Header Principal -->
+    <VCard class="mb-5 rounded-xl border elevation-0 pa-4 bg-surface">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
         <div class="d-flex align-center gap-3">
-          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-1">
-            <VIcon icon="ri-user-3-line" size="24" />
+          <VAvatar color="primary" variant="tonal" rounded="lg" size="44" class="elevation-0 flex-shrink-0">
+            <VIcon icon="ri-wallet-3-line" size="24" />
           </VAvatar>
           <div>
             <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+              <h1 class="text-h5 font-weight-bold text-high-emphasis mb-0">
                 Pagos de Nómina
               </h1>
               <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
                 {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
-              Gestiona los pagos y adelantos otorgados a los empleados
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0.5">
+              Gestiona los roles de pago y adelantos concedidos a los empleados
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-3 flex-wrap">
-          <VBtn color="primary" variant="elevated" size="small" prepend-icon="ri-money-dollar-circle-line"
-            class="font-weight-semibold elevation-2" @click="openAddPaymentDialog">
-            Nuevo Pago
+        <div class="d-flex align-center gap-2.5 flex-wrap">
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-refresh-line"
+            size="default"
+            class="font-weight-medium"
+            :loading="loading"
+            @click="loadExpenses"
+          >
+            Actualizar
           </VBtn>
-          <VBtn color="info" variant="elevated" size="small" prepend-icon="ri-hand-coin-line"
-            class="font-weight-semibold elevation-2" @click="openAddAdvanceDialog">
+          <VBtn
+            color="info"
+            variant="tonal"
+            size="default"
+            prepend-icon="ri-hand-coin-line"
+            class="font-weight-semibold"
+            @click="openAddAdvanceDialog"
+          >
             Nuevo Adelanto
+          </VBtn>
+          <VBtn
+            color="primary"
+            variant="elevated"
+            size="default"
+            prepend-icon="ri-money-dollar-circle-line"
+            class="font-weight-bold elevation-1"
+            @click="openAddPaymentDialog"
+          >
+            Nuevo Pago
           </VBtn>
         </div>
       </div>
     </VCard>
 
-    <!-- Tarjetas de Resumen KPI con colores tonales -->
-    <VRow class="mb-5">
+    <!-- Barra de Métricas Rápidas (KPIs) -->
+    <VRow class="mb-5" dense>
       <!-- Total Pagos -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-4 rounded-xl tonal-card bg-primary-tonal border-primary operations-kpi-card" elevation="0">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-              <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
-                Total Pagos
-              </span>
-              <div v-if="loading" class="mt-1">
-                <VSkeletonLoader type="text" width="110" height="28" />
-              </div>
-              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
-                {{ formatCurrency(summary.total_payments) }}
-              </div>
-              <span class="text-caption text-medium-emphasis font-weight-medium">
-                Suma acumulada de pagos de nómina
-              </span>
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-file-user-line" size="26" />
+          </VAvatar>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Roles de Pago</div>
+            <div class="text-h6 font-weight-bold text-primary font-mono text-truncate">
+              {{ formatCurrency(summary.total_payments) }}
             </div>
-            <VAvatar color="primary" variant="elevated" size="42" class="elevation-2 kpi-avatar">
-              <VIcon size="24" icon="ri-money-dollar-circle-line" color="white" />
-            </VAvatar>
+            <div class="text-caption text-disabled text-truncate font-weight-regular">
+              Suma acumulada de pagos de nómina
+            </div>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total Adelantos -->
-      <VCol cols="12" sm="6" md="4">
-        <VCard class="pa-4 rounded-xl tonal-card bg-success-tonal border-success operations-kpi-card" elevation="0">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-              <span class="text-overline font-weight-bold text-success text-uppercase tracking-wider">
-                Total Adelantos
-              </span>
-              <div v-if="loading" class="mt-1">
-                <VSkeletonLoader type="text" width="110" height="28" />
-              </div>
-              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
-                {{ formatCurrency(summary.total_advances) }}
-              </div>
-              <span class="text-caption text-medium-emphasis font-weight-medium">
-                Suma acumulada de adelantos
-              </span>
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-hand-coin-line" size="26" />
+          </VAvatar>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Adelantos</div>
+            <div class="text-h6 font-weight-bold text-warning font-mono text-truncate">
+              {{ formatCurrency(summary.total_advances) }}
             </div>
-            <VAvatar color="success" variant="elevated" size="42" class="elevation-2 kpi-avatar">
-              <VIcon size="24" icon="ri-hand-coin-line" color="white" />
-            </VAvatar>
+            <div class="text-caption text-disabled text-truncate font-weight-regular">
+              Adelantos concedidos a empleados
+            </div>
           </div>
         </VCard>
       </VCol>
 
       <!-- Total General -->
-      <VCol cols="12" sm="12" md="4">
-        <VCard class="pa-4 rounded-xl tonal-card bg-info-tonal border-info operations-kpi-card" elevation="0">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-              <span class="text-overline font-weight-bold text-info text-uppercase tracking-wider">
-                Total General
-              </span>
-              <div v-if="loading" class="mt-1">
-                <VSkeletonLoader type="text" width="110" height="28" />
-              </div>
-              <div v-else class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
-                {{ formatCurrency(summary.total_general) }}
-              </div>
-              <span class="text-caption text-medium-emphasis font-weight-medium">
-                Suma total de egresos por nómina
-              </span>
+      <VCol cols="12" sm="4">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-4 bg-surface d-flex align-center gap-3 h-100">
+          <VAvatar size="46" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-funds-line" size="26" />
+          </VAvatar>
+          <div class="min-w-0 flex-grow-1">
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total General Nómina</div>
+            <div class="text-h6 font-weight-bold text-info font-mono text-truncate">
+              {{ formatCurrency(summary.total_general) }}
             </div>
-            <VAvatar color="info" variant="elevated" size="42" class="elevation-2 kpi-avatar">
-              <VIcon size="24" icon="ri-funds-line" color="white" />
-            </VAvatar>
+            <div class="text-caption text-disabled text-truncate font-weight-regular">
+              Egresos totales acumulados
+            </div>
           </div>
         </VCard>
       </VCol>
     </VRow>
 
-    <!-- Barra de Filtros de Búsqueda -->
-    <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
-      <VRow align="center" density="comfortable">
+    <!-- Barra de Filtros y Búsqueda -->
+    <VCard class="pa-4 mb-5 rounded-xl border elevation-0 bg-surface">
+      <VRow align="center" dense class="gap-y-3">
         <VCol cols="12" md="6">
-          <VTextField v-model="searchQuery" prepend-inner-icon="ri-search-2-line"
-            placeholder="Buscar por empleado, descripción o cuenta..." hide-details clearable variant="outlined"
-            density="compact" :loading="loading" />
+          <VTextField
+            v-model="searchQuery"
+            prepend-inner-icon="ri-search-2-line"
+            placeholder="Buscar por empleado, mes, descripción o cuenta..."
+            hide-details
+            clearable
+            variant="outlined"
+            density="compact"
+            :loading="loading"
+          />
         </VCol>
 
-        <VCol cols="12" md="6" class="d-flex justify-md-end align-center gap-2 flex-wrap">
-          <span class="text-body-2 font-weight-medium text-medium-emphasis me-2">Filtrar:</span>
-          <VBtn size="small" :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'all' ? 'primary' : 'secondary'" class="font-weight-semibold"
-            @click="selectedType = 'all'">
+        <VCol cols="12" md="6" class="d-flex justify-md-end align-center gap-2.5 flex-wrap">
+          <span class="text-body-2 font-weight-medium text-medium-emphasis me-1">Filtrar:</span>
+          <VBtn
+            size="small"
+            :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
+            :color="selectedType === 'all' ? 'primary' : 'secondary'"
+            prepend-icon="ri-apps-2-line"
+            class="font-weight-semibold px-3"
+            @click="selectedType = 'all'"
+          >
             Todos
           </VBtn>
-          <VBtn size="small" :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'payments' ? 'primary' : 'secondary'" class="font-weight-semibold"
-            @click="selectedType = 'payments'">
+          <VBtn
+            size="small"
+            :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
+            :color="selectedType === 'payments' ? 'primary' : 'secondary'"
+            prepend-icon="ri-file-user-line"
+            class="font-weight-semibold px-3"
+            @click="selectedType = 'payments'"
+          >
             Pagos
           </VBtn>
-          <VBtn size="small" :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'advances' ? 'primary' : 'secondary'" class="font-weight-semibold"
-            @click="selectedType = 'advances'">
+          <VBtn
+            size="small"
+            :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
+            :color="selectedType === 'advances' ? 'primary' : 'secondary'"
+            prepend-icon="ri-hand-coin-line"
+            class="font-weight-semibold px-3"
+            @click="selectedType = 'advances'"
+          >
             Adelantos
           </VBtn>
         </VCol>
       </VRow>
     </VCard>
 
-    <!-- Tabla de Datos Unificada -->
-    <VCard class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container">
-      <VDataTable :headers="headers" :items="filteredExpenses" :search="searchQuery" :loading="loading"
-        :sort-by="[{ key: 'raw_date', order: 'desc' }]" class="transfer-table expenses-table text-no-wrap" hover>
-        <template #loading>
-          <div class="pa-4">
-            <div v-for="n in 6" :key="n" class="d-flex align-center gap-4 py-3 border-b">
-              <div style="width: 130px;">
-                <VSkeletonLoader type="chip" height="26" />
-              </div>
-              <div class="flex-grow-1">
-                <VSkeletonLoader type="text" height="22" />
-              </div>
-              <div class="flex-grow-1">
-                <VSkeletonLoader type="text" height="22" />
-              </div>
-              <div style="width: 120px;">
-                <VSkeletonLoader type="text" height="22" />
-              </div>
-              <div style="width: 120px;">
-                <VSkeletonLoader type="text" height="22" />
-              </div>
-              <div style="width: 90px;" class="d-flex justify-center">
-                <VSkeletonLoader type="button" height="32" width="32" class="rounded-lg" />
-              </div>
-            </div>
-          </div>
-        </template>
-        <!-- Slot: TIPO / REGISTRO (Diseño Chévere y Espaciado) -->
-        <template #item.type="{ item }">
-          <!-- 1. Caso: PAGO DE NÓMINA / ROL DE PAGOS -->
-          <div v-if="item.type === 'payment'" class="d-flex align-center py-1.5" style="gap: 10px;">
-            <VAvatar size="34" color="success" variant="tonal" class="rounded-lg shrink-0">
-              <VIcon icon="ri-file-user-line" size="18" color="success" />
-            </VAvatar>
-            <div class="d-flex flex-column text-left">
-              <span class="font-weight-bold text-slate-900 text-body-2 leading-tight">
-                Rol de Pagos
-              </span>
-              <span v-if="item.payment_month"
-                class="text-caption font-weight-bold text-primary d-flex align-center mt-0.5" style="gap: 4px; font-size: 0.72rem;">
-                <VIcon icon="ri-calendar-event-line" size="13" />
-                {{ formatMonthLabel(item.payment_month) }}
-              </span>
-              <span v-else class="text-caption text-medium-emphasis mt-0.5" style="font-size: 0.72rem;">
-                Liquidación
-              </span>
-            </div>
-          </div>
-
-          <!-- 2. Caso: ADELANTO LIQUIDADO / DEDUCIDO -->
-          <div v-else-if="item.is_deducted" class="d-flex align-center py-1.5" style="gap: 10px;">
-            <VAvatar size="34" color="secondary" variant="tonal" class="rounded-lg shrink-0">
-              <VIcon icon="ri-checkbox-circle-line" size="18" color="success" />
-            </VAvatar>
-            <div class="d-flex flex-column text-left">
-              <span class="font-weight-bold text-slate-700 text-body-2 leading-tight">
-                Adelanto
-              </span>
-              <span class="text-caption font-weight-semibold text-success d-flex align-center mt-0.5" style="gap: 4px; font-size: 0.72rem;">
-                <VIcon icon="ri-check-line" size="13" />
-                Liquidado en Rol
-              </span>
-            </div>
-          </div>
-
-          <!-- 3. Caso: ADELANTO PENDIENTE DE COBRO -->
-          <div v-else class="d-flex align-center py-1.5" style="gap: 10px;">
-            <VAvatar size="34" color="warning" variant="tonal" class="rounded-lg shrink-0">
-              <VIcon icon="ri-hand-coin-line" size="18" color="warning" />
-            </VAvatar>
-            <div class="d-flex flex-column text-left">
-              <span class="font-weight-bold text-slate-800 text-body-2 leading-tight">
-                Adelanto
-              </span>
-              <span class="text-caption font-weight-semibold text-warning d-flex align-center mt-0.5" style="gap: 4px; font-size: 0.72rem;">
-                <VIcon icon="ri-time-line" size="13" />
-                Por Deducir
-              </span>
-            </div>
-          </div>
-        </template>
-
-        <!-- Slot: EMPLEADO -->
-        <template #item.employee_name="{ item }">
-          <div class="d-flex align-center py-1.5" style="gap: 10px;">
-            <VAvatar size="32" color="primary" variant="tonal"
-              class="rounded-circle shrink-0 font-weight-bold text-caption">
-              <VIcon icon="ri-user-3-line" size="16" />
-            </VAvatar>
-            <div class="d-flex flex-column text-left">
-              <span class="font-weight-bold text-slate-800 text-body-2">
-                {{ item.employee_name }}
-              </span>
-            </div>
-          </div>
-        </template>
-
-        <!-- Slot: DESCRIPCIÓN -->
-        <template #item.description="{ item }">
-          <div class="text-body-2 text-slate-700 py-1"
-            style="max-width: 240px; white-space: normal; line-height: 1.3;">
-            {{ item.description || item.reason || 'Sin descripción' }}
-          </div>
-        </template>
-
-        <!-- Slot: CUENTA DE PAGO -->
-        <template #item.account_name="{ item }">
-          <div class="d-flex align-center gap-2 py-1">
-            <VAvatar size="26"
-              :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'"
-              variant="tonal" class="rounded-lg shrink-0">
-              <VIcon
-                :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                size="14" />
-            </VAvatar>
-            <span class="font-weight-medium text-slate-800 text-body-2">
-              {{ cleanAccountName(item.account_name) }}
-            </span>
-          </div>
-        </template>
-
-        <!-- Slot: MONTO -->
-        <template #item.amount="{ item }">
-          <span class="font-weight-black text-subtitle-1"
-            :class="item.type === 'payment' ? 'text-primary' : 'text-info'">
-            {{ formatCurrency(item.amount) }}
-          </span>
-        </template>
-
-        <!-- Slot: FECHA -->
-        <template #item.raw_date="{ item }">
-          <div class="d-flex align-center gap-1.5 text-body-2 text-medium-emphasis font-weight-medium">
-            <VIcon icon="ri-calendar-line" size="16" color="secondary" />
-            <span>{{ item.date }}</span>
-          </div>
-        </template>
-
-        <template #item.actions="{ item }">
-          <div class="d-flex align-center justify-center gap-1">
-            <!-- Botón Principal: Ver Nota y Comprobantes -->
-            <VBtn title="Ver Nota y Comprobantes" icon="ri-eye-line" variant="tonal" size="small" color="primary"
-              class="action-btn" @click="openEmployeeNoteDialog(item)" />
-
-            <!-- Menú Pro de Acciones Secundarias -->
-            <VMenu location="bottom end" transition="scale-transition">
-              <template #activator="{ props: menuProps }">
-                <VBtn v-bind="menuProps" size="small" variant="text" color="secondary" icon="ri-more-2-fill"
-                  class="action-btn" title="Más opciones" />
-              </template>
-
-              <VList density="compact" elevation="6" class="py-1 rounded-lg" min-width="200">
-                <VListItem @click="generatePDF(item)">
-                  <template #prepend>
-                    <VIcon icon="ri-file-pdf-line" :color="item.type === 'payment' ? 'primary' : 'info'" size="18"
-                      class="me-2" />
-                  </template>
-                  <VListItemTitle class="font-weight-medium text-body-2">
-                    {{ item.type === 'payment' ? 'Descargar Rol de Pagos' : 'Descargar Comprobante' }}
-                  </VListItemTitle>
-                </VListItem>
-
-                <VListItem @click="openAttachDialog(item)">
-                  <template #prepend>
-                    <VIcon icon="ri-attachment-2" color="secondary" size="18" class="me-2" />
-                  </template>
-                  <VListItemTitle class="font-weight-medium text-body-2">
-                    Adjuntar Comprobante
-                  </VListItemTitle>
-                </VListItem>
-
-                <VListItem :disabled="item.type === 'advance' && item.is_deducted"
-                  @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)">
-                  <template #prepend>
-                    <VIcon icon="ri-edit-line" color="warning" size="18" class="me-2" />
-                  </template>
-                  <VListItemTitle class="font-weight-medium text-body-2">
-                    Editar Registro
-                  </VListItemTitle>
-                </VListItem>
-
-                <VDivider class="my-1" />
-
-                <VListItem class="text-error" :disabled="item.type === 'advance' && item.is_deducted"
-                  @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)">
-                  <template #prepend>
-                    <VIcon icon="ri-delete-bin-line" color="error" size="18" class="me-2" />
-                  </template>
-                  <VListItemTitle class="font-weight-medium text-body-2 text-error">
-                    Eliminar Registro
-                  </VListItemTitle>
-                </VListItem>
-              </VList>
-            </VMenu>
-          </div>
-        </template>
-
-        <template #no-data>
-          <div class="text-center pa-12 text-medium-emphasis">
-            <VAvatar color="primary" variant="tonal" size="80" class="mb-4">
-              <VIcon icon="ri-inbox-line" size="42" color="primary" />
-            </VAvatar>
-            <h3 class="text-h6 font-weight-bold text-high-emphasis">
-              No hay registros
-            </h3>
-            <p class="text-body-2 text-medium-emphasis mt-1">
-              No se encontraron pagos ni adelantos registrados.
-            </p>
-          </div>
-        </template>
-      </VDataTable>
+    <!-- ESTADO DE CARGA -->
+    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+      <VTable>
+        <tbody>
+          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
+            <td class="py-4" style="width: 190px;"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
+            <td class="py-4" style="min-width: 250px;"><div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" /></td>
+            <td class="py-4" style="min-width: 280px;"><div class="shimmer-line w-80" /></td>
+            <td class="py-4" style="width: 200px;"><div class="shimmer-line w-60" /></td>
+            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-50" /></td>
+            <td class="py-4 text-right" style="width: 130px;"><div class="shimmer-line w-50 ms-auto" /></td>
+            <td class="py-4 text-center" style="width: 120px;"><div class="shimmer-button rounded mx-auto" /></td>
+          </tr>
+        </tbody>
+      </VTable>
     </VCard>
+
+    <!-- ESTADO VACÍO -->
+    <VCard
+      v-else-if="!filteredExpenses.length"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
+    >
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-wallet-3-line" />
+      </VAvatar>
+      <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
+        No se encontraron registros de nómina
+      </h3>
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+        Intenta ajustar los criterios de búsqueda o registra un nuevo pago de nómina o adelanto.
+      </p>
+      <div class="d-flex justify-center gap-3">
+        <VBtn v-if="searchQuery || selectedType !== 'all'" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="searchQuery = ''; selectedType = 'all'">
+          Restablecer Filtros
+        </VBtn>
+        <VBtn color="primary" prepend-icon="ri-money-dollar-circle-line" @click="openAddPaymentDialog">
+          Nuevo Pago
+        </VBtn>
+      </div>
+    </VCard>
+
+    <!-- TABLA MODERNA DE NÓMINA -->
+    <div v-else>
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable hover class="overflow-x-auto">
+          <thead>
+            <tr class="bg-grey-lighten-5">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 190px; min-width: 180px; white-space: nowrap;">
+                Tipo / Registro
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 240px; min-width: 200px;">
+                Empleado
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
+                Descripción
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 200px; min-width: 180px; white-space: nowrap;">
+                Cuenta de Pago
+              </th>
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
+                Fecha
+              </th>
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+                Monto
+              </th>
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in paginatedExpenses" :key="`${item.type}-${item.id}`" class="payroll-table-row">
+              <!-- Tipo / Registro -->
+              <td class="py-3" style="white-space: nowrap;">
+                <!-- PAGO DE NÓMINA -->
+                <div v-if="item.type === 'payment'" class="d-flex align-center gap-3">
+                  <VAvatar size="34" color="success" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-file-user-line" size="18" color="success" />
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                      Rol de Pagos
+                    </div>
+                    <div v-if="item.payment_month" class="text-caption font-weight-bold text-primary d-flex align-center mt-0.5" style="gap: 6px; font-size: 0.74rem;">
+                      <VIcon icon="ri-calendar-event-line" size="13" />
+                      <span>{{ formatMonthLabel(item.payment_month) }}</span>
+                    </div>
+                    <div v-else class="text-caption text-medium-emphasis mt-0.5" style="font-size: 0.74rem;">
+                      Liquidación
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ADELANTO DEDUCIDO -->
+                <div v-else-if="item.is_deducted" class="d-flex align-center gap-3">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-checkbox-circle-line" size="18" color="success" />
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                      Adelanto
+                    </div>
+                    <div class="text-caption font-weight-semibold text-success d-flex align-center mt-0.5" style="gap: 6px; font-size: 0.74rem;">
+                      <VIcon icon="ri-check-line" size="13" />
+                      <span>Liquidado en Rol</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ADELANTO PENDIENTE -->
+                <div v-else class="d-flex align-center gap-3">
+                  <VAvatar size="34" color="warning" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-hand-coin-line" size="18" color="warning" />
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                      Adelanto
+                    </div>
+                    <div class="text-caption font-weight-semibold text-warning d-flex align-center mt-0.5" style="gap: 6px; font-size: 0.74rem;">
+                      <VIcon icon="ri-time-line" size="13" />
+                      <span>Por Deducir</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Empleado -->
+              <td class="py-3" style="max-width: 240px;">
+                <div class="d-flex align-center gap-3" style="min-width: 0;">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 font-weight-bold">
+                    <span style="font-size: 0.8rem;">{{ getEmployeeInitials(item.employee_name) }}</span>
+                  </VAvatar>
+                  <div class="d-flex flex-column text-left" style="min-width: 0; flex: 1 1 auto;">
+                    <div
+                      class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                      :title="item.employee_name"
+                    >
+                      {{ item.employee_name }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis mt-0.5 font-weight-medium text-truncate" style="font-size: 0.74rem;">
+                      {{ item.type === 'payment' ? 'Empleado / Sueldo' : 'Anticipo' }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Descripción -->
+              <td class="py-3">
+                <div
+                  class="text-body-2 text-high-emphasis line-clamp-2"
+                  :title="item.description || item.reason"
+                  style="max-width: 320px;"
+                >
+                  {{ item.description || item.reason || 'Sin descripción adicional' }}
+                </div>
+              </td>
+
+              <!-- Cuenta de Pago -->
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center gap-2.5">
+                  <VAvatar size="28" :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'" variant="tonal" rounded="lg" class="flex-shrink-0">
+                    <VIcon :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'" size="15" />
+                  </VAvatar>
+                  <span class="font-weight-medium text-high-emphasis text-body-2">
+                    {{ cleanAccountName(item.account_name) }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Fecha -->
+              <td class="py-3" style="white-space: nowrap;">
+                <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                  <VIcon icon="ri-calendar-line" size="15" class="me-2 flex-shrink-0 text-disabled" />
+                  <span class="font-weight-medium">{{ item.date }}</span>
+                </div>
+              </td>
+
+              <!-- Monto -->
+              <td class="py-3 text-right" style="white-space: nowrap;">
+                <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
+                  {{ formatCurrency(item.amount) }}
+                </span>
+              </td>
+
+              <!-- Acciones -->
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <div class="d-flex justify-center align-center gap-3">
+                  <VBtn
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    icon="ri-eye-line"
+                    title="Ver Nota y Comprobantes"
+                    @click="openEmployeeNoteDialog(item)"
+                  />
+
+                  <VBtn
+                    size="small"
+                    color="secondary"
+                    variant="tonal"
+                    icon="ri-more-2-line"
+                    title="Más Opciones"
+                  >
+                    <VMenu
+                      activator="parent"
+                      transition="slide-y-transition"
+                      align="end"
+                      location="bottom end"
+                    >
+                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="200">
+                        <VListItem
+                          :prepend-icon="item.type === 'payment' ? 'ri-file-pdf-line' : 'ri-file-text-line'"
+                          :title="item.type === 'payment' ? 'Descargar Rol de Pagos' : 'Descargar Comprobante'"
+                          :class="item.type === 'payment' ? 'text-primary font-weight-medium' : 'text-info font-weight-medium'"
+                          @click="generatePDF(item)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-attachment-2"
+                          title="Adjuntar Comprobante"
+                          class="text-secondary font-weight-medium"
+                          @click="openAttachDialog(item)"
+                        />
+                        <VDivider class="my-1" />
+                        <VListItem
+                          prepend-icon="ri-edit-line"
+                          title="Editar Registro"
+                          class="text-warning font-weight-medium"
+                          :disabled="item.type === 'advance' && item.is_deducted"
+                          @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-delete-bin-line"
+                          title="Eliminar Registro"
+                          class="text-error font-weight-medium"
+                          :disabled="item.type === 'advance' && item.is_deducted"
+                          @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
+                        />
+                      </VList>
+                    </VMenu>
+                  </VBtn>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <!-- Paginación -->
+      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong class="text-high-emphasis">{{ paginatedExpenses.length }}</strong> de <strong class="text-high-emphasis">{{ filteredExpenses.length }}</strong> registros
+          </div>
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+          />
+        </div>
+      </VCard>
+    </div>
 
     <!-- Diálogos -->
     <AddEmployeeAdvanceDialog v-if="showAddAdvanceDialog" v-model="showAddAdvanceDialog" :accounts="[]"
@@ -704,7 +822,66 @@ onMounted(() => {
   </div>
 </template>
 
+<style scoped lang="scss">
+.kpi-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
+
+.payroll-table-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.shimmer-line {
+  height: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite;
+}
+
+.shimmer-button {
+  width: 32px;
+  height: 32px;
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+</style>
+
 <route lang="yaml">
 meta:
   navActiveLink: 'operations-index'
 </route>
+

@@ -18,6 +18,32 @@
   <meta name="theme-color" content="#4a5df8" />
 
   <link rel="stylesheet" type="text/css" href="/loader.css" />
+
+  <script>
+    // Suprimir y limpiar de la consola errores de scripts inyectados por el navegador
+    window.addEventListener('error', function(e) {
+      var msg = (e && e.message ? e.message : '').toLowerCase();
+      var stack = (e && e.error && e.error.stack ? e.error.stack : '').toLowerCase();
+      if (msg.indexOf("reading 'starttime'") !== -1 || msg.indexOf('reportallchanges') !== -1 || stack.indexOf('reportallchanges') !== -1) {
+        e.preventDefault();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        try {
+          setTimeout(function() { console.clear(); }, 10);
+        } catch(err) {}
+        return true;
+      }
+    }, true);
+    window.onerror = function(msg, url, line, col, error) {
+      var strMsg = (msg || '').toString().toLowerCase();
+      var strStack = (error && error.stack ? error.stack : '').toLowerCase();
+      if (strMsg.indexOf("reading 'starttime'") !== -1 || strMsg.indexOf('reportallchanges') !== -1 || strStack.indexOf('reportallchanges') !== -1) {
+        try {
+          setTimeout(function() { console.clear(); }, 10);
+        } catch(err) {}
+        return true;
+      }
+    };
+  </script>
 </head>
 
 <body>

@@ -396,12 +396,37 @@ const syncSriStatus = async () => {
   try {
     showNotification('Consultando estado en el SRI...', 'info')
     const response = await $api(`sales/${props.saleData.id}/sri/estado`)
+    
+    // ── Diagnóstico de Consola SRI ──
+    const status = response?.data?.sri_status || response?.sri_status || 'DESCONOCIDO'
+    const sriError = response?.data?.sri_error || response?.data?.sync_error || response?.sync_error || response?.error || ''
+    const errorSource = response?.error_source || response?.data?.error_source || (
+      ['RECHAZADA', 'DEVUELTA', 'NO AUTORIZADO'].includes(status) || /sri|soap|comprobante|clave|autorizacion|wsdl|recepcion/i.test(sriError)
+        ? 'SRI'
+        : (sriError ? 'LOCAL_SYSTEM' : null)
+    )
+
+    console.group(`🧾 [SRI Diagnóstico] Sincronización Factura #${props.saleData?.document_number || props.saleData?.id}`)
+    console.log('📌 Estado recibido:', status)
+    if (errorSource === 'SRI' || status === 'RECHAZADA' || status === 'DEVUELTA') {
+      console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+      console.warn('ℹ️ Explicación: El comprobante fue procesado o rechazado por el Web Service del SRI.')
+      console.error('🚨 Detalle SRI:', sriError || 'Sin detalle de error devuelto por SRI')
+    } else if (errorSource === 'LOCAL_SYSTEM' || (!response?.success && response?.message)) {
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / LOCAL]')
+      console.error('ℹ️ Explicación: Error en la conexión interna, parámetros locales o certificados de la aplicación.')
+      console.error('🚨 Detalle Sistema:', sriError || response?.message || 'Error desconocido del sistema')
+    } else {
+      console.log('✅ Estado SRI sincronizado sin incidencias.')
+    }
+    console.log('📦 Respuesta completa del servidor:', response)
+    console.groupEnd()
+
     if (response?.success && response?.data) {
-      const status = response.data.sri_status
       if (status === 'AUTORIZADA') {
         showNotification('¡Factura AUTORIZADA exitosamente por el SRI!', 'success')
       } else if (status === 'RECHAZADA' || status === 'DEVUELTA') {
-        showNotification(`Factura ${status} por el SRI: ${response.data.sri_error || ''}`, 'warning')
+        showNotification(`Factura ${status} por el SRI: ${sriError || ''}`, 'warning')
       } else {
         showNotification(`Estado actual en SRI: ${status}`, 'info')
       }
@@ -410,6 +435,10 @@ const syncSriStatus = async () => {
       showNotification(response?.message || 'Error al consultar estado SRI', 'error')
     }
   } catch (err) {
+    console.group(`🧾 [SRI Diagnóstico] Error en Sincronización Factura #${props.saleData?.document_number || props.saleData?.id}`)
+    console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / RED]')
+    console.error('🚨 Excepción capturada:', err)
+    console.groupEnd()
     showNotification('Error al conectar con el servicio SRI', 'error')
   } finally {
     isSyncingSri.value = false
@@ -423,6 +452,18 @@ const resendSri = async () => {
     const response = await $api(`sales/${props.saleData.id}/sri/reenviar`, {
       method: 'POST',
     })
+
+    console.group(`🚀 [SRI Diagnóstico] Reenvío de Factura #${props.saleData?.document_number || props.saleData?.id}`)
+    if (response?.success) {
+      console.log('✅ Factura encolada con éxito para reenvío al SRI.')
+      console.log('📦 Respuesta:', response)
+    } else {
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / VALIDACIÓN]')
+      console.error('🚨 Mensaje:', response?.message || 'Error al reenviar al SRI')
+      console.log('📦 Respuesta completa:', response)
+    }
+    console.groupEnd()
+
     if (response?.success) {
       showNotification(response.message || 'Factura reenviada al SRI correctamente', 'success')
       emit('refresh')
@@ -430,6 +471,10 @@ const resendSri = async () => {
       showNotification(response?.message || 'Error al reenviar al SRI', 'warning')
     }
   } catch (err) {
+    console.group(`🚀 [SRI Diagnóstico] Error en Reenvío Factura #${props.saleData?.document_number || props.saleData?.id}`)
+    console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / CONECTIVIDAD]')
+    console.error('🚨 Excepción capturada:', err)
+    console.groupEnd()
     showNotification('Error al conectar con el servicio SRI', 'error')
   } finally {
     isResending.value = false

@@ -88,11 +88,28 @@ const checkSriConnection = async (amb = null) => {
         minute: '2-digit',
         second: '2-digit',
       })
+
+      console.group(`🏥 [SRI Diagnóstico] Estado de Conectividad SRI (Ambiente: ${targetAmb === 2 ? 'PRODUCCIÓN' : 'PRUEBAS'})`)
+      if (response.data.online) {
+        console.log('✅ Servidores del SRI ONLINE y respondiendo correctamente.')
+      } else {
+        console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+        console.warn('ℹ️ Servidores del SRI offline o fuera de servicio.')
+      }
+      console.log('📊 Diagnóstico completo:', response.data)
+      console.groupEnd()
     } else {
+      console.group('🏥 [SRI Diagnóstico] Fallo al verificar estado SRI')
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / RESPUESTA INESPERADA]')
+      console.error('🚨 Respuesta recibida:', response)
+      console.groupEnd()
       showNotification('No se pudo verificar la conexión con el SRI', 'error')
     }
   } catch (error) {
-    console.error('Error al verificar SRI:', error)
+    console.group('🏥 [SRI Diagnóstico] Error al consultar SRI')
+    console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / RED]')
+    console.error('🚨 Excepción:', error)
+    console.groupEnd()
     showNotification('Error al consultar el servicio de verificación del SRI', 'error')
   } finally {
     loading.value = false

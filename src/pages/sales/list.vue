@@ -611,12 +611,38 @@ const syncSriStatus = async item => {
   try {
     showNotification('Consultando estado en el SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/estado`)
+    
+    // ── Diagnóstico de Consola SRI ──
+    const isSuccess = response?.success && response?.data?.sri_status === 'AUTORIZADA'
+    const status = response?.data?.sri_status || response?.sri_status || 'DESCONOCIDO'
+    const sriError = response?.data?.sri_error || response?.data?.sync_error || response?.sync_error || response?.error || ''
+    const errorSource = response?.error_source || response?.data?.error_source || (
+      ['RECHAZADA', 'DEVUELTA', 'NO AUTORIZADO'].includes(status) || /sri|soap|comprobante|clave|autorizacion|wsdl|recepcion/i.test(sriError)
+        ? 'SRI'
+        : (sriError ? 'LOCAL_SYSTEM' : null)
+    )
+
+    console.group(`🧾 [SRI Diagnóstico] Sincronización Factura #${item.document_number || item.id}`)
+    console.log('📌 Estado recibido:', status)
+    if (errorSource === 'SRI' || status === 'RECHAZADA' || status === 'DEVUELTA') {
+      console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+      console.warn('ℹ️ Explicación: El comprobante fue procesado o rechazado por el Web Service del SRI.')
+      console.error('🚨 Detalle SRI:', sriError || 'Sin detalle de error devuelto por SRI')
+    } else if (errorSource === 'LOCAL_SYSTEM' || (!response?.success && response?.message)) {
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / LOCAL]')
+      console.error('ℹ️ Explicación: Error en la conexión interna, parámetros locales o certificados de la aplicación.')
+      console.error('🚨 Detalle Sistema:', sriError || response?.message || 'Error desconocido del sistema')
+    } else {
+      console.log('✅ Estado SRI sincronizado sin incidencias.')
+    }
+    console.log('📦 Respuesta completa del servidor:', response)
+    console.groupEnd()
+
     if (response?.success && response?.data) {
-      const status = response.data.sri_status
       if (status === 'AUTORIZADA') {
         showNotification('¡Factura AUTORIZADA exitosamente por el SRI!', 'success')
       } else if (status === 'RECHAZADA' || status === 'DEVUELTA') {
-        showNotification(`Factura ${status} por el SRI: ${response.data.sri_error || ''}`, 'warning')
+        showNotification(`Factura ${status} por el SRI: ${sriError || ''}`, 'warning')
       } else {
         showNotification(`Estado actual en SRI: ${status}`, 'info')
       }
@@ -625,7 +651,10 @@ const syncSriStatus = async item => {
       showNotification(response?.message || 'Error al consultar estado SRI', 'error')
     }
   } catch (error) {
-    console.error('Error al sincronizar estado SRI:', error)
+    console.group(`🧾 [SRI Diagnóstico] Error en Sincronización Factura #${item.document_number || item.id}`)
+    console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / RED]')
+    console.error('🚨 Excepción capturada:', error)
+    console.groupEnd()
     showNotification('Error al conectar con el servicio SRI', 'error')
   } finally {
     const updated = new Set(sriSyncingIds.value)
@@ -640,6 +669,18 @@ const resendSri = async item => {
   try {
     showNotification('Reenviando comprobante al SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/reenviar`, { method: 'POST' })
+    
+    console.group(`🚀 [SRI Diagnóstico] Reenvío de Factura #${item.document_number || item.id}`)
+    if (response?.success) {
+      console.log('✅ Factura encolada con éxito para reenvío al SRI.')
+      console.log('📦 Respuesta:', response)
+    } else {
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / VALIDACIÓN]')
+      console.error('🚨 Mensaje:', response?.message || 'Error al reenviar al SRI')
+      console.log('📦 Respuesta completa:', response)
+    }
+    console.groupEnd()
+
     if (response?.success) {
       showNotification('Factura encolada para reenvío al SRI', 'success')
       loadSales()
@@ -647,6 +688,10 @@ const resendSri = async item => {
       showNotification(response?.message || 'Error al reenviar al SRI', 'error')
     }
   } catch (error) {
+    console.group(`🚀 [SRI Diagnóstico] Error en Reenvío Factura #${item.document_number || item.id}`)
+    console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA / CONECTIVIDAD]')
+    console.error('🚨 Excepción capturada:', error)
+    console.groupEnd()
     showNotification('Error al solicitar reenvío al SRI', 'error')
   } finally {
     const updated = new Set(sriResendingIds.value)
@@ -1167,12 +1212,17 @@ onMounted(() => {
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 250px;">
-                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
+                    <div
+                      class="font-mono text-truncate"
+                      :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
+                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
+                    >
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                     </div>
-                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium"
-                      :title="formatVehicleInfo(item.vehicle)">
+                    <div
+                      class="text-uppercase text-truncate font-weight-medium text-medium-emphasis vehicle-model-small"
+                      :title="formatVehicleInfo(item.vehicle)"
+                    >
                       {{ formatVehicleInfo(item.vehicle) }}
                     </div>
                   </div>
@@ -1393,6 +1443,21 @@ onMounted(() => {
   border: 1.5px solid #0f172a;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.vehicle-plate-large {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.25 !important;
+}
+
+.vehicle-model-small {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  opacity: 0.8 !important;
 }
 
 .text-xxs {

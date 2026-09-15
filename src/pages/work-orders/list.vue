@@ -715,10 +715,17 @@ onMounted(() => {
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 250px;">
-                    <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'Sin placa'">
+                    <div
+                      class="font-mono text-truncate"
+                      :class="item.vehicle.license_plate ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
+                      :title="item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'Sin placa'"
+                    >
                       {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
                     </div>
-                    <div class="text-caption text-medium-emphasis text-uppercase text-truncate font-weight-medium" :title="getVehicleInfo(item.vehicle)">
+                    <div
+                      class="text-uppercase text-truncate font-weight-medium text-medium-emphasis vehicle-model-small"
+                      :title="getVehicleInfo(item.vehicle)"
+                    >
                       {{ getVehicleInfo(item.vehicle) }}
                     </div>
                   </div>
@@ -1314,6 +1321,21 @@ onMounted(() => {
   border: 1.5px solid #0f172a;
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.vehicle-plate-large {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.25 !important;
+}
+
+.vehicle-model-small {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  opacity: 0.8 !important;
 }
 
 .hover-underline:hover {

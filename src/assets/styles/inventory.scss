@@ -4180,6 +4180,21 @@
     box-sizing: border-box !important;
   }
 
+  .vehicle-plate-large {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.05em !important;
+    line-height: 1.25 !important;
+  }
+
+  .vehicle-model-small {
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.02em !important;
+    opacity: 0.8 !important;
+  }
+
   // Badges de Método de Pago / Banco
   .payment-method-chip {
     display: inline-flex !important;

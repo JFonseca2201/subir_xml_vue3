@@ -195,6 +195,30 @@ const loader = useLoaderStore()
 const success = ref(null)
 const msg = ref(null)
 
+// Helpers para extracción segura de nodos XML
+const getNodeVal = (node, defaultVal = '') => {
+  if (node === null || node === undefined) return defaultVal
+  if (typeof node === 'object') {
+    if (node['#text'] !== undefined) return String(node['#text']).trim()
+    if (node['#cdata-section'] !== undefined) return String(node['#cdata-section']).trim()
+    if (node['_text'] !== undefined) return String(node['_text']).trim()
+    for (const k of Object.keys(node)) {
+      if (!k.startsWith('@_')) {
+        const val = node[k]
+        if (typeof val === 'string' || typeof val === 'number') return String(val).trim()
+      }
+    }
+    return defaultVal
+  }
+  return String(node).trim()
+}
+
+const getNodeNum = (node, defaultVal = 0) => {
+  const raw = getNodeVal(node, defaultVal)
+  const parsed = parseFloat(raw)
+  return isNaN(parsed) ? defaultVal : parsed
+}
+
 // Función helper para obtener los detalles de forma segura
 const getDetallesArray = () => {
   if (!xmlData.value || !xmlData.value.detalles) return []
@@ -226,14 +250,14 @@ const calculateTercerosFromUnchecked = () => {
 
   items.forEach(item => {
     if (item._selectedForInventory === false) {
-      let itemTotal = parseFloat(item.precioTotalSinImpuesto || 0)
+      let itemTotal = getNodeNum(item.precioTotalSinImpuesto, 0)
       let itemIva = 0
       if (item.impuestos && item.impuestos.impuesto) {
         let imp = item.impuestos.impuesto
         if (Array.isArray(imp)) {
-          itemIva = imp.reduce((s, i) => s + parseFloat(i.valor || 0), 0)
+          itemIva = imp.reduce((s, i) => s + getNodeNum(i.valor, 0), 0)
         } else {
-          itemIva = parseFloat(imp.valor || 0)
+          itemIva = getNodeNum(imp.valor, 0)
         }
       }
       autoTotal += itemTotal + itemIva
@@ -824,11 +848,11 @@ onMounted(() => {
                       open-on-hover
                     >
                       <template #activator="{ props: tooltipProps }">
-                        <span v-bind="tooltipProps">{{ item.descripcion.substring(0, 45) + '...' }}</span>
+                        <span v-bind="tooltipProps">{{ getNodeVal(item.descripcion, '').substring(0, 45) + '...' }}</span>
                       </template>
-                      <span>{{ item.descripcion }}</span>
+                      <span>{{ getNodeVal(item.descripcion, '') }}</span>
                     </VTooltip>
-                    <span v-else>{{ item.descripcion || 'Sin descripción' }}</span>
+                    <span v-else>{{ getNodeVal(item.descripcion, 'Sin descripción') }}</span>
                   </td>
                   <td class="text-center">
                     <VChip
@@ -837,15 +861,14 @@ onMounted(() => {
                       size="x-small"
                       class="font-weight-bold"
                     >
-                      {{ parseFloat(item.cantidad || 0).toFixed(0) }}
+                      {{ getNodeNum(item.cantidad, 0) % 1 === 0 ? getNodeNum(item.cantidad, 0).toFixed(0) : getNodeNum(item.cantidad, 0).toFixed(2) }}
                     </VChip>
                   </td>
                   <td class="text-right text-caption">
-                    ${{ parseFloat(item.precioUnitario || 0).toFixed(2) }}
+                    ${{ getNodeNum(item.precioUnitario, 0).toFixed(2) }}
                   </td>
                   <td class="text-right font-weight-bold text-info">
-                    ${{ parseFloat(item.precioTotalSinImpuesto ||
-                      0).toFixed(2) }}
+                    ${{ getNodeNum(item.precioTotalSinImpuesto, 0).toFixed(2) }}
                   </td>
                 </tr>
               </tbody>

@@ -162,6 +162,12 @@ const executeSriEmission = async () => {
       const isDown = !health.online || !recepcionOnline || health.status === 'FUERA_DE_SERVICIO' || health.status === 'CAIDO'
 
       if (isDown) {
+        console.group('🏥 [SRI Diagnóstico] Estado Previo de Servidores SRI')
+        console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+        console.warn('ℹ️ Explicación: Los servidores del Web Service del SRI están inactivos o fuera de servicio.')
+        console.error('🚨 Diagnóstico de salud SRI:', health)
+        console.groupEnd()
+
         if (timerInterval.value) clearInterval(timerInterval.value)
         processStatus.value = 'sri_offline'
         progressPercent.value = 100
@@ -172,7 +178,9 @@ const executeSriEmission = async () => {
       }
     }
   } catch (checkErr) {
-    console.warn('Error en sondeo previo del SRI:', checkErr)
+    console.groupCollapsed('⚠️ [SRI Diagnóstico] Advertencia en sondeo previo del SRI')
+    console.warn('No se pudo verificar el estado previo del SRI, se continuará con el flujo estándar:', checkErr)
+    console.groupEnd()
   }
 
   // ── FASE 2: Servidores listos, estructuración y emisión ──
@@ -200,6 +208,12 @@ const executeSriEmission = async () => {
       processStatus.value = 'success'
       statusMessage.value = '¡Factura electrónica emitida y procesada correctamente!'
 
+      console.group(`🧾 [SRI Diagnóstico] Emisión de Factura #${responseData.value?.document_number || responseData.value?.id || 'Nueva'}`)
+      console.log('✅ Factura procesada exitosamente.')
+      console.log('📌 Estado SRI:', responseData.value?.sri_status || 'AUTORIZADA')
+      console.log('📦 Respuesta:', response)
+      console.groupEnd()
+
       emit('completed', responseData.value)
 
       // Iniciar cuenta regresiva para redirección automática suave
@@ -207,6 +221,23 @@ const executeSriEmission = async () => {
     } else {
       processStatus.value = 'error'
       errorMessage.value = response?.message || 'El SRI no pudo autorizar el comprobante en este momento.'
+      
+      const errorStr = (response?.message || '') + ' ' + (response?.error || '') + ' ' + (response?.data?.sri_error || '')
+      const isSriFault = /sri|soap|recepcion|autorizacion|wsdl|clave|rechazada|devuelta/i.test(errorStr)
+
+      console.group(`🧾 [SRI Diagnóstico] Fallo en Emisión de Factura`)
+      if (isSriFault) {
+        console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+        console.warn('ℹ️ Explicación: El SRI rechazó o devolvió el comprobante tributario.')
+        console.error('🚨 Detalle SRI:', response?.data?.sri_error || response?.error || response?.message)
+      } else {
+        console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA]')
+        console.error('ℹ️ Explicación: Validación local, error en payload o backend.')
+        console.error('🚨 Detalle Sistema:', response?.message || response?.error)
+      }
+      console.log('📦 Respuesta recibida:', response)
+      console.groupEnd()
+
       emit('error', errorMessage.value)
     }
   } catch (err) {
@@ -220,6 +251,22 @@ const executeSriEmission = async () => {
       err.response?._data?.message ||
       err.message ||
       'Error de conexión con el servicio de facturación SRI'
+
+    const errorStr = JSON.stringify(err.data || err.response?._data || err.message || '')
+    const isSriFault = /sri|soap|recepcion|autorizacion|wsdl|clave|rechazada|devuelta|curl/i.test(errorStr)
+
+    console.group(`🧾 [SRI Diagnóstico] Excepción en Emisión de Factura`)
+    if (isSriFault) {
+      console.warn('🏛️ ORIGEN DEL FALLO: [FALLO DEL SERVIDOR DEL SRI]')
+      console.warn('ℹ️ Explicación: Error generado durante la comunicación o procesamiento con los Web Services del SRI.')
+      console.error('🚨 Detalle SRI:', backendMsg)
+    } else {
+      console.error('💻 ORIGEN DEL FALLO: [FALLO DE NUESTRO SISTEMA]')
+      console.error('ℹ️ Explicación: Error interno de servidor (500), validación (422) o conectividad de red.')
+      console.error('🚨 Detalle Sistema:', backendMsg)
+    }
+    console.error('🚨 Objeto de Excepción completo:', err)
+    console.groupEnd()
 
     errorMessage.value = backendMsg
     emit('error', backendMsg)

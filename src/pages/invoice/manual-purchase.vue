@@ -548,19 +548,56 @@ const processXmlFile = async (file) => {
         detalles = facturaData.detalles
       }
 
+      // Helpers para extracción segura de nodos XML (soporta texto simple, CDATA y objetos)
+      const getNodeVal = (node, defaultVal = '') => {
+        if (node === null || node === undefined) return defaultVal
+        if (typeof node === 'object') {
+          if (node['#text'] !== undefined) return String(node['#text']).trim()
+          if (node['#cdata-section'] !== undefined) return String(node['#cdata-section']).trim()
+          if (node['_text'] !== undefined) return String(node['_text']).trim()
+          for (const k of Object.keys(node)) {
+            if (!k.startsWith('@_')) {
+              const val = node[k]
+              if (typeof val === 'string' || typeof val === 'number') return String(val).trim()
+            }
+          }
+          return defaultVal
+        }
+        return String(node).trim()
+      }
+
+      const getNodeNum = (node, defaultVal = 0) => {
+        const raw = getNodeVal(node, defaultVal)
+        const parsed = parseFloat(raw)
+        return isNaN(parsed) ? defaultVal : parsed
+      }
+
       const defaultCatId = categories.value[0]?.id || null
       const parsedItems = []
 
       detalles.forEach((det, idx) => {
-        const primaryCode = (det.codigoPrincipal || det.codigoInterno || '').toString().trim().toUpperCase()
-        const auxCode = (det.codigoAuxiliar || '').toString().trim().toUpperCase()
-        const code = (primaryCode || auxCode || `XML-${idx + 1}`).toString().trim().toUpperCase()
+        const primaryCode = getNodeVal(det.codigoPrincipal || det.codigoInterno, '').toUpperCase()
+        const auxCode = getNodeVal(det.codigoAuxiliar, '').toUpperCase()
+        const code = (primaryCode || auxCode || `XML-${idx + 1}`).toUpperCase()
         const codeAux = (auxCode && auxCode !== '-') ? auxCode : (primaryCode ? `LE${primaryCode}` : (code ? `LE${code}` : ''))
-        const description = (det.descripcion || 'Sin descripción').toString().trim()
-        const qty = parseFloat(det.cantidad || 1)
-        const unitPrice = parseFloat(det.precioUnitario || 0)
-        const discount = parseFloat(det.descuento || 0)
-        const subtotalVal = parseFloat(det.precioTotalSinImpuesto || (qty * unitPrice - discount))
+        const description = getNodeVal(det.descripcion, 'Sin descripción')
+        
+        // Extracción robusta de cantidades y precios
+        let qty = getNodeNum(det.cantidad, 1)
+        if (qty <= 0) qty = 1
+        
+        let unitPrice = getNodeNum(det.precioUnitario, 0)
+        const discount = getNodeNum(det.descuento, 0)
+        let subtotalVal = getNodeNum(det.precioTotalSinImpuesto, 0)
+
+        // Si subtotal viene en 0 pero unitPrice existe
+        if (subtotalVal <= 0 && unitPrice > 0) {
+          subtotalVal = (qty * unitPrice) - discount
+        }
+        // Si unitPrice viene en 0 pero subtotal existe
+        if (unitPrice <= 0 && subtotalVal > 0 && qty > 0) {
+          unitPrice = (subtotalVal + discount) / qty
+        }
 
         // Calcular impuesto
         let taxVal = 0
@@ -568,8 +605,8 @@ const processXmlFile = async (file) => {
         if (det.impuestos?.impuesto) {
           const impArray = Array.isArray(det.impuestos.impuesto) ? det.impuestos.impuesto : [det.impuestos.impuesto]
           impArray.forEach(imp => {
-            const val = parseFloat(imp.valor || 0)
-            const tarifa = parseFloat(imp.tarifa || 0)
+            const val = getNodeNum(imp.valor, 0)
+            const tarifa = getNodeNum(imp.tarifa, 0)
             if (val > 0 || tarifa > 0) {
               taxVal += val > 0 ? val : (subtotalVal * (tarifa / 100))
               isTax = 1
@@ -1360,14 +1397,14 @@ onMounted(() => {
                         </div>
                       </td>
 
-                      <!-- Cantidad (Columna Individual - Editable en Compra Manual) -->
+                      <!-- Cantidad (Columna Individual - Editable) -->
                       <td class="text-center py-2" style="width: 75px;">
                         <VTextField
-                          v-if="!xmlLoadedInfo && !isDuplicateInvoice"
+                          v-if="!isDuplicateInvoice"
                           v-model.number="item.quantity"
                           type="number"
-                          min="1"
-                          step="1"
+                          min="0.01"
+                          step="any"
                           variant="outlined"
                           density="compact"
                           hide-details
@@ -1380,9 +1417,23 @@ onMounted(() => {
                         </span>
                       </td>
 
-                      <!-- Precio Unitario (Columna Individual) -->
-                      <td class="text-center py-3">
-                        <span class="text-body-2 font-weight-medium text-grey-darken-3">${{ Number(item.unit_price ||
+                      <!-- Precio Unitario (Columna Individual - Editable) -->
+                      <td class="text-center py-2" style="width: 95px;">
+                        <VTextField
+                          v-if="!isDuplicateInvoice"
+                          v-model.number="item.unit_price"
+                          type="number"
+                          min="0"
+                          step="0.0001"
+                          prefix="$"
+                          variant="outlined"
+                          density="compact"
+                          hide-details
+                          class="custom-number-input"
+                          style="max-width: 88px; margin: 0 auto;"
+                          @update:model-value="updateItemTotals(item)"
+                        />
+                        <span v-else class="text-body-2 font-weight-medium text-grey-darken-3">${{ Number(item.unit_price ||
                           0).toFixed(2)
                         }}</span>
                       </td>

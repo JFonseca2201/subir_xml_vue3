@@ -241,16 +241,32 @@ const stockRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const percentageRules = [minValueRule(0), maxPercentageRule]
 
 const calculateMaxDiscount = () => {
-  const purchasePrice = parseFloat(product.value.purchase_price) || 0
   const salePrice = parseFloat(product.value.price_sale) || 0
   const discountPercentage = parseFloat(product.value.discount_percentage) || 0
 
-  if (purchasePrice > 0 && salePrice > 0 && discountPercentage > 0) {
-    const maxDiscountAmount = (salePrice - purchasePrice) * discountPercentage / 100
-
+  if (salePrice > 0 && discountPercentage > 0) {
+    const maxDiscountAmount = (salePrice * discountPercentage) / 100
     product.value.max_discount = parseFloat(maxDiscountAmount.toFixed(2))
-  } else {
+  }
+}
+
+const onDiscountPercentageInput = val => {
+  const pct = parseFloat(val) || 0
+  const salePrice = parseFloat(product.value.price_sale) || 0
+  if (salePrice > 0 && pct > 0) {
+    product.value.max_discount = parseFloat(((salePrice * pct) / 100).toFixed(2))
+  } else if (pct === 0) {
     product.value.max_discount = 0
+  }
+}
+
+const onMaxDiscountInput = val => {
+  const amount = parseFloat(val) || 0
+  const salePrice = parseFloat(product.value.price_sale) || 0
+  if (salePrice > 0 && amount > 0) {
+    product.value.discount_percentage = parseFloat(((amount / salePrice) * 100).toFixed(1))
+  } else if (amount === 0) {
+    product.value.discount_percentage = 0
   }
 }
 
@@ -341,9 +357,15 @@ const loadProduct = async () => {
 
     if (response.status === 200) {
       product.value = response.product
-      if (response.product.max_discount) product.value.max_discount = parseFloat(response.product.max_discount)
-      if (response.product.discount_percentage) product.value.discount_percentage = parseFloat(response.product.discount_percentage)
-      if (response.product.discount) product.value.discount = parseFloat(response.product.discount)
+      product.value.max_discount = parseFloat(response.product.max_discount || 0)
+      product.value.discount_percentage = parseFloat(response.product.discount_percentage || 0)
+
+      // Si tiene porcentaje pero no max_discount (o viceversa), sincronizar
+      if ((!product.value.max_discount || product.value.max_discount === 0) && product.value.discount_percentage > 0 && product.value.price_sale > 0) {
+        product.value.max_discount = parseFloat(((product.value.price_sale * product.value.discount_percentage) / 100).toFixed(2))
+      } else if ((!product.value.discount_percentage || product.value.discount_percentage === 0) && product.value.max_discount > 0 && product.value.price_sale > 0) {
+        product.value.discount_percentage = parseFloat(((product.value.max_discount / product.value.price_sale) * 100).toFixed(1))
+      }
 
       if (response.product.imagen) {
         fileData.value = [{ url: response.product.imagen, file: null }]
@@ -626,144 +648,111 @@ onMounted(() => {
       @submit.prevent="updateProduct"
     >
       <VRow>
-        <!-- Columna Izquierda (8 cols): Tipo, Info Básica, Clasificación, Stock -->
+        <!-- Columna Izquierda (8 cols): Tipo, Info Básica, Clasificación, Stock, Notas -->
         <VCol
           cols="12"
           lg="8"
         >
-          <!-- Tarjeta 1: Tipo de Ítem / Clasificación -->
+          <!-- Tarjeta 1: Tipo de Ítem -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
-                <div class="d-flex align-center justify-space-between flex-wrap gap-2">
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      size="36"
-                      color="primary"
-                      variant="tonal"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-shapes-line"
-                        size="20"
-                      />
-                    </VAvatar>
-                    <div>
-                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                        Tipo de Ítem
-                      </h3>
-                      <p class="text-caption text-medium-emphasis mb-0">
-                        Define el comportamiento de inventario y facturación
-                      </p>
-                    </div>
-                  </div>
+                <div class="d-flex align-center gap-2">
+                  <VIcon
+                    icon="ri-shapes-line"
+                    size="18"
+                    class="text-medium-emphasis"
+                  />
+                  <span class="text-subtitle-2 font-weight-bold text-slate-800">Tipo de Ítem</span>
                 </div>
               </template>
             </VCardItem>
 
-            <VCardText class="pa-4 pa-sm-5 bg-white">
-              <div class="doc-type-united-group rounded-xl d-flex flex-column flex-md-row">
-                <!-- Opción Producto -->
+            <VCardText class="pa-4 bg-white">
+              <div class="d-flex flex-wrap gap-3">
+                <!-- Opción 1: Producto Físico -->
                 <div
-                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                  :class="product.item_type == 1 || !product.item_type ? 'doc-type-selected-primary' : 'doc-type-unselected'"
+                  class="cursor-pointer d-flex align-center justify-space-between pa-3 px-4 rounded-lg border flex-grow-1 transition-all"
+                  :class="(product.item_type == 1 || !product.item_type) ? 'border-primary bg-slate-50 text-primary' : 'border-light bg-white text-slate-700'"
+                  style="min-width: 180px;"
                   @click="product.item_type = 1"
                 >
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      :color="product.item_type == 1 || !product.item_type ? 'primary' : 'grey-lighten-3'"
-                      :variant="product.item_type == 1 || !product.item_type ? 'flat' : 'tonal'"
-                      size="40"
-                      class="transition-all"
-                    >
-                      <VIcon
-                        icon="ri-box-3-line"
-                        size="22"
-                        :color="product.item_type == 1 || !product.item_type ? 'white' : 'grey-darken-1'"
-                      />
-                    </VAvatar>
-                    <div>
-                      <div
-                        class="text-body-2 font-weight-bold"
-                        :class="product.item_type == 1 || !product.item_type ? 'text-primary' : 'text-grey-darken-3'"
-                      >
-                        Producto Físico
-                      </div>
-                      <div
-                        class="text-caption text-medium-emphasis"
-                        style="font-size: 0.75rem;"
-                      >
-                        Control de stock y bodega
-                      </div>
-                    </div>
-                  </div>
                   <div class="d-flex align-center gap-2">
-                    <VChip
-                      size="x-small"
-                      :color="product.item_type == 1 || !product.item_type ? 'primary' : 'grey'"
-                      :variant="product.item_type == 1 || !product.item_type ? 'tonal' : 'outlined'"
-                      class="font-weight-bold"
-                    >
-                      Físico
-                    </VChip>
                     <VIcon
-                      :icon="product.item_type == 1 || !product.item_type ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      icon="ri-box-3-line"
                       size="20"
-                      :color="product.item_type == 1 || !product.item_type ? 'primary' : 'grey-lighten-1'"
+                      :color="(product.item_type == 1 || !product.item_type) ? 'primary' : 'grey-darken-1'"
                     />
+                    <span class="font-weight-semibold text-body-2">Producto Físico</span>
                   </div>
+                  <VIcon
+                    :icon="(product.item_type == 1 || !product.item_type) ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                    size="20"
+                    :color="(product.item_type == 1 || !product.item_type) ? 'primary' : 'grey-lighten-1'"
+                  />
                 </div>
 
-                <!-- Opción Servicio -->
+                <!-- Opción 2: Servicio Técnico -->
                 <div
-                  class="doc-type-united-item rounded-lg pa-3 px-4 cursor-pointer d-flex align-center justify-space-between"
-                  :class="product.item_type == 2 ? 'doc-type-selected-success' : 'doc-type-unselected'"
+                  class="cursor-pointer d-flex align-center justify-space-between pa-3 px-4 rounded-lg border flex-grow-1 transition-all"
+                  :class="product.item_type == 2 ? 'border-success bg-slate-50 text-success' : 'border-light bg-white text-slate-700'"
+                  style="min-width: 180px;"
                   @click="product.item_type = 2"
                 >
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      :color="product.item_type == 2 ? 'success' : 'grey-lighten-3'"
-                      :variant="product.item_type == 2 ? 'flat' : 'tonal'"
-                      size="40"
-                      class="transition-all"
-                    >
-                      <VIcon
-                        icon="ri-tools-line"
-                        size="22"
-                        :color="product.item_type == 2 ? 'white' : 'grey-darken-1'"
-                      />
-                    </VAvatar>
-                    <div>
-                      <div
-                        class="text-body-2 font-weight-bold"
-                        :class="product.item_type == 2 ? 'text-success' : 'text-grey-darken-3'"
-                      >
-                        Servicio Técnico
-                      </div>
-                      <div
-                        class="text-caption text-medium-emphasis"
-                        style="font-size: 0.75rem;"
-                      >
-                        Mano de obra sin inventario
-                      </div>
-                    </div>
-                  </div>
                   <div class="d-flex align-center gap-2">
-                    <VChip
-                      size="x-small"
-                      :color="product.item_type == 2 ? 'success' : 'grey'"
-                      :variant="product.item_type == 2 ? 'tonal' : 'outlined'"
-                      class="font-weight-bold"
-                    >
-                      Servicio
-                    </VChip>
                     <VIcon
-                      :icon="product.item_type == 2 ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                      icon="ri-tools-line"
                       size="20"
-                      :color="product.item_type == 2 ? 'success' : 'grey-lighten-1'"
+                      :color="product.item_type == 2 ? 'success' : 'grey-darken-1'"
                     />
+                    <span class="font-weight-semibold text-body-2">Servicio Técnico</span>
                   </div>
+                  <VIcon
+                    :icon="product.item_type == 2 ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                    size="20"
+                    :color="product.item_type == 2 ? 'success' : 'grey-lighten-1'"
+                  />
                 </div>
+
+                <!-- Opción 3: Herramienta -->
+                <div
+                  class="cursor-pointer d-flex align-center justify-space-between pa-3 px-4 rounded-lg border flex-grow-1 transition-all"
+                  :class="product.item_type == 3 ? 'border-warning bg-slate-50 text-warning' : 'border-light bg-white text-slate-700'"
+                  style="min-width: 180px;"
+                  @click="product.item_type = 3"
+                >
+                  <div class="d-flex align-center gap-2">
+                    <VIcon
+                      icon="ri-hammer-line"
+                      size="20"
+                      :color="product.item_type == 3 ? 'warning' : 'grey-darken-1'"
+                    />
+                    <span class="font-weight-semibold text-body-2">Herramienta</span>
+                  </div>
+                  <VIcon
+                    :icon="product.item_type == 3 ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
+                    size="20"
+                    :color="product.item_type == 3 ? 'warning' : 'grey-lighten-1'"
+                  />
+                </div>
+              </div>
+
+              <!-- Pie de la tarjeta: Texto descriptivo dinámico y sobrio -->
+              <div class="d-flex align-center gap-1.5 pt-3 mt-3 border-t text-caption text-medium-emphasis">
+                <VIcon
+                  icon="ri-information-line"
+                  size="16"
+                  class="text-primary"
+                />
+                <span v-if="product.item_type == 2">
+                  <strong>Servicio Técnico:</strong> Mano de obra o servicios intangibles sin control de stock físico ni costo de compra.
+                </span>
+                <span v-else-if="product.item_type == 3">
+                  <strong>Herramienta:</strong> Equipos y herramientas asignadas para uso interno del taller.
+                </span>
+                <span v-else>
+                  <strong>Producto Físico:</strong> Mercadería con control de stock, bodegas y costos de inventario.
+                </span>
               </div>
             </VCardText>
           </VCard>
@@ -1224,7 +1213,7 @@ onMounted(() => {
             </VCardText>
           </VCard>
 
-          <!-- Tarjeta 5: Observaciones y Notas (Compacta) -->
+          <!-- Tarjeta 4: Observaciones y Notas (Compacta) -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
             <VCardItem class="bg-white py-3 px-4 border-b">
               <template #title>
@@ -1258,8 +1247,8 @@ onMounted(() => {
           cols="12"
           lg="4"
         >
-          <div class="d-flex flex-column gap-6 sticky-sidebar">
-            <!-- Tarjeta A: Imagen Principal -->
+          <div class="d-flex flex-column gap-4 sticky-sidebar">
+            <!-- Tarjeta 1: Imagen Principal -->
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
@@ -1280,7 +1269,7 @@ onMounted(() => {
                         Imagen del Producto
                       </h3>
                       <p class="text-caption text-medium-emphasis mb-0">
-                        Foto representativa para catálogo
+                        Visualización en catálogo y POS
                       </p>
                     </div>
                   </div>
@@ -1295,77 +1284,65 @@ onMounted(() => {
                 >
                   <div
                     v-if="fileData.length === 0"
-                    class="d-flex flex-column justify-center align-center gap-2 pa-6 border-2 border-dashed rounded-xl bg-slate-50 transition-swing text-center"
-                    style="min-height: 180px;"
+                    class="d-flex flex-column justify-center align-center gap-2 pa-5 border border-dashed rounded-lg bg-slate-50 text-center transition-swing"
+                    style="min-height: 120px;"
                   >
                     <VAvatar
+                      size="38"
                       color="primary"
                       variant="tonal"
-                      size="48"
-                      class="mb-1"
+                      class="rounded-circle"
                     >
                       <VIcon
                         icon="ri-upload-cloud-2-line"
-                        size="26"
+                        size="20"
                       />
                     </VAvatar>
-                    <div class="text-body-2 font-weight-bold text-slate-800">
-                      Subir Imagen
+                    <div>
+                      <div class="text-body-2 font-weight-semibold text-slate-800">
+                        Subir o cambiar imagen
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        PNG, JPG o WEBP
+                      </div>
                     </div>
-                    <span
-                      class="text-caption text-medium-emphasis"
-                      style="font-size: 0.75rem;"
-                    >
-                      Arrastra o haz clic para seleccionar (JPG, PNG)
-                    </span>
                   </div>
                   <div
                     v-else
-                    class="pa-2 border rounded-xl bg-slate-50"
+                    class="pa-2 border rounded-lg bg-slate-50"
                   >
-                    <VCard
+                    <div
                       v-for="(item, index) in fileData"
                       :key="index"
-                      class="elevation-0 border rounded-lg overflow-hidden bg-white"
-                      :ripple="false"
+                      class="text-center"
                     >
-                      <VCardText
-                        class="pa-3 text-center"
-                        @click.stop
+                      <VImg
+                        :src="item.url"
+                        height="150px"
+                        class="rounded-lg mb-2 mx-auto bg-white border"
+                        contain
+                      />
+                      <div class="text-caption font-weight-semibold text-truncate mb-2 text-slate-800">
+                        {{ item.file?.name || 'Imagen actual del producto' }}
+                      </div>
+                      <VBtn
+                        variant="tonal"
+                        block
+                        size="small"
+                        color="error"
+                        prepend-icon="ri-delete-bin-line"
+                        class="font-weight-medium"
+                        @click.stop="clearImage"
                       >
-                        <VImg
-                          :src="item.url"
-                          height="160px"
-                          class="rounded-lg mb-2 mx-auto bg-slate-100"
-                          contain
-                        />
-                        <div class="text-caption font-weight-bold mb-0 text-truncate text-slate-800">
-                          {{ item.file?.name || 'Imagen actual' }}
-                        </div>
-                        <div class="text-caption text-medium-emphasis">
-                          {{ item.file ? (item.file.size / 1024).toFixed(2) + ' KB' : 'Imagen existente' }}
-                        </div>
-                      </VCardText>
-                      <VCardActions class="pa-3 pt-0">
-                        <VBtn
-                          variant="tonal"
-                          block
-                          size="small"
-                          color="error"
-                          prepend-icon="ri-delete-bin-line"
-                          class="font-weight-medium"
-                          @click.stop="clearImage"
-                        >
-                          Eliminar Imagen
-                        </VBtn>
-                      </VCardActions>
-                    </VCard>
+                        Eliminar Imagen
+                      </VBtn>
+                    </div>
                   </div>
                 </div>
               </VCardText>
             </VCard>
 
-            <!-- Tarjeta B: Estructura de Precios e Impuestos -->
+            <!-- Tarjeta 2: Estructura de Precios e Impuestos -->
             <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
               <VCardItem class="bg-white py-3 px-4 border-b">
                 <template #title>
@@ -1378,16 +1355,16 @@ onMounted(() => {
                         class="rounded-lg"
                       >
                         <VIcon
-                          icon="ri-money-dollar-circle-line"
+                          icon="ri-price-tag-3-line"
                           size="20"
                         />
                       </VAvatar>
                       <div>
                         <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
-                          Precios y Costos
+                          Precios y Finanzas
                         </h3>
                         <p class="text-caption text-medium-emphasis mb-0">
-                          Tarifas de venta, costos y márgenes
+                          PVP, costos y política fiscal
                         </p>
                       </div>
                     </div>
@@ -1395,7 +1372,7 @@ onMounted(() => {
                       size="small"
                       color="primary"
                       variant="tonal"
-                      class="font-weight-bold"
+                      class="font-weight-semibold"
                     >
                       IVA {{ product.tax_rate || 15 }}%
                     </VChip>
@@ -1404,16 +1381,16 @@ onMounted(() => {
               </VCardItem>
 
               <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
-                <!-- Switches Tributarios -->
-                <div class="pa-3 rounded-xl bg-slate-50 border d-flex flex-column gap-2">
+                <!-- Opciones Tributarias -->
+                <div class="d-flex flex-column gap-2 pa-3 rounded-lg bg-slate-50 border">
                   <div class="d-flex align-center justify-space-between">
-                    <div class="d-flex align-center gap-2">
-                      <VIcon
-                        icon="ri-receipt-line"
-                        size="18"
-                        color="primary"
-                      />
-                      <span class="text-caption font-weight-bold text-slate-800">Graba IVA (15%)</span>
+                    <div>
+                      <div class="text-body-2 font-weight-medium text-slate-800">
+                        Graba IVA ({{ product.tax_rate || 15 }}%)
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Aplica tarifa impositiva general
+                      </div>
                     </div>
                     <VSwitch
                       v-model="isTaxableSwitch"
@@ -1422,79 +1399,31 @@ onMounted(() => {
                       color="primary"
                     />
                   </div>
-                  <VDivider />
+                  <VDivider class="my-1" />
                   <div class="d-flex align-center justify-space-between">
-                    <div class="d-flex align-center gap-2">
-                      <VIcon
-                        icon="ri-gift-line"
-                        size="18"
-                        color="info"
-                      />
-                      <span class="text-caption font-weight-bold text-slate-800">¿Es un regalo / muestra?</span>
+                    <div>
+                      <div class="text-body-2 font-weight-medium text-slate-800">
+                        Muestra o Regalo
+                      </div>
+                      <div class="text-caption text-medium-emphasis">
+                        Sin costo comercial directo
+                      </div>
                     </div>
                     <VSwitch
                       v-model="isGiftSwitch"
                       hide-details
                       density="compact"
-                      color="info"
+                      color="primary"
                     />
                   </div>
                 </div>
 
-                <!-- Precios de Compra (Solo productos físicos) -->
-                <template v-if="product.item_type != 2">
-                  <div class="d-flex flex-column gap-2">
-                    <div class="text-caption font-weight-bold text-slate-700 text-uppercase">
-                      Costo de Compra
-                    </div>
-                    <VRow dense>
-                      <VCol
-                        cols="12"
-                        sm="6"
-                      >
-                        <VTextField
-                          v-model="purchasePriceWithIva"
-                          :rules="priceRules"
-                          label="Costo (Con IVA)"
-                          placeholder="0.00"
-                          variant="outlined"
-                          density="compact"
-                          prefix="$"
-                          prepend-inner-icon="ri-shopping-cart-fill"
-                          hide-details="auto"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="font-mono font-weight-semibold"
-                        />
-                      </VCol>
-                      <VCol
-                        cols="12"
-                        sm="6"
-                      >
-                        <VTextField
-                          v-model="product.purchase_price"
-                          :rules="priceRules"
-                          label="Costo Base (Sin IVA)"
-                          placeholder="0.00"
-                          variant="outlined"
-                          density="compact"
-                          prefix="$"
-                          prepend-inner-icon="ri-shopping-cart-line"
-                          hide-details="auto"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          class="font-mono font-weight-semibold"
-                        />
-                      </VCol>
-                    </VRow>
-                  </div>
-                </template>
-
                 <!-- Precios de Venta / PVP -->
-                <div class="d-flex flex-column gap-2">
-                  <div class="text-caption font-weight-bold text-slate-700 text-uppercase">
+                <div>
+                  <div
+                    class="text-caption font-weight-bold text-slate-700 text-uppercase mb-2"
+                    style="letter-spacing: 0.5px;"
+                  >
                     Precio de Venta al Público (PVP)
                   </div>
                   <VRow dense>
@@ -1505,18 +1434,17 @@ onMounted(() => {
                       <VTextField
                         v-model="priceSaleWithIva"
                         :rules="priceRules"
-                        label="PVP Final (Con IVA) *"
+                        label="PVP (Con IVA) *"
                         placeholder="0.00"
                         variant="outlined"
-                        density="compact"
+                        density="comfortable"
                         prefix="$"
-                        prepend-inner-icon="ri-money-dollar-circle-fill"
                         hide-details="auto"
                         type="number"
                         step="0.01"
                         min="0"
                         required
-                        color="success"
+                        color="primary"
                         class="font-mono font-weight-bold"
                       />
                     </VCol>
@@ -1530,24 +1458,78 @@ onMounted(() => {
                         label="PVP Base (Sin IVA) *"
                         placeholder="0.00"
                         variant="outlined"
-                        density="compact"
+                        density="comfortable"
                         prefix="$"
-                        prepend-inner-icon="ri-price-tag-3-line"
                         hide-details="auto"
                         type="number"
                         step="0.01"
                         min="0"
                         required
                         color="primary"
-                        class="font-mono font-weight-semibold"
+                        class="font-mono"
+                      />
+                    </VCol>
+                  </VRow>
+                </div>
+
+                <!-- Precios de Compra (Solo productos físicos) -->
+                <div v-if="product.item_type != 2">
+                  <div
+                    class="text-caption font-weight-bold text-slate-700 text-uppercase mb-2"
+                    style="letter-spacing: 0.5px;"
+                  >
+                    Costo de Adquisición
+                  </div>
+                  <VRow dense>
+                    <VCol
+                      cols="12"
+                      sm="6"
+                    >
+                      <VTextField
+                        v-model="purchasePriceWithIva"
+                        :rules="priceRules"
+                        label="Costo (Con IVA)"
+                        placeholder="0.00"
+                        variant="outlined"
+                        density="comfortable"
+                        prefix="$"
+                        hide-details="auto"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        color="primary"
+                        class="font-mono"
+                      />
+                    </VCol>
+                    <VCol
+                      cols="12"
+                      sm="6"
+                    >
+                      <VTextField
+                        v-model="product.purchase_price"
+                        :rules="priceRules"
+                        label="Costo Base (Sin IVA)"
+                        placeholder="0.00"
+                        variant="outlined"
+                        density="comfortable"
+                        prefix="$"
+                        hide-details="auto"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        color="primary"
+                        class="font-mono"
                       />
                     </VCol>
                   </VRow>
                 </div>
 
                 <!-- Descuentos Permitidos -->
-                <div class="d-flex flex-column gap-2">
-                  <div class="text-caption font-weight-bold text-slate-700 text-uppercase">
+                <div>
+                  <div
+                    class="text-caption font-weight-bold text-slate-700 text-uppercase mb-2"
+                    style="letter-spacing: 0.5px;"
+                  >
                     Políticas de Descuento
                   </div>
                   <VRow dense>
@@ -1556,19 +1538,20 @@ onMounted(() => {
                       sm="6"
                     >
                       <VTextField
-                        v-model="product.discount_percentage"
+                        v-model.number="product.discount_percentage"
                         :rules="percentageRules"
-                        label="Desc. Máx. (%)"
+                        label="Desc. Máximo (%)"
                         placeholder="0"
                         variant="outlined"
-                        density="compact"
+                        density="comfortable"
                         suffix="%"
-                        prepend-inner-icon="ri-percent-line"
                         hide-details="auto"
                         type="number"
                         step="0.1"
                         min="0"
                         max="100"
+                        color="primary"
+                        @update:model-value="onDiscountPercentageInput"
                       />
                     </VCol>
                     <VCol
@@ -1576,73 +1559,85 @@ onMounted(() => {
                       sm="6"
                     >
                       <VTextField
-                        v-model="product.discount"
+                        v-model.number="product.max_discount"
                         :rules="discountRules"
-                        label="Desc. Inicial ($)"
+                        label="Desc. Máximo ($)"
                         placeholder="0.00"
                         variant="outlined"
-                        density="compact"
+                        density="comfortable"
                         prefix="$"
-                        prepend-inner-icon="ri-money-dollar-circle-line"
                         hide-details="auto"
                         type="number"
                         step="0.01"
                         min="0"
+                        color="primary"
+                        class="font-mono"
+                        @update:model-value="onMaxDiscountInput"
                       />
                     </VCol>
                   </VRow>
                 </div>
 
-                <!-- Resumen Financiero & Margen Estimado -->
-                <div class="pa-3 rounded-xl bg-slate-50 border mt-1">
-                  <div class="d-flex justify-space-between align-center mb-1 text-caption">
-                    <span class="text-medium-emphasis">PVP Final:</span>
-                    <span class="font-mono font-weight-bold text-success">${{ (Number(priceSaleWithIva) || 0).toFixed(2) }}</span>
+                <!-- Margen Financiero Estimado -->
+                <div
+                  v-if="product.item_type != 2 && Number(product.price_sale) > 0 && Number(product.purchase_price) > 0"
+                  class="pa-3 rounded-lg border bg-slate-50 d-flex justify-space-between align-center"
+                >
+                  <div>
+                    <div class="text-caption text-medium-emphasis">
+                      Margen Estimado
+                    </div>
+                    <div class="text-subtitle-2 font-weight-bold text-success font-mono">
+                      +${{ (Number(product.price_sale) - Number(product.purchase_price)).toFixed(2) }}
+                    </div>
                   </div>
-                  <div
-                    v-if="product.item_type != 2"
-                    class="d-flex justify-space-between align-center mb-1 text-caption"
+                  <VChip
+                    color="success"
+                    variant="tonal"
+                    size="small"
+                    class="font-weight-bold font-mono"
                   >
-                    <span class="text-medium-emphasis">Costo Compra:</span>
-                    <span class="font-mono font-weight-semibold text-slate-700">${{ (Number(purchasePriceWithIva) || 0).toFixed(2) }}</span>
-                  </div>
-                  <VDivider
-                    v-if="product.item_type != 2"
-                    class="my-2"
-                  />
-                  <div
-                    v-if="product.item_type != 2 && Number(product.price_sale) > 0 && Number(product.purchase_price) > 0"
-                    class="d-flex justify-space-between align-center"
-                  >
-                    <span class="text-caption font-weight-bold text-slate-800">Margen Estimado:</span>
-                    <VChip
-                      size="small"
-                      color="info"
-                      variant="flat"
-                      class="font-weight-bold font-mono px-2"
-                    >
-                      +${{ (Number(product.price_sale) - Number(product.purchase_price)).toFixed(2) }} ({{ (((Number(product.price_sale) - Number(product.purchase_price)) / Number(product.purchase_price)) * 100).toFixed(1) }}%)
-                    </VChip>
-                  </div>
-                  <div
-                    v-else
-                    class="text-caption text-medium-emphasis text-center py-1"
-                  >
-                    Ingresa costo y PVP para calcular margen
-                  </div>
+                    {{ (((Number(product.price_sale) - Number(product.purchase_price)) / Number(product.purchase_price)) * 100).toFixed(1) }}% Rentabilidad
+                  </VChip>
                 </div>
               </VCardText>
+            </VCard>
 
-              <VDivider />
+            <!-- Tarjeta 3: Confirmación y Guardado -->
+            <VCard class="rounded-xl border-light elevation-1 overflow-hidden">
+              <VCardItem class="bg-white py-3 px-4 border-b">
+                <template #title>
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="36"
+                      color="info"
+                      variant="tonal"
+                      class="rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-check-double-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div>
+                      <h3 class="text-subtitle-1 font-weight-bold text-slate-900 mb-0">
+                        Confirmación
+                      </h3>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Actualizar información del producto
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </VCardItem>
 
-              <!-- Acciones de Guardar -->
-              <VCardActions class="pa-4 bg-slate-50 sales-actions-container">
+              <VCardText class="pa-4 bg-white d-flex flex-column gap-3">
                 <!-- Alertas -->
                 <VAlert
                   v-if="success"
                   color="success"
                   variant="tonal"
-                  class="w-100 mb-2 rounded-lg"
+                  class="w-100 mb-1 rounded-lg"
                   border="start"
                   closable
                   @click:close="success = null"
@@ -1661,7 +1656,7 @@ onMounted(() => {
                   v-if="warning"
                   color="warning"
                   variant="tonal"
-                  class="w-100 mb-2 rounded-lg"
+                  class="w-100 mb-1 rounded-lg"
                   border="start"
                   closable
                   @click:close="warning = null"
@@ -1680,7 +1675,7 @@ onMounted(() => {
                   v-if="error_exist"
                   color="error"
                   variant="tonal"
-                  class="w-100 mb-2 rounded-lg"
+                  class="w-100 mb-1 rounded-lg"
                   border="start"
                   closable
                   @click:close="error_exist = null"
@@ -1695,12 +1690,13 @@ onMounted(() => {
                   </div>
                 </VAlert>
 
-                <div class="d-flex gap-3 w-100">
+                <div class="d-flex gap-3 w-100 pt-1">
                   <VBtn
                     color="secondary"
                     variant="outlined"
                     prepend-icon="ri-close-line"
                     class="font-weight-medium flex-grow-1"
+                    size="large"
                     :disabled="isLoading || isLoadingConfig || loader.loading"
                     @click="router.push('/product/list')"
                   >
@@ -1712,14 +1708,15 @@ onMounted(() => {
                     color="primary"
                     variant="elevated"
                     prepend-icon="ri-save-3-line"
-                    class="font-weight-bold elevation-2 flex-grow-1"
+                    class="font-weight-bold flex-grow-1"
+                    size="large"
                     :loading="loader.loading"
                     :disabled="loader.loading || isLoading || isLoadingConfig"
                   >
-                    ACTUALIZAR PRODUCTO
+                    Guardar Cambios
                   </VBtn>
                 </div>
-              </VCardActions>
+              </VCardText>
             </VCard>
           </div>
         </VCol>
