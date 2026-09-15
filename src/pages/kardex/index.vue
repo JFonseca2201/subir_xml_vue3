@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { $api } from '@/utils/api'
+import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const { showNotification } = useGlobalToast()
 
 // Estado reactivo
+const isExportingPdf = ref(false)
 const isRefreshing = ref(false)
 const isFiltering = ref(false)
 const isClearing = ref(false)
@@ -239,10 +240,10 @@ const getConceptoIcon = concepto => {
     compra_inventario: 'ri-shopping-bag-3-line',
     pago_sueldo: 'ri-money-dollar-circle-line',
     adelanto: 'ri-hand-coin-line',
+    aporte_capital: 'ri-hand-heart-line',
     gasto_general: 'ri-file-list-3-line',
     transferencia: 'ri-arrow-left-right-line',
   }
-
 
   return icons[concepto] || 'ri-file-line'
 }
@@ -253,12 +254,12 @@ const getConceptoLabel = concepto => {
     venta_producto: 'Venta Producto',
     venta_servicio: 'Venta Servicio',
     compra_inventario: 'Compra Inventario',
-    pago_sueldo: 'Pago Sueldo',
-    adelanto: 'Adelanto',
+    pago_sueldo: 'Pago Sueldo / Nómina',
+    adelanto: 'Adelanto Sueldo',
+    aporte_capital: 'Aporte de Capital',
     gasto_general: 'Gasto General',
     transferencia: 'Transferencia',
   }
-
 
   return labels[concepto] || concepto
 }
@@ -283,7 +284,7 @@ const groupedByProduct = computed(() => {
   const movimientos = kardexData.value.movimientos || []
 
   movimientos.forEach(mov => {
-    let productName = 'Otros (Sin Producto Específico)'
+    let productName = 'Gastos Operativos y Otros Movimientos'
     let productSku = ''
     let isProduct = false
 
@@ -295,11 +296,23 @@ const groupedByProduct = computed(() => {
       productName = mov.descripcion || mov.concepto
       productSku = mov.sku || mov.codigo_aux || ''
       isProduct = true
+    } else if (mov.concepto_tipo === 'aporte_capital' || (mov.concepto && mov.concepto.includes('APORTE'))) {
+      productName = 'Aportes de Capital de Socios'
+      productSku = ''
+      isProduct = false
+    } else if (mov.concepto_tipo === 'pago_sueldo' || mov.concepto_tipo === 'adelanto' || (mov.concepto && (mov.concepto.includes('NÓMINA') || mov.concepto.includes('NOMINA') || mov.concepto.includes('ADELANTO')))) {
+      productName = 'Nómina y Pagos a Empleados'
+      productSku = ''
+      isProduct = false
+    } else {
+      productName = 'Gastos Operativos y Otros Movimientos'
+      productSku = ''
+      isProduct = false
     }
 
     const key = isProduct
       ? (productSku ? `${productName} [SKU:${productSku}]` : productName)
-      : 'Movimientos Generales (Pagos, Adelantos, etc)'
+      : productName
 
     if (!groups[key]) {
       groups[key] = {
@@ -370,6 +383,38 @@ onMounted(() => {
   loadKardex('initial')
 })
 
+// Exportar Reporte General de Kardex en PDF
+const exportKardexPDF = () => {
+  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || ''
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+
+  const params = new URLSearchParams()
+  params.append('token', token)
+
+  if (search.value && search.value.trim()) {
+    params.append('search', search.value.trim())
+  }
+  if (movimientoTipo.value) {
+    params.append('movimiento_tipo', movimientoTipo.value)
+  }
+  if (startDate.value) {
+    params.append('start_date', startDate.value)
+  }
+  if (endDate.value) {
+    params.append('end_date', endDate.value)
+  }
+
+  const pdfUrl = `${apiBaseUrl}/kardex/pdf?${params.toString()}`
+
+  const printWindow = window.open(pdfUrl, '_blank')
+  if (printWindow) {
+    printWindow.focus()
+    showNotification('Generando Reporte PDF...', 'success')
+  } else {
+    showNotification('Permite ventanas emergentes para abrir el PDF', 'warning')
+  }
+}
+
 definePage({ meta: { permission: 'kardex' } })
 </script>
 
@@ -387,6 +432,15 @@ definePage({ meta: { permission: 'kardex' } })
         </p>
       </div>
       <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+        <VBtn
+          color="error"
+          variant="tonal"
+          prepend-icon="ri-file-pdf-line"
+          class="font-weight-medium"
+          @click="exportKardexPDF"
+        >
+          Exportar PDF
+        </VBtn>
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"

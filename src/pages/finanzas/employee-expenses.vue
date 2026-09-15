@@ -731,6 +731,7 @@ onMounted(() => {
                     icon="ri-more-2-line"
                     title="Más Opciones"
                   >
+                    <VIcon icon="ri-more-2-line" size="18" />
                     <VMenu
                       activator="parent"
                       transition="slide-y-transition"

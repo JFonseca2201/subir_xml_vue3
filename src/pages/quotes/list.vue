@@ -1379,9 +1379,9 @@ onMounted(() => {
 
 .vehicle-plate-large {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-weight: 800 !important;
-  font-size: 1.05rem !important;
-  letter-spacing: 0.05em !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.03em !important;
   line-height: 1.25 !important;
 }
 

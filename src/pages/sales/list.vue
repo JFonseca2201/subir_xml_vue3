@@ -279,6 +279,16 @@ const getClientPhone = client => {
   return client.phone || client.mobile || client.cellphone || client.telefono || ''
 }
 
+// Formateador estándar de número de documento (6 dígitos, ej: 001647)
+const formatDocumentNumber = num => {
+  if (!num) return 'S/N'
+  const clean = String(num).replace(/[^0-9]/g, '')
+  if (!clean) return String(num)
+  const val = parseInt(clean, 10)
+  if (isNaN(val)) return String(num)
+  return String(val).padStart(6, '0')
+}
+
 // Formateador estándar de numeración (# + 6 dígitos, ej: #001619)
 const formatWorkOrderNumber = num => {
   if (!num) return '-'
@@ -457,6 +467,16 @@ const viewSale = async sale => {
 }
 
 
+const goToWorkOrder = (id, number = null) => {
+  const cleanNum = number ? String(number).replace(/[^0-9]/g, '') : ''
+  const searchVal = cleanNum || (id ? String(id) : '')
+  if (searchVal) {
+    router.push({ path: '/work-orders', query: { search: searchVal } })
+  } else {
+    router.push('/work-orders')
+  }
+}
+
 const editSale = sale => {
   if (isSaleCanceled(sale)) {
     showNotification('No se puede editar una venta anulada', 'warning')
@@ -611,7 +631,7 @@ const syncSriStatus = async item => {
   try {
     showNotification('Consultando estado en el SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/estado`)
-    
+
     // ── Diagnóstico de Consola SRI ──
     const isSuccess = response?.success && response?.data?.sri_status === 'AUTORIZADA'
     const status = response?.data?.sri_status || response?.sri_status || 'DESCONOCIDO'
@@ -669,7 +689,7 @@ const resendSri = async item => {
   try {
     showNotification('Reenviando comprobante al SRI...', 'info')
     const response = await $api(`sales/${item.id}/sri/reenviar`, { method: 'POST' })
-    
+
     console.group(`🚀 [SRI Diagnóstico] Reenvío de Factura #${item.document_number || item.id}`)
     if (response?.success) {
       console.log('✅ Factura encolada con éxito para reenvío al SRI.')
@@ -1157,13 +1177,13 @@ onMounted(() => {
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
                   </div>
-                  <div class="font-mono font-weight-bold text-body-1" :class="[
+                  <div class="font-mono text-body-2 font-weight-regular" :class="[
                     isSaleCanceled(item)
                       ? 'doc-number-canceled cursor-pointer'
                       : 'doc-number-active cursor-pointer hover-underline'
                   ]" :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
                     @click="viewSale(item)">
-                    {{ item.document_number || 'S/N' }}
+                    {{ formatDocumentNumber(item.document_number) }}
                   </div>
                 </div>
               </td>
@@ -1173,7 +1193,7 @@ onMounted(() => {
                 <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer"
                   :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
-                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id)">
+                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id, item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)">
                   {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number
                     || item.work_order_id) }}
                 </span>
@@ -1185,7 +1205,7 @@ onMounted(() => {
                 <div class="d-flex align-center gap-2">
                   <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client)
-                    }}</span>
+                      }}</span>
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 180px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
@@ -1212,17 +1232,14 @@ onMounted(() => {
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
                   <div class="min-w-0" style="max-width: 250px;">
-                    <div
-                      class="font-mono text-truncate"
+                    <div class="font-mono text-truncate"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
-                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'"
-                    >
+                      :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                     </div>
                     <div
                       class="text-uppercase text-truncate font-weight-medium text-medium-emphasis vehicle-model-small"
-                      :title="formatVehicleInfo(item.vehicle)"
-                    >
+                      :title="formatVehicleInfo(item.vehicle)">
                       {{ formatVehicleInfo(item.vehicle) }}
                     </div>
                   </div>
@@ -1265,22 +1282,17 @@ onMounted(() => {
 
                   <!-- Estado SRI (Solo para facturas activas) -->
                   <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
-                    class="sri-badge-clean cursor-pointer position-relative d-inline-flex align-center"
-                    :class="[
+                    class="sri-badge-clean cursor-pointer position-relative d-inline-flex align-center" :class="[
                       `sri-${item.sri_status.toLowerCase()}`,
                       { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
                     ]"
                     :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
                     @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))">
-                    <VProgressCircular
-                      v-if="isSriSyncing(item.id) || isSriResending(item.id)"
-                      indeterminate
-                      size="11"
-                      width="1.8"
-                      class="me-1 text-primary"
-                    />
+                    <VProgressCircular v-if="isSriSyncing(item.id) || isSriResending(item.id)" indeterminate size="11"
+                      width="1.8" class="me-1 text-primary" />
                     <span v-else class="sri-dot" />
-                    <span>{{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' : getSriStatusInfo(item.sri_status).text) }}</span>
+                    <span>{{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' :
+                      getSriStatusInfo(item.sri_status).text) }}</span>
                   </div>
                 </div>
               </td>
@@ -1307,27 +1319,20 @@ onMounted(() => {
                         <!-- Acciones SRI para Facturas -->
                         <template v-if="item.document_type === 'invoice'">
                           <VDivider class="my-1" />
-                          <VListItem
-                            v-if="item.sri_status !== 'AUTORIZADA'"
-                            prepend-icon="ri-refresh-line"
+                          <VListItem v-if="item.sri_status !== 'AUTORIZADA'" prepend-icon="ri-refresh-line"
                             :title="isSriSyncing(item.id) ? 'Sincronizando con SRI...' : 'Sincronizar con SRI'"
                             :disabled="isSriSyncing(item.id) || isSriResending(item.id)"
-                            class="text-primary text-body-2"
-                            @click="syncSriStatus(item)"
-                          >
+                            class="text-primary text-body-2" @click="syncSriStatus(item)">
                             <template v-if="isSriSyncing(item.id)" #append>
                               <VProgressCircular indeterminate size="15" width="2" color="primary" />
                             </template>
                           </VListItem>
 
-                          <VListItem
-                            v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
+                          <VListItem v-if="['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
                             prepend-icon="ri-send-plane-line"
                             :title="isSriResending(item.id) ? 'Reenviando al SRI...' : 'Reenviar al SRI'"
                             :disabled="isSriSyncing(item.id) || isSriResending(item.id)"
-                            class="text-warning text-body-2"
-                            @click="resendSri(item)"
-                          >
+                            class="text-warning text-body-2" @click="resendSri(item)">
                             <template v-if="isSriResending(item.id)" #append>
                               <VProgressCircular indeterminate size="15" width="2" color="warning" />
                             </template>
@@ -1388,16 +1393,11 @@ onMounted(() => {
     <SaleMailDialog v-model:is-dialog-visible="isMailDialogVisible" :sale-selected="mailSaleSelected" />
 
     <!-- Diálogo Modal para Errores SRI -->
-    <SriErrorDialog
-      v-model:is-dialog-visible="sriErrorDialogVisible"
-      :error-msg="selectedSriError"
+    <SriErrorDialog v-model:is-dialog-visible="sriErrorDialogVisible" :error-msg="selectedSriError"
       :sale="selectedSaleForSriError"
       :is-syncing="selectedSaleForSriError ? isSriSyncing(selectedSaleForSriError.id) : false"
       :is-resending="selectedSaleForSriError ? isSriResending(selectedSaleForSriError.id) : false"
-      @verify-sri="isSriStatusDialogVisible = true"
-      @sync-status="handleSriErrorSync"
-      @resend="handleSriErrorResend"
-    />
+      @verify-sri="isSriStatusDialogVisible = true" @sync-status="handleSriErrorSync" @resend="handleSriErrorResend" />
 
     <!-- Diálogo para Emitir Nota de Crédito SRI -->
     <CreditNoteDialog :is-dialog-visible="isCreditNoteDialogVisible" :sale-selected="selectedSaleForCreditNote"
@@ -1447,9 +1447,9 @@ onMounted(() => {
 
 .vehicle-plate-large {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-weight: 800 !important;
-  font-size: 1.05rem !important;
-  letter-spacing: 0.05em !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.03em !important;
   line-height: 1.25 !important;
 }
 
@@ -1464,21 +1464,25 @@ onMounted(() => {
   font-size: 0.65rem !important;
 }
 
-// Números de documento (gris por defecto, gris con tachón rojo si es anulado)
+// Números de documento (gris elegante sin negrilla, gris con tachón rojo si es anulado)
 .doc-number-active {
-  color: #334155 !important; // Gris elegante
+  color: #64748b !important; // Más gris
+  font-weight: 500 !important; // Sin negrilla
+  font-size: 0.85rem !important; // Un poco más pequeño
   transition: color 0.15s ease;
 
   &:hover {
-    color: #0f172a !important;
+    color: #1e293b !important;
   }
 }
 
 .doc-number-canceled {
-  color: #64748b !important; // Gris
+  color: #94a3b8 !important; // Gris
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
   text-decoration: line-through !important;
   text-decoration-color: #ef4444 !important; // Tachón rojo
-  text-decoration-thickness: 2.5px !important;
+  text-decoration-thickness: 2px !important;
   opacity: 0.85;
 
   &:hover {

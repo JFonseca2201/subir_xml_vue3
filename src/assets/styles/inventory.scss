@@ -3448,7 +3448,10 @@
         background-color: #ecfdf5 !important;
         color: #065f46 !important;
         border: 1px solid #a7f3d0 !important;
-        .v-icon { color: #10b981 !important; }
+
+        .v-icon {
+          color: #10b981 !important;
+        }
       }
 
       &.text-error,
@@ -3456,7 +3459,10 @@
         background-color: #fef2f2 !important;
         color: #991b1b !important;
         border: 1px solid #fecaca !important;
-        .v-icon { color: #ef4444 !important; }
+
+        .v-icon {
+          color: #ef4444 !important;
+        }
       }
 
       &.text-warning,
@@ -3464,7 +3470,10 @@
         background-color: #fffbeb !important;
         color: #92400e !important;
         border: 1px solid #fde68a !important;
-        .v-icon { color: #f59e0b !important; }
+
+        .v-icon {
+          color: #f59e0b !important;
+        }
       }
 
       &.text-info,
@@ -3472,7 +3481,10 @@
         background-color: #eff6ff !important;
         color: #1e40af !important;
         border: 1px solid #bfdbfe !important;
-        .v-icon { color: #3b82f6 !important; }
+
+        .v-icon {
+          color: #3b82f6 !important;
+        }
       }
 
       &.text-primary,
@@ -3480,7 +3492,10 @@
         background-color: #f5f3ff !important;
         color: #6d28d9 !important;
         border: 1px solid #ddd6fe !important;
-        .v-icon { color: #8b5cf6 !important; }
+
+        .v-icon {
+          color: #8b5cf6 !important;
+        }
       }
 
       &.text-secondary,
@@ -3488,7 +3503,10 @@
         background-color: #f1f5f9 !important;
         color: #475569 !important;
         border: 1px solid #cbd5e1 !important;
-        .v-icon { color: #94a3b8 !important; }
+
+        .v-icon {
+          color: #94a3b8 !important;
+        }
       }
     }
   }
@@ -3702,6 +3720,7 @@
 
 // Adaptación responsive para pantallas móviles
 @media (max-width: 640px) {
+
   .operations-browser-tabs,
   .operations-tabbed-container,
   .operations-continuous-menu,
@@ -4182,9 +4201,9 @@
 
   .vehicle-plate-large {
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-    font-weight: 800 !important;
-    font-size: 1.05rem !important;
-    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.03em !important;
     line-height: 1.25 !important;
   }
 
@@ -4395,4 +4414,4 @@
   height: 12px;
   background: #e2e8f0;
   border-radius: 4px;
-}
+}

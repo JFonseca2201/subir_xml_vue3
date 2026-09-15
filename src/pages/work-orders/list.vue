@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
@@ -11,6 +11,7 @@ import { useLoaderStore } from '@/stores/loader'
 import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
+const route = useRoute()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 const { can } = usePermissions()
@@ -474,7 +475,18 @@ const formatWorkOrderNumber = (num, fallbackId = null) => {
 }
 
 onMounted(() => {
+  if (route.query.search) {
+    searchQuery.value = String(route.query.search)
+    debouncedSearchQuery.value = String(route.query.search)
+  }
   loadWorkOrders()
+})
+
+watch(() => route.query.search, newSearch => {
+  if (newSearch) {
+    searchQuery.value = String(newSearch)
+    debouncedSearchQuery.value = String(newSearch)
+  }
 })
 </script>
 
@@ -1325,9 +1337,9 @@ onMounted(() => {
 
 .vehicle-plate-large {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-weight: 800 !important;
-  font-size: 1.05rem !important;
-  letter-spacing: 0.05em !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.03em !important;
   line-height: 1.25 !important;
 }
 
