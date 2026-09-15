@@ -420,25 +420,28 @@ onMounted(() => {
                 {{ item.model }}
               </h2>
               <div class="d-flex flex-wrap align-center gap-2">
-                <VChip size="small" color="secondary" variant="tonal" prepend-icon="ri-calendar-line" class="font-weight-medium">
-                  Año {{ item.year }}
-                </VChip>
-                <VChip v-if="item.traction" size="small" color="info" variant="tonal" prepend-icon="ri-compass-3-line" class="font-weight-medium">
-                  {{ item.traction }}
-                </VChip>
-                <VChip v-if="item.origin_country" size="small" color="warning" variant="tonal" prepend-icon="ri-earth-line" class="font-weight-medium">
-                  {{ item.origin_country }}
-                </VChip>
+                <div class="status-pill-clean status-secondary">
+                  <VIcon icon="ri-calendar-line" size="12" />
+                  <span>Año {{ item.year }}</span>
+                </div>
+                <div v-if="item.traction" class="status-pill-clean status-info">
+                  <VIcon icon="ri-compass-3-line" size="12" />
+                  <span>{{ item.traction }}</span>
+                </div>
+                <div v-if="item.origin_country" class="status-pill-clean status-partial">
+                  <VIcon icon="ri-earth-line" size="12" />
+                  <span>{{ item.origin_country }}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Resumen y Acciones Rápidas -->
           <div class="d-flex align-center flex-wrap gap-3">
-            <VChip color="primary" variant="flat" size="default" class="font-weight-bold">
-              <VIcon icon="ri-tools-line" size="16" class="me-1.5" />
-              {{ (item.items || []).length }} {{ (item.items || []).length === 1 ? 'Repuesto' : 'Repuestos' }}
-            </VChip>
+            <div class="status-pill-clean status-primary py-1 px-3">
+              <VIcon icon="ri-tools-line" size="14" />
+              <span>{{ (item.items || []).length }} {{ (item.items || []).length === 1 ? 'Repuesto' : 'Repuestos' }}</span>
+            </div>
 
             <div class="d-flex align-center gap-1">
               <VBtn
@@ -520,17 +523,15 @@ onMounted(() => {
                     </span>
                   </td>
 
-                  <!-- Categoría -->
+                  <!-- Categoría (Estilo status-pill-clean con punto) -->
                   <td>
-                    <VChip
-                      size="small"
-                      :color="isMatchingCategory(subItem.category) ? 'primary' : 'default'"
-                      :variant="isMatchingCategory(subItem.category) ? 'elevated' : 'tonal'"
-                      class="font-weight-semibold text-uppercase"
+                    <div
+                      class="status-pill-clean"
+                      :class="isMatchingCategory(subItem.category) ? 'status-paid' : 'status-info'"
                     >
-                      <VIcon icon="ri-price-tag-3-line" size="14" class="me-1" />
-                      {{ subItem.category }}
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>{{ subItem.category }}</span>
+                    </div>
                   </td>
 
                   <!-- Costo Compra -->
@@ -671,5 +672,87 @@ onMounted(() => {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+}
+
+// Status Pills (Estilo listado de clientes / ventas)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-info {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
+  }
 }
 </style>

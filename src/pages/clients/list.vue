@@ -541,14 +541,13 @@ onMounted(() => {
 
               <!-- Tipo -->
               <td>
-                <VChip
-                  size="small"
-                  :color="isCompanyClient(client) ? 'warning' : 'primary'"
-                  variant="tonal"
-                  class="font-weight-medium"
+                <div
+                  class="status-pill-clean"
+                  :class="isCompanyClient(client) ? 'status-partial' : 'status-primary'"
                 >
-                  {{ isCompanyClient(client) ? 'Jurídico / Empresa' : 'Natural' }}
-                </VChip>
+                  <span class="status-dot" />
+                  <span>{{ isCompanyClient(client) ? 'Jurídico / Empresa' : 'Natural' }}</span>
+                </div>
               </td>
 
               <!-- Estado (Pill limpia aceituna / pastel con punto) -->
@@ -747,6 +746,46 @@ onMounted(() => {
 
   .status-dot {
     background-color: #ef4444 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-info {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
   }
 }
 </style>

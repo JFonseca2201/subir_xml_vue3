@@ -195,9 +195,10 @@ const vehicleHeader = computed(() => {
                 />
                 Repuestos Compatibles Registrados
               </div>
-              <VChip size="small" color="primary" variant="tonal" class="font-weight-bold">
-                {{ props.requestSelected.items ? props.requestSelected.items.length : 0 }} items
-              </VChip>
+              <div class="status-pill-clean status-primary">
+                <span class="status-dot" />
+                <span>{{ props.requestSelected.items ? props.requestSelected.items.length : 0 }} items</span>
+              </div>
             </div>
             <VDivider />
           </VCol>
@@ -215,23 +216,19 @@ const vehicleHeader = computed(() => {
               <!-- Card Header -->
               <div class="d-flex align-center justify-space-between mb-3 border-b pb-2 flex-wrap gap-2">
                 <div class="d-flex align-center gap-2">
-                  <VChip
-                    size="small"
-                    color="primary"
-                    variant="flat"
-                    class="font-weight-bold elevation-1"
-                  >
-                    #{{ idx + 1 }}
-                  </VChip>
+                  <div class="status-pill-clean status-primary font-weight-bold">
+                    <span>#{{ idx + 1 }}</span>
+                  </div>
                   <span class="text-subtitle-1 font-weight-bold text-high-emphasis text-uppercase">
                     {{ item.category }}
                   </span>
                 </div>
                 <div class="d-flex align-center gap-1">
                   <span class="text-caption text-medium-emphasis">Marca Repuesto:</span>
-                  <VChip size="x-small" color="secondary" variant="tonal" class="font-weight-bold text-uppercase ms-1">
-                    {{ item.spare_part_brand || 'Genérico' }}
-                  </VChip>
+                  <div class="status-pill-clean status-secondary">
+                    <span class="status-dot" />
+                    <span>{{ item.spare_part_brand || 'Genérico' }}</span>
+                  </div>
                 </div>
               </div>
 
@@ -319,3 +316,57 @@ const vehicleHeader = computed(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
+  }
+}
+</style>
+

@@ -474,15 +474,14 @@ definePage({ meta: { permission: 'kardex' } })
                       {{ item.description }}
                     </div>
                     <div class="d-flex align-center gap-2 mt-1">
-                      <VChip
+                      <div
                         v-if="item.sku"
-                        size="x-small"
-                        color="primary"
-                        variant="tonal"
-                        class="font-weight-bold"
+                        class="status-pill-clean status-primary"
+                        style="font-size: 0.68rem !important; padding: 2px 8px !important;"
                       >
-                        SKU: {{ item.sku }}
-                      </VChip>
+                        <span class="status-dot" />
+                        <span>SKU: {{ item.sku }}</span>
+                      </div>
                       <span
                         v-if="item.code_aux"
                         class="text-caption text-medium-emphasis"
@@ -494,14 +493,13 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- Tipo: Producto o Servicio -->
                   <td class="text-center py-3">
-                    <VChip
-                      :color="item.tipo === 'servicio' ? 'info' : 'warning'"
-                      size="small"
-                      label
-                      class="text-uppercase font-weight-bold"
+                    <div
+                      class="status-pill-clean"
+                      :class="item.tipo === 'servicio' ? 'status-info' : 'status-partial'"
                     >
-                      {{ item.tipo }}
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>{{ item.tipo }}</span>
+                    </div>
                   </td>
 
                   <!-- Cant. Vendida -->
@@ -532,3 +530,113 @@ definePage({ meta: { permission: 'kardex' } })
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.border-light {
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.day-header {
+  background-color: rgba(var(--v-theme-primary), 0.03);
+}
+
+.bg-success-header {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: #065f46 !important;
+}
+
+.bg-success-light {
+  background-color: rgba(16, 185, 129, 0.03) !important;
+}
+
+.bg-error-header {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  color: #991b1b !important;
+}
+
+.bg-error-light {
+  background-color: rgba(239, 68, 68, 0.03) !important;
+}
+
+// Status Pills (Estilo listado de clientes / ventas)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-info {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
+  }
+}
+</style>

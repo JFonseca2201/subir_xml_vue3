@@ -264,6 +264,22 @@ const getConceptoLabel = concepto => {
   return labels[concepto] || concepto
 }
 
+// Obtener clase de estilo status-pill-clean según concepto
+const getConceptoPillClass = concepto => {
+  const map = {
+    venta_producto: 'status-paid',
+    venta_servicio: 'status-paid',
+    compra_inventario: 'status-pending',
+    pago_sueldo: 'status-partial',
+    adelanto: 'status-partial',
+    aporte_capital: 'status-primary',
+    gasto_general: 'status-pending',
+    transferencia: 'status-info',
+  }
+
+  return map[concepto] || 'status-secondary'
+}
+
 // Formatear cantidades para redondear valores como 4.01 a 4
 const formatQuantity = value => {
   if (value === null || value === undefined) return 0
@@ -595,10 +611,14 @@ definePage({ meta: { permission: 'kardex' } })
                   <span>{{ group.name }}</span>
                 </h2>
                 <div class="d-flex align-center gap-2 flex-wrap text-body-2 text-medium-emphasis mt-1">
-                  <span v-if="group.isProduct && group.sku && group.sku !== 'N/A'" size="x-small" color="primary"
-                    variant="tonal" class="font-weight-bold">
-                    COD: {{ group.sku }}
-                  </span>
+                  <div
+                    v-if="group.isProduct && group.sku && group.sku !== 'N/A'"
+                    class="status-pill-clean status-primary"
+                    style="font-size: 0.68rem !important; padding: 2px 8px !important;"
+                  >
+                    <span class="status-dot" />
+                    <span>COD: {{ group.sku }}</span>
+                  </div>
                   <span v-if="group.isProduct && group.sku && group.sku !== 'N/A'">•</span>
                   <span>{{ group.items.length }} Movimiento{{ group.items.length > 1 ? 's' : '' }} en este rango</span>
                 </div>
@@ -671,9 +691,12 @@ definePage({ meta: { permission: 'kardex' } })
                 <tr v-for="movimiento in group.items" :key="movimiento.id">
                   <td>{{ movimiento.fecha_formateada }}</td>
                   <td>
-                    <div class="d-flex align-center">
-                      <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="small" class="me-2" />
-                      {{ getConceptoLabel(movimiento.concepto_tipo) }}
+                    <div
+                      class="status-pill-clean"
+                      :class="getConceptoPillClass(movimiento.concepto_tipo)"
+                    >
+                      <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="12" />
+                      <span>{{ getConceptoLabel(movimiento.concepto_tipo) }}</span>
                     </div>
                   </td>
 
@@ -684,9 +707,15 @@ definePage({ meta: { permission: 'kardex' } })
                     </div>
                     <div
                       v-if="movimiento.sku || (movimiento.producto && movimiento.producto.sku) || movimiento.codigo_aux"
-                      class="text-caption text-primary font-weight-bold mt-0.5 d-flex align-center gap-1">
-                      <VIcon icon="ri-barcode-line" size="12" />
-                      <span>COD: {{ movimiento.sku || movimiento.producto?.sku || movimiento.codigo_aux }}</span>
+                      class="d-flex align-center gap-1 mt-1"
+                    >
+                      <div
+                        class="status-pill-clean status-primary"
+                        style="font-size: 0.68rem !important; padding: 2px 8px !important;"
+                      >
+                        <span class="status-dot" />
+                        <span>COD: {{ movimiento.sku || movimiento.producto?.sku || movimiento.codigo_aux }}</span>
+                      </div>
                     </div>
                     <div v-if="movimiento.account" class="text-caption text-medium-emphasis d-flex align-center mt-1">
                       <VIcon icon="ri-bank-card-line" size="x-small" class="me-1" />
@@ -696,15 +725,14 @@ definePage({ meta: { permission: 'kardex' } })
 
                   <!-- CANTIDAD FÍSICA -->
                   <td v-if="group.isProduct" class="text-center">
-                    <VChip
+                    <div
                       v-if="movimiento.cantidad_movida"
-                      size="small"
-                      :color="isStockEntry(movimiento) ? 'success' : 'error'"
-                      variant="tonal"
-                      class="font-weight-bold"
+                      class="status-pill-clean"
+                      :class="isStockEntry(movimiento) ? 'status-paid' : 'status-pending'"
                     >
-                      {{ isStockEntry(movimiento) ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }}
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>{{ isStockEntry(movimiento) ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }}</span>
+                    </div>
                     <span v-else class="text-grey">-</span>
                   </td>
 
@@ -732,3 +760,95 @@ definePage({ meta: { permission: 'kardex' } })
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.border-light {
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.day-header {
+  background-color: rgba(var(--v-theme-primary), 0.03);
+}
+
+// Status Pills (Estilo listado de clientes / ventas)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-info {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
+  }
+}
+</style>
