@@ -106,7 +106,7 @@ const saveService = async () => {
 
   // Construir el payload completo para el backend respetando item_type = 2
   const inputPrice = parseFloat(serviceForm.value.price_sale) || 0
-  const finalPrice = serviceForm.value.is_taxable ? inputPrice / 1.15 : inputPrice
+  const finalPrice = inputPrice
 
   const payload = {
     description: serviceForm.value.description.toUpperCase().trim(),
@@ -127,7 +127,7 @@ const saveService = async () => {
     is_taxable: serviceForm.value.is_taxable ? 1 : 2,
     is_gift: 2, // No es regalo
     state: 1, // Activo
-    notes: 'REGISTRADO DESDE MODAL EXPRESS DE VENTAS',
+    notes: 'REGISTRADO DESDE MODAL EXPRESS DE SERVICIOS',
   }
 
   try {
@@ -186,7 +186,7 @@ onMounted(() => {
           Registrar Servicio Express
         </h3>
         <p class="custom-dialog-subtitle">
-          Crea rápidamente un nuevo servicio para inyectar en la venta
+          Crea rápidamente un nuevo servicio para inyectar en la venta u orden
         </p>
       </div>
 
@@ -246,7 +246,7 @@ onMounted(() => {
               />
             </VCol>
 
-            <!-- Desglose Informativo Con IVA y Sin IVA -->
+            <!-- Desglose Informativo -->
             <VCol
               v-if="parseFloat(serviceForm.price_sale) > 0"
               cols="12"
@@ -256,21 +256,21 @@ onMounted(() => {
                 style="background-color: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-theme-on-surface), 0.08);"
               >
                 <div class="d-flex flex-column">
-                  <span class="text-caption text-medium-emphasis">Valor Base (Sin IVA):</span>
+                  <span class="text-caption text-medium-emphasis">Precio Unitario:</span>
                   <span class="text-body-2 font-weight-bold">
-                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) / 1.15) : parseFloat(serviceForm.price_sale)).toFixed(2) }}
+                    ${{ parseFloat(serviceForm.price_sale).toFixed(2) }}
                   </span>
                 </div>
                 <div class="d-flex flex-column text-center">
                   <span class="text-caption text-medium-emphasis">IVA ({{ serviceForm.is_taxable ? '15%' : '0%' }}):</span>
                   <span class="text-body-2 font-weight-bold text-primary">
-                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) - (parseFloat(serviceForm.price_sale) / 1.15)) : 0).toFixed(2) }}
+                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) * 0.15) : 0).toFixed(2) }}
                   </span>
                 </div>
                 <div class="d-flex flex-column text-right">
-                  <span class="text-caption text-medium-emphasis">PVP Final (Con IVA):</span>
+                  <span class="text-caption text-medium-emphasis">Total con IVA:</span>
                   <span class="text-body-2 font-weight-bold text-success">
-                    ${{ parseFloat(serviceForm.price_sale).toFixed(2) }}
+                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) * 1.15) : parseFloat(serviceForm.price_sale)).toFixed(2) }}
                   </span>
                 </div>
               </div>

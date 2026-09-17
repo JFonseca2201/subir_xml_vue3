@@ -696,7 +696,7 @@ onMounted(() => {
                     class="mb-3 pa-4 rounded-lg border bg-white shadow-sm"
                   >
                     <div class="text-caption text-medium-emphasis font-weight-bold mb-2">
-                      Registro de Egreso #{{ record.id }} ({{ record.entry_date ? new Date(record.entry_date).toISOString().slice(0, 10) : '-' }})
+                      Registro de Egreso #{{ record.id }} ({{ formatDate(record.entry_date) }})
                     </div>
 
                     <div v-if="record.payment_distributions && record.payment_distributions.length > 0">
@@ -708,9 +708,9 @@ onMounted(() => {
                         <div class="d-flex align-center gap-2">
                           <VIcon
                             size="18"
-                            :color="dist.payment_method === 'cash' ? 'success' : 'primary'"
+                            :color="(dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'success' : 'primary'"
                           >
-                            {{ dist.payment_method === 'cash' ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
+                            {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'ri-money-dollar-circle-line' : 'ri-bank-card-line' }}
                           </VIcon>
                           <div>
                             <div
@@ -723,7 +723,7 @@ onMounted(() => {
                               class="text-caption text-grey text-none"
                               style="text-transform: none;"
                             >
-                              {{ dist.payment_method === 'cash' ? 'Efectivo' : 'Transferencia' }}
+                              {{ (dist.payment_method === 'cash' || dist.account?.type === 'cash') ? 'Efectivo' : 'Transferencia' }}
                             </div>
                           </div>
                         </div>

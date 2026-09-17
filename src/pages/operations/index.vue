@@ -78,6 +78,10 @@ const getPaymentMethodInfo = (movement, accountsList = []) => {
   const accName = (targetAccount?.name || movement.account_name || movement.account_label || '').toLowerCase()
   const bankName = (targetAccount?.bank_name || '').toLowerCase()
 
+  if (targetAccount?.type === 'cash' || targetAccount?.code === 'CAJA_CHICA' || accName.includes('caja chica') || accName.includes('caja (efectivo)') || rawMethod === 'CASH' || rawMethod === 'EFECTIVO') {
+    return { type: 'EFECTIVO', label: 'Efectivo', icon: 'ri-bill-line', badgeClass: 'method-badge-cash' }
+  }
+
   if (accName.includes('pichincha') || bankName.includes('pichincha') || rawMethod.includes('PICHINCHA')) {
     return { type: 'PICHINCHA', label: 'B. Pichincha', icon: 'ri-bank-line', badgeClass: 'method-badge-pichincha' }
   }

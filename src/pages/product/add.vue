@@ -485,20 +485,42 @@ const store = async () => {
   }
 
   try {
+    let errorMessageHandled = false
     const resp = await $api("products", {
       method: "POST",
       body: formData,
       onResponseError({ response }) {
-        error_exist.value = response._data.error
+        const errorData = response?._data || {}
+        let msg = errorData.message || errorData.message_text || errorData.error
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstKey = Object.keys(errorData.errors)[0]
+          if (firstKey && Array.isArray(errorData.errors[firstKey]) && errorData.errors[firstKey].length > 0) {
+            msg = errorData.errors[firstKey][0]
+          }
+        }
+        const finalMsg = msg || 'Error al crear el producto'
+        error_exist.value = finalMsg
+        showNotification(finalMsg, 'error')
+        errorMessageHandled = true
       },
     })
 
-    showNotification('Producto creado exitosamente', 'success')
-    setTimeout(() => {
-      onFormReset()
-    }, 1000)
+    if (resp?.status === 200 || resp?.product) {
+      showNotification('Producto creado exitosamente', 'success')
+      setTimeout(() => {
+        onFormReset()
+      }, 1000)
+    } else if (!errorMessageHandled && (resp?.message_text || resp?.message)) {
+      const finalMsg = resp.message_text || resp.message
+      showNotification(finalMsg, 'warning')
+      error_exist.value = finalMsg
+    }
   } catch (error) {
-    showNotification('Error al crear producto', 'error')
+    if (!error_exist.value) {
+      const msg = error?.data?.message || error?.message || 'Error al crear producto'
+      showNotification(msg, 'error')
+      error_exist.value = msg
+    }
   } finally {
     loader.stop()
     isLoading.value = false

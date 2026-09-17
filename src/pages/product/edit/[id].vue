@@ -375,11 +375,11 @@ const loadProduct = async () => {
         product.value.warehouse_id = response.product.warehouse.id
       }
     } else {
-      showNotification('error', 'No se pudo cargar el producto')
+      showNotification('No se pudo cargar el producto', 'error')
       router.push('/product/list')
     }
   } catch (error) {
-    showNotification('error', 'Error al cargar el producto')
+    showNotification('Error al cargar el producto', 'error')
     router.push('/product/list')
   } finally {
     isLoading.value = false
@@ -411,7 +411,7 @@ const loadInitialData = async () => {
 const updateProduct = async () => {
   const { valid } = await formRef.value.validate()
   if (!valid) {
-    showNotification('warning', 'Por favor complete los campos obligatorios')
+    showNotification('Por favor complete los campos obligatorios', 'warning')
 
     return
   }
@@ -452,19 +452,40 @@ const updateProduct = async () => {
     }
     formData.append('_method', 'PUT')
 
+    let errorMessageHandled = false
     const response = await $api(`products/${product.value.id}`, {
       method: 'POST',
       body: formData,
       onResponseError({ response }) {
-        showNotification('error', response._data.message || 'Error al actualizar el producto')
+        const errorData = response?._data || {}
+        let msg = errorData.message || errorData.message_text || errorData.error
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const firstKey = Object.keys(errorData.errors)[0]
+          if (firstKey && Array.isArray(errorData.errors[firstKey]) && errorData.errors[firstKey].length > 0) {
+            msg = errorData.errors[firstKey][0]
+          }
+        }
+        const finalMsg = msg || 'Error al actualizar el producto'
+        error_exist.value = finalMsg
+        showNotification(finalMsg, 'error')
+        errorMessageHandled = true
       },
     })
 
-    if (response.status === 200) {
+    if (response?.status === 200 || response?.product) {
       success.value = 'Producto actualizado correctamente'
+      showNotification('Producto actualizado correctamente', 'success')
+    } else if (!errorMessageHandled && (response?.message_text || response?.message)) {
+      const finalMsg = response.message_text || response.message
+      showNotification(finalMsg, 'warning')
+      error_exist.value = finalMsg
     }
   } catch (error) {
-    error_exist.value = 'Error al actualizar el producto'
+    if (!error_exist.value) {
+      const msg = error?.data?.message || error?.message || 'Error al actualizar el producto'
+      error_exist.value = msg
+      showNotification(msg, 'error')
+    }
   } finally {
     isLoading.value = false
     loader.stop()

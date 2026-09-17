@@ -769,20 +769,28 @@ const addProductToItems = product => {
     return
   }
 
+  const isTaxable = (product.is_taxable === 0 || product.is_taxable === '0' || product.is_taxable === false) ? 0 : 1
+  const qty = 1
+  const unitPrice = Number(product.purchase_price) || 0
+  const discount = Number(product.discount) || 0
+  const sub = Number(((qty * unitPrice) - discount).toFixed(2))
+  const tax = isTaxable === 1 ? Number((sub * 0.15).toFixed(2)) : 0
+  const total = Number((sub + tax).toFixed(2))
+
   items.value.push({
     id: Date.now(),
     code: product.sku,
     description: product.description,
     brand: product.brand || 'SM',
-    quantity: 1,
-    unit_price: product.purchase_price || 0,
-    subtotal: product.purchase_price || 0,
-    discount: Number(product.discount) || 0,
-    tax: 0,
-    total: product.purchase_price || 0,
+    quantity: qty,
+    unit_price: unitPrice,
+    subtotal: sub,
+    discount: discount,
+    tax: tax,
+    total: total,
     item_type: 1,
-    product_categorie_id: product.product_categorie_id || categories.value[0]?.id,
-    is_taxable: product.is_taxable || 0,
+    product_categorie_id: product.product_categorie_id || (categories.value && categories.value[0] ? categories.value[0].id : null),
+    is_taxable: isTaxable,
     _selected: true,
   })
 
@@ -794,15 +802,21 @@ const updateItemTotals = item => {
   const price = Number(item.unit_price) || 0
   const disc = Number(item.discount) || 0
 
-  item.subtotal = (qty * price) - disc
+  item.subtotal = Number(((qty * price) - disc).toFixed(2))
 
-  // Asumimos 15% de IVA si es taxable
-  item.tax = item.is_taxable == 1 ? item.subtotal * 0.15 : 0
-  item.total = item.subtotal + item.tax
+  const isTaxable = (item.is_taxable === 0 || item.is_taxable === '0' || item.is_taxable === false) ? 0 : 1
+  item.is_taxable = isTaxable
+  item.tax = isTaxable === 1 ? Number((item.subtotal * 0.15).toFixed(2)) : 0
+  item.total = Number((item.subtotal + item.tax).toFixed(2))
 
   if (isSharedInvoice.value) {
     calculateTercerosFromUnchecked()
   }
+}
+
+const toggleItemTax = item => {
+  item.is_taxable = (item.is_taxable === 1 || item.is_taxable === true) ? 0 : 1
+  updateItemTotals(item)
 }
 
 const removeItem = index => {
@@ -1254,210 +1268,216 @@ onMounted(() => {
                 </VExpandTransition>
               </div>
 
-              <!-- TABLA DE PRODUCTOS CON CANTIDAD EN COLUMNA INDIVIDUAL Y MODAL DE TIPO -->
-              <div>
-                <VTable class="manual-purchase-table border rounded-xl overflow-hidden w-100">
-                  <thead>
-                    <tr class="bg-grey-lighten-4">
-                      <!-- Checkbox Único Maestro -->
-                      <th class="text-center font-weight-bold py-3" style="width: 44px;"
-                        :title="isDuplicateInvoice ? 'Número de ítem' : (isSharedInvoice ? 'Marcar si pertenece al taller / aplicar categoría' : 'Marcar para aplicar categoría')">
-                        <span v-if="isDuplicateInvoice"
-                          class="text-caption font-weight-bold text-medium-emphasis">#</span>
-                        <VCheckbox v-else :model-value="isAllSelected" :indeterminate="isSomeSelected && !isAllSelected"
-                          density="compact" hide-details @click.stop="toggleSelectAll" />
-                      </th>
-                      <th class="text-left font-weight-bold py-3" style="min-width: 160px;">
-                        PRODUCTO / SKU
-                      </th>
-                      <th class="text-center font-weight-bold py-3" style="width: 130px;">
-                        TIPO
-                      </th>
-                      <th class="text-left font-weight-bold py-3" style="width: 160px;">
-                        CATEGORÍA
-                      </th>
-                      <th class="text-center font-weight-bold py-3" style="width: 65px;">
-                        CANT.
-                      </th>
-                      <th class="text-center font-weight-bold py-3" style="width: 85px;">
-                        PRECIO
-                      </th>
-                      <th class="text-right font-weight-bold py-3 pr-3" style="width: 90px;">
-                        SUBTOTAL
-                      </th>
-                      <th v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center font-weight-bold py-3"
-                        style="width: 44px;">
-                        <VIcon icon="ri-settings-3-line" size="16" color="grey" />
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-if="items.length === 0">
-                      <td :colspan="xmlLoadedInfo || isDuplicateInvoice ? 7 : 8"
-                        class="text-center py-10 text-medium-emphasis">
-                        <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
-                        <div class="text-body-1 font-weight-medium">
-                          No hay productos agregados a la compra
-                        </div>
-                        <p class="text-caption text-medium-emphasis mb-0">
-                          Carga un XML del SRI arriba o ingresa productos manualmente
-                        </p>
-                      </td>
-                    </tr>
-                    <tr v-for="(item, index) in items" :key="item.id" class="purchase-item-row"
-                      :class="{ 'opacity-50 bg-grey-lighten-5': isSharedInvoice && item._selected === false }">
-                      <!-- Checkbox Único por Fila -->
-                      <td class="text-center py-3">
-                        <span v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis font-weight-bold">{{
-                          index + 1
-                        }}</span>
-                        <VCheckbox v-else :model-value="item._selected !== false" color="primary" density="compact"
-                          hide-details
-                          :title="isSharedInvoice ? 'Marcar si pertenece al taller / categoría' : 'Marcar para aplicar categoría'"
-                          @update:model-value="val => onToggleItem(item, val)" />
-                      </td>
+              <!-- TABLA DE PRODUCTOS SIN SCROLL HORIZONTAL -->
+              <VTable class="manual-purchase-table border rounded-xl overflow-hidden w-100">
+                <thead>
+                  <tr class="bg-grey-lighten-4">
+                    <!-- Checkbox Único Maestro -->
+                    <th class="text-center font-weight-bold py-3 px-1" style="width: 36px;"
+                      :title="isDuplicateInvoice ? 'Número de ítem' : (isSharedInvoice ? 'Marcar si pertenece al taller / aplicar categoría' : 'Marcar para aplicar categoría')">
+                      <span v-if="isDuplicateInvoice"
+                        class="text-caption font-weight-bold text-medium-emphasis">#</span>
+                      <VCheckbox v-else :model-value="isAllSelected" :indeterminate="isSomeSelected && !isAllSelected"
+                        density="compact" hide-details @click.stop="toggleSelectAll" />
+                    </th>
+                    <th class="text-left font-weight-bold py-3 px-2">
+                      PRODUCTO / DETALLES
+                    </th>
+                    <th class="text-left font-weight-bold py-3 px-2" style="width: 145px;">
+                      CATEGORÍA
+                    </th>
+                    <th class="text-center font-weight-bold py-3 px-1" style="width: 56px;">
+                      CANT.
+                    </th>
+                    <th class="text-center font-weight-bold py-3 px-1" style="width: 80px;">
+                      PRECIO
+                    </th>
+                    <th class="text-center font-weight-bold py-3 px-1" style="width: 52px;">
+                      IVA
+                    </th>
+                    <th class="text-right font-weight-bold py-3 pr-3 pl-1" style="width: 78px;">
+                      SUBTOTAL
+                    </th>
+                    <th v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center font-weight-bold py-3 px-1"
+                      style="width: 34px;">
+                      <VIcon icon="ri-settings-3-line" size="15" color="grey" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="items.length === 0">
+                    <td :colspan="xmlLoadedInfo || isDuplicateInvoice ? 7 : 8"
+                      class="text-center py-10 text-medium-emphasis">
+                      <VIcon icon="ri-shopping-bag-3-line" size="40" class="mb-2 text-grey-lighten-1" />
+                      <div class="text-body-1 font-weight-medium">
+                        No hay productos agregados a la compra
+                      </div>
+                      <p class="text-caption text-medium-emphasis mb-0">
+                        Carga un XML del SRI arriba o ingresa productos manualmente
+                      </p>
+                    </td>
+                  </tr>
+                  <tr v-for="(item, index) in items" :key="item.id" class="purchase-item-row"
+                    :class="{ 'opacity-50 bg-grey-lighten-5': isSharedInvoice && item._selected === false }">
+                    <!-- Checkbox Único por Fila -->
+                    <td class="text-center py-2 px-1" style="width: 36px;">
+                      <span v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis font-weight-bold">{{
+                        index + 1
+                      }}</span>
+                      <VCheckbox v-else :model-value="item._selected !== false" color="primary" density="compact"
+                        hide-details
+                        :title="isSharedInvoice ? 'Marcar si pertenece al taller / categoría' : 'Marcar para aplicar categoría'"
+                        @update:model-value="val => onToggleItem(item, val)" />
+                    </td>
 
-                      <!-- Nombre y SKU -->
-                      <td class="py-3">
-                        <div
-                          class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-1 flex-wrap">
-                          <span>{{ item.description }}</span>
-                          <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
-                            class="font-weight-bold" style="height: 18px;">
-                            XML
-                          </VChip>
-                          <VChip v-else-if="item.is_manual" size="x-small" color="info" variant="tonal"
-                            class="font-weight-bold" style="height: 18px;">
-                            Manual
-                          </VChip>
-                        </div>
-                        <div class="text-caption text-medium-emphasis mt-0-5 d-flex align-center gap-2">
-                          <span>SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
-                        </div>
-                      </td>
+                    <!-- Nombre, SKU, Tipo y Marca -->
+                    <td class="py-2.5 px-2">
+                      <div
+                        class="font-weight-bold text-high-emphasis text-body-2 d-flex align-center gap-1 flex-wrap">
+                        <span>{{ item.description }}</span>
+                        <VChip v-if="item.is_from_xml" size="x-small" color="success" variant="tonal"
+                          class="font-weight-bold px-1" style="height: 17px; font-size: 0.65rem;">
+                          XML
+                        </VChip>
+                        <VChip v-else-if="item.is_manual" size="x-small" color="info" variant="tonal"
+                          class="font-weight-bold px-1" style="height: 17px; font-size: 0.65rem;">
+                          Manual
+                        </VChip>
+                      </div>
+                      <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-1.5 flex-wrap">
+                        <span>SKU: <strong class="text-high-emphasis">{{ item.code }}</strong></span>
+                        <span class="text-disabled">•</span>
+                        <VChip
+                          v-if="!isDuplicateInvoice && item._selected !== false"
+                          size="x-small"
+                          :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
+                          variant="tonal"
+                          class="font-weight-bold cursor-pointer px-1.5"
+                          style="height: 19px; font-size: 0.7rem;"
+                          title="Clic para cambiar tipo de ítem / marca"
+                          @click="openItemClassificationDialog(item)"
+                        >
+                          <VIcon :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 2 ? 'ri-truck-line' : 'ri-tools-line')" size="12" class="me-0.5" />
+                          {{ itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] || 'Producto' }}
+                        </VChip>
+                        <VChip
+                          v-else-if="isDuplicateInvoice"
+                          size="x-small"
+                          :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
+                          variant="tonal"
+                          class="font-weight-medium px-1.5"
+                          style="height: 19px; font-size: 0.7rem;"
+                        >
+                          {{ itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] || 'Producto' }}
+                        </VChip>
+                        <span v-else class="text-caption text-medium-emphasis">
+                          (Terceros)
+                        </span>
+                        <span v-if="Number(item.item_type) === 1 && item.brand && item.brand !== 'N/A'" class="text-caption text-medium-emphasis">
+                          • {{ item.brand }}
+                        </span>
+                      </div>
+                    </td>
 
-                      <!-- Tipo (Clickable chip para abrir modal VDialog) -->
-                      <td class="text-center py-3">
-                        <div v-if="isDuplicateInvoice">
-                          <VChip size="small"
-                            :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
-                            variant="tonal" class="font-weight-medium">
-                            <VIcon
-                              :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 2 ? 'ri-truck-line' : 'ri-tools-line')"
-                              size="14" class="me-1" />
-                            {{itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] ||
-                              'Producto'}}
-                          </VChip>
-                          <div v-if="Number(item.item_type) === 1 && item.brand && item.brand !== 'N/A'"
-                            class="text-caption text-medium-emphasis mt-0-5" style="font-size: 0.72rem;">
-                            {{ item.brand }}
-                          </div>
-                        </div>
-                        <div v-else-if="item._selected !== false">
-                          <VChip size="small"
-                            :color="Number(item.item_type) === 1 ? 'primary' : (Number(item.item_type) === 2 ? 'warning' : 'info')"
-                            variant="tonal" class="font-weight-bold cursor-pointer"
-                            title="Haga clic para cambiar tipo de ítem / marca"
-                            @click="openItemClassificationDialog(item)">
-                            <VIcon
-                              :icon="Number(item.item_type) === 1 ? 'ri-box-3-line' : (Number(item.item_type) === 2 ? 'ri-truck-line' : 'ri-tools-line')"
-                              size="14" class="me-1" />
-                            {{itemTypeOptions.find(t => t.value === Number(item.item_type))?.title?.split(' ')[1] ||
-                              'Producto'}}
-                          </VChip>
-                          <div v-if="Number(item.item_type) === 1" class="text-caption text-medium-emphasis mt-0-5"
-                            style="font-size: 0.72rem;">
-                            {{ item.brand || 'SM' }}
-                          </div>
-                        </div>
-                        <div v-else
-                          class="text-caption text-medium-emphasis text-center py-1-5 px-2 bg-grey-lighten-4 rounded border border-dashed">
-                          <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
-                          Terceros
-                        </div>
-                      </td>
+                    <!-- Selector Editable de Categoría -->
+                    <td class="py-2 px-2" style="width: 145px;">
+                      <div v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis text-truncate"
+                        :title="getCategoryName(item.product_categorie_id)">
+                        <span v-if="getCategoryName(item.product_categorie_id)"
+                          class="text-primary font-weight-medium">
+                          {{ getCategoryName(item.product_categorie_id) }}
+                        </span>
+                        <span v-else class="text-disabled">—</span>
+                      </div>
+                      <VSelect v-else-if="item._selected !== false && Number(item.item_type) === 1"
+                        v-model="item.product_categorie_id" :items="categories" item-title="title" item-value="id"
+                        placeholder="Categoría *" variant="outlined" density="compact" hide-details
+                        class="custom-table-select" />
+                      <div v-else
+                        class="text-caption text-medium-emphasis text-center py-1 px-1 bg-grey-lighten-4 rounded border border-dashed">
+                        <span style="font-size: 0.72rem;">No aplica</span>
+                      </div>
+                    </td>
 
-                      <!-- Selector Editable de Categoría (Solo si está marcado y es Producto) -->
-                      <td class="py-3">
-                        <div v-if="isDuplicateInvoice" class="text-caption text-medium-emphasis">
-                          <span v-if="getCategoryName(item.product_categorie_id)"
-                            class="text-primary font-weight-medium">
-                            {{ getCategoryName(item.product_categorie_id) }}
-                          </span>
-                          <span v-else class="text-disabled">—</span>
-                        </div>
-                        <VSelect v-else-if="item._selected !== false && Number(item.item_type) === 1"
-                          v-model="item.product_categorie_id" :items="categories" item-title="title" item-value="id"
-                          placeholder="Categoría *" variant="outlined" density="compact" hide-details
-                          class="custom-table-select" />
-                        <div v-else
-                          class="text-caption text-medium-emphasis text-center py-1-5 px-2 bg-grey-lighten-4 rounded border border-dashed">
-                          <VIcon icon="ri-forbid-2-line" size="14" class="me-1" />
-                          No aplica
-                        </div>
-                      </td>
-
-                      <!-- Cantidad (Columna Individual - Editable) -->
-                      <td class="text-center py-2" style="width: 75px;">
-                        <VTextField
-                          v-if="!isDuplicateInvoice"
+                    <!-- Cantidad (Columna Individual - Editable) -->
+                    <td class="text-center py-2 px-1" style="width: 56px;">
+                      <div v-if="!isDuplicateInvoice" class="table-cell-input-box qty-box">
+                        <input
                           v-model.number="item.quantity"
                           type="number"
                           min="0.01"
                           step="any"
-                          variant="outlined"
-                          density="compact"
-                          hide-details
-                          class="custom-number-input"
-                          style="max-width: 65px; margin: 0 auto;"
-                          @update:model-value="updateItemTotals(item)"
+                          class="table-cell-input text-center"
+                          placeholder="1"
+                          @input="updateItemTotals(item)"
                         />
-                        <span v-else class="text-body-2 font-weight-bold text-high-emphasis">
-                          {{ item.quantity }}
-                        </span>
-                      </td>
+                      </div>
+                      <span v-else class="text-body-2 font-weight-bold text-high-emphasis">
+                        {{ item.quantity }}
+                      </span>
+                    </td>
 
-                      <!-- Precio Unitario (Columna Individual - Editable) -->
-                      <td class="text-center py-2" style="width: 95px;">
-                        <VTextField
-                          v-if="!isDuplicateInvoice"
+                    <!-- Precio Unitario (Columna Individual - Editable) -->
+                    <td class="text-center py-2 px-1" style="width: 80px;">
+                      <div v-if="!isDuplicateInvoice" class="table-cell-input-box price-box">
+                        <span class="table-cell-prefix">$</span>
+                        <input
                           v-model.number="item.unit_price"
                           type="number"
                           min="0"
                           step="0.0001"
-                          prefix="$"
-                          variant="outlined"
-                          density="compact"
-                          hide-details
-                          class="custom-number-input"
-                          style="max-width: 88px; margin: 0 auto;"
-                          @update:model-value="updateItemTotals(item)"
+                          class="table-cell-input text-right"
+                          placeholder="0.00"
+                          @input="updateItemTotals(item)"
                         />
-                        <span v-else class="text-body-2 font-weight-medium text-grey-darken-3">${{ Number(item.unit_price ||
-                          0).toFixed(2)
-                        }}</span>
-                      </td>
+                      </div>
+                      <span v-else class="text-body-2 font-weight-medium text-grey-darken-3">${{ Number(item.unit_price ||
+                        0).toFixed(2)
+                      }}</span>
+                    </td>
 
-                      <!-- Subtotal (Columna Individual) -->
-                      <td class="text-right py-3 pr-3">
-                        <span class="font-weight-bold text-body-2 text-primary">
-                          ${{ Number((item.quantity * item.unit_price) - (item.discount || 0)).toFixed(2) }}
-                        </span>
-                        <div v-if="item.discount > 0" class="text-caption text-error text-no-wrap"
-                          style="font-size: 0.7rem;">
-                          -${{ Number(item.discount).toFixed(2) }}
-                        </div>
-                      </td>
+                    <!-- IVA Toggle Chip -->
+                    <td class="text-center py-2 px-1" style="width: 52px;">
+                      <VChip
+                        v-if="!isDuplicateInvoice"
+                        size="x-small"
+                        :color="item.is_taxable == 1 ? 'primary' : 'default'"
+                        :variant="item.is_taxable == 1 ? 'tonal' : 'outlined'"
+                        class="font-weight-bold cursor-pointer px-1"
+                        style="height: 22px; font-size: 0.72rem;"
+                        :title="item.is_taxable == 1 ? 'Grava IVA 15% (Clic para cambiar a 0%)' : 'No grava IVA (Clic para cambiar a 15%)'"
+                        @click="toggleItemTax(item)"
+                      >
+                        {{ item.is_taxable == 1 ? '15%' : '0%' }}
+                      </VChip>
+                      <span v-else class="text-caption font-weight-medium" style="font-size: 0.72rem;">
+                        {{ item.is_taxable == 1 ? '15%' : '0%' }}
+                      </span>
+                    </td>
 
-                      <!-- Acción Eliminar (Oculta si es importado de XML) -->
-                      <td v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center py-3">
-                        <VBtn v-if="!item.is_from_xml" icon="ri-delete-bin-line" color="error" variant="text"
-                          size="small" class="rounded-lg" title="Eliminar producto" @click="removeItem(index)" />
-                      </td>
-                    </tr>
-                  </tbody>
-                </VTable>
-              </div>
+                    <!-- Subtotal (Columna Individual) -->
+                    <td class="text-right py-2 pr-3 pl-1" style="width: 78px;">
+                      <div class="font-weight-bold text-body-2 text-primary">
+                        ${{ Number((item.quantity * item.unit_price) - (item.discount || 0)).toFixed(2) }}
+                      </div>
+                      <div v-if="item.is_taxable == 1" class="text-caption text-medium-emphasis"
+                        style="font-size: 0.68rem; line-height: 1.1;">
+                        +IVA ${{ Number(item.tax || 0).toFixed(2) }}
+                      </div>
+                      <div v-if="item.discount > 0" class="text-caption text-error text-no-wrap"
+                        style="font-size: 0.68rem; line-height: 1.1;">
+                        -${{ Number(item.discount).toFixed(2) }}
+                      </div>
+                    </td>
+
+                    <!-- Acción Eliminar (Oculta si es importado de XML) -->
+                    <td v-if="!xmlLoadedInfo && !isDuplicateInvoice" class="text-center py-2 px-1" style="width: 34px;">
+                      <VBtn v-if="!item.is_from_xml" icon="ri-delete-bin-line" color="error" variant="text"
+                        size="x-small" class="rounded-lg" title="Eliminar producto" @click="removeItem(index)" />
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
             </VCardText>
           </VCard>
         </VCol>
@@ -1713,7 +1733,7 @@ onMounted(() => {
         </VCardText>
 
         <VDivider />
-
+ 
         <VCardActions class="pa-4 d-flex justify-end gap-2 bg-grey-lighten-5">
           <VBtn variant="outlined" color="secondary" class="rounded-lg text-none"
             @click="isItemClassificationDialogOpen = false">
@@ -1728,3 +1748,95 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.manual-purchase-table {
+  width: 100%;
+}
+
+.manual-purchase-table :deep(.v-table__wrapper) {
+  overflow-x: hidden !important;
+}
+
+.manual-purchase-table th {
+  font-size: 0.72rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569 !important;
+  white-space: nowrap;
+}
+
+.table-cell-input-box {
+  display: inline-flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 4px;
+  height: 32px;
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.table-cell-input-box.qty-box {
+  max-width: 52px;
+}
+
+.table-cell-input-box.price-box {
+  max-width: 76px;
+  padding: 2px 4px;
+}
+
+.table-cell-input-box:hover {
+  border-color: #94a3b8;
+}
+
+.table-cell-input-box:focus-within {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.15);
+  background-color: #ffffff;
+}
+
+.table-cell-prefix {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-right: 1px;
+  user-select: none;
+}
+
+.table-cell-input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+  padding: 0;
+  font-family: inherit;
+}
+
+.table-cell-input::-webkit-inner-spin-button,
+.table-cell-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.table-cell-input {
+  -moz-appearance: textfield;
+}
+
+.custom-table-select :deep(.v-field) {
+  border-radius: 6px !important;
+}
+
+.custom-table-select :deep(.v-field__input) {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  min-height: 32px !important;
+  font-size: 0.78rem !important;
+}
+</style>
