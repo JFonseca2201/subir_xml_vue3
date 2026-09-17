@@ -529,10 +529,24 @@ const calculateTotal = () => {
   }, 0)
 }
 
+const getProductPriceWithTax = product => {
+  if (!product) return 0
+  const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
+
+  const isTaxable = product.is_taxable !== 2 && product.is_taxable !== '2' && product.is_taxable !== 0 && product.is_taxable !== '0' && product.is_taxable !== false
+  const taxRate = parseFloat(product.tax_rate) || 15
+
+  if (isTaxable) {
+    return parseFloat((rawPrice * (1 + (taxRate / 100))).toFixed(2))
+  }
+
+  return parseFloat(rawPrice.toFixed(2))
+}
+
 const getProductPrice = productId => {
   const product = products.value.find(p => p.id === productId)
 
-  return product ? parseFloat(product.price) : 0
+  return product ? getProductPriceWithTax(product) : 0
 }
 
 const getProductStock = (productId, item = null) => {
@@ -558,12 +572,10 @@ const onProductChanged = item => {
     const product = products.value.find(p => p.id === item.product_id)
     if (product) {
       item.description = product.name || product.description || ''
-      item.unit_price = parseFloat(product.price) || 0
+      item.unit_price = getProductPriceWithTax(product)
     }
   }
 }
-
-
 
 // Agregar producto desde búsqueda
 const addProductFromSearch = product => {
@@ -576,6 +588,7 @@ const addProductFromSearch = product => {
     (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))
 
   const existingItemIndex = workOrder.value.items.findIndex(item => item.product_id === product.id)
+  const finalUnitPrice = getProductPriceWithTax(product)
 
   if (existingItemIndex !== -1) {
     workOrder.value.items[existingItemIndex].quantity += 1
@@ -584,7 +597,7 @@ const addProductFromSearch = product => {
       product_id: product.id,
       description: product.description || product.name || '',
       quantity: 1,
-      unit_price: parseFloat(product.price_sale) || parseFloat(product.price) || 0,
+      unit_price: finalUnitPrice,
       discount: 0,
       type: isService ? 'service' : 'product',
       sku: product.sku || product.code || '',
@@ -1047,41 +1060,44 @@ onMounted(() => {
 
               <!-- Tabla de items -->
               <div v-if="workOrder.items.length > 0" class="rounded-xl border overflow-hidden">
-                <VTable class="custom-items-table text-no-wrap">
+                <VTable class="custom-items-table w-100">
                   <thead>
                     <tr class="bg-slate-50 text-caption font-weight-bold">
-                      <th class="text-left font-weight-bold text-slate-700" style="min-width: 250px;">
+                      <th class="text-left font-weight-bold text-slate-700">
                         Ítem / Descripción
                       </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
-                        Cantidad
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 95px;">
+                        Cant.
                       </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 140px;">
-                        Precio Unit.
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 95px;">
+                        P. Unit.
                       </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 120px;">
-                        Descuento
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 85px;">
+                        Desc.
                       </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 130px;">
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 90px;">
                         Subtotal
                       </th>
-                      <th class="text-center font-weight-bold text-slate-700" style="width: 60px;">
-                        Acciones
+                      <th class="text-center font-weight-bold text-slate-700" style="width: 44px;">
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="(item, index) in workOrder.items" :key="index" class="hover-row">
-                      <td>
-                        <div class="d-flex align-center gap-3 py-1">
-                          <VAvatar size="36" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
-                            class="rounded-lg">
-                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="18" />
+                      <td class="py-2">
+                        <div class="d-flex align-center gap-2.5">
+                          <VAvatar size="32" :color="item.type === 'service' ? 'info' : 'primary'" variant="tonal"
+                            class="rounded-lg flex-shrink-0">
+                            <VIcon :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'" size="16" />
                           </VAvatar>
-                          <div class="flex-grow-1">
-                            <VTextField v-model="item.description" density="compact" variant="plain" hide-details
-                              placeholder="Descripción del ítem..." class="font-weight-bold text-slate-900" />
-                            <div class="text-caption text-medium-emphasis mt-1 d-flex align-center gap-2">
+                          <div class="flex-grow-1 min-w-0">
+                            <input
+                              v-model="item.description"
+                              type="text"
+                              placeholder="Descripción del ítem..."
+                              class="wo-item-desc-input font-weight-bold text-slate-900"
+                            />
+                            <div class="text-caption text-medium-emphasis mt-0.5 d-flex align-center flex-wrap gap-1.5">
                               <span class="text-uppercase font-weight-bold"
                                 :class="item.type === 'service' ? 'text-primary' : 'text-secondary'"
                                 style="font-size: 0.65rem;">
@@ -1089,45 +1105,52 @@ onMounted(() => {
                               </span>
                               <span v-if="item.type === 'product'" class="stock-tag"
                                 :class="{ 'stock-low': item.quantity > getProductStock(item.product_id, item) }">
-                                <VIcon icon="ri-stack-line" size="12" class="mr-1" />
-                                {{ getProductStock(item.product_id, item) }} en stock
+                                <VIcon icon="ri-stack-line" size="11" class="mr-0.5" />
+                                {{ getProductStock(item.product_id, item) }} stock
                               </span>
                               <span v-if="item.product && (item.product.sku || item.product.code_aux)"
-                                class="text-uppercase font-weight-bold" style="font-size: 0.65rem;">
+                                class="text-uppercase font-weight-bold text-slate-500" style="font-size: 0.65rem;">
                                 {{ item.product.sku || item.product.code_aux }}
                               </span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td class="text-center">
-                        <div class="d-inline-flex align-center qty-selector">
-                          <VBtn icon="ri-subtract-line" variant="text" color="primary" :disabled="item.quantity <= 1"
-                            class="qty-btn" size="small" @click="item.quantity--" />
-                          <input v-model.number="item.quantity" type="number" min="1" max="99"
-                            class="qty-input font-mono font-weight-bold"
-                            @input="item.quantity > 99 ? item.quantity = 99 : null"
+                      <td class="text-center py-2">
+                        <div class="wo-qty-box">
+                          <button type="button" class="wo-qty-btn" :disabled="item.quantity <= 1" @click="item.quantity--">
+                            <VIcon icon="ri-subtract-line" size="13" />
+                          </button>
+                          <input v-model.number="item.quantity" type="number" min="1" max="999"
+                            class="wo-qty-val font-mono"
+                            @input="item.quantity > 999 ? item.quantity = 999 : null"
                             @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null">
-                          <VBtn icon="ri-add-line" variant="text" color="primary" :disabled="item.quantity >= 99"
-                            class="qty-btn" size="small" @click="item.quantity < 99 ? item.quantity++ : null" />
+                          <button type="button" class="wo-qty-btn" :disabled="item.quantity >= 999" @click="item.quantity++">
+                            <VIcon icon="ri-add-line" size="13" />
+                          </button>
                         </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.unit_price" type="number" density="compact" variant="plain"
-                          hide-details min="0" step="0.01" prefix="$"
-                          class="font-weight-bold text-slate-800 font-mono" />
+                      <td class="text-center py-2">
+                        <div class="wo-compact-input-wrap">
+                          <span class="wo-currency">$</span>
+                          <input v-model.number="item.unit_price" type="number" step="0.01" min="0"
+                            class="wo-compact-input font-mono font-weight-bold text-slate-800" />
+                        </div>
                       </td>
-                      <td>
-                        <VTextField v-model.number="item.discount" type="number" density="compact" variant="plain"
-                          hide-details min="0" step="0.01" prefix="$" class="font-weight-medium text-error font-mono" />
+                      <td class="text-center py-2">
+                        <div class="wo-compact-input-wrap">
+                          <span class="wo-currency">$</span>
+                          <input v-model.number="item.discount" type="number" step="0.01" min="0"
+                            class="wo-compact-input font-mono font-weight-medium text-error" />
+                        </div>
                       </td>
-                      <td class="text-center">
-                        <span class="text-body-1 font-weight-black text-success font-mono">
+                      <td class="text-center py-2">
+                        <span class="text-body-2 font-weight-black text-success font-mono">
                           ${{ calculateItemSubtotal(item).toFixed(2) }}
                         </span>
                       </td>
-                      <td class="text-center">
-                        <VBtn icon="ri-delete-bin-line" size="small" color="error" variant="text" class="delete-btn"
+                      <td class="text-center py-2">
+                        <VBtn icon="ri-delete-bin-line" size="x-small" color="error" variant="text" class="delete-btn"
                           @click="removeItem(index)" />
                       </td>
                     </tr>

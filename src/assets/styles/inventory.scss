@@ -171,7 +171,6 @@
 .vehicle-table,
 .movement-table,
 .expense-table,
-.custom-items-table,
 .sales-table,
 .detailed-movements-table {
   width: 100%;
@@ -202,6 +201,168 @@
         background-color: #f8fafc !important;
       }
     }
+  }
+}
+
+// Work Order Items Table & Compact Responsive Styling
+.custom-items-table {
+  width: 100% !important;
+  table-layout: auto;
+  border-collapse: collapse;
+
+  thead {
+    background-color: #f8fafc !important;
+
+    th {
+      color: #475569 !important;
+      font-weight: 700 !important;
+      font-size: 0.72rem !important;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #e2e8f0 !important;
+      height: 40px !important;
+      text-transform: uppercase;
+      vertical-align: middle;
+      padding: 6px 8px !important;
+      white-space: nowrap !important;
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: #f8fafc !important;
+      }
+
+      td {
+        padding: 6px 8px !important;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+      }
+    }
+  }
+}
+
+.wo-item-desc-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  padding: 2px 0;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+
+  &:focus {
+    border-bottom: 1.5px solid #6366f1;
+    background-color: rgba(99, 102, 241, 0.04);
+    border-radius: 4px;
+    padding-left: 4px;
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+  }
+}
+
+.wo-qty-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 2px;
+  border: 1px solid #e2e8f0;
+}
+
+.wo-qty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: #cbd5e1;
+    color: #0f172a;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.wo-qty-val {
+  width: 26px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  padding: 0;
+  outline: none;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.wo-compact-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 3px 5px;
+  width: 100%;
+  max-width: 82px;
+  transition: all 0.15s ease;
+
+  &:focus-within {
+    border-color: #6366f1;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px #6366f1;
+  }
+}
+
+.wo-currency {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-right: 2px;
+  user-select: none;
+}
+
+.wo-compact-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  padding: 0;
+  outline: none;
+  text-align: right;
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
 
