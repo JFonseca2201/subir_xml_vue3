@@ -801,6 +801,17 @@ watch(() => route.query.search, newSearch => {
                     @click="viewDetails(item)"
                   />
 
+                  <!-- Facturar / Generar Venta directa -->
+                  <VBtn
+                    v-if="['ready', 'delivered'].includes(item.status) && !item.sale"
+                    size="small"
+                    color="success"
+                    variant="tonal"
+                    icon="ri-shopping-cart-2-line"
+                    title="Facturar / Generar Venta"
+                    @click="goToSale(item.id)"
+                  />
+
                   <!-- Editar -->
                   <VBtn
                     v-if="item.status === 'draft' || (can('edit_sale') && !isWorkOrderInvoiced(item))"
@@ -1057,6 +1068,17 @@ watch(() => route.query.search, newSearch => {
             @click="showDetailsDialog = false"
           >
             Cerrar
+          </VBtn>
+          <VBtn
+            v-if="['ready', 'delivered'].includes(selectedWorkOrder?.status) && !selectedWorkOrder?.sale"
+            color="success"
+            variant="elevated"
+            prepend-icon="ri-shopping-cart-2-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
+            height="40"
+            @click="goToSale(selectedWorkOrder.id)"
+          >
+            Facturar / Vender
           </VBtn>
           <VBtn
             color="primary"
