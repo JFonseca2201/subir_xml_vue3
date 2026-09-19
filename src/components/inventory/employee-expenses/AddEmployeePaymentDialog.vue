@@ -153,11 +153,19 @@ const transformAccounts = accs => {
     const cleanedName = (account.name || '')
       .replace(/\(EFECTIVO\)/gi, '')
       .replace(/\(TRANSFERENCIA\)/gi, '')
+      .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
       .trim()
+
+    let displayName = cleanedName || account.name || 'Sin nombre'
+    if (account.bank_name) {
+      displayName = account.bank_name.toLowerCase() === cleanedName.toLowerCase()
+        ? account.bank_name
+        : `${account.bank_name} (${cleanedName})`
+    }
 
     return {
       ...account,
-      display_name: `${account.bank_name || 'Cuenta'} (${cleanedName})`,
+      display_name: displayName,
     }
   })
 }

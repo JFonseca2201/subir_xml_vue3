@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import ReceiptUploader from '@/components/common/ReceiptUploader.vue'
@@ -20,6 +20,7 @@ const emit = defineEmits(['update:modelValue', 'transferred'])
 // Estado
 const formRef = ref(null)
 const loading = ref(false)
+const isLoadingData = ref(false)
 const accounts = ref([])
 const { showNotification } = useGlobalToast()
 const receiptFiles = ref([])
@@ -41,31 +42,53 @@ const show = computed({
 const isEditing = computed(() => !!props.transferData)
 
 const originAccounts = computed(() => {
-  return accounts.value.filter(account => account.id !== form.value.to_account_id)
+  if (!form.value.to_account_id) return accounts.value
+  return accounts.value.filter(account => String(account.id) !== String(form.value.to_account_id))
 })
 
 const destinationAccounts = computed(() => {
-  return accounts.value.filter(account => account.id !== form.value.from_account_id)
+  if (!form.value.from_account_id) return accounts.value
+  return accounts.value.filter(account => String(account.id) !== String(form.value.from_account_id))
 })
 
-// Cargar cuentas desde la API
+// Cargar cuentas desde la API de forma robusta
 const loadAccounts = async () => {
   try {
     const response = await $api('accounts')
 
-    accounts.value = (response || []).map(account => {
+    let rawList = []
+    if (Array.isArray(response)) {
+      rawList = response
+    } else if (response && Array.isArray(response.data)) {
+      rawList = response.data
+    } else if (response && Array.isArray(response.accounts)) {
+      rawList = response.accounts
+    } else if (response && response.data && Array.isArray(response.data.accounts)) {
+      rawList = response.data.accounts
+    }
+
+    accounts.value = rawList.map(account => {
       const cleanedName = (account.name || '')
         .replace(/\(EFECTIVO\)/gi, '')
         .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
+
+      let displayName = cleanedName || account.name || 'Sin nombre'
+      if (account.bank_name) {
+        displayName = account.bank_name.toLowerCase() === cleanedName.toLowerCase()
+          ? account.bank_name
+          : `${account.bank_name} (${cleanedName})`
+      }
 
       return {
         ...account,
-        display_name: `${account.bank_name} (${cleanedName})`,
+        id: Number(account.id) || account.id,
+        display_name: displayName,
       }
     })
   } catch (error) {
-    console.error('Error al cargar cuentas:', error)
+    console.error('Error al cargar cuentas en TransferDialog:', error)
     showNotification('Error al cargar la lista de cuentas', 'error')
   }
 }
@@ -143,10 +166,8 @@ const handleSubmit = async () => {
   }
 }
 
-const isLoadingData = ref(false)
-
-watch(() => show.value, newVal => {
-  if (newVal) {
+const initDialogData = () => {
+  if (show.value) {
     isLoadingData.value = true
     loadAccounts().then(() => {
       if (props.transferData) {
@@ -154,7 +175,7 @@ watch(() => show.value, newVal => {
           from_account_id: props.transferData.from_account_id || props.transferData.source_account_id || null,
           to_account_id: props.transferData.to_account_id || props.transferData.destination_account_id || null,
           amount: props.transferData.amount || '',
-          description: props.transferData.description,
+          description: props.transferData.description || '',
           transfer_date: props.transferData.transfer_date
             ? props.transferData.transfer_date.split('T')[0]
             : (props.transferData.created_at ? props.transferData.created_at.split('T')[0] : new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]),
@@ -165,6 +186,18 @@ watch(() => show.value, newVal => {
     }).finally(() => {
       isLoadingData.value = false
     })
+  }
+}
+
+watch(() => props.modelValue, newVal => {
+  if (newVal) {
+    initDialogData()
+  }
+}, { immediate: true })
+
+onMounted(() => {
+  if (props.modelValue) {
+    initDialogData()
   }
 })
 </script>
