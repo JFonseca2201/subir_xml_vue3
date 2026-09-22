@@ -69,7 +69,26 @@ const loadInitialConfig = async () => {
     ])
 
     suppliers.value = configRes?.suppliers || []
-    accounts.value = accountsRes?.data || accountsRes?.accounts || accountsRes || []
+    const rawAccounts = accountsRes?.data || accountsRes?.accounts || accountsRes || []
+    accounts.value = (Array.isArray(rawAccounts) ? rawAccounts : []).map(acc => {
+      const cleanedName = (acc.name || '')
+        .replace(/\(EFECTIVO\)/gi, '')
+        .replace(/\(TRANSFERENCIA\)/gi, '')
+        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
+        .trim()
+
+      let displayName = cleanedName || acc.name || 'Sin nombre'
+      if (acc.bank_name) {
+        displayName = acc.bank_name.toLowerCase() === cleanedName.toLowerCase()
+          ? acc.bank_name
+          : `${acc.bank_name} (${cleanedName})`
+      }
+
+      return {
+        ...acc,
+        display_name: displayName,
+      }
+    })
   } catch (error) {
     console.error('Error cargando configuración:', error)
   }
@@ -196,7 +215,8 @@ const submitRefund = async () => {
     }
   } catch (error) {
     console.error('Error en reembolso:', error)
-    showNotification(error?.response?._data?.message || 'Error al procesar el reembolso.', 'error')
+    const errData = error?.data || error?._data || error?.response?._data || error?.response?.data
+    showNotification(errData?.message || error?.message || 'Error al procesar el reembolso.', 'error')
   } finally {
     isRefundSubmitting.value = false
   }
@@ -469,19 +489,56 @@ onMounted(() => {
     </VCard>
 
     <!-- DIÁLOGO: Reembolso de Saldo a Cuenta Bancaria -->
-    <VDialog v-model="isRefundDialogVisible" max-width="500" persistent>
-      <VCard class="rounded-xl overflow-hidden">
-        <VCardItem class="bg-success text-white py-3">
-          <VCardTitle class="text-subtitle-1 font-weight-bold text-white d-flex align-center gap-2">
-            <VIcon icon="ri-refund-2-line" size="20" />
-            Reembolso de Saldo a Favor
-          </VCardTitle>
+    <VDialog v-model="isRefundDialogVisible" max-width="520" persistent>
+      <VCard class="rounded-xl overflow-hidden elevation-10">
+        <!-- Header Banner Primary -->
+        <VCardItem class="bg-primary text-white py-4 px-5">
+          <div class="d-flex align-center justify-space-between w-100">
+            <div class="d-flex align-center gap-3">
+              <div class="d-flex align-center justify-center rounded-circle bg-white bg-opacity-20 pa-2" style="width: 40px; height: 40px;">
+                <VIcon icon="ri-refund-2-line" size="22" color="white" />
+              </div>
+              <div>
+                <VCardTitle class="text-h6 font-weight-bold text-white mb-0" style="line-height: 1.2;">
+                  Reembolso de Saldo a Favor
+                </VCardTitle>
+                <VCardSubtitle class="text-caption text-white text-opacity-80 pa-0 mt-0.5">
+                  Ingreso de fondos por devolución del proveedor
+                </VCardSubtitle>
+              </div>
+            </div>
+            <VBtn
+              icon="ri-close-line"
+              variant="text"
+              size="small"
+              color="white"
+              :disabled="isRefundSubmitting"
+              @click="isRefundDialogVisible = false"
+            />
+          </div>
         </VCardItem>
 
-        <VCardText class="pa-5">
-          <p class="text-body-2 text-grey-darken-3 mb-4">
-            Ingresa la cuenta bancaria o caja donde el proveedor realizó la devolución del dinero:
-          </p>
+        <VCardText class="pa-6">
+          <!-- Tarjeta Informativa del Proveedor y Saldo -->
+          <div v-if="selectedCreditForRefund" class="pa-3 rounded-lg bg-grey-lighten-4 border mb-5">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+              <div>
+                <div class="text-caption text-medium-emphasis">Proveedor</div>
+                <div class="text-body-2 font-weight-bold text-high-emphasis">
+                  {{ selectedCreditForRefund.supplier?.trade_name || selectedCreditForRefund.supplier?.name || 'Proveedor' }}
+                </div>
+                <div v-if="selectedCreditForRefund.supplier?.ruc || selectedCreditForRefund.supplier?.tax_id" class="text-caption text-medium-emphasis">
+                  RUC: {{ selectedCreditForRefund.supplier?.ruc || selectedCreditForRefund.supplier?.tax_id }}
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-caption text-medium-emphasis">Saldo Disponible</div>
+                <div class="text-h6 font-weight-bold text-primary">
+                  {{ formatMoney(selectedCreditForRefund.remaining_balance) }}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <VRow dense>
             <VCol cols="12" class="mb-3">
@@ -491,13 +548,13 @@ onMounted(() => {
               <VSelect
                 v-model="refundForm.account_id"
                 :items="accounts"
-                item-title="name"
+                item-title="display_name"
                 item-value="id"
-                placeholder="Seleccione cuenta..."
+                placeholder="Seleccione cuenta destino..."
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="success"
+                prepend-inner-icon="ri-bank-card-line"
               />
             </VCol>
 
@@ -515,10 +572,16 @@ onMounted(() => {
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="success"
+                prepend-inner-icon="ri-money-dollar-circle-line"
               />
-              <div class="text-caption text-medium-emphasis mt-1">
-                Máximo disponible: {{ formatMoney(selectedCreditForRefund?.remaining_balance) }}
+              <div class="text-caption text-medium-emphasis mt-1 d-flex justify-space-between align-center">
+                <span>Máximo disponible: {{ formatMoney(selectedCreditForRefund?.remaining_balance) }}</span>
+                <span
+                  class="text-primary cursor-pointer font-weight-medium"
+                  @click="refundForm.amount = Number(selectedCreditForRefund?.remaining_balance || 0)"
+                >
+                  Usar Total
+                </span>
               </div>
             </VCol>
 
@@ -532,7 +595,7 @@ onMounted(() => {
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
-                color="success"
+                prepend-inner-icon="ri-file-text-line"
               />
             </VCol>
           </VRow>
@@ -542,14 +605,17 @@ onMounted(() => {
           <VBtn
             variant="outlined"
             color="secondary"
-            class="text-none"
+            class="text-none font-weight-medium"
+            :disabled="isRefundSubmitting"
             @click="isRefundDialogVisible = false"
           >
             Cancelar
           </VBtn>
           <VBtn
-            color="success"
-            class="text-none font-weight-bold px-4"
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-check-line"
+            class="text-none font-weight-bold px-5"
             :loading="isRefundSubmitting"
             @click="submitRefund"
           >
