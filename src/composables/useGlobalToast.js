@@ -65,6 +65,20 @@ export function extractErrorMessage(err, fallback = 'Ha ocurrido un error inespe
 
 export function useGlobalToast() {
   const showNotification = (messageOrError, type = 'success') => {
+    const validTypes = ['success', 'error', 'warning', 'info', 'primary', 'secondary']
+
+    // Soporte robusto por si en algún componente se llamaron los argumentos invertidos: showNotification('success', 'Mensaje...')
+    if (
+      typeof messageOrError === 'string' &&
+      validTypes.includes(messageOrError.toLowerCase().trim()) &&
+      typeof type === 'string' &&
+      !validTypes.includes(type.toLowerCase().trim())
+    ) {
+      const temp = messageOrError.toLowerCase().trim()
+      messageOrError = type
+      type = temp
+    }
+
     let cleanMessage = ''
 
     if (type === 'error' || type === 'warning') {

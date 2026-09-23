@@ -13,11 +13,11 @@ const toastColor = computed(() => {
 })
 
 const toastIcon = computed(() => {
-  if (notificationType.value === 'success') return 'ri-checkbox-circle-line'
-  if (notificationType.value === 'info') return 'ri-information-line'
-  if (notificationType.value === 'warning') return 'ri-alert-line'
+  if (notificationType.value === 'success') return 'ri-checkbox-circle-fill'
+  if (notificationType.value === 'info') return 'ri-information-fill'
+  if (notificationType.value === 'warning') return 'ri-alert-fill'
   
-  return 'ri-error-warning-line'
+  return 'ri-error-warning-fill'
 })
 </script>
 
@@ -26,22 +26,24 @@ const toastIcon = computed(() => {
   <VSnackbar 
     v-model="notificationShow" 
     :color="toastColor"
+    variant="tonal"
     location="top right"
     :style="{ 'margin-top': '60px' }"
-    timeout="2000"
+    timeout="2500"
+    class="custom-global-toast"
   >
-    <div class="d-flex align-center justify-space-between">
-      <div class="d-flex align-center">
+    <div class="d-flex align-center justify-space-between w-100 py-0.5">
+      <div class="d-flex align-center gap-2 text-body-2 font-weight-medium">
         <VIcon 
           :icon="toastIcon"
-          class="me-2"
+          size="20"
         />
-        {{ notificationMessage }}
+        <span>{{ notificationMessage }}</span>
       </div>
       <VBtn
         icon="ri-close-line"
         variant="text"
-        size="small"
+        size="x-small"
         class="ms-2"
         @click="notificationShow = false"
       />

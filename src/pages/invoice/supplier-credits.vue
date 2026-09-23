@@ -71,17 +71,12 @@ const loadInitialConfig = async () => {
     suppliers.value = configRes?.suppliers || []
     const rawAccounts = accountsRes?.data || accountsRes?.accounts || accountsRes || []
     accounts.value = (Array.isArray(rawAccounts) ? rawAccounts : []).map(acc => {
-      const cleanedName = (acc.name || '')
-        .replace(/\(EFECTIVO\)/gi, '')
-        .replace(/\(TRANSFERENCIA\)/gi, '')
-        .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
-        .trim()
-
-      let displayName = cleanedName || acc.name || 'Sin nombre'
-      if (acc.bank_name) {
-        displayName = acc.bank_name.toLowerCase() === cleanedName.toLowerCase()
-          ? acc.bank_name
-          : `${acc.bank_name} (${cleanedName})`
+      let displayName = acc.name || 'Sin nombre'
+      if (acc.bank_name && !displayName.toLowerCase().includes(acc.bank_name.toLowerCase())) {
+        displayName = `${displayName} - ${acc.bank_name}`
+      }
+      if (acc.type === 'cash' && !displayName.toLowerCase().includes('efectivo')) {
+        displayName += ' (Efectivo)'
       }
 
       return {
@@ -178,7 +173,7 @@ const getSourceTypeBadge = (type) => {
 const openRefundDialog = (credit) => {
   selectedCreditForRefund.value = credit
   refundForm.value = {
-    account_id: accounts.value[0]?.id || null,
+    account_id: null, // Obligar a seleccionar la cuenta conscientemente
     amount: Number(credit.remaining_balance),
     notes: '',
   }

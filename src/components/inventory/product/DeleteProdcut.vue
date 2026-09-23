@@ -30,7 +30,7 @@ const imageError = ref(false)
 // Eliminar producto
 const deleteProduct = async () => {
   if (!props.product?.id) {
-    showNotification('error', 'No se puede eliminar el producto: ID no válido')
+    showNotification('No se puede eliminar el producto: ID no válido', 'error')
     return
   }
 
@@ -44,20 +44,20 @@ const deleteProduct = async () => {
     const response = await $api(`products/${props.product.id}`, {
       method: 'DELETE',
       onResponseError({ response }) {
-        showNotification('error', response._data.message || 'Error al eliminar el producto')
+        showNotification(response._data.message || 'Error al eliminar el producto', 'error')
       },
     })
 
     if (response.message === 200 || response.status === 200 || response.success) {
-      showNotification('success', 'Producto eliminado correctamente')
+      showNotification('Producto eliminado correctamente', 'success')
       emit('deleted')
       closeDialog()
     } else {
-      showNotification('error', response.message || 'Error al eliminar el producto')
+      showNotification(response.message || 'Error al eliminar el producto', 'error')
     }
   } catch (error) {
     console.error('❌ Error en deleteProduct:', error)
-    showNotification('error', 'Error al eliminar el producto')
+    showNotification('Error al eliminar el producto', 'error')
   } finally {
     isLoading.value = false
         

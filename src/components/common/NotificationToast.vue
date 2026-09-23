@@ -25,42 +25,36 @@ const props = defineProps({
 const emit = defineEmits(['update:show'])
 
 const getIcon = () => {
-  switch (props.type) {
-  case 'success':
-    return 'success'
-  case 'error':
-    return 'error'
-  case 'warning':
-    return 'warning'
-  case 'info':
-    return 'info'
-  default:
-    return 'info'
-  }
-}
-
-const getColor = () => {
-  switch (props.type) {
-  case 'success':
-    return '#10b981'
-  case 'error':
-    return '#ef4444'
-  case 'warning':
-    return '#f59e0b'
-  case 'info':
-    return '#3b82f6'
-  default:
-    return '#3b82f6'
-  }
+  const t = (props.type || 'success').toLowerCase()
+  if (t === 'success') return 'success'
+  if (t === 'error') return 'error'
+  if (t === 'warning') return 'warning'
+  if (t === 'info') return 'info'
+  return 'info'
 }
 
 // Watch para mostrar la notificación cuando show cambia a true
 watch(() => props.show, newVal => {
   if (newVal) {
+    const iconType = getIcon()
+
+    const bgColors = {
+      success: '#ecfdf5',
+      error: '#fef2f2',
+      warning: '#fffbeb',
+      info: '#eff6ff',
+    }
+    const textColors = {
+      success: '#065f46',
+      error: '#991b1b',
+      warning: '#92400e',
+      info: '#1e40af',
+    }
+
     Swal.fire({
       toast: true,
       position: 'top-end',
-      icon: getIcon(),
+      icon: iconType,
       title: props.message,
       showConfirmButton: false,
       timer: props.timeout,
@@ -70,10 +64,10 @@ watch(() => props.show, newVal => {
         toast.addEventListener('mouseleave', Swal.resumeTimer)
       },
       customClass: {
-        popup: 'custom-swal-toast',
+        popup: 'custom-swal-toast border',
       },
-      background: getColor(),
-      color: '#ffffff',
+      background: bgColors[iconType] || '#ecfdf5',
+      color: textColors[iconType] || '#065f46',
     }).then(() => {
       emit('update:show', false)
     })

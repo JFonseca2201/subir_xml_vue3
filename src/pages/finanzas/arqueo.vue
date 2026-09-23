@@ -34,6 +34,18 @@ const initialBalances = ref({
   cash_details: null,
 })
 
+// Último cuadre absoluto registrado en el sistema y búsqueda de historial
+const latestOverallCount = ref(null)
+const historyDialog = ref(false)
+const historyLoading = ref(false)
+const historySearch = ref('')
+const historyItems = ref([])
+const historyPage = ref(1)
+const historyTotal = ref(0)
+const historyLastPage = ref(1)
+const selectedHistoryItem = ref(null)
+const historyItemDetailDialog = ref(false)
+
 // Live system balances for comparison
 const systemBalances = ref({
   cash: 0,
@@ -161,11 +173,40 @@ const formatCurrency = value => {
   }).format(value || 0)
 }
 
+// Extraer siempre la fecha limpia YYYY-MM-DD independientemente del formato recibido (ISO, Timestamp, etc.)
+const extractYMD = dateVal => {
+  if (!dateVal) return ''
+  const str = String(dateVal).trim()
+  const clean = str.split('T')[0]
+  const match = clean.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    return `${match[1]}-${match[2]}-${match[3]}`
+  }
+  return clean
+}
+
+// Formatear estrictamente a DIA/MES/AÑO (ej: 22/09/2026)
+const formatDateDMY = dateStr => {
+  if (!dateStr) return ''
+  try {
+    const ymd = extractYMD(dateStr)
+    const parts = ymd.split('-')
+    if (parts.length === 3) {
+      const [y, m, d] = parts
+      return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`
+    }
+    return dateStr
+  } catch (e) {
+    return dateStr
+  }
+}
+
 // Format date strictly in Spanish
 const formatSpanishDate = dateStr => {
   if (!dateStr) return ''
   try {
-    const [y, m, d] = dateStr.split('-').map(Number)
+    const ymd = extractYMD(dateStr)
+    const [y, m, d] = ymd.split('-').map(Number)
     const dt = new Date(y, m - 1, d)
 
     const formatted = new Intl.DateTimeFormat('es-EC', {
@@ -179,6 +220,82 @@ const formatSpanishDate = dateStr => {
   } catch (e) {
     return dateStr
   }
+}
+
+const formatShortDate = dateStr => {
+  if (!dateStr) return ''
+  try {
+    const ymd = extractYMD(dateStr)
+    const [y, m, d] = ymd.split('-').map(Number)
+    const dt = new Date(y, m - 1, d)
+
+    return new Intl.DateTimeFormat('es-EC', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(dt)
+  } catch (e) {
+    return dateStr
+  }
+}
+
+const formatLongDate = dateStr => {
+  if (!dateStr) return ''
+  try {
+    const ymd = extractYMD(dateStr)
+    const [y, m, d] = ymd.split('-').map(Number)
+    const dt = new Date(y, m - 1, d)
+
+    const formatted = new Intl.DateTimeFormat('es-EC', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(dt)
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+  } catch (e) {
+    return dateStr
+  }
+}
+
+const getActiveBills = cashDetails => {
+  if (!cashDetails?.bills) return []
+  const active = []
+  billsList.forEach(denom => {
+    const qty = parseInt(cashDetails.bills[denom]) || 0
+    if (qty > 0) {
+      active.push({
+        denom,
+        qty,
+        total: denom * qty,
+      })
+    }
+  })
+
+  return active
+}
+
+const getActiveCoins = cashDetails => {
+  if (!cashDetails?.coins) return []
+  const active = []
+  coinsList.forEach(denom => {
+    const qty = parseInt(cashDetails.coins[denom]) || 0
+    if (qty > 0) {
+      active.push({
+        denom,
+        qty,
+        total: parseFloat(denom) * qty,
+      })
+    }
+  })
+
+  return active
+}
+
+const viewHistoryItemDetail = item => {
+  selectedHistoryItem.value = item
+  historyItemDetailDialog.value = true
 }
 
 // Fetch daily status from Laravel API
@@ -205,6 +322,12 @@ const fetchStatus = async date => {
           origin_date: response.initial_balances.origin_date || null,
           cash_details: response.initial_balances.cash_details || null,
         }
+      }
+
+      if (response.latest_overall_count) {
+        latestOverallCount.value = response.latest_overall_count
+      } else {
+        latestOverallCount.value = null
       }
 
       if (response.system_balances) {
@@ -254,6 +377,54 @@ const fetchStatus = async date => {
     showNotification('Error al cargar la información del arqueo diario.', 'error')
   } finally {
     loading.value = false
+  }
+}
+
+// Búsqueda e Historial de Cuadres
+const fetchHistory = async (page = 1) => {
+  historyLoading.value = true
+  historyPage.value = page
+  try {
+    const response = await $api('daily-cash-counts/history', {
+      params: {
+        search: historySearch.value || undefined,
+        page: page,
+        per_page: 12,
+      },
+    })
+
+    if (response && response.success) {
+      historyItems.value = response.data?.data || []
+      historyTotal.value = response.data?.total || 0
+      historyLastPage.value = response.data?.last_page || 1
+    }
+  } catch (error) {
+    console.error('Error fetching cash count history:', error)
+    showNotification('Error al consultar el historial de cuadres.', 'error')
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+const openHistoryDialog = () => {
+  historyDialog.value = true
+  fetchHistory(1)
+}
+
+const goToLatestCount = () => {
+  if (latestOverallCount.value && latestOverallCount.value.count_date) {
+    const cleanDate = extractYMD(latestOverallCount.value.count_date)
+    payload.value.count_date = cleanDate
+    showNotification(`Cargando último cuadre registrado (${formatDateDMY(cleanDate)})...`, 'info')
+  }
+}
+
+const selectHistoryDate = dateStr => {
+  if (dateStr) {
+    const cleanDate = extractYMD(dateStr)
+    payload.value.count_date = cleanDate
+    historyDialog.value = false
+    showNotification(`Cargando cuadre del ${formatDateDMY(cleanDate)}...`, 'info')
   }
 }
 
@@ -444,7 +615,44 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="d-flex align-center gap-3">
+          <div class="d-flex align-center flex-wrap gap-2">
+            <!-- Botón Buscar / Historial de Cuadres -->
+            <VBtn
+              variant="tonal"
+              color="primary"
+              size="small"
+              class="rounded-lg text-none font-weight-bold"
+              prepend-icon="ri-history-line"
+              @click="openHistoryDialog"
+            >
+              Buscar / Historial
+            </VBtn>
+
+            <!-- Acceso Rápido al Último Cuadre si la fecha actual es diferente -->
+            <VBtn
+              v-if="latestOverallCount && latestOverallCount.count_date && latestOverallCount.count_date !== payload.count_date"
+              variant="flat"
+              color="info"
+              size="small"
+              class="rounded-lg text-none font-weight-bold"
+              prepend-icon="ri-arrow-go-forward-line"
+              @click="goToLatestCount"
+            >
+              Último cuadre: {{ formatShortDate(latestOverallCount.count_date) }}
+            </VBtn>
+
+            <VChip
+              v-else-if="latestOverallCount && latestOverallCount.count_date && latestOverallCount.count_date === payload.count_date"
+              color="success"
+              variant="tonal"
+              size="small"
+              class="font-weight-bold"
+            >
+              <VIcon start icon="ri-check-double-line" size="14" />
+              Último cuadre registrado
+            </VChip>
+
+            <!-- Selector de Fecha de Corte -->
             <div class="d-flex align-center gap-2 bg-white px-3 py-1.5 rounded-lg border">
               <VIcon icon="ri-calendar-event-line" color="primary" size="18" />
               <span class="text-caption font-weight-bold text-slate-700 text-uppercase d-none d-sm-inline">Fecha de Corte:</span>
@@ -464,12 +672,38 @@ onMounted(() => {
         v-if="dateFormatted"
         class="pa-4 mb-5 rounded-xl bg-primary-tonal border-primary elevation-0 d-flex justify-space-between align-center flex-wrap gap-3"
       >
-        <div class="d-flex align-center gap-2">
-          <VIcon icon="ri-calendar-check-line" color="primary" size="22" />
-          <span class="text-subtitle-1 font-weight-bold text-slate-900 capitalize-first">{{ dateFormatted }}</span>
+        <div class="d-flex align-center gap-2 flex-wrap">
+          <div class="d-flex align-center gap-2">
+            <VIcon icon="ri-calendar-check-line" color="primary" size="22" />
+            <span class="text-subtitle-1 font-weight-bold text-slate-900 capitalize-first">{{ dateFormatted }}</span>
+          </div>
+          <VChip
+            v-if="latestOverallCount && latestOverallCount.count_date && latestOverallCount.count_date !== payload.count_date"
+            size="small"
+            color="info"
+            variant="tonal"
+            class="font-weight-bold cursor-pointer"
+            @click="goToLatestCount"
+          >
+            <VIcon start icon="ri-history-line" size="14" />
+            Último en sistema: {{ formatShortDate(latestOverallCount.count_date) }} ({{ formatCurrency(latestOverallCount.grand_total) }})
+          </VChip>
         </div>
-        <div class="text-caption text-primary font-weight-semibold">
-          Control diario de efectivo y cuentas
+        <div class="d-flex align-center gap-2">
+          <span class="text-caption text-primary font-weight-semibold d-none d-sm-inline">
+            Control diario de efectivo y cuentas
+          </span>
+          <VBtn
+            variant="text"
+            color="primary"
+            size="small"
+            density="compact"
+            class="text-none font-weight-bold"
+            prepend-icon="ri-search-2-line"
+            @click="openHistoryDialog"
+          >
+            Ver todos los cuadres
+          </VBtn>
         </div>
       </VCard>
 
@@ -491,10 +725,13 @@ onMounted(() => {
                   </div>
                   <div
                     v-if="initialBalances.origin_date"
-                    class="status-pill-clean status-transfer"
+                    class="status-pill-clean status-transfer cursor-pointer"
+                    title="Hacer clic para ir al cuadre del día anterior"
+                    @click="selectHistoryDate(initialBalances.origin_date)"
                   >
                     <span class="status-dot" />
                     <span>Arrastre del cierre: {{ initialBalances.origin_date }}</span>
+                    <VIcon icon="ri-arrow-right-s-line" size="14" />
                   </div>
                 </div>
               </template>
@@ -1312,6 +1549,437 @@ onMounted(() => {
               class="rounded-lg px-6 font-weight-medium"
               height="40"
               @click="prevCountDetailsDialog = false"
+            >
+              Cerrar
+            </VBtn>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Modal de Búsqueda e Historial de Cuadres -->
+      <VDialog
+        v-model="historyDialog"
+        max-width="1200"
+        scrollable
+      >
+        <VCard class="rounded-xl overflow-hidden">
+          <!-- Header del Modal -->
+          <VCardItem class="bg-primary text-white py-4 px-6">
+            <template #prepend>
+              <VAvatar color="white" variant="tonal" size="40" class="mr-3 text-white">
+                <VIcon icon="ri-history-line" size="22" />
+              </VAvatar>
+            </template>
+            <template #title>
+              <span class="text-h6 font-weight-bold text-white">
+                Historial y Búsqueda de Cuadres de Caja
+              </span>
+            </template>
+            <template #subtitle>
+              <span class="text-caption text-white opacity-90">
+                Consulta los arqueos guardados, fechas, observaciones y billetes registrados
+              </span>
+            </template>
+            <template #append>
+              <VBtn
+                icon="ri-close-line"
+                variant="text"
+                color="white"
+                density="comfortable"
+                @click="historyDialog = false"
+              />
+            </template>
+          </VCardItem>
+
+          <VDivider />
+
+          <!-- Buscador y Filtros -->
+          <div class="pa-4 bg-slate-50 border-b">
+            <div class="d-flex align-center gap-3 flex-wrap">
+              <VTextField
+                v-model="historySearch"
+                placeholder="Buscar por fecha (ej: 2026-09-22), responsable u observación..."
+                density="compact"
+                variant="outlined"
+                prepend-inner-icon="ri-search-line"
+                clearable
+                hide-details
+                class="flex-grow-1 bg-white"
+                @keyup.enter="fetchHistory(1)"
+                @click:clear="historySearch = ''; fetchHistory(1)"
+              />
+              <VBtn
+                color="primary"
+                variant="flat"
+                class="text-none font-weight-bold px-5"
+                prepend-icon="ri-search-line"
+                :loading="historyLoading"
+                @click="fetchHistory(1)"
+              >
+                Buscar
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Contenido de la Tabla -->
+          <VCardText class="pa-0" style="max-height: 520px;">
+            <div v-if="historyLoading" class="pa-8 text-center">
+              <VProgressCircular indeterminate color="primary" size="36" class="mb-2" />
+              <p class="text-caption text-medium-emphasis mb-0">Cargando historial de cuadres...</p>
+            </div>
+
+            <div v-else-if="!historyItems || historyItems.length === 0" class="pa-8 text-center">
+              <VIcon size="48" color="medium-emphasis" class="mb-2">
+                ri-folder-history-line
+              </VIcon>
+              <p class="text-body-1 font-weight-medium text-slate-700 mb-1">
+                No se encontraron cuadres registrados
+              </p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                Prueba con otros términos de búsqueda o registra el primer arqueo del día.
+              </p>
+            </div>
+
+            <VTable v-else hover class="text-no-wrap">
+              <thead>
+                <tr class="bg-slate-50 text-caption font-weight-bold text-slate-700">
+                  <th class="py-3 px-4 text-left" style="min-width: 170px;">FECHA DE CORTE</th>
+                  <th class="py-3 px-4 text-left">RESPONSABLE</th>
+                  <th class="py-3 px-4 text-left" style="min-width: 220px;">TOTAL EFECTIVO</th>
+                  <th class="py-3 px-right text-right">TOTALES</th>
+                  <th class="py-3 px-4 text-left" style="min-width: 220px;">OBSERVACIONES</th>
+                  <th class="py-3 px-4 text-center">ESTADO</th>
+                  <th class="py-3 px-4 text-center">ACCIÓN</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="item in historyItems"
+                  :key="`history-row-${item.id}`"
+                  :class="{ 'bg-primary-tonal': extractYMD(item.count_date) === payload.count_date }"
+                >
+                  <!-- Fecha de corte estrictamente DIA/MES/AÑO -->
+                  <td class="py-3 px-4">
+                    <div class="d-flex align-center gap-2">
+                      <VIcon
+                        :icon="extractYMD(item.count_date) === payload.count_date ? 'ri-calendar-check-fill' : 'ri-calendar-line'"
+                        :color="extractYMD(item.count_date) === payload.count_date ? 'primary' : 'secondary'"
+                        size="20"
+                      />
+                      <div>
+                        <div class="font-weight-black text-slate-900 font-mono text-body-1">
+                          {{ formatDateDMY(item.count_date) }}
+                        </div>
+                        <div
+                          v-if="latestOverallCount && extractYMD(latestOverallCount.count_date) === extractYMD(item.count_date)"
+                          class="mt-0.5"
+                        >
+                          <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                            ★ Último cuadre
+                          </VChip>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Responsable -->
+                  <td class="py-3 px-4">
+                    <div class="d-flex align-center gap-2">
+                      <VAvatar size="26" color="primary" variant="tonal" class="text-caption font-weight-bold">
+                        {{ (item.user?.name || 'U').charAt(0).toUpperCase() }}
+                      </VAvatar>
+                      <span class="text-body-2 text-slate-800 font-weight-medium">
+                        {{ item.user?.name || 'Sistema' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Total de Efectivo y Botón Ver Desglose -->
+                  <td class="py-3 px-4">
+                    <div class="d-flex align-center gap-3">
+                      <span class="font-mono font-weight-black text-subtitle-1 text-success">
+                        {{ formatCurrency(item.cash_total) }}
+                      </span>
+                      <VBtn
+                        variant="tonal"
+                        color="primary"
+                        density="compact"
+                        size="small"
+                        class="text-none font-weight-bold px-3 rounded-lg"
+                        prepend-icon="ri-eye-line"
+                        @click="viewHistoryItemDetail(item)"
+                      >
+                        Ver desglose
+                      </VBtn>
+                    </div>
+                  </td>
+
+                  <!-- Totales -->
+                  <td class="py-3 px-4 text-right">
+                    <div class="font-mono font-weight-black text-subtitle-1 text-slate-900">
+                      {{ formatCurrency(item.grand_total) }}
+                    </div>
+                    <div class="text-caption text-slate-500 font-mono">
+                      Bancos: {{ formatCurrency((parseFloat(item.pichincha_total) || 0) + (parseFloat(item.guayaquil_total) || 0)) }}
+                    </div>
+                  </td>
+
+                  <!-- Observaciones -->
+                  <td class="py-3 px-4">
+                    <div style="max-width: 240px; min-width: 160px;" class="text-wrap">
+                      <div v-if="item.observations" class="d-flex align-start gap-1">
+                        <VIcon icon="ri-message-3-line" size="14" color="primary" class="mt-0.5 flex-shrink-0" />
+                        <span class="text-caption text-slate-800 font-weight-medium">
+                          {{ item.observations }}
+                        </span>
+                      </div>
+                      <span v-else class="text-caption text-medium-emphasis italic">
+                        Sin observaciones
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Estado -->
+                  <td class="py-3 px-4 text-center">
+                    <VChip
+                      v-if="item.is_sealed"
+                      color="error"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      <VIcon start icon="ri-lock-line" size="12" />
+                      Sellado
+                    </VChip>
+                    <VChip
+                      v-else
+                      color="success"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      <VIcon start icon="ri-check-line" size="12" />
+                      Registrado
+                    </VChip>
+                  </td>
+
+                  <!-- Acción -->
+                  <td class="py-3 px-4 text-center">
+                    <VBtn
+                      v-if="extractYMD(item.count_date) !== payload.count_date"
+                      color="primary"
+                      variant="tonal"
+                      size="small"
+                      class="text-none font-weight-bold"
+                      prepend-icon="ri-arrow-right-line"
+                      @click="selectHistoryDate(item.count_date)"
+                    >
+                      Cargar
+                    </VBtn>
+                    <VChip
+                      v-else
+                      color="primary"
+                      variant="flat"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      Activo
+                    </VChip>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </VCardText>
+
+          <VDivider />
+
+          <!-- Footer con Paginación -->
+          <VCardActions class="pa-4 bg-white d-flex justify-space-between align-center flex-wrap gap-2">
+            <span class="text-caption text-medium-emphasis">
+              Total de registros: <strong>{{ historyTotal }}</strong>
+            </span>
+            <div class="d-flex align-center gap-2">
+              <VPagination
+                v-if="historyLastPage > 1"
+                v-model="historyPage"
+                :length="historyLastPage"
+                :total-visible="5"
+                density="compact"
+                size="small"
+                @update:model-value="fetchHistory"
+              />
+              <VBtn
+                variant="outlined"
+                color="secondary"
+                class="rounded-lg px-4 font-weight-medium"
+                height="36"
+                @click="historyDialog = false"
+              >
+                Cerrar
+              </VBtn>
+            </div>
+          </VCardActions>
+        </VCard>
+      </VDialog>
+
+      <!-- Modal de Detalle Completo de Billetes y Monedas del Cuadre Seleccionado -->
+      <VDialog
+        v-model="historyItemDetailDialog"
+        max-width="650"
+        scrollable
+      >
+        <VCard v-if="selectedHistoryItem" class="rounded-xl overflow-hidden">
+          <VCardItem class="bg-primary text-white py-4 px-6">
+            <template #prepend>
+              <VAvatar color="white" variant="tonal" size="40" class="mr-3 text-white">
+                <VIcon icon="ri-money-dollar-circle-line" size="22" />
+              </VAvatar>
+            </template>
+            <template #title>
+              <span class="text-h6 font-weight-bold text-white">
+                Detalle de Efectivo & Observaciones
+              </span>
+            </template>
+            <template #subtitle>
+              <span class="text-caption text-white opacity-90 font-mono font-weight-bold">
+                Fecha de Corte: {{ formatDateDMY(selectedHistoryItem.count_date) }}
+              </span>
+            </template>
+            <template #append>
+              <VBtn
+                icon="ri-close-line"
+                variant="text"
+                color="white"
+                density="comfortable"
+                @click="historyItemDetailDialog = false"
+              />
+            </template>
+          </VCardItem>
+
+          <VDivider />
+
+          <VCardText class="pa-5">
+            <!-- Resumen Superior -->
+            <div class="d-flex justify-space-between align-center flex-wrap gap-2 mb-4 pa-3 bg-slate-50 rounded-lg border">
+              <div>
+                <span class="text-caption text-slate-500 d-block">Responsable:</span>
+                <span class="font-weight-bold text-slate-900 text-body-2">{{ selectedHistoryItem.user?.name || 'Sistema' }}</span>
+              </div>
+              <div>
+                <span class="text-caption text-slate-500 d-block">Estado:</span>
+                <VChip
+                  :color="selectedHistoryItem.is_sealed ? 'error' : 'success'"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold"
+                >
+                  {{ selectedHistoryItem.is_sealed ? 'Sellado' : 'Registrado' }}
+                </VChip>
+              </div>
+              <div>
+                <span class="text-caption text-slate-500 d-block text-right">Total Efectivo:</span>
+                <span class="font-mono font-weight-black text-h6 text-success text-right d-block">
+                  {{ formatCurrency(selectedHistoryItem.cash_total) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tablas de Billetes y Monedas -->
+            <VRow class="mb-3">
+              <!-- Billetes -->
+              <VCol cols="12" sm="6">
+                <div class="d-flex align-center gap-2 mb-2 pb-1 border-b">
+                  <VIcon icon="ri-money-dollar-box-line" color="primary" size="18" />
+                  <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Billetes</span>
+                </div>
+                <table class="w-100 table-cash text-uppercase">
+                  <thead>
+                    <tr>
+                      <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">Denom.</th>
+                      <th class="text-center py-1 text-slate-500 text-caption font-weight-bold">Cant.</th>
+                      <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="denom in billsList" :key="`detail-bill-${denom}`">
+                      <td class="py-1.5">
+                        <VChip variant="tonal" size="x-small" color="primary" class="font-weight-bold font-mono">
+                          ${{ denom }}
+                        </VChip>
+                      </td>
+                      <td class="py-1.5 text-center font-weight-bold font-mono text-slate-800">
+                        {{ selectedHistoryItem.cash_details?.bills?.[denom] || 0 }}
+                      </td>
+                      <td class="py-1.5 text-right font-weight-bold font-mono text-slate-900">
+                        {{ formatCurrency(denom * (selectedHistoryItem.cash_details?.bills?.[denom] || 0)) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </VCol>
+
+              <!-- Monedas -->
+              <VCol cols="12" sm="6">
+                <div class="d-flex align-center gap-2 mb-2 pb-1 border-b">
+                  <VIcon icon="ri-coins-line" color="warning" size="18" />
+                  <span class="font-weight-bold text-subtitle-2 text-slate-800 text-uppercase">Monedas</span>
+                </div>
+                <table class="w-100 table-cash text-uppercase">
+                  <thead>
+                    <tr>
+                      <th class="text-left py-1 text-slate-500 text-caption font-weight-bold">Denom.</th>
+                      <th class="text-center py-1 text-slate-500 text-caption font-weight-bold">Cant.</th>
+                      <th class="text-right py-1 text-slate-500 text-caption font-weight-bold">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="denom in coinsList" :key="`detail-coin-${denom}`">
+                      <td class="py-1.5">
+                        <VChip variant="tonal" size="x-small" color="warning" class="font-weight-bold font-mono">
+                          ${{ denom }}
+                        </VChip>
+                      </td>
+                      <td class="py-1.5 text-center font-weight-bold font-mono text-slate-800">
+                        {{ selectedHistoryItem.cash_details?.coins?.[denom] || 0 }}
+                      </td>
+                      <td class="py-1.5 text-right font-weight-bold font-mono text-slate-900">
+                        {{ formatCurrency(parseFloat(denom) * (selectedHistoryItem.cash_details?.coins?.[denom] || 0)) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </VCol>
+            </VRow>
+
+            <!-- Observaciones -->
+            <div class="pa-3 bg-slate-50 rounded-lg border">
+              <div class="d-flex align-center gap-2 mb-1">
+                <VIcon icon="ri-message-3-line" size="16" color="primary" />
+                <span class="text-caption font-weight-bold text-slate-700 text-uppercase">Observaciones del Cuadre:</span>
+              </div>
+              <p class="text-body-2 text-slate-800 mb-0 font-weight-medium">
+                {{ selectedHistoryItem.observations || 'Sin observaciones registradas para este día.' }}
+              </p>
+            </div>
+          </VCardText>
+
+          <VDivider />
+
+          <VCardActions class="pa-4 bg-white d-flex justify-space-between align-center">
+            <VBtn
+              color="primary"
+              variant="flat"
+              class="text-none font-weight-bold px-5"
+              prepend-icon="ri-arrow-right-line"
+              @click="historyItemDetailDialog = false; selectHistoryDate(selectedHistoryItem.count_date)"
+            >
+              Cargar este Arqueo en Pantalla
+            </VBtn>
+            <VBtn
+              variant="outlined"
+              color="secondary"
+              class="rounded-lg px-4"
+              @click="historyItemDetailDialog = false"
             >
               Cerrar
             </VBtn>

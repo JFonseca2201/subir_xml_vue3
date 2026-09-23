@@ -268,25 +268,29 @@ const handleStatusClick = workOrder => {
   openTimeline(workOrder)
 }
 
+const isWorkOrderInvoiced = workOrder => {
+  return !!(workOrder?.sale && workOrder.sale.document_type !== 'quote' && workOrder.sale.status !== 'canceled')
+}
+
 const getDynamicIcon = workOrder => {
-  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) return 'ri-shopping-cart-line'
-  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) return 'ri-check-double-line'
+  if (['ready', 'delivered'].includes(workOrder.status) && !isWorkOrderInvoiced(workOrder)) return 'ri-shopping-cart-line'
+  if (['ready', 'delivered'].includes(workOrder.status) && isWorkOrderInvoiced(workOrder)) return 'ri-check-double-line'
 
   return statusIcons[workOrder.status] || 'ri-tools-line'
 }
 
 const getDynamicLegend = workOrder => {
-  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) return 'Facturar'
-  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) return 'Facturado'
+  if (['ready', 'delivered'].includes(workOrder.status) && !isWorkOrderInvoiced(workOrder)) return 'Facturar'
+  if (['ready', 'delivered'].includes(workOrder.status) && isWorkOrderInvoiced(workOrder)) return 'Facturado'
 
   return statusLabels[workOrder.status] || workOrder.status
 }
 
 const getStatusPillClass = workOrder => {
-  if (['ready', 'delivered'].includes(workOrder.status) && workOrder.sale) {
+  if (['ready', 'delivered'].includes(workOrder.status) && isWorkOrderInvoiced(workOrder)) {
     return 'status-paid'
   }
-  if (['ready', 'delivered'].includes(workOrder.status) && !workOrder.sale) {
+  if (['ready', 'delivered'].includes(workOrder.status) && !isWorkOrderInvoiced(workOrder)) {
     return 'status-partial'
   }
 
@@ -312,10 +316,6 @@ const viewDetails = workOrder => {
 
 const goToSale = workOrderId => {
   router.push({ path: '/sales/add', query: { work_order_id: workOrderId } })
-}
-
-const isWorkOrderInvoiced = workOrder => {
-  return !!(workOrder?.sale && workOrder.sale.status !== 'canceled')
 }
 
 const goToEdit = (workOrderId, workOrder = null) => {
@@ -803,7 +803,7 @@ watch(() => route.query.search, newSearch => {
 
                   <!-- Facturar / Generar Venta directa -->
                   <VBtn
-                    v-if="['ready', 'delivered'].includes(item.status) && !item.sale"
+                    v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
                     size="small"
                     color="success"
                     variant="tonal"
@@ -872,7 +872,7 @@ watch(() => route.query.search, newSearch => {
                           @click="openTimeline(item)"
                         />
                         <VListItem
-                          v-if="['ready', 'delivered'].includes(item.status) && !item.sale"
+                          v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
                           prepend-icon="ri-shopping-cart-line"
                           title="Generar Venta"
                           class="text-success font-weight-semibold"
@@ -1070,7 +1070,7 @@ watch(() => route.query.search, newSearch => {
             Cerrar
           </VBtn>
           <VBtn
-            v-if="['ready', 'delivered'].includes(selectedWorkOrder?.status) && !selectedWorkOrder?.sale"
+            v-if="['ready', 'delivered'].includes(selectedWorkOrder?.status) && !isWorkOrderInvoiced(selectedWorkOrder)"
             color="success"
             variant="elevated"
             prepend-icon="ri-shopping-cart-2-line"
