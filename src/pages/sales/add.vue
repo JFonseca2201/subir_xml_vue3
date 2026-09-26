@@ -783,7 +783,18 @@ const netItemsTotal = computed(() => {
 
 const subtotal = computed(() => {
   if (sale.value.document_type === 'invoice') {
-    return Number((netItemsTotal.value / (1 + TAX_RATE)).toFixed(2))
+    const sumSubtotal = sale.value.items.reduce((sum, item) => {
+      const price = item.price || item.unit_price || 0
+      const quantity = item.quantity || 0
+      const discount = Number(item.discount) || 0
+      const itemNet = Math.max(0, (quantity * parseFloat(price)) - discount)
+      const rate = Number(item.tax_rate ?? 15) / 100
+      const base = rate > 0 ? (itemNet / (1 + rate)) : itemNet
+
+      return sum + base
+    }, 0)
+
+    return Number(sumSubtotal.toFixed(2))
   }
 
   return Number(netItemsTotal.value.toFixed(2))
@@ -791,7 +802,7 @@ const subtotal = computed(() => {
 
 const taxAmount = computed(() => {
   if (sale.value.document_type === 'invoice') {
-    return Number((netItemsTotal.value - subtotal.value).toFixed(2))
+    return Number(Math.max(0, netItemsTotal.value - subtotal.value).toFixed(2))
   }
 
   return 0

@@ -52,8 +52,8 @@ const clientForm = ref({
   type_document: 2, // RUC por defecto
   n_document: '',
   birth_date: '', // Fecha de constitución
-  user_id: 1, // ID de usuario por defecto (no nulo)
-  sucursale_id: 1, // Por defecto 1
+  user_id: userStore?.id || 1,
+  sucursale_id: userStore?.sucursale_id || 1,
   state: 1, // Activo por defecto
   gender: '', // No aplica para empresas
   ubigeo_region: '',
@@ -415,8 +415,8 @@ const resetForm = () => {
     type_document: 2,
     n_document: '',
     birth_date: '',
-    user_id: 1,
-    sucursale_id: 1,
+    user_id: userStore?.id || 1,
+    sucursale_id: userStore?.sucursale_id || 1,
     state: 1,
     gender: '',
     ubigeo_region: '',

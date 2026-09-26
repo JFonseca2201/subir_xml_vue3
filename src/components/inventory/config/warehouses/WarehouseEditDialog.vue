@@ -81,7 +81,7 @@ const update = async () => {
       name: props.warehouseSelected.name,
       address: props.warehouseSelected.address,
       state: props.warehouseSelected.state,
-      sucursale_id: 1,
+      sucursale_id: props.warehouseSelected.sucursale_id || 1,
     }
     console.log('Actualizando almacén:', data)
 

@@ -612,6 +612,7 @@ onMounted(() => {
             prepend-icon="ri-check-line"
             class="text-none font-weight-bold px-5"
             :loading="isRefundSubmitting"
+            :disabled="isRefundSubmitting"
             @click="submitRefund"
           >
             Confirmar Reembolso

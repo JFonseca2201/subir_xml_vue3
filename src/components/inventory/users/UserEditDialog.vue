@@ -198,14 +198,18 @@ const loadUserData = () => {
   }
   console.log(editUser.value)
 
+  const getFullAvatarUrl = avatar => {
+    if (!avatar) return null
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
+    const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || ''
+    const clean = avatar.replace(/^\/?storage\/?/, '')
+    return `${base}/storage/${clean}`
+  }
+
   // Guardar avatar original y establecer previsualización
   originalAvatar.value = props.userSelected.avatar
   if (props.userSelected.avatar) {
-    const avatarUrl = props.userSelected.avatar.startsWith('http')
-      ? props.userSelected.avatar
-      : `http://127.0.0.1:8000/storage/${props.userSelected.avatar}`
-
-    avatarPreview.value = avatarUrl
+    avatarPreview.value = getFullAvatarUrl(props.userSelected.avatar)
   } else {
     avatarPreview.value = null
   }
@@ -258,9 +262,7 @@ const update = async () => {
 
       // Asegurar que el avatar se mantenga y tenga URL completa
       avatar: resp.user.avatar 
-        ? (resp.user.avatar.startsWith('http') 
-          ? resp.user.avatar 
-          : `http://127.0.0.1:8000${resp.user.avatar}`)
+        ? getFullAvatarUrl(resp.user.avatar)
         : originalAvatar.value,
     }
 

@@ -479,7 +479,7 @@ const calculateItemSubtotal = item => {
   const unitPrice = parseFloat(item.unit_price) || 0
   const discount = parseFloat(item.discount) || 0
 
-  return (quantity * unitPrice) - discount
+  return Math.max(0, (quantity * unitPrice) - discount)
 }
 
 const calculateTotal = () => {
@@ -699,7 +699,7 @@ onMounted(async () => {
         <div class="d-flex align-center gap-2 flex-wrap">
           <VBtn variant="outlined" color="secondary" prepend-icon="ri-arrow-left-line" class="font-weight-medium"
             @click="cancel">
-            Volver al Lsitado
+            Volver al Listado
           </VBtn>
         </div>
       </div>

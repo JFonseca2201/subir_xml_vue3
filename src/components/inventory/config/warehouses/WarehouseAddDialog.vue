@@ -71,10 +71,11 @@ const store = async () => {
   }
 
   try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
     const data = {
       name: warehouse.value.name,
       address: warehouse.value.address,
-      sucursale_id: 1,
+      sucursale_id: user?.sucursale_id || 1,
       state: 1, // 1 = Activo
     }
 

@@ -21,6 +21,15 @@ const emit = defineEmits([
   'addUser',
 ])
 
+const getActiveSucursaleId = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    return String(user.sucursale_id || '1')
+  } catch (e) {
+    return '1'
+  }
+}
+
 const newUser = ref({
   name: null,
   surname: null,
@@ -33,7 +42,7 @@ const newUser = ref({
   avatar: null,
   role_id: null,
   status: '1',
-  sucursale_id: '1',
+  sucursale_id: getActiveSucursaleId(),
   password: null,
   confirmPassword: null,
 })
@@ -382,7 +391,7 @@ const onFormReset = () => {
     avatar: null,
     role_id: null,
     status: '1',
-    sucursale_id: '1',
+    sucursale_id: getActiveSucursaleId(),
     password: null,
     confirmPassword: null,
   }
