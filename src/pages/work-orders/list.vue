@@ -6,6 +6,7 @@ import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { getBrandNameById } from '@/data/vehicleBrands'
 import WorkOrderTimelineDialog from '@/components/dialogs/WorkOrderTimelineDialog.vue'
+import WorkOrderAdvanceDialog from '@/components/dialogs/WorkOrderAdvanceDialog.vue'
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import { useLoaderStore } from '@/stores/loader'
 import { usePermissions } from '@/composables/usePermissions'
@@ -31,6 +32,30 @@ const selectedTimelineOrder = ref(null)
 const openTimeline = workOrder => {
   selectedTimelineOrder.value = workOrder
   showTimelineDialog.value = true
+}
+
+// Abonos / Anticipos
+const showAdvanceDialog = ref(false)
+const selectedAdvanceOrder = ref(null)
+
+const openAdvanceDialog = workOrder => {
+  selectedAdvanceOrder.value = workOrder
+  showAdvanceDialog.value = true
+}
+
+const handleAdvanceUpdated = () => {
+  loadWorkOrders()
+}
+
+const getWorkOrderAdvances = item => {
+  if (!item) return 0
+  if (item.total_advances !== undefined && item.total_advances !== null) {
+    return parseFloat(item.total_advances) || 0
+  }
+  if (Array.isArray(item.advances)) {
+    return item.advances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0)
+  }
+  return 0
 }
 
 const isLoading = ref(false)
@@ -763,6 +788,19 @@ watch(() => route.query.search, newSearch => {
                 <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
                   ${{ getTotalAmount(item).toFixed(2) }}
                 </span>
+                <div v-if="getWorkOrderAdvances(item) > 0" class="mt-1">
+                  <VChip
+                    size="x-small"
+                    color="success"
+                    variant="tonal"
+                    :class="{'cursor-pointer': !isWorkOrderInvoiced(item)}"
+                    :title="isWorkOrderInvoiced(item) ? 'Abonos registrados (Orden ya facturada)' : 'Abonos registrados. Clic para gestionar'"
+                    @click.stop="!isWorkOrderInvoiced(item) ? openAdvanceDialog(item) : null"
+                  >
+                    <VIcon icon="ri-hand-coin-line" size="12" class="me-0.5" />
+                    Abonado: ${{ getWorkOrderAdvances(item).toFixed(2) }}
+                  </VChip>
+                </div>
               </td>
 
               <!-- Estado (Píldora limpia estilo socios con punto) -->
@@ -801,31 +839,8 @@ watch(() => route.query.search, newSearch => {
                     @click="viewDetails(item)"
                   />
 
-                  <!-- Facturar / Generar Venta directa -->
-                  <VBtn
-                    v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    icon="ri-shopping-cart-2-line"
-                    title="Facturar / Generar Venta"
-                    @click="goToSale(item.id)"
-                  />
-
-                  <!-- Editar -->
-                  <VBtn
-                    v-if="item.status === 'draft' || (can('edit_sale') && !isWorkOrderInvoiced(item))"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Orden"
-                    @click="goToEdit(item.id, item)"
-                  />
-
                   <!-- Menú Más Opciones -->
                   <VBtn
-                    v-if="item.status !== 'draft'"
                     size="small"
                     color="secondary"
                     variant="tonal"
@@ -840,44 +855,61 @@ watch(() => route.query.search, newSearch => {
                       location="bottom end"
                     >
                       <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
+                        <!-- Editar Orden -->
                         <VListItem
+                          v-if="item.status === 'draft' || (can('edit_sale') && !isWorkOrderInvoiced(item))"
+                          prepend-icon="ri-pencil-line"
+                          title="Editar Orden"
+                          class="text-warning font-weight-medium"
+                          @click="goToEdit(item.id, item)"
+                        />
+
+                        <!-- Abonos / Anticipos (Solo si no ha sido facturada) -->
+                        <VListItem
+                          v-if="item.status !== 'draft' && !isWorkOrderInvoiced(item)"
+                          prepend-icon="ri-hand-coin-line"
+                          :title="getWorkOrderAdvances(item) > 0 ? `Abonos ($${getWorkOrderAdvances(item).toFixed(2)})` : 'Registrar Abono'"
+                          class="text-success font-weight-medium"
+                          @click="openAdvanceDialog(item)"
+                        />
+
+                        <!-- Facturar / Generar Venta -->
+                        <VListItem
+                          v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
+                          prepend-icon="ri-shopping-cart-2-line"
+                          title="Facturar / Generar Venta"
+                          class="text-success font-weight-semibold"
+                          @click="goToSale(item.id)"
+                        />
+
+                        <!-- Ver / Imprimir PDF -->
+                        <VListItem
+                          v-if="item.status !== 'draft'"
                           prepend-icon="ri-file-pdf-line"
-                          title="Ver PDF"
+                          title="Ver / Imprimir PDF"
                           class="text-primary font-weight-medium"
                           @click="openPdfPreview(item)"
                         />
+
+                        <!-- Descargar PDF -->
                         <VListItem
-                          prepend-icon="ri-printer-line"
-                          title="Imprimir Orden"
-                          class="text-info font-weight-medium"
-                          @click="printPDF(item.id)"
-                        />
-                        <VListItem
+                          v-if="item.status !== 'draft'"
                           prepend-icon="ri-download-2-line"
                           title="Descargar PDF"
                           class="text-secondary font-weight-medium"
                           @click="downloadPDF(item.id)"
                         />
+
+                        <!-- Comprobantes / Soportes -->
                         <VListItem
+                          v-if="item.status !== 'draft'"
                           prepend-icon="ri-attachment-2"
                           title="Comprobantes / Soportes"
                           class="text-primary font-weight-medium"
                           @click="openReceiptsDialog(item)"
                         />
-                        <VDivider class="my-1" />
-                        <VListItem
-                          prepend-icon="ri-time-line"
-                          title="Ver Secuencia / Historial"
-                          class="text-secondary font-weight-medium"
-                          @click="openTimeline(item)"
-                        />
-                        <VListItem
-                          v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
-                          prepend-icon="ri-shopping-cart-line"
-                          title="Generar Venta"
-                          class="text-success font-weight-semibold"
-                          @click="goToSale(item.id)"
-                        />
+
+                        <!-- Marcar como Entregado -->
                         <VListItem
                           v-if="item.status !== 'delivered' && item.status !== 'draft'"
                           prepend-icon="ri-truck-line"
@@ -885,7 +917,10 @@ watch(() => route.query.search, newSearch => {
                           class="text-primary font-weight-medium"
                           @click="updateStatus(item.id, 'delivered')"
                         />
+
                         <VDivider v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)" class="my-1" />
+
+                        <!-- Eliminar Orden -->
                         <VListItem
                           v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)"
                           prepend-icon="ri-delete-bin-line"
@@ -1317,6 +1352,14 @@ watch(() => route.query.search, newSearch => {
       :attachable-id="selectedReceiptsOrder.id"
       :identifier="selectedReceiptsOrder.order_number ? '#' + selectedReceiptsOrder.order_number : '#' + selectedReceiptsOrder.id"
       :party-name="selectedReceiptsOrder.client?.full_name || selectedReceiptsOrder.client?.name || ''"
+    />
+
+    <!-- Diálogo de Abonos / Anticipos -->
+    <WorkOrderAdvanceDialog
+      v-model:is-dialog-visible="showAdvanceDialog"
+      :work-order="selectedAdvanceOrder"
+      @advance-saved="handleAdvanceUpdated"
+      @advance-deleted="handleAdvanceUpdated"
     />
   </div>
 </template>

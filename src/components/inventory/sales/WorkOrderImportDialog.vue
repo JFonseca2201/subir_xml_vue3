@@ -133,6 +133,21 @@ const calculateOrderTotal = order => {
   }, 0)
 }
 
+const calculateOrderAdvances = order => {
+  if (!order) return 0
+  if (order.total_advances !== undefined && order.total_advances !== null) {
+    return parseFloat(order.total_advances) || 0
+  }
+  if (Array.isArray(order.advances)) {
+    return order.advances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0)
+  }
+  return 0
+}
+
+const calculateOrderBalance = order => {
+  return Math.max(0, calculateOrderTotal(order) - calculateOrderAdvances(order))
+}
+
 // Órdenes filtradas por búsqueda
 const filteredWorkOrders = computed(() => {
   if (!workOrderSearchQuery.value) return readyWorkOrders.value
@@ -385,15 +400,25 @@ const handleSelectOrder = order => {
                 </div>
               </div>
 
-              <!-- Bloque Lateral Derecho: Total y Botón Importar -->
-              <div class="d-flex flex-row flex-md-column align-center align-md-end justify-space-between gap-3 shrink-0 pt-2 pt-md-0 border-top-md-0 border-t-sm" style="min-width: 140px;">
-                <div class="d-flex flex-column align-start align-md-end">
+              <!-- Bloque Lateral Derecho: Total, Abono y Botón Importar -->
+              <div class="d-flex flex-row flex-md-column align-center align-md-end justify-space-between gap-2 shrink-0 pt-2 pt-md-0 border-top-md-0 border-t-sm" style="min-width: 150px;">
+                <div class="d-flex flex-column align-start align-md-end text-end">
                   <span class="text-caption text-medium-emphasis font-weight-medium">
-                    Total de la OT
+                    Total: <strong class="text-slate-800 font-mono">{{ formatCurrency(calculateOrderTotal(order)) }}</strong>
                   </span>
-                  <span class="text-h6 font-weight-black text-primary font-mono line-height-1">
-                    {{ formatCurrency(calculateOrderTotal(order)) }}
-                  </span>
+                  <div v-if="calculateOrderAdvances(order) > 0" class="d-flex flex-column align-end mt-0.5">
+                    <span class="text-caption font-weight-bold text-emerald-700">
+                      Abono: -{{ formatCurrency(calculateOrderAdvances(order)) }}
+                    </span>
+                    <span class="text-caption font-weight-bold text-amber-900 mt-0.5">
+                      Saldo: <strong class="text-h6 font-weight-black text-amber-900 font-mono">{{ formatCurrency(calculateOrderBalance(order)) }}</strong>
+                    </span>
+                  </div>
+                  <div v-else>
+                    <span class="text-h6 font-weight-black text-primary font-mono line-height-1">
+                      {{ formatCurrency(calculateOrderTotal(order)) }}
+                    </span>
+                  </div>
                 </div>
 
                 <VBtn

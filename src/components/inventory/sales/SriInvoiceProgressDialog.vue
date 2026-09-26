@@ -2,6 +2,7 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
+import { copyToClipboard } from '@/utils/clipboard'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
 
@@ -59,6 +60,29 @@ const responseData = ref(null)
 const timerInterval = ref(null)
 const autoRedirectTimer = ref(null)
 const countdownSeconds = ref(3)
+const copiedKey = ref(false)
+
+const copyAccessKey = async () => {
+  const key = responseData.value?.sri_access_key ||
+              responseData.value?.sale?.sri_access_key ||
+              responseData.value?.data?.sri_access_key ||
+              responseData.value?.access_key ||
+              props.salePayload?.sri_access_key
+
+  if (!key) {
+    showNotification('No hay clave de acceso disponible', 'warning')
+    return
+  }
+
+  const ok = await copyToClipboard(key)
+  if (ok) {
+    copiedKey.value = true
+    showNotification('Clave de acceso copiada al portapapeles', 'success')
+    setTimeout(() => { copiedKey.value = false }, 2500)
+  } else {
+    showNotification('Por favor selecciona y copia la clave manualmente', 'info')
+  }
+}
 
 // Diagnóstico previo del SRI
 const sriDiagnostic = ref(null)
@@ -561,13 +585,27 @@ onBeforeUnmount(() => {
                 </span>
               </div>
 
-              <div v-if="responseData?.sri_access_key" class="d-flex flex-column pb-2 border-b mb-2">
-                <span class="text-caption text-medium-emphasis font-weight-medium mb-1">CLAVE DE ACCESO SRI (49 DÍGITOS)</span>
-                <span
-                  class="text-caption font-mono font-weight-bold pa-1.5 rounded bg-background border text-break"
-                  style="font-size: 0.72rem !important; word-break: break-all;">
-                  {{ responseData?.sri_access_key }}
-                </span>
+              <div v-if="responseData?.sri_access_key || responseData?.sale?.sri_access_key" class="d-flex flex-column pb-2 border-b mb-2">
+                <div class="d-flex justify-space-between align-center mb-1">
+                  <span class="text-caption text-medium-emphasis font-weight-medium">CLAVE DE ACCESO SRI (49 DÍGITOS)</span>
+                  <VBtn
+                    size="x-small"
+                    variant="tonal"
+                    :color="copiedKey ? 'success' : 'primary'"
+                    :prepend-icon="copiedKey ? 'ri-check-line' : 'ri-file-copy-line'"
+                    class="font-weight-bold px-2 rounded"
+                    @click.stop="copyAccessKey"
+                  >
+                    {{ copiedKey ? '¡Copiada!' : 'Copiar' }}
+                  </VBtn>
+                </div>
+                <div
+                  class="text-caption font-mono font-weight-bold pa-2 rounded bg-background border text-break user-select-all cursor-pointer"
+                  style="font-size: 0.72rem !important; word-break: break-all;"
+                  title="Clic para copiar la clave de acceso"
+                  @click="copyAccessKey">
+                  {{ responseData?.sri_access_key || responseData?.sale?.sri_access_key }}
+                </div>
               </div>
 
               <div class="d-flex justify-space-between align-center">

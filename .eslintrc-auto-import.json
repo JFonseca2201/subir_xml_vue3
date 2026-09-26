@@ -375,6 +375,7 @@
     "refreshPermissionsUser": true,
     "compressFiles": true,
     "compressImage": true,
-    "extractErrorMessage": true
+    "extractErrorMessage": true,
+    "copyToClipboard": true
   }
 }

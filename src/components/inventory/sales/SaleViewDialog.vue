@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getBrandNameById } from '@/data/vehicleBrands'
 import { $api, getApiBaseUrl } from '@/utils/api'
+import { copyToClipboard } from '@/utils/clipboard'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
 const router = useRouter()
@@ -288,51 +289,13 @@ const formatDateTime = dateStr => {
 }
 
 const copyAccessKey = async () => {
-  const key = props.saleData?.sri_access_key
+  const key = props.saleData?.sri_access_key || props.saleData?.access_key || props.saleData?.clave_acceso || ''
   if (!key) {
     showNotification('No hay clave de acceso registrada', 'warning')
     return
   }
 
-  let successful = false
-
-  // Try modern Clipboard API
-  if (navigator?.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(key)
-      successful = true
-    } catch (e) {
-      successful = false
-    }
-  }
-
-  // Fallback for non-HTTPS / restricted environments
-  if (!successful) {
-    try {
-      const textArea = document.createElement('textarea')
-      textArea.value = key
-      textArea.setAttribute('readonly', '')
-      textArea.style.position = 'fixed'
-      textArea.style.top = '0'
-      textArea.style.left = '0'
-      textArea.style.width = '2em'
-      textArea.style.height = '2em'
-      textArea.style.padding = '0'
-      textArea.style.border = 'none'
-      textArea.style.outline = 'none'
-      textArea.style.boxShadow = 'none'
-      textArea.style.background = 'transparent'
-      textArea.style.opacity = '0'
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      textArea.setSelectionRange(0, 99999)
-      successful = document.execCommand('copy')
-      document.body.removeChild(textArea)
-    } catch (err) {
-      successful = false
-    }
-  }
+  const successful = await copyToClipboard(key)
 
   if (successful) {
     copiedKey.value = true
@@ -729,7 +692,9 @@ const convertToSale = () => {
                   <span class="text-caption text-medium-emphasis">· Comprobante Oficial</span>
                 </div>
                 <div
-                  class="font-monospace text-body-2 font-weight-bold text-indigo-darken-4 text-break user-select-all mt-0.5 tracking-wide">
+                  class="font-monospace text-body-2 font-weight-bold text-indigo-darken-4 text-break user-select-all mt-0.5 tracking-wide cursor-pointer"
+                  title="Clic para copiar la clave de acceso"
+                  @click="copyAccessKey">
                   {{ saleData.sri_access_key }}
                 </div>
               </div>

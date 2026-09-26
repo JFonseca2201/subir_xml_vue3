@@ -103,17 +103,30 @@ const requiredRule = v => (
   !(typeof v === 'number' && Number.isNaN(v))
 ) || 'Campo obligatorio'
 
-// Pagos distribuidos
+// Pagos distribuidos y anticipos de OT
 const paymentDistributions = ref([])
+const importedWorkOrderAdvances = ref([])
+
+const importedWorkOrderTotalAdvances = computed(() => {
+  return importedWorkOrderAdvances.value.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0)
+})
+
+const balanceToCollectToday = computed(() => {
+  const currentTotal = typeof total !== 'undefined' && total.value ? Number(total.value) : 0
+  return Math.max(0, currentTotal - importedWorkOrderTotalAdvances.value)
+})
 
 // Inicializar con un pago distribuido cuando sea al contado o cuando hay items (sin método seleccionado por defecto)
 const initializePaymentDistribution = () => {
+  const targetAmount = balanceToCollectToday.value
   if (!paymentDistributions.value || paymentDistributions.value.length === 0) {
     paymentDistributions.value = [{
       account_id: null,
-      amount: typeof total !== 'undefined' && total.value ? Number(total.value) : 0,
+      amount: targetAmount,
       payment_method: null,
     }]
+  } else if (paymentDistributions.value.length === 1 && !paymentDistributions.value[0].payment_method) {
+    paymentDistributions.value[0].amount = targetAmount
   }
 }
 
@@ -465,11 +478,27 @@ const selectWorkOrder = async workOrder => {
         sku: item.product?.sku || item.product?.code || item.sku || '',
       }
     })
-    initializePaymentDistribution()
   }
 
+  // Cargar abonos previos de la OT
+  importedWorkOrderAdvances.value = workOrder.advances || []
+  try {
+    const advRes = await $api(`work-orders/${workOrder.id}/advances`)
+    if (advRes?.data?.advances) {
+      importedWorkOrderAdvances.value = advRes.data.advances
+    }
+  } catch (e) {
+    console.warn('Error fetching OT advances:', e)
+  }
+
+  initializePaymentDistribution()
+
   isWorkOrderImportDialogVisible.value = false
-  showNotification('Orden de trabajo importada exitosamente', 'success')
+  if (importedWorkOrderTotalAdvances.value > 0) {
+    showNotification(`OT importada con anticipo previo de $${importedWorkOrderTotalAdvances.value.toFixed(2)}. Saldo a cobrar hoy: $${balanceToCollectToday.value.toFixed(2)}`, 'success')
+  } else {
+    showNotification('Orden de trabajo importada exitosamente', 'success')
+  }
 }
 
 // Abrir diálogo de importación de órdenes de trabajo
@@ -687,7 +716,7 @@ const totalDistributed = computed(() => {
 
 
 const remainingAmount = computed(() => {
-  return total.value - totalDistributed.value
+  return balanceToCollectToday.value - totalDistributed.value
 })
 
 const handlePaymentAmountChange = (dist, index) => {
@@ -695,11 +724,11 @@ const handlePaymentAmountChange = (dist, index) => {
     return i !== index ? sum + (Number(d.amount) || 0) : sum
   }, 0)
 
-  const maxAllowed = Number((total.value - otherPaymentsTotal).toFixed(2))
+  const maxAllowed = Number((balanceToCollectToday.value - otherPaymentsTotal).toFixed(2))
 
   if (Number(dist.amount) > maxAllowed) {
     dist.amount = maxAllowed > 0 ? maxAllowed : 0
-    showNotification(`El pago no puede exceder el saldo restante ($${maxAllowed.toFixed(2)})`, 'warning')
+    showNotification(`El pago no puede exceder el saldo a cobrar hoy ($${maxAllowed.toFixed(2)})`, 'warning')
   }
 }
 
@@ -2055,6 +2084,25 @@ onMounted(async () => {
               </VCardItem>
 
               <VCardText class="pa-3 bg-white d-flex flex-column gap-3">
+                <!-- Banner informativo de anticipos en la OT vinculada -->
+                <div v-if="importedWorkOrderTotalAdvances > 0"
+                  class="pa-3 rounded-xl bg-emerald-50 border border-emerald-200 d-flex align-start gap-2.5">
+                  <VIcon icon="ri-hand-coin-line" size="22" color="success" class="mt-0.5 shrink-0" />
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-center justify-space-between flex-wrap gap-1">
+                      <span class="text-caption font-weight-bold text-emerald-900">
+                        Anticipo Previo en OT: ${{ importedWorkOrderTotalAdvances.toFixed(2) }}
+                      </span>
+                      <VChip size="x-small" color="success" variant="flat" class="font-weight-bold">
+                        Saldo a Cobrar: ${{ balanceToCollectToday.toFixed(2) }}
+                      </VChip>
+                    </div>
+                    <div class="text-caption text-emerald-800 mt-0.5" style="font-size: 0.73rem; line-height: 1.25;">
+                      El cliente ya abonó ${{ importedWorkOrderTotalAdvances.toFixed(2) }} a cuenta. La factura se emitirá por el total (${{ total.toFixed(2) }}), pero solo se ingresará a caja/banco el saldo de <strong>${{ balanceToCollectToday.toFixed(2) }}</strong>.
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Selector Principal: Contado vs Crédito -->
                 <div class="d-flex gap-2">
                   <div class="payment-mode-card flex-grow-1" :class="{ 'active-contado': !sale.is_credited }"

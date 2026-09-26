@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const props = defineProps({
   isDialogVisible: {
@@ -23,6 +24,17 @@ const { showNotification } = useGlobalToast()
 
 const isSubmitting = ref(false)
 const reasonType = ref('ANULACIÓN TOTAL DE FACTURA')
+const copiedKey = ref(false)
+
+const copyAccessKey = async key => {
+  if (!key) return
+  const ok = await copyToClipboard(key)
+  if (ok) {
+    copiedKey.value = true
+    showNotification('Clave de acceso copiada al portapapeles', 'success')
+    setTimeout(() => { copiedKey.value = false }, 2500)
+  }
+}
 const customReason = ref('')
 const restoreStock = ref(true)
 const reverseBalance = ref(true)
@@ -152,8 +164,20 @@ const submitCreditNote = async () => {
             </span>
           </div>
 
-          <div v-if="props.saleSelected?.sri_access_key" class="mt-2 text-caption text-slate-500 font-monospace text-truncate">
-            <strong>Clave Factura SRI:</strong> {{ props.saleSelected.sri_access_key }}
+          <div v-if="props.saleSelected?.sri_access_key" class="mt-2 text-caption text-slate-600 d-flex align-center justify-space-between gap-2 bg-slate-50 pa-2 rounded border">
+            <span class="font-monospace text-truncate user-select-all" style="font-size: 0.75rem;">
+              <strong>Clave SRI:</strong> {{ props.saleSelected.sri_access_key }}
+            </span>
+            <VBtn
+              size="x-small"
+              variant="tonal"
+              :color="copiedKey ? 'success' : 'primary'"
+              :prepend-icon="copiedKey ? 'ri-check-line' : 'ri-file-copy-line'"
+              class="font-weight-bold px-2 flex-shrink-0"
+              @click="copyAccessKey(props.saleSelected.sri_access_key)"
+            >
+              {{ copiedKey ? 'Copiada' : 'Copiar' }}
+            </VBtn>
           </div>
         </VCard>
 
