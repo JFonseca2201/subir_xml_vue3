@@ -436,17 +436,7 @@ const getPaymentMethodDisplay = item => {
   return 'EFEC.T.'
 }
 
-const getPaymentMethodIcon = item => {
-  if (!item || item.payment_status === 'pending') return 'ri-time-line'
 
-  const display = (getPaymentMethodDisplay(item) || '').toLowerCase()
-  if (display.includes('+') || display.includes(',')) return 'ri-split-cells-horizontal'
-  if (display.includes('transf')) return 'ri-bank-card-line'
-  if (display.includes('tarj')) return 'ri-bank-card-2-line'
-  if (display.includes('efec')) return 'ri-money-dollar-circle-line'
-
-  return 'ri-wallet-3-line'
-}
 
 const getPaymentMethodColor = item => {
   if (!item || item.payment_status === 'pending') return 'error'
@@ -1079,8 +1069,8 @@ onMounted(() => {
             <span>Filtros de Ventas</span>
           </div>
 
-          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold" @click="resetFilters">
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+            @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
@@ -1234,13 +1224,6 @@ onMounted(() => {
                     @click="viewSale(item)">
                     {{ formatDocumentNumber(item.document_number) }}
                   </div>
-                  <!-- Tipo de movimiento (Efectivo / Transferencia) en letras muy pequeñas -->
-                  <div v-if="!isSaleCanceled(item)" class="d-flex align-center text-medium-emphasis"
-                    style="font-size: 0.68rem; line-height: 1.1; margin-top: 1px;">
-                    <VIcon :icon="getPaymentMethodIcon(item)" size="11" class="me-1 text-disabled flex-shrink-0" />
-                    <span class="font-weight-medium text-capitalize text-truncate" style="max-width: 130px;"
-                      :title="`Método de pago: ${getPaymentMethodText(item)}`">{{ getPaymentMethodText(item) }}</span>
-                  </div>
                 </div>
               </td>
 
@@ -1321,9 +1304,19 @@ onMounted(() => {
 
               <!-- Total -->
               <td class="text-right py-3" style="white-space: nowrap;">
-                <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
-                  ${{ parseFloat(item.total || 0).toFixed(2) }}
-                </span>
+                <div class="d-flex flex-column align-end gap-0.5">
+                  <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
+                    ${{ parseFloat(item.total || 0).toFixed(2) }}
+                  </span>
+                  <!-- Tipo de movimiento (Efectivo / Transferencia) en letras muy pequeñas -->
+                  <div v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
+                    class="d-flex align-center text-medium-emphasis"
+                    style="font-size: 0.68rem; line-height: 1.1; margin-top: 1px;">
+                    <VIcon :icon="getPaymentMethodIcon(item)" size="11" class="me-1 text-disabled flex-shrink-0" />
+                    <span class="font-weight-medium text-capitalize"
+                      :title="`Método de pago: ${getPaymentMethodText(item)}`">{{ getPaymentMethodText(item) }}</span>
+                  </div>
+                </div>
               </td>
 
               <!-- Estado -->
