@@ -28,6 +28,7 @@ declare module 'vue-router/auto-routes' {
     'configuration-unitconversions': RouteRecordInfo<'configuration-unitconversions', '/configuration/unitconversions', Record<never, never>, Record<never, never>>,
     'configuration-units': RouteRecordInfo<'configuration-units', '/configuration/units', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
+    'distribuidor-catalogo': RouteRecordInfo<'distribuidor-catalogo', '/distribuidor-catalogo', Record<never, never>, Record<never, never>>,
     'employees-list': RouteRecordInfo<'employees-list', '/employees/list', Record<never, never>, Record<never, never>>,
     'finanzas-arqueo': RouteRecordInfo<'finanzas-arqueo', '/finanzas/arqueo', Record<never, never>, Record<never, never>>,
     'finanzas-employee-expenses': RouteRecordInfo<'finanzas-employee-expenses', '/finanzas/employee-expenses', Record<never, never>, Record<never, never>>,

@@ -140,6 +140,12 @@ export default [
     permission: 'list_pedido',
     children: [
       {
+        title: 'Catálogo Distribuidores',
+        to: 'distribuidor-catalogo',
+        icon: { icon: 'ri-book-read-line' },
+        permission: 'list_pedido',
+      },
+      {
         title: 'Registrar',
         to: 'sales-pedidos-distribuidor',
         icon: { icon: 'ri-file-add-line' },

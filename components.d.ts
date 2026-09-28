@@ -59,6 +59,7 @@ declare module 'vue' {
     DeleteEmployeePaymentDialog: typeof import('./src/components/inventory/employee-expenses/DeleteEmployeePaymentDialog.vue')['default']
     DeleteProdcut: typeof import('./src/components/inventory/product/DeleteProdcut.vue')['default']
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
+    DistributorCatalogImportDialog: typeof import('./src/components/distribuidor-catalogo/DistributorCatalogImportDialog.vue')['default']
     EditEmployeeAdvanceDialog: typeof import('./src/components/inventory/employee-expenses/EditEmployeeAdvanceDialog.vue')['default']
     EditEmployeePaymentDialog: typeof import('./src/components/inventory/employee-expenses/EditEmployeePaymentDialog.vue')['default']
     EmployeeCreateDialog: typeof import('./src/components/inventory/employees/EmployeeCreateDialog.vue')['default']
