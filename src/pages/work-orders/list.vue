@@ -146,6 +146,14 @@ const stats = computed(() => {
   return { total, received, inProgress, ready, delivered }
 })
 
+const readyWorkOrdersCount = computed(() => {
+  return workOrders.value.filter(wo => wo.status === 'ready').length
+})
+
+const isPendingFinish = workOrder => {
+  return workOrder?.status === 'ready'
+}
+
 const hasActiveFilters = computed(() => {
   return !!(
     (searchQuery.value && searchQuery.value.trim()) ||
@@ -589,6 +597,37 @@ watch(() => route.query.search, newSearch => {
       </VCol>
     </VRow>
 
+    <!-- Alarma de Órdenes Por Finalizar / Listas -->
+    <VAlert
+      v-if="readyWorkOrdersCount > 0"
+      color="warning"
+      variant="tonal"
+      class="mb-4 rounded-xl border border-warning elevation-0 alert-ready-banner"
+      icon="ri-alarm-warning-fill"
+    >
+      <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center w-100 gap-2">
+        <div class="d-flex align-center gap-2 flex-wrap">
+          <span class="font-weight-bold text-body-1">
+            ¡Alerta de Taller! Hay {{ readyWorkOrdersCount }} {{ readyWorkOrdersCount === 1 ? 'orden de trabajo lista por finalizar' : 'órdenes de trabajo listas por finalizar' }}.
+          </span>
+          <span class="text-caption text-medium-emphasis">
+            (Vehículos con servicio técnico completado pendientes de entrega y/o facturación al cliente)
+          </span>
+        </div>
+        <VBtn
+          v-if="statusFilter !== 'ready'"
+          size="small"
+          color="warning"
+          variant="flat"
+          class="font-weight-bold flex-shrink-0"
+          prepend-icon="ri-filter-3-line"
+          @click="statusFilter = 'ready'"
+        >
+          Ver {{ readyWorkOrdersCount === 1 ? 'Orden Lista' : 'Órdenes Listas' }} ({{ readyWorkOrdersCount }})
+        </VBtn>
+      </div>
+    </VAlert>
+
     <!-- Filtros y Búsqueda -->
     <VCard class="rounded-xl border elevation-0 mb-5 bg-surface">
       <VCardText class="pa-4">
@@ -716,15 +755,35 @@ watch(() => route.query.search, newSearch => {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in paginatedWorkOrders" :key="item.id" class="wo-table-row">
+            <tr
+              v-for="item in paginatedWorkOrders"
+              :key="item.id"
+              class="wo-table-row"
+              :class="{
+                'wo-row-pending-finish': isPendingFinish(item),
+              }"
+            >
               <!-- N° Orden -->
               <td class="py-3" style="white-space: nowrap;">
-                <div
-                  class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
-                  title="Ver Secuencia e Historial de la Orden"
-                  @click="openTimeline(item)"
-                >
-                  {{ formatWorkOrderNumber(item.number, item.id) }}
+                <div class="d-flex align-center gap-1.5">
+                  <VTooltip v-if="isPendingFinish(item)" text="¡Orden lista por finalizar!">
+                    <template #activator="{ props }">
+                      <VIcon
+                        v-bind="props"
+                        icon="ri-alarm-warning-fill"
+                        color="warning"
+                        size="18"
+                        class="pulse-alarm-icon flex-shrink-0"
+                      />
+                    </template>
+                  </VTooltip>
+                  <div
+                    class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
+                    title="Ver Secuencia e Historial de la Orden"
+                    @click="openTimeline(item)"
+                  >
+                    {{ formatWorkOrderNumber(item.number, item.id) }}
+                  </div>
                 </div>
               </td>
 
@@ -1494,6 +1553,41 @@ watch(() => route.query.search, newSearch => {
 
   .status-dot {
     background-color: #94a3b8 !important;
+  }
+}
+
+// Alarma y fila destacada para órdenes listas / por finalizar
+.wo-row-pending-finish {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  transition: background-color 0.2s ease;
+
+  > td:first-child {
+    border-left: 4px solid #f59e0b !important;
+  }
+
+  &:hover {
+    background-color: rgba(245, 158, 11, 0.16) !important;
+  }
+}
+
+.pulse-alarm-icon {
+  animation: pulse-alarm-ring 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-alarm-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.22);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
   }
 }
 </style>
