@@ -22,7 +22,16 @@ const deleteLoading = ref(false)
 
 const searchForm = ref({
   search: null,
+  type: null,
+  start_date: null,
+  end_date: null,
 })
+
+const typeOptions = [
+  { title: 'Todos los tipos', value: 'all' },
+  { title: 'Total', value: 'total' },
+  { title: 'Parcial', value: 'partial' },
+]
 
 const currentPage = ref(1)
 const itemsPerPage = ref(15)
@@ -38,7 +47,7 @@ const loadReturns = async () => {
     }
 
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === '') {
+      if (params[key] === null || params[key] === '' || params[key] === 'all') {
         delete params[key]
       }
     })
@@ -122,6 +131,9 @@ const confirmDeleteReturn = async () => {
 const clearSearch = () => {
   searchForm.value = {
     search: null,
+    type: null,
+    start_date: null,
+    end_date: null,
   }
   currentPage.value = 1
   loadReturns()
@@ -167,7 +179,12 @@ const totalReturnsTypeCount = computed(() => {
 })
 
 const hasActiveFilters = computed(() => {
-  return !!(searchForm.value.search && searchForm.value.search.trim())
+  return !!(
+    (searchForm.value.search && searchForm.value.search.trim()) ||
+    (searchForm.value.type && searchForm.value.type !== 'all') ||
+    searchForm.value.start_date ||
+    searchForm.value.end_date
+  )
 })
 
 const resetFilters = () => {
@@ -178,6 +195,14 @@ watch(currentPage, () => {
   loadReturns()
 })
 
+watch(
+  () => [searchForm.value.type, searchForm.value.start_date, searchForm.value.end_date],
+  () => {
+    currentPage.value = 1
+    loadReturns()
+  }
+)
+
 // Búsqueda en tiempo real (debounce)
 let searchTimeout = null
 watch(() => searchForm.value.search, () => {
@@ -185,7 +210,7 @@ watch(() => searchForm.value.search, () => {
   searchTimeout = setTimeout(() => {
     currentPage.value = 1
     loadReturns()
-  }, 500)
+  }, 400)
 })
 
 onMounted(() => {
@@ -276,7 +301,6 @@ onMounted(() => {
           </div>
 
           <VBtn
-            v-if="hasActiveFilters"
             variant="text"
             color="error"
             size="small"
@@ -289,7 +313,7 @@ onMounted(() => {
         </div>
 
         <VRow dense class="gap-y-3">
-          <VCol cols="12">
+          <VCol cols="12" md="6">
             <VTextField
               v-model="searchForm.search"
               label="Buscar devolución"
@@ -302,6 +326,49 @@ onMounted(() => {
               color="primary"
               :loading="loading"
               @click:clear="clearSearch"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VSelect
+              v-model="searchForm.type"
+              :items="typeOptions"
+              item-title="title"
+              item-value="value"
+              label="Tipo de Devolución"
+              placeholder="Todos los tipos"
+              prepend-inner-icon="ri-toggle-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="searchForm.start_date"
+              type="date"
+              label="Desde"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="searchForm.end_date"
+              type="date"
+              label="Hasta"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
             />
           </VCol>
         </VRow>

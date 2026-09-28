@@ -1030,7 +1030,7 @@ onMounted(() => {
             <span>Filtros de Ventas</span>
           </div>
 
-          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
             class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>

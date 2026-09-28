@@ -24,6 +24,8 @@ const statusOptions = [
 ]
 
 const selectedStatus = ref('all')
+const startDate = ref(null)
+const endDate = ref(null)
 
 // Métricas computadas y filtros
 const completedCount = computed(() => {
@@ -45,13 +47,17 @@ const filteredPedidos = computed(() => {
 const hasActiveFilters = computed(() => {
   return !!(
     (search.value && search.value.trim()) ||
-    (selectedStatus.value && selectedStatus.value !== 'all')
+    (selectedStatus.value && selectedStatus.value !== 'all') ||
+    startDate.value ||
+    endDate.value
   )
 })
 
 const resetFiltersClean = () => {
   search.value = ''
   selectedStatus.value = 'all'
+  startDate.value = null
+  endDate.value = null
   currentPage.value = 1
   loadPedidos()
 }
@@ -77,11 +83,23 @@ const loadPedidos = async () => {
     const params = {
       page: currentPage.value,
       search: search.value,
+      status: selectedStatus.value !== 'all' ? selectedStatus.value : undefined,
+      start_date: startDate.value || undefined,
+      end_date: endDate.value || undefined,
     }
 
     // Limpiar vacíos
     if (!params.search) {
       delete params.search
+    }
+    if (!params.status) {
+      delete params.status
+    }
+    if (!params.start_date) {
+      delete params.start_date
+    }
+    if (!params.end_date) {
+      delete params.end_date
     }
 
     const response = await $api('pedidos-distribuidor', { params })
@@ -319,7 +337,7 @@ const updateStatus = async (pedido, newStatus) => {
 }
 
 // Watchers
-watch(currentPage, () => {
+watch([currentPage, selectedStatus, startDate, endDate], () => {
   loadPedidos()
 })
 
@@ -330,7 +348,7 @@ watch(search, () => {
   searchTimeout = setTimeout(() => {
     currentPage.value = 1
     loadPedidos()
-  }, 500)
+  }, 400)
 })
 
 // Historial de repuestos
@@ -561,7 +579,6 @@ onMounted(() => {
           </div>
 
           <VBtn
-            v-if="hasActiveFilters"
             variant="text"
             color="error"
             size="small"
@@ -574,7 +591,7 @@ onMounted(() => {
         </div>
 
         <VRow dense class="gap-y-3">
-          <VCol cols="12" md="8">
+          <VCol cols="12" md="6">
             <VTextField
               v-model="search"
               label="Buscar pedidos"
@@ -590,7 +607,7 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" md="4">
+          <VCol cols="12" sm="6" md="2">
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
@@ -602,6 +619,33 @@ onMounted(() => {
               variant="outlined"
               density="comfortable"
               hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="startDate"
+              type="date"
+              label="Desde"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="endDate"
+              type="date"
+              label="Hasta"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
               color="primary"
             />
           </VCol>

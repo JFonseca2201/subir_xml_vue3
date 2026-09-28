@@ -64,6 +64,8 @@ const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
 const isSearching = ref(false)
 const statusFilter = ref('all')
+const startDate = ref(null)
+const endDate = ref(null)
 const selectedWorkOrder = ref(null)
 const showDetailsDialog = ref(false)
 const loadingOrders = ref(null)
@@ -114,6 +116,20 @@ const filteredWorkOrders = computed(() => {
     filtered = filtered.filter(wo => wo.status === statusFilter.value)
   }
 
+  if (startDate.value) {
+    filtered = filtered.filter(wo => {
+      const d = (wo.date || wo.created_at || '').split('T')[0].split(' ')[0]
+      return d >= startDate.value
+    })
+  }
+
+  if (endDate.value) {
+    filtered = filtered.filter(wo => {
+      const d = (wo.date || wo.created_at || '').split('T')[0].split(' ')[0]
+      return d <= endDate.value
+    })
+  }
+
   if (debouncedSearchQuery.value) {
     const query = debouncedSearchQuery.value.toLowerCase()
     const cleanQuery = query.replace(/[^a-z0-9]/g, '')
@@ -157,7 +173,9 @@ const isPendingFinish = workOrder => {
 const hasActiveFilters = computed(() => {
   return !!(
     (searchQuery.value && searchQuery.value.trim()) ||
-    (statusFilter.value && statusFilter.value !== 'all')
+    (statusFilter.value && statusFilter.value !== 'all') ||
+    startDate.value ||
+    endDate.value
   )
 })
 
@@ -165,6 +183,8 @@ const resetFilters = () => {
   searchQuery.value = ''
   debouncedSearchQuery.value = ''
   statusFilter.value = 'all'
+  startDate.value = null
+  endDate.value = null
   currentPage.value = 1
 }
 
@@ -638,7 +658,6 @@ watch(() => route.query.search, newSearch => {
           </div>
 
           <VBtn
-            v-if="hasActiveFilters"
             variant="text"
             color="error"
             size="small"
@@ -651,7 +670,7 @@ watch(() => route.query.search, newSearch => {
         </div>
 
         <VRow dense class="gap-y-3">
-          <VCol cols="12" md="8">
+          <VCol cols="12" md="6">
             <VTextField
               v-model="searchQuery"
               label="Buscar orden"
@@ -666,7 +685,7 @@ watch(() => route.query.search, newSearch => {
             />
           </VCol>
 
-          <VCol cols="12" md="4">
+          <VCol cols="12" sm="6" md="2">
             <VSelect
               v-model="statusFilter"
               :items="statusOptions"
@@ -678,6 +697,33 @@ watch(() => route.query.search, newSearch => {
               variant="outlined"
               density="comfortable"
               hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="startDate"
+              type="date"
+              label="Desde"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
+          </VCol>
+
+          <VCol cols="12" sm="6" md="2">
+            <VTextField
+              v-model="endDate"
+              type="date"
+              label="Hasta"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
               color="primary"
             />
           </VCol>

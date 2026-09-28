@@ -337,14 +337,14 @@ onMounted(() => {
               <span>Filtros de Búsqueda</span>
             </div>
 
-            <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
               class="font-weight-semibold" @click="resetFilters">
               Limpiar Filtros
             </VBtn>
           </div>
 
           <VRow dense class="gap-y-3">
-            <VCol cols="12" md="4">
+            <VCol cols="12" md="6">
               <VTextField v-model="searchForm.search" label="Buscar vehículo"
                 placeholder="Placa, marca, modelo o cliente..." clearable hide-details variant="outlined"
                 density="comfortable" color="primary" :loading="loading" prepend-inner-icon="ri-search-2-line" />
@@ -362,11 +362,11 @@ onMounted(() => {
                 color="primary" prepend-inner-icon="ri-shield-star-line" />
             </VCol>
 
-            <VCol cols="12" sm="4" md="2">
+            <!-- <VCol cols="12" sm="4" md="2">
               <VSelect v-model="searchForm.year" :items="yearOptions" item-title="title" item-value="value" label="Año"
                 placeholder="Todos" clearable hide-details variant="outlined" density="comfortable" color="primary"
                 prepend-inner-icon="ri-calendar-line" />
-            </VCol>
+            </VCol> -->
           </VRow>
         </VForm>
       </VCardText>
@@ -441,11 +441,12 @@ onMounted(() => {
                 Intenta ajustar tus criterios de búsqueda o agrega un nuevo vehículo al sistema.
               </p>
               <div class="d-flex justify-center gap-2">
-                <VBtn v-if="hasActiveFilters" size="small" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
-                  @click="resetFilters">
+                <VBtn v-if="hasActiveFilters" size="small" variant="outlined" color="secondary"
+                  prepend-icon="ri-filter-off-line" @click="resetFilters">
                   Restablecer Filtros
                 </VBtn>
-                <VBtn v-if="can('register_car')" size="small" color="primary" prepend-icon="ri-add-line" @click="addVehicle">
+                <VBtn v-if="can('register_car')" size="small" color="primary" prepend-icon="ri-add-line"
+                  @click="addVehicle">
                   Agregar Vehículo
                 </VBtn>
               </div>
@@ -518,10 +519,7 @@ onMounted(() => {
 
             <!-- Estado (Pill limpia aceituna / pastel con punto) -->
             <td class="text-center py-3" style="white-space: nowrap;">
-              <div
-                class="status-pill-clean"
-                :class="parseInt(vehicle.status) === 1 ? 'status-paid' : 'status-pending'"
-              >
+              <div class="status-pill-clean" :class="parseInt(vehicle.status) === 1 ? 'status-paid' : 'status-pending'">
                 <span class="status-dot" />
                 <span>{{ parseInt(vehicle.status) === 1 ? 'Activo' : 'Inactivo' }}</span>
               </div>
@@ -544,8 +542,8 @@ onMounted(() => {
                       <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2"
                         @click="showHistory(vehicle)" />
                       <VDivider v-if="can('delete_car')" class="my-1" />
-                      <VListItem v-if="can('delete_car')" prepend-icon="ri-delete-bin-6-line"
-                        title="Eliminar Vehículo" class="text-error text-body-2" @click="deleteVehicle(vehicle)" />
+                      <VListItem v-if="can('delete_car')" prepend-icon="ri-delete-bin-6-line" title="Eliminar Vehículo"
+                        class="text-error text-body-2" @click="deleteVehicle(vehicle)" />
                     </VList>
                   </VMenu>
                 </VBtn>
@@ -558,19 +556,14 @@ onMounted(() => {
       <VDivider v-if="totalPages > 1 || totalItems > 0" />
 
       <!-- Paginación persistente en Card Footer -->
-      <VCardActions v-if="totalPages > 1 || totalItems > 0" class="pa-4 bg-grey-lighten-5 justify-space-between align-center flex-column flex-sm-row gap-3">
+      <VCardActions v-if="totalPages > 1 || totalItems > 0"
+        class="pa-4 bg-grey-lighten-5 justify-space-between align-center flex-column flex-sm-row gap-3">
         <div class="text-body-2 text-medium-emphasis">
           Mostrando <strong class="text-high-emphasis">{{ vehicles.length }}</strong> de <strong
             class="text-high-emphasis">{{ totalItems }}</strong> vehículos
         </div>
-        <VPagination
-          v-if="totalPages > 1"
-          v-model="currentPage"
-          :length="totalPages"
-          rounded="circle"
-          :total-visible="7"
-          color="primary"
-        />
+        <VPagination v-if="totalPages > 1" v-model="currentPage" :length="totalPages" rounded="circle"
+          :total-visible="7" color="primary" />
       </VCardActions>
     </VCard>
 

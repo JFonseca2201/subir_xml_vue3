@@ -687,7 +687,6 @@ onMounted(() => {
           </div>
 
           <VBtn
-            v-if="hasActiveFilters"
             variant="text"
             color="error"
             size="small"
