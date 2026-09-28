@@ -184,7 +184,7 @@ const formatCurrency = value => {
       <div>
         <h1 class="text-h3 font-weight-bold text-primary mb-1 d-flex align-center gap-2">
           <VIcon icon="ri-refund-2-fill" size="40" />
-          Procesar Devolución
+          Procesar Devolución de distribuidores
         </h1>
         <p class="text-medium-emphasis mb-0 text-body-1">
           Busca la venta original y selecciona los artículos a retornar al inventario.
