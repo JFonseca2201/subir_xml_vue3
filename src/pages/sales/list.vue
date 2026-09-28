@@ -328,6 +328,55 @@ const isSaleCanceled = item => {
   return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
 }
 
+const getPaymentMethodText = item => {
+  if (!item) return ''
+  if (isSaleCanceled(item)) return 'Anulado'
+  if (item.document_type === 'quote') return 'Cotización'
+
+  const distributions = item.finance_record?.payment_distributions || item.financeRecord?.paymentDistributions
+  if (distributions && distributions.length > 0) {
+    const methods = distributions.map(d => {
+      const method = (d.payment_method || d.account?.type || d.account?.name || '').toLowerCase()
+      const accName = (d.account?.name || '').toLowerCase()
+      if (method.includes('transf') || accName.includes('transf') || accName.includes('pichincha') || accName.includes('guayaquil') || accName.includes('produbanco') || accName.includes('banco') || method.includes('transfer')) {
+        return 'Transferencia'
+      }
+      if (method.includes('card') || method.includes('tarjeta') || accName.includes('tarjeta') || accName.includes('pos') || accName.includes('datafast')) {
+        return 'Tarjeta'
+      }
+      if (method.includes('credit') || method.includes('credito') || accName.includes('credito')) {
+        return 'Crédito'
+      }
+      if (method.includes('cash') || method.includes('efectivo') || accName.includes('caja') || accName.includes('efectivo')) {
+        return 'Efectivo'
+      }
+      return d.payment_method || d.account?.name || 'Efectivo'
+    })
+    return [...new Set(methods)].join(', ')
+  }
+
+  if (item.is_credited || item.payment_status === 'pending') {
+    return 'Crédito'
+  }
+
+  const method = (item.payment_method || '').toLowerCase()
+  if (method.includes('transf') || method.includes('banco')) return 'Transferencia'
+  if (method.includes('tarjeta') || method.includes('card')) return 'Tarjeta'
+  if (method.includes('cred')) return 'Crédito'
+  if (method.includes('efectivo') || method.includes('cash')) return 'Efectivo'
+  if (item.payment_method) return item.payment_method
+
+  return 'Efectivo'
+}
+
+const getPaymentMethodIcon = item => {
+  const text = getPaymentMethodText(item).toLowerCase()
+  if (text.includes('transf')) return 'ri-bank-line'
+  if (text.includes('tarjeta')) return 'ri-bank-card-line'
+  if (text.includes('crédit') || text.includes('credit')) return 'ri-time-line'
+  return 'ri-money-dollar-circle-line'
+}
+
 const getStatusInfo = item => {
   if (!item) return { color: 'grey', text: '-', icon: 'ri-question-line' }
   if (isSaleCanceled(item)) {
@@ -1184,6 +1233,13 @@ onMounted(() => {
                   ]" :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
                     @click="viewSale(item)">
                     {{ formatDocumentNumber(item.document_number) }}
+                  </div>
+                  <!-- Tipo de movimiento (Efectivo / Transferencia) en letras muy pequeñas -->
+                  <div v-if="!isSaleCanceled(item)" class="d-flex align-center text-medium-emphasis"
+                    style="font-size: 0.68rem; line-height: 1.1; margin-top: 1px;">
+                    <VIcon :icon="getPaymentMethodIcon(item)" size="11" class="me-1 text-disabled flex-shrink-0" />
+                    <span class="font-weight-medium text-capitalize text-truncate" style="max-width: 130px;"
+                      :title="`Método de pago: ${getPaymentMethodText(item)}`">{{ getPaymentMethodText(item) }}</span>
                   </div>
                 </div>
               </td>
