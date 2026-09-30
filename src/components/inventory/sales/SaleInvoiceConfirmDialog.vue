@@ -146,34 +146,31 @@ const onConfirm = () => {
 
           <div class="d-flex justify-space-between align-center pb-2 border-b mb-3">
             <span class="text-caption text-medium-emphasis font-weight-medium">AMBIENTE SRI</span>
-            <VChip :color="sriEnvironmentInfo.color" size="small" variant="flat" class="font-weight-bold px-2.5">
-              <VIcon :icon="sriEnvironmentInfo.icon" size="14" class="me-1" />
-              {{ sriEnvironmentInfo.text }}
-            </VChip>
+            <div class="status-pill-clean" :class="sriEnvironmentInfo.isProd ? 'status-paid' : 'status-partial'">
+              <span class="status-dot" />
+              <span>{{ sriEnvironmentInfo.text }}</span>
+            </div>
           </div>
 
           <!-- Tipo de Pago Simple (1 método o Crédito) -->
           <div v-if="paymentDistributions.length <= 1 || sale?.payment_status === 'pending'"
             class="d-flex justify-space-between align-center pb-2 border-b mb-3">
             <span class="text-caption text-medium-emphasis font-weight-medium">TIPO DE PAGO</span>
-            <VChip
-              :color="sale?.payment_status === 'pending' ? 'warning' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'info' : 'success')"
-              size="small" variant="flat" class="font-weight-bold px-2.5">
-              <VIcon
-                :icon="sale?.payment_status === 'pending' ? 'ri-time-line' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'ri-bank-line' : 'ri-money-dollar-circle-line')"
-                size="14" class="me-1" />
-              {{ computedPaymentMethodSummary }}
-            </VChip>
+            <div class="status-pill-clean"
+              :class="sale?.payment_status === 'pending' ? 'status-pending' : (paymentDistributions[0]?.payment_method === 'Transferencia' ? 'status-transfer' : 'status-paid')">
+              <span class="status-dot" />
+              <span>{{ computedPaymentMethodSummary }}</span>
+            </div>
           </div>
 
           <!-- Desglose de Pagos Múltiples (solo si está dividido en 2 o más métodos) -->
           <div v-else class="d-flex flex-column pb-2 border-b mb-3">
             <div class="d-flex justify-space-between align-center mb-1.5">
               <span class="text-caption text-medium-emphasis font-weight-medium">FORMA DE PAGO</span>
-              <VChip color="primary" size="small" variant="tonal" class="font-weight-bold px-2">
-                <VIcon icon="ri-split-cells-horizontal" size="14" class="me-1" />
-                Pago Dividido ({{ paymentDistributions.length }})
-              </VChip>
+              <div class="status-pill-clean status-transfer">
+                <span class="status-dot" />
+                <span>Pago Dividido ({{ paymentDistributions.length }})</span>
+              </div>
             </div>
 
             <div class="bg-slate-50 pa-2.5 rounded-lg border">
@@ -223,3 +220,66 @@ const onConfirm = () => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped lang="scss">
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 3px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+</style>

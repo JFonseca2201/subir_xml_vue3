@@ -893,18 +893,17 @@ watch(() => route.query.search, newSearch => {
                 <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
                   ${{ getTotalAmount(item).toFixed(2) }}
                 </span>
-                <div v-if="getWorkOrderAdvances(item) > 0" class="mt-1">
-                  <VChip
-                    size="x-small"
-                    color="success"
-                    variant="tonal"
+                <div v-if="getWorkOrderAdvances(item) > 0" class="mt-1 d-flex justify-end">
+                  <div
+                    class="status-pill-clean status-paid"
+                    style="font-size: 0.68rem !important; padding: 2px 8px !important;"
                     :class="{'cursor-pointer': !isWorkOrderInvoiced(item)}"
                     :title="isWorkOrderInvoiced(item) ? 'Abonos registrados (Orden ya facturada)' : 'Abonos registrados. Clic para gestionar'"
                     @click.stop="!isWorkOrderInvoiced(item) ? openAdvanceDialog(item) : null"
                   >
-                    <VIcon icon="ri-hand-coin-line" size="12" class="me-0.5" />
-                    Abonado: ${{ getWorkOrderAdvances(item).toFixed(2) }}
-                  </VChip>
+                    <span class="status-dot" />
+                    <span>Abonado: ${{ getWorkOrderAdvances(item).toFixed(2) }}</span>
+                  </div>
                 </div>
               </td>
 
