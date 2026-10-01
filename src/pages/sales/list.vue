@@ -1173,7 +1173,7 @@ onMounted(() => {
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 125px; min-width: 115px; white-space: nowrap;">
+                style="width: 105px; min-width: 95px; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
@@ -1181,15 +1181,15 @@ onMounted(() => {
                 O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 155px; min-width: 130px; max-width: 165px;">
+                style="width: 185px; min-width: 160px; max-width: 200px;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 125px; min-width: 105px; max-width: 130px;">
+                style="width: 160px; min-width: 140px; max-width: 175px;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 95px; min-width: 85px; white-space: nowrap;">
+                style="width: 85px; min-width: 75px; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5"
@@ -1211,12 +1211,13 @@ onMounted(() => {
               <!-- Documento -->
               <td class="py-2.5" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
-                  <div class="d-flex align-center gap-1.5">
+                  <div class="d-flex align-center gap-1">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                      size="15" class="me-1 flex-shrink-0"
+                      size="14" class="me-1 flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
+                      style="font-size: 0.7rem;"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
@@ -1245,13 +1246,13 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-2.5" style="max-width: 165px;">
-                <div class="d-flex align-center gap-1.5">
+              <td class="py-2.5" style="max-width: 200px;">
+                <div class="d-flex align-center gap-2">
                   <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
                       }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 125px;">
+                  <div class="min-w-0" style="max-width: 155px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
@@ -1270,12 +1271,12 @@ onMounted(() => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-2.5" style="max-width: 130px;">
-                <div v-if="item.vehicle" class="d-flex align-center gap-1.5">
+              <td class="py-2.5" style="max-width: 175px;">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="15" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 90px;">
+                  <div class="min-w-0" style="max-width: 130px;">
                     <div class="font-mono text-truncate"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
@@ -1288,7 +1289,7 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-1.5 text-disabled text-caption">
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg"
                     class="elevation-0 flex-shrink-0 opacity-40">
                     <VIcon icon="ri-car-line" size="15" />
@@ -1301,8 +1302,8 @@ onMounted(() => {
               <td class="py-2.5" style="white-space: nowrap;">
                 <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                   style="white-space: nowrap;">
-                  <VIcon icon="ri-calendar-line" size="14" color="medium-emphasis" class="me-1 flex-shrink-0" />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
+                  <VIcon icon="ri-calendar-line" size="13" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap; font-size: 0.82rem;">{{
                     formatDate(item.created_at) }}</span>
                 </div>
               </td>
