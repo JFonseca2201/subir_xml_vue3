@@ -1173,35 +1173,35 @@ onMounted(() => {
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 10%; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 7%; white-space: nowrap;">
                 O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="min-width: 200px;">
+                style="width: 32%;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="min-width: 200px;">
+                style="width: 25%;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 8%; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 7%; white-space: nowrap;">
                 Total
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 6%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 1%; white-space: nowrap;">
+                style="width: 5%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1209,7 +1209,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in sales" :key="item?.id || index" class="sale-table-row">
               <!-- Documento -->
-              <td class="py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="py-2.5" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
                   <div class="d-flex align-center gap-1">
                     <VIcon
@@ -1234,7 +1234,7 @@ onMounted(() => {
               </td>
 
               <!-- OT Vinculada -->
-              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="text-center py-2.5" style="white-space: nowrap;">
                 <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-1.5 py-0.5 rounded cursor-pointer"
                   :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
@@ -1247,7 +1247,7 @@ onMounted(() => {
 
               <!-- Cliente -->
               <td class="py-2.5">
-                <div class="d-flex align-center gap-2">
+                <div class="d-flex align-center gap-2 min-w-0">
                   <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
                     }}</span>
@@ -1272,7 +1272,7 @@ onMounted(() => {
 
               <!-- Vehículo -->
               <td class="py-2.5">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2 min-w-0">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="15" color="secondary" />
                   </VAvatar>
@@ -1299,7 +1299,7 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="py-2.5" style="white-space: nowrap;">
                 <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                   style="white-space: nowrap;">
                   <span class="text-no-wrap font-weight-medium" style="white-space: nowrap; font-size: 0.82rem;">{{

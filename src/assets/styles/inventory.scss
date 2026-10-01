@@ -204,6 +204,27 @@
   }
 }
 
+.sales-modern-table {
+  width: 100% !important;
+
+  .v-table__wrapper {
+    overflow-x: hidden !important;
+  }
+
+  table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  th,
+  td {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
 // Work Order Items Table & Compact Responsive Styling
 .custom-items-table {
   width: 100% !important;
