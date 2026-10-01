@@ -92,7 +92,64 @@ const paymentStatusOptions = [
   { title: 'Pendiente', value: 'pending' },
 ]
 
+const isSaleCanceled = item => {
+  if (!item) return false
+  if (item.deleted_at) return true
+  if (item.is_canceled === true || item.is_canceled === 1 || item.is_canceled === '1') return true
+  if (item.has_credit_note === true && item.credit_note_type === 'full') return true
+  const s = String(item.status || '').toLowerCase().trim()
+  const ps = String(item.payment_status || '').toLowerCase().trim()
+  const sri = String(item.sri_status || '').toLowerCase().trim()
+  return (
+    s === 'canceled' ||
+    s === 'anulado' ||
+    s === 'anulada' ||
+    s === 'cancelled' ||
+    ps === 'canceled' ||
+    ps === 'anulado' ||
+    ps === 'anulada' ||
+    sri === 'anulada' ||
+    sri === 'anulado' ||
+    sri === 'cancelada' ||
+    sri === 'cancelado'
+  )
+}
+
+const isSalePending = s => {
+  if (!s || isSaleCanceled(s)) return false
+  const ps = String(s.payment_status || '').toLowerCase().trim()
+  return (ps === 'pending' || ps === 'partial' || s.is_credited === true || s.is_credited === 1)
+}
+
+const extractArray = (res, key) => {
+  if (Array.isArray(res)) return res
+  if (res?.[key] && Array.isArray(res[key])) return res[key]
+  if (res?.[key]?.data && Array.isArray(res[key].data)) return res[key].data
+  if (res?.data && Array.isArray(res.data)) return res.data
+  if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data
+
+  return []
+}
+
 let salesAbortController = null
+const globalPendingCount = ref(0)
+
+const fetchPendingCount = async () => {
+  try {
+    const res = await $api('sales', {
+      params: {
+        payment_status: 'pending',
+        exclude_quotes: true,
+        per_page: 100,
+      },
+    })
+    const items = extractArray(res, 'sales')
+    const validPending = items.filter(s => isSalePending(s) && !isSaleCanceled(s))
+    globalPendingCount.value = validPending.length
+  } catch (error) {
+    console.error('Error al consultar conteo de ventas pendientes:', error)
+  }
+}
 
 // Cargar datos
 const loadSales = async () => {
@@ -121,21 +178,17 @@ const loadSales = async () => {
       signal: salesAbortController.signal,
     })
 
-    // Extraer el arreglo real sin importar la estructura de la respuesta
-    const extractArray = (res, key) => {
-      if (Array.isArray(res)) return res
-      if (res?.[key] && Array.isArray(res[key])) return res[key]
-      if (res?.[key]?.data && Array.isArray(res[key].data)) return res[key].data
-      if (res?.data && Array.isArray(res.data)) return res.data
-      if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data
-
-      return []
-    }
-
     sales.value = extractArray(response, 'sales')
     const paginator = response?.data?.data ? response.data : (response?.data || response?.sales || response || {})
 
-    totalItems.value = paginator.total || sales.value.length || 0
+    if (searchForm.value.payment_status === 'pending') {
+      const validPending = sales.value.filter(s => isSalePending(s) && !isSaleCanceled(s))
+      globalPendingCount.value = validPending.length
+      totalItems.value = validPending.length
+    } else {
+      totalItems.value = paginator.total || sales.value.length || 0
+      fetchPendingCount()
+    }
     totalPages.value = paginator.last_page || 1
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
@@ -146,14 +199,43 @@ const loadSales = async () => {
   }
 }
 
+// Ventas mostradas en tabla (filtrando canceladas cuando se ve 'pending')
+const displayedSales = computed(() => {
+  if (searchForm.value.payment_status === 'pending') {
+    return sales.value.filter(s => isSalePending(s) && !isSaleCanceled(s))
+  }
+  return sales.value
+})
+
 // Métricas computadas y filtros
 const totalBilledInPage = computed(() => {
-  return sales.value.reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0)
+  return displayedSales.value.reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0)
 })
 
 const pendingSalesCount = computed(() => {
-  return sales.value.filter(s => s.payment_status === 'pending').length
+  if (searchForm.value.payment_status === 'pending') {
+    return displayedSales.value.length
+  }
+  const inPageCount = sales.value.filter(s => isSalePending(s) && !isSaleCanceled(s)).length
+  return globalPendingCount.value !== undefined && globalPendingCount.value > 0
+    ? globalPendingCount.value
+    : inPageCount
 })
+
+const togglePendingFilter = () => {
+  searchForm.value.payment_status = searchForm.value.payment_status === 'pending' ? null : 'pending'
+  currentPage.value = 1
+}
+
+const togglePaidFilter = () => {
+  searchForm.value.payment_status = searchForm.value.payment_status === 'paid' ? null : 'paid'
+  currentPage.value = 1
+}
+
+const clearPaymentStatusFilter = () => {
+  searchForm.value.payment_status = null
+  currentPage.value = 1
+}
 
 const hasActiveFilters = computed(() => {
   return !!(
@@ -321,14 +403,6 @@ const getPaymentStatusInfo = status => {
   }
 
   return map[status] || { color: 'grey', text: status || 'Pendiente', icon: 'ri-question-line' }
-}
-
-const isSaleCanceled = item => {
-  if (!item) return false
-  if (item.deleted_at) return true
-  const s = String(item.status || '').toLowerCase()
-  const ps = String(item.payment_status || '').toLowerCase()
-  return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
 }
 
 const getPaymentMethodText = item => {
@@ -1029,10 +1103,14 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Barra de Métricas Rápidas (KPIs) -->
+    <!-- Barra de Métricas Rápidas (KPIs / Pestañas de Filtro Interactivas) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card': !searchForm.payment_status }"
+          @click="clearPaymentStatusFilter"
+        >
           <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-file-shield-2-line" size="24" />
           </VAvatar>
@@ -1046,7 +1124,11 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card-success': searchForm.payment_status === 'paid' }"
+          @click="togglePaidFilter"
+        >
           <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-money-dollar-circle-line" size="24" />
           </VAvatar>
@@ -1060,7 +1142,11 @@ onMounted(() => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card-warning': searchForm.payment_status === 'pending' }"
+          @click="togglePendingFilter"
+        >
           <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-time-line" size="24" />
           </VAvatar>
@@ -1122,34 +1208,34 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
+    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface" style="overflow-x: hidden !important;">
+      <VTable style="table-layout: fixed; width: 100%;">
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 130px;">
+            <td class="py-4" style="width: 9%;">
               <div class="shimmer-line w-75" />
             </td>
-            <td class="py-4" style="width: 90px;">
+            <td class="py-4" style="width: 7%;">
               <div class="shimmer-line w-60 mx-auto" />
             </td>
-            <td class="py-4">
+            <td class="py-4" style="width: 24%;">
               <div class="shimmer-line w-75 mb-2" />
               <div class="shimmer-line w-40" />
             </td>
-            <td class="py-4">
+            <td class="py-4" style="width: 20%;">
               <div class="shimmer-line w-60 mb-2" />
               <div class="shimmer-line w-40" />
             </td>
-            <td class="py-4" style="width: 130px;">
+            <td class="py-4" style="width: 11%;">
               <div class="shimmer-line w-50" />
             </td>
-            <td class="py-4 text-right" style="width: 110px;">
+            <td class="py-4 text-right" style="width: 9%;">
               <div class="shimmer-line w-60 ms-auto" />
             </td>
-            <td class="py-4 text-center" style="width: 140px;">
+            <td class="py-4 text-center" style="width: 13%;">
               <div class="shimmer-chip mx-auto" />
             </td>
-            <td class="py-4 text-center" style="width: 120px;">
+            <td class="py-4 text-center" style="width: 7%;">
               <div class="shimmer-button rounded mx-auto" />
             </td>
           </tr>
@@ -1158,7 +1244,7 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard v-else-if="!sales || sales.length === 0"
+    <VCard v-else-if="!displayedSales || displayedSales.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
       <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
         <VIcon size="38" icon="ri-shopping-cart-2-line" />
@@ -1182,44 +1268,44 @@ onMounted(() => {
 
     <!-- TABLA MODERNA DE VENTAS -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="sales-modern-table">
+      <VCard class="rounded-xl border elevation-0 bg-surface" style="overflow-x: hidden !important;">
+        <VTable hover class="sales-modern-table" style="table-layout: fixed; width: 100%;">
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 11%; min-width: 105px; white-space: nowrap;">
+                style="width: 9%; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 8%; min-width: 75px; white-space: nowrap;">
+                style="width: 7%; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 24%; min-width: 170px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 24%;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 20%; min-width: 160px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 20%;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 11%; min-width: 100px; white-space: nowrap;">
+                style="width: 11%; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 9%; min-width: 90px; white-space: nowrap;">
+                style="width: 9%; white-space: nowrap;">
                 Total
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 11%; min-width: 120px; white-space: nowrap;">
+                style="width: 13%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 6%; min-width: 80px; white-space: nowrap;">
+                style="width: 7%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in sales" :key="item?.id || index" class="sale-table-row">
+            <tr v-for="(item, index) in displayedSales" :key="item?.id || index" class="sale-table-row">
               <!-- Documento -->
               <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
@@ -1259,50 +1345,56 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-2">
+              <td class="py-3" style="overflow: hidden;">
+                <div class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="34" color="primary" variant="tonal" rounded="lg"
                     class="font-weight-bold elevation-0 flex-shrink-0">
                     <span style="font-size: 0.8rem;">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 220px;">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                    <span class="font-weight-bold text-high-emphasis text-body-2"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
-                    </div>
-                    <div v-if="getClientPhone(item.client)"
-                      class="text-caption text-medium-emphasis d-flex align-center mt-0.5 text-truncate">
-                      <VIcon icon="ri-phone-line" size="12" class="me-1 text-disabled flex-shrink-0" />
-                      <span class="text-truncate">{{ getClientPhone(item.client) }}</span>
-                    </div>
-                    <div v-else-if="item.client?.n_document"
-                      class="text-caption text-medium-emphasis font-mono text-truncate">
+                    </span>
+                    <span v-if="getClientPhone(item.client)"
+                      class="text-caption text-medium-emphasis mt-0.5 font-mono"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
+                      :title="getClientPhone(item.client)">
+                      {{ getClientPhone(item.client) }}
+                    </span>
+                    <span v-else-if="item.client?.n_document"
+                      class="text-caption text-medium-emphasis font-mono"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
+                      :title="item.client.n_document">
                       {{ item.client.n_document }}
-                    </div>
+                    </span>
                   </div>
                 </div>
               </td>
 
               <!-- Vehículo -->
-              <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+              <td class="py-3" style="overflow: hidden;">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 200px;">
-                    <div class="font-mono text-truncate"
+                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                    <span class="font-mono"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
-                    </div>
-                    <div
-                      class="text-uppercase text-truncate font-weight-medium text-medium-emphasis vehicle-model-small"
+                    </span>
+                    <span
+                      class="text-uppercase font-weight-medium text-medium-emphasis vehicle-model-small"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                       :title="formatVehicleInfo(item.vehicle)">
                       {{ formatVehicleInfo(item.vehicle) }}
-                    </div>
+                    </span>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
                   <VAvatar size="34" color="secondary" variant="tonal" rounded="lg"
                     class="elevation-0 flex-shrink-0 opacity-40">
                     <VIcon icon="ri-car-line" size="18" />
@@ -1343,8 +1435,14 @@ onMounted(() => {
               <!-- Estado -->
               <td class="text-center py-3" style="white-space: nowrap;">
                 <div v-if="item" class="d-inline-flex justify-center">
-                  <!-- Factura con SRI: Badge Compuesto Unificado -->
-                  <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                  <!-- Factura / Documento Anulado (NUNCA mostrar como pendiente) -->
+                  <div v-if="isSaleCanceled(item)" class="status-pill-clean status-canceled">
+                    <span class="status-dot" />
+                    <span>Anulada</span>
+                  </div>
+
+                  <!-- Factura con SRI (No Anulada): Badge Compuesto Unificado -->
+                  <div v-else-if="item.document_type === 'invoice' && item.sri_status"
                     class="status-composite-card" :class="[
                       `payment-is-${item.payment_status || 'pending'}`,
                       `sri-is-${item.sri_status.toLowerCase()}`
@@ -1370,9 +1468,9 @@ onMounted(() => {
                     </div>
                   </div>
 
-                  <!-- Documento simple (Cotización, Nota de Venta, Anulada o sin SRI) -->
+                  <!-- Documento simple (Cotización, Nota de Venta o Factura simple sin SRI) -->
                   <div v-else class="status-pill-clean"
-                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`">
+                    :class="`status-${item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending')}`">
                     <span class="status-dot" />
                     <span>{{ getStatusInfo(item)?.text }}</span>
                   </div>
@@ -1493,50 +1591,3 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.sale-table-row {
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-.vehicle-plate-large {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-weight: 700 !important;
-  font-size: 0.82rem !important;
-  letter-spacing: 0.03em !important;
-  line-height: 1.25 !important;
-}
-
-.vehicle-model-small {
-  font-size: 0.68rem !important;
-  line-height: 1.2 !important;
-  letter-spacing: 0.02em !important;
-  opacity: 0.8 !important;
-}
-
-.hover-underline:hover {
-  text-decoration: underline;
-}
-
-.doc-number-canceled {
-  color: #94a3b8 !important;
-  text-decoration: line-through;
-}
-</style>

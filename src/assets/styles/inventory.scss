@@ -5091,4 +5091,221 @@
     background-color: #94a3b8 !important;
   }
 }
+
+// =======================================================
+// MODERN DATA TABLES - ZERO HORIZONTAL SCROLL LAYOUT
+// =======================================================
+.work-orders-modern-table,
+.sales-modern-table,
+.employees-modern-table,
+.partners-modern-table,
+.client-modern-table,
+.vehicle-modern-table,
+.app-data-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse;
+
+  th {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+.sale-table-row,
+.wo-table-row,
+.employee-table-row,
+.partner-table-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+.vehicle-plate-large {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.25 !important;
+}
+
+.vehicle-model-small {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  opacity: 0.8 !important;
+}
+
+.kardex-plate-badge {
+  display: inline-block;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #1e293b;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 1px 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.hover-underline:hover {
+  text-decoration: underline !important;
+}
+
+.doc-number-canceled {
+  color: #94a3b8 !important;
+  text-decoration: line-through !important;
+}
+
+// Alarma y fila destacada para órdenes listas / por finalizar
+.wo-row-pending-finish {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  transition: background-color 0.2s ease;
+
+  > td:first-child {
+    border-left: 4px solid #f59e0b !important;
+  }
+
+  &:hover {
+    background-color: rgba(245, 158, 11, 0.16) !important;
+  }
+}
+
+.pulse-alarm-icon {
+  animation: pulse-alarm-ring 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-alarm-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.22);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+}
+
+.license-plate-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  border: 1.5px solid #0f172a;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+// =======================================================
+// SIDEBAR / VERTICAL NAV SECTION HEADERS STYLING
+// =======================================================
+.layout-vertical-nav {
+  .nav-section-title {
+    margin-block-start: 1.85rem !important;
+    margin-block-end: 0.75rem !important;
+    opacity: 1 !important;
+
+    &:first-child {
+      margin-block-start: 0.85rem !important;
+    }
+
+    .title-wrapper {
+      padding-block: 0.35rem !important;
+    }
+
+    .title-text {
+      color: #ffffff !important;
+      font-size: 0.92rem !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.15em !important;
+      text-transform: uppercase !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      opacity: 1 !important;
+
+      &::before,
+      &::after {
+        border-block-end: 2px solid rgba(255, 255, 255, 0.55) !important;
+        content: "";
+        opacity: 0.9 !important;
+      }
+
+      &::after {
+        flex: 1 1 auto;
+      }
+
+      &::before {
+        flex: 0 1 1rem;
+      }
+    }
+  }
+
+  .nav-link,
+  .nav-group {
+    .nav-item-title {
+      font-size: 0.835rem !important;
+    }
+  }
+}
+
+// =======================================================
+// KPI STAT CARDS & INTERACTIVE TABS / FILTERS
+// =======================================================
+.kpi-stat-card {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  user-select: none;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+
+  &.cursor-pointer {
+    cursor: pointer !important;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+      border-color: rgba(var(--v-theme-primary), 0.5) !important;
+    }
+  }
+
+  &.active-kpi-card {
+    border-color: rgb(var(--v-theme-primary)) !important;
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.25), 0 4px 14px rgba(var(--v-theme-primary), 0.12) !important;
+    background: rgba(var(--v-theme-primary), 0.04) !important;
+  }
+
+  &.active-kpi-card-warning {
+    border-color: rgb(var(--v-theme-warning)) !important;
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-warning), 0.28), 0 4px 14px rgba(var(--v-theme-warning), 0.14) !important;
+    background: rgba(var(--v-theme-warning), 0.05) !important;
+  }
+
+  &.active-kpi-card-success {
+    border-color: rgb(var(--v-theme-success)) !important;
+    box-shadow: 0 0 0 2px rgba(var(--v-theme-success), 0.28), 0 4px 14px rgba(var(--v-theme-success), 0.14) !important;
+    background: rgba(var(--v-theme-success), 0.05) !important;
+  }
+}
+
+
+
+
 

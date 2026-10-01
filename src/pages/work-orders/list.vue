@@ -78,6 +78,7 @@ const itemsPerPage = ref(10)
 
 const statusOptions = [
   { title: 'Todos los estados', value: 'all' },
+  { title: 'Activas / En Taller', value: 'active' },
   { title: 'Borrador', value: 'draft' },
   { title: 'Recibido', value: 'received' },
   { title: 'En Progreso', value: 'in_progress' },
@@ -86,6 +87,7 @@ const statusOptions = [
 ]
 
 const statusColors = {
+  active: 'warning',
   draft: 'secondary',
   received: 'info',
   in_progress: 'warning',
@@ -94,6 +96,7 @@ const statusColors = {
 }
 
 const statusIcons = {
+  active: 'ri-tools-line',
   draft: 'ri-draft-line',
   received: 'ri-file-list-3-line',
   in_progress: 'ri-tools-line',
@@ -102,6 +105,7 @@ const statusIcons = {
 }
 
 const statusLabels = {
+  active: 'Activa',
   draft: 'Borrador',
   received: 'Recibido',
   in_progress: 'En Progreso',
@@ -112,7 +116,9 @@ const statusLabels = {
 const filteredWorkOrders = computed(() => {
   let filtered = workOrders.value
 
-  if (statusFilter.value !== 'all') {
+  if (statusFilter.value === 'active') {
+    filtered = filtered.filter(wo => ['received', 'in_progress', 'ready'].includes(wo.status))
+  } else if (statusFilter.value !== 'all') {
     filtered = filtered.filter(wo => wo.status === statusFilter.value)
   }
 
@@ -572,10 +578,14 @@ watch(() => route.query.search, newSearch => {
       </div>
     </div>
 
-    <!-- Barra de Métricas Rápidas (KPIs) -->
+    <!-- Barra de Métricas Rápidas (KPIs / Pestañas de Filtro Interactivas) -->
     <VRow class="mb-4" dense>
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card': statusFilter === 'all' }"
+          @click="statusFilter = 'all'"
+        >
           <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-file-list-3-line" size="24" />
           </VAvatar>
@@ -589,28 +599,36 @@ watch(() => route.query.search, newSearch => {
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card-warning': statusFilter === 'active' || statusFilter === 'in_progress' || statusFilter === 'received' }"
+          @click="statusFilter = (statusFilter === 'active' ? 'all' : 'active')"
+        >
           <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-tools-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">En Taller (Operativas)</div>
             <div class="text-h6 font-weight-bold text-warning text-truncate">
-              {{ stats.received + stats.inProgress }} <span class="text-caption text-disabled font-weight-regular">activas</span>
+              {{ stats.received + stats.inProgress + stats.ready }} <span class="text-caption text-disabled font-weight-regular">activas</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
       <VCol cols="12" sm="4">
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard
+          class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
+          :class="{ 'active-kpi-card-success': statusFilter === 'ready' }"
+          @click="statusFilter = (statusFilter === 'ready' ? 'all' : 'ready')"
+        >
           <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
             <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Listas / Entregadas</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Listas para Entrega</div>
             <div class="text-h6 font-weight-bold text-success text-truncate">
-              {{ stats.ready + stats.delivered }} <span class="text-caption text-disabled font-weight-regular">finalizadas</span>
+              {{ stats.ready }} <span class="text-caption text-disabled font-weight-regular">listas</span>
             </div>
           </div>
         </VCard>
@@ -732,16 +750,17 @@ watch(() => route.query.search, newSearch => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
+    <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface" style="overflow-x: hidden !important;">
+      <VTable style="table-layout: fixed; width: 100%;">
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-50" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 140px;"><div class="shimmer-button rounded mx-auto" /></td>
+            <td class="py-4" style="width: 13%;"><div class="shimmer-line w-75" /></td>
+            <td class="py-4" style="width: 27%;"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
+            <td class="py-4" style="width: 23%;"><div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" /></td>
+            <td class="py-4" style="width: 12%;"><div class="shimmer-line w-50" /></td>
+            <td class="py-4 text-right" style="width: 10%;"><div class="shimmer-line w-60 ms-auto" /></td>
+            <td class="py-4 text-center" style="width: 10%;"><div class="shimmer-chip mx-auto" /></td>
+            <td class="py-4 text-center" style="width: 5%;"><div class="shimmer-button rounded mx-auto" /></td>
           </tr>
         </tbody>
       </VTable>
@@ -773,29 +792,29 @@ watch(() => route.query.search, newSearch => {
 
     <!-- TABLA MODERNA DE ÓRDENES DE TRABAJO -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="work-orders-modern-table overflow-x-auto">
+      <VCard class="rounded-xl border elevation-0 bg-surface" style="overflow-x: hidden !important;">
+        <VTable hover class="work-orders-modern-table" style="table-layout: fixed; width: 100%;">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 13%; white-space: nowrap;">
                 N° Orden
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 27%;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 23%;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 12%; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 5%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -834,49 +853,60 @@ watch(() => route.query.search, newSearch => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3" style="max-width: 240px;">
-                <div class="d-flex align-center gap-2">
+              <td class="py-3" style="overflow: hidden;">
+                <div class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0 flex-shrink-0">
                     <span style="font-size: 0.8rem;">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 180px;">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="getClientName(item.client)">
+                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                    <span
+                      class="font-weight-bold text-high-emphasis text-body-2"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
+                      :title="getClientName(item.client)"
+                    >
                       {{ getClientName(item.client) }}
-                    </div>
-                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
+                    </span>
+                    <span
+                      v-if="item.client?.n_document"
+                      class="text-caption text-medium-emphasis font-mono"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
+                      :title="item.client.n_document"
+                    >
                       {{ item.client.n_document }}
-                    </div>
+                    </span>
                   </div>
                 </div>
               </td>
 
               <!-- Vehículo -->
-              <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+              <td class="py-3" style="overflow: hidden;">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 250px;">
-                    <div
-                      class="font-mono text-truncate"
+                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                    <span
+                      class="font-mono"
                       :class="item.vehicle.license_plate ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                       :title="item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'Sin placa'"
                     >
                       {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
-                    </div>
-                    <div
-                      class="text-uppercase text-truncate font-weight-medium text-medium-emphasis vehicle-model-small"
+                    </span>
+                    <span
+                      class="text-uppercase font-weight-medium text-medium-emphasis vehicle-model-small"
+                      style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
                       :title="getVehicleInfo(item.vehicle)"
                     >
                       {{ getVehicleInfo(item.vehicle) }}
-                    </div>
+                    </span>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
                   <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
                     <VIcon icon="ri-car-line" size="18" />
                   </VAvatar>
-                  <span>Sin vehículo</span>
+                  <span class="text-truncate">Sin vehículo</span>
                 </div>
               </td>
 
@@ -1468,171 +1498,3 @@ watch(() => route.query.search, newSearch => {
   </div>
 </template>
 
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.wo-table-row {
-  transition: background-color 0.15s ease;
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-
-.license-plate-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  border: 1.5px solid #0f172a;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.vehicle-plate-large {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-weight: 700 !important;
-  font-size: 0.82rem !important;
-  letter-spacing: 0.03em !important;
-  line-height: 1.25 !important;
-}
-
-.vehicle-model-small {
-  font-size: 0.68rem !important;
-  line-height: 1.2 !important;
-  letter-spacing: 0.02em !important;
-  opacity: 0.8 !important;
-}
-
-.hover-underline:hover {
-  text-decoration: underline;
-}
-
-// Status Pills (Estilo Socios Activo/Inactivo con Punto)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-partial {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-.status-transfer {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-canceled {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
-
-  .status-dot {
-    background-color: #94a3b8 !important;
-  }
-}
-
-// Alarma y fila destacada para órdenes listas / por finalizar
-.wo-row-pending-finish {
-  background-color: rgba(245, 158, 11, 0.08) !important;
-  transition: background-color 0.2s ease;
-
-  > td:first-child {
-    border-left: 4px solid #f59e0b !important;
-  }
-
-  &:hover {
-    background-color: rgba(245, 158, 11, 0.16) !important;
-  }
-}
-
-.pulse-alarm-icon {
-  animation: pulse-alarm-ring 1.8s infinite ease-in-out;
-}
-
-@keyframes pulse-alarm-ring {
-  0% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-
-  50% {
-    transform: scale(1.22);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-}
-</style>
