@@ -240,8 +240,8 @@ const getAccountName = account => {
     .trim() || account.name || 'Cuenta'
 }
 
-// Transferencias filtradas
-const filteredTransfers = computed(() => {
+// Transferencias filtradas (plano para paginación)
+const allFilteredTransfers = computed(() => {
   if (!transfers.value || !transfers.value.length) return []
 
   const query = searchQuery.value.trim().toLowerCase()
@@ -249,45 +249,84 @@ const filteredTransfers = computed(() => {
   const today = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0')
   const currentMonth = today.substring(0, 7)
 
-  return transfers.value
-    .map(group => {
-      const items = group.transfers || [group]
+  const flatList = []
 
-      const matchingItems = items.filter(t => {
-        const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
+  transfers.value.forEach(group => {
+    const items = group.transfers || [group]
 
-        if (selectedFilter.value === 'today' && tDate !== today) return false
-        if (selectedFilter.value === 'month' && tDate.substring(0, 7) !== currentMonth) return false
+    items.forEach(t => {
+      const tDate = (t.transfer_date || t.created_at || '').split('T')[0]
 
-        if (!query) return true
+      if (selectedFilter.value === 'today' && tDate !== today) return
+      if (selectedFilter.value === 'month' && tDate.substring(0, 7) !== currentMonth) return
 
+      if (query) {
         const sourceName = (getAccountName(t.source_account) + ' ' + (t.source_account?.name || '')).toLowerCase()
         const destName = (getAccountName(t.destination_account) + ' ' + (t.destination_account?.name || '')).toLowerCase()
         const desc = (t.description || '').toLowerCase()
         const amountStr = String(t.amount || '')
         const groupLabel = (group.label || '').toLowerCase()
 
-        return (
+        const match = (
           sourceName.includes(query) ||
           destName.includes(query) ||
           desc.includes(query) ||
           amountStr.includes(query) ||
           groupLabel.includes(query)
         )
-      })
 
-      return {
-        ...group,
-        transfers: matchingItems,
+        if (!match) return
       }
+
+      flatList.push(t)
     })
-    .filter(group => group.transfers.length > 0)
+  })
+
+  return flatList.sort((a, b) => new Date(b.transfer_date || b.created_at || 0) - new Date(a.transfer_date || a.created_at || 0))
+})
+
+// Paginación
+const currentPage = ref(1)
+const itemsPerPage = ref(15)
+const totalPages = computed(() => Math.ceil(allFilteredTransfers.value.length / itemsPerPage.value) || 1)
+
+watch(totalPages, newVal => {
+  if (currentPage.value > newVal) {
+    currentPage.value = newVal || 1
+  }
+})
+
+watch([searchQuery, selectedFilter], () => {
+  currentPage.value = 1
+})
+
+// Transferencias de la página activa
+const paginatedTransfers = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return allFilteredTransfers.value.slice(start, end)
+})
+
+// Agrupación por fecha de las transferencias de la página activa
+const paginatedGroupedTransfers = computed(() => {
+  const groups = {}
+
+  paginatedTransfers.value.forEach(t => {
+    const date = (t.transfer_date || t.created_at || '').split('T')[0] || 'Sin fecha'
+    if (!groups[date]) {
+      groups[date] = {
+        label: date,
+        transfers: [],
+      }
+    }
+    groups[date].transfers.push(t)
+  })
+
+  return Object.values(groups).sort((a, b) => new Date(b.label) - new Date(a.label))
 })
 
 // Total de ítems filtrados
-const totalFilteredItems = computed(() => {
-  return filteredTransfers.value.reduce((acc, g) => acc + (g.transfers ? g.transfers.length : 0), 0)
-})
+const totalFilteredItems = computed(() => allFilteredTransfers.value.length)
 
 // Montar componente
 onMounted(() => {
@@ -689,7 +728,7 @@ onMounted(() => {
         </tbody>
 
         <!-- Sin resultados filtrados -->
-        <tbody v-else-if="!filteredTransfers.length">
+        <tbody v-else-if="!allFilteredTransfers.length">
           <tr>
             <td
               colspan="4"
@@ -720,7 +759,7 @@ onMounted(() => {
         <!-- Datos reales -->
         <tbody v-else>
           <template
-            v-for="group in filteredTransfers"
+            v-for="group in paginatedGroupedTransfers"
             :key="group.label"
           >
             <!-- Fila de Encabezado por Fecha -->
@@ -939,6 +978,45 @@ onMounted(() => {
           </template>
         </tbody>
       </VTable>
+    </VCard>
+
+    <!-- Paginación -->
+    <VCard
+      v-if="allFilteredTransfers.length > 0"
+      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+    >
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex align-center gap-4 flex-wrap">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong
+              class="text-high-emphasis"
+            >{{ allFilteredTransfers.length }}</strong> transferencias
+          </div>
+          <div
+            class="d-flex align-center gap-2"
+            style="min-width: 140px;"
+          >
+            <span class="text-caption text-medium-emphasis">Por pág:</span>
+            <VSelect
+              v-model="itemsPerPage"
+              :items="[10, 15, 25, 50, 100]"
+              variant="outlined"
+              density="compact"
+              hide-details
+              style="max-width: 95px;"
+              @update:model-value="currentPage = 1"
+            />
+          </div>
+        </div>
+        <VPagination
+          v-if="totalPages > 1"
+          v-model="currentPage"
+          :length="totalPages"
+          rounded="circle"
+          :total-visible="7"
+          color="primary"
+        />
+      </div>
     </VCard>
   </div>
 
