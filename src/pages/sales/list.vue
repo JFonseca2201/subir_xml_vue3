@@ -13,6 +13,7 @@ import SaleMailDialog from '@/components/inventory/sales/SaleMailDialog.vue'
 import SriErrorDialog from '@/components/inventory/sales/SriErrorDialog.vue'
 import CreditNoteDialog from '@/components/inventory/sales/CreditNoteDialog.vue'
 import SriStatusDialog from '@/components/inventory/sales/SriStatusDialog.vue'
+import WorkOrderViewDialog from '@/components/dialogs/WorkOrderViewDialog.vue'
 import { getBrandNameById } from '@/data/vehicleBrands'
 
 
@@ -35,6 +36,8 @@ const isDeleteDialogVisible = ref(false)
 const isPaymentDialogVisible = ref(false)
 const isCreditNoteDialogVisible = ref(false)
 const isSriStatusDialogVisible = ref(false)
+const isWorkOrderViewDialogVisible = ref(false)
+const selectedWorkOrderIdForView = ref(null)
 const selectedSaleForCreditNote = ref(null)
 const selectedSale = ref(null)
 const viewLoading = ref(false)
@@ -505,6 +508,13 @@ const viewSale = async sale => {
   }
 }
 
+
+const openWorkOrderView = id => {
+  if (!id) return
+  const cleanId = typeof id === 'string' ? id.replace(/[^0-9]/g, '') : id
+  selectedWorkOrderIdForView.value = cleanId || id
+  isWorkOrderViewDialogVisible.value = true
+}
 
 const goToWorkOrder = (id, number = null) => {
   const cleanNum = number ? String(number).replace(/[^0-9]/g, '') : ''
@@ -999,7 +1009,7 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2.5 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end" style="gap: 12px;">
         <VBtn variant="tonal" color="info" prepend-icon="ri-wifi-line" class="font-weight-medium"
           @click="isSriStatusDialogVisible = true">
           Estado SRI
@@ -1116,26 +1126,30 @@ onMounted(() => {
       <VTable>
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;">
+            <td class="py-4" style="width: 130px;">
               <div class="shimmer-line w-75" />
             </td>
-            <td class="py-4" style="width: 100px;">
-              <div class="shimmer-line w-50" />
+            <td class="py-4" style="width: 90px;">
+              <div class="shimmer-line w-60 mx-auto" />
             </td>
             <td class="py-4">
               <div class="shimmer-line w-75 mb-2" />
               <div class="shimmer-line w-40" />
             </td>
             <td class="py-4">
-              <div class="shimmer-line w-60" />
+              <div class="shimmer-line w-60 mb-2" />
+              <div class="shimmer-line w-40" />
             </td>
-            <td class="py-4" style="width: 110px;">
+            <td class="py-4" style="width: 130px;">
+              <div class="shimmer-line w-50" />
+            </td>
+            <td class="py-4 text-right" style="width: 110px;">
               <div class="shimmer-line w-60 ms-auto" />
             </td>
-            <td class="py-4" style="width: 120px;">
+            <td class="py-4 text-center" style="width: 140px;">
               <div class="shimmer-chip mx-auto" />
             </td>
-            <td class="py-4 text-center" style="width: 130px;">
+            <td class="py-4 text-center" style="width: 120px;">
               <div class="shimmer-button rounded mx-auto" />
             </td>
           </tr>
@@ -1172,28 +1186,34 @@ onMounted(() => {
         <VTable hover class="sales-modern-table">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 8%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 11%; min-width: 105px; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 6%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 8%; min-width: 75px; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 27%;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 24%; min-width: 170px;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 23%;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 20%; min-width: 160px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 8.5%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 11%; min-width: 100px; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-2.5" style="width: 9%; white-space: nowrap;">
+              <th class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 9%; min-width: 90px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 11.5%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 11%; min-width: 120px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 7%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 6%; min-width: 80px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1201,23 +1221,23 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in sales" :key="item?.id || index" class="sale-table-row">
               <!-- Documento -->
-              <td class="py-2.5" style="white-space: nowrap;">
+              <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
                   <div class="d-flex align-center gap-1">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                      size="13" class="flex-shrink-0"
+                      size="12" class="flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
-                      style="font-size: 0.68rem; letter-spacing: 0.02em;"
+                      style="font-size: 0.62rem; letter-spacing: 0.02em;"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
                   </div>
-                  <div class="font-mono text-body-2 font-weight-regular" :class="[
+                  <div class="font-mono text-body-1 font-weight-bold" :class="[
                     isSaleCanceled(item)
                       ? 'doc-number-canceled cursor-pointer'
-                      : 'doc-number-active cursor-pointer hover-underline'
+                      : 'text-primary cursor-pointer hover-underline'
                   ]" :title="isSaleCanceled(item) ? 'Documento Anulado (Clic para más información)' : 'Ver Detalle'"
                     @click="viewSale(item)">
                     {{ formatDocumentNumber(item.document_number) }}
@@ -1226,11 +1246,12 @@ onMounted(() => {
               </td>
 
               <!-- OT Vinculada -->
-              <td class="text-center py-2.5" style="white-space: nowrap;">
-                <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
-                  class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-1.5 py-0.5 rounded cursor-pointer"
-                  :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
-                  @click="goToWorkOrder(item.work_order_id || item.work_order?.id || item.workOrder?.id, item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)">
+              <td class="text-center py-3" style="white-space: nowrap;">
+                <span
+                  v-if="item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order?.number || item.workOrder?.number"
+                  class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer hover-underline"
+                  :title="`Ver Detalle de Orden de Trabajo #${item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id}`"
+                  @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)">
                   {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number
                     || item.work_order_id) }}
                 </span>
@@ -1238,20 +1259,20 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-2.5 overflow-hidden">
-                <div class="d-flex align-center gap-2 overflow-hidden w-100">
-                  <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
-                    }}</span>
+              <td class="py-3">
+                <div class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg"
+                    class="font-weight-bold elevation-0 flex-shrink-0">
+                    <span style="font-size: 0.8rem;">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1 overflow-hidden">
+                  <div class="min-w-0" style="max-width: 220px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
                     </div>
                     <div v-if="getClientPhone(item.client)"
                       class="text-caption text-medium-emphasis d-flex align-center mt-0.5 text-truncate">
-                      <VIcon icon="ri-phone-line" size="11" class="me-1 text-disabled flex-shrink-0" />
+                      <VIcon icon="ri-phone-line" size="12" class="me-1 text-disabled flex-shrink-0" />
                       <span class="text-truncate">{{ getClientPhone(item.client) }}</span>
                     </div>
                     <div v-else-if="item.client?.n_document"
@@ -1263,13 +1284,14 @@ onMounted(() => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-2.5 overflow-hidden">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
-                  <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-car-line" size="15" color="secondary" />
+              <td class="py-3">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
+                    <VIcon icon="ri-car-line" size="18" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1 overflow-hidden">
-                    <div class="font-mono text-truncate vehicle-plate-large text-high-emphasis"
+                  <div class="min-w-0" style="max-width: 200px;">
+                    <div class="font-mono text-truncate"
+                      :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                     </div>
@@ -1280,43 +1302,46 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
-                  <VAvatar size="28" color="secondary" variant="tonal" rounded="lg"
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg"
                     class="elevation-0 flex-shrink-0 opacity-40">
-                    <VIcon icon="ri-car-line" size="15" />
+                    <VIcon icon="ri-car-line" size="18" />
                   </VAvatar>
                   <span class="text-truncate">Sin vehículo</span>
                 </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-2.5" style="white-space: nowrap;">
+              <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                   style="white-space: nowrap;">
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap; font-size: 0.82rem;">{{
-                    formatDate(item.created_at) }}</span>
+                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
+                    formatDate(item.service_date || item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Total -->
-              <td class="text-right py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="py-3 text-right" style="white-space: nowrap;">
                 <div class="d-flex flex-column align-end gap-0.5">
                   <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                     ${{ parseFloat(item.total || 0).toFixed(2) }}
                   </span>
-                  <!-- Tipo de movimiento (Efectivo / Transferencia) en letras muy pequeñas -->
+                  <!-- Tipo de movimiento (Efectivo / Transferencia) en letras pequeñas -->
                   <div v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
                     class="d-flex align-center text-medium-emphasis"
                     style="font-size: 0.68rem; line-height: 1.1; margin-top: 1px;">
                     <VIcon :icon="getPaymentMethodIcon(item)" size="11" class="me-1 text-disabled flex-shrink-0" />
                     <span class="font-weight-medium text-capitalize"
-                      :title="`Método de pago: ${getPaymentMethodText(item)}`">{{ getPaymentMethodText(item) }}</span>
+                      :title="`Método de pago: ${getPaymentMethodText(item)}`">
+                      {{ getPaymentMethodText(item) }}
+                    </span>
                   </div>
                 </div>
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <div v-if="item" class="d-inline-flex justify-center">
                   <!-- Factura con SRI: Badge Compuesto Unificado -->
                   <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
@@ -1355,7 +1380,7 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
+              <td class="text-center py-3" style="white-space: nowrap;">
                 <div v-if="!isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                   <!-- Ver venta -->
                   <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
@@ -1426,7 +1451,7 @@ onMounted(() => {
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong
               class="text-high-emphasis">{{
-                totalItems }}</strong> ventas
+              totalItems }}</strong> ventas
           </div>
           <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary"
             @update:model-value="loadSales" />
@@ -1440,7 +1465,6 @@ onMounted(() => {
 
     <SaleDeleteDialog v-if="isDeleteDialogVisible" v-model:isDialogVisible="isDeleteDialogVisible"
       :sale-selected="selectedSale" @delete-sale="handleDeleteSale" />
-
 
     <!-- Payment Dialog -->
     <SalePaymentDialog v-model:is-dialog-visible="isPaymentDialogVisible" :sale="selectedSale"
@@ -1462,5 +1486,145 @@ onMounted(() => {
 
     <!-- Diálogo para Verificar Estado de Servidores SRI -->
     <SriStatusDialog v-model:is-dialog-visible="isSriStatusDialogVisible" />
+
+    <!-- Diálogo para Ver Orden de Trabajo -->
+    <WorkOrderViewDialog v-if="isWorkOrderViewDialogVisible" v-model:is-dialog-visible="isWorkOrderViewDialogVisible"
+      :work-order-id="selectedWorkOrderIdForView" />
   </div>
 </template>
+
+<style scoped lang="scss">
+.kpi-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-color: rgba(var(--v-border-color), 0.1) !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
+  }
+}
+
+.sale-table-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.font-mono {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+}
+
+.vehicle-plate-large {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.25 !important;
+}
+
+.vehicle-model-small {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  opacity: 0.8 !important;
+}
+
+.hover-underline:hover {
+  text-decoration: underline;
+}
+
+// Status Pills (Estilo Socios Activo/Inactivo con Punto)
+.status-pill-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 4px 10px !important;
+  border-radius: 9999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+.status-paid {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+
+  .status-dot {
+    background-color: #10b981 !important;
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-pending {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+
+  .status-dot {
+    background-color: #ef4444 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-canceled {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-quote {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  .status-dot {
+    background-color: #0ea5e9 !important;
+  }
+}
+
+.doc-number-canceled {
+  color: #94a3b8 !important;
+  text-decoration: line-through;
+}
+</style>

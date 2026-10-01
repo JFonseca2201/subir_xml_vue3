@@ -63,6 +63,78 @@
 }
 
 // Global General Helpers
+.gap-0 {
+  gap: 0 !important;
+}
+
+.gap-1 {
+  gap: 4px !important;
+}
+
+.gap-1\.5 {
+  gap: 6px !important;
+}
+
+.gap-2 {
+  gap: 8px !important;
+}
+
+.gap-2\.5 {
+  gap: 10px !important;
+}
+
+.gap-3 {
+  gap: 12px !important;
+}
+
+.gap-3\.5 {
+  gap: 14px !important;
+}
+
+.gap-4 {
+  gap: 16px !important;
+}
+
+.gap-5 {
+  gap: 20px !important;
+}
+
+.gap-6 {
+  gap: 24px !important;
+}
+
+.gap-x-1 {
+  column-gap: 4px !important;
+}
+
+.gap-x-2 {
+  column-gap: 8px !important;
+}
+
+.gap-x-3 {
+  column-gap: 12px !important;
+}
+
+.gap-x-4 {
+  column-gap: 16px !important;
+}
+
+.gap-y-1 {
+  row-gap: 4px !important;
+}
+
+.gap-y-2 {
+  row-gap: 8px !important;
+}
+
+.gap-y-3 {
+  row-gap: 12px !important;
+}
+
+.gap-y-4 {
+  row-gap: 16px !important;
+}
+
 .border-light {
   border: 1px solid #e2e8f0 !important;
 }
@@ -4791,6 +4863,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -4867,7 +4940,10 @@
 
     .composite-payment-row {
       color: #991b1b;
-      .status-dot { background-color: #ef4444; }
+
+      .status-dot {
+        background-color: #ef4444;
+      }
     }
 
     .composite-sri-row {
@@ -4881,7 +4957,10 @@
 
     .composite-payment-row {
       color: #92400e;
-      .status-dot { background-color: #f59e0b; }
+
+      .status-dot {
+        background-color: #f59e0b;
+      }
     }
 
     .composite-sri-row {
@@ -4894,14 +4973,20 @@
     color: #92400e !important;
     border-top-color: rgba(245, 158, 11, 0.3) !important;
     background-color: rgba(254, 243, 199, 0.6) !important;
-    .sri-dot { background-color: #f59e0b !important; }
+
+    .sri-dot {
+      background-color: #f59e0b !important;
+    }
   }
 
   .sri-sub-rechazada {
     color: #991b1b !important;
     border-top-color: rgba(239, 68, 68, 0.3) !important;
     background-color: rgba(254, 226, 226, 0.6) !important;
-    .sri-dot { background-color: #ef4444 !important; }
+
+    .sri-dot {
+      background-color: #ef4444 !important;
+    }
   }
 
   .sri-sub-enviada,
@@ -4910,6 +4995,9 @@
     color: #1e40af !important;
     border-top-color: rgba(59, 130, 246, 0.3) !important;
     background-color: rgba(239, 246, 255, 0.6) !important;
-    .sri-dot { background-color: #3b82f6 !important; }
+
+    .sri-dot {
+      background-color: #3b82f6 !important;
+    }
   }
 }
