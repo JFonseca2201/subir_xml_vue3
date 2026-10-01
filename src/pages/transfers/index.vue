@@ -631,28 +631,31 @@ onMounted(() => {
       />
       <VTable
         hover
-        class="transfer-table text-no-wrap"
+        class="transfer-table"
       >
         <thead>
           <tr>
             <th
-              class="text-left py-4"
-              style="min-width: 380px;"
+              class="text-left py-3"
+              style="width: 44%;"
             >
               FLUJO DE LA TRANSFERENCIA
             </th>
-            <th class="text-left py-4" style="min-width: 240px;">
+            <th
+              class="text-left py-3"
+              style="width: 30%;"
+            >
               DESCRIPCIÓN & FECHA
             </th>
             <th
-              class="text-right py-4"
-              style="width: 160px;"
+              class="text-right py-3"
+              style="width: 14%;"
             >
               MONTO
             </th>
             <th
-              class="text-center py-4"
-              style="width: 120px;"
+              class="text-center py-3"
+              style="width: 12%;"
             >
               ACCIONES
             </th>
@@ -1097,6 +1100,54 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+// Control de ancho y eliminación de scroll horizontal
+.transfer-table-container {
+  overflow-x: hidden !important;
+
+  :deep(.v-table__wrapper) {
+    overflow-x: hidden !important;
+  }
+}
+
+.transfer-table {
+  width: 100% !important;
+  table-layout: auto;
+
+  th, td {
+    white-space: normal !important;
+    word-break: break-word;
+  }
+}
+
+.transfer-account-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background-color: rgba(var(--v-theme-surface-variant), 0.35);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  max-width: 100%;
+
+  &.source {
+    border-color: rgba(var(--v-theme-error), 0.25);
+    background-color: rgba(var(--v-theme-error), 0.05);
+  }
+
+  &.dest {
+    border-color: rgba(var(--v-theme-success), 0.25);
+    background-color: rgba(var(--v-theme-success), 0.05);
+  }
+}
+
+.transfer-flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
 // Status Pills (Estilo Socios/Usuarios con Punto Indicador)
 .status-pill-clean {
   display: inline-flex !important;
