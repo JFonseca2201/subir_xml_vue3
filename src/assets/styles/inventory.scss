@@ -4737,3 +4737,121 @@
     background-position: -200% 0;
   }
 }
+
+// =======================================================
+// COMPOSITE STATUS BADGE (UNIFIED & SEAMLESS)
+// =======================================================
+.status-composite-card {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #a7f3d0;
+  background-color: #ecfdf5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+
+  .composite-payment-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 3.5px 8px 3px 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #065f46;
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      flex-shrink: 0;
+    }
+  }
+
+  .composite-sri-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4.5px;
+    padding: 2.5px 8px 3.5px 8px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    border-top: 1px solid rgba(16, 185, 129, 0.25);
+    color: #166534;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .sri-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: #16a34a;
+      flex-shrink: 0;
+    }
+  }
+
+  // Modificadores de Pago
+  &.payment-is-pending {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+
+    .composite-payment-row {
+      color: #991b1b;
+      .status-dot { background-color: #ef4444; }
+    }
+
+    .composite-sri-row {
+      border-top-color: rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  &.payment-is-partial {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+
+    .composite-payment-row {
+      color: #92400e;
+      .status-dot { background-color: #f59e0b; }
+    }
+
+    .composite-sri-row {
+      border-top-color: rgba(245, 158, 11, 0.2);
+    }
+  }
+
+  // Modificadores de SRI dentro del compuesto
+  .sri-sub-devuelta {
+    color: #92400e !important;
+    border-top-color: rgba(245, 158, 11, 0.3) !important;
+    background-color: rgba(254, 243, 199, 0.6) !important;
+    .sri-dot { background-color: #f59e0b !important; }
+  }
+
+  .sri-sub-rechazada {
+    color: #991b1b !important;
+    border-top-color: rgba(239, 68, 68, 0.3) !important;
+    background-color: rgba(254, 226, 226, 0.6) !important;
+    .sri-dot { background-color: #ef4444 !important; }
+  }
+
+  .sri-sub-enviada,
+  .sri-sub-firmada,
+  .sri-sub-creada {
+    color: #1e40af !important;
+    border-top-color: rgba(59, 130, 246, 0.3) !important;
+    background-color: rgba(239, 246, 255, 0.6) !important;
+    .sri-dot { background-color: #3b82f6 !important; }
+  }
+}

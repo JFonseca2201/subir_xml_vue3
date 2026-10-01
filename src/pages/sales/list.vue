@@ -1325,27 +1325,48 @@ onMounted(() => {
 
               <!-- Estado -->
               <td class="text-center py-3" style="white-space: nowrap;">
-                <div v-if="item" class="d-inline-flex flex-column align-center gap-1">
-                  <!-- Estado de Pago / Anulada con punto -->
-                  <div class="status-pill-clean"
-                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`">
-                    <span class="status-dot" />
-                    <span>{{ getStatusInfo(item)?.text }}</span>
+                <div v-if="item" class="d-inline-flex justify-center">
+                  <!-- Factura con SRI: Badge Compuesto Unificado -->
+                  <div
+                    v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                    class="status-composite-card"
+                    :class="[
+                      `payment-is-${item.payment_status || 'pending'}`,
+                      `sri-is-${item.sri_status.toLowerCase()}`
+                    ]"
+                  >
+                    <!-- Fila 1: Estado de Pago -->
+                    <div class="composite-payment-row">
+                      <span class="status-dot" />
+                      <span>{{ getStatusInfo(item)?.text }}</span>
+                    </div>
+
+                    <!-- Fila 2: Estado SRI (Clicable) -->
+                    <div
+                      class="composite-sri-row cursor-pointer"
+                      :class="[
+                        `sri-sub-${item.sri_status.toLowerCase()}`,
+                        { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
+                      ]"
+                      :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
+                      @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))"
+                    >
+                      <VProgressCircular v-if="isSriSyncing(item.id) || isSriResending(item.id)" indeterminate size="10"
+                        width="1.5" class="me-1 text-primary" />
+                      <span v-else class="sri-dot" />
+                      <span>{{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' :
+                        getSriStatusInfo(item.sri_status).text) }}</span>
+                    </div>
                   </div>
 
-                  <!-- Estado SRI (Solo para facturas activas) -->
-                  <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
-                    class="sri-badge-clean cursor-pointer position-relative d-inline-flex align-center" :class="[
-                      `sri-${item.sri_status.toLowerCase()}`,
-                      { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
-                    ]"
-                    :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
-                    @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))">
-                    <VProgressCircular v-if="isSriSyncing(item.id) || isSriResending(item.id)" indeterminate size="11"
-                      width="1.8" class="me-1 text-primary" />
-                    <span v-else class="sri-dot" />
-                    <span>{{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' :
-                      getSriStatusInfo(item.sri_status).text) }}</span>
+                  <!-- Documento simple (Cotización, Nota de Venta, Anulada o sin SRI) -->
+                  <div
+                    v-else
+                    class="status-pill-clean"
+                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ getStatusInfo(item)?.text }}</span>
                   </div>
                 </div>
               </td>
