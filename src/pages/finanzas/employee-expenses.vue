@@ -623,16 +623,16 @@ onMounted(() => {
               <td class="py-3" style="white-space: nowrap;">
                 <!-- PAGO DE NÓMINA -->
                 <div v-if="item.type === 'payment'" class="d-flex align-center gap-3">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-file-user-line" size="18" class="text-medium-emphasis" />
+                  <VAvatar size="34" rounded="lg" class="elevation-0 flex-shrink-0" style="background-color: rgba(99, 102, 241, 0.12); color: #6366f1;">
+                    <VIcon icon="ri-file-user-line" size="18" style="color: #6366f1;" />
                   </VAvatar>
                   <div class="d-flex flex-column text-left">
-                    <div class="font-weight-semibold text-high-emphasis text-body-2 leading-tight">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
                       Rol de Pagos
                     </div>
-                    <div v-if="item.payment_month" class="text-caption text-medium-emphasis d-flex align-center mt-0.5" style="gap: 5px; font-size: 0.74rem;">
-                      <VIcon icon="ri-calendar-line" size="13" class="text-disabled" />
-                      <span class="font-weight-medium">{{ formatMonthLabel(item.payment_month) }}</span>
+                    <div v-if="item.payment_month" class="text-caption d-flex align-center mt-0.5 font-weight-medium" style="gap: 5px; font-size: 0.74rem; color: #4f46e5;">
+                      <VIcon icon="ri-calendar-event-line" size="13" style="color: #6366f1;" />
+                      <span>{{ formatMonthLabel(item.payment_month) }}</span>
                     </div>
                     <div v-else class="text-caption text-medium-emphasis mt-0.5" style="font-size: 0.74rem;">
                       Liquidación
@@ -642,32 +642,32 @@ onMounted(() => {
 
                 <!-- ADELANTO DEDUCIDO -->
                 <div v-else-if="item.is_deducted" class="d-flex align-center gap-3">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-check-line" size="17" class="text-medium-emphasis" />
+                  <VAvatar size="34" rounded="lg" class="elevation-0 flex-shrink-0" style="background-color: rgba(16, 185, 129, 0.12); color: #059669;">
+                    <VIcon icon="ri-checkbox-circle-line" size="18" style="color: #059669;" />
                   </VAvatar>
                   <div class="d-flex flex-column text-left">
-                    <div class="font-weight-semibold text-high-emphasis text-body-2 leading-tight">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
                       Adelanto
                     </div>
-                    <div class="text-caption text-medium-emphasis d-flex align-center mt-0.5" style="gap: 5px; font-size: 0.74rem;">
-                      <VIcon icon="ri-checkbox-circle-fill" size="13" color="success" style="opacity: 0.8;" />
-                      <span class="font-weight-medium">Liquidado en Rol</span>
+                    <div class="text-caption d-flex align-center mt-0.5 font-weight-medium" style="gap: 5px; font-size: 0.74rem; color: #047857;">
+                      <VIcon icon="ri-check-line" size="13" style="color: #059669;" />
+                      <span>Liquidado en Rol</span>
                     </div>
                   </div>
                 </div>
 
                 <!-- ADELANTO PENDIENTE -->
                 <div v-else class="d-flex align-center gap-3">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-hand-coin-line" size="17" class="text-medium-emphasis" />
+                  <VAvatar size="34" rounded="lg" class="elevation-0 flex-shrink-0" style="background-color: rgba(245, 158, 11, 0.12); color: #d97706;">
+                    <VIcon icon="ri-hand-coin-line" size="18" style="color: #d97706;" />
                   </VAvatar>
                   <div class="d-flex flex-column text-left">
-                    <div class="font-weight-semibold text-high-emphasis text-body-2 leading-tight">
+                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
                       Adelanto
                     </div>
-                    <div class="text-caption text-medium-emphasis d-flex align-center mt-0.5" style="gap: 5px; font-size: 0.74rem;">
-                      <VIcon icon="ri-time-line" size="13" color="warning" style="opacity: 0.85;" />
-                      <span class="font-weight-medium text-warning" style="opacity: 0.9;">Por Deducir</span>
+                    <div class="text-caption d-flex align-center mt-0.5 font-weight-medium" style="gap: 5px; font-size: 0.74rem; color: #b45309;">
+                      <VIcon icon="ri-time-line" size="13" style="color: #d97706;" />
+                      <span>Por Deducir</span>
                     </div>
                   </div>
                 </div>
@@ -676,7 +676,7 @@ onMounted(() => {
               <!-- Empleado -->
               <td class="py-3" style="max-width: 240px;">
                 <div class="d-flex align-center gap-3" style="min-width: 0;">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 font-weight-medium">
+                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 font-weight-bold">
                     <span style="font-size: 0.8rem;">{{ getEmployeeInitials(item.employee_name) }}</span>
                   </VAvatar>
                   <div class="d-flex flex-column text-left" style="min-width: 0; flex: 1 1 auto;">
@@ -707,8 +707,8 @@ onMounted(() => {
               <!-- Cuenta de Pago -->
               <td class="py-3" style="white-space: nowrap;">
                 <div class="d-flex align-center gap-2.5">
-                  <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="flex-shrink-0">
-                    <VIcon :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'" size="15" class="text-medium-emphasis" />
+                  <VAvatar size="28" :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'" variant="tonal" rounded="lg" class="flex-shrink-0">
+                    <VIcon :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'" size="15" />
                   </VAvatar>
                   <span class="font-weight-medium text-high-emphasis text-body-2">
                     {{ cleanAccountName(item.account_name) }}
