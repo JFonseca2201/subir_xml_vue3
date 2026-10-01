@@ -1172,36 +1172,28 @@ onMounted(() => {
         <VTable hover class="sales-modern-table">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 13%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-0.5" style="width: 13%; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 7%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 7%; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 24%;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 24%;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 20%;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 20%;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 9%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 9%; white-space: nowrap;">
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-2.5"
-                style="width: 9%; white-space: nowrap;">
+              <th class="text-right font-weight-bold text-uppercase py-2.5" style="width: 9%; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 11%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 11%; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 7%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 7%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1246,13 +1238,13 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-2.5">
-                <div class="d-flex align-center gap-2 min-w-0">
+              <td class="py-2.5 overflow-hidden">
+                <div class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
                     }}</span>
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1">
+                  <div class="min-w-0 flex-grow-1 overflow-hidden">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
@@ -1271,14 +1263,13 @@ onMounted(() => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-2.5">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2 min-w-0">
+              <td class="py-2.5 overflow-hidden">
+                <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="15" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1">
-                    <div class="font-mono text-truncate"
-                      :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
+                  <div class="min-w-0 flex-grow-1 overflow-hidden">
+                    <div class="font-mono text-truncate vehicle-plate-large text-high-emphasis"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
                       {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
                     </div>
@@ -1289,7 +1280,7 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
+                <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg"
                     class="elevation-0 flex-shrink-0 opacity-40">
                     <VIcon icon="ri-car-line" size="15" />
