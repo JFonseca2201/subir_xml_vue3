@@ -1172,25 +1172,25 @@ onMounted(() => {
         <VTable hover class="sales-modern-table">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-0.5" style="width: 13%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 8%; white-space: nowrap;">
                 Documento
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 7%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 6%; white-space: nowrap;">
                 O. T.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 24%;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 27%;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 20%;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 23%;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 9%; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-2.5" style="width: 8.5%; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5" style="width: 9%; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 11%; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 11.5%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5" style="width: 7%; white-space: nowrap;">
