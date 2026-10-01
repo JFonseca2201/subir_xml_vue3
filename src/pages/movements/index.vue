@@ -30,6 +30,17 @@ const showDeleteDialog = ref(false)
 const movementToDelete = ref(null)
 const loading = ref(false)
 
+// Paginación
+const currentPage = ref(1)
+const itemsPerPage = ref(15)
+const totalPages = computed(() => Math.ceil(movements.value.length / itemsPerPage.value) || 1)
+
+watch(totalPages, newVal => {
+  if (currentPage.value > newVal) {
+    currentPage.value = newVal || 1
+  }
+})
+
 // Búsqueda y Filtros
 const searchWorkOrder = ref('')
 const rangeDate = ref(null)
@@ -45,10 +56,18 @@ const backendTotals = ref({
 
 let searchTimeout = null
 watch([searchWorkOrder, rangeDate, filterType, filterMonth], () => {
+  currentPage.value = 1
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     loadMovements()
   }, 500)
+})
+
+// Movimientos paginados para la vista actual
+const paginatedMovements = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return movements.value.slice(start, end)
 })
 
 // Filtrar movimientos por Ingreso / Egreso
@@ -81,11 +100,11 @@ const totals = computed(() => {
   }
 })
 
-// Agrupar movimientos por día (ingresos y egresos)
+// Agrupar movimientos por día (ingresos y egresos) para la página actual
 const groupedMovements = computed(() => {
   const groups = {}
 
-  movements.value.forEach(movement => {
+  paginatedMovements.value.forEach(movement => {
     const date = movement.entry_date ? movement.entry_date.split('T')[0] : 'Sin fecha'
     if (!groups[date]) {
       groups[date] = {
@@ -1457,6 +1476,38 @@ onMounted(() => {
           </template>
         </tbody>
       </VTable>
+    </VCard>
+
+    <!-- Paginación -->
+    <VCard v-if="movements.length > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex align-center gap-4 flex-wrap">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong class="text-high-emphasis">{{ paginatedMovements.length }}</strong> de <strong
+              class="text-high-emphasis">{{ movements.length }}</strong> movimientos
+          </div>
+          <div class="d-flex align-center gap-2" style="min-width: 140px;">
+            <span class="text-caption text-medium-emphasis">Por pág:</span>
+            <VSelect
+              v-model="itemsPerPage"
+              :items="[10, 15, 25, 50, 100]"
+              variant="outlined"
+              density="compact"
+              hide-details
+              style="max-width: 95px;"
+              @update:model-value="currentPage = 1"
+            />
+          </div>
+        </div>
+        <VPagination
+          v-if="totalPages > 1"
+          v-model="currentPage"
+          :length="totalPages"
+          rounded="circle"
+          :total-visible="7"
+          color="primary"
+        />
+      </div>
     </VCard>
 
     <!-- Diálogos -->
