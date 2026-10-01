@@ -4576,3 +4576,164 @@
   background: #e2e8f0;
   border-radius: 4px;
 }
+
+// =======================================================
+// SALES LIST & FISCAL BADGES (CENTRALIZED)
+// =======================================================
+
+.sale-table-row,
+.payroll-table-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
+  }
+}
+
+.license-plate-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  border: 1.5px solid #0f172a;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.vehicle-plate-large {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.03em !important;
+  line-height: 1.25 !important;
+}
+
+.vehicle-model-small {
+  font-size: 0.68rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.02em !important;
+  opacity: 0.8 !important;
+}
+
+.text-xxs {
+  font-size: 0.65rem !important;
+}
+
+// Números de documento
+.doc-number-active {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #1e293b !important;
+  }
+}
+
+.doc-number-canceled {
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  text-decoration: line-through !important;
+  text-decoration-color: #ef4444 !important;
+  text-decoration-thickness: 2px !important;
+  opacity: 0.85;
+
+  &:hover {
+    color: #ef4444 !important;
+  }
+}
+
+// SRI Fiscal Status Badges
+.sri-badge-clean {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  font-size: 0.70rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  .sri-dot {
+    width: 5px !important;
+    height: 5px !important;
+    border-radius: 50% !important;
+    flex-shrink: 0 !important;
+    background-color: currentColor !important;
+  }
+}
+
+.sri-autorizada {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.sri-enviada,
+.sri-firmada,
+.sri-creada {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+}
+
+.sri-devuelta {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.sri-rechazada {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.status-quote {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  .status-dot {
+    background-color: #0ea5e9 !important;
+  }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.shimmer-button {
+  width: 32px;
+  height: 32px;
+  background: #f0f0f0;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
