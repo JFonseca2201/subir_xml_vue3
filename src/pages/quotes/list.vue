@@ -793,22 +793,22 @@ onMounted(() => {
               <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
                 Cotización
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px; max-width: 240px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px;">
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px; min-width: 80px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -922,40 +922,7 @@ onMounted(() => {
                     @click="viewQuote(item)"
                   />
 
-                  <!-- Generar Orden de Trabajo Directa -->
-                  <VBtn
-                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    icon="ri-tools-line"
-                    title="Convertir a Orden de Trabajo"
-                    @click="convertToWorkOrderDirect(item)"
-                  />
-
-                  <!-- Facturar / Emitir Venta -->
-                  <VBtn
-                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    icon="ri-shopping-cart-2-line"
-                    title="Facturar o Emitir Venta"
-                    @click="openConvertDialog(item)"
-                  />
-
-                  <!-- Editar -->
-                  <VBtn
-                    v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Cotización"
-                    @click="editQuote(item)"
-                  />
-
-                  <!-- Más Opciones -->
+                  <!-- Menú Más Opciones (3 puntitos) -->
                   <VBtn
                     size="small"
                     color="secondary"
@@ -965,12 +932,47 @@ onMounted(() => {
                   >
                     <VIcon icon="ri-more-2-line" size="18" />
                     <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
+                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
+                        <!-- Convertir a Orden de Trabajo -->
+                        <VListItem
+                          v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                          prepend-icon="ri-tools-line"
+                          title="Convertir a Orden"
+                          class="text-primary text-body-2"
+                          @click="convertToWorkOrderDirect(item)"
+                        />
+
+                        <!-- Facturar / Emitir Venta -->
+                        <VListItem
+                          v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                          prepend-icon="ri-shopping-cart-2-line"
+                          title="Facturar / Emitir Venta"
+                          class="text-success text-body-2"
+                          @click="openConvertDialog(item)"
+                        />
+
+                        <!-- Editar Cotización -->
+                        <VListItem
+                          v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                          prepend-icon="ri-pencil-line"
+                          title="Editar Cotización"
+                          class="text-warning text-body-2"
+                          @click="editQuote(item)"
+                        />
+
+                        <VDivider
+                          v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                          class="my-1"
+                        />
+
+                        <!-- Imprimir y PDF -->
                         <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2" @click="printQuote(item.id)" />
                         <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2" @click="generateSinglePDF(item)" />
                         <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
                         <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo" class="text-secondary text-body-2" @click="openMailDialog(item)" />
+                        
                         <VDivider class="my-1" />
+                        
                         <!-- Si está anulada, permitir reactivar; si está vigente, permitir anular -->
                         <VListItem
                           v-if="isQuoteCanceled(item)"

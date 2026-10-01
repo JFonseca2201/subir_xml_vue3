@@ -545,7 +545,7 @@ watch(
 <template>
   <VDialog
     :model-value="props.modelValue"
-    max-width="920"
+    max-width="600"
     scrollable
     persistent
     @update:model-value="closeDialog"
@@ -890,7 +890,7 @@ watch(
     <!-- Lightbox / Modal de Foto en Pantalla Completa -->
     <VDialog
       v-model="isLightboxOpen"
-      max-width="920"
+      max-width="600"
       scrollable
     >
       <VCard class="rounded-xl overflow-hidden elevation-10">

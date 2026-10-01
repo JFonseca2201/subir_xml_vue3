@@ -32,7 +32,7 @@ const vehicleHeader = computed(() => {
 
 <template>
   <VDialog
-    max-width="920"
+    max-width="620"
     :model-value="props.isDialogVisible"
     scrollable
     transition="dialog-bottom-transition"

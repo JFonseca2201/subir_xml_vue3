@@ -224,7 +224,7 @@ watch(() => props.modelValue, newValue => {
   <VDialog
     scrollable
     :model-value="modelValue"
-    max-width="800"
+    max-width="620"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <VCard class="custom-dialog-card elevation-24">

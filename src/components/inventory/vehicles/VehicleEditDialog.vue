@@ -333,7 +333,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable max-width="880" :model-value="props.isDialogVisible" persistent @update:model-value="closeDialog">
+  <VDialog scrollable max-width="620" :model-value="props.isDialogVisible" persistent @update:model-value="closeDialog">
     <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">

@@ -109,8 +109,8 @@ const cancelDelete = () => {
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
     <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden elevation-10">
-      <!-- Header Banner Danger -->
-      <div class="custom-dialog-header-danger bg-error text-white">
+      <!-- Header Banner Primary -->
+      <div class="custom-dialog-header-primary">
         <VBtn
           icon="ri-close-line"
           variant="text"

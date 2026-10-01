@@ -210,7 +210,7 @@ const save = async () => {
 
 <template>
   <VDialog
-    max-width="950"
+    max-width="640"
     :model-value="props.isDialogVisible"
     scrollable
     @update:model-value="closeDialog"

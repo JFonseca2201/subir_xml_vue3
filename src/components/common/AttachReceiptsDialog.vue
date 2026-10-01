@@ -194,7 +194,7 @@ const openAttachment = att => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="920"
+    max-width="580"
     scrollable
     persistent
     @update:model-value="closeDialog"

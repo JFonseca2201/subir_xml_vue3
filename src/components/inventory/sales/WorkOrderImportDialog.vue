@@ -193,7 +193,7 @@ const handleSelectOrder = order => {
   <VDialog
     :model-value="isDialogVisible"
     scrollable
-    max-width="950px"
+    max-width="650px"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
     <VCard class="custom-dialog-card rounded-xl elevation-12">

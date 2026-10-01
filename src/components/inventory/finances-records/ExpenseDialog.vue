@@ -294,7 +294,7 @@ const formatCurrency = value => {
   <VDialog
     scrollable
     :model-value="props.modelValue"
-    max-width="920"
+    max-width="580"
     persistent
     @update:model-value="$emit('update:modelValue', $event)"
   >

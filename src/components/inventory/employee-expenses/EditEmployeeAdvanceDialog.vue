@@ -379,7 +379,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VDialog v-model="show" scrollable max-width="920" persistent>
+  <VDialog v-model="show" scrollable max-width="560" persistent>
     <VCard class="custom-dialog-card">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">

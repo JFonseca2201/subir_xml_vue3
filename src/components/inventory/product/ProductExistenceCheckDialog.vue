@@ -140,7 +140,7 @@ watch(activeFilter, () => {
 <template>
   <VDialog
     v-model="show"
-    max-width="880"
+    max-width="580"
     scrollable
     transition="dialog-bottom-transition"
   >

@@ -226,7 +226,7 @@ const formatDate = dateStr => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    max-width="820"
+    max-width="580"
     persistent
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >

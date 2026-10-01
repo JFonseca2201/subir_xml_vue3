@@ -206,7 +206,7 @@ onMounted(() => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="920"
+    max-width="560"
     persistent
   >
     <VCard class="custom-dialog-card">
@@ -253,7 +253,7 @@ onMounted(() => {
           <VRow class="ma-0">
             <VCol
               cols="12"
-              md="6"
+              sm="6"
               class="pa-2"
             >
               <VSelect
@@ -269,7 +269,7 @@ onMounted(() => {
             </VCol>
             <VCol
               cols="12"
-              md="6"
+              sm="6"
               class="pa-2"
             >
               <VSelect
@@ -285,7 +285,7 @@ onMounted(() => {
             </VCol>
             <VCol
               cols="12"
-              md="6"
+              sm="6"
               class="pa-2"
             >
               <VTextField
@@ -300,7 +300,7 @@ onMounted(() => {
             </VCol>
             <VCol
               cols="12"
-              md="6"
+              sm="6"
               class="pa-2"
             >
               <VTextField

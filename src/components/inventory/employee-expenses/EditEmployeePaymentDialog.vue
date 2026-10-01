@@ -433,7 +433,7 @@ onMounted(async () => {
   <VDialog
     v-model="show"
     scrollable
-    max-width="920"
+    max-width="580"
     persistent
   >
     <VCard class="custom-dialog-card">

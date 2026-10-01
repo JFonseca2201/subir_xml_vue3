@@ -565,7 +565,7 @@ onMounted(() => {
 <template>
   <VDialog
     scrollable
-    max-width="820"
+    max-width="640"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"

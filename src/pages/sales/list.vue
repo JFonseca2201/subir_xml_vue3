@@ -1208,8 +1208,8 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface" style="overflow-x: hidden !important;">
-      <VTable style="table-layout: fixed; width: 100%;">
+    <VCard v-if="loading" class="rounded-xl border elevation-0 bg-surface table-card-responsive">
+      <VTable class="sales-modern-table">
         <tbody>
           <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
             <td class="py-4" style="width: 9%;">
@@ -1268,8 +1268,8 @@ onMounted(() => {
 
     <!-- TABLA MODERNA DE VENTAS -->
     <div v-else>
-      <VCard class="rounded-xl border elevation-0 bg-surface" style="overflow-x: hidden !important;">
-        <VTable hover class="sales-modern-table" style="table-layout: fixed; width: 100%;">
+      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive">
+        <VTable hover class="sales-modern-table">
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-3"
