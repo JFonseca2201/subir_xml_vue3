@@ -1173,7 +1173,7 @@ onMounted(() => {
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 10%; white-space: nowrap;">
+                style="width: 13%; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
@@ -1181,27 +1181,27 @@ onMounted(() => {
                 O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 32%;">
+                style="width: 24%;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 25%;">
+                style="width: 20%;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 8%; white-space: nowrap;">
+                style="width: 9%; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5"
-                style="width: 7%; white-space: nowrap;">
+                style="width: 9%; white-space: nowrap;">
                 Total
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 6%; white-space: nowrap;">
+                style="width: 11%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 5%; white-space: nowrap;">
+                style="width: 7%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
