@@ -1008,8 +1008,8 @@ onMounted(() => {
           prepend-icon="ri-file-pdf-line" class="font-weight-medium" :loading="pdfLoading" @click="generatePDF">
           Exportar PDF
         </VBtn>
-        <VBtn v-if="can('register_sale')" variant="tonal" color="primary" prepend-icon="ri-tools-line" to="/work-orders/add"
-          class="font-weight-semibold">
+        <VBtn v-if="can('register_sale')" variant="tonal" color="primary" prepend-icon="ri-tools-line"
+          to="/work-orders/add" class="font-weight-semibold">
           Nueva O/T
         </VBtn>
         <VBtn v-if="can('register_sale')" color="primary" prepend-icon="ri-add-line" to="/sales/add"
@@ -1173,35 +1173,35 @@ onMounted(() => {
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 90px; min-width: 85px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 60px; min-width: 55px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 215px; min-width: 190px; max-width: 240px;">
+                style="min-width: 200px;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 185px; min-width: 160px; max-width: 210px;">
+                style="min-width: 200px;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 75px; min-width: 70px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5"
-                style="width: 85px; min-width: 75px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 Total
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 120px; min-width: 110px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 80px; min-width: 75px; white-space: nowrap;">
+                style="width: 1%; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1209,7 +1209,7 @@ onMounted(() => {
           <tbody>
             <tr v-for="(item, index) in sales" :key="item?.id || index" class="sale-table-row">
               <!-- Documento -->
-              <td class="py-2.5" style="white-space: nowrap;">
+              <td class="py-2.5" style="width: 1%; white-space: nowrap;">
                 <div class="d-flex flex-column gap-0.5">
                   <div class="d-flex align-center gap-1">
                     <VIcon
@@ -1234,7 +1234,7 @@ onMounted(() => {
               </td>
 
               <!-- OT Vinculada -->
-              <td class="text-center py-2.5" style="white-space: nowrap;">
+              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
                 <span v-if="item.work_order_id || item.work_order?.number || item.workOrder?.number"
                   class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-1.5 py-0.5 rounded cursor-pointer"
                   :title="`Orden de Trabajo ${formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id)}`"
@@ -1246,13 +1246,13 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-2.5" style="max-width: 240px;">
+              <td class="py-2.5">
                 <div class="d-flex align-center gap-2">
                   <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
-                      }}</span>
+                    }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 185px;">
+                  <div class="min-w-0 flex-grow-1">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
@@ -1271,12 +1271,12 @@ onMounted(() => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-2.5" style="max-width: 210px;">
+              <td class="py-2.5">
                 <div v-if="item.vehicle" class="d-flex align-center gap-2">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="15" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 155px;">
+                  <div class="min-w-0 flex-grow-1">
                     <div class="font-mono text-truncate"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
@@ -1299,7 +1299,7 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-2.5" style="white-space: nowrap;">
+              <td class="py-2.5" style="width: 1%; white-space: nowrap;">
                 <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                   style="white-space: nowrap;">
                   <span class="text-no-wrap font-weight-medium" style="white-space: nowrap; font-size: 0.82rem;">{{
@@ -1308,7 +1308,7 @@ onMounted(() => {
               </td>
 
               <!-- Total -->
-              <td class="text-right py-2.5" style="white-space: nowrap;">
+              <td class="text-right py-2.5" style="width: 1%; white-space: nowrap;">
                 <div class="d-flex flex-column align-end gap-0.5">
                   <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                     ${{ parseFloat(item.total || 0).toFixed(2) }}
@@ -1325,17 +1325,14 @@ onMounted(() => {
               </td>
 
               <!-- Estado -->
-              <td class="text-center py-2.5" style="white-space: nowrap;">
+              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
                 <div v-if="item" class="d-inline-flex justify-center">
                   <!-- Factura con SRI: Badge Compuesto Unificado -->
-                  <div
-                    v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
-                    class="status-composite-card"
-                    :class="[
+                  <div v-if="item.document_type === 'invoice' && item.sri_status && !isSaleCanceled(item)"
+                    class="status-composite-card" :class="[
                       `payment-is-${item.payment_status || 'pending'}`,
                       `sri-is-${item.sri_status.toLowerCase()}`
-                    ]"
-                  >
+                    ]">
                     <!-- Fila 1: Estado de Pago -->
                     <div class="composite-payment-row">
                       <span class="status-dot" />
@@ -1343,15 +1340,12 @@ onMounted(() => {
                     </div>
 
                     <!-- Fila 2: Estado SRI (Clicable) -->
-                    <div
-                      class="composite-sri-row cursor-pointer"
-                      :class="[
-                        `sri-sub-${item.sri_status.toLowerCase()}`,
-                        { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
-                      ]"
+                    <div class="composite-sri-row cursor-pointer" :class="[
+                      `sri-sub-${item.sri_status.toLowerCase()}`,
+                      { 'opacity-75': isSriSyncing(item.id) || isSriResending(item.id) }
+                    ]"
                       :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
-                      @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))"
-                    >
+                      @click="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))">
                       <VProgressCircular v-if="isSriSyncing(item.id) || isSriResending(item.id)" indeterminate size="10"
                         width="1.5" class="me-1 text-primary" />
                       <span v-else class="sri-dot" />
@@ -1361,11 +1355,8 @@ onMounted(() => {
                   </div>
 
                   <!-- Documento simple (Cotización, Nota de Venta, Anulada o sin SRI) -->
-                  <div
-                    v-else
-                    class="status-pill-clean"
-                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`"
-                  >
+                  <div v-else class="status-pill-clean"
+                    :class="`status-${isSaleCanceled(item) ? 'canceled' : (item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending'))}`">
                     <span class="status-dot" />
                     <span>{{ getStatusInfo(item)?.text }}</span>
                   </div>
@@ -1373,7 +1364,7 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-2.5" style="white-space: nowrap;">
+              <td class="text-center py-2.5" style="width: 1%; white-space: nowrap;">
                 <div v-if="!isSaleCanceled(item)" class="d-flex justify-center align-center gap-1">
                   <!-- Ver venta -->
                   <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
@@ -1482,4 +1473,3 @@ onMounted(() => {
     <SriStatusDialog v-model:is-dialog-visible="isSriStatusDialogVisible" />
   </div>
 </template>
-
