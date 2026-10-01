@@ -101,7 +101,7 @@ const headers = [
   { title: 'CUENTA DE PAGO', key: 'account_name', sortable: true, width: '140px', minWidth: '130px' },
   { title: 'MONTO', key: 'amount', sortable: true, align: 'end', width: '110px', minWidth: '100px' },
   { title: 'FECHA', key: 'raw_date', sortable: true, width: '110px', minWidth: '105px' },
-  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '130px', minWidth: '120px' },
+  { title: 'ACCIONES', key: 'actions', sortable: false, align: 'center', width: '150px', minWidth: '140px' },
 ]
 
 // Functions
@@ -251,6 +251,25 @@ const formatMonthLabel = monthStr => {
     }
   }
   return monthStr
+}
+
+const printReceipt = item => {
+  try {
+    const token = localStorage.getItem('token')
+    const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
+    const printUrl = `${apiBaseUrl}/employee-expenses/${item.type}/${item.id}/receipt?token=${token}&print=true`
+
+    const printWindow = window.open(printUrl, '_blank')
+    if (printWindow) {
+      printWindow.focus()
+      showNotification('Comprobante de media hoja cargado para impresión', 'info')
+    } else {
+      showNotification('Permite las ventanas emergentes para abrir el comprobante', 'warning')
+    }
+  } catch (error) {
+    console.error('Error al imprimir comprobante:', error)
+    showNotification('Error al abrir comprobante de impresión', 'error')
+  }
 }
 
 const generatePDF = async item => {
@@ -714,7 +733,7 @@ onMounted(() => {
 
               <!-- Acciones -->
               <td class="text-center py-3" style="white-space: nowrap;">
-                <div class="d-flex justify-center align-center gap-3">
+                <div class="d-flex justify-center align-center gap-2">
                   <VBtn
                     size="small"
                     color="primary"
@@ -722,6 +741,15 @@ onMounted(() => {
                     icon="ri-eye-line"
                     title="Ver Nota y Comprobantes"
                     @click="openEmployeeNoteDialog(item)"
+                  />
+
+                  <VBtn
+                    size="small"
+                    color="info"
+                    variant="tonal"
+                    icon="ri-printer-line"
+                    title="Imprimir Comprobante"
+                    @click="printReceipt(item)"
                   />
 
                   <VBtn
@@ -738,11 +766,17 @@ onMounted(() => {
                       align="end"
                       location="bottom end"
                     >
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="200">
+                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
+                        <VListItem
+                          prepend-icon="ri-printer-line"
+                          title="Imprimir Comprobante"
+                          class="text-info font-weight-medium"
+                          @click="printReceipt(item)"
+                        />
                         <VListItem
                           :prepend-icon="item.type === 'payment' ? 'ri-file-pdf-line' : 'ri-file-text-line'"
-                          :title="item.type === 'payment' ? 'Descargar Rol de Pagos' : 'Descargar Comprobante'"
-                          :class="item.type === 'payment' ? 'text-primary font-weight-medium' : 'text-info font-weight-medium'"
+                          :title="item.type === 'payment' ? 'Descargar Rol de Pagos (PDF)' : 'Descargar Comprobante (PDF)'"
+                          class="text-primary font-weight-medium"
                           @click="generatePDF(item)"
                         />
                         <VListItem
