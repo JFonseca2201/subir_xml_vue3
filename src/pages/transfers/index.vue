@@ -811,60 +811,49 @@ onMounted(() => {
               :key="transfer.id"
               class="transfer-row"
             >
-              <!-- Flujo: Origen -> Destino con badges claros de alto contraste -->
+              <!-- Flujo: Origen -> Destino sobrio y elegante -->
               <td class="py-3">
-                <div class="d-flex align-center flex-wrap" style="gap: 10px;">
-                  <!-- Origen (Sale de) -->
-                  <div class="transfer-account-badge source">
+                <div class="transfer-flow-container">
+                  <!-- Origen -->
+                  <div class="transfer-endpoint">
                     <VAvatar
-                      size="26"
-                      color="error"
+                      size="24"
+                      color="secondary"
                       variant="tonal"
-                      class="rounded-lg shrink-0"
+                      class="rounded-circle shrink-0"
                     >
                       <VIcon
-                        :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                        size="15"
-                        color="error"
+                        :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="13"
+                        color="secondary"
                       />
                     </VAvatar>
-                    <div class="d-flex flex-column text-left">
-                      <span class="text-caption font-weight-bold leading-none text-uppercase opacity-70" style="font-size: 0.65rem;">Sale de</span>
-                      <span class="text-body-2 font-weight-bold text-error mt-0.5">
-                        {{ getAccountName(transfer.source_account) }}
-                      </span>
-                    </div>
+                    <span class="account-name">{{ getAccountName(transfer.source_account) }}</span>
                   </div>
 
-                  <!-- Conector Flujo -->
-                  <div class="transfer-flow-arrow">
+                  <!-- Separador Flecha -->
+                  <div class="transfer-arrow-separator">
                     <VIcon
                       icon="ri-arrow-right-line"
-                      size="16"
-                      color="primary"
+                      size="12"
                     />
                   </div>
 
-                  <!-- Destino (Ingresa a) -->
-                  <div class="transfer-account-badge dest">
+                  <!-- Destino -->
+                  <div class="transfer-endpoint">
                     <VAvatar
-                      size="26"
-                      color="success"
+                      size="24"
+                      color="primary"
                       variant="tonal"
-                      class="rounded-lg shrink-0"
+                      class="rounded-circle shrink-0"
                     >
                       <VIcon
-                        :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                        size="15"
-                        color="success"
+                        :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="13"
+                        color="primary"
                       />
                     </VAvatar>
-                    <div class="d-flex flex-column text-left">
-                      <span class="text-caption font-weight-bold leading-none text-uppercase opacity-70" style="font-size: 0.65rem;">Ingresa a</span>
-                      <span class="text-body-2 font-weight-bold text-success mt-0.5">
-                        {{ getAccountName(transfer.destination_account) }}
-                      </span>
-                    </div>
+                    <span class="account-name font-weight-bold text-high-emphasis">{{ getAccountName(transfer.destination_account) }}</span>
                   </div>
                 </div>
               </td>
@@ -1197,33 +1186,46 @@ onMounted(() => {
   }
 }
 
-.transfer-account-badge {
+.transfer-flow-container {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background-color: rgba(var(--v-theme-surface-variant), 0.35);
+  padding: 5px 10px;
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  transition: all 0.2s ease;
   max-width: 100%;
 
-  &.source {
-    border-color: rgba(var(--v-theme-error), 0.25);
-    background-color: rgba(var(--v-theme-error), 0.05);
+  &:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.06);
+    border-color: rgba(var(--v-theme-primary), 0.25);
   }
 
-  &.dest {
-    border-color: rgba(var(--v-theme-success), 0.25);
-    background-color: rgba(var(--v-theme-success), 0.05);
-  }
-}
+  .transfer-endpoint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
 
-.transfer-flow-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.8;
-  flex-shrink: 0;
+    .account-name {
+      white-space: nowrap;
+    }
+  }
+
+  .transfer-arrow-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: rgba(var(--v-theme-primary), 0.1);
+    color: rgb(var(--v-theme-primary));
+    flex-shrink: 0;
+  }
 }
 
 // Status Pills (Estilo Socios/Usuarios con Punto Indicador)
