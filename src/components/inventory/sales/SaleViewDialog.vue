@@ -545,12 +545,15 @@ const convertToSale = () => {
               <span class="header-tag-label">
                 Comprobante de {{ getDocumentTypeLabel }}
               </span>
-              <VChip v-if="sriEnvironment" size="x-small"
-                :color="sriEnvironment === 'PRODUCCIÓN' ? 'success' : 'amber-darken-2'" variant="flat"
-                class="font-weight-bold text-white shadow-sm px-2">
-                <VIcon icon="ri-shield-flash-line" size="12" class="me-1" />
-                {{ sriEnvironment }}
-              </VChip>
+              <span
+                v-if="sriEnvironment"
+                class="status-pill-clean"
+                :class="sriEnvironment === 'PRODUCCIÓN' ? 'status-paid' : 'status-partial'"
+                style="font-size: 0.68rem; padding: 2px 8px;"
+              >
+                <span class="status-dot" />
+                <span>{{ sriEnvironment }}</span>
+              </span>
             </div>
 
             <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
@@ -575,11 +578,14 @@ const convertToSale = () => {
               }}</span>
           </div>
 
-          <VChip :color="isInvoice && sriStatus ? sriStatusColor : getStatusColor" size="small" variant="flat"
-            class="font-weight-bold text-white elevation-2 px-3">
-            <VIcon :icon="isInvoice && sriStatus ? sriStatusIcon : statusIcon" size="14" class="me-1" />
-            {{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}
-          </VChip>
+          <div
+            class="status-pill-clean"
+            :class="isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'status-paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'status-pending' : 'status-transfer')) : (saleData.status === 'canceled' ? 'status-canceled' : (saleData.payment_status === 'paid' ? 'status-paid' : (saleData.payment_status === 'partial' ? 'status-partial' : 'status-pending')))"
+            style="font-size: 0.74rem; padding: 4px 10px;"
+          >
+            <span class="status-dot" />
+            <span>{{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}</span>
+          </div>
 
           <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-button ms-1"
             @click="closeDialog" />
@@ -628,11 +634,13 @@ const convertToSale = () => {
                       {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
                     </div>
                   </div>
-                  <VChip size="small" class="status-pill-clean font-weight-bold"
-                    :class="`status-${isInvoice && sriStatus ? (sriStatus === 'AUTORIZADA' ? 'paid' : 'pending') : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`">
+                  <div
+                    class="status-pill-clean font-weight-bold"
+                    :class="`status-${isInvoice && sriStatus ? (['AUTORIZADA', 'AUTORIZADO'].includes(sriStatus.toUpperCase()) ? 'paid' : (['DEVUELTA', 'RECHAZADA'].includes(sriStatus.toUpperCase()) ? 'pending' : 'transfer')) : (saleData.status === 'canceled' ? 'canceled' : (saleData.payment_status || 'pending'))}`"
+                  >
                     <span class="status-dot" />
                     <span>{{ isInvoice && sriStatus ? sriStatus : getPaymentStatusLabel }}</span>
-                  </VChip>
+                  </div>
                 </div>
               </div>
             </VCol>
@@ -767,11 +775,16 @@ const convertToSale = () => {
                       <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
                     </span>
                     <span class="detail-value">
-                      <div class="d-flex flex-wrap gap-1 justify-end">
-                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal"
-                          class="font-weight-medium">
-                          {{ tech.first_name }} {{ tech.last_name }}
-                        </VChip>
+                      <div class="d-flex flex-wrap gap-1.5 justify-end">
+                        <div
+                          v-for="tech in technicians"
+                          :key="tech.id"
+                          class="status-pill-clean status-transfer font-weight-medium"
+                          style="font-size: 0.72rem; padding: 3px 8px; text-transform: uppercase;"
+                        >
+                          <span class="status-dot" />
+                          <span>{{ tech.first_name }} {{ tech.last_name }}</span>
+                        </div>
                       </div>
                     </span>
                   </div>
@@ -825,11 +838,16 @@ const convertToSale = () => {
                       <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
                     </span>
                     <span class="detail-value">
-                      <div class="d-flex flex-wrap gap-1 justify-end">
-                        <VChip v-for="tech in technicians" :key="tech.id" size="small" color="primary" variant="tonal"
-                          class="font-weight-medium">
-                          {{ tech.first_name }} {{ tech.last_name }}
-                        </VChip>
+                      <div class="d-flex flex-wrap gap-1.5 justify-end">
+                        <div
+                          v-for="tech in technicians"
+                          :key="tech.id"
+                          class="status-pill-clean status-transfer font-weight-medium"
+                          style="font-size: 0.72rem; padding: 3px 8px; text-transform: uppercase;"
+                        >
+                          <span class="status-dot" />
+                          <span>{{ tech.first_name }} {{ tech.last_name }}</span>
+                        </div>
                       </div>
                     </span>
                   </div>
@@ -1076,3 +1094,4 @@ const convertToSale = () => {
     </VCard>
   </VDialog>
 </template>
+

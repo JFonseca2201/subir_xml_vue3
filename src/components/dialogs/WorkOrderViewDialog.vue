@@ -191,15 +191,11 @@ const goToEdit = () => {
 </script>
 
 <template>
-  <VDialog
-    v-model="isVisible"
-    max-width="920"
-    scrollable
-    transition="dialog-bottom-transition"
-  >
+  <VDialog v-model="isVisible" max-width="920" scrollable transition="dialog-bottom-transition">
     <VCard class="custom-dialog-card elevation-12">
       <!-- Encabezado de Diálogo -->
-      <div class="custom-dialog-header-primary bg-primary text-white py-4 px-6 d-flex align-center justify-space-between position-relative">
+      <div
+        class="custom-dialog-header-primary bg-primary text-white py-4 px-6 d-flex align-center justify-space-between position-relative">
         <div class="d-flex align-center gap-3">
           <VAvatar size="44" color="white" variant="tonal" class="rounded-xl shadow-sm">
             <VIcon icon="ri-tools-line" size="26" color="white" />
@@ -209,15 +205,19 @@ const goToEdit = () => {
               <h2 class="text-h6 font-weight-bold text-white mb-0">
                 Orden de Trabajo {{ formattedNumber }}
               </h2>
-              <VChip
-                size="small"
-                :color="currentStatusInfo.color"
-                variant="elevated"
-                class="font-weight-bold text-uppercase"
+              <div
+                class="status-pill-clean"
+                :class="{
+                  'status-paid': ['ready', 'delivered'].includes(order.status),
+                  'status-partial': order.status === 'in_progress',
+                  'status-transfer': order.status === 'received',
+                  'status-canceled': order.status === 'draft',
+                }"
+                style="font-size: 0.74rem; padding: 4px 10px;"
               >
-                <VIcon :icon="currentStatusInfo.icon" size="13" class="me-1" />
-                {{ currentStatusInfo.label }}
-              </VChip>
+                <span class="status-dot" />
+                <span>{{ currentStatusInfo.label }}</span>
+              </div>
             </div>
             <p class="text-caption text-white opacity-85 mb-0 mt-0.5">
               Fecha de ingreso: {{ formatDate(order.date || order.created_at) }}
@@ -225,13 +225,8 @@ const goToEdit = () => {
             </p>
           </div>
         </div>
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="isVisible = false"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+          @click="isVisible = false" />
       </div>
 
       <!-- Cuerpo del Diálogo -->
@@ -291,7 +286,8 @@ const goToEdit = () => {
                 <div v-if="vehicle" class="d-flex flex-column gap-1.5 text-caption">
                   <div class="d-flex justify-space-between">
                     <span class="text-medium-emphasis">Marca y Modelo:</span>
-                    <strong class="text-high-emphasis font-weight-semibold">{{ vehicleBrand }} {{ vehicleModel }}</strong>
+                    <strong class="text-high-emphasis font-weight-semibold">{{ vehicleBrand }} {{ vehicleModel
+                    }}</strong>
                   </div>
                   <div class="d-flex justify-space-between">
                     <span class="text-medium-emphasis">Año / Color:</span>
@@ -328,7 +324,8 @@ const goToEdit = () => {
             <VTable density="compact" class="custom-items-table">
               <thead>
                 <tr class="bg-grey-lighten-5">
-                  <th class="text-left font-weight-bold text-uppercase py-2" style="width: 45%;">Descripción / Trabajo</th>
+                  <th class="text-left font-weight-bold text-uppercase py-2" style="width: 45%;">Descripción / Trabajo
+                  </th>
                   <th class="text-center font-weight-bold text-uppercase py-2" style="width: 15%;">Cant.</th>
                   <th class="text-right font-weight-bold text-uppercase py-2" style="width: 20%;">P. Unit</th>
                   <th class="text-right font-weight-bold text-uppercase py-2" style="width: 20%;">Subtotal</th>
@@ -340,7 +337,8 @@ const goToEdit = () => {
                     <div class="font-weight-medium text-high-emphasis text-body-2">
                       {{ item.description || item.name || item.product?.name || 'Servicio de taller' }}
                     </div>
-                    <div v-if="item.technician || item.technician_name" class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-0.5">
+                    <div v-if="item.technician || item.technician_name"
+                      class="text-caption text-medium-emphasis d-flex align-center gap-1 mt-0.5">
                       <VIcon icon="ri-user-settings-line" size="11" />
                       <span>Técnico: {{ item.technician?.name || item.technician_name }}</span>
                     </div>
@@ -352,7 +350,8 @@ const goToEdit = () => {
                     ${{ parseFloat(item.price || item.unit_price || 0).toFixed(2) }}
                   </td>
                   <td class="text-right font-mono font-weight-bold text-body-2 text-high-emphasis py-2.5">
-                    ${{ parseFloat(item.subtotal || (Number(item.quantity || 1) * Number(item.price || 0))).toFixed(2) }}
+                    ${{ parseFloat(item.subtotal || (Number(item.quantity || 1) * Number(item.price || 0))).toFixed(2)
+                    }}
                   </td>
                 </tr>
                 <tr v-if="itemsList.length === 0">
@@ -371,10 +370,11 @@ const goToEdit = () => {
               <VCard class="elevation-0 border rounded-xl pa-3.5 h-100 bg-surface">
                 <div class="d-flex align-center gap-2 mb-2 pb-1 border-b">
                   <VIcon icon="ri-file-text-line" size="16" color="info" />
-                  <span class="text-caption font-weight-bold text-high-emphasis text-uppercase">Diagnóstico y Notas</span>
+                  <span class="text-caption font-weight-bold text-high-emphasis text-uppercase">Diagnóstico y
+                    Notas</span>
                 </div>
                 <p class="text-caption text-medium-emphasis mb-0" style="white-space: pre-line; line-height: 1.4;">
-                  {{ order.notes || order.observations || order.diagnostic || 'Sin observaciones o notas especiales registradas.' }}
+                  {{ order.notes || order.observations || order.diagnostic || 'Sin observaciones registradas.' }}
                 </p>
               </VCard>
             </VCol>
@@ -414,44 +414,22 @@ const goToEdit = () => {
       <!-- Acciones del Modal -->
       <VCardActions class="pa-4 px-6 d-flex justify-space-between align-center bg-surface">
         <div class="d-flex gap-2">
-          <VBtn
-            variant="tonal"
-            color="secondary"
-            prepend-icon="ri-printer-line"
-            size="small"
-            class="font-weight-medium"
-            @click="printPDF"
-          >
+          <VBtn variant="tonal" color="secondary" prepend-icon="ri-printer-line" size="small" class="font-weight-medium"
+            @click="printPDF">
             Imprimir
           </VBtn>
-          <VBtn
-            variant="tonal"
-            color="primary"
-            prepend-icon="ri-download-2-line"
-            size="small"
-            class="font-weight-medium"
-            @click="downloadPDF"
-          >
+          <VBtn variant="tonal" color="primary" prepend-icon="ri-download-2-line" size="small"
+            class="font-weight-medium" @click="downloadPDF">
             PDF
           </VBtn>
         </div>
 
         <div class="d-flex gap-2">
-          <VBtn
-            variant="tonal"
-            color="info"
-            prepend-icon="ri-pencil-line"
-            class="rounded-lg font-weight-semibold"
-            @click="goToEdit"
-          >
+          <VBtn variant="tonal" color="info" prepend-icon="ri-pencil-line" class="rounded-lg font-weight-semibold"
+            @click="goToEdit">
             Ir a Orden
           </VBtn>
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            class="rounded-lg font-weight-medium"
-            @click="isVisible = false"
-          >
+          <VBtn variant="outlined" color="secondary" class="rounded-lg font-weight-medium" @click="isVisible = false">
             Cerrar
           </VBtn>
         </div>
@@ -459,3 +437,4 @@ const goToEdit = () => {
     </VCard>
   </VDialog>
 </template>
+
