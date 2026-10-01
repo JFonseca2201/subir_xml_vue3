@@ -1173,35 +1173,35 @@ onMounted(() => {
           <thead>
             <tr class="bg-grey-lighten-5">
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 105px; min-width: 95px; white-space: nowrap;">
+                style="width: 90px; min-width: 85px; white-space: nowrap;">
                 Documento
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 65px; min-width: 60px; white-space: nowrap;">
+                style="width: 60px; min-width: 55px; white-space: nowrap;">
                 O. T.
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 185px; min-width: 160px; max-width: 200px;">
+                style="width: 215px; min-width: 190px; max-width: 240px;">
                 Cliente
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 160px; min-width: 140px; max-width: 175px;">
+                style="width: 185px; min-width: 160px; max-width: 210px;">
                 Vehículo
               </th>
               <th class="text-left font-weight-bold text-uppercase py-2.5"
-                style="width: 85px; min-width: 75px; white-space: nowrap;">
+                style="width: 75px; min-width: 70px; white-space: nowrap;">
                 Fecha
               </th>
               <th class="text-right font-weight-bold text-uppercase py-2.5"
-                style="width: 90px; min-width: 80px; white-space: nowrap;">
+                style="width: 85px; min-width: 75px; white-space: nowrap;">
                 Total
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 125px; min-width: 115px; white-space: nowrap;">
+                style="width: 120px; min-width: 110px; white-space: nowrap;">
                 Estado
               </th>
               <th class="text-center font-weight-bold text-uppercase py-2.5"
-                style="width: 85px; min-width: 80px; white-space: nowrap;">
+                style="width: 80px; min-width: 75px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
@@ -1214,10 +1214,10 @@ onMounted(() => {
                   <div class="d-flex align-center gap-1">
                     <VIcon
                       :icon="item.document_type === 'invoice' ? 'ri-file-shield-2-line' : (item.document_type === 'sale_note' ? 'ri-file-paper-2-line' : 'ri-file-list-3-line')"
-                      size="14" class="me-1 flex-shrink-0"
+                      size="13" class="flex-shrink-0"
                       :color="isSaleCanceled(item) ? 'grey' : (item.document_type === 'invoice' ? 'primary' : 'success')" />
                     <span class="text-caption font-weight-bold text-uppercase"
-                      style="font-size: 0.7rem;"
+                      style="font-size: 0.68rem; letter-spacing: 0.02em;"
                       :class="isSaleCanceled(item) ? 'text-disabled' : (item.document_type === 'invoice' ? 'text-primary' : 'text-success')">
                       {{ getDocumentTypeInfo(item.document_type)?.text }}
                     </span>
@@ -1246,13 +1246,13 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-2.5" style="max-width: 200px;">
+              <td class="py-2.5" style="max-width: 240px;">
                 <div class="d-flex align-center gap-2">
                   <VAvatar size="28" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <span style="font-size: 0.72rem;" class="font-weight-bold">{{ getClientInitials(item.client)
                       }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 155px;">
+                  <div class="min-w-0" style="max-width: 185px;">
                     <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
                       :title="getClientName(item.client)">
                       {{ getClientName(item.client) }}
@@ -1271,12 +1271,12 @@ onMounted(() => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-2.5" style="max-width: 175px;">
+              <td class="py-2.5" style="max-width: 210px;">
                 <div v-if="item.vehicle" class="d-flex align-center gap-2">
                   <VAvatar size="28" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
                     <VIcon icon="ri-car-line" size="15" color="secondary" />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 130px;">
+                  <div class="min-w-0" style="max-width: 155px;">
                     <div class="font-mono text-truncate"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
                       :title="(item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'Sin placa'">
@@ -1302,7 +1302,6 @@ onMounted(() => {
               <td class="py-2.5" style="white-space: nowrap;">
                 <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                   style="white-space: nowrap;">
-                  <VIcon icon="ri-calendar-line" size="13" color="medium-emphasis" class="me-1 flex-shrink-0" />
                   <span class="text-no-wrap font-weight-medium" style="white-space: nowrap; font-size: 0.82rem;">{{
                     formatDate(item.created_at) }}</span>
                 </div>
