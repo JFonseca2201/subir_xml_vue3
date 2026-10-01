@@ -999,7 +999,7 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2.5 flex-wrap align-self-md-center align-self-end">
         <VBtn variant="tonal" color="info" prepend-icon="ri-wifi-line" class="font-weight-medium"
           @click="isSriStatusDialogVisible = true">
           Estado SRI
@@ -1007,6 +1007,10 @@ onMounted(() => {
         <VBtn v-if="can('export_data') || can('list_sale')" variant="tonal" color="secondary"
           prepend-icon="ri-file-pdf-line" class="font-weight-medium" :loading="pdfLoading" @click="generatePDF">
           Exportar PDF
+        </VBtn>
+        <VBtn v-if="can('register_sale')" variant="tonal" color="primary" prepend-icon="ri-tools-line" to="/work-orders/add"
+          class="font-weight-semibold">
+          Nueva O/T
         </VBtn>
         <VBtn v-if="can('register_sale')" color="primary" prepend-icon="ri-add-line" to="/sales/add"
           class="elevation-2 font-weight-bold">
