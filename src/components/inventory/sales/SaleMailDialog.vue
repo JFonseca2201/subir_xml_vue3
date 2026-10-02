@@ -24,6 +24,7 @@ const isMailSending = ref(false)
 
 const getClientName = client => {
   if (!client) return 'Cliente no disponible'
+  
   return client.full_name || `${client.name || ''} ${client.surname || ''}`.trim() || client.n_document || 'Cliente sin nombre'
 }
 
@@ -33,6 +34,8 @@ const getDocumentTypeInfo = type => {
     quote: { color: 'info', text: 'Cotización' },
     sale_note: { color: 'warning', text: 'Nota de Venta' },
   }
+
+  
   return map[type] || { color: 'grey', text: type || 'Documento' }
 }
 
@@ -47,6 +50,7 @@ const confirmSendMail = async () => {
   isMailSending.value = true
   try {
     const isInvoice = props.saleSelected.document_type === 'invoice'
+
     const endpoint = isInvoice
       ? `sales/${props.saleSelected.id}/sri/enviar-email`
       : `sales/${props.saleSelected.id}/enviar-cotizacion`

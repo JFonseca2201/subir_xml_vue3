@@ -728,6 +728,7 @@ export const getBrandNameById = id => {
     return str.toUpperCase()
   }
   const numericId = Number(str)
+  
   return vehicleBrands[numericId] || vehicleBrands[str] || str
 }
 

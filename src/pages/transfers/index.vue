@@ -190,6 +190,7 @@ const formatDate = dateString => {
     const parts = datePart.split('-')
     if (parts.length === 3) {
       const [year, month, day] = parts
+      
       return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     }
 
@@ -198,11 +199,13 @@ const formatDate = dateString => {
       const y = date.getFullYear()
       const m = String(date.getMonth() + 1).padStart(2, '0')
       const d = String(date.getDate()).padStart(2, '0')
+      
       return `${y}/${m}/${d}`
     }
   } catch (e) {
     return dateString
   }
+  
   return dateString
 }
 
@@ -304,6 +307,7 @@ watch([searchQuery, selectedFilter], () => {
 const paginatedTransfers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
+  
   return allFilteredTransfers.value.slice(start, end)
 })
 
@@ -405,9 +409,7 @@ onMounted(() => {
               <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
                 Transferencias
               </h1>
-              <div
-                class="status-pill-clean status-transfer"
-              >
+              <div class="status-pill-clean status-transfer">
                 <span class="status-dot" />
                 <span>{{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'registro' : 'registros' }}</span>
               </div>
@@ -654,359 +656,550 @@ onMounted(() => {
       </VBtn>
     </VCard>
 
-    <!-- Lista de Transferencias Unificada (Se muestra si está cargando o si ya hay registros) -->
-    <VCard
-      v-else
-      class="rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative"
-    >
-      <VProgressLinear
-        v-if="loading"
-        v-slot
-        indeterminate
-        color="primary"
-        height="3"
-        class="position-absolute"
-        style="top: 0; left: 0; right: 0; z-index: 10;"
-      />
-      <VTable
-        hover
-        class="transfer-table"
-      >
-        <thead>
-          <tr>
-            <th
-              class="text-left py-3"
-              style="width: 44%;"
-            >
-              FLUJO DE LA TRANSFERENCIA
-            </th>
-            <th
-              class="text-left py-3"
-              style="width: 30%;"
-            >
-              DESCRIPCIÓN & FECHA
-            </th>
-            <th
-              class="text-right py-3"
-              style="width: 14%;"
-            >
-              MONTO
-            </th>
-            <th
-              class="text-center py-3"
-              style="width: 12%;"
-            >
-              ACCIONES
-            </th>
-          </tr>
-        </thead>
-        
-        <!-- Cargando (Skeleton Rows) -->
-        <tbody v-if="loading">
-          <tr
-            v-for="n in 5"
+    <!-- Contenedor v-else para transferencias existentes (Móvil + Desktop + Paginación) -->
+    <div v-else>
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-4 mb-4">
+        <div
+          v-if="loading"
+          class="d-flex flex-column gap-3"
+        >
+          <div
+            v-for="n in 3"
             :key="n"
-            class="skeleton-row align-middle"
+            class="pa-4 rounded-xl border bg-surface"
           >
-            <td class="py-4">
-              <div class="shimmer-line w-75" />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-60 mb-2" />
-              <div class="shimmer-line w-40" />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-40 ms-auto" />
-            </td>
-            <td class="py-4 text-center">
-              <div class="d-flex justify-center gap-2">
-                <div class="shimmer-button" />
-                <div class="shimmer-button" />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-
-        <!-- Sin resultados filtrados -->
-        <tbody v-else-if="!allFilteredTransfers.length">
-          <tr>
-            <td
-              colspan="4"
-              class="text-center py-12 text-medium-emphasis"
-            >
-              <VAvatar
-                color="primary"
-                variant="tonal"
-                size="64"
-                class="mb-3"
-              >
+            <div class="shimmer-line w-50 mb-2" />
+            <div class="shimmer-line w-75 mb-3" />
+            <div class="shimmer-line w-40" />
+          </div>
+        </div>
+        <div
+          v-else-if="!allFilteredTransfers.length"
+          class="text-center pa-8 rounded-xl border bg-surface"
+        >
+          <VAvatar
+            size="56"
+            color="primary"
+            variant="tonal"
+            class="mb-3"
+          >
+            <VIcon
+              size="28"
+              icon="ri-arrow-left-right-line"
+            />
+          </VAvatar>
+          <p class="text-body-1 font-weight-bold mb-1">
+            No se encontraron transferencias
+          </p>
+          <p class="text-caption text-medium-emphasis mb-0">
+            Intenta cambiar los términos de búsqueda o registra una transferencia.
+          </p>
+        </div>
+        <template
+          v-for="group in paginatedGroupedTransfers"
+          v-else
+          :key="`mob-tr-grp-${group.label}`"
+        >
+          <!-- Cabecera de Día Móvil -->
+          <div class="pa-3 rounded-xl bg-slate-50 border d-flex flex-column gap-1.5">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+              <div class="d-flex align-center gap-2">
                 <VIcon
-                  icon="ri-inbox-line"
-                  size="32"
+                  icon="ri-calendar-event-line"
+                  size="18"
                   color="primary"
                 />
-              </VAvatar>
-              <div class="text-h6 font-weight-bold text-high-emphasis">
-                Sin resultados para la búsqueda
+                <span class="text-body-2 font-weight-bold text-high-emphasis">
+                  {{ formatDateHeader(group.label) }}
+                </span>
               </div>
-              <div class="text-body-2 text-medium-emphasis mt-1">
-                Prueba cambiando el término de búsqueda o limpia el filtro aplicado.
+              <div class="status-pill-clean status-transfer">
+                <span class="status-dot" />
+                <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}</span>
               </div>
-            </td>
-          </tr>
-        </tbody>
+            </div>
+            <div class="d-flex align-center justify-space-between pt-1 border-t text-caption font-weight-bold">
+              <span class="text-medium-emphasis text-uppercase">Total jornada:</span>
+              <span class="text-primary font-weight-black">
+                {{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}
+              </span>
+            </div>
+          </div>
 
-        <!-- Datos reales -->
-        <tbody v-else>
-          <template
-            v-for="group in paginatedGroupedTransfers"
-            :key="group.label"
+          <!-- Tarjetas de Transferencia del Día -->
+          <div
+            v-for="transfer in group.transfers"
+            :key="`mob-transfer-${transfer.id}`"
+            class="mobile-transfer-card"
           >
-            <!-- Fila de Encabezado por Fecha -->
-            <tr class="transfer-date-header-row">
-              <td colspan="4">
-                <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
-                  <div class="d-flex align-center gap-3">
-                    <VAvatar
-                      color="primary"
-                      variant="tonal"
-                      size="36"
-                      class="rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-calendar-event-line"
-                        size="20"
+            <!-- Fila Superior: Fecha y Referencia -->
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                {{ formatDate(transfer.transfer_date || transfer.created_at) }}
+              </span>
+              <span class="text-caption font-mono font-weight-bold text-medium-emphasis">
+                #TRANS-{{ transfer.id }}
+              </span>
+            </div>
+
+            <!-- Flujo de Cuentas: Origen -> Destino -->
+            <div class="transfer-flow-container w-100 mb-2.5 justify-space-between">
+              <div class="transfer-endpoint">
+                <VAvatar
+                  size="22"
+                  color="secondary"
+                  variant="tonal"
+                  class="rounded-circle shrink-0"
+                >
+                  <VIcon
+                    :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                    size="12"
+                  />
+                </VAvatar>
+                <span
+                  class="account-name text-truncate"
+                  style="max-width: 120px;"
+                >
+                  {{ getAccountName(transfer.source_account) }}
+                </span>
+              </div>
+
+              <div class="transfer-arrow-separator">
+                <VIcon
+                  icon="ri-arrow-right-line"
+                  size="12"
+                />
+              </div>
+
+              <div class="transfer-endpoint">
+                <VAvatar
+                  size="22"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded-circle shrink-0"
+                >
+                  <VIcon
+                    :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                    size="12"
+                  />
+                </VAvatar>
+                <span
+                  class="account-name font-weight-bold text-high-emphasis text-truncate"
+                  style="max-width: 120px;"
+                >
+                  {{ getAccountName(transfer.destination_account) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Concepto / Descripción -->
+            <div class="mb-2 text-body-2 text-slate-800">
+              {{ transfer.description || 'Transferencia entre cuentas' }}
+            </div>
+
+            <!-- Fila Inferior: Monto y Acciones -->
+            <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
+              <div>
+                <span
+                  class="text-caption text-medium-emphasis d-block"
+                  style="font-size: 0.68rem;"
+                >MONTO</span>
+                <span class="text-h6 font-weight-black text-primary">
+                  {{ formatCurrency(transfer.amount) }}
+                </span>
+              </div>
+
+              <div class="d-flex align-center gap-1 ms-auto">
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  icon="ri-eye-line"
+                  class="rounded-lg"
+                  title="Ver Nota"
+                  @click="openNoteDialog(transfer)"
+                />
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="secondary"
+                  icon="ri-attachment-line"
+                  class="rounded-lg"
+                  title="Adjuntos"
+                  @click="openAttachDialog(transfer)"
+                />
+                <VBtn
+                  v-if="can('edit_transfer')"
+                  size="small"
+                  variant="tonal"
+                  color="warning"
+                  icon="ri-pencil-line"
+                  class="rounded-lg"
+                  title="Editar"
+                  @click="openEditDialog(transfer)"
+                />
+                <VBtn
+                  v-if="can('delete_transfer')"
+                  size="small"
+                  variant="tonal"
+                  color="error"
+                  icon="ri-delete-bin-line"
+                  class="rounded-lg"
+                  title="Eliminar"
+                  @click="deleteTransfer(transfer)"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Lista de Transferencias Unificada Desktop (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
+        <VProgressLinear
+          v-if="loading"
+          v-slot
+          indeterminate
+          color="primary"
+          height="3"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+        />
+        <VTable
+          hover
+          class="transfer-table"
+        >
+          <thead>
+            <tr>
+              <th
+                class="text-left py-3"
+                style="width: 44%;"
+              >
+                FLUJO DE LA TRANSFERENCIA
+              </th>
+              <th
+                class="text-left py-3"
+                style="width: 30%;"
+              >
+                DESCRIPCIÓN & FECHA
+              </th>
+              <th
+                class="text-right py-3"
+                style="width: 14%;"
+              >
+                MONTO
+              </th>
+              <th
+                class="text-center py-3"
+                style="width: 12%;"
+              >
+                ACCIONES
+              </th>
+            </tr>
+          </thead>
+        
+          <!-- Cargando (Skeleton Rows) -->
+          <tbody v-if="loading">
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td class="py-4">
+                <div class="shimmer-line w-75" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60 mb-2" />
+                <div class="shimmer-line w-40" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-40 ms-auto" />
+              </td>
+              <td class="py-4 text-center">
+                <div class="d-flex justify-center gap-2">
+                  <div class="shimmer-button" />
+                  <div class="shimmer-button" />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- Sin resultados filtrados -->
+          <tbody v-else-if="!allFilteredTransfers.length">
+            <tr>
+              <td
+                colspan="4"
+                class="text-center py-12 text-medium-emphasis"
+              >
+                <VAvatar
+                  color="primary"
+                  variant="tonal"
+                  size="64"
+                  class="mb-3"
+                >
+                  <VIcon
+                    icon="ri-inbox-line"
+                    size="32"
+                    color="primary"
+                  />
+                </VAvatar>
+                <div class="text-h6 font-weight-bold text-high-emphasis">
+                  Sin resultados para la búsqueda
+                </div>
+                <div class="text-body-2 text-medium-emphasis mt-1">
+                  Prueba cambiando el término de búsqueda o limpia el filtro aplicado.
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+          <!-- Datos reales -->
+          <tbody v-else>
+            <template
+              v-for="group in paginatedGroupedTransfers"
+              :key="group.label"
+            >
+              <!-- Fila de Encabezado por Fecha -->
+              <tr class="transfer-date-header-row">
+                <td colspan="4">
+                  <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
+                    <div class="d-flex align-center gap-3">
+                      <VAvatar
                         color="primary"
-                      />
-                    </VAvatar>
-                    <div class="d-flex align-center gap-2">
-                      <span class="text-subtitle-2 font-weight-bold text-slate-900">
-                        {{ formatDateHeader(group.label) }}
-                      </span>
-                      <div
-                        class="status-pill-clean status-transfer"
+                        variant="tonal"
+                        size="36"
+                        class="rounded-lg"
                       >
+                        <VIcon
+                          icon="ri-calendar-event-line"
+                          size="20"
+                          color="primary"
+                        />
+                      </VAvatar>
+                      <div class="d-flex align-center gap-2">
+                        <span class="text-subtitle-2 font-weight-bold text-slate-900">
+                          {{ formatDateHeader(group.label) }}
+                        </span>
+                        <div class="status-pill-clean status-transfer">
+                          <span class="status-dot" />
+                          <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-center gap-2 me-2">
+                      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
+                      <div class="status-pill-clean status-paid">
                         <span class="status-dot" />
-                        <span>{{ group.transfers.length }} {{ group.transfers.length === 1 ? 'operación' : 'operaciones' }}</span>
+                        <span>{{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}</span>
                       </div>
                     </div>
                   </div>
+                </td>
+              </tr>
 
-                  <div class="d-flex align-center gap-2 me-2">
-                    <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Total del Día:</span>
-                    <div
-                      class="status-pill-clean status-paid"
-                    >
-                      <span class="status-dot" />
-                      <span>{{ formatCurrency(group.transfers.reduce((acc, t) => acc + parseFloat(t.amount || 0), 0)) }}</span>
+              <!-- Filas de Transferencias para ese día -->
+              <tr
+                v-for="transfer in group.transfers"
+                :key="transfer.id"
+                class="transfer-row"
+              >
+                <!-- Flujo: Origen -> Destino sobrio y elegante -->
+                <td class="py-3">
+                  <div class="transfer-flow-container">
+                    <!-- Origen -->
+                    <div class="transfer-endpoint">
+                      <VAvatar
+                        size="24"
+                        color="secondary"
+                        variant="tonal"
+                        class="rounded-circle shrink-0"
+                      >
+                        <VIcon
+                          :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                          size="13"
+                          color="secondary"
+                        />
+                      </VAvatar>
+                      <span class="account-name">{{ getAccountName(transfer.source_account) }}</span>
+                    </div>
+
+                    <!-- Separador Flecha -->
+                    <div class="transfer-arrow-separator">
+                      <VIcon
+                        icon="ri-arrow-right-line"
+                        size="12"
+                      />
+                    </div>
+
+                    <!-- Destino -->
+                    <div class="transfer-endpoint">
+                      <VAvatar
+                        size="24"
+                        color="primary"
+                        variant="tonal"
+                        class="rounded-circle shrink-0"
+                      >
+                        <VIcon
+                          :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                          size="13"
+                          color="primary"
+                        />
+                      </VAvatar>
+                      <span class="account-name font-weight-bold text-high-emphasis">{{ getAccountName(transfer.destination_account) }}</span>
                     </div>
                   </div>
-                </div>
-              </td>
-            </tr>
+                </td>
 
-            <!-- Filas de Transferencias para ese día -->
-            <tr
-              v-for="transfer in group.transfers"
-              :key="transfer.id"
-              class="transfer-row"
-            >
-              <!-- Flujo: Origen -> Destino sobrio y elegante -->
-              <td class="py-3">
-                <div class="transfer-flow-container">
-                  <!-- Origen -->
-                  <div class="transfer-endpoint">
-                    <VAvatar
-                      size="24"
-                      color="secondary"
-                      variant="tonal"
-                      class="rounded-circle shrink-0"
-                    >
+                <!-- Descripción & Fecha -->
+                <td class="py-3">
+                  <div class="d-flex flex-column">
+                    <span class="text-body-2 font-weight-bold text-slate-900 leading-tight">
+                      {{ transfer.description || 'Transferencia entre cuentas' }}
+                    </span>
+                    <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis font-weight-medium mt-1">
                       <VIcon
-                        :icon="getAccountName(transfer.source_account).toLowerCase().includes('efectivo') || getAccountName(transfer.source_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                        size="13"
+                        icon="ri-calendar-line"
+                        size="14"
                         color="secondary"
                       />
-                    </VAvatar>
-                    <span class="account-name">{{ getAccountName(transfer.source_account) }}</span>
+                      <span>{{ formatDate(transfer.transfer_date || transfer.created_at) }}</span>
+                    </div>
                   </div>
+                </td>
 
-                  <!-- Separador Flecha -->
-                  <div class="transfer-arrow-separator">
-                    <VIcon
-                      icon="ri-arrow-right-line"
-                      size="12"
-                    />
-                  </div>
-
-                  <!-- Destino -->
-                  <div class="transfer-endpoint">
-                    <VAvatar
-                      size="24"
-                      color="primary"
-                      variant="tonal"
-                      class="rounded-circle shrink-0"
-                    >
-                      <VIcon
-                        :icon="getAccountName(transfer.destination_account).toLowerCase().includes('efectivo') || getAccountName(transfer.destination_account).toLowerCase().includes('caja') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                        size="13"
-                        color="primary"
-                      />
-                    </VAvatar>
-                    <span class="account-name font-weight-bold text-high-emphasis">{{ getAccountName(transfer.destination_account) }}</span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Descripción & Fecha -->
-              <td class="py-3">
-                <div class="d-flex flex-column">
-                  <span class="text-body-2 font-weight-bold text-slate-900 leading-tight">
-                    {{ transfer.description || 'Transferencia entre cuentas' }}
+                <!-- Monto -->
+                <td class="py-3 text-right">
+                  <span class="text-subtitle-1 font-weight-black text-primary">
+                    {{ formatCurrency(transfer.amount) }}
                   </span>
-                  <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis font-weight-medium mt-1">
-                    <VIcon
-                      icon="ri-calendar-line"
-                      size="14"
-                      color="secondary"
+                </td>
+
+                <!-- Acciones -->
+                <td class="py-3 text-center">
+                  <div class="d-flex align-center justify-center gap-1">
+                    <!-- Botón Principal: Ver Nota de Transferencia -->
+                    <VBtn
+                      title="Ver nota de transferencia y comprobantes"
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      icon="ri-eye-line"
+                      class="action-btn"
+                      @click="openNoteDialog(transfer)"
                     />
-                    <span>{{ formatDate(transfer.transfer_date || transfer.created_at) }}</span>
-                  </div>
-                </div>
-              </td>
 
-              <!-- Monto -->
-              <td class="py-3 text-right">
-                <span class="text-subtitle-1 font-weight-black text-primary">
-                  {{ formatCurrency(transfer.amount) }}
-                </span>
-              </td>
-
-              <!-- Acciones -->
-              <td class="py-3 text-center">
-                <div class="d-flex align-center justify-center gap-1">
-                  <!-- Botón Principal: Ver Nota de Transferencia -->
-                  <VBtn
-                    title="Ver nota de transferencia y comprobantes"
-                    size="small"
-                    variant="tonal"
-                    color="primary"
-                    icon="ri-eye-line"
-                    class="action-btn"
-                    @click="openNoteDialog(transfer)"
-                  />
-
-                  <!-- Menú Pro de Acciones Secundarias -->
-                  <VMenu
-                    v-if="can('edit_transfer') || can('delete_transfer')"
-                    location="bottom end"
-                    transition="scale-transition"
-                  >
-                    <template #activator="{ props: menuProps }">
-                      <VBtn
-                        v-bind="menuProps"
-                        size="small"
-                        variant="text"
-                        color="secondary"
-                        icon="ri-more-2-fill"
-                        class="action-btn"
-                        title="Más opciones"
-                      />
-                    </template>
-
-                    <VList
-                      density="compact"
-                      elevation="6"
-                      class="py-1 rounded-lg"
-                      min-width="180"
+                    <!-- Menú Pro de Acciones Secundarias -->
+                    <VMenu
+                      v-if="can('edit_transfer') || can('delete_transfer')"
+                      location="bottom end"
+                      transition="scale-transition"
                     >
-                      <VListItem
-                        v-if="can('edit_transfer')"
-                        @click="openEditDialog(transfer)"
+                      <template #activator="{ props: menuProps }">
+                        <VBtn
+                          v-bind="menuProps"
+                          size="small"
+                          variant="text"
+                          color="secondary"
+                          icon="ri-more-2-fill"
+                          class="action-btn"
+                          title="Más opciones"
+                        />
+                      </template>
+
+                      <VList
+                        density="compact"
+                        elevation="6"
+                        class="py-1 rounded-lg"
+                        min-width="180"
                       >
-                        <template #prepend>
-                          <VIcon
-                            icon="ri-edit-line"
-                            color="warning"
-                            size="18"
-                            class="me-2"
-                          />
-                        </template>
-                        <VListItemTitle class="font-weight-medium text-body-2">
-                          Editar Registro
-                        </VListItemTitle>
-                      </VListItem>
+                        <VListItem
+                          v-if="can('edit_transfer')"
+                          @click="openEditDialog(transfer)"
+                        >
+                          <template #prepend>
+                            <VIcon
+                              icon="ri-edit-line"
+                              color="warning"
+                              size="18"
+                              class="me-2"
+                            />
+                          </template>
+                          <VListItemTitle class="font-weight-medium text-body-2">
+                            Editar Registro
+                          </VListItemTitle>
+                        </VListItem>
 
-                      <VDivider
-                        v-if="can('edit_transfer') && can('delete_transfer')"
-                        class="my-1"
-                      />
+                        <VDivider
+                          v-if="can('edit_transfer') && can('delete_transfer')"
+                          class="my-1"
+                        />
 
-                      <VListItem
-                        v-if="can('delete_transfer')"
-                        class="text-error"
-                        @click="deleteTransfer(transfer)"
-                      >
-                        <template #prepend>
-                          <VIcon
-                            icon="ri-delete-bin-line"
-                            color="error"
-                            size="18"
-                            class="me-2"
-                          />
-                        </template>
-                        <VListItemTitle class="font-weight-medium text-body-2 text-error">
-                          Eliminar Registro
-                        </VListItemTitle>
-                      </VListItem>
-                    </VList>
-                  </VMenu>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </VTable>
-    </VCard>
+                        <VListItem
+                          v-if="can('delete_transfer')"
+                          class="text-error"
+                          @click="deleteTransfer(transfer)"
+                        >
+                          <template #prepend>
+                            <VIcon
+                              icon="ri-delete-bin-line"
+                              color="error"
+                              size="18"
+                              class="me-2"
+                            />
+                          </template>
+                          <VListItemTitle class="font-weight-medium text-body-2 text-error">
+                            Eliminar Registro
+                          </VListItemTitle>
+                        </VListItem>
+                      </VList>
+                    </VMenu>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </VTable>
+      </VCard>
 
-    <!-- Paginación -->
-    <VCard
-      v-if="allFilteredTransfers.length > 0"
-      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
-    >
-      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
-        <div class="d-flex align-center gap-4 flex-wrap">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong
-              class="text-high-emphasis"
-            >{{ allFilteredTransfers.length }}</strong> transferencias
+      <!-- Paginación -->
+      <VCard
+        v-if="allFilteredTransfers.length > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+          <div class="d-flex align-center gap-4 flex-wrap">
+            <div class="text-body-2 text-medium-emphasis">
+              Mostrando <strong class="text-high-emphasis">{{ paginatedTransfers.length }}</strong> de <strong class="text-high-emphasis">{{ allFilteredTransfers.length }}</strong> transferencias
+            </div>
+            <div
+              class="d-flex align-center gap-2"
+              style="min-width: 140px;"
+            >
+              <span class="text-caption text-medium-emphasis">Por pág:</span>
+              <VSelect
+                v-model="itemsPerPage"
+                :items="[10, 15, 25, 50, 100]"
+                variant="outlined"
+                density="compact"
+                hide-details
+                style="max-width: 95px;"
+                @update:model-value="currentPage = 1"
+              />
+            </div>
           </div>
-          <div
-            class="d-flex align-center gap-2"
-            style="min-width: 140px;"
-          >
-            <span class="text-caption text-medium-emphasis">Por pág:</span>
-            <VSelect
-              v-model="itemsPerPage"
-              :items="[10, 15, 25, 50, 100]"
-              variant="outlined"
-              density="compact"
-              hide-details
-              style="max-width: 95px;"
-              @update:model-value="currentPage = 1"
-            />
-          </div>
+          <VPagination
+            v-if="totalPages > 1"
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="7"
+            color="primary"
+          />
         </div>
-        <VPagination
-          v-if="totalPages > 1"
-          v-model="currentPage"
-          :length="totalPages"
-          rounded="circle"
-          :total-visible="7"
-          color="primary"
-        />
-      </div>
-    </VCard>
+      </VCard>
+    </div>
   </div>
 
   <!-- Modal Ver Nota de Transferencia -->
@@ -1102,7 +1295,10 @@ onMounted(() => {
                 class="d-flex justify-space-between align-center"
               >
                 <span class="text-caption text-medium-emphasis">Descripción:</span>
-                <span class="text-caption text-high-emphasis text-truncate" style="max-width: 220px;">
+                <span
+                  class="text-caption text-high-emphasis text-truncate"
+                  style="max-width: 220px;"
+                >
                   {{ transferToDelete.description }}
                 </span>
               </div>
@@ -1165,147 +1361,6 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
-
-<style scoped lang="scss">
-// Control de ancho y eliminación de scroll horizontal
-.transfer-table-container {
-  overflow-x: hidden !important;
-
-  :deep(.v-table__wrapper) {
-    overflow-x: hidden !important;
-  }
-}
-
-.transfer-table {
-  width: 100% !important;
-  table-layout: auto;
-
-  th, td {
-    white-space: normal !important;
-    word-break: break-word;
-  }
-}
-
-.transfer-flow-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px;
-  background-color: rgba(var(--v-theme-on-surface), 0.03);
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  max-width: 100%;
-
-  &:hover {
-    background-color: rgba(var(--v-theme-on-surface), 0.06);
-    border-color: rgba(var(--v-theme-primary), 0.25);
-  }
-
-  .transfer-endpoint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
-
-    .account-name {
-      white-space: nowrap;
-    }
-  }
-
-  .transfer-arrow-separator {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-    flex-shrink: 0;
-  }
-}
-
-// Status Pills (Estilo Socios/Usuarios con Punto Indicador)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-partial {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-.status-transfer {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-canceled {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
-
-  .status-dot {
-    background-color: #94a3b8 !important;
-  }
-}
-</style>
 
 <route lang="yaml">
 meta:

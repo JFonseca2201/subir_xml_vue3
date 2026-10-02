@@ -43,11 +43,13 @@ const isEditing = computed(() => !!props.transferData)
 
 const originAccounts = computed(() => {
   if (!form.value.to_account_id) return accounts.value
+  
   return accounts.value.filter(account => String(account.id) !== String(form.value.to_account_id))
 })
 
 const destinationAccounts = computed(() => {
   if (!form.value.from_account_id) return accounts.value
+  
   return accounts.value.filter(account => String(account.id) !== String(form.value.from_account_id))
 })
 
@@ -115,11 +117,13 @@ const handleSubmit = async () => {
 
   if (form.value.from_account_id === form.value.to_account_id) {
     showNotification('La cuenta de origen y destino no pueden ser la misma', 'warning')
+    
     return
   }
 
   if (!isEditing.value && receiptFiles.value.length === 0) {
     showNotification('Es obligatorio adjuntar la foto o comprobante de la transferencia', 'warning')
+    
     return
   }
 
@@ -132,6 +136,7 @@ const handleSubmit = async () => {
     let requestBody
     if (receiptFiles.value.length > 0) {
       const formData = new FormData()
+
       formData.append('from_account_id', form.value.from_account_id)
       formData.append('to_account_id', form.value.to_account_id)
       formData.append('amount', form.value.amount)
@@ -159,7 +164,9 @@ const handleSubmit = async () => {
     closeDialog()
   } catch (error) {
     console.error('Error al realizar transferencia:', error)
+
     const errMessage = error?.data?.message || (error?.data?.errors ? Object.values(error.data.errors).flat().join(', ') : 'Error al procesar la transferencia')
+
     showNotification(errMessage, 'error')
   } finally {
     loading.value = false
@@ -232,16 +239,79 @@ onMounted(() => {
       </div>
 
       <!-- Formulario con Scroll Interno -->
-      <VCardText class="pa-4" style="overflow-x: hidden;">
+      <VCardText
+        class="pa-4"
+        style="overflow-x: hidden;"
+      >
         <!-- Skeleton Loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-2">
+        <div
+          v-if="isLoadingData"
+          class="py-2"
+        >
           <VRow class="ma-0">
-            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" md="6" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" class="pa-2"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12" class="pa-2"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="article"
+                class="rounded-lg"
+              />
+            </VCol>
           </VRow>
         </div>
 
@@ -311,7 +381,10 @@ onMounted(() => {
                 prepend-inner-icon="ri-calendar-line"
               />
             </VCol>
-            <VCol cols="12" class="pa-2">
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
               <VTextarea
                 v-model="form.description"
                 label="Motivo / Descripción *"
@@ -332,7 +405,10 @@ onMounted(() => {
             </VCol>
 
             <!-- Foto / Comprobante de la Transferencia -->
-            <VCol cols="12" class="pa-2">
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
               <ReceiptUploader
                 v-model="receiptFiles"
                 label="Foto / Comprobante de la Transferencia"

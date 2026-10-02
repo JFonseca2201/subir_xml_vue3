@@ -43,6 +43,7 @@ export async function compressImage(file, options = {}) {
       const img = await new Promise((resolve, reject) => {
         const image = new Image()
         const url = URL.createObjectURL(file)
+
         image.onload = () => {
           URL.revokeObjectURL(url)
           resolve(image)
@@ -53,6 +54,7 @@ export async function compressImage(file, options = {}) {
         }
         image.src = url
       })
+
       width = img.naturalWidth || img.width
       height = img.naturalHeight || img.height
       sourceImageBitmap = img
@@ -61,6 +63,7 @@ export async function compressImage(file, options = {}) {
     // Si la imagen ya es pequeña y pesa menos de 300KB, no es necesario recomprimir
     if (file.size <= 300 * 1024 && width <= maxWidth && height <= maxHeight) {
       if (sourceImageBitmap.close) sourceImageBitmap.close()
+      
       return file
     }
 
@@ -70,14 +73,17 @@ export async function compressImage(file, options = {}) {
 
     if (targetWidth > maxWidth || targetHeight > maxHeight) {
       const ratio = Math.min(maxWidth / targetWidth, maxHeight / targetHeight)
+
       targetWidth = Math.round(targetWidth * ratio)
       targetHeight = Math.round(targetHeight * ratio)
     }
 
     // 3. Dibujar en canvas
     const canvas = document.createElement('canvas')
+
     canvas.width = targetWidth
     canvas.height = targetHeight
+
     const ctx = canvas.getContext('2d', { alpha: false })
 
     // Fondo blanco para imágenes con transparencia convertidas a JPEG
@@ -114,6 +120,7 @@ export async function compressImage(file, options = {}) {
     })
   } catch (error) {
     console.warn('No se pudo comprimir la imagen, usando original:', error)
+    
     return file
   }
 }
@@ -123,5 +130,6 @@ export async function compressImage(file, options = {}) {
  */
 export async function compressFiles(files, options = {}) {
   if (!Array.isArray(files) || files.length === 0) return []
+  
   return Promise.all(files.map(f => compressImage(f, options)))
 }

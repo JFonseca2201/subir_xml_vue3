@@ -213,6 +213,7 @@ const saveSucursal = async () => {
 
     if (hasFile) {
       const formData = new FormData()
+
       formData.append('_method', 'PUT')
       Object.keys(sucursal.value).forEach(key => {
         if (sucursal.value[key] !== null && sucursal.value[key] !== undefined) {
@@ -545,7 +546,10 @@ onMounted(() => {
               hide-details="auto"
               :disabled="!isEditing"
             />
-            <small v-if="sucursal.firma_electronica" class="text-caption text-success d-block mt-1">
+            <small
+              v-if="sucursal.firma_electronica"
+              class="text-caption text-success d-block mt-1"
+            >
               Firma actual: {{ sucursal.firma_electronica }}
             </small>
           </VCol>

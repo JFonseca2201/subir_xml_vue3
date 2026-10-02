@@ -174,16 +174,31 @@ const formatCurrency = value => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
-    <VProgressLinear v-if="loading" v-slot indeterminate color="primary" height="3" class="position-absolute"
-      style="top: 0; left: 0; right: 0; z-index: 10;" />
+    <VProgressLinear
+      v-if="loading"
+      v-slot
+      indeterminate
+      color="primary"
+      height="3"
+      class="position-absolute"
+      style="top: 0; left: 0; right: 0; z-index: 10;"
+    />
 
     <!-- Header Section -->
     <div class="d-flex align-center gap-4 mb-6">
-      <VBtn icon="ri-arrow-left-line" variant="tonal" color="primary" class="rounded-lg elevation-2"
-        @click="router.push('/returns/list')" />
+      <VBtn
+        icon="ri-arrow-left-line"
+        variant="tonal"
+        color="primary"
+        class="rounded-lg elevation-2"
+        @click="router.push('/returns/list')"
+      />
       <div>
         <h1 class="text-h3 font-weight-bold text-primary mb-1 d-flex align-center gap-2">
-          <VIcon icon="ri-refund-2-fill" size="40" />
+          <VIcon
+            icon="ri-refund-2-fill"
+            size="40"
+          />
           Procesar Devolución de distribuidores
         </h1>
         <p class="text-medium-emphasis mb-0 text-body-1">
@@ -196,15 +211,38 @@ const formatCurrency = value => {
     <VCard class="mb-8 rounded-xl elevation-3 border-0 overflow-visible">
       <VCardText class="pa-6">
         <VRow align="center">
-          <VCol cols="12" md="9">
-            <VTextField v-model="searchSaleNumber" label="Buscar Venta (Nº Factura, Cédula, Placa o Nombre)"
-              placeholder="Ej: 1712345678 o FAC-001" prepend-inner-icon="ri-search-2-line" variant="outlined"
-              hide-details rounded="lg" color="primary" bg-color="surface" class="search-input-hover"
-              @keyup.enter="searchSale" />
+          <VCol
+            cols="12"
+            md="9"
+          >
+            <VTextField
+              v-model="searchSaleNumber"
+              label="Buscar Venta (Nº Factura, Cédula, Placa o Nombre)"
+              placeholder="Ej: 1712345678 o FAC-001"
+              prepend-inner-icon="ri-search-2-line"
+              variant="outlined"
+              hide-details
+              rounded="lg"
+              color="primary"
+              bg-color="surface"
+              class="search-input-hover"
+              @keyup.enter="searchSale"
+            />
           </VCol>
-          <VCol cols="12" md="3">
-            <VBtn color="primary" block size="x-large" rounded="lg" class="elevation-2 text-button font-weight-bold"
-              :loading="loading" prepend-icon="ri-search-eye-line" @click="searchSale">
+          <VCol
+            cols="12"
+            md="3"
+          >
+            <VBtn
+              color="primary"
+              block
+              size="x-large"
+              rounded="lg"
+              class="elevation-2 text-button font-weight-bold"
+              :loading="loading"
+              prepend-icon="ri-search-eye-line"
+              @click="searchSale"
+            >
               Buscar
             </VBtn>
           </VCol>
@@ -220,24 +258,48 @@ const formatCurrency = value => {
           Múltiples coincidencias encontradas
         </h3>
         <VRow>
-          <VCol v-for="s in foundSales" :key="s.id" cols="12" md="6" lg="4">
-            <VCard variant="outlined" class="h-100 rounded-lg hover-card transition-swing"
-              :class="{ 'opacity-50': s.status === 'canceled' }" :disabled="s.status === 'canceled'"
-              @click="selectSale(s)">
+          <VCol
+            v-for="s in foundSales"
+            :key="s.id"
+            cols="12"
+            md="6"
+            lg="4"
+          >
+            <VCard
+              variant="outlined"
+              class="h-100 rounded-lg hover-card transition-swing"
+              :class="{ 'opacity-50': s.status === 'canceled' }"
+              :disabled="s.status === 'canceled'"
+              @click="selectSale(s)"
+            >
               <VCardText class="pa-5">
                 <div class="d-flex justify-space-between align-start mb-3">
-                  <VChip size="small" :color="s.document_type === 'invoice' ? 'primary' : 'info'"
-                    class="font-weight-bold">
+                  <VChip
+                    size="small"
+                    :color="s.document_type === 'invoice' ? 'primary' : 'info'"
+                    class="font-weight-bold"
+                  >
                     {{ s.document_number }}
                   </VChip>
-                  <VChip size="small" :color="s.status === 'canceled' ? 'error' : 'success'" variant="flat">
+                  <VChip
+                    size="small"
+                    :color="s.status === 'canceled' ? 'error' : 'success'"
+                    variant="flat"
+                  >
                     {{ s.status === 'canceled' ? 'Anulada' : 'Válida' }}
                   </VChip>
                 </div>
 
                 <div class="d-flex align-center gap-3 mb-2">
-                  <VAvatar color="primary-lighten-4" size="40" rounded>
-                    <VIcon icon="ri-user-3-line" color="primary" />
+                  <VAvatar
+                    color="primary-lighten-4"
+                    size="40"
+                    rounded
+                  >
+                    <VIcon
+                      icon="ri-user-3-line"
+                      color="primary"
+                    />
                   </VAvatar>
                   <div>
                     <div class="text-subtitle-2 font-weight-bold">
@@ -265,7 +327,11 @@ const formatCurrency = value => {
       <div v-if="sale">
         <VRow>
           <!-- Resumen de la Venta (Izquierda) -->
-          <VCol cols="12" md="4" lg="3">
+          <VCol
+            cols="12"
+            md="4"
+            lg="3"
+          >
             <VCard class="rounded-xl elevation-2 h-100 border-thin">
               <VCardTitle class="pa-5 pb-0 text-h5 font-weight-bold d-flex align-center gap-2 text-primary">
                 <VIcon icon="ri-information-line" />
@@ -273,10 +339,20 @@ const formatCurrency = value => {
               </VCardTitle>
 
               <VCardText class="pa-5">
-                <VList class="bg-transparent" lines="two" density="compact">
+                <VList
+                  class="bg-transparent"
+                  lines="two"
+                  density="compact"
+                >
                   <VListItem class="px-0">
                     <template #prepend>
-                      <VAvatar color="primary" variant="tonal" size="42" rounded class="mr-3">
+                      <VAvatar
+                        color="primary"
+                        variant="tonal"
+                        size="42"
+                        rounded
+                        class="mr-3"
+                      >
                         <VIcon icon="ri-file-list-3-line" />
                       </VAvatar>
                     </template>
@@ -290,7 +366,13 @@ const formatCurrency = value => {
 
                   <VListItem class="px-0 mt-3">
                     <template #prepend>
-                      <VAvatar color="info" variant="tonal" size="42" rounded class="mr-3">
+                      <VAvatar
+                        color="info"
+                        variant="tonal"
+                        size="42"
+                        rounded
+                        class="mr-3"
+                      >
                         <VIcon icon="ri-calendar-2-line" />
                       </VAvatar>
                     </template>
@@ -304,21 +386,36 @@ const formatCurrency = value => {
 
                   <VListItem class="px-0 mt-3">
                     <template #prepend>
-                      <VAvatar color="success" variant="tonal" size="42" rounded class="mr-3">
+                      <VAvatar
+                        color="success"
+                        variant="tonal"
+                        size="42"
+                        rounded
+                        class="mr-3"
+                      >
                         <VIcon icon="ri-user-heart-line" />
                       </VAvatar>
                     </template>
                     <VListItemSubtitle class="text-uppercase text-caption font-weight-bold mb-1">
                       Cliente
                     </VListItemSubtitle>
-                    <VListItemTitle class="text-subtitle-1 font-weight-medium" style="white-space: normal;">
+                    <VListItemTitle
+                      class="text-subtitle-1 font-weight-medium"
+                      style="white-space: normal;"
+                    >
                       {{ sale.client?.full_name || sale.client?.name || 'Consumidor Final' }}
                     </VListItemTitle>
                   </VListItem>
 
                   <VListItem class="px-0 mt-3">
                     <template #prepend>
-                      <VAvatar color="warning" variant="tonal" size="42" rounded class="mr-3">
+                      <VAvatar
+                        color="warning"
+                        variant="tonal"
+                        size="42"
+                        rounded
+                        class="mr-3"
+                      >
                         <VIcon icon="ri-money-dollar-circle-line" />
                       </VAvatar>
                     </template>
@@ -337,10 +434,17 @@ const formatCurrency = value => {
                   <div class="text-caption text-uppercase font-weight-bold text-medium-emphasis text-center">
                     Estado de la Venta
                   </div>
-                  <VChip size="large" :color="sale.payment_status === 'paid' ? 'success' : 'warning'" variant="flat"
-                    class="font-weight-bold w-100 justify-center py-5 text-subtitle-1 rounded-lg elevation-1">
-                    <VIcon :icon="sale.payment_status === 'paid' ? 'ri-checkbox-circle-fill' : 'ri-time-fill'" start
-                      size="22" />
+                  <VChip
+                    size="large"
+                    :color="sale.payment_status === 'paid' ? 'success' : 'warning'"
+                    variant="flat"
+                    class="font-weight-bold w-100 justify-center py-5 text-subtitle-1 rounded-lg elevation-1"
+                  >
+                    <VIcon
+                      :icon="sale.payment_status === 'paid' ? 'ri-checkbox-circle-fill' : 'ri-time-fill'"
+                      start
+                      size="22"
+                    />
                     {{ sale.payment_status === 'paid' ? 'Factura Pagada' : 'Crédito / Pendiente' }}
                   </VChip>
                 </div>
@@ -349,19 +453,31 @@ const formatCurrency = value => {
           </VCol>
 
           <!-- Tabla de Productos y Motivo (Derecha) -->
-          <VCol cols="12" md="8" lg="9">
+          <VCol
+            cols="12"
+            md="8"
+            lg="9"
+          >
             <VCard class="rounded-xl elevation-3 border-0 overflow-hidden h-100 d-flex flex-column">
               <VCardTitle class="pa-5 bg-grey-lighten-4 border-b d-flex align-center justify-space-between">
                 <div class="d-flex align-center gap-2 text-h5 font-weight-bold text-primary">
                   <VIcon icon="ri-shopping-cart-2-line" />
                   Selección de Artículos
                 </div>
-                <VChip color="primary" variant="tonal" size="small" class="font-weight-bold">
+                <VChip
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  class="font-weight-bold"
+                >
                   {{ returnForm.items.length }} ítem(s) en factura
                 </VChip>
               </VCardTitle>
 
-              <VTable hover class="flex-grow-1 table-modern">
+              <VTable
+                hover
+                class="flex-grow-1 table-modern"
+              >
                 <thead class="bg-grey-lighten-5">
                   <tr>
                     <th class="text-uppercase text-caption font-weight-bold text-medium-emphasis">
@@ -375,7 +491,8 @@ const formatCurrency = value => {
                     </th>
                     <th
                       class="text-center text-uppercase text-caption font-weight-bold text-primary bg-primary-lighten-5"
-                      style="width: 180px">
+                      style="width: 180px"
+                    >
                       Devolución
                     </th>
                     <th class="text-right text-uppercase text-caption font-weight-bold text-medium-emphasis">
@@ -384,14 +501,21 @@ const formatCurrency = value => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in returnForm.items" :key="item.id" class="transition-swing">
+                  <tr
+                    v-for="item in returnForm.items"
+                    :key="item.id"
+                    class="transition-swing"
+                  >
                     <td class="py-3">
                       <div class="font-weight-bold text-body-1">
                         {{ item.description }}
                       </div>
                     </td>
                     <td class="text-center font-weight-medium text-medium-emphasis">
-                      <VChip size="small" variant="tonal">
+                      <VChip
+                        size="small"
+                        variant="tonal"
+                      >
                         {{ item.max_quantity }}
                       </VChip>
                     </td>
@@ -399,9 +523,19 @@ const formatCurrency = value => {
                       {{ formatCurrency(item.price) }}
                     </td>
                     <td class="bg-primary-lighten-5 px-4">
-                      <VTextField v-model.number="item.return_quantity" type="number" min="0" :max="item.max_quantity"
-                        density="compact" variant="outlined" hide-details color="primary" bg-color="white"
-                        class="centered-input rounded" @update:model-value="val => clampQuantity(item, val)" />
+                      <VTextField
+                        v-model.number="item.return_quantity"
+                        type="number"
+                        min="0"
+                        :max="item.max_quantity"
+                        density="compact"
+                        variant="outlined"
+                        hide-details
+                        color="primary"
+                        bg-color="white"
+                        class="centered-input rounded"
+                        @update:model-value="val => clampQuantity(item, val)"
+                      />
                     </td>
                     <td class="text-right font-weight-bold text-error text-subtitle-1">
                       {{ formatCurrency(item.return_quantity * item.price) }}
@@ -413,19 +547,37 @@ const formatCurrency = value => {
               <!-- Resumen Final y Botón -->
               <div class="bg-grey-lighten-4 pa-6 border-t mt-auto">
                 <VRow>
-                  <VCol cols="12" md="7">
+                  <VCol
+                    cols="12"
+                    md="7"
+                  >
                     <div class="text-subtitle-2 font-weight-bold mb-2 text-medium-emphasis">
-                      <VIcon icon="ri-chat-1-line" size="small" class="mr-1" />
+                      <VIcon
+                        icon="ri-chat-1-line"
+                        size="small"
+                        class="mr-1"
+                      />
                       Justificación requerida
                     </div>
-                    <VTextarea v-model="returnForm.reason" label="Motivo de la Devolución"
-                      placeholder="Ej: Producto en mal estado, error de facturación..." variant="solo" rounded="lg"
-                      rows="3" hide-details bg-color="white" class="elevation-1" />
+                    <VTextarea
+                      v-model="returnForm.reason"
+                      label="Motivo de la Devolución"
+                      placeholder="Ej: Producto en mal estado, error de facturación..."
+                      variant="solo"
+                      rounded="lg"
+                      rows="3"
+                      hide-details
+                      bg-color="white"
+                      class="elevation-1"
+                    />
                   </VCol>
 
-                  <VCol cols="12" md="5" class="d-flex flex-column justify-end">
-                    <div
-                      class="bg-white rounded-xl pa-5 elevation-2 border-primary border-thin d-flex flex-column align-end">
+                  <VCol
+                    cols="12"
+                    md="5"
+                    class="d-flex flex-column justify-end"
+                  >
+                    <div class="bg-white rounded-xl pa-5 elevation-2 border-primary border-thin d-flex flex-column align-end">
                       <div class="text-uppercase text-caption font-weight-bold text-medium-emphasis mb-1">
                         Monto a Reintegrar
                       </div>
@@ -433,9 +585,17 @@ const formatCurrency = value => {
                         {{ formatCurrency(totalRefund) }}
                       </div>
 
-                      <VBtn color="error" size="x-large" block rounded="lg"
-                        class="text-button font-weight-bold elevation-3" prepend-icon="ri-check-double-line"
-                        :loading="processing" :disabled="processing" @click="submitReturn">
+                      <VBtn
+                        color="error"
+                        size="x-large"
+                        block
+                        rounded="lg"
+                        class="text-button font-weight-bold elevation-3"
+                        prepend-icon="ri-check-double-line"
+                        :loading="processing"
+                        :disabled="processing"
+                        @click="submitReturn"
+                      >
                         Confirmar Devolución
                       </VBtn>
                     </div>

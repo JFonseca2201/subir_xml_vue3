@@ -124,6 +124,7 @@ const parseCSV = text => {
       }
     }
     values.push(current.trim().replace(/^"|"$/g, '').trim())
+    
     return values
   }
 
@@ -166,6 +167,7 @@ const parseCSV = text => {
       const idx = rawHeaders.findIndex(h => h.includes(part))
       if (idx !== -1) return idx
     }
+    
     return -1
   }
 
@@ -210,6 +212,7 @@ const parseCSV = text => {
     // Si la categoría detectada es un número y el category_code es texto, intercambiarlos
     if (catName && /^\d+$/.test(catName.trim()) && catCode && !/^\d+$/.test(catCode.trim())) {
       const temp = catName
+
       catName = catCode.toUpperCase()
       catCode = temp
     }
@@ -257,10 +260,12 @@ const processFile = file => {
   parseError.value = ''
   
   const reader = new FileReader()
+
   reader.onload = e => {
     try {
       const text = e.target.result
       const { items, categories } = parseCSV(text)
+
       parsedRows.value = items
       previewRows.value = items.slice(0, 5)
       totalParsed.value = items.length
@@ -279,6 +284,7 @@ const processFile = file => {
 const submitImport = async () => {
   if (parsedRows.value.length === 0) {
     showNotification('Por favor selecciona un archivo con datos válidos', 'warning')
+    
     return
   }
 
@@ -288,12 +294,14 @@ const submitImport = async () => {
   if (isNewSupplier.value) {
     if (!customSupplierName.value.trim()) {
       showNotification('Ingresa el nombre del nuevo distribuidor', 'warning')
+      
       return
     }
     supplierName = customSupplierName.value.trim().toUpperCase()
     supplierId = null
   } else {
     const found = props.suppliers.find(s => s.id === supplierId)
+
     supplierName = found ? found.name : 'DISTRIBUIDOR'
   }
 
@@ -318,7 +326,9 @@ const submitImport = async () => {
     }
   } catch (error) {
     console.error('Error en importación:', error)
+
     const msg = error?.response?.data?.message || 'Error al subir catálogo de distribuidor'
+
     showNotification(msg, 'error')
   } finally {
     isSubmitting.value = false
@@ -339,6 +349,7 @@ const filterSupplier = (value, query, item) => {
   const ruc = String(item.raw?.ruc || '').toLowerCase()
   const phone = String(item.raw?.phone || '').toLowerCase()
   const id = String(item.raw?.id || '')
+  
   return name.includes(q) || ruc.includes(q) || phone.includes(q) || id.includes(q)
 }
 </script>
@@ -354,8 +365,17 @@ const filterSupplier = (value, query, item) => {
       <!-- Header -->
       <VCardItem class="bg-primary text-white py-4 px-6">
         <template #prepend>
-          <VAvatar size="42" color="white" variant="tonal" class="rounded-lg me-2">
-            <VIcon icon="ri-file-upload-line" size="26" color="white" />
+          <VAvatar
+            size="42"
+            color="white"
+            variant="tonal"
+            class="rounded-lg me-2"
+          >
+            <VIcon
+              icon="ri-file-upload-line"
+              size="26"
+              color="white"
+            />
           </VAvatar>
         </template>
         <VCardTitle class="text-h6 font-weight-bold text-white">
@@ -365,7 +385,13 @@ const filterSupplier = (value, query, item) => {
           Soporta archivos CSV con cabeceras: code, description, reference, price, category_name, stock_status
         </VCardSubtitle>
         <template #append>
-          <VBtn icon="ri-close-line" variant="text" color="white" density="compact" @click="emit('update:isDialogVisible', false)" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            color="white"
+            density="compact"
+            @click="emit('update:isDialogVisible', false)"
+          />
         </template>
       </VCardItem>
 
@@ -373,12 +399,18 @@ const filterSupplier = (value, query, item) => {
         <!-- Paso 1: Distribuidor y Modo -->
         <VCard class="border rounded-xl mb-4 bg-surface elevation-0 pa-4">
           <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-            <VIcon icon="ri-store-2-line" size="18" />
+            <VIcon
+              icon="ri-store-2-line"
+              size="18"
+            />
             <span>1. Seleccionar Distribuidor y Modo de Carga</span>
           </div>
 
           <VRow dense>
-            <VCol cols="12" sm="7">
+            <VCol
+              cols="12"
+              sm="7"
+            >
               <div v-if="!isNewSupplier">
                 <VAutocomplete
                   v-model="selectedSupplier"
@@ -396,7 +428,10 @@ const filterSupplier = (value, query, item) => {
                   clearable
                 >
                   <template #item="{ props: itemProps, item }">
-                    <VListItem v-bind="itemProps" :title="item.raw.name">
+                    <VListItem
+                      v-bind="itemProps"
+                      :title="item.raw.name"
+                    >
                       <template #subtitle>
                         <span class="text-caption text-medium-emphasis">
                           RUC: <strong class="font-mono text-primary">{{ item.raw.ruc || 'S/N' }}</strong> · {{ item.raw.total_items || 0 }} productos actuales
@@ -407,7 +442,10 @@ const filterSupplier = (value, query, item) => {
                   <template #selection="{ item }">
                     <div class="d-flex align-center gap-2">
                       <span class="font-weight-semibold">{{ item.raw.name }}</span>
-                      <span v-if="item.raw.ruc" class="text-caption font-mono text-medium-emphasis">({{ item.raw.ruc }})</span>
+                      <span
+                        v-if="item.raw.ruc"
+                        class="text-caption font-mono text-medium-emphasis"
+                      >({{ item.raw.ruc }})</span>
                     </div>
                   </template>
                 </VAutocomplete>
@@ -439,8 +477,17 @@ const filterSupplier = (value, query, item) => {
               </div>
             </VCol>
 
-            <VCol cols="12" sm="5">
-              <VRadioGroup v-model="importMode" inline density="compact" hide-details="auto" class="mt-1">
+            <VCol
+              cols="12"
+              sm="5"
+            >
+              <VRadioGroup
+                v-model="importMode"
+                inline
+                density="compact"
+                hide-details="auto"
+                class="mt-1"
+              >
                 <div class="d-flex flex-column gap-1">
                   <VRadio
                     value="replace"
@@ -461,7 +508,10 @@ const filterSupplier = (value, query, item) => {
         <!-- Paso 2: Zona de Carga de Archivo -->
         <VCard class="border rounded-xl mb-4 bg-surface elevation-0 pa-4">
           <div class="text-subtitle-2 font-weight-bold mb-3 d-flex align-center gap-2 text-primary">
-            <VIcon icon="ri-file-text-line" size="18" />
+            <VIcon
+              icon="ri-file-text-line"
+              size="18"
+            />
             <span>2. Subir Archivo CSV</span>
           </div>
 
@@ -477,9 +527,17 @@ const filterSupplier = (value, query, item) => {
               accept=".csv,.txt,.tsv"
               class="d-none"
               @change="handleFileUpload"
-            />
-            <VAvatar size="54" color="primary" variant="tonal" class="mb-2">
-              <VIcon icon="ri-upload-cloud-2-line" size="28" />
+            >
+            <VAvatar
+              size="54"
+              color="primary"
+              variant="tonal"
+              class="mb-2"
+            >
+              <VIcon
+                icon="ri-upload-cloud-2-line"
+                size="28"
+              />
             </VAvatar>
             <div class="text-subtitle-1 font-weight-bold text-high-emphasis">
               {{ selectedFile ? selectedFile.name : 'Haz clic o arrastra tu archivo CSV aquí' }}
@@ -489,7 +547,13 @@ const filterSupplier = (value, query, item) => {
             </p>
           </div>
 
-          <VAlert v-if="parseError" type="error" variant="tonal" class="mt-3 rounded-lg" density="compact">
+          <VAlert
+            v-if="parseError"
+            type="error"
+            variant="tonal"
+            class="mt-3 rounded-lg"
+            density="compact"
+          >
             {{ parseError }}
           </VAlert>
         </VCard>
@@ -498,37 +562,76 @@ const filterSupplier = (value, query, item) => {
         <div v-if="totalParsed > 0">
           <div class="d-flex align-center justify-space-between mb-2">
             <div class="text-subtitle-2 font-weight-bold d-flex align-center gap-2 text-success">
-              <VIcon icon="ri-checkbox-circle-line" size="18" />
+              <VIcon
+                icon="ri-checkbox-circle-line"
+                size="18"
+              />
               <span>Vista previa ({{ totalParsed }} registros detectados, {{ detectedCategories.length }} categorías)</span>
             </div>
-            <VChip size="small" color="success" variant="tonal" class="font-weight-bold">
+            <VChip
+              size="small"
+              color="success"
+              variant="tonal"
+              class="font-weight-bold"
+            >
               Listo para importar
             </VChip>
           </div>
 
           <VCard class="border rounded-xl bg-surface elevation-0 overflow-hidden mb-2">
-            <VTable density="compact" class="text-caption preview-table">
+            <VTable
+              density="compact"
+              class="text-caption preview-table"
+            >
               <thead>
                 <tr class="bg-slate-50 text-uppercase font-weight-bold">
                   <th>Código</th>
                   <th>Descripción</th>
                   <th>Referencia</th>
                   <th>Categoría</th>
-                  <th class="text-right">Precio</th>
-                  <th class="text-center">Stock</th>
+                  <th class="text-right">
+                    Precio
+                  </th>
+                  <th class="text-center">
+                    Stock
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, idx) in previewRows" :key="idx">
-                  <td class="font-mono font-weight-bold text-primary">{{ row.code }}</td>
-                  <td class="text-truncate" style="max-width: 250px;">{{ row.description }}</td>
-                  <td class="font-mono">{{ row.reference || '-' }}</td>
-                  <td>
-                    <VChip size="x-small" color="secondary" variant="tonal">{{ row.category_name }}</VChip>
+                <tr
+                  v-for="(row, idx) in previewRows"
+                  :key="idx"
+                >
+                  <td class="font-mono font-weight-bold text-primary">
+                    {{ row.code }}
                   </td>
-                  <td class="text-right font-weight-bold font-mono">{{ formatCurrency(row.price) }}</td>
+                  <td
+                    class="text-truncate"
+                    style="max-width: 250px;"
+                  >
+                    {{ row.description }}
+                  </td>
+                  <td class="font-mono">
+                    {{ row.reference || '-' }}
+                  </td>
+                  <td>
+                    <VChip
+                      size="x-small"
+                      color="secondary"
+                      variant="tonal"
+                    >
+                      {{ row.category_name }}
+                    </VChip>
+                  </td>
+                  <td class="text-right font-weight-bold font-mono">
+                    {{ formatCurrency(row.price) }}
+                  </td>
                   <td class="text-center">
-                    <VChip size="x-small" :color="row.stock_status.includes('Disponible') ? 'success' : 'warning'" variant="flat">
+                    <VChip
+                      size="x-small"
+                      :color="row.stock_status.includes('Disponible') ? 'success' : 'warning'"
+                      variant="flat"
+                    >
                       {{ row.stock_status }}
                     </VChip>
                   </td>
@@ -545,7 +648,11 @@ const filterSupplier = (value, query, item) => {
       <VDivider />
 
       <VCardActions class="pa-4 bg-surface d-flex justify-space-between">
-        <VBtn variant="outlined" color="secondary" @click="emit('update:isDialogVisible', false)">
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          @click="emit('update:isDialogVisible', false)"
+        >
           Cancelar
         </VBtn>
 

@@ -54,6 +54,7 @@ const fetchAttachments = async () => {
       attachable_type: props.attachableType || 'expense',
       attachable_id: props.attachableId || 0,
     }
+
     if (props.identifier) {
       params.identifier = props.identifier
     }
@@ -90,7 +91,7 @@ watch(
       existingAttachments.value = []
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const closeDialog = () => {
@@ -103,12 +104,14 @@ const closeDialog = () => {
 const saveReceipts = async () => {
   if (newFiles.value.length === 0) {
     showNotification('No has seleccionado nuevos comprobantes para subir', 'warning')
+    
     return
   }
 
   isSaving.value = true
   try {
     const formData = new FormData()
+
     formData.append('attachable_type', props.attachableType)
     formData.append('attachable_id', props.attachableId)
     if (props.identifier) formData.append('identifier', props.identifier)
@@ -266,8 +269,20 @@ const openAttachment = att => {
             class="py-3"
           >
             <VRow dense>
-              <VCol cols="6"><VSkeletonLoader type="card" height="120" class="rounded-lg" /></VCol>
-              <VCol cols="6"><VSkeletonLoader type="card" height="120" class="rounded-lg" /></VCol>
+              <VCol cols="6">
+                <VSkeletonLoader
+                  type="card"
+                  height="120"
+                  class="rounded-lg"
+                />
+              </VCol>
+              <VCol cols="6">
+                <VSkeletonLoader
+                  type="card"
+                  height="120"
+                  class="rounded-lg"
+                />
+              </VCol>
             </VRow>
           </div>
 
@@ -305,7 +320,7 @@ const openAttachment = att => {
                   :src="getFullUrl(att.file_path)"
                   :alt="att.file_name"
                   class="existing-img"
-                />
+                >
                 <div class="existing-overlay">
                   <VIcon
                     icon="ri-external-link-line"

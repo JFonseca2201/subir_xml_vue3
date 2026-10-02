@@ -105,6 +105,7 @@ watch(
       const basePrice = parseFloat(p.price_sale || 0)
       const finalPrice = parseFloat((basePrice * (1 + taxRate / 100)).toFixed(2))
       const currentStock = parseFloat(p.stock || 0)
+
       const rawCatId = p.product_categorie_id !== undefined && p.product_categorie_id !== null
         ? p.product_categorie_id
         : (p.categorie?.id !== undefined ? p.categorie.id : null)
@@ -164,6 +165,7 @@ const computedCategories = computed(() => {
     const exists = list.some(c => c.id === currentCatId)
     if (!exists) {
       const catTitle = props.product?.categorie?.title || `Categoría #${currentCatId}`
+
       list.unshift({ id: currentCatId, title: catTitle })
     }
   }
@@ -175,24 +177,28 @@ const computedCategories = computed(() => {
 const calculatedSubtotal = computed(() => {
   const tax = form.value.tax_rate || 0
   const final = parseFloat(form.value.final_price) || 0
+  
   return (final / (1 + tax / 100)).toFixed(2)
 })
 
 const calculatedTaxAmount = computed(() => {
   const final = parseFloat(form.value.final_price) || 0
   const subtotal = parseFloat(calculatedSubtotal.value) || 0
+  
   return Math.max(0, final - subtotal).toFixed(2)
 })
 
 const onFinalPriceInput = val => {
   const final = parseFloat(val) || 0
   const tax = form.value.tax_rate || 0
+
   form.value.price_sale = parseFloat((final / (1 + tax / 100)).toFixed(4))
 }
 
 const onBasePriceInput = val => {
   const base = parseFloat(val) || 0
   const tax = form.value.tax_rate || 0
+
   form.value.final_price = parseFloat((base * (1 + tax / 100)).toFixed(2))
 }
 
@@ -200,12 +206,14 @@ const onBasePriceInput = val => {
 const adjustStock = delta => {
   const current = parseFloat(form.value.stock) || 0
   const updated = Math.max(0, current + delta)
+
   form.value.stock = Math.round(updated * 100) / 100
 }
 
 const stockDelta = computed(() => {
   const current = parseFloat(form.value.stock) || 0
   const initial = parseFloat(form.value.initialStock) || 0
+  
   return Math.round((current - initial) * 100) / 100
 })
 
@@ -215,6 +223,7 @@ const combinedBrands = computed(() => {
   if (form.value.brand && !list.includes(form.value.brand)) {
     list.unshift(form.value.brand)
   }
+  
   return list.filter(Boolean)
 })
 
@@ -227,16 +236,19 @@ const closeDialog = () => {
 const saveChanges = async () => {
   if (!form.value.product_categorie_id) {
     errorMessage.value = 'Por favor selecciona una categoría'
+    
     return
   }
 
   if (parseFloat(form.value.final_price) < 0) {
     errorMessage.value = 'El precio de venta no puede ser negativo'
+    
     return
   }
 
   if (form.value.item_type == 1 && parseFloat(form.value.stock) < 0) {
     errorMessage.value = 'El stock no puede ser negativo'
+    
     return
   }
 
@@ -256,6 +268,7 @@ const saveChanges = async () => {
     }
 
     const formData = new FormData()
+
     formData.append('description', form.value.description || '')
     formData.append('sku', form.value.sku || '')
     if (form.value.code_aux) formData.append('code_aux', form.value.code_aux)
@@ -342,7 +355,7 @@ const saveChanges = async () => {
               :src="form.imagen"
               :alt="form.description"
               style="width: 100%; height: 100%; object-fit: cover;"
-            />
+            >
             <VIcon
               v-else
               icon="ri-box-3-line"
@@ -351,12 +364,22 @@ const saveChanges = async () => {
             />
           </VAvatar>
 
-          <div class="overflow-hidden" style="flex: 1;">
+          <div
+            class="overflow-hidden"
+            style="flex: 1;"
+          >
             <div class="d-flex align-center gap-2 mb-0.5 flex-wrap">
               <span class="product-mini-badge font-mono">SKU: {{ form.sku || 'S/C' }}</span>
-              <span v-if="form.item_type == 2" class="product-mini-badge bg-white text-primary">Servicio</span>
+              <span
+                v-if="form.item_type == 2"
+                class="product-mini-badge bg-white text-primary"
+              >Servicio</span>
             </div>
-            <h3 class="text-white font-weight-bold text-truncate mb-0" style="font-size: 1.05rem;" :title="form.description">
+            <h3
+              class="text-white font-weight-bold text-truncate mb-0"
+              style="font-size: 1.05rem;"
+              :title="form.description"
+            >
               {{ form.description || 'Edición Rápida' }}
             </h3>
           </div>
@@ -373,7 +396,11 @@ const saveChanges = async () => {
             :class="{ active: activeTab === t.id }"
             @click="activeTab = t.id"
           >
-            <VIcon :icon="t.icon" size="16" class="me-1" />
+            <VIcon
+              :icon="t.icon"
+              size="16"
+              class="me-1"
+            />
             <span>{{ t.label }}</span>
           </div>
         </div>
@@ -395,10 +422,16 @@ const saveChanges = async () => {
         </VAlert>
 
         <!-- SECCIÓN: STOCK -->
-        <div v-show="activeTab === 'all' || activeTab === 'stock'" class="quick-edit-section">
+        <div
+          v-show="activeTab === 'all' || activeTab === 'stock'"
+          class="quick-edit-section"
+        >
           <div class="section-header">
             <div class="section-icon-wrap bg-primary-lighten-5 text-primary">
-              <VIcon icon="ri-box-3-line" size="18" />
+              <VIcon
+                icon="ri-box-3-line"
+                size="18"
+              />
             </div>
             <span class="section-title-text">Ajuste de Stock en Almacén</span>
             <VSpacer />
@@ -411,18 +444,37 @@ const saveChanges = async () => {
             </span>
           </div>
 
-          <div v-if="form.item_type == 2" class="text-center pa-4 bg-grey-lighten-4 rounded-lg">
-            <VIcon icon="ri-information-line" color="medium-emphasis" class="mb-1" />
-            <div class="text-caption text-medium-emphasis">Este ítem está configurado como <strong>Servicio</strong>, no gestiona existencias físicas.</div>
+          <div
+            v-if="form.item_type == 2"
+            class="text-center pa-4 bg-grey-lighten-4 rounded-lg"
+          >
+            <VIcon
+              icon="ri-information-line"
+              color="medium-emphasis"
+              class="mb-1"
+            />
+            <div class="text-caption text-medium-emphasis">
+              Este ítem está configurado como <strong>Servicio</strong>, no gestiona existencias físicas.
+            </div>
           </div>
 
-          <div v-else class="quick-stock-stepper-box">
+          <div
+            v-else
+            class="quick-stock-stepper-box"
+          >
             <div class="stock-current-display">
-              <div class="text-caption text-medium-emphasis font-weight-medium">Existencia Actualizada</div>
-              <div class="stock-big-number" :class="form.stock > 0 ? 'text-primary' : 'text-error'">
+              <div class="text-caption text-medium-emphasis font-weight-medium">
+                Existencia Actualizada
+              </div>
+              <div
+                class="stock-big-number"
+                :class="form.stock > 0 ? 'text-primary' : 'text-error'"
+              >
                 {{ form.stock }}
               </div>
-              <div class="text-caption text-disabled font-mono">Stock anterior: {{ form.initialStock }}</div>
+              <div class="text-caption text-disabled font-mono">
+                Stock anterior: {{ form.initialStock }}
+              </div>
             </div>
 
             <!-- Stepper interactivo táctil -->
@@ -434,7 +486,10 @@ const saveChanges = async () => {
                 :disabled="form.stock <= 0"
                 @click="adjustStock(-1)"
               >
-                <VIcon icon="ri-subtract-line" size="20" />
+                <VIcon
+                  icon="ri-subtract-line"
+                  size="20"
+                />
               </VBtn>
 
               <VTextField
@@ -455,35 +510,68 @@ const saveChanges = async () => {
                 class="quick-stepper-btn"
                 @click="adjustStock(1)"
               >
-                <VIcon icon="ri-add-line" size="20" />
+                <VIcon
+                  icon="ri-add-line"
+                  size="20"
+                />
               </VBtn>
             </div>
 
             <!-- Chips de ajuste rápido para celulares -->
             <div class="quick-adjustment-chips mt-2">
-              <span class="adj-chip adj-minus" @click="adjustStock(-10)">-10</span>
-              <span class="adj-chip adj-minus" @click="adjustStock(-5)">-5</span>
-              <span class="adj-chip adj-minus" @click="adjustStock(-1)">-1</span>
-              <span class="adj-chip adj-plus" @click="adjustStock(1)">+1</span>
-              <span class="adj-chip adj-plus" @click="adjustStock(5)">+5</span>
-              <span class="adj-chip adj-plus" @click="adjustStock(10)">+10</span>
+              <span
+                class="adj-chip adj-minus"
+                @click="adjustStock(-10)"
+              >-10</span>
+              <span
+                class="adj-chip adj-minus"
+                @click="adjustStock(-5)"
+              >-5</span>
+              <span
+                class="adj-chip adj-minus"
+                @click="adjustStock(-1)"
+              >-1</span>
+              <span
+                class="adj-chip adj-plus"
+                @click="adjustStock(1)"
+              >+1</span>
+              <span
+                class="adj-chip adj-plus"
+                @click="adjustStock(5)"
+              >+5</span>
+              <span
+                class="adj-chip adj-plus"
+                @click="adjustStock(10)"
+              >+10</span>
             </div>
           </div>
         </div>
 
         <!-- SECCIÓN: PRECIO VENTA FINAL (P.V.P CON IVA) -->
-        <div v-show="activeTab === 'all' || activeTab === 'price'" class="quick-edit-section">
+        <div
+          v-show="activeTab === 'all' || activeTab === 'price'"
+          class="quick-edit-section"
+        >
           <div class="section-header">
             <div class="section-icon-wrap bg-success-lighten-5 text-success">
-              <VIcon icon="ri-money-dollar-circle-line" size="18" />
+              <VIcon
+                icon="ri-money-dollar-circle-line"
+                size="18"
+              />
             </div>
             <span class="section-title-text">Precio de Venta Final (P.V.P)</span>
             <VSpacer />
             <span class="text-caption text-medium-emphasis font-weight-medium">IVA {{ form.tax_rate }}%</span>
           </div>
 
-          <VRow dense class="mb-2">
-            <VCol cols="12" sm="7">
+          <VRow
+            dense
+            class="mb-2"
+          >
+            <VCol
+              cols="12"
+              sm="7"
+            >
               <VTextField
                 v-model="form.final_price"
                 type="number"
@@ -500,7 +588,10 @@ const saveChanges = async () => {
               />
             </VCol>
 
-            <VCol cols="12" sm="5">
+            <VCol
+              cols="12"
+              sm="5"
+            >
               <VTextField
                 v-model="form.price_sale"
                 type="number"
@@ -536,10 +627,16 @@ const saveChanges = async () => {
         </div>
 
         <!-- SECCIÓN: CATEGORÍA & MARCA -->
-        <div v-show="activeTab === 'all' || activeTab === 'category'" class="quick-edit-section mb-0">
+        <div
+          v-show="activeTab === 'all' || activeTab === 'category'"
+          class="quick-edit-section mb-0"
+        >
           <div class="section-header">
             <div class="section-icon-wrap bg-warning-lighten-5 text-warning">
-              <VIcon icon="ri-price-tag-3-line" size="18" />
+              <VIcon
+                icon="ri-price-tag-3-line"
+                size="18"
+              />
             </div>
             <span class="section-title-text">Categoría & Marca Comercial</span>
           </div>
@@ -564,7 +661,10 @@ const saveChanges = async () => {
                   <span>{{ item.raw?.title || item.title }}</span>
                 </template>
                 <template #item="{ props: itemProps, item }">
-                  <VListItem v-bind="itemProps" :title="item.raw?.title || item.title" />
+                  <VListItem
+                    v-bind="itemProps"
+                    :title="item.raw?.title || item.title"
+                  />
                 </template>
               </VSelect>
             </VCol>

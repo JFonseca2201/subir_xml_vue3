@@ -69,45 +69,46 @@ const movementType = computed(() => {
   if (t === 0 || t === '0' || t === 'income') return 'income'
   if (t === 1 || t === '1' || t === 'expense') return 'expense'
   if (t === 'transfer' || t === 'internal_transfer') return 'transfer'
+  
   return 'income'
 })
 
 const typeTitle = computed(() => {
   switch (movementType.value) {
-    case 'income':
-      return 'Nota de Ingreso'
-    case 'expense':
-      return 'Nota de Egreso'
-    case 'transfer':
-      return 'Comprobante de Transferencia'
-    default:
-      return 'Nota de Movimiento'
+  case 'income':
+    return 'Nota de Ingreso'
+  case 'expense':
+    return 'Nota de Egreso'
+  case 'transfer':
+    return 'Comprobante de Transferencia'
+  default:
+    return 'Nota de Movimiento'
   }
 })
 
 const typeIcon = computed(() => {
   switch (movementType.value) {
-    case 'income':
-      return 'ri-arrow-down-circle-fill'
-    case 'expense':
-      return 'ri-arrow-up-circle-fill'
-    case 'transfer':
-      return 'ri-arrow-left-right-line'
-    default:
-      return 'ri-exchange-funds-line'
+  case 'income':
+    return 'ri-arrow-down-circle-fill'
+  case 'expense':
+    return 'ri-arrow-up-circle-fill'
+  case 'transfer':
+    return 'ri-arrow-left-right-line'
+  default:
+    return 'ri-exchange-funds-line'
   }
 })
 
 const typeColor = computed(() => {
   switch (movementType.value) {
-    case 'income':
-      return 'success'
-    case 'expense':
-      return 'error'
-    case 'transfer':
-      return 'info'
-    default:
-      return 'primary'
+  case 'income':
+    return 'success'
+  case 'expense':
+    return 'error'
+  case 'transfer':
+    return 'info'
+  default:
+    return 'primary'
   }
 })
 
@@ -153,6 +154,7 @@ const docNumber = computed(() => {
 // Formato de moneda
 const formatCurrency = val => {
   const num = Number(val || 0)
+  
   return new Intl.NumberFormat('es-EC', {
     style: 'currency',
     currency: 'USD',
@@ -167,6 +169,7 @@ const formattedDate = computed(() => {
     const parts = String(rawDate).split('T')[0].split('-')
     if (parts.length === 3) {
       const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+      
       return d.toLocaleDateString('es-EC', {
         weekday: 'long',
         year: 'numeric',
@@ -177,15 +180,18 @@ const formattedDate = computed(() => {
   } catch (e) {
     return rawDate
   }
+  
   return rawDate
 })
 
 // Cargar catálogo de cuentas para resolver bank_name
 const fetchedAccounts = ref([])
+
 const loadAccounts = async () => {
   if (fetchedAccounts.value.length === 0) {
     try {
       const response = await $api('accounts')
+
       fetchedAccounts.value = response || []
     } catch (e) {
       console.warn('Error al cargar cuentas en MovementReceiptNoteDialog:', e)
@@ -196,7 +202,9 @@ const loadAccounts = async () => {
 const allAccounts = computed(() => {
   const merged = [...(props.accounts || []), ...(fetchedAccounts.value || [])]
   const map = new Map()
+
   merged.forEach(a => { if (a && a.id) map.set(String(a.id), a) })
+  
   return Array.from(map.values())
 })
 
@@ -216,6 +224,7 @@ const getCleanAccountName = (accObj, accId, fallbackStr) => {
       if (bName) return bName.replace(/\(EFECTIVO\)/gi, '').replace(/\(TRANSFERENCIA\)/gi, '').trim()
     }
   }
+  
   return fallbackStr
 }
 
@@ -247,6 +256,7 @@ const accountInfo = computed(() => {
   }
 
   const singleName = getCleanAccountName(m.account, m.account_id, 'Caja / Cuenta Principal')
+  
   return { single: singleName }
 })
 
@@ -362,6 +372,7 @@ const attachableData = computed(() => {
 const loadAttachments = async () => {
   if (!props.movement) {
     attachments.value = []
+    
     return
   }
 
@@ -378,6 +389,7 @@ const loadAttachments = async () => {
       attachable_type: attachableData.value.type,
       attachable_id: attachableData.value.id,
     }
+
     if (attachableData.value.identifier && attachableData.value.identifier !== '-') {
       params.identifier = attachableData.value.identifier
     }
@@ -417,12 +429,14 @@ const loadAttachments = async () => {
 const handleUploadNewReceipts = async () => {
   if (newReceiptFiles.value.length === 0) {
     showNotification('Selecciona al menos un archivo para subir', 'warning')
+    
     return
   }
 
   isUploading.value = true
   try {
     const formData = new FormData()
+
     formData.append('attachable_type', attachableData.value.type)
     formData.append('attachable_id', attachableData.value.id)
     formData.append('identifier', attachableData.value.identifier)
@@ -457,6 +471,7 @@ const downloadSingleAttachment = att => {
   if (!att) return
   const url = att.download_url || getFullUrl(att.file_path || att.url)
   const link = document.createElement('a')
+
   link.href = url
   link.download = att.file_name || 'comprobante'
   link.target = '_blank'
@@ -538,7 +553,7 @@ watch(
       loadAttachments()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 
@@ -550,7 +565,10 @@ watch(
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard class="rounded-xl overflow-hidden elevation-12 d-flex flex-column" style="max-height: 90vh;">
+    <VCard
+      class="rounded-xl overflow-hidden elevation-12 d-flex flex-column"
+      style="max-height: 90vh;"
+    >
       <!-- Header Banner Primary -->
       <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
         <div class="d-flex align-center gap-3">
@@ -570,7 +588,10 @@ watch(
             <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
               {{ typeTitle }}
             </div>
-            <div class="text-caption text-white opacity-80" style="font-size: 11px;">
+            <div
+              class="text-caption text-white opacity-80"
+              style="font-size: 11px;"
+            >
               {{ docNumber }} • {{ formattedDate }}
             </div>
           </div>
@@ -598,7 +619,10 @@ watch(
       </VCardTitle>
 
       <!-- Contenido Principal con Scroll -->
-      <VCardText class="pa-5 overflow-y-auto" style="flex: 1 1 auto; max-height: calc(90vh - 140px);">
+      <VCardText
+        class="pa-5 overflow-y-auto"
+        style="flex: 1 1 auto; max-height: calc(90vh - 140px);"
+      >
         <!-- 1. Hero Box: Monto & Estado -->
         <VCard
           variant="outlined"
@@ -649,7 +673,10 @@ watch(
 
           <VRow dense>
             <!-- Concepto / Descripción -->
-            <VCol cols="12" class="mb-2">
+            <VCol
+              cols="12"
+              class="mb-2"
+            >
               <div class="text-caption text-medium-emphasis font-weight-medium">
                 Concepto / Descripción
               </div>
@@ -659,7 +686,11 @@ watch(
             </VCol>
 
             <!-- Cuentas -->
-            <VCol cols="12" sm="6" class="mb-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="mb-2"
+            >
               <div class="text-caption text-medium-emphasis font-weight-medium">
                 {{ movementType === 'transfer' ? 'Cuentas (Origen ➔ Destino)' : (movementType === 'income' ? 'Cuenta Destino' : 'Cuenta Origen') }}
               </div>
@@ -673,7 +704,11 @@ watch(
             </VCol>
 
             <!-- Método de Pago -->
-            <VCol cols="12" sm="6" class="mb-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="mb-2"
+            >
               <div class="text-caption text-medium-emphasis font-weight-medium">
                 Método de Pago
               </div>
@@ -688,7 +723,10 @@ watch(
             </VCol>
 
             <!-- Código / Número de Documento -->
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <div class="text-caption text-medium-emphasis font-weight-medium">
                 Número de Factura / OT / Código
               </div>
@@ -698,7 +736,10 @@ watch(
             </VCol>
 
             <!-- ID del Registro en Sistema -->
-            <VCol cols="12" sm="6">
+            <VCol
+              cols="12"
+              sm="6"
+            >
               <div class="text-caption text-medium-emphasis font-weight-medium">
                 ID de Registro
               </div>
@@ -738,11 +779,25 @@ watch(
             class="py-3"
           >
             <VRow dense>
-              <VCol cols="6" sm="4">
-                <VSkeletonLoader type="card" height="130" class="rounded-xl" />
+              <VCol
+                cols="6"
+                sm="4"
+              >
+                <VSkeletonLoader
+                  type="card"
+                  height="130"
+                  class="rounded-xl"
+                />
               </VCol>
-              <VCol cols="6" sm="4">
-                <VSkeletonLoader type="card" height="130" class="rounded-xl" />
+              <VCol
+                cols="6"
+                sm="4"
+              >
+                <VSkeletonLoader
+                  type="card"
+                  height="130"
+                  class="rounded-xl"
+                />
               </VCol>
             </VRow>
           </div>
@@ -792,7 +847,7 @@ watch(
                   :alt="att.file_name"
                   class="w-100 h-100 object-cover"
                   style="object-fit: cover;"
-                />
+                >
                 <div class="image-hover-overlay d-flex align-center justify-center">
                   <VIcon
                     icon="ri-zoom-in-line"
@@ -828,7 +883,10 @@ watch(
                 >
                   {{ att.file_name || 'Comprobante' }}
                 </div>
-                <div class="text-caption text-disabled mb-2" style="font-size: 10px;">
+                <div
+                  class="text-caption text-disabled mb-2"
+                  style="font-size: 10px;"
+                >
                   {{ att.file_size ? `${(att.file_size / 1024).toFixed(0)} KB` : 'Archivo' }}
                 </div>
 
@@ -910,7 +968,10 @@ watch(
               />
             </VAvatar>
             <div>
-              <div class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate" style="max-width: 450px;">
+              <div
+                class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate"
+                style="max-width: 450px;"
+              >
                 {{ attachments[activePhotoIndex]?.file_name || 'Comprobante' }}
               </div>
               <div class="text-caption text-white opacity-80">
@@ -965,7 +1026,7 @@ watch(
               :alt="attachments[activePhotoIndex].file_name"
               class="img-fluid rounded-xl elevation-4 border"
               style="max-width: 100%; max-height: 68vh; object-fit: contain; background: white;"
-            />
+            >
           </div>
 
           <!-- Visualizador para PDF -->

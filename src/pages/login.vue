@@ -95,7 +95,10 @@ const appBrandName = computed(() => {
 <template>
   <div class="auth-page-root">
     <!-- Desktop Top Left Brand Badge -->
-    <RouterLink to="/" class="auth-brand-floating d-none d-lg-flex align-center gap-3">
+    <RouterLink
+      to="/"
+      class="auth-brand-floating d-none d-lg-flex align-center gap-3"
+    >
       <div class="brand-logo-container">
         <VNodeRenderer :nodes="themeConfig.app.logo" />
       </div>
@@ -109,40 +112,65 @@ const appBrandName = computed(() => {
       </div>
     </RouterLink>
 
-    <VRow no-gutters class="auth-wrapper">
+    <VRow
+      no-gutters
+      class="auth-wrapper"
+    >
       <!-- LEFT COLUMN: Showcase Visual with Workshop Background -->
-      <VCol lg="8" class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column">
-        <div
-          class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
+      <VCol
+        lg="8"
+        class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column"
+      >
+        <div class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
           <!-- Glassmorphism Dark/Purple Overlay -->
           <div class="auth-showcase-overlay" />
 
           <!-- Floating Feature Badges -->
           <div class="showcase-floating-badge badge-top-right elevation-6">
             <div class="badge-icon-box bg-success-subtle text-success">
-              <VIcon icon="ri-shield-check-line" size="22" />
+              <VIcon
+                icon="ri-shield-check-line"
+                size="22"
+              />
             </div>
             <div>
-              <div class="badge-caption">FACTURACIÓN SRI</div>
-              <div class="badge-title">XML Homologado 100%</div>
+              <div class="badge-caption">
+                FACTURACIÓN SRI
+              </div>
+              <div class="badge-title">
+                XML Homologado 100%
+              </div>
             </div>
           </div>
 
           <div class="showcase-floating-badge badge-bottom-left elevation-6">
             <div class="badge-icon-box bg-primary-subtle text-primary">
-              <VIcon icon="ri-tools-line" size="22" />
+              <VIcon
+                icon="ri-tools-line"
+                size="22"
+              />
             </div>
             <div>
-              <div class="badge-caption">CONTROL EN VIVO</div>
-              <div class="badge-title">Taller, OTs & Kardex</div>
+              <div class="badge-caption">
+                CONTROL EN VIVO
+              </div>
+              <div class="badge-title">
+                Taller, OTs & Kardex
+              </div>
             </div>
           </div>
 
           <!-- Center Showcase Glass Card -->
           <div class="showcase-center-card z-index-2 pa-6 rounded-2xl elevation-8 text-center mx-6">
             <div class="d-flex align-center justify-center gap-2 mb-2">
-              <VIcon icon="ri-tools-fill" size="28" color="primary" />
-              <h3 class="text-h5 font-weight-black text-high-emphasis mb-0">Gestión Integral de Taller</h3>
+              <VIcon
+                icon="ri-tools-fill"
+                size="28"
+                color="primary"
+              />
+              <h3 class="text-h5 font-weight-black text-high-emphasis mb-0">
+                Gestión Integral de Taller
+              </h3>
             </div>
             <p class="text-body-2 text-medium-emphasis mb-0">
               Control de Órdenes de Trabajo, Mantenimientos Preventivos, Kardex de Repuestos y Facturación SRI
@@ -152,7 +180,11 @@ const appBrandName = computed(() => {
       </VCol>
 
       <!-- RIGHT COLUMN: Colorido con Fondo Color Primary -->
-      <VCol cols="12" lg="4" class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8">
+      <VCol
+        cols="12"
+        lg="4"
+        class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8"
+      >
         <!-- Ambient Glow Orbs en el Sidebar -->
         <div class="sidebar-glow-orb orb-1" />
         <div class="sidebar-glow-orb orb-2" />
@@ -170,7 +202,6 @@ const appBrandName = computed(() => {
 
           <!-- Welcome Titles -->
           <div class="mb-6 text-center text-sm-start">
-
             <h1 class="text-h4 font-weight-black text-white mb-1">
               Iniciar Sesión
             </h1>
@@ -181,41 +212,76 @@ const appBrandName = computed(() => {
 
           <!-- Login Form -->
           <VForm @submit.prevent="login">
-            <VRow dense class="gap-y-4">
+            <VRow
+              dense
+              class="gap-y-4"
+            >
               <!-- Email Input -->
               <VCol cols="12">
                 <div class="form-field-header mb-1.5">
                   <span class="form-field-label-white">
-                    <VIcon icon="ri-mail-line" size="14" class="me-1" />
+                    <VIcon
+                      icon="ri-mail-line"
+                      size="14"
+                      class="me-1"
+                    />
                     CORREO ELECTRÓNICO
                   </span>
                 </div>
-                <VTextField v-model="form.email" autofocus placeholder="ejemplo@luxuryevys.com" bg-color="white"
-                  color="primary" variant="solo" density="comfortable" prepend-inner-icon="ri-user-3-line"
-                  class="auth-input-white rounded-xl" hide-details="auto" />
+                <VTextField
+                  v-model="form.email"
+                  autofocus
+                  placeholder="ejemplo@luxuryevys.com"
+                  bg-color="white"
+                  color="primary"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-user-3-line"
+                  class="auth-input-white rounded-xl"
+                  hide-details="auto"
+                />
               </VCol>
 
               <!-- Password Input -->
               <VCol cols="12">
                 <div class="d-flex justify-space-between align-center mb-1.5">
                   <span class="form-field-label-white">
-                    <VIcon icon="ri-lock-2-line" size="14" class="me-1" />
+                    <VIcon
+                      icon="ri-lock-2-line"
+                      size="14"
+                      class="me-1"
+                    />
                     CONTRASEÑA
                   </span>
-                  <a href="#" class="text-caption text-white font-weight-bold forgot-link-white" @click.prevent>
+                  <a
+                    href="#"
+                    class="text-caption text-white font-weight-bold forgot-link-white"
+                    @click.prevent
+                  >
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>
-                <VTextField v-model="form.password" placeholder="••••••••••••" bg-color="white" color="primary"
-                  variant="solo" density="comfortable" prepend-inner-icon="ri-key-2-line"
+                <VTextField
+                  v-model="form.password"
+                  placeholder="••••••••••••"
+                  bg-color="white"
+                  color="primary"
+                  variant="solo"
+                  density="comfortable"
+                  prepend-inner-icon="ri-key-2-line"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                  class="auth-input-white rounded-xl" hide-details="auto"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+                  class="auth-input-white rounded-xl"
+                  hide-details="auto"
+                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
+                />
               </VCol>
 
               <!-- Remember Me -->
-              <VCol cols="12" class="pt-1">
+              <VCol
+                cols="12"
+                class="pt-1"
+              >
                 <VCheckbox
                   v-model="form.remember"
                   label="Mantener sesión iniciada"
@@ -229,21 +295,41 @@ const appBrandName = computed(() => {
               </VCol>
 
               <!-- Alerts -->
-              <VCol v-if="success_login" cols="12">
-                <VAlert type="success" color="success" variant="elevated" closable
-                  class="rounded-xl shadow-sm text-white">
+              <VCol
+                v-if="success_login"
+                cols="12"
+              >
+                <VAlert
+                  type="success"
+                  color="success"
+                  variant="elevated"
+                  closable
+                  class="rounded-xl shadow-sm text-white"
+                >
                   {{ success_login }}
                 </VAlert>
               </VCol>
 
-              <VCol v-if="error_login" cols="12">
-                <VAlert type="error" color="error" variant="elevated" closable class="rounded-xl shadow-sm text-white">
+              <VCol
+                v-if="error_login"
+                cols="12"
+              >
+                <VAlert
+                  type="error"
+                  color="error"
+                  variant="elevated"
+                  closable
+                  class="rounded-xl shadow-sm text-white"
+                >
                   {{ error_login }}
                 </VAlert>
               </VCol>
 
               <!-- Submit Button (High-Contrast Solid White Button) -->
-              <VCol cols="12" class="pt-3">
+              <VCol
+                cols="12"
+                class="pt-3"
+              >
                 <VBtn
                   block
                   size="x-large"
@@ -255,15 +341,24 @@ const appBrandName = computed(() => {
                   :disabled="loader.loading"
                 >
                   <span class="btn-text-primary">INGRESAR AL SISTEMA</span>
-                  <VIcon icon="ri-arrow-right-line" class="ms-2 btn-icon-primary" />
+                  <VIcon
+                    icon="ri-arrow-right-line"
+                    class="ms-2 btn-icon-primary"
+                  />
                 </VBtn>
               </VCol>
 
               <!-- Security Footer -->
-              <VCol cols="12" class="text-center mt-5">
-                <div
-                  class="d-inline-flex align-center gap-1.5 text-caption text-white opacity-90 mb-1 font-weight-medium">
-                  <VIcon icon="ri-shield-keyhole-line" size="14" color="white" />
+              <VCol
+                cols="12"
+                class="text-center mt-5"
+              >
+                <div class="d-inline-flex align-center gap-1.5 text-caption text-white opacity-90 mb-1 font-weight-medium">
+                  <VIcon
+                    icon="ri-shield-keyhole-line"
+                    size="14"
+                    color="white"
+                  />
                   <span>Conexión Encriptada SSL de 256 bits</span>
                 </div>
                 <div class="text-caption text-white opacity-75">

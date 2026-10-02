@@ -24,11 +24,13 @@ const isLoading = ref(false)
 const filteredConversions = computed(() => {
   if (!searchQuery.value || !searchQuery.value.trim()) return list_conversions.value
   const q = searchQuery.value.trim().toLowerCase()
+  
   return list_conversions.value.filter(c => {
     const fromName = (c.from_unit?.name || '').toLowerCase()
     const toName = (c.to_unit?.name || '').toLowerCase()
     const fromCode = (c.from_unit?.code || '').toLowerCase()
     const toCode = (c.to_unit?.code || '').toLowerCase()
+    
     return fromName.includes(q) || toName.includes(q) || fromCode.includes(q) || toCode.includes(q)
   })
 })
@@ -124,8 +126,17 @@ definePage({ meta: { permission: "settings" } })
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-exchange-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-exchange-line"
+              size="26"
+            />
           </VAvatar>
           Conversiones de Unidades
         </h1>
@@ -147,14 +158,30 @@ definePage({ meta: { permission: "settings" } })
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
-            <VIcon icon="ri-scales-3-line" size="24" />
+          <VAvatar
+            size="46"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-scales-3-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Factores de Conversión</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Factores de Conversión
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ list_conversions.length }} <span class="text-caption text-disabled font-weight-regular">registrados</span>
             </div>
@@ -162,13 +189,26 @@ definePage({ meta: { permission: "settings" } })
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
-            <VIcon icon="ri-ruler-2-line" size="24" />
+          <VAvatar
+            size="46"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-ruler-2-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Unidades Base Vinculadas</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Unidades Base Vinculadas
+            </div>
             <div class="text-h6 font-weight-bold text-success">
               {{ list_units.length }} <span class="text-caption text-disabled font-weight-regular">unidades</span>
             </div>
@@ -176,13 +216,26 @@ definePage({ meta: { permission: "settings" } })
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-calculator-line" size="24" />
+          <VAvatar
+            size="46"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-calculator-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Cálculo en Ventas y Compras</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Cálculo en Ventas y Compras
+            </div>
             <div class="text-h6 font-weight-bold text-warning">
               Automático <span class="text-caption text-disabled font-weight-regular">(En tiempo real)</span>
             </div>
@@ -196,7 +249,11 @@ definePage({ meta: { permission: "settings" } })
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Búsqueda</span>
           </div>
 
@@ -213,7 +270,10 @@ definePage({ meta: { permission: "settings" } })
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
           <VCol cols="12">
             <VTextField
               v-model="searchQuery"
@@ -233,72 +293,287 @@ definePage({ meta: { permission: "settings" } })
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4 text-center" style="width: 120px;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="isLoading">
+      <!-- Loading móvil -->
+      <div class="d-md-none d-flex flex-column gap-3">
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="mobile-conversion-card"
+        >
+          <div class="d-flex justify-space-between align-center pb-2 border-b mb-2">
+            <div
+              class="shimmer-line w-20"
+              style="height: 14px;"
+            />
+            <div
+              class="shimmer-button rounded"
+              style="width: 70px; height: 26px;"
+            />
+          </div>
+          <div class="d-flex align-center justify-space-between gap-2 mb-3 bg-grey-lighten-4 pa-3 rounded-lg">
+            <div
+              class="shimmer-line w-40"
+              style="height: 24px;"
+            />
+            <div
+              class="shimmer-line w-40"
+              style="height: 24px;"
+            />
+          </div>
+          <div class="pt-2 border-t d-flex justify-space-between align-center">
+            <div
+              class="shimmer-line w-40"
+              style="height: 14px;"
+            />
+            <div
+              class="shimmer-line w-30"
+              style="height: 18px;"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading desktop -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 70px;"
+              >
+                <div class="shimmer-line w-40" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 120px;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!filteredConversions || filteredConversions.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-exchange-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-exchange-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron conversiones
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar los criterios de búsqueda o registra una nueva regla de conversión de unidades.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-add-line" @click="openNewConversionDialog">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openNewConversionDialog"
+        >
           Nueva Conversión
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA DE CONVERSIONES -->
+    <!-- LISTA DE CONVERSIONES -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="conversions-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <div
+          v-for="(item, index) in filteredConversions"
+          :key="item.id"
+          class="mobile-conversion-card"
+        >
+          <!-- Fila Superior: Número y Acciones -->
+          <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+            <span class="text-caption font-weight-bold text-disabled">#{{ index + 1 }}</span>
+            <div class="d-flex align-center gap-1">
+              <VBtn
+                size="small"
+                color="warning"
+                variant="tonal"
+                icon="ri-pencil-line"
+                title="Editar Conversión"
+                @click="editItem(item)"
+              />
+              <VBtn
+                size="small"
+                color="error"
+                variant="tonal"
+                icon="ri-delete-bin-line"
+                title="Eliminar Conversión"
+                @click="deleteItem(item)"
+              />
+            </div>
+          </div>
+
+          <!-- Fila Central: Relación Origen -> Destino -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-3 bg-grey-lighten-4 pa-3 rounded-lg">
+            <!-- Origen -->
+            <div class="d-flex align-center gap-2 min-w-0 flex-1">
+              <VAvatar
+                size="32"
+                color="primary"
+                variant="tonal"
+                rounded="lg"
+                class="flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-ruler-line"
+                  size="18"
+                />
+              </VAvatar>
+              <div class="min-w-0">
+                <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate">
+                  {{ item.from_unit?.name || 'Sin nombre' }}
+                </div>
+                <div
+                  v-if="item.from_unit?.code"
+                  class="text-caption text-disabled font-mono"
+                >
+                  ({{ item.from_unit.code }})
+                </div>
+              </div>
+            </div>
+
+            <VIcon
+              icon="ri-arrow-right-line"
+              color="medium-emphasis"
+              size="20"
+              class="flex-shrink-0 mx-1"
+            />
+
+            <!-- Destino -->
+            <div class="d-flex align-center gap-2 min-w-0 flex-1 justify-end text-right">
+              <div class="min-w-0">
+                <div class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate">
+                  {{ item.to_unit?.name || 'Sin nombre' }}
+                </div>
+                <div
+                  v-if="item.to_unit?.code"
+                  class="text-caption text-disabled font-mono"
+                >
+                  ({{ item.to_unit.code }})
+                </div>
+              </div>
+              <VAvatar
+                size="32"
+                color="secondary"
+                variant="tonal"
+                rounded="lg"
+                class="flex-shrink-0"
+              >
+                <VIcon
+                  icon="ri-ruler-2-line"
+                  size="18"
+                />
+              </VAvatar>
+            </div>
+          </div>
+
+          <!-- Fila Inferior: Factor Multiplicador -->
+          <div class="pt-2 border-t d-flex align-center justify-space-between">
+            <span class="text-caption text-medium-emphasis font-weight-medium">Factor de equivalencia:</span>
+            <span class="text-body-1 font-weight-bold font-mono text-primary">
+              1 = {{ item.factor }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="conversions-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 70px;"
+              >
                 #
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 240px;"
+              >
                 Unidad Origen
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 60px;">
-                
-              </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 60px;"
+              />
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 240px;"
+              >
                 Unidad Destino
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 180px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 180px;"
+              >
                 Factor Multiplicador
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 120px;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in filteredConversions" :key="item.id" class="conversion-table-row">
+            <tr
+              v-for="(item, index) in filteredConversions"
+              :key="item.id"
+              class="conversion-table-row"
+            >
               <td class="font-weight-bold text-disabled">
                 #{{ index + 1 }}
               </td>
@@ -306,14 +581,25 @@ definePage({ meta: { permission: "settings" } })
               <!-- Unidad Origen -->
               <td class="py-3">
                 <div class="d-flex align-center gap-2">
-                  <VAvatar size="32" color="primary" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-ruler-line" size="18" />
+                  <VAvatar
+                    size="32"
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-ruler-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <div>
                     <span class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
                       {{ item.from_unit?.name || 'Sin nombre' }}
                     </span>
-                    <span v-if="item.from_unit?.code" class="text-caption text-disabled ms-1 font-mono">
+                    <span
+                      v-if="item.from_unit?.code"
+                      class="text-caption text-disabled ms-1 font-mono"
+                    >
                       ({{ item.from_unit.code }})
                     </span>
                   </div>
@@ -322,20 +608,35 @@ definePage({ meta: { permission: "settings" } })
 
               <!-- Flecha Indicadora -->
               <td class="text-center py-3">
-                <VIcon icon="ri-arrow-right-line" color="medium-emphasis" size="20" />
+                <VIcon
+                  icon="ri-arrow-right-line"
+                  color="medium-emphasis"
+                  size="20"
+                />
               </td>
 
               <!-- Unidad Destino -->
               <td class="py-3">
                 <div class="d-flex align-center gap-2">
-                  <VAvatar size="32" color="secondary" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-ruler-2-line" size="18" />
+                  <VAvatar
+                    size="32"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-ruler-2-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <div>
                     <span class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
                       {{ item.to_unit?.name || 'Sin nombre' }}
                     </span>
-                    <span v-if="item.to_unit?.code" class="text-caption text-disabled ms-1 font-mono">
+                    <span
+                      v-if="item.to_unit?.code"
+                      class="text-caption text-disabled ms-1 font-mono"
+                    >
                       ({{ item.to_unit.code }})
                     </span>
                   </div>
@@ -405,26 +706,3 @@ definePage({ meta: { permission: "settings" } })
     />
   </div>
 </template>
-
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.conversion-table-row {
-  transition: background-color 0.15s ease;
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-
-.font-mono {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-}
-</style>

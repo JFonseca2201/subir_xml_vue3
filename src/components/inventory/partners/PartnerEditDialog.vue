@@ -117,6 +117,7 @@ const showNotification = (message, type = 'success') => {
 watch(() => props.partnerSelected, val => {
   if (val) {
     const isActive = val.is_active !== false && val.is_active !== 0 && val.is_active !== '0' && val.status !== 'inactive'
+
     editMember.value = {
       email: val.email || '',
       identification: val.identification || '',
@@ -378,7 +379,10 @@ const updatePartner = async () => {
                   </div>
                 </template>
                 <template #item="{ item, props: itemProps }">
-                  <VListItem v-bind="itemProps" :title="undefined">
+                  <VListItem
+                    v-bind="itemProps"
+                    :title="undefined"
+                  >
                     <template #prepend>
                       <VBadge
                         dot

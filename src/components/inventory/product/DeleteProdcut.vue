@@ -31,6 +31,7 @@ const imageError = ref(false)
 const deleteProduct = async () => {
   if (!props.product?.id) {
     showNotification('No se puede eliminar el producto: ID no válido', 'error')
+    
     return
   }
 
@@ -98,7 +99,10 @@ const handleImageError = () => {
           @click="closeDialog"
         />
         <div class="custom-dialog-avatar mb-2">
-          <VIcon icon="ri-delete-bin-line" size="24" />
+          <VIcon
+            icon="ri-delete-bin-line"
+            size="24"
+          />
         </div>
         <h3 class="custom-dialog-title text-h6 font-weight-bold mb-1">
           Eliminar Producto
@@ -167,7 +171,11 @@ const handleImageError = () => {
           class="rounded-xl pa-3.5"
         >
           <template #prepend>
-            <VIcon icon="ri-error-warning-fill" size="20" class="mr-1" />
+            <VIcon
+              icon="ri-error-warning-fill"
+              size="20"
+              class="mr-1"
+            />
           </template>
           <div class="text-body-2 font-weight-medium">
             ¿Está seguro de eliminar este producto? Esta acción no se puede revertir.
@@ -177,9 +185,7 @@ const handleImageError = () => {
 
       <VDivider />
 
-      <VCardActions
-        class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white"
-      >
+      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white">
         <VBtn 
           variant="tonal" 
           color="secondary"

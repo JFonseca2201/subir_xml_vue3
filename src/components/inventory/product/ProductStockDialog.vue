@@ -28,7 +28,9 @@ watch(
   visible => {
     if (visible && props.product) {
       errorMessage.value = ''
+
       const stockVal = parseFloat(props.product.stock || 0)
+
       currentStock.value = stockVal
       initialStock.value = stockVal
     }
@@ -38,6 +40,7 @@ watch(
 
 const adjust = delta => {
   const updated = Math.max(0, (parseFloat(currentStock.value) || 0) + delta)
+
   currentStock.value = Math.round(updated * 100) / 100
 }
 
@@ -47,6 +50,7 @@ const resetToInitial = () => {
 
 const delta = computed(() => {
   const diff = (parseFloat(currentStock.value) || 0) - (parseFloat(initialStock.value) || 0)
+  
   return Math.round(diff * 100) / 100
 })
 
@@ -57,6 +61,7 @@ const closeDialog = () => {
 const saveStock = async () => {
   if (parseFloat(currentStock.value) < 0) {
     errorMessage.value = 'El stock no puede ser menor a 0'
+    
     return
   }
 
@@ -69,6 +74,7 @@ const saveStock = async () => {
     const basePrice = parseFloat(p.price_sale || 0)
 
     const formData = new FormData()
+
     formData.append('description', p.description || '')
     formData.append('sku', p.sku || '')
     if (p.code_aux) formData.append('code_aux', p.code_aux)
@@ -128,7 +134,10 @@ const saveStock = async () => {
   >
     <VCard class="product-quick-dialog-card">
       <!-- Header con degradado primario / teal -->
-      <div class="product-quick-header" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 60%, #0369a1 100%) !important;">
+      <div
+        class="product-quick-header"
+        style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 60%, #0369a1 100%) !important;"
+      >
         <VBtn
           icon="ri-close-line"
           variant="text"
@@ -144,12 +153,23 @@ const saveStock = async () => {
             color="white"
             class="elevation-2 overflow-hidden flex-shrink-0"
           >
-            <VIcon icon="ri-archive-line" color="info" size="24" />
+            <VIcon
+              icon="ri-archive-line"
+              color="info"
+              size="24"
+            />
           </VAvatar>
 
-          <div class="overflow-hidden" style="flex: 1;">
+          <div
+            class="overflow-hidden"
+            style="flex: 1;"
+          >
             <span class="product-mini-badge font-mono">SKU: {{ product?.sku || 'S/C' }}</span>
-            <h3 class="text-white font-weight-bold text-truncate mb-0 mt-0.5" style="font-size: 1rem;" :title="product?.description">
+            <h3
+              class="text-white font-weight-bold text-truncate mb-0 mt-0.5"
+              style="font-size: 1rem;"
+              :title="product?.description"
+            >
               {{ product?.description || 'Ajuste de Stock' }}
             </h3>
           </div>
@@ -202,7 +222,10 @@ const saveStock = async () => {
               :disabled="currentStock <= 0"
               @click="adjust(-1)"
             >
-              <VIcon icon="ri-subtract-line" size="22" />
+              <VIcon
+                icon="ri-subtract-line"
+                size="22"
+              />
             </VBtn>
 
             <VTextField
@@ -223,21 +246,45 @@ const saveStock = async () => {
               class="quick-stepper-btn"
               @click="adjust(1)"
             >
-              <VIcon icon="ri-add-line" size="22" />
+              <VIcon
+                icon="ri-add-line"
+                size="22"
+              />
             </VBtn>
           </div>
 
           <!-- Ajustes rápidos para móvil -->
           <div class="quick-adjustment-chips mt-3">
-            <span class="adj-chip adj-minus" @click="adjust(-10)">-10</span>
-            <span class="adj-chip adj-minus" @click="adjust(-5)">-5</span>
-            <span class="adj-chip adj-minus" @click="adjust(-1)">-1</span>
-            <span class="adj-chip adj-plus" @click="adjust(1)">+1</span>
-            <span class="adj-chip adj-plus" @click="adjust(5)">+5</span>
-            <span class="adj-chip adj-plus" @click="adjust(10)">+10</span>
+            <span
+              class="adj-chip adj-minus"
+              @click="adjust(-10)"
+            >-10</span>
+            <span
+              class="adj-chip adj-minus"
+              @click="adjust(-5)"
+            >-5</span>
+            <span
+              class="adj-chip adj-minus"
+              @click="adjust(-1)"
+            >-1</span>
+            <span
+              class="adj-chip adj-plus"
+              @click="adjust(1)"
+            >+1</span>
+            <span
+              class="adj-chip adj-plus"
+              @click="adjust(5)"
+            >+5</span>
+            <span
+              class="adj-chip adj-plus"
+              @click="adjust(10)"
+            >+10</span>
           </div>
 
-          <div v-if="delta !== 0" class="text-center mt-3">
+          <div
+            v-if="delta !== 0"
+            class="text-center mt-3"
+          >
             <VBtn
               variant="text"
               color="secondary"

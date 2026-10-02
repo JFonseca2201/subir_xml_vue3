@@ -55,6 +55,7 @@ const getWorkOrderAdvances = item => {
   if (Array.isArray(item.advances)) {
     return item.advances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0)
   }
+  
   return 0
 }
 
@@ -125,6 +126,7 @@ const filteredWorkOrders = computed(() => {
   if (startDate.value) {
     filtered = filtered.filter(wo => {
       const d = (wo.date || wo.created_at || '').split('T')[0].split(' ')[0]
+      
       return d >= startDate.value
     })
   }
@@ -132,6 +134,7 @@ const filteredWorkOrders = computed(() => {
   if (endDate.value) {
     filtered = filtered.filter(wo => {
       const d = (wo.date || wo.created_at || '').split('T')[0].split(' ')[0]
+      
       return d <= endDate.value
     })
   }
@@ -281,12 +284,14 @@ const hasSriAuthorizedInvoice = workOrder => {
   if (!workOrder) return false
   const sale = workOrder.sale
   if (!sale) return false
+  
   return sale.document_type === 'invoice' && ['AUTORIZADA', 'AUTORIZADO'].includes(sale.sri_status)
 }
 
 const deleteWorkOrder = workOrder => {
   if (hasSriAuthorizedInvoice(workOrder)) {
     showNotification('No se puede eliminar la orden de trabajo porque tiene una factura autorizada por el SRI.', 'error')
+    
     return
   }
   workOrderToDelete.value = workOrder
@@ -299,6 +304,7 @@ const confirmDeleteWorkOrder = async () => {
   if (hasSriAuthorizedInvoice(workOrderToDelete.value)) {
     showNotification('No se puede eliminar una orden de trabajo con factura autorizada por el SRI', 'error')
     showDeleteDialog.value = false
+    
     return
   }
 
@@ -308,6 +314,7 @@ const confirmDeleteWorkOrder = async () => {
       method: 'DELETE',
       onResponseError({ response }) {
         const errorMsg = response?._data?.message || 'Error al eliminar la orden de trabajo'
+
         showNotification(errorMsg, 'error')
       },
     })
@@ -354,17 +361,17 @@ const getStatusPillClass = workOrder => {
   }
 
   switch (workOrder.status) {
-    case 'ready':
-      return 'status-paid'
-    case 'in_progress':
-      return 'status-partial'
-    case 'received':
-      return 'status-transfer'
-    case 'delivered':
-      return 'status-paid'
-    case 'draft':
-    default:
-      return 'status-canceled'
+  case 'ready':
+    return 'status-paid'
+  case 'in_progress':
+    return 'status-partial'
+  case 'received':
+    return 'status-transfer'
+  case 'delivered':
+    return 'status-paid'
+  case 'draft':
+  default:
+    return 'status-canceled'
   }
 }
 
@@ -380,6 +387,7 @@ const goToSale = workOrderId => {
 const goToEdit = (workOrderId, workOrder = null) => {
   if (workOrder && isWorkOrderInvoiced(workOrder)) {
     showNotification('Esta orden de trabajo ya ha sido facturada y no se puede editar', 'warning')
+    
     return
   }
   router.push(`/work-orders/edit/${workOrderId}`)
@@ -394,6 +402,7 @@ const isPdfLoading = ref(false)
 const openPdfPreview = workOrder => {
   try {
     isPdfLoading.value = true
+
     const token = localStorage.getItem('token')
     const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
     
@@ -425,9 +434,11 @@ const downloadPDF = async workOrderId => {
       const url = window.URL.createObjectURL(blob)
 
       const rawClient = workOrder?.client?.full_name || getClientName(workOrder?.client) || 'Cliente'
+
       const clientName = rawClient
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase()
+
       const plate = (workOrder?.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
       const docNumber = (workOrder?.number || workOrderId || 'OT').toString().replace(/[^a-zA-Z0-9\-_]/g, '')
       const parts = ['Orden_Trabajo', docNumber, clientName]
@@ -435,6 +446,7 @@ const downloadPDF = async workOrderId => {
       const fileName = parts.join('_') + '.pdf'
 
       const a = document.createElement('a')
+
       a.href = url
       a.download = fileName
       document.body.appendChild(a)
@@ -472,6 +484,7 @@ const printPDF = workOrderId => {
 
 const getClientName = client => {
   if (!client) return 'N/A'
+  
   return client.full_name || `${client.name || ''} ${client.surname || ''}`.trim() || 'N/A'
 }
 
@@ -480,6 +493,7 @@ const getClientInitials = client => {
   if (!name || name === 'N/A') return 'CL'
   const parts = name.split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  
   return name.slice(0, 2).toUpperCase()
 }
 
@@ -497,6 +511,7 @@ const getVehicleInfo = vehicle => {
 
 const getTotalAmount = workOrder => {
   if (!workOrder.items || !Array.isArray(workOrder.items)) return 0
+  
   return workOrder.items.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0)
 }
 
@@ -506,6 +521,7 @@ const formatDate = dateString => {
   const parts = clean.split('-')
   if (parts.length === 3) {
     const [year, month, day] = parts
+    
     return `${year}/${month}/${day}`
   }
   const date = new Date(dateString)
@@ -513,8 +529,10 @@ const formatDate = dateString => {
     const y = date.getFullYear()
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
+    
     return `${y}/${m}/${d}`
   }
+  
   return dateString
 }
 
@@ -525,11 +543,13 @@ const formatWorkOrderNumber = (num, fallbackId = null) => {
     if (s.startsWith('#')) return s
     if (s.includes('-')) return s
     if (/^\d+$/.test(s)) return '#' + s
+    
     return s
   }
   if (fallbackId) {
     return '#' + String(fallbackId).padStart(6, '0')
   }
+  
   return '-'
 }
 
@@ -555,8 +575,17 @@ watch(() => route.query.search, newSearch => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-tools-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-tools-line"
+              size="26"
+            />
           </VAvatar>
           Órdenes de Trabajo
         </h1>
@@ -579,18 +608,35 @@ watch(() => route.query.search, newSearch => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs / Pestañas de Filtro Interactivas) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard
           class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
           :class="{ 'active-kpi-card': statusFilter === 'all' }"
           @click="statusFilter = 'all'"
         >
-          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-file-list-3-line" size="24" />
+          <VAvatar
+            size="44"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Órdenes</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Total Órdenes
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ stats.total }} <span class="text-caption text-disabled font-weight-regular">en historial</span>
             </div>
@@ -598,17 +644,31 @@ watch(() => route.query.search, newSearch => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard
           class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
           :class="{ 'active-kpi-card-warning': statusFilter === 'active' || statusFilter === 'in_progress' || statusFilter === 'received' }"
           @click="statusFilter = (statusFilter === 'active' ? 'all' : 'active')"
         >
-          <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-tools-line" size="24" />
+          <VAvatar
+            size="44"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-tools-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">En Taller (Operativas)</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              En Taller (Operativas)
+            </div>
             <div class="text-h6 font-weight-bold text-warning text-truncate">
               {{ stats.received + stats.inProgress + stats.ready }} <span class="text-caption text-disabled font-weight-regular">activas</span>
             </div>
@@ -616,17 +676,31 @@ watch(() => route.query.search, newSearch => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard
           class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100 cursor-pointer"
           :class="{ 'active-kpi-card-success': statusFilter === 'ready' }"
           @click="statusFilter = (statusFilter === 'ready' ? 'all' : 'ready')"
         >
-          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-checkbox-circle-line" size="24" />
+          <VAvatar
+            size="44"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-checkbox-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Listas para Entrega</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Listas para Entrega
+            </div>
             <div class="text-h6 font-weight-bold text-success text-truncate">
               {{ stats.ready }} <span class="text-caption text-disabled font-weight-regular">listas</span>
             </div>
@@ -671,7 +745,11 @@ watch(() => route.query.search, newSearch => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Órdenes</span>
           </div>
 
@@ -687,8 +765,14 @@ watch(() => route.query.search, newSearch => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
-          <VCol cols="12" md="6">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="searchQuery"
               label="Buscar orden"
@@ -703,7 +787,11 @@ watch(() => route.query.search, newSearch => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VSelect
               v-model="statusFilter"
               :items="statusOptions"
@@ -720,7 +808,11 @@ watch(() => route.query.search, newSearch => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="startDate"
               type="date"
@@ -733,7 +825,11 @@ watch(() => route.query.search, newSearch => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="endDate"
               type="date"
@@ -750,71 +846,426 @@ watch(() => route.query.search, newSearch => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="isLoading" class="rounded-xl border elevation-0 bg-surface table-card-responsive">
-      <VTable class="work-orders-modern-table">
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 13%;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4" style="width: 27%;"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4" style="width: 23%;"><div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4" style="width: 12%;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4 text-right" style="width: 10%;"><div class="shimmer-line w-60 ms-auto" /></td>
-            <td class="py-4 text-center" style="width: 10%;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 5%;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="isLoading">
+      <!-- Skeleton Móvil (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="n in 4"
+          :key="'mob-skel-wo-' + n"
+          class="mobile-wo-card elevation-0 pa-4"
+        >
+          <div class="d-flex justify-space-between mb-2">
+            <div class="shimmer-line w-40" />
+            <div
+              class="shimmer-button rounded"
+              style="width: 24px; height: 24px;"
+            />
+          </div>
+          <div class="d-flex align-center gap-2 mb-3">
+            <div
+              class="shimmer-button rounded-lg"
+              style="width: 34px; height: 34px;"
+            />
+            <div class="flex-grow-1">
+              <div class="shimmer-line w-60 mb-1" />
+              <div class="shimmer-line w-35" />
+            </div>
+          </div>
+          <div class="d-flex justify-space-between align-center pt-2 border-t">
+            <div class="shimmer-line w-30" />
+            <div
+              class="shimmer-chip"
+              style="width: 70px;"
+            />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio (d-none d-md-block) -->
+      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
+        <VTable class="work-orders-modern-table">
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 13%;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 27%;"
+              >
+                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 23%;"
+              >
+                <div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 12%;"
+              >
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4 text-right"
+                style="width: 10%;"
+              >
+                <div class="shimmer-line w-60 ms-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 10%;"
+              >
+                <div class="shimmer-chip mx-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 5%;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!filteredWorkOrders.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-file-text-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-file-text-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron órdenes de trabajo
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar los filtros de búsqueda o registra una nueva orden técnica.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn v-if="can('register_sale')" color="primary" prepend-icon="ri-add-line" to="/work-orders/add">
+        <VBtn
+          v-if="can('register_sale')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/work-orders/add"
+        >
           Nueva Orden
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA MODERNA DE ÓRDENES DE TRABAJO -->
+    <!-- LISTADO DE ÓRDENES DE TRABAJO (MÓVIL Y ESCRITORIO) -->
     <div v-else>
-      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive">
-        <VTable hover class="work-orders-modern-table">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="item in paginatedWorkOrders"
+          :key="'mob-wo-' + item.id"
+          class="mobile-wo-card elevation-0"
+          :class="{
+            'wo-row-pending-finish': isPendingFinish(item),
+          }"
+        >
+          <!-- Fila superior: N° Orden + Alerta + Acciones -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-1 border-b">
+            <div class="d-flex align-center gap-1.5 min-w-0">
+              <VIcon
+                v-if="isPendingFinish(item)"
+                icon="ri-alarm-warning-fill"
+                color="warning"
+                size="16"
+                class="pulse-alarm-icon flex-shrink-0"
+                title="¡Orden lista por finalizar!"
+              />
+              <span
+                class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
+                title="Ver Secuencia e Historial"
+                @click="openTimeline(item)"
+              >
+                {{ formatWorkOrderNumber(item.number, item.id) }}
+              </span>
+            </div>
+
+            <!-- Acciones rápidas de cabecera -->
+            <div class="d-flex align-center gap-1">
+              <VBtn
+                v-if="item.status !== 'draft'"
+                size="x-small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Detalles"
+                @click="viewDetails(item)"
+              />
+              <VBtn
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+                icon="ri-more-2-line"
+                title="Más Opciones"
+              >
+                <VIcon
+                  icon="ri-more-2-line"
+                  size="16"
+                />
+                <VMenu
+                  activator="parent"
+                  transition="slide-y-transition"
+                  align="end"
+                  location="bottom end"
+                >
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-4 border"
+                    min-width="190"
+                  >
+                    <VListItem
+                      v-if="item.status === 'draft' || (can('edit_sale') && !isWorkOrderInvoiced(item))"
+                      prepend-icon="ri-pencil-line"
+                      title="Editar Orden"
+                      class="text-warning font-weight-medium"
+                      @click="goToEdit(item.id, item)"
+                    />
+                    <VListItem
+                      v-if="item.status !== 'draft' && !isWorkOrderInvoiced(item)"
+                      prepend-icon="ri-hand-coin-line"
+                      :title="getWorkOrderAdvances(item) > 0 ? `Abonos ($${getWorkOrderAdvances(item).toFixed(2)})` : 'Registrar Abono'"
+                      class="text-success font-weight-medium"
+                      @click="openAdvanceDialog(item)"
+                    />
+                    <VListItem
+                      v-if="['ready', 'delivered'].includes(item.status) && !isWorkOrderInvoiced(item)"
+                      prepend-icon="ri-shopping-cart-2-line"
+                      title="Facturar / Generar Venta"
+                      class="text-success font-weight-semibold"
+                      @click="goToSale(item.id)"
+                    />
+                    <VListItem
+                      v-if="item.status !== 'draft'"
+                      prepend-icon="ri-file-pdf-line"
+                      title="Ver / Imprimir PDF"
+                      class="text-primary font-weight-medium"
+                      @click="openPdfPreview(item)"
+                    />
+                    <VListItem
+                      v-if="item.status !== 'draft'"
+                      prepend-icon="ri-download-2-line"
+                      title="Descargar PDF"
+                      class="text-secondary font-weight-medium"
+                      @click="downloadPDF(item.id)"
+                    />
+                    <VListItem
+                      v-if="item.status !== 'draft'"
+                      prepend-icon="ri-attachment-2"
+                      title="Comprobantes / Soportes"
+                      class="text-primary font-weight-medium"
+                      @click="openReceiptsDialog(item)"
+                    />
+                    <VListItem
+                      v-if="item.status !== 'delivered' && item.status !== 'draft'"
+                      prepend-icon="ri-truck-line"
+                      title="Marcar como Entregado"
+                      class="text-info font-weight-medium"
+                      @click="markAsDelivered(item)"
+                    />
+                    <VDivider
+                      v-if="can('cancel_sale')"
+                      class="my-1"
+                    />
+                    <VListItem
+                      v-if="can('cancel_sale')"
+                      prepend-icon="ri-close-circle-line"
+                      title="Anular Orden"
+                      class="text-error font-weight-medium"
+                      @click="cancelOrder(item)"
+                    />
+                  </VList>
+                </VMenu>
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Cliente -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VAvatar
+              size="32"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              class="font-weight-bold flex-shrink-0"
+            >
+              <span style="font-size: 0.75rem;">{{ getClientInitials(item.client) }}</span>
+            </VAvatar>
+            <div class="min-w-0 flex-grow-1">
+              <div
+                class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                :title="getClientName(item.client)"
+              >
+                {{ getClientName(item.client) }}
+              </div>
+              <div
+                v-if="item.client?.n_document"
+                class="text-caption text-medium-emphasis font-mono text-truncate"
+              >
+                {{ item.client.n_document }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehículo -->
+          <div
+            v-if="item.vehicle"
+            class="d-flex align-center gap-2 mb-2.5 py-1 px-2.5 rounded-lg bg-grey-lighten-5 border"
+          >
+            <VIcon
+              icon="ri-car-line"
+              size="15"
+              color="secondary"
+              class="flex-shrink-0"
+            />
+            <span class="font-mono font-weight-bold text-caption text-high-emphasis flex-shrink-0">
+              {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
+            </span>
+            <span class="text-caption text-medium-emphasis text-truncate">
+              {{ getVehicleInfo(item.vehicle) }}
+            </span>
+          </div>
+
+          <!-- Fila inferior: Fecha (Izquierda) + Total y Estado (Derecha) -->
+          <div class="d-flex align-end justify-space-between gap-2 pt-1 border-t">
+            <!-- Fecha -->
+            <div class="d-flex align-center text-caption text-medium-emphasis">
+              <VIcon
+                icon="ri-calendar-line"
+                size="13"
+                class="me-1 text-disabled"
+              />
+              <span class="font-weight-medium">{{ formatDate(item.date || item.created_at) }}</span>
+            </div>
+
+            <!-- Total y Estado -->
+            <div class="d-flex flex-column align-end gap-1">
+              <div class="d-flex align-center gap-2">
+                <div
+                  v-if="getWorkOrderAdvances(item) > 0"
+                  class="status-pill-clean status-paid"
+                  style="font-size: 0.65rem !important; padding: 1.5px 6px !important;"
+                  :class="{'cursor-pointer': !isWorkOrderInvoiced(item)}"
+                  @click.stop="!isWorkOrderInvoiced(item) ? openAdvanceDialog(item) : null"
+                >
+                  <span class="status-dot" />
+                  <span>Abono: ${{ getWorkOrderAdvances(item).toFixed(2) }}</span>
+                </div>
+                <span
+                  class="font-mono font-weight-bold text-h6 text-high-emphasis"
+                  style="line-height: 1.1;"
+                >
+                  ${{ getTotalAmount(item).toFixed(2) }}
+                </span>
+              </div>
+
+              <!-- Estado -->
+              <div
+                class="status-pill-clean"
+                :class="[getStatusPillClass(item), item.status !== 'draft' ? 'cursor-pointer' : '']"
+                title="Clic para ver secuencia de la orden"
+                @click="item.status !== 'draft' ? handleStatusClick(item) : null"
+              >
+                <VProgressCircular
+                  v-if="loadingOrders === item.id"
+                  indeterminate
+                  size="10"
+                  width="1.5"
+                />
+                <span
+                  v-else
+                  class="status-dot"
+                />
+                <span>{{ getDynamicLegend(item) }}</span>
+              </div>
+            </div>
+          </div>
+        </VCard>
+      </div>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
+        <VTable
+          hover
+          class="work-orders-modern-table"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 13%; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 13%; white-space: nowrap;"
+              >
                 N° Orden
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 27%;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 27%;"
+              >
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 23%;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 23%;"
+              >
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 12%; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 12%; white-space: nowrap;"
+              >
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 10%; white-space: nowrap;"
+              >
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 10%; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 10%; white-space: nowrap;"
+              >
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 5%; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 5%; white-space: nowrap;"
+              >
                 Acciones
               </th>
             </tr>
@@ -829,19 +1280,19 @@ watch(() => route.query.search, newSearch => {
               }"
             >
               <!-- N° Orden -->
-              <td class="py-3" style="white-space: nowrap;">
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
                 <div class="d-flex align-center gap-1.5">
-                  <VTooltip v-if="isPendingFinish(item)" text="¡Orden lista por finalizar!">
-                    <template #activator="{ props }">
-                      <VIcon
-                        v-bind="props"
-                        icon="ri-alarm-warning-fill"
-                        color="warning"
-                        size="18"
-                        class="pulse-alarm-icon flex-shrink-0"
-                      />
-                    </template>
-                  </VTooltip>
+                  <VIcon
+                    v-if="isPendingFinish(item)"
+                    icon="ri-alarm-warning-fill"
+                    color="warning"
+                    size="18"
+                    class="pulse-alarm-icon flex-shrink-0"
+                    title="¡Orden lista por finalizar!"
+                  />
                   <div
                     class="font-mono font-weight-bold text-primary cursor-pointer text-body-1 hover-underline"
                     title="Ver Secuencia e Historial de la Orden"
@@ -853,12 +1304,24 @@ watch(() => route.query.search, newSearch => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3" style="overflow: hidden;">
+              <td
+                class="py-3"
+                style="overflow: hidden;"
+              >
                 <div class="d-flex align-center gap-2 overflow-hidden w-100">
-                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0 flex-shrink-0">
+                  <VAvatar
+                    size="34"
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="font-weight-bold elevation-0 flex-shrink-0"
+                  >
                     <span style="font-size: 0.8rem;">{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                  <div
+                    class="min-w-0 flex-grow-1 overflow-hidden"
+                    style="width: 0;"
+                  >
                     <span
                       class="font-weight-bold text-high-emphasis text-body-2"
                       style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;"
@@ -879,12 +1342,31 @@ watch(() => route.query.search, newSearch => {
               </td>
 
               <!-- Vehículo -->
-              <td class="py-3" style="overflow: hidden;">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2 overflow-hidden w-100">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-car-line" size="18" color="secondary" />
+              <td
+                class="py-3"
+                style="overflow: hidden;"
+              >
+                <div
+                  v-if="item.vehicle"
+                  class="d-flex align-center gap-2 overflow-hidden w-100"
+                >
+                  <VAvatar
+                    size="34"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="elevation-0 flex-shrink-0"
+                  >
+                    <VIcon
+                      icon="ri-car-line"
+                      size="18"
+                      color="secondary"
+                    />
                   </VAvatar>
-                  <div class="min-w-0 flex-grow-1 overflow-hidden" style="width: 0;">
+                  <div
+                    class="min-w-0 flex-grow-1 overflow-hidden"
+                    style="width: 0;"
+                  >
                     <span
                       class="font-mono"
                       :class="item.vehicle.license_plate ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
@@ -902,28 +1384,60 @@ watch(() => route.query.search, newSearch => {
                     </span>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
-                    <VIcon icon="ri-car-line" size="18" />
+                <div
+                  v-else
+                  class="d-flex align-center gap-2 text-disabled text-caption overflow-hidden w-100"
+                >
+                  <VAvatar
+                    size="34"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="elevation-0 flex-shrink-0 opacity-40"
+                  >
+                    <VIcon
+                      icon="ri-car-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <span class="text-truncate">Sin vehículo</span>
                 </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
-                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.date || item.created_at) }}</span>
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                  style="white-space: nowrap;"
+                >
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="16"
+                    color="medium-emphasis"
+                    class="me-1 flex-shrink-0"
+                  />
+                  <span
+                    class="text-no-wrap font-weight-medium"
+                    style="white-space: nowrap;"
+                  >{{ formatDate(item.date || item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Total -->
-              <td class="py-3 text-right" style="white-space: nowrap;">
+              <td
+                class="py-3 text-right"
+                style="white-space: nowrap;"
+              >
                 <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
                   ${{ getTotalAmount(item).toFixed(2) }}
                 </span>
-                <div v-if="getWorkOrderAdvances(item) > 0" class="mt-1 d-flex justify-end">
+                <div
+                  v-if="getWorkOrderAdvances(item) > 0"
+                  class="mt-1 d-flex justify-end"
+                >
                   <div
                     class="status-pill-clean status-paid"
                     style="font-size: 0.68rem !important; padding: 2px 8px !important;"
@@ -938,7 +1452,10 @@ watch(() => route.query.search, newSearch => {
               </td>
 
               <!-- Estado (Píldora limpia estilo socios con punto) -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <div
                   class="status-pill-clean"
                   :class="[getStatusPillClass(item), item.status !== 'draft' ? 'cursor-pointer' : '']"
@@ -960,7 +1477,10 @@ watch(() => route.query.search, newSearch => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalles -->
                   <VBtn
@@ -981,14 +1501,21 @@ watch(() => route.query.search, newSearch => {
                     icon="ri-more-2-line"
                     title="Más Opciones"
                   >
-                    <VIcon icon="ri-more-2-line" size="18" />
+                    <VIcon
+                      icon="ri-more-2-line"
+                      size="18"
+                    />
                     <VMenu
                       activator="parent"
                       transition="slide-y-transition"
                       align="end"
                       location="bottom end"
                     >
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
+                      <VList
+                        density="compact"
+                        class="py-1 rounded-lg elevation-4 border"
+                        min-width="190"
+                      >
                         <!-- Editar Orden -->
                         <VListItem
                           v-if="item.status === 'draft' || (can('edit_sale') && !isWorkOrderInvoiced(item))"
@@ -1052,7 +1579,10 @@ watch(() => route.query.search, newSearch => {
                           @click="updateStatus(item.id, 'delivered')"
                         />
 
-                        <VDivider v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)" class="my-1" />
+                        <VDivider
+                          v-if="can('delete_sale') && !hasSriAuthorizedInvoice(item)"
+                          class="my-1"
+                        />
 
                         <!-- Eliminar Orden -->
                         <VListItem
@@ -1098,7 +1628,10 @@ watch(() => route.query.search, newSearch => {
       persistent
       transition="dialog-bottom-transition"
     >
-      <VCard v-if="selectedWorkOrder" class="custom-dialog-card elevation-12">
+      <VCard
+        v-if="selectedWorkOrder"
+        class="custom-dialog-card elevation-12"
+      >
         <!-- Header Banner Primary (Estilo unificado del sistema) -->
         <div class="custom-dialog-header-primary bg-primary text-white">
           <VBtn
@@ -1121,29 +1654,58 @@ watch(() => route.query.search, newSearch => {
 
         <VCardText class="pa-6">
           <!-- Tarjetas Resumen de Cliente y Vehículo -->
-          <VRow dense class="mb-4">
-            <VCol cols="12" sm="6">
-              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+          <VRow
+            dense
+            class="mb-4"
+          >
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <div
+                class="pa-3 rounded-xl border info-card-flat h-100"
+                style="background-color: #f8fafc;"
+              >
                 <div class="d-flex align-center gap-2 mb-1.5">
-                  <VIcon icon="ri-user-3-line" size="18" color="primary" />
+                  <VIcon
+                    icon="ri-user-3-line"
+                    size="18"
+                    color="primary"
+                  />
                   <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Cliente</span>
                 </div>
                 <div class="text-body-1 font-weight-bold text-slate-900">
                   {{ getClientName(selectedWorkOrder.client) }}
                 </div>
-                <div v-if="selectedWorkOrder.client?.n_document" class="text-caption text-medium-emphasis font-mono mt-0.5">
+                <div
+                  v-if="selectedWorkOrder.client?.n_document"
+                  class="text-caption text-medium-emphasis font-mono mt-0.5"
+                >
                   Doc: {{ selectedWorkOrder.client.n_document }}
                 </div>
               </div>
             </VCol>
-            <VCol cols="12" sm="6">
-              <div class="pa-3 rounded-xl border info-card-flat h-100" style="background-color: #f8fafc;">
+            <VCol
+              cols="12"
+              sm="6"
+            >
+              <div
+                class="pa-3 rounded-xl border info-card-flat h-100"
+                style="background-color: #f8fafc;"
+              >
                 <div class="d-flex align-center justify-space-between mb-1.5">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-car-line" size="18" color="primary" />
+                    <VIcon
+                      icon="ri-car-line"
+                      size="18"
+                      color="primary"
+                    />
                     <span class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Vehículo</span>
                   </div>
-                  <span v-if="selectedWorkOrder.vehicle?.license_plate" class="license-plate-badge">
+                  <span
+                    v-if="selectedWorkOrder.vehicle?.license_plate"
+                    class="license-plate-badge"
+                  >
                     {{ selectedWorkOrder.vehicle.license_plate.toUpperCase() }}
                   </span>
                 </div>
@@ -1162,10 +1724,19 @@ watch(() => route.query.search, newSearch => {
           <!-- Tabla de Items de la Orden -->
           <div class="d-flex align-center justify-space-between mb-2">
             <span class="text-subtitle-2 font-weight-bold text-slate-900 d-flex align-center gap-1.5">
-              <VIcon icon="ri-tools-line" size="18" color="primary" />
+              <VIcon
+                icon="ri-tools-line"
+                size="18"
+                color="primary"
+              />
               Servicios y Repuestos Asignados
             </span>
-            <VChip size="small" variant="tonal" color="primary" class="font-weight-bold">
+            <VChip
+              size="small"
+              variant="tonal"
+              color="primary"
+              class="font-weight-bold"
+            >
               {{ (selectedWorkOrder.items || []).length }} ítem(s)
             </VChip>
           </div>
@@ -1174,14 +1745,35 @@ watch(() => route.query.search, newSearch => {
             <VTable density="comfortable">
               <thead>
                 <tr class="bg-grey-lighten-5">
-                  <th class="text-left py-3 font-weight-bold text-uppercase text-caption">Descripción</th>
-                  <th class="text-center py-3 font-weight-bold text-uppercase text-caption" style="width: 90px;">Cant.</th>
-                  <th class="text-right py-3 font-weight-bold text-uppercase text-caption" style="width: 120px;">P. Unit</th>
-                  <th class="text-right py-3 font-weight-bold text-uppercase text-caption" style="width: 120px;">Subtotal</th>
+                  <th class="text-left py-3 font-weight-bold text-uppercase text-caption">
+                    Descripción
+                  </th>
+                  <th
+                    class="text-center py-3 font-weight-bold text-uppercase text-caption"
+                    style="width: 90px;"
+                  >
+                    Cant.
+                  </th>
+                  <th
+                    class="text-right py-3 font-weight-bold text-uppercase text-caption"
+                    style="width: 120px;"
+                  >
+                    P. Unit
+                  </th>
+                  <th
+                    class="text-right py-3 font-weight-bold text-uppercase text-caption"
+                    style="width: 120px;"
+                  >
+                    Subtotal
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, idx) in (selectedWorkOrder.items || [])" :key="idx" class="border-b">
+                <tr
+                  v-for="(item, idx) in (selectedWorkOrder.items || [])"
+                  :key="idx"
+                  class="border-b"
+                >
                   <td class="py-2.5 font-weight-medium text-body-2 text-slate-900">
                     {{ item.description || item.product?.title || '-' }}
                   </td>
@@ -1196,8 +1788,15 @@ watch(() => route.query.search, newSearch => {
                   </td>
                 </tr>
                 <tr v-if="!selectedWorkOrder.items || !selectedWorkOrder.items.length">
-                  <td colspan="4" class="text-center py-6 text-medium-emphasis">
-                    <VIcon icon="ri-inbox-line" size="24" class="d-block mx-auto mb-1 text-disabled" />
+                  <td
+                    colspan="4"
+                    class="text-center py-6 text-medium-emphasis"
+                  >
+                    <VIcon
+                      icon="ri-inbox-line"
+                      size="24"
+                      class="d-block mx-auto mb-1 text-disabled"
+                    />
                     No hay ítems registrados en la orden
                   </td>
                 </tr>
@@ -1206,14 +1805,30 @@ watch(() => route.query.search, newSearch => {
           </div>
 
           <!-- Total de la Orden -->
-          <div class="pa-4 rounded-xl border d-flex justify-space-between align-center" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+          <div
+            class="pa-4 rounded-xl border d-flex justify-space-between align-center"
+            style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);"
+          >
             <div class="d-flex align-center gap-2.5">
-              <VAvatar size="38" color="primary" variant="tonal" class="rounded-lg">
-                <VIcon icon="ri-money-dollar-circle-line" size="22" color="primary" />
+              <VAvatar
+                size="38"
+                color="primary"
+                variant="tonal"
+                class="rounded-lg"
+              >
+                <VIcon
+                  icon="ri-money-dollar-circle-line"
+                  size="22"
+                  color="primary"
+                />
               </VAvatar>
               <div>
-                <div class="text-caption font-weight-bold text-uppercase text-medium-emphasis">Total de la Orden</div>
-                <div class="text-caption text-medium-emphasis">Monto acumulado de servicios y repuestos</div>
+                <div class="text-caption font-weight-bold text-uppercase text-medium-emphasis">
+                  Total de la Orden
+                </div>
+                <div class="text-caption text-medium-emphasis">
+                  Monto acumulado de servicios y repuestos
+                </div>
               </div>
             </div>
             <span class="text-h5 font-weight-black font-mono text-primary">
@@ -1271,7 +1886,10 @@ watch(() => route.query.search, newSearch => {
       persistent
       transition="dialog-bottom-transition"
     >
-      <VCard v-if="workOrderToDelete" class="custom-dialog-card elevation-12">
+      <VCard
+        v-if="workOrderToDelete"
+        class="custom-dialog-card elevation-12"
+      >
         <!-- Header Banner Primary (Color del sistema) -->
         <div class="custom-dialog-header-primary bg-primary text-white">
           <VBtn
@@ -1322,14 +1940,23 @@ watch(() => route.query.search, newSearch => {
                 class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
                 style="background-color: #f8fafc;"
               >
-                <div v-if="workOrderToDelete.client" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="workOrderToDelete.client"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Cliente:</span>
-                  <span class="text-caption font-weight-bold text-slate-900 text-truncate" style="max-width: 220px;">
+                  <span
+                    class="text-caption font-weight-bold text-slate-900 text-truncate"
+                    style="max-width: 220px;"
+                  >
                     {{ getClientName(workOrderToDelete.client) }}
                   </span>
                 </div>
 
-                <div v-if="workOrderToDelete.vehicle" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="workOrderToDelete.vehicle"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Vehículo:</span>
                   <span class="text-caption font-mono font-weight-bold text-primary">
                     {{ workOrderToDelete.vehicle.license_plate ? workOrderToDelete.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
@@ -1343,7 +1970,10 @@ watch(() => route.query.search, newSearch => {
                   </span>
                 </div>
 
-                <div v-if="workOrderToDelete.total" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="workOrderToDelete.total"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Total:</span>
                   <span class="text-caption font-mono font-weight-bold text-slate-900">
                     ${{ parseFloat(workOrderToDelete.total || 0).toFixed(2) }}
@@ -1423,8 +2053,17 @@ watch(() => route.query.search, newSearch => {
       <VCard class="custom-dialog-card elevation-12">
         <div class="custom-dialog-header-primary bg-primary text-white py-3 px-5 d-flex align-center justify-space-between position-relative">
           <div class="d-flex align-center gap-3">
-            <VAvatar size="38" color="white" variant="tonal" class="rounded-lg">
-              <VIcon icon="ri-file-pdf-line" size="22" color="white" />
+            <VAvatar
+              size="38"
+              color="white"
+              variant="tonal"
+              class="rounded-lg"
+            >
+              <VIcon
+                icon="ri-file-pdf-line"
+                size="22"
+                color="white"
+              />
             </VAvatar>
             <div class="text-start">
               <h3 class="text-subtitle-1 font-weight-bold text-white mb-0">
@@ -1443,7 +2082,10 @@ watch(() => route.query.search, newSearch => {
             @click="isPdfPreviewDialogVisible = false"
           />
         </div>
-        <VCardText class="pa-0" style="height: 720px; overflow: hidden;">
+        <VCardText
+          class="pa-0"
+          style="height: 720px; overflow: hidden;"
+        >
           <iframe
             v-if="pdfPreviewUrl"
             :src="pdfPreviewUrl"
@@ -1453,7 +2095,10 @@ watch(() => route.query.search, newSearch => {
           />
         </VCardText>
         <VDivider />
-        <VCardActions class="pa-3 px-5 d-flex justify-end align-center bg-white" style="position: sticky; bottom: 0; z-index: 2;">
+        <VCardActions
+          class="pa-3 px-5 d-flex justify-end align-center bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;"
+        >
           <VBtn
             variant="outlined"
             color="secondary"

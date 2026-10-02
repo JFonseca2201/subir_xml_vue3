@@ -30,6 +30,7 @@ const getIcon = () => {
   if (t === 'error') return 'error'
   if (t === 'warning') return 'warning'
   if (t === 'info') return 'info'
+  
   return 'info'
 }
 
@@ -44,6 +45,7 @@ watch(() => props.show, newVal => {
       warning: '#fffbeb',
       info: '#eff6ff',
     }
+
     const textColors = {
       success: '#065f46',
       error: '#991b1b',

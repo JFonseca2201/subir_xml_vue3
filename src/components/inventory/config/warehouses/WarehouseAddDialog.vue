@@ -66,12 +66,14 @@ const store = async () => {
     if (!valid.valid) {
       loader.stop()
       warning.value = 'Corrige los campos obligatorios.'
+      
       return
     }
   }
 
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}')
+
     const data = {
       name: warehouse.value.name,
       address: warehouse.value.address,

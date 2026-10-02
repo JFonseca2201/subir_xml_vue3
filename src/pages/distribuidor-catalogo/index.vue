@@ -49,6 +49,7 @@ const stockOptions = [
 
 const supplierOptions = computed(() => {
   const active = suppliers.value.filter(s => Number(s.total_items) > 0)
+  
   return [
     { title: 'Todos los Distribuidores con Catálogo', value: 'all', name: 'Todos los Distribuidores', count: stats.value.total_products, ruc: null },
     ...active.map(s => ({
@@ -65,6 +66,7 @@ const selectedSupplierData = computed(() => {
   if (selectedSupplierId.value === 'all') {
     return { name: 'Todos los Distribuidores', total_items: stats.value.total_products, ruc: null }
   }
+  
   return suppliers.value.find(s => s.id === selectedSupplierId.value) || { name: 'Distribuidor', total_items: 0, ruc: null }
 })
 
@@ -83,6 +85,7 @@ const categoryOptions = computed(() => {
 const loadSuppliers = async () => {
   try {
     const response = await $api('distributor-catalog/suppliers')
+
     suppliers.value = response?.data || []
 
     // Si hay distribuidores con catálogo y no está seteado, seleccionar el primero
@@ -105,6 +108,7 @@ const loadCategories = async () => {
     }
 
     const response = await $api('distributor-catalog/categories', { params })
+
     categories.value = response?.data || []
   } catch (err) {
     console.error('Error al cargar categorías:', err)
@@ -192,6 +196,7 @@ const copyToClipboard = async text => {
       await navigator.clipboard.writeText(text)
     } else {
       const el = document.createElement('textarea')
+
       el.value = text
       document.body.appendChild(el)
       el.select()
@@ -217,6 +222,7 @@ const getStockPillClass = status => {
   if (s.includes('disponible')) return 'status-paid'
   if (s.includes('stock <=') || s.includes('bajo') || s.includes('10')) return 'status-partial'
   if (s.includes('tránsito') || s.includes('transito')) return 'status-transfer'
+  
   return 'status-primary'
 }
 
@@ -250,8 +256,17 @@ onMounted(async () => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-book-read-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-book-read-line"
+              size="26"
+            />
           </VAvatar>
           Catálogo de Distribuidores
         </h1>
@@ -261,22 +276,44 @@ onMounted(async () => {
       </div>
 
       <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
-        <VBtn color="primary" prepend-icon="ri-upload-cloud-2-line" class="elevation-2 font-weight-bold"
-          @click="isImportDialogVisible = true">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-upload-cloud-2-line"
+          class="elevation-2 font-weight-bold"
+          @click="isImportDialogVisible = true"
+        >
           Subir / Importar Lista
         </VBtn>
       </div>
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="6" md="3">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-box-3-line" size="24" />
+          <VAvatar
+            size="44"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-box-3-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Productos</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Total Productos
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ stats.total_products }} <span class="text-caption text-disabled font-weight-regular">ítems</span>
             </div>
@@ -284,13 +321,28 @@ onMounted(async () => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-folder-2-line" size="24" />
+          <VAvatar
+            size="44"
+            color="info"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-folder-2-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Categorías</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Categorías
+            </div>
             <div class="text-h6 font-weight-bold text-info text-truncate">
               {{ stats.total_categories }} <span class="text-caption text-disabled font-weight-regular">grupos</span>
             </div>
@@ -298,13 +350,28 @@ onMounted(async () => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-checkbox-circle-line" size="24" />
+          <VAvatar
+            size="44"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-checkbox-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">En Stock / Disponibles</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              En Stock / Disponibles
+            </div>
             <div class="text-h6 font-weight-bold text-success text-truncate">
               {{ stats.total_available }} <span class="text-caption text-disabled font-weight-regular">ítems</span>
             </div>
@@ -312,16 +379,30 @@ onMounted(async () => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="6" md="3">
+      <VCol
+        cols="12"
+        sm="6"
+        md="3"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-error-warning-line" size="24" />
+          <VAvatar
+            size="44"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-error-warning-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Stock Bajo / Tránsito</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Stock Bajo / Tránsito
+            </div>
             <div class="text-h6 font-weight-bold text-warning text-truncate">
-              {{ stats.total_low_stock + stats.total_transit }} <span
-                class="text-caption text-disabled font-weight-regular">críticos</span>
+              {{ stats.total_low_stock + stats.total_transit }} <span class="text-caption text-disabled font-weight-regular">críticos</span>
             </div>
           </div>
         </VCard>
@@ -333,28 +414,67 @@ onMounted(async () => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Catálogo</span>
           </div>
 
-          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold" @click="resetFilters">
+          <VBtn
+            variant="text"
+            color="error"
+            size="small"
+            prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold"
+            @click="resetFilters"
+          >
             Limpiar Filtros
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
           <!-- 3. Búsqueda -->
-          <VCol cols="12" sm="6" md="5">
-            <VTextField v-model="searchQuery" label="Buscar en catálogo" placeholder="Código o aplicación vehicular..."
-              prepend-inner-icon="ri-search-2-line" variant="outlined" density="comfortable" hide-details="auto"
-              clearable color="primary" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="5"
+          >
+            <VTextField
+              v-model="searchQuery"
+              label="Buscar en catálogo"
+              placeholder="Código o aplicación vehicular..."
+              prepend-inner-icon="ri-search-2-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              clearable
+              color="primary"
+            />
           </VCol>
           <!-- 1. Distribuidor Activo -->
-          <VCol cols="12" sm="6" md="3">
-            <VSelect v-model="selectedSupplierId" :items="supplierOptions" item-title="title" item-value="value"
-              label="Distribuidor Activo" placeholder="Seleccionar distribuidor" prepend-inner-icon="ri-truck-line"
-              variant="outlined" density="comfortable" hide-details="auto" color="primary">
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
+            <VSelect
+              v-model="selectedSupplierId"
+              :items="supplierOptions"
+              item-title="title"
+              item-value="value"
+              label="Distribuidor Activo"
+              placeholder="Seleccionar distribuidor"
+              prepend-inner-icon="ri-truck-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              color="primary"
+            >
               <template #selection="{ item }">
                 <span class="font-weight-semibold text-truncate">{{ item.raw.name }}</span>
               </template>
@@ -363,13 +483,20 @@ onMounted(async () => {
                   <template #title>
                     <div class="d-flex align-center justify-space-between w-100">
                       <span class="font-weight-semibold text-body-2">{{ item.raw.name }}</span>
-                      <VChip size="x-small" :color="item.raw.count > 0 ? 'primary' : 'default'" variant="tonal"
-                        class="ms-2 font-mono font-weight-bold">
+                      <VChip
+                        size="x-small"
+                        :color="item.raw.count > 0 ? 'primary' : 'default'"
+                        variant="tonal"
+                        class="ms-2 font-mono font-weight-bold"
+                      >
                         {{ item.raw.count }}
                       </VChip>
                     </div>
                   </template>
-                  <template v-if="item.raw.ruc" #subtitle>
+                  <template
+                    v-if="item.raw.ruc"
+                    #subtitle
+                  >
                     <span class="text-caption font-mono text-disabled">RUC: {{ item.raw.ruc }}</span>
                   </template>
                 </VListItem>
@@ -379,67 +506,135 @@ onMounted(async () => {
 
 
           <!-- 2. Categoría -->
-          <VCol cols="12" sm="6" md="2">
-            <VAutocomplete v-model="selectedCategory" :items="categoryOptions" item-title="title" item-value="value"
-              label="Categoría de Repuesto" placeholder="Todas las Categorías" prepend-inner-icon="ri-price-tag-3-line"
-              variant="outlined" density="comfortable" hide-details="auto" color="primary"
-              :loading="isCategoriesLoading" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
+            <VAutocomplete
+              v-model="selectedCategory"
+              :items="categoryOptions"
+              item-title="title"
+              item-value="value"
+              label="Categoría de Repuesto"
+              placeholder="Todas las Categorías"
+              prepend-inner-icon="ri-price-tag-3-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              color="primary"
+              :loading="isCategoriesLoading"
+            />
           </VCol>
 
           <!-- 4. Disponibilidad -->
-          <VCol cols="12" sm="6" md="2">
-            <VSelect v-model="selectedStockStatus" :items="stockOptions" item-title="title" item-value="value"
-              label="Disponibilidad" placeholder="Todos los estados" prepend-inner-icon="ri-shield-check-line"
-              variant="outlined" density="comfortable" hide-details="auto" color="primary" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
+            <VSelect
+              v-model="selectedStockStatus"
+              :items="stockOptions"
+              item-title="title"
+              item-value="value"
+              label="Disponibilidad"
+              placeholder="Todos los estados"
+              prepend-inner-icon="ri-shield-check-line"
+              variant="outlined"
+              density="comfortable"
+              hide-details="auto"
+              color="primary"
+            />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- ESTADO DE CARGA SKELETON -->
-    <VCard v-if="isLoading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
+    <VCard
+      v-if="isLoading"
+      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
+    >
       <VTable class="distributor-catalog-table">
         <thead>
           <tr class="bg-grey-lighten-5">
-            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="width: 140px; min-width: 130px;"
+            >
               Código
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="min-width: 280px;"
+            >
               Descripción / Aplicación Vehicular
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 110px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="width: 130px; min-width: 110px;"
+            >
               Referencia
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 200px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="min-width: 200px;"
+            >
               Categoría
             </th>
-            <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 110px;">
+            <th
+              class="text-right font-weight-bold text-uppercase py-3"
+              style="width: 130px; min-width: 110px;"
+            >
               Precio
             </th>
-            <th class="text-center font-weight-bold text-uppercase py-3" style="width: 160px; min-width: 140px;">
+            <th
+              class="text-center font-weight-bold text-uppercase py-3"
+              style="width: 160px; min-width: 140px;"
+            >
               Disponibilidad
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="n in 6" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;">
+          <tr
+            v-for="n in 6"
+            :key="n"
+            class="skeleton-row align-middle"
+          >
+            <td
+              class="py-4"
+              style="width: 140px;"
+            >
               <div class="shimmer-line w-75" />
             </td>
             <td class="py-4">
               <div class="shimmer-line w-80 mb-2" />
               <div class="shimmer-line w-50" />
             </td>
-            <td class="py-4" style="width: 130px;">
+            <td
+              class="py-4"
+              style="width: 130px;"
+            >
               <div class="shimmer-line w-60" />
             </td>
-            <td class="py-4" style="min-width: 200px;">
+            <td
+              class="py-4"
+              style="min-width: 200px;"
+            >
               <div class="shimmer-line w-60" />
             </td>
-            <td class="py-4 text-right" style="width: 130px;">
+            <td
+              class="py-4 text-right"
+              style="width: 130px;"
+            >
               <div class="shimmer-line w-60 ms-auto" />
             </td>
-            <td class="py-4 text-center" style="width: 160px;">
+            <td
+              class="py-4 text-center"
+              style="width: 160px;"
+            >
               <div class="shimmer-chip mx-auto" />
             </td>
           </tr>
@@ -448,56 +643,119 @@ onMounted(async () => {
     </VCard>
 
     <!-- ESTADO VACÍO -->
-    <VCard v-else-if="items.length === 0" class="rounded-xl border elevation-0 pa-10 text-center bg-surface">
-      <VAvatar size="72" color="primary" variant="tonal" class="mb-3">
-        <VIcon size="36" icon="ri-search-line" />
+    <VCard
+      v-else-if="items.length === 0"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface"
+    >
+      <VAvatar
+        size="72"
+        color="primary"
+        variant="tonal"
+        class="mb-3"
+      >
+        <VIcon
+          size="36"
+          icon="ri-search-line"
+        />
       </VAvatar>
-      <h3 class="text-h6 font-weight-bold mb-1">No se encontraron productos en el catálogo</h3>
-      <p class="text-body-2 text-medium-emphasis mb-4" style="max-width: 480px; margin: 0 auto;">
+      <h3 class="text-h6 font-weight-bold mb-1">
+        No se encontraron productos en el catálogo
+      </h3>
+      <p
+        class="text-body-2 text-medium-emphasis mb-4"
+        style="max-width: 480px; margin: 0 auto;"
+      >
         Prueba con otros términos de búsqueda o sube una nueva lista de precios para este distribuidor.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-upload-2-line" @click="isImportDialogVisible = true">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-upload-2-line"
+          @click="isImportDialogVisible = true"
+        >
           Importar Catálogo
         </VBtn>
       </div>
     </VCard>
 
     <!-- TABLA PRINCIPAL DE DATOS -->
-    <VCard v-else class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable hover class="distributor-catalog-table overflow-x-auto">
+    <VCard
+      v-else
+      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
+    >
+      <VTable
+        hover
+        class="distributor-catalog-table overflow-x-auto"
+      >
         <thead>
           <tr class="bg-grey-lighten-5">
-            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="width: 140px; min-width: 130px;"
+            >
               Código
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 280px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="min-width: 280px;"
+            >
               Descripción / Aplicación Vehicular
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 110px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="width: 130px; min-width: 110px;"
+            >
               Referencia
             </th>
-            <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 200px;">
+            <th
+              class="text-left font-weight-bold text-uppercase py-3"
+              style="min-width: 200px;"
+            >
               Categoría
             </th>
-            <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 110px;">
+            <th
+              class="text-right font-weight-bold text-uppercase py-3"
+              style="width: 130px; min-width: 110px;"
+            >
               Precio
             </th>
-            <th class="text-center font-weight-bold text-uppercase py-3" style="width: 160px; min-width: 140px;">
+            <th
+              class="text-center font-weight-bold text-uppercase py-3"
+              style="width: 160px; min-width: 140px;"
+            >
               Disponibilidad
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in items" :key="item.id" class="catalog-row">
+          <tr
+            v-for="item in items"
+            :key="item.id"
+            class="catalog-row"
+          >
             <!-- Código -->
-            <td class="py-3" style="white-space: nowrap;">
-              <div class="d-inline-flex align-center cursor-pointer code-copy-action text-primary"
-                title="Clic para copiar código" @click="copyToClipboard(item.code)">
-                <VIcon icon="ri-file-copy-line" size="16" class="me-1.5 copy-action-icon" />
+            <td
+              class="py-3"
+              style="white-space: nowrap;"
+            >
+              <div
+                class="d-inline-flex align-center cursor-pointer code-copy-action text-primary"
+                title="Clic para copiar código"
+                @click="copyToClipboard(item.code)"
+              >
+                <VIcon
+                  icon="ri-file-copy-line"
+                  size="16"
+                  class="me-1.5 copy-action-icon"
+                />
                 <span class="font-mono font-weight-bold text-body-2">
                   {{ item.code }}
                 </span>
@@ -506,18 +764,29 @@ onMounted(async () => {
 
             <!-- Descripción -->
             <td class="py-3">
-              <div class="font-weight-semibold text-high-emphasis text-body-2" :title="item.description">
+              <div
+                class="font-weight-semibold text-high-emphasis text-body-2"
+                :title="item.description"
+              >
                 {{ item.description }}
               </div>
             </td>
 
             <!-- Referencia -->
-            <td class="py-3" style="white-space: nowrap;">
-              <span v-if="item.reference"
-                class="font-mono text-caption px-2 py-0.5 rounded bg-slate-100 font-weight-bold text-slate-700">
+            <td
+              class="py-3"
+              style="white-space: nowrap;"
+            >
+              <span
+                v-if="item.reference"
+                class="font-mono text-caption px-2 py-0.5 rounded bg-slate-100 font-weight-bold text-slate-700"
+              >
                 {{ item.reference }}
               </span>
-              <span v-else class="text-disabled text-caption">-</span>
+              <span
+                v-else
+                class="text-disabled text-caption"
+              >-</span>
             </td>
 
             <!-- Categoría (Nombre de la categoría) -->
@@ -528,15 +797,24 @@ onMounted(async () => {
             </td>
 
             <!-- Precio -->
-            <td class="py-3 text-right" style="white-space: nowrap;">
+            <td
+              class="py-3 text-right"
+              style="white-space: nowrap;"
+            >
               <span class="font-weight-black font-mono text-body-1 text-emerald-700">
                 {{ formatCurrency(item.price) }}
               </span>
             </td>
 
             <!-- Disponibilidad (Estilo Status Cliente con punto) -->
-            <td class="py-3 text-center" style="white-space: nowrap;">
-              <div class="status-pill-clean" :class="getStockPillClass(item.stock_status)">
+            <td
+              class="py-3 text-center"
+              style="white-space: nowrap;"
+            >
+              <div
+                class="status-pill-clean"
+                :class="getStockPillClass(item.stock_status)"
+              >
                 <span class="status-dot" />
                 <span>{{ item.stock_status }}</span>
               </div>
@@ -550,13 +828,23 @@ onMounted(async () => {
         <div class="text-body-2 text-medium-emphasis">
           Mostrando <strong>{{ items.length }}</strong> de <strong>{{ totalItems }}</strong> productos
         </div>
-        <VPagination v-model="currentPage" :length="totalPages" rounded="circle" :total-visible="7" color="primary" />
+        <VPagination
+          v-model="currentPage"
+          :length="totalPages"
+          rounded="circle"
+          :total-visible="7"
+          color="primary"
+        />
       </div>
     </VCard>
 
     <!-- Modal de Importación -->
-    <DistributorCatalogImportDialog v-model:is-dialog-visible="isImportDialogVisible" :suppliers="suppliers"
-      :selected-supplier-id="selectedSupplierId" @imported="handleImported" />
+    <DistributorCatalogImportDialog
+      v-model:is-dialog-visible="isImportDialogVisible"
+      :suppliers="suppliers"
+      :selected-supplier-id="selectedSupplierId"
+      @imported="handleImported"
+    />
   </div>
 </template>
 

@@ -61,6 +61,7 @@ function formatFileSize(bytes) {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
@@ -80,6 +81,7 @@ const updatePreviews = files => {
 
     let url = null
     const cacheKey = fileObj instanceof Blob ? `${rawName}_${rawSize}_${fileObj.lastModified || 0}` : (item?.url || item?.file_path || `${rawName}_${index}`)
+
     activeKeys.add(cacheKey)
 
     if (urlCache.has(cacheKey)) {
@@ -122,7 +124,7 @@ watch(
   newFiles => {
     updatePreviews(newFiles)
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onUnmounted(() => {
@@ -178,7 +180,9 @@ const handleFileSelection = async rawFiles => {
     }
   } catch (err) {
     console.error('Error procesando archivos:', err)
+
     const combined = [...props.modelValue, ...validFiles]
+
     emit('update:modelValue', combined.slice(0, props.maxFiles))
   } finally {
     isCompressing.value = false
@@ -188,6 +192,7 @@ const handleFileSelection = async rawFiles => {
 const onFilesChosen = async event => {
   if (event.target.files && event.target.files.length > 0) {
     const files = event.target.files
+
     await handleFileSelection(files)
     event.target.value = '' // Reset input
   }
@@ -216,6 +221,7 @@ const onDrop = async event => {
 const removeFile = index => {
   if (props.disabled) return
   const current = [...props.modelValue]
+
   current.splice(index, 1)
   emit('update:modelValue', current)
 }
@@ -237,7 +243,7 @@ const openPreview = item => {
       class="d-none"
       :disabled="disabled"
       @change="onFilesChosen"
-    />
+    >
 
     <!-- Input oculto para captura directa de cámara en smartphones -->
     <input
@@ -248,7 +254,7 @@ const openPreview = item => {
       class="d-none"
       :disabled="disabled"
       @change="onFilesChosen"
-    />
+    >
 
     <!-- Cabecera del componente -->
     <div class="d-flex align-center justify-space-between mb-2">
@@ -342,7 +348,10 @@ const openPreview = item => {
         <div class="text-caption font-weight-medium text-high-emphasis">
           Arrastra comprobantes o <span class="text-primary font-weight-bold text-decoration-underline">examina tus archivos</span>
         </div>
-        <div class="text-caption text-medium-emphasis mt-0.5" style="font-size: 11px;">
+        <div
+          class="text-caption text-medium-emphasis mt-0.5"
+          style="font-size: 11px;"
+        >
           {{ hint }}
         </div>
       </div>
@@ -360,12 +369,22 @@ const openPreview = item => {
       @click="triggerFileInput"
     >
       <div class="d-flex align-center gap-2">
-        <VIcon icon="ri-add-circle-line" size="16" color="primary" />
-        <span class="text-caption font-weight-semibold text-primary" style="font-size: 11px;">
+        <VIcon
+          icon="ri-add-circle-line"
+          size="16"
+          color="primary"
+        />
+        <span
+          class="text-caption font-weight-semibold text-primary"
+          style="font-size: 11px;"
+        >
           Haz clic o arrastra para adjuntar más fotos / documentos
         </span>
       </div>
-      <span class="text-caption text-medium-emphasis font-weight-bold" style="font-size: 10px;">
+      <span
+        class="text-caption text-medium-emphasis font-weight-bold"
+        style="font-size: 10px;"
+      >
         {{ modelValue.length }}/{{ maxFiles }}
       </span>
     </div>
@@ -392,7 +411,7 @@ const openPreview = item => {
             loading="lazy"
             decoding="async"
             class="thumbnail-img"
-          />
+          >
           <div class="thumbnail-overlay">
             <VIcon
               icon="ri-zoom-in-line"
@@ -493,7 +512,7 @@ const openPreview = item => {
             :src="previewItem.url"
             :alt="previewItem.name"
             class="lightbox-img rounded elevation-2"
-          />
+          >
           <iframe
             v-else-if="previewItem.isPdf"
             :src="previewItem.url"

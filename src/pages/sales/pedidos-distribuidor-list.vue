@@ -41,6 +41,7 @@ const filteredPedidos = computed(() => {
   if (selectedStatus.value && selectedStatus.value !== 'all') {
     list = list.filter(p => p.estado === selectedStatus.value)
   }
+  
   return list
 })
 
@@ -160,6 +161,7 @@ const formatShortDate = dateString => {
   const day = String(date.getDate()).padStart(2, '0')
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const year = date.getFullYear()
+  
   return `${year}/${month}/${day}`
 }
 
@@ -493,8 +495,17 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-truck-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-truck-line"
+              size="26"
+            />
           </VAvatar>
           Pedidos a Distribuidor
         </h1>
@@ -525,14 +536,30 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
-            <VIcon icon="ri-file-list-3-line" size="24" />
+          <VAvatar
+            size="46"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Pedidos</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Pedidos
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">registrados</span>
             </div>
@@ -540,13 +567,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
-            <VIcon icon="ri-checkbox-circle-line" size="24" />
+          <VAvatar
+            size="46"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-checkbox-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Pedidos Completados</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Pedidos Completados
+            </div>
             <div class="text-h6 font-weight-bold text-success">
               {{ completedCount }} <span class="text-caption text-disabled font-weight-regular">entregados</span>
             </div>
@@ -554,13 +594,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-time-line" size="24" />
+          <VAvatar
+            size="46"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-time-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Pendientes de Entrega</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Pendientes de Entrega
+            </div>
             <div class="text-h6 font-weight-bold text-warning">
               {{ pendingCount }} <span class="text-caption text-disabled font-weight-regular">en gestión</span>
             </div>
@@ -574,7 +627,11 @@ onMounted(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Pedidos</span>
           </div>
 
@@ -590,8 +647,14 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
-          <VCol cols="12" md="6">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="search"
               label="Buscar pedidos"
@@ -607,7 +670,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VSelect
               v-model="selectedStatus"
               :items="statusOptions"
@@ -624,7 +691,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="startDate"
               type="date"
@@ -637,7 +708,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="endDate"
               type="date"
@@ -654,77 +729,383 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4" style="width: 150px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4"><div class="shimmer-line w-80 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-60 ms-auto" /></td>
-            <td class="py-4" style="width: 140px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 140px;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="loading">
+      <!-- Skeleton Móvil -->
+      <div class="d-md-none d-flex flex-column gap-3">
+        <VCard
+          v-for="n in 4"
+          :key="'mob-skel-ped-' + n"
+          class="mobile-pedido-card elevation-0 pa-4"
+        >
+          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+            <div
+              class="shimmer-line"
+              style="width: 80px; height: 16px;"
+            />
+            <div class="d-flex gap-1">
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+            </div>
+          </div>
+          <div class="d-flex align-center gap-3 mb-3">
+            <div
+              class="shimmer-circle"
+              style="width: 38px; height: 38px; border-radius: 8px;"
+            />
+            <div class="flex-grow-1">
+              <div
+                class="shimmer-line w-75 mb-2"
+                style="height: 16px;"
+              />
+              <div
+                class="shimmer-line w-40"
+                style="height: 12px;"
+              />
+            </div>
+          </div>
+          <div class="d-flex justify-space-between pt-2 border-t">
+            <div
+              class="shimmer-line"
+              style="width: 90px; height: 16px;"
+            />
+            <div
+              class="shimmer-chip"
+              style="width: 80px; height: 24px;"
+            />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 120px;"
+              >
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 150px;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-80 mb-2" /><div class="shimmer-line w-40" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 120px;"
+              >
+                <div class="shimmer-line w-60 ms-auto" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-chip mx-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 140px;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!filteredPedidos.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-truck-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-truck-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron pedidos
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Prueba cambiando el filtro de búsqueda o registra una nueva solicitud de repuestos.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFiltersClean">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFiltersClean"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-add-line" to="/sales/pedidos-distribuidor">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/sales/pedidos-distribuidor"
+        >
           Nuevo Pedido
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA MODERNA DE PEDIDOS -->
+    <!-- LISTADO DE PEDIDOS (MÓVIL Y ESCRITORIO) -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="pedidos-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="item in filteredPedidos"
+          :key="'mob-pedido-' + item.id"
+          class="mobile-pedido-card elevation-0"
+        >
+          <!-- Cabecera Móvil: N° Pedido + Fecha + Acciones Rápidas -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
+            <div class="d-flex align-center gap-2 min-w-0">
+              <span
+                class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
+                @click="viewPedidoDetails(item)"
+              >
+                #{{ String(item.id).padStart(5, '0') }}
+              </span>
+              <span class="text-caption text-disabled">•</span>
+              <span class="text-caption text-medium-emphasis text-no-wrap">
+                {{ formatDate(item.created_at) }}
+              </span>
+            </div>
+
+            <!-- Botones de Acción Móvil -->
+            <div class="d-flex align-center gap-1 flex-shrink-0">
+              <VBtn
+                size="x-small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Detalle"
+                :loading="viewLoading && selectedPedido?.id === item.id"
+                @click="viewPedidoDetails(item)"
+              />
+              <VBtn
+                size="x-small"
+                color="warning"
+                variant="tonal"
+                icon="ri-pencil-line"
+                title="Editar Pedido"
+                @click="editPedido(item)"
+              />
+              <VBtn
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+                icon="ri-more-2-line"
+                title="Más Opciones"
+              >
+                <VIcon
+                  icon="ri-more-2-line"
+                  size="16"
+                />
+                <VMenu
+                  activator="parent"
+                  transition="slide-y-transition"
+                  align="end"
+                  location="bottom end"
+                >
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-4 border"
+                    min-width="190"
+                  >
+                    <VListItem
+                      prepend-icon="ri-printer-line"
+                      title="Imprimir Pedido"
+                      class="text-info text-body-2"
+                      @click="printPedido(item.id)"
+                    />
+                    <VListItem
+                      prepend-icon="ri-file-pdf-line"
+                      title="Ver PDF (Sin Precios)"
+                      class="text-success text-body-2"
+                      @click="generateSinglePDF(item)"
+                    />
+                    <VDivider class="my-1" />
+                    <VListItem
+                      prepend-icon="ri-delete-bin-6-line"
+                      title="Eliminar Pedido"
+                      class="text-error text-body-2"
+                      @click="deletePedido(item)"
+                    />
+                  </VList>
+                </VMenu>
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Distribuidor Móvil -->
+          <div class="d-flex align-start gap-3 mb-2">
+            <VAvatar
+              size="38"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              class="elevation-0 flex-shrink-0 mt-0.5"
+            >
+              <VIcon
+                icon="ri-store-2-line"
+                size="20"
+              />
+            </VAvatar>
+            <div class="min-w-0 flex-grow-1">
+              <div
+                class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                :title="item.distribuidor?.name"
+              >
+                {{ item.distribuidor?.name || 'Distribuidor no especificado' }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Solicitado por: <span class="font-weight-medium text-high-emphasis">{{ item.usuario?.name || 'S/N' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pie Móvil: Total y Estado -->
+          <div class="d-flex align-center justify-space-between pt-1.5 border-t">
+            <div>
+              <span class="text-caption text-disabled me-1">Total:</span>
+              <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
+                {{ formatCurrency(item.total) }}
+              </span>
+            </div>
+
+            <!-- Estado (Menú interactivo) -->
+            <VMenu close-on-content-click>
+              <template #activator="{ props }">
+                <div
+                  v-bind="props"
+                  class="status-pill-clean cursor-pointer"
+                  :class="getStatusClass(item.estado)"
+                >
+                  <span class="status-dot" />
+                  <span>{{ getStatusInfo(item.estado).text }}</span>
+                  <VIcon
+                    icon="ri-arrow-down-s-line"
+                    size="14"
+                    class="ms-0.5 opacity-70"
+                  />
+                </div>
+              </template>
+              <VList
+                density="compact"
+                class="py-1 rounded-lg elevation-4 border"
+              >
+                <VListItem
+                  v-for="status in statusOptions.filter(s => s.value !== 'all')"
+                  :key="status.value"
+                  @click="updateStatus(item, status.value)"
+                >
+                  <template #prepend>
+                    <VIcon
+                      :icon="status.icon"
+                      :color="status.color"
+                      class="mr-2"
+                      size="18"
+                    />
+                  </template>
+                  <VListItemTitle class="text-body-2 font-weight-medium">
+                    {{ status.label }}
+                  </VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
+          </div>
+        </VCard>
+      </div>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="pedidos-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 120px;"
+              >
                 N° Pedido
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 160px;"
+              >
                 Fecha / Hora
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 240px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 240px;"
+              >
                 Distribuidor
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 160px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 160px;"
+              >
                 Solicitado Por
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 130px;"
+              >
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 160px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 160px;"
+              >
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 140px;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredPedidos" :key="item.id" class="pedido-table-row">
+            <tr
+              v-for="item in filteredPedidos"
+              :key="item.id"
+              class="pedido-table-row"
+            >
               <!-- ID Pedido -->
               <td class="py-3">
                 <div
@@ -736,24 +1117,53 @@ onMounted(() => {
               </td>
 
               <!-- Fecha -->
-              <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
-                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at) }}</span>
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                  style="white-space: nowrap;"
+                >
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="16"
+                    color="medium-emphasis"
+                    class="me-1 flex-shrink-0"
+                  />
+                  <span
+                    class="text-no-wrap font-weight-medium"
+                    style="white-space: nowrap;"
+                  >{{ formatDate(item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Distribuidor -->
               <td class="py-3">
                 <div class="d-flex align-center gap-3">
-                  <VAvatar size="36" color="primary" variant="tonal" rounded="lg" class="font-weight-bold elevation-0">
-                    <VIcon icon="ri-store-2-line" size="18" />
+                  <VAvatar
+                    size="36"
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="font-weight-bold elevation-0"
+                  >
+                    <VIcon
+                      icon="ri-store-2-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="item.distribuidor?.name || 'Distribuidor no especificado'">
+                    <div
+                      class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                      :title="item.distribuidor?.name || 'Distribuidor no especificado'"
+                    >
                       {{ item.distribuidor?.name || 'Distribuidor no especificado' }}
                     </div>
-                    <div v-if="item.distribuidor?.ruc" class="text-caption text-medium-emphasis font-mono">
+                    <div
+                      v-if="item.distribuidor?.ruc"
+                      class="text-caption text-medium-emphasis font-mono"
+                    >
                       RUC: {{ item.distribuidor.ruc }}
                     </div>
                   </div>
@@ -775,7 +1185,10 @@ onMounted(() => {
               </td>
 
               <!-- Estado (Pill limpia estilo Socios/Usuarios con punto) -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <VMenu close-on-content-click>
                   <template #activator="{ props }">
                     <div
@@ -785,19 +1198,33 @@ onMounted(() => {
                     >
                       <span class="status-dot" />
                       <span>{{ getStatusInfo(item.estado).text }}</span>
-                      <VIcon icon="ri-arrow-down-s-line" size="14" class="ms-0.5 opacity-70" />
+                      <VIcon
+                        icon="ri-arrow-down-s-line"
+                        size="14"
+                        class="ms-0.5 opacity-70"
+                      />
                     </div>
                   </template>
-                  <VList density="compact" class="py-1 rounded-lg elevation-4 border">
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-4 border"
+                  >
                     <VListItem
                       v-for="status in statusOptions.filter(s => s.value !== 'all')"
                       :key="status.value"
                       @click="updateStatus(item, status.value)"
                     >
                       <template #prepend>
-                        <VIcon :icon="status.icon" :color="status.color" class="mr-2" size="18" />
+                        <VIcon
+                          :icon="status.icon"
+                          :color="status.color"
+                          class="mr-2"
+                          size="18"
+                        />
                       </template>
-                      <VListItemTitle class="text-body-2 font-weight-medium">{{ status.label }}</VListItemTitle>
+                      <VListItemTitle class="text-body-2 font-weight-medium">
+                        {{ status.label }}
+                      </VListItemTitle>
                     </VListItem>
                   </VList>
                 </VMenu>
@@ -835,13 +1262,40 @@ onMounted(() => {
                     icon="ri-more-2-line"
                     title="Más Opciones"
                   >
-                    <VIcon icon="ri-more-2-line" size="18" />
-                    <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
-                        <VListItem prepend-icon="ri-printer-line" title="Imprimir Pedido" class="text-info text-body-2" @click="printPedido(item.id)" />
-                        <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF (Sin Precios)" class="text-success text-body-2" @click="generateSinglePDF(item)" />
+                    <VIcon
+                      icon="ri-more-2-line"
+                      size="18"
+                    />
+                    <VMenu
+                      activator="parent"
+                      transition="slide-y-transition"
+                      align="end"
+                      location="bottom end"
+                    >
+                      <VList
+                        density="compact"
+                        class="py-1 rounded-lg elevation-4 border"
+                        min-width="190"
+                      >
+                        <VListItem
+                          prepend-icon="ri-printer-line"
+                          title="Imprimir Pedido"
+                          class="text-info text-body-2"
+                          @click="printPedido(item.id)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-file-pdf-line"
+                          title="Ver PDF (Sin Precios)"
+                          class="text-success text-body-2"
+                          @click="generateSinglePDF(item)"
+                        />
                         <VDivider class="my-1" />
-                        <VListItem prepend-icon="ri-delete-bin-6-line" title="Eliminar Pedido" class="text-error text-body-2" @click="deletePedido(item)" />
+                        <VListItem
+                          prepend-icon="ri-delete-bin-6-line"
+                          title="Eliminar Pedido"
+                          class="text-error text-body-2"
+                          @click="deletePedido(item)"
+                        />
                       </VList>
                     </VMenu>
                   </VBtn>
@@ -1332,7 +1786,10 @@ onMounted(() => {
       persistent
       transition="dialog-bottom-transition"
     >
-      <VCard v-if="pedidoToDelete" class="custom-dialog-card elevation-12">
+      <VCard
+        v-if="pedidoToDelete"
+        class="custom-dialog-card elevation-12"
+      >
         <!-- Header Banner Primary (Color del sistema) -->
         <div class="custom-dialog-header-primary bg-primary text-white">
           <VBtn
@@ -1383,14 +1840,23 @@ onMounted(() => {
                 class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
                 style="background-color: #f8fafc;"
               >
-                <div v-if="pedidoToDelete.distribuidor?.name" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="pedidoToDelete.distribuidor?.name"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Distribuidor:</span>
-                  <span class="text-caption font-weight-bold text-slate-900 text-truncate" style="max-width: 220px;">
+                  <span
+                    class="text-caption font-weight-bold text-slate-900 text-truncate"
+                    style="max-width: 220px;"
+                  >
                     {{ pedidoToDelete.distribuidor.name }}
                   </span>
                 </div>
 
-                <div v-if="pedidoToDelete.distribuidor?.ruc" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="pedidoToDelete.distribuidor?.ruc"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">RUC:</span>
                   <span class="text-caption font-mono font-weight-medium">
                     {{ pedidoToDelete.distribuidor.ruc }}
@@ -1404,14 +1870,20 @@ onMounted(() => {
                   </span>
                 </div>
 
-                <div v-if="pedidoToDelete.usuario?.name" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="pedidoToDelete.usuario?.name"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Solicitado por:</span>
                   <span class="text-caption font-weight-medium text-slate-800">
                     {{ pedidoToDelete.usuario.name }}
                   </span>
                 </div>
 
-                <div v-if="pedidoToDelete.estado" class="d-flex justify-space-between align-center">
+                <div
+                  v-if="pedidoToDelete.estado"
+                  class="d-flex justify-space-between align-center"
+                >
                   <span class="text-caption text-medium-emphasis">Estado:</span>
                   <div
                     class="status-pill-clean"

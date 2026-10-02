@@ -268,9 +268,7 @@ const vehicleHeader = computed(() => {
                   >
                     COSTO COMPRA
                   </div>
-                  <div
-                    class="text-body-2 font-weight-medium text-medium-emphasis font-mono"
-                  >
+                  <div class="text-body-2 font-weight-medium text-medium-emphasis font-mono">
                     ${{ parseFloat(item.purchase_price || 0).toFixed(2) }}
                   </div>
                 </div>

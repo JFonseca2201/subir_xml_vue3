@@ -93,6 +93,7 @@ const filteredUserProfileList = computed(() => {
   const clean = userProfileList.filter(item => {
     if (item.type === 'divider') return true
     if (!item.permission) return true
+    
     return can(item.permission)
   })
 
@@ -101,6 +102,7 @@ const filteredUserProfileList = computed(() => {
       if (index === 0 || index === arr.length - 1) return false
       if (arr[index - 1]?.type === 'divider') return false
     }
+    
     return true
   })
 })

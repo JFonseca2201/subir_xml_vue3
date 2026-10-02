@@ -52,6 +52,7 @@ const isSaleCanceled = item => {
   if (item.deleted_at) return true
   const s = String(item.status || '').toLowerCase()
   const ps = String(item.payment_status || '').toLowerCase()
+  
   return s === 'canceled' || s === 'anulado' || s === 'anulada' || s === 'cancelled' || ps === 'canceled' || ps === 'anulado'
 }
 
@@ -129,39 +130,39 @@ const formatDate = dateString => {
 const getStatusColor = sale => {
   if (isSaleCanceled(sale)) return 'error'
   switch (sale?.payment_status) {
-    case 'paid': return 'success'
-    case 'partial': return 'warning'
-    case 'pending': return 'error'
-    default: return 'secondary'
+  case 'paid': return 'success'
+  case 'partial': return 'warning'
+  case 'pending': return 'error'
+  default: return 'secondary'
   }
 }
 
 const getStatusText = sale => {
   if (isSaleCanceled(sale)) return 'Anulada'
   switch (sale?.payment_status) {
-    case 'paid': return 'Pagado'
-    case 'partial': return 'Abonado'
-    case 'pending': return 'Pendiente'
-    default: return sale?.payment_status || 'N/A'
+  case 'paid': return 'Pagado'
+  case 'partial': return 'Abonado'
+  case 'pending': return 'Pendiente'
+  default: return sale?.payment_status || 'N/A'
   }
 }
 
 const getDocumentType = type => {
   switch (type) {
-    case 'invoice': return 'Factura'
-    case 'sale_note': return 'Nota de Venta'
-    case 'ticket': return 'Ticket'
-    default: return type ? type.toUpperCase() : 'DOCUMENTO'
+  case 'invoice': return 'Factura'
+  case 'sale_note': return 'Nota de Venta'
+  case 'ticket': return 'Ticket'
+  default: return type ? type.toUpperCase() : 'DOCUMENTO'
   }
 }
 
 const getDocumentTypeColor = (type, isCanceled) => {
   if (isCanceled) return 'error'
   switch (type) {
-    case 'invoice': return 'primary'
-    case 'sale_note': return 'secondary'
-    case 'ticket': return 'info'
-    default: return 'primary'
+  case 'invoice': return 'primary'
+  case 'sale_note': return 'secondary'
+  case 'ticket': return 'info'
+  default: return 'primary'
   }
 }
 
@@ -181,6 +182,7 @@ const handleCardClick = sale => {
       confirmButtonText: 'Entendido',
       confirmButtonColor: '#7367f0',
     })
+    
     return
   }
 
@@ -190,6 +192,7 @@ const handleCardClick = sale => {
 const generateSinglePDF = sale => {
   if (isSaleCanceled(sale)) {
     handleCardClick(sale)
+    
     return
   }
 
@@ -208,12 +211,25 @@ const generateSinglePDF = sale => {
 </script>
 
 <template>
-  <VDialog v-model="dialog" scrollable max-width="880" transition="dialog-bottom-transition">
-    <VCard class="custom-dialog-card history-dialog-card pa-0 elevation-8"
-      style="overflow: hidden; max-height: 85vh; display: flex; flex-direction: column;">
+  <VDialog
+    v-model="dialog"
+    scrollable
+    max-width="880"
+    transition="dialog-bottom-transition"
+  >
+    <VCard
+      class="custom-dialog-card history-dialog-card pa-0 elevation-8"
+      style="overflow: hidden; max-height: 85vh; display: flex; flex-direction: column;"
+    >
       <!-- Header Banner Primary (Estilo estándar de diálogos del sistema) -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-history-line" />
         </div>
@@ -227,30 +243,58 @@ const generateSinglePDF = sale => {
 
       <!-- Content Area -->
       <VCardText class="pa-0 position-relative d-flex flex-column flex-grow-1 overflow-hidden history-content-area">
-        <VProgressLinear v-if="loading" indeterminate color="primary" class="position-absolute"
-          style="top: 0; left: 0; right: 0; z-index: 10;" height="3" />
+        <VProgressLinear
+          v-if="loading"
+          indeterminate
+          color="primary"
+          class="position-absolute"
+          style="top: 0; left: 0; right: 0; z-index: 10;"
+          height="3"
+        />
 
         <!-- Summary Stats Banner (Skeleton & Active) -->
-        <div v-if="loading"
-          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
+        <div
+          v-if="loading"
+          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar"
+        >
           <div class="d-flex align-center gap-2">
-            <div class="shimmer-chip" style="width: 110px; height: 26px; border-radius: 9999px;" />
-            <div class="shimmer-chip" style="width: 95px; height: 26px; border-radius: 9999px;" />
+            <div
+              class="shimmer-chip"
+              style="width: 110px; height: 26px; border-radius: 9999px;"
+            />
+            <div
+              class="shimmer-chip"
+              style="width: 95px; height: 26px; border-radius: 9999px;"
+            />
           </div>
           <div class="d-flex align-center gap-2">
-            <div class="shimmer-line" style="width: 140px; height: 14px;" />
-            <div class="shimmer-line" style="width: 70px; height: 20px;" />
+            <div
+              class="shimmer-line"
+              style="width: 140px; height: 14px;"
+            />
+            <div
+              class="shimmer-line"
+              style="width: 70px; height: 20px;"
+            />
           </div>
         </div>
 
-        <div v-else-if="sales.length > 0"
-          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar">
+        <div
+          v-else-if="sales.length > 0"
+          class="pa-4 bg-surface border-b d-flex flex-wrap align-center justify-space-between gap-3 history-stats-bar"
+        >
           <div class="d-flex align-center gap-2">
-            <VChip size="small" class="status-pill-clean status-primary font-weight-bold">
+            <VChip
+              size="small"
+              class="status-pill-clean status-primary font-weight-bold"
+            >
               <span class="status-dot" />
               <span>{{ sales.length }} {{ sales.length === 1 ? 'Transacción' : 'Transacciones' }}</span>
             </VChip>
-            <VChip size="small" class="status-pill-clean status-paid font-weight-bold">
+            <VChip
+              size="small"
+              class="status-pill-clean status-paid font-weight-bold"
+            >
               <span class="status-dot" />
               <span>{{ paidCount }} Pagadas</span>
             </VChip>
@@ -265,35 +309,71 @@ const generateSinglePDF = sale => {
         <!-- History Items List / Scroll Area -->
         <div class="pa-4 pa-sm-6 flex-grow-1 overflow-y-auto history-list-scroll">
           <!-- Skeleton Loading State -->
-          <div v-if="loading" class="d-flex flex-column gap-3">
-            <VCard v-for="n in 3" :key="n" class="history-item-card rounded-xl border elevation-0">
+          <div
+            v-if="loading"
+            class="d-flex flex-column gap-3"
+          >
+            <VCard
+              v-for="n in 3"
+              :key="n"
+              class="history-item-card rounded-xl border elevation-0"
+            >
               <div class="d-flex flex-column flex-sm-row">
                 <!-- Left Tag / Type Column Skeleton -->
                 <div
                   class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
-                  style="min-width: 150px;">
-                  <div class="shimmer-chip mb-2" style="width: 75px; height: 20px;" />
-                  <div class="shimmer-line mb-2" style="width: 90px; height: 16px;" />
-                  <div class="shimmer-line" style="width: 80px; height: 12px;" />
+                  style="min-width: 150px;"
+                >
+                  <div
+                    class="shimmer-chip mb-2"
+                    style="width: 75px; height: 20px;"
+                  />
+                  <div
+                    class="shimmer-line mb-2"
+                    style="width: 90px; height: 16px;"
+                  />
+                  <div
+                    class="shimmer-line"
+                    style="width: 80px; height: 12px;"
+                  />
                 </div>
 
                 <!-- Middle Content Info Skeleton -->
                 <div class="pa-4 flex-grow-1 d-flex flex-column justify-center">
-                  <div class="shimmer-line mb-2" style="width: 120px; height: 11px;" />
+                  <div
+                    class="shimmer-line mb-2"
+                    style="width: 120px; height: 11px;"
+                  />
                   <div class="d-flex align-center gap-2">
-                    <div class="shimmer-button rounded-circle" style="width: 20px; height: 20px;" />
-                    <div class="shimmer-line" style="width: 55%; height: 16px;" />
+                    <div
+                      class="shimmer-button rounded-circle"
+                      style="width: 20px; height: 20px;"
+                    />
+                    <div
+                      class="shimmer-line"
+                      style="width: 55%; height: 16px;"
+                    />
                   </div>
                 </div>
 
                 <!-- Right Side Skeleton -->
                 <div
                   class="pa-4 d-flex flex-row flex-sm-column align-center justify-space-between justify-sm-center align-sm-end border-t border-sm-t-0 gap-2"
-                  style="min-width: 160px;">
-                  <div class="shimmer-line mb-2" style="width: 75px; height: 22px;" />
+                  style="min-width: 160px;"
+                >
+                  <div
+                    class="shimmer-line mb-2"
+                    style="width: 75px; height: 22px;"
+                  />
                   <div class="d-flex align-center gap-2">
-                    <div class="shimmer-chip" style="width: 75px; height: 24px;" />
-                    <div class="shimmer-button rounded-lg" style="width: 28px; height: 28px;" />
+                    <div
+                      class="shimmer-chip"
+                      style="width: 75px; height: 24px;"
+                    />
+                    <div
+                      class="shimmer-button rounded-lg"
+                      style="width: 28px; height: 28px;"
+                    />
                   </div>
                 </div>
               </div>
@@ -301,31 +381,51 @@ const generateSinglePDF = sale => {
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="sales.length === 0"
-            class="d-flex flex-column align-center justify-center py-12 text-center">
-            <VAvatar size="72" color="secondary" variant="tonal" class="mb-3 rounded-circle opacity-80">
-              <VIcon icon="ri-inbox-2-line" size="36" />
+          <div
+            v-else-if="sales.length === 0"
+            class="d-flex flex-column align-center justify-center py-12 text-center"
+          >
+            <VAvatar
+              size="72"
+              color="secondary"
+              variant="tonal"
+              class="mb-3 rounded-circle opacity-80"
+            >
+              <VIcon
+                icon="ri-inbox-2-line"
+                size="36"
+              />
             </VAvatar>
             <h4 class="text-h6 font-weight-bold text-high-emphasis mb-1">
               Sin registros en el historial
             </h4>
-            <p class="text-body-2 text-medium-emphasis mb-0" style="max-width: 380px;">
+            <p
+              class="text-body-2 text-medium-emphasis mb-0"
+              style="max-width: 380px;"
+            >
               Este {{ props.clientId ? 'cliente' : 'vehículo' }} aún no cuenta con facturas, notas de venta o servicios
               registrados.
             </p>
           </div>
 
           <!-- History Item Cards -->
-          <div v-else class="d-flex flex-column gap-3">
-            <VCard v-for="sale in sales" :key="sale.id"
+          <div
+            v-else
+            class="d-flex flex-column gap-3"
+          >
+            <VCard
+              v-for="sale in sales"
+              :key="sale.id"
               class="history-item-card rounded-xl border elevation-0 transition-swing cursor-pointer"
               :class="{ 'opacity-70 bg-grey-lighten-5': isSaleCanceled(sale) }"
-              @click="handleCardClick(sale)">
+              @click="handleCardClick(sale)"
+            >
               <div class="d-flex flex-column flex-sm-row">
                 <!-- Left Tag / Type Column -->
                 <div
                   class="history-card-tag pa-4 d-flex flex-column justify-center align-start align-sm-center border-b border-sm-b-0 border-sm-e"
-                  style="min-width: 150px;">
+                  style="min-width: 150px;"
+                >
                   <VChip
                     size="x-small"
                     class="status-pill-clean mb-1 font-weight-bold"
@@ -334,12 +434,18 @@ const generateSinglePDF = sale => {
                     <span class="status-dot" />
                     <span>{{ getDocumentType(sale.document_type) }}</span>
                   </VChip>
-                  <span class="text-subtitle-2 font-weight-bold text-high-emphasis"
-                    :class="{ 'text-decoration-line-through text-disabled': isSaleCanceled(sale) }">
+                  <span
+                    class="text-subtitle-2 font-weight-bold text-high-emphasis"
+                    :class="{ 'text-decoration-line-through text-disabled': isSaleCanceled(sale) }"
+                  >
                     #{{ sale.document_number || sale.id }}
                   </span>
                   <span class="text-caption text-medium-emphasis d-flex align-center mt-1">
-                    <VIcon icon="ri-calendar-line" size="13" class="me-1" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="13"
+                      class="me-1"
+                    />
                     {{ formatDate(sale.service_date || sale.created_at) }}
                   </span>
                 </div>
@@ -352,12 +458,22 @@ const generateSinglePDF = sale => {
                       <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold">
                         Vehículo
                       </div>
-                      <div v-if="sale.vehicle" class="d-flex align-center gap-1 mt-0.5">
-                        <VIcon icon="ri-car-line" size="16" color="info" />
+                      <div
+                        v-if="sale.vehicle"
+                        class="d-flex align-center gap-1 mt-0.5"
+                      >
+                        <VIcon
+                          icon="ri-car-line"
+                          size="16"
+                          color="info"
+                        />
                         <span class="font-weight-bold text-body-2 text-high-emphasis">{{ sale.vehicle.license_plate }}</span>
                         <span class="text-caption text-medium-emphasis">({{ getBrandNameById(sale.vehicle.brand) }} {{ sale.vehicle.model }})</span>
                       </div>
-                      <span v-else class="text-caption text-disabled">Venta directa / Sin vehículo</span>
+                      <span
+                        v-else
+                        class="text-caption text-disabled"
+                      >Venta directa / Sin vehículo</span>
                     </div>
 
                     <!-- Client info when browsing by vehicle -->
@@ -366,7 +482,11 @@ const generateSinglePDF = sale => {
                         Cliente / Propietario
                       </div>
                       <div class="d-flex align-center gap-1 mt-0.5">
-                        <VIcon icon="ri-user-3-line" size="16" color="primary" />
+                        <VIcon
+                          icon="ri-user-3-line"
+                          size="16"
+                          color="primary"
+                        />
                         <span class="font-weight-bold text-body-2 text-high-emphasis">
                           {{ sale.client?.full_name || sale.client?.name || 'Consumidor Final' }}
                         </span>
@@ -378,10 +498,13 @@ const generateSinglePDF = sale => {
                 <!-- Right Side: Total Amount, Status Chip & Action -->
                 <div
                   class="pa-4 d-flex flex-row flex-sm-column align-center justify-space-between justify-sm-center align-sm-end border-t border-sm-t-0 gap-2"
-                  style="min-width: 160px;">
+                  style="min-width: 160px;"
+                >
                   <div class="text-right">
-                    <div class="text-h6 font-weight-black leading-tight"
-                      :class="isSaleCanceled(sale) ? 'text-decoration-line-through text-disabled' : 'text-high-emphasis'">
+                    <div
+                      class="text-h6 font-weight-black leading-tight"
+                      :class="isSaleCanceled(sale) ? 'text-decoration-line-through text-disabled' : 'text-high-emphasis'"
+                    >
                       {{ formatCurrency(sale.total) }}
                     </div>
                   </div>
@@ -396,10 +519,23 @@ const generateSinglePDF = sale => {
                       <span>{{ getStatusText(sale) }}</span>
                     </VChip>
 
-                    <VBtn v-if="!isSaleCanceled(sale)" icon size="x-small" color="error" variant="tonal" class="rounded-lg"
-                      @click.stop="generateSinglePDF(sale)">
-                      <VIcon icon="ri-file-pdf-2-line" size="16" />
-                      <VTooltip activator="parent" location="top">
+                    <VBtn
+                      v-if="!isSaleCanceled(sale)"
+                      icon
+                      size="x-small"
+                      color="error"
+                      variant="tonal"
+                      class="rounded-lg"
+                      @click.stop="generateSinglePDF(sale)"
+                    >
+                      <VIcon
+                        icon="ri-file-pdf-2-line"
+                        size="16"
+                      />
+                      <VTooltip
+                        activator="parent"
+                        location="top"
+                      >
                         Ver y descargar PDF
                       </VTooltip>
                     </VBtn>
@@ -411,10 +547,18 @@ const generateSinglePDF = sale => {
         </div>
 
         <!-- Pagination Controls -->
-        <div v-if="totalPages > 1 && !loading" class="d-flex justify-center align-center py-3 bg-surface border-t"
-          style="flex-shrink: 0;">
-          <VPagination v-model="currentPage" :length="totalPages" rounded="circle" active-color="primary"
-            density="compact" />
+        <div
+          v-if="totalPages > 1 && !loading"
+          class="d-flex justify-center align-center py-3 bg-surface border-t"
+          style="flex-shrink: 0;"
+        >
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            active-color="primary"
+            density="compact"
+          />
         </div>
       </VCardText>
 
@@ -423,12 +567,22 @@ const generateSinglePDF = sale => {
       <!-- Dialog Action Footer -->
       <VCardActions class="pa-4 d-flex justify-space-between align-center bg-surface">
         <div class="text-caption text-medium-emphasis d-none d-sm-block">
-          <VIcon icon="ri-information-line" size="14" class="me-1" />
+          <VIcon
+            icon="ri-information-line"
+            size="14"
+            class="me-1"
+          />
           Haz clic en cualquier tarjeta para abrir el documento PDF
         </div>
 
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-bold ms-auto" height="40" @click="closeDialog">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-bold ms-auto"
+          height="40"
+          @click="closeDialog"
+        >
           Cerrar
         </VBtn>
       </VCardActions>

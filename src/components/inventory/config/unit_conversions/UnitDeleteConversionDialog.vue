@@ -58,6 +58,7 @@ const unitBaseName = computed(() => {
   if (props.unitSelected?.name) return props.unitSelected.name
   if (currentConversion.value.unit?.name) return currentConversion.value.unit.name
   if (currentConversion.value.unit_name) return currentConversion.value.unit_name
+  
   return 'Unidad Base'
 })
 
@@ -78,6 +79,7 @@ const deleteConversion = async () => {
   const conv = currentConversion.value
   if (!conv || !conv.id) {
     showNotification('No se ha especificado la conversión a eliminar', 'error')
+    
     return
   }
 

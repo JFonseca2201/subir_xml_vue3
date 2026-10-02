@@ -34,6 +34,7 @@ const emit = defineEmits([
 const isSriNetworkError = computed(() => {
   if (!props.errorMsg) return false
   const err = props.errorMsg.toLowerCase()
+  
   return (
     err.includes('curl') ||
     err.includes('timeout') ||
@@ -74,17 +75,27 @@ const onResend = () => {
 </script>
 
 <template>
-  <VDialog :model-value="isDialogVisible" max-width="620"
-    @update:model-value="val => emit('update:isDialogVisible', val)">
+  <VDialog
+    :model-value="isDialogVisible"
+    max-width="620"
+    @update:model-value="val => emit('update:isDialogVisible', val)"
+  >
     <VCard class="rounded-xl border border-error border-opacity-25 overflow-hidden">
       <VCardItem class="bg-error-lighten-5 pa-4">
         <template #prepend>
-          <VIcon icon="ri-alert-line" color="error" size="28" />
+          <VIcon
+            icon="ri-alert-line"
+            color="error"
+            size="28"
+          />
         </template>
         <VCardTitle class="text-h6 font-weight-bold text-error">
           Detalle de Respuesta SRI
         </VCardTitle>
-        <VCardSubtitle v-if="sale?.document_number" class="text-caption text-medium-emphasis">
+        <VCardSubtitle
+          v-if="sale?.document_number"
+          class="text-caption text-medium-emphasis"
+        >
           Factura {{ sale.document_number }}
         </VCardSubtitle>
       </VCardItem>
@@ -93,12 +104,17 @@ const onResend = () => {
         <p class="text-body-2 text-medium-emphasis mb-3">
           El Servicio de Rentas Internas (SRI) retornó la siguiente observación al procesar este comprobante:
         </p>
-        <div
-          class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border mb-4">
+        <div class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border mb-4">
           {{ errorMsg || 'Sin detalle de error registrado por el SRI.' }}
         </div>
 
-        <VAlert v-if="isSriNetworkError" type="warning" variant="tonal" border="start" class="rounded-lg">
+        <VAlert
+          v-if="isSriNetworkError"
+          type="warning"
+          variant="tonal"
+          border="start"
+          class="rounded-lg"
+        >
           <template #prepend>
             <VIcon icon="ri-wifi-off-line" />
           </template>

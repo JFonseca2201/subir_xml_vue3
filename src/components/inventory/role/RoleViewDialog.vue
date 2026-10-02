@@ -27,6 +27,7 @@ const filterOnlyActive = ref(true)
 const rolePermissions = computed(() => {
   if (!props.roleSelected) return []
   const perms = props.roleSelected.permissions_pluck || props.roleSelected.permissions || []
+  
   return perms.map(p => (typeof p === 'object' && p ? p.name || p.permiso : p))
 })
 
@@ -57,6 +58,7 @@ const modulesWithStatus = computed(() => {
 
     const matchModuleName = mod.name.toLowerCase().includes(query)
     const matchPermName = mod.allPerms.some(p => p.name.toLowerCase().includes(query) || p.permiso.toLowerCase().includes(query))
+    
     return matchModuleName || matchPermName
   })
 })
@@ -66,6 +68,7 @@ const getRoleColor = roleName => {
   if (name.includes('admin')) return 'warning'
   if (name.includes('vendedor') || name.includes('seller')) return 'success'
   if (name.includes('gerente') || name.includes('manager')) return 'primary'
+  
   return 'secondary'
 }
 
@@ -74,12 +77,14 @@ const getRoleIcon = roleName => {
   if (name.includes('admin')) return 'ri-vip-crown-line'
   if (name.includes('vendedor') || name.includes('seller')) return 'ri-shopping-cart-line'
   if (name.includes('gerente') || name.includes('manager')) return 'ri-briefcase-4-line'
+  
   return 'ri-shield-user-line'
 }
 
 const formatDate = dateStr => {
   if (!dateStr) return 'N/A'
   const d = new Date(dateStr.replace ? dateStr.replace(' ', 'T') : dateStr)
+  
   return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('es-EC', {
     year: 'numeric',
     month: 'long',

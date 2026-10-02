@@ -6,6 +6,7 @@ const userState = ref(null)
 function initUser() {
   try {
     const userStr = localStorage.getItem('user')
+
     userState.value = userStr ? JSON.parse(userStr) : null
   } catch (e) {
     console.error('Error parsing user from localStorage:', e)
@@ -37,6 +38,7 @@ export function usePermissions() {
     if (!userState.value) {
       initUser()
     }
+    
     return userState.value
   })
 

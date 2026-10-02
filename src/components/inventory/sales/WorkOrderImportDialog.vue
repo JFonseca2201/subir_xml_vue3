@@ -26,6 +26,7 @@ const loadReadyWorkOrders = async () => {
   isLoadingWorkOrders.value = true
   try {
     const response = await $api('work-orders/ready-to-invoice')
+
     readyWorkOrders.value = response?.data || []
   } catch (error) {
     console.error('Error al cargar órdenes listas:', error)
@@ -49,12 +50,14 @@ const formatOtNumber = order => {
   if (num.toUpperCase().startsWith('OT-') || num.toUpperCase().startsWith('OT')) {
     return num.toUpperCase()
   }
+  
   return `OT-${num}`
 }
 
 // Obtener nombre de la marca por ID o string
 const getBrandName = brand => {
   if (!brand) return ''
+  
   return vehicleBrands[brand] || vehicleBrands[String(brand)] || brand
 }
 
@@ -63,6 +66,7 @@ const getClientName = client => {
   if (!client) return 'Consumidor Final'
   if (client.full_name && client.full_name.trim()) return client.full_name.trim()
   const name = `${client.name || ''} ${client.surname || ''}`.trim()
+  
   return name || client.n_document || 'Cliente'
 }
 
@@ -78,6 +82,7 @@ const getVehicleDescription = vehicle => {
   const model = vehicle.model || ''
   const year = vehicle.year ? `(${vehicle.year})` : ''
   const color = vehicle.color ? `• ${vehicle.color}` : ''
+  
   return `${brand} ${model} ${year} ${color}`.trim() || 'Vehículo sin detalles'
 }
 
@@ -91,6 +96,7 @@ const getItemSubtotal = item => {
   const qty = parseFloat(item?.quantity) || 0
   const price = parseFloat(item?.unit_price || item?.price) || 0
   const discount = parseFloat(item?.discount) || 0
+  
   return qty * price - discount
 }
 
@@ -102,8 +108,10 @@ const formatDate = dateStr => {
     if (isNaN(d.getTime())) {
       const parts = String(dateStr).split(' ')[0].split('-')
       if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+      
       return dateStr
     }
+    
     return d.toLocaleDateString('es-EC', {
       day: '2-digit',
       month: 'short',
@@ -125,10 +133,12 @@ const formatCurrency = val => {
 // Calcular total estimado de la OT
 const calculateOrderTotal = order => {
   if (!order?.items || !Array.isArray(order.items)) return 0
+  
   return order.items.reduce((sum, item) => {
     const qty = parseFloat(item.quantity) || 0
     const price = parseFloat(item.unit_price || item.price) || 0
     const discount = parseFloat(item.discount) || 0
+    
     return sum + (qty * price - discount)
   }, 0)
 }
@@ -141,6 +151,7 @@ const calculateOrderAdvances = order => {
   if (Array.isArray(order.advances)) {
     return order.advances.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0)
   }
+  
   return 0
 }
 
@@ -239,15 +250,27 @@ const handleSelectOrder = order => {
               size="small"
               class="font-weight-bold"
             >
-              <VIcon icon="ri-check-double-line" size="14" class="me-1" />
+              <VIcon
+                icon="ri-check-double-line"
+                size="14"
+                class="me-1"
+              />
               {{ filteredWorkOrders.length }} {{ filteredWorkOrders.length === 1 ? 'orden lista' : 'órdenes listas' }}
             </VChip>
           </div>
         </div>
 
         <!-- Estado de Carga -->
-        <div v-if="isLoadingWorkOrders" class="text-center py-12 bg-white rounded-xl border-light">
-          <VProgressCircular indeterminate color="primary" size="52" width="4" />
+        <div
+          v-if="isLoadingWorkOrders"
+          class="text-center py-12 bg-white rounded-xl border-light"
+        >
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="52"
+            width="4"
+          />
           <p class="mt-4 text-body-1 font-weight-medium text-high-emphasis">
             Cargando órdenes de trabajo listas para facturar...
           </p>
@@ -261,8 +284,17 @@ const handleSelectOrder = order => {
           v-else-if="readyWorkOrders.length === 0"
           class="text-center py-12 px-4 bg-white rounded-xl border-light"
         >
-          <VAvatar size="64" color="primary" variant="tonal" class="mb-3">
-            <VIcon icon="ri-file-list-3-line" size="32" color="primary" />
+          <VAvatar
+            size="64"
+            color="primary"
+            variant="tonal"
+            class="mb-3"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="32"
+              color="primary"
+            />
           </VAvatar>
           <h4 class="text-h6 font-weight-bold text-high-emphasis">
             No hay órdenes de trabajo listas para facturar
@@ -277,7 +309,12 @@ const handleSelectOrder = order => {
           v-else-if="filteredWorkOrders.length === 0"
           class="text-center py-10 px-4 bg-white rounded-xl border-light"
         >
-          <VIcon icon="ri-search-eye-line" size="48" color="medium-emphasis" class="mb-2" />
+          <VIcon
+            icon="ri-search-eye-line"
+            size="48"
+            color="medium-emphasis"
+            class="mb-2"
+          />
           <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis">
             No se encontraron coincidencias
           </h4>
@@ -296,7 +333,10 @@ const handleSelectOrder = order => {
         </div>
 
         <!-- Lista de Tarjetas de Órdenes de Trabajo -->
-        <div v-else class="d-flex flex-column gap-3">
+        <div
+          v-else
+          class="d-flex flex-column gap-3"
+        >
           <div
             v-for="order in filteredWorkOrders"
             :key="order.id"
@@ -309,7 +349,11 @@ const handleSelectOrder = order => {
                 <!-- Fila Superior: Badge OT + Estado + Fecha -->
                 <div class="d-flex align-center flex-wrap gap-2">
                   <span class="ot-number-badge">
-                    <VIcon icon="ri-tools-line" size="13" class="me-1" />
+                    <VIcon
+                      icon="ri-tools-line"
+                      size="13"
+                      class="me-1"
+                    />
                     {{ formatOtNumber(order) }}
                   </span>
 
@@ -322,7 +366,11 @@ const handleSelectOrder = order => {
                   </span>
 
                   <span class="text-caption text-medium-emphasis d-flex align-center">
-                    <VIcon icon="ri-calendar-line" size="13" class="me-1" />
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="13"
+                      class="me-1"
+                    />
                     {{ formatDate(order.date || order.created_at || order.entry_date) }}
                   </span>
                 </div>
@@ -330,20 +378,44 @@ const handleSelectOrder = order => {
                 <!-- Fila Media: Cliente y Vehículo -->
                 <div class="d-flex flex-column flex-sm-row gap-3 gap-sm-5 mt-1">
                   <!-- Cliente -->
-                  <div class="d-flex align-start gap-2" style="min-width: 220px; max-width: 320px;">
-                    <VAvatar size="32" color="primary" variant="tonal" class="rounded-lg mt-1 shrink-0">
-                      <VIcon icon="ri-user-3-line" size="16" />
+                  <div
+                    class="d-flex align-start gap-2"
+                    style="min-width: 220px; max-width: 320px;"
+                  >
+                    <VAvatar
+                      size="32"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-lg mt-1 shrink-0"
+                    >
+                      <VIcon
+                        icon="ri-user-3-line"
+                        size="16"
+                      />
                     </VAvatar>
                     <div class="d-flex flex-column overflow-hidden">
-                      <span class="text-body-2 font-weight-bold text-slate-900 line-clamp-1" :title="getClientName(order.client)">
+                      <span
+                        class="text-body-2 font-weight-bold text-slate-900 line-clamp-1"
+                        :title="getClientName(order.client)"
+                      >
                         {{ getClientName(order.client) }}
                       </span>
                       <div class="d-flex align-center gap-2 text-caption text-medium-emphasis">
-                        <span v-if="order.client?.n_document" class="font-mono">
-                          <VIcon icon="ri-id-card-line" size="12" class="me-1" />
+                        <span
+                          v-if="order.client?.n_document"
+                          class="font-mono"
+                        >
+                          <VIcon
+                            icon="ri-id-card-line"
+                            size="12"
+                            class="me-1"
+                          />
                           {{ order.client?.n_document }}
                         </span>
-                        <span v-if="order.client?.phone" class="text-truncate">
+                        <span
+                          v-if="order.client?.phone"
+                          class="text-truncate"
+                        >
                           • {{ order.client?.phone }}
                         </span>
                       </div>
@@ -356,11 +428,21 @@ const handleSelectOrder = order => {
                       {{ getVehiclePlate(order.vehicle) }}
                     </div>
                     <div class="d-flex flex-column overflow-hidden">
-                      <span class="text-body-2 font-weight-semibold text-slate-800 line-clamp-1" :title="getVehicleDescription(order.vehicle)">
+                      <span
+                        class="text-body-2 font-weight-semibold text-slate-800 line-clamp-1"
+                        :title="getVehicleDescription(order.vehicle)"
+                      >
                         {{ getVehicleDescription(order.vehicle) }}
                       </span>
-                      <span v-if="order.mileage" class="text-caption text-medium-emphasis font-mono">
-                        <VIcon icon="ri-dashboard-3-line" size="12" class="me-1" />
+                      <span
+                        v-if="order.mileage"
+                        class="text-caption text-medium-emphasis font-mono"
+                      >
+                        <VIcon
+                          icon="ri-dashboard-3-line"
+                          size="12"
+                          class="me-1"
+                        />
                         {{ Number(order.mileage).toLocaleString() }} km
                       </span>
                     </div>
@@ -368,9 +450,16 @@ const handleSelectOrder = order => {
                 </div>
 
                 <!-- Fila Inferior: Lista Limpia y Estructurada de Ítems / Servicios -->
-                <div v-if="order.items && order.items.length > 0" class="ot-items-box rounded-lg pa-2 mt-1">
+                <div
+                  v-if="order.items && order.items.length > 0"
+                  class="ot-items-box rounded-lg pa-2 mt-1"
+                >
                   <div class="d-flex align-center gap-1 mb-1">
-                    <VIcon icon="ri-shopping-bag-3-line" size="13" color="primary" />
+                    <VIcon
+                      icon="ri-shopping-bag-3-line"
+                      size="13"
+                      color="primary"
+                    />
                     <span class="text-caption font-weight-bold text-slate-700">
                       {{ order.items.length }} {{ order.items.length === 1 ? 'producto / servicio incluido' : 'productos / servicios incluidos' }}:
                     </span>
@@ -384,7 +473,10 @@ const handleSelectOrder = order => {
                     >
                       <div class="d-flex align-center gap-2 overflow-hidden flex-grow-1">
                         <span class="ot-item-qty">{{ item.quantity }}x</span>
-                        <span class="ot-item-name text-truncate" :title="getItemDescription(item)">
+                        <span
+                          class="ot-item-name text-truncate"
+                          :title="getItemDescription(item)"
+                        >
                           {{ getItemDescription(item) }}
                         </span>
                       </div>
@@ -393,7 +485,10 @@ const handleSelectOrder = order => {
                       </span>
                     </div>
 
-                    <div v-if="order.items.length > 2" class="text-caption text-primary font-weight-medium mt-1">
+                    <div
+                      v-if="order.items.length > 2"
+                      class="text-caption text-primary font-weight-medium mt-1"
+                    >
                       + {{ order.items.length - 2 }} más en esta orden
                     </div>
                   </div>
@@ -401,12 +496,18 @@ const handleSelectOrder = order => {
               </div>
 
               <!-- Bloque Lateral Derecho: Total, Abono y Botón Importar -->
-              <div class="d-flex flex-row flex-md-column align-center align-md-end justify-space-between gap-2 shrink-0 pt-2 pt-md-0 border-top-md-0 border-t-sm" style="min-width: 150px;">
+              <div
+                class="d-flex flex-row flex-md-column align-center align-md-end justify-space-between gap-2 shrink-0 pt-2 pt-md-0 border-top-md-0 border-t-sm"
+                style="min-width: 150px;"
+              >
                 <div class="d-flex flex-column align-start align-md-end text-end">
                   <span class="text-caption text-medium-emphasis font-weight-medium">
                     Total: <strong class="text-slate-800 font-mono">{{ formatCurrency(calculateOrderTotal(order)) }}</strong>
                   </span>
-                  <div v-if="calculateOrderAdvances(order) > 0" class="d-flex flex-column align-end mt-0.5">
+                  <div
+                    v-if="calculateOrderAdvances(order) > 0"
+                    class="d-flex flex-column align-end mt-0.5"
+                  >
                     <span class="text-caption font-weight-bold text-emerald-700">
                       Abono: -{{ formatCurrency(calculateOrderAdvances(order)) }}
                     </span>

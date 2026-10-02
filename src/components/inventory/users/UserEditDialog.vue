@@ -203,6 +203,7 @@ const loadUserData = () => {
     if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
     const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || ''
     const clean = avatar.replace(/^\/?storage\/?/, '')
+    
     return `${base}/storage/${clean}`
   }
 

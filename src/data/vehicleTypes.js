@@ -73,6 +73,7 @@ export const getVehicleUsageTypeOptions = () => {
 
 export const getVehicleUsageTypeLabel = value => {
   const usage = vehicleUsageTypes.find(u => u.value === value)
+  
   return usage ? usage.title : (value ? String(value).toUpperCase() : 'Particular')
 }
 

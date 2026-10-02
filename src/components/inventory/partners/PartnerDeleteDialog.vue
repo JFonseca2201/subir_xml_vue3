@@ -95,9 +95,7 @@ const onDelete = () => {
               />
               Identificación:
             </span>
-            <span
-              class="text-body-2 font-weight-bold text-high-emphasis font-mono"
-            >
+            <span class="text-body-2 font-weight-bold text-high-emphasis font-mono">
               {{ props.partnerSelected.identification || props.partnerSelected.dni || props.partnerSelected.n_document || 'N/A' }}
             </span>
           </div>

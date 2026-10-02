@@ -36,6 +36,7 @@ const getCurrentMonthValue = () => {
   const now = new Date()
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
+  
   return `${year}-${month}`
 }
 
@@ -56,10 +57,22 @@ const form = ref({
 // Opciones de Meses (últimos 12 meses, actual y 2 futuros)
 const monthOptions = computed(() => {
   const options = []
+
   const monthNames = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
   ]
+
   const today = new Date()
 
   for (let i = 2; i >= -12; i--) {
@@ -68,8 +81,10 @@ const monthOptions = computed(() => {
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const value = `${year}-${month}`
     const title = `${monthNames[d.getMonth()]} ${year}`
+
     options.push({ title, value })
   }
+  
   return options
 })
 
@@ -108,6 +123,7 @@ const formatCurrency = value => {
 // Notificación Toast
 const showToast = (message, type = 'info') => {
   const toast = document.createElement('div')
+
   toast.className = `toast toast-${type}`
   toast.textContent = message
   toast.style.cssText = `
@@ -138,6 +154,7 @@ const showToast = (message, type = 'info') => {
 const loadEmployees = async () => {
   try {
     const response = await $api('employees')
+
     employees.value = response.employees?.map(emp => ({
       ...emp,
       name: `${emp.first_name} ${emp.last_name}`.trim(),
@@ -173,9 +190,11 @@ const transformAccounts = accs => {
 const loadAccounts = async () => {
   try {
     const response = await $api('accounts')
+    
     return transformAccounts(response)
   } catch (error) {
     console.error('Error al cargar cuentas:', error)
+    
     return []
   }
 }
@@ -184,6 +203,7 @@ const loadAccounts = async () => {
 const checkMonthStatus = async () => {
   if (!form.value.employee_id || !form.value.payment_month) {
     monthPaidInfo.value = null
+    
     return
   }
 
@@ -193,7 +213,7 @@ const checkMonthStatus = async () => {
       params: {
         employee_id: form.value.employee_id,
         month: form.value.payment_month,
-      }
+      },
     })
 
     if (response.is_paid) {
@@ -250,6 +270,7 @@ const closeDialog = () => {
 const handleSubmit = async () => {
   if (monthPaidInfo.value?.is_paid) {
     showToast('No se puede registrar el pago porque este mes ya fue liquidado.', 'error')
+    
     return
   }
 
@@ -260,6 +281,7 @@ const handleSubmit = async () => {
 
   try {
     const formData = new FormData()
+
     formData.append('employee_id', form.value.employee_id)
     formData.append('payment_month', form.value.payment_month)
     formData.append('account_id', form.value.account_id)
@@ -292,14 +314,17 @@ const handleSubmit = async () => {
       if (errorData.error === 'month_already_paid') {
         showToast(errorData.message, 'error')
         monthPaidInfo.value = { is_paid: true, message: errorData.message }
+        
         return
       }
       if (errorData.message && errorData.message.includes('Saldo insuficiente')) {
         showToast('Saldo insuficiente en la cuenta seleccionada.', 'error')
+        
         return
       }
       if (errorData.message) {
         showToast(errorData.message, 'error')
+        
         return
       }
     }
@@ -392,27 +417,78 @@ onMounted(async () => {
         </p>
       </div>
 
-      <VCardText class="pa-4" style="overflow-x: hidden;">
+      <VCardText
+        class="pa-4"
+        style="overflow-x: hidden;"
+      >
         <!-- Skeleton Loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-2">
+        <div
+          v-if="isLoadingData"
+          class="py-2"
+        >
           <VRow class="ma-0">
-            <VCol cols="12" md="6" class="pa-2">
-              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
             </VCol>
-            <VCol cols="12" md="6" class="pa-2">
-              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
             </VCol>
-            <VCol cols="12" class="pa-2">
-              <VSkeletonLoader type="card" height="120" class="rounded-lg mb-2" />
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="card"
+                height="120"
+                class="rounded-lg mb-2"
+              />
             </VCol>
-            <VCol cols="12" md="6" class="pa-2">
-              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
             </VCol>
-            <VCol cols="12" md="6" class="pa-2">
-              <VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" />
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
             </VCol>
-            <VCol cols="12" class="pa-2">
-              <VSkeletonLoader type="article" class="rounded-lg" />
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
+              <VSkeletonLoader
+                type="article"
+                class="rounded-lg"
+              />
             </VCol>
           </VRow>
         </div>
@@ -424,7 +500,11 @@ onMounted(async () => {
         >
           <VRow class="ma-0">
             <!-- 1. Selección de Empleado -->
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VSelect
                 v-model="form.employee_id"
                 :items="employees"
@@ -436,7 +516,10 @@ onMounted(async () => {
                 required
               >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
                     ri-user-follow-line
                   </VIcon>
                 </template>
@@ -444,7 +527,11 @@ onMounted(async () => {
             </VCol>
 
             <!-- 2. Selección de Mes de Pago -->
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VSelect
                 v-model="form.payment_month"
                 :items="monthOptions"
@@ -457,7 +544,10 @@ onMounted(async () => {
                 required
               >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
                     ri-calendar-check-line
                   </VIcon>
                 </template>
@@ -465,7 +555,11 @@ onMounted(async () => {
             </VCol>
 
             <!-- ALERTA DE MES YA PAGADO (BLOQUEO) -->
-            <VCol v-if="monthPaidInfo?.is_paid" cols="12" class="pa-2">
+            <VCol
+              v-if="monthPaidInfo?.is_paid"
+              cols="12"
+              class="pa-2"
+            >
               <VAlert
                 type="error"
                 variant="tonal"
@@ -474,7 +568,10 @@ onMounted(async () => {
               >
                 <template #title>
                   <div class="d-flex align-center gap-2 font-weight-black text-subtitle-1">
-                    <VIcon icon="ri-lock-2-line" size="22" />
+                    <VIcon
+                      icon="ri-lock-2-line"
+                      size="22"
+                    />
                     Sueldo Ya Liquidado para este Período
                   </div>
                 </template>
@@ -482,13 +579,28 @@ onMounted(async () => {
                   {{ monthPaidInfo.message }}
                 </div>
                 <div class="d-flex align-center gap-3 mt-3 flex-wrap">
-                  <VChip color="error" size="small" variant="flat" class="font-weight-bold">
+                  <VChip
+                    color="error"
+                    size="small"
+                    variant="flat"
+                    class="font-weight-bold"
+                  >
                     Pago #{{ monthPaidInfo.existing_payment?.id }}
                   </VChip>
-                  <VChip color="slate" size="small" variant="outlined" class="font-weight-medium">
+                  <VChip
+                    color="slate"
+                    size="small"
+                    variant="outlined"
+                    class="font-weight-medium"
+                  >
                     Fecha: {{ monthPaidInfo.existing_payment?.payment_date }}
                   </VChip>
-                  <VChip color="success" size="small" variant="tonal" class="font-weight-bold">
+                  <VChip
+                    color="success"
+                    size="small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
                     Neto Pagado: {{ formatCurrency(monthPaidInfo.existing_payment?.amount) }}
                   </VChip>
                 </div>
@@ -499,23 +611,40 @@ onMounted(async () => {
             </VCol>
 
             <!-- DESGLOSE FINANCIERO (ROL DE PAGOS EN TIEMPO REAL) -->
-            <VCol v-if="form.employee_id && !monthPaidInfo?.is_paid" cols="12" class="pa-2">
+            <VCol
+              v-if="form.employee_id && !monthPaidInfo?.is_paid"
+              cols="12"
+              class="pa-2"
+            >
               <VCard class="pa-4 rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="d-flex align-center justify-space-between mb-3 border-b pb-2">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-calculator-line" color="primary" size="20" />
+                    <VIcon
+                      icon="ri-calculator-line"
+                      color="primary"
+                      size="20"
+                    />
                     <span class="text-subtitle-2 font-weight-bold text-slate-800">
                       Liquidación de Haberes - Rol de Pagos
                     </span>
                   </div>
-                  <VChip color="primary" size="small" variant="tonal" class="font-weight-bold">
+                  <VChip
+                    color="primary"
+                    size="small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
                     {{ monthOptions.find(m => m.value === form.payment_month)?.title || form.payment_month }}
                   </VChip>
                 </div>
 
                 <!-- 3 Tarjetas de Resumen KPI Interno -->
                 <VRow class="ma-0 text-center mb-3">
-                  <VCol cols="12" sm="4" class="pa-1">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                    class="pa-1"
+                  >
                     <div class="pa-3 rounded-lg bg-slate-50 border border-slate-200">
                       <div class="text-caption text-medium-emphasis font-weight-medium">
                         Sueldo Base (A)
@@ -525,7 +654,11 @@ onMounted(async () => {
                       </div>
                     </div>
                   </VCol>
-                  <VCol cols="12" sm="4" class="pa-1">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                    class="pa-1"
+                  >
                     <div class="pa-3 rounded-lg bg-red-lighten-5 border border-red-200">
                       <div class="text-caption text-error font-weight-medium">
                         Adelantos a Deducir (B)
@@ -535,7 +668,11 @@ onMounted(async () => {
                       </div>
                     </div>
                   </VCol>
-                  <VCol cols="12" sm="4" class="pa-1">
+                  <VCol
+                    cols="12"
+                    sm="4"
+                    class="pa-1"
+                  >
                     <div class="pa-3 rounded-lg bg-green-lighten-5 border border-green-300">
                       <div class="text-caption text-success font-weight-bold">
                         Líquido a Pagar (A - B)
@@ -548,13 +685,24 @@ onMounted(async () => {
                 </VRow>
 
                 <!-- Detalle de Adelantos Descontados -->
-                <div v-if="pendingAdvances.length > 0" class="mt-2">
+                <div
+                  v-if="pendingAdvances.length > 0"
+                  class="mt-2"
+                >
                   <div class="text-caption font-weight-bold text-slate-700 mb-1 d-flex align-center gap-1">
-                    <VIcon icon="ri-file-list-2-line" size="14" color="warning" />
+                    <VIcon
+                      icon="ri-file-list-2-line"
+                      size="14"
+                      color="warning"
+                    />
                     Detalle de Adelantos que serán liquidados en este pago:
                   </div>
                   <div class="rounded-lg border border-slate-200 overflow-hidden">
-                    <VTable density="compact" class="text-caption" style="width: 100%;">
+                    <VTable
+                      density="compact"
+                      class="text-caption"
+                      style="width: 100%;"
+                    >
                       <thead>
                         <tr class="bg-slate-100">
                           <th class="text-left font-weight-bold">
@@ -569,7 +717,10 @@ onMounted(async () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="adv in pendingAdvances" :key="adv.id">
+                        <tr
+                          v-for="adv in pendingAdvances"
+                          :key="adv.id"
+                        >
                           <td>{{ adv.advance_date }}</td>
                           <td>{{ adv.reason || adv.description || 'Adelanto de sueldo' }}</td>
                           <td class="text-right font-weight-bold text-error">
@@ -580,14 +731,21 @@ onMounted(async () => {
                     </VTable>
                   </div>
                 </div>
-                <div v-else class="text-caption text-medium-emphasis text-center py-1">
+                <div
+                  v-else
+                  class="text-caption text-medium-emphasis text-center py-1"
+                >
                   <em>No registra adelantos pendientes de descuento para este empleado.</em>
                 </div>
               </VCard>
             </VCol>
 
             <!-- 3. Método de Pago y Cuenta -->
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VSelect
                 v-model="form.payment_method"
                 :items="paymentMethods"
@@ -600,14 +758,21 @@ onMounted(async () => {
                 required
               >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
                     ri-bank-card-line
                   </VIcon>
                 </template>
               </VSelect>
             </VCol>
 
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VSelect
                 v-model="form.account_id"
                 :items="filteredAccounts"
@@ -620,12 +785,18 @@ onMounted(async () => {
                 required
               >
                 <template #prepend-inner>
-                  <VIcon color="primary" size="20">
+                  <VIcon
+                    color="primary"
+                    size="20"
+                  >
                     {{ form.payment_method === 'EFECTIVO' ? 'ri-money-dollar-circle-line' : 'ri-bank-line' }}
                   </VIcon>
                 </template>
                 <template #item="{ props, item }">
-                  <VListItem v-bind="props" :title="undefined">
+                  <VListItem
+                    v-bind="props"
+                    :title="undefined"
+                  >
                     <template #prepend>
                       <VAvatar
                         size="30"
@@ -654,7 +825,11 @@ onMounted(async () => {
             </VCol>
 
             <!-- 4. Fecha de Pago y Referencia -->
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VTextField
                 v-model="form.payment_date"
                 label="Fecha de Emisión / Pago"
@@ -665,7 +840,11 @@ onMounted(async () => {
               />
             </VCol>
 
-            <VCol cols="12" md="6" class="pa-2">
+            <VCol
+              cols="12"
+              md="6"
+              class="pa-2"
+            >
               <VTextField
                 v-model="form.reference"
                 label="Nº Documento / Transferencia (Opcional)"
@@ -673,7 +852,10 @@ onMounted(async () => {
                 :disabled="monthPaidInfo?.is_paid"
               >
                 <template #prepend-inner>
-                  <VIcon color="secondary" size="20">
+                  <VIcon
+                    color="secondary"
+                    size="20"
+                  >
                     ri-hashtag
                   </VIcon>
                 </template>
@@ -681,7 +863,10 @@ onMounted(async () => {
             </VCol>
 
             <!-- 5. Observaciones -->
-            <VCol cols="12" class="pa-2">
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
               <VTextarea
                 v-model="form.description"
                 label="Observaciones o Notas del Rol (Opcional)"
@@ -692,7 +877,10 @@ onMounted(async () => {
             </VCol>
 
             <!-- 6. Adjuntar Comprobantes -->
-            <VCol cols="12" class="pa-2">
+            <VCol
+              cols="12"
+              class="pa-2"
+            >
               <ReceiptUploader
                 v-model="receiptFiles"
                 label="Comprobante(s) de Pago / Rol (Foto / PDF)"

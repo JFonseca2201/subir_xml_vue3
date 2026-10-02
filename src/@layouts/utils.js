@@ -38,16 +38,19 @@ export const resolveNavLinkRouteName = (link, router) => {
     if (link.to.startsWith('/')) {
       try {
         const resolved = router.resolve(link.to)
+        
         return resolved?.name || link.to
       } catch (e) {
         return link.to
       }
     }
+    
     return link.to
   }
   
   try {
     const resolved = router.resolve(link.to)
+    
     return resolved?.name || null
   } catch (e) {
     return null

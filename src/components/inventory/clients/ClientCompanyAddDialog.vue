@@ -238,6 +238,7 @@ const checkDocument = async (force = false) => {
     isClientExisting.value = false
     matchedClient.value = null
     lastCheckedDocument.value = ''
+    
     return
   }
 
@@ -265,6 +266,7 @@ const checkDocument = async (force = false) => {
       params: { search: doc },
       signal: checkDocCompanyAbortController.signal,
     })
+
     const fetchedClients = Array.isArray(resp.clients) ? resp.clients : (Array.isArray(resp.data) ? resp.data : [])
 
     const match = fetchedClients.find(c => String(c.n_document).trim() === String(doc).trim())
@@ -312,6 +314,7 @@ const selectExistingClient = () => {
 const saveClient = async () => {
   if (isClientExisting.value && matchedClient.value) {
     selectExistingClient()
+    
     return
   }
   if (clientForm.value.n_document) {
@@ -365,6 +368,7 @@ const saveClient = async () => {
         emit('update:isDialogVisible', false)
 
         const serverData = resp.data || resp.client || resp
+
         const updatedData = {
           ...serverData,
           id: serverData?.id || serverData?.client?.id,
@@ -507,6 +511,7 @@ const districts = ref([])
 const loadRegions = async () => {
   try {
     const resp = await $api('geographic/regions', { method: 'GET' })
+
     regions.value = resp
   } catch (e) {
     console.error(e)
@@ -517,6 +522,7 @@ watch(() => clientForm.value.ubigeo_region, async newVal => {
   if (newVal) {
     try {
       const resp = await $api(`geographic/provinces/${newVal}`, { method: 'GET' })
+
       provinces.value = resp
       clientForm.value.region = regions.value.find(r => r.id === newVal)?.name || ''
     } catch (e) {
@@ -535,6 +541,7 @@ watch(() => clientForm.value.ubigeo_provincia, async newVal => {
   if (newVal) {
     try {
       const resp = await $api(`geographic/cities/${newVal}`, { method: 'GET' })
+
       districts.value = resp
       clientForm.value.provincia = provinces.value.find(p => p.id === newVal)?.name || ''
     } catch (e) {
@@ -600,18 +607,36 @@ onMounted(() => {
         >
           <VRow>
             <!-- 👉 Sección 1: Identificación y RUC -->
-            <VCol cols="12" class="pb-1">
+            <VCol
+              cols="12"
+              class="pb-1"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-shield-user-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-shield-user-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   1. Identificación Tributaria
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.type_document"
                 :items="typeDocumentOptions"
@@ -625,7 +650,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="8" class="py-2">
+            <VCol
+              cols="12"
+              sm="8"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.n_document"
                 label="Número de RUC / Documento *"
@@ -647,7 +676,11 @@ onMounted(() => {
             </VCol>
 
             <!-- 👉 Banner de Empresa Existente -->
-            <VCol v-if="isClientExisting && matchedClient" cols="12" class="py-1">
+            <VCol
+              v-if="isClientExisting && matchedClient"
+              cols="12"
+              class="py-1"
+            >
               <VAlert
                 type="info"
                 variant="tonal"
@@ -657,7 +690,11 @@ onMounted(() => {
                 <div class="d-flex flex-column flex-sm-row align-sm-center justify-space-between gap-3">
                   <div>
                     <div class="font-weight-bold text-body-1 text-primary d-flex align-center gap-1">
-                      <VIcon icon="ri-checkbox-circle-fill" size="18" color="success" />
+                      <VIcon
+                        icon="ri-checkbox-circle-fill"
+                        size="18"
+                        color="success"
+                      />
                       Empresa ya registrada en el sistema
                     </div>
                     <div class="text-caption text-medium-emphasis mt-0.5">
@@ -678,28 +715,55 @@ onMounted(() => {
               </VAlert>
             </VCol>
 
-            <VCol v-else-if="!isDocumentChecked && !clientForm.n_document" cols="12" class="py-0">
+            <VCol
+              v-else-if="!isDocumentChecked && !clientForm.n_document"
+              cols="12"
+              class="py-0"
+            >
               <div class="text-caption text-medium-emphasis ms-1 mb-2 d-flex align-center gap-1">
-                <VIcon icon="ri-information-line" size="14" color="info" />
+                <VIcon
+                  icon="ri-information-line"
+                  size="14"
+                  color="info"
+                />
                 Ingresa el número de RUC para verificar si la empresa ya existe o registrarla.
               </div>
             </VCol>
 
-            <VCol cols="12"><VDivider class="my-1" /></VCol>
+            <VCol cols="12">
+              <VDivider class="my-1" />
+            </VCol>
 
             <!-- 👉 Sección 2: Datos de la Empresa -->
-            <VCol cols="12" class="pb-1 pt-2">
+            <VCol
+              cols="12"
+              class="pb-1 pt-2"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-building-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-building-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   2. Datos de la Empresa
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" class="py-2">
+            <VCol
+              cols="12"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.full_name"
                 label="Razón Social / Nombre Completo *"
@@ -715,7 +779,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.phone"
                 label="Teléfono de Contacto"
@@ -731,7 +799,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.email"
                 label="Correo Electrónico"
@@ -746,7 +818,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.birth_date"
                 label="Fecha de Constitución"
@@ -759,7 +835,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.state"
                 :items="stateOptions"
@@ -775,21 +855,40 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12"><VDivider class="my-1" /></VCol>
+            <VCol cols="12">
+              <VDivider class="my-1" />
+            </VCol>
 
             <!-- 👉 Sección 3: Ubicación y Dirección -->
-            <VCol cols="12" class="pb-1 pt-2">
+            <VCol
+              cols="12"
+              class="pb-1 pt-2"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-map-pin-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-map-pin-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   3. Dirección y Ubicación
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" class="py-2">
+            <VCol
+              cols="12"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.address"
                 label="Dirección de la Empresa"
@@ -802,7 +901,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_region"
                 :items="regions"
@@ -818,7 +921,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_provincia"
                 :items="provinces"
@@ -834,7 +941,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_distrito"
                 :items="districts"
@@ -851,7 +962,10 @@ onMounted(() => {
             </VCol>
 
             <!-- 👉 Alerts -->
-            <VCol v-if="error" cols="12">
+            <VCol
+              v-if="error"
+              cols="12"
+            >
               <VAlert
                 type="error"
                 variant="tonal"
@@ -863,7 +977,10 @@ onMounted(() => {
               </VAlert>
             </VCol>
 
-            <VCol v-if="success" cols="12">
+            <VCol
+              v-if="success"
+              cols="12"
+            >
               <VAlert
                 type="success"
                 variant="tonal"

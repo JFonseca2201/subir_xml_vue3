@@ -153,6 +153,7 @@ const formatDate = dateString => {
     const parts = cleanDate.split('-')
     if (parts.length === 3) {
       const [year, month, day] = parts
+      
       return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     }
 
@@ -161,11 +162,13 @@ const formatDate = dateString => {
       const day = String(d.getDate()).padStart(2, '0')
       const month = String(d.getMonth() + 1).padStart(2, '0')
       const year = d.getFullYear()
+      
       return `${year}/${month}/${day}`
     }
   } catch (e) {
     console.error('Error formatting date:', e)
   }
+  
   return dateString
 }
 
@@ -200,7 +203,7 @@ watch(
   () => {
     currentPage.value = 1
     loadReturns()
-  }
+  },
 )
 
 // Búsqueda en tiempo real (debounce)
@@ -224,8 +227,17 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="error" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-arrow-go-back-line" size="26" />
+          <VAvatar
+            size="42"
+            color="error"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-arrow-go-back-line"
+              size="26"
+            />
           </VAvatar>
           Devoluciones y Reembolsos
         </h1>
@@ -247,14 +259,30 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
-            <VIcon icon="ri-file-list-3-line" size="24" />
+          <VAvatar
+            size="46"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Devoluciones</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Devoluciones
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en historial</span>
             </div>
@@ -262,13 +290,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="error" variant="tonal" rounded="lg">
-            <VIcon icon="ri-money-dollar-circle-line" size="24" />
+          <VAvatar
+            size="46"
+            color="error"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-money-dollar-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Reembolsado (Pág.)</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Reembolsado (Pág.)
+            </div>
             <div class="text-h6 font-weight-bold text-error font-mono">
               ${{ totalRefundedInPage.toFixed(2) }}
             </div>
@@ -276,13 +317,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-restart-line" size="24" />
+          <VAvatar
+            size="46"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-restart-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Devoluciones Totales</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Devoluciones Totales
+            </div>
             <div class="text-h6 font-weight-bold text-warning">
               {{ totalReturnsTypeCount }} <span class="text-caption text-disabled font-weight-regular">anulación total</span>
             </div>
@@ -296,7 +350,11 @@ onMounted(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Devoluciones</span>
           </div>
 
@@ -312,8 +370,14 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
-          <VCol cols="12" md="6">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="searchForm.search"
               label="Buscar devolución"
@@ -329,7 +393,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VSelect
               v-model="searchForm.type"
               :items="typeOptions"
@@ -346,7 +414,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="searchForm.start_date"
               type="date"
@@ -359,7 +431,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VTextField
               v-model="searchForm.end_date"
               type="date"
@@ -376,79 +452,292 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-60" /></td>
-            <td class="py-4"><div class="shimmer-line w-80" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-60 ms-auto" /></td>
-            <td class="py-4" style="width: 100px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 100px;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="loading">
+      <!-- Skeleton Móvil -->
+      <div class="d-md-none d-flex flex-column gap-3">
+        <VCard
+          v-for="n in 4"
+          :key="'mob-skel-ret-' + n"
+          class="mobile-return-card elevation-0 pa-4"
+        >
+          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+            <div
+              class="shimmer-line"
+              style="width: 90px; height: 16px;"
+            />
+            <div class="d-flex gap-1">
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+            </div>
+          </div>
+          <div
+            class="shimmer-line w-50 mb-2"
+            style="height: 14px;"
+          />
+          <div
+            class="shimmer-line w-100 mb-2"
+            style="height: 18px;"
+          />
+          <div class="d-flex justify-space-between pt-2 border-t">
+            <div
+              class="shimmer-line"
+              style="width: 80px; height: 16px;"
+            />
+            <div
+              class="shimmer-chip"
+              style="width: 60px; height: 24px;"
+            />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 120px;"
+              >
+                <div class="shimmer-line w-60" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-80" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 120px;"
+              >
+                <div class="shimmer-line w-60 ms-auto" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 100px;"
+              >
+                <div class="shimmer-chip mx-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 100px;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!returns || returns.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-arrow-go-back-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-arrow-go-back-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron devoluciones
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar los criterios de búsqueda o emite una nueva devolución para reintegrar productos.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-add-line" to="/returns/add">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/returns/add"
+        >
           Nueva Devolución
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA MODERNA DE DEVOLUCIONES -->
+    <!-- LISTADO DE DEVOLUCIONES (MÓVIL Y ESCRITORIO) -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="returns-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="(item, index) in returns"
+          :key="'mob-ret-' + (item?.id || index)"
+          class="mobile-return-card elevation-0"
+        >
+          <!-- Cabecera Móvil: N° Devolución + Fecha + Acciones Rápidas -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
+            <div class="d-flex align-center gap-2 min-w-0">
+              <span
+                class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
+                @click="viewReturn(item)"
+              >
+                {{ item.return_number }}
+              </span>
+              <span class="text-caption text-disabled">•</span>
+              <span class="text-caption text-medium-emphasis text-no-wrap">
+                {{ formatDate(item.created_at || item.date) }}
+              </span>
+            </div>
+
+            <!-- Botones de Acción Móvil -->
+            <div class="d-flex align-center gap-1 flex-shrink-0">
+              <VBtn
+                size="x-small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Detalle"
+                @click="viewReturn(item)"
+              />
+              <VBtn
+                size="x-small"
+                color="error"
+                variant="tonal"
+                icon="ri-delete-bin-line"
+                title="Eliminar Devolución"
+                @click="deleteReturn(item)"
+              />
+            </div>
+          </div>
+
+          <!-- Venta Origen y Motivo -->
+          <div class="mb-2">
+            <div
+              v-if="item.sale?.document_number"
+              class="text-caption text-medium-emphasis mb-1"
+            >
+              Venta Origen: <strong class="font-mono text-high-emphasis">{{ item.sale.document_number }}</strong>
+            </div>
+            <div class="text-body-2 text-high-emphasis">
+              {{ item.reason || 'Sin motivo especificado' }}
+            </div>
+          </div>
+
+          <!-- Pie Móvil: Total Reembolsado y Tipo -->
+          <div class="d-flex align-center justify-space-between pt-1.5 border-t">
+            <div>
+              <span class="text-caption text-disabled me-1">Reembolso:</span>
+              <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
+                {{ formatCurrency(item.refund_amount) }}
+              </span>
+            </div>
+
+            <VChip
+              :color="item.type === 'total' ? 'error' : 'warning'"
+              variant="tonal"
+              size="small"
+              class="font-weight-semibold text-uppercase"
+            >
+              {{ item.type === 'total' ? 'Total' : 'Parcial' }}
+            </VChip>
+          </div>
+        </VCard>
+      </div>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="returns-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 150px; min-width: 140px; white-space: nowrap;"
+              >
                 Devolución
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px; min-width: 140px; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 150px; min-width: 140px; white-space: nowrap;"
+              >
                 Venta Orig.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 145px; min-width: 140px; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 145px; min-width: 140px; white-space: nowrap;"
+              >
                 Fecha
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 260px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 260px;"
+              >
                 Motivo / Causa
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 110px; min-width: 100px; white-space: nowrap;"
+              >
                 Reembolso
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;"
+              >
                 Tipo
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in returns" :key="item?.id || index" class="return-table-row">
+            <tr
+              v-for="(item, index) in returns"
+              :key="item?.id || index"
+              class="return-table-row"
+            >
               <!-- N° Devolución -->
-              <td class="py-3" style="white-space: nowrap;">
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
                 <div
                   class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
                   @click="viewReturn(item)"
@@ -458,45 +747,70 @@ onMounted(() => {
               </td>
 
               <!-- Venta Origen -->
-              <td class="py-3" style="white-space: nowrap;">
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
                 <span
                   v-if="item.sale?.document_number"
                   class="font-mono font-weight-semibold text-high-emphasis text-body-2"
                 >
                   {{ item.sale.document_number }}
                 </span>
-                <span v-else class="text-disabled">—</span>
+                <span
+                  v-else
+                  class="text-disabled"
+                >—</span>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                  style="white-space: nowrap;"
+                >
                   <VIcon
                     icon="ri-calendar-line"
                     size="16"
                     color="medium-emphasis"
                     class="me-1 flex-shrink-0"
                   />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.created_at || item.date) }}</span>
+                  <span
+                    class="text-no-wrap font-weight-medium"
+                    style="white-space: nowrap;"
+                  >{{ formatDate(item.created_at || item.date) }}</span>
                 </div>
               </td>
 
               <!-- Motivo -->
               <td class="py-3">
-                <div class="text-body-2 text-high-emphasis text-truncate" style="max-width: 280px;" :title="item.reason">
+                <div
+                  class="text-body-2 text-high-emphasis text-truncate"
+                  style="max-width: 280px;"
+                  :title="item.reason"
+                >
                   {{ item.reason || 'Sin motivo especificado' }}
                 </div>
               </td>
 
               <!-- Reembolso -->
-              <td class="text-right py-3" style="white-space: nowrap;">
+              <td
+                class="text-right py-3"
+                style="white-space: nowrap;"
+              >
                 <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                   {{ formatCurrency(item.refund_amount) }}
                 </span>
               </td>
 
               <!-- Tipo -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <VChip
                   :color="item.type === 'total' ? 'error' : 'warning'"
                   variant="tonal"

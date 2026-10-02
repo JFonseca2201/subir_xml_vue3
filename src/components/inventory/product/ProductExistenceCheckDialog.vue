@@ -48,6 +48,7 @@ const performSearch = async () => {
     searched.value = false
     hasExactSkuMatch.value = false
     hasExactNameMatch.value = false
+    
     return
   }
 
@@ -70,10 +71,12 @@ const performSearch = async () => {
     const response = await $api(`products/search?${queryString}`, { method: 'GET' })
 
     const list = Array.isArray(response) ? response : (response.data || response.products || [])
+
     results.value = list
 
     // Check for exact matches
     const lowerQuery = query.toLowerCase()
+
     hasExactSkuMatch.value = list.some(p => p.sku && p.sku.toLowerCase() === lowerQuery)
     hasExactNameMatch.value = list.some(p => p.description && p.description.toLowerCase() === lowerQuery)
   } catch (error) {
@@ -96,6 +99,7 @@ const navigateToEdit = id => {
 
 const formatCurrency = val => {
   const num = parseFloat(val) || 0
+  
   return `$${num.toFixed(2)}`
 }
 
@@ -299,90 +303,143 @@ watch(activeFilter, () => {
 
             <!-- Lista de Productos Coincidentes (Diseño Limpio) -->
             <div class="products-result-list d-flex flex-column gap-3">
-            <div v-for="item in results" :key="item.id" class="product-lookup-item" :class="{
-              'product-lookup-item--matched-sku': item.sku && searchQuery.trim().toLowerCase() === item.sku.toLowerCase(),
-            }">
-              <div class="d-flex align-start justify-space-between flex-wrap gap-3">
-                <div class="d-flex align-start gap-3 flex-grow-1">
-                  <!-- Thumbnail o Icono -->
-                  <VAvatar rounded="lg" size="44" color="primary" variant="tonal" class="border flex-shrink-0">
-                    <VImg v-if="item.imagen" :src="item.imagen" cover />
-                    <VIcon v-else icon="ri-box-3-line" size="22" color="primary" />
-                  </VAvatar>
+              <div
+                v-for="item in results"
+                :key="item.id"
+                class="product-lookup-item"
+                :class="{
+                  'product-lookup-item--matched-sku': item.sku && searchQuery.trim().toLowerCase() === item.sku.toLowerCase(),
+                }"
+              >
+                <div class="d-flex align-start justify-space-between flex-wrap gap-3">
+                  <div class="d-flex align-start gap-3 flex-grow-1">
+                    <!-- Thumbnail o Icono -->
+                    <VAvatar
+                      rounded="lg"
+                      size="44"
+                      color="primary"
+                      variant="tonal"
+                      class="border flex-shrink-0"
+                    >
+                      <VImg
+                        v-if="item.imagen"
+                        :src="item.imagen"
+                        cover
+                      />
+                      <VIcon
+                        v-else
+                        icon="ri-box-3-line"
+                        size="22"
+                        color="primary"
+                      />
+                    </VAvatar>
 
-                  <!-- Información del producto -->
-                  <div class="flex-grow-1">
-                    <!-- Nombre del Producto -->
-                    <h4 class="text-body-1 font-weight-bold text-high-emphasis mb-1">
-                      {{ item.description }}
-                    </h4>
+                    <!-- Información del producto -->
+                    <div class="flex-grow-1">
+                      <!-- Nombre del Producto -->
+                      <h4 class="text-body-1 font-weight-bold text-high-emphasis mb-1">
+                        {{ item.description }}
+                      </h4>
 
-                    <!-- Fila 1: SKU, Código Auxiliar, Marca, Estado -->
-                    <div class="d-flex align-center flex-wrap gap-x-3 gap-y-1 text-caption text-medium-emphasis mb-1">
-                      <span>
-                        SKU: <span class="product-lookup-sku-badge">{{ item.sku }}</span>
-                      </span>
-                      <span v-if="item.code_aux">
-                        • Aux: <strong class="text-high-emphasis font-mono">{{ item.code_aux }}</strong>
-                      </span>
-                      <span v-if="item.brand">
-                        • Marca: <strong>{{ item.brand }}</strong>
-                      </span>
-                      <span>
-                        • Estado: <span :class="item.state == 1 ? 'text-success font-weight-medium' : 'text-error'">{{
-                          item.state == 1 ? 'Activo' : 'Inactivo' }}</span>
-                      </span>
-                    </div>
+                      <!-- Fila 1: SKU, Código Auxiliar, Marca, Estado -->
+                      <div class="d-flex align-center flex-wrap gap-x-3 gap-y-1 text-caption text-medium-emphasis mb-1">
+                        <span>
+                          SKU: <span class="product-lookup-sku-badge">{{ item.sku }}</span>
+                        </span>
+                        <span v-if="item.code_aux">
+                          • Aux: <strong class="text-high-emphasis font-mono">{{ item.code_aux }}</strong>
+                        </span>
+                        <span v-if="item.brand">
+                          • Marca: <strong>{{ item.brand }}</strong>
+                        </span>
+                        <span>
+                          • Estado: <span :class="item.state == 1 ? 'text-success font-weight-medium' : 'text-error'">{{
+                            item.state == 1 ? 'Activo' : 'Inactivo' }}</span>
+                        </span>
+                      </div>
 
-                    <!-- Fila 2: Categoría, Almacén, Stock, PVP -->
-                    <div class="d-flex align-center flex-wrap gap-x-3 gap-y-1 text-caption text-medium-emphasis">
-                      <span v-if="item.categorie?.title">
-                        <VIcon icon="ri-folder-line" size="13" class="me-1" />
-                        {{ item.categorie.title }}
-                      </span>
-                      <span v-if="item.warehouse?.name">
-                        <VIcon icon="ri-home-4-line" size="13" class="me-1" />
-                        {{ item.warehouse.name }}
-                      </span>
-                      <span>
-                        <VIcon icon="ri-stack-line" size="13" class="me-1" />
-                        Stock: <strong :class="parseFloat(item.stock) > 0 ? 'text-success' : 'text-error'">{{ item.stock
-                        }} {{
+                      <!-- Fila 2: Categoría, Almacén, Stock, PVP -->
+                      <div class="d-flex align-center flex-wrap gap-x-3 gap-y-1 text-caption text-medium-emphasis">
+                        <span v-if="item.categorie?.title">
+                          <VIcon
+                            icon="ri-folder-line"
+                            size="13"
+                            class="me-1"
+                          />
+                          {{ item.categorie.title }}
+                        </span>
+                        <span v-if="item.warehouse?.name">
+                          <VIcon
+                            icon="ri-home-4-line"
+                            size="13"
+                            class="me-1"
+                          />
+                          {{ item.warehouse.name }}
+                        </span>
+                        <span>
+                          <VIcon
+                            icon="ri-stack-line"
+                            size="13"
+                            class="me-1"
+                          />
+                          Stock: <strong :class="parseFloat(item.stock) > 0 ? 'text-success' : 'text-error'">{{ item.stock
+                          }} {{
                             item.unit?.name || 'UND' }}</strong>
-                      </span>
-                      <span>
-                        <VIcon icon="ri-price-tag-3-line" size="13" class="me-1" />
-                        PVP: <strong class="text-primary font-weight-bold">{{ formatCurrency(item.price_sale)
-                        }}</strong>
-                      </span>
+                        </span>
+                        <span>
+                          <VIcon
+                            icon="ri-price-tag-3-line"
+                            size="13"
+                            class="me-1"
+                          />
+                          PVP: <strong class="text-primary font-weight-bold">{{ formatCurrency(item.price_sale)
+                          }}</strong>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Acciones -->
-                <div class="d-flex align-center gap-2 flex-shrink-0 align-self-center">
-                  <VBtn color="secondary" variant="tonal" size="small" prepend-icon="ri-edit-line"
-                    class="rounded-lg font-weight-medium text-none" @click="navigateToEdit(item.id)">
-                    Editar
-                  </VBtn>
+                  <!-- Acciones -->
+                  <div class="d-flex align-center gap-2 flex-shrink-0 align-self-center">
+                    <VBtn
+                      color="secondary"
+                      variant="tonal"
+                      size="small"
+                      prepend-icon="ri-edit-line"
+                      class="rounded-lg font-weight-medium text-none"
+                      @click="navigateToEdit(item.id)"
+                    >
+                      Editar
+                    </VBtn>
 
-                  <VBtn color="primary" variant="elevated" size="small" prepend-icon="ri-file-copy-line"
-                    class="rounded-lg font-weight-bold text-none" @click="handleUseData(item)">
-                    Usar Datos
-                  </VBtn>
+                    <VBtn
+                      color="primary"
+                      variant="elevated"
+                      size="small"
+                      prepend-icon="ri-file-copy-line"
+                      class="rounded-lg font-weight-bold text-none"
+                      @click="handleUseData(item)"
+                    >
+                      Usar Datos
+                    </VBtn>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </VCardText>
+      </VCardText>
 
       <VDivider />
 
       <VCardActions class="pa-4 bg-surface d-flex justify-end gap-3">
-        <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-          class="rounded-lg font-weight-medium text-none" @click="show = false">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg font-weight-medium text-none"
+          @click="show = false"
+        >
           Cerrar
         </VBtn>
       </VCardActions>

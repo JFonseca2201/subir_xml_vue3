@@ -54,6 +54,7 @@ const numeroOrden = computed(() => {
   const num = targetOrder.value?.number || targetOrder.value?.id
   if (!num) return 'SIN NÚMERO'
   const str = String(num).trim()
+  
   return str.startsWith('#') ? str : (str.includes('-') ? str : '#' + str)
 })
 
@@ -65,8 +66,10 @@ const vehiculoInfo = computed(() => {
     const brand = getBrandNameById(v.brand?.name || v.brand || v.brand_id) || ''
     const model = v.model || ''
     const brandModel = `${brand} ${model}`.trim()
+    
     return brandModel ? `${brandModel} • ${plate}` : plate
   }
+  
   return 'Vehículo en Taller'
 })
 
@@ -74,8 +77,10 @@ const vehiculoInfo = computed(() => {
 const clienteInfo = computed(() => {
   if (targetOrder.value?.client) {
     const c = targetOrder.value.client
+    
     return c.full_name || c.name || ''
   }
+  
   return ''
 })
 

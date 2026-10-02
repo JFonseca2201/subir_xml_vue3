@@ -394,8 +394,102 @@ definePage({ meta: { permission: 'kardex' } })
           </VCardText>
         </VCard>
 
-        <!-- Tabla de Movimientos del Mes -->
-        <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+        <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+        <div class="d-md-none d-flex flex-column gap-3 mb-4">
+          <div
+            v-for="item in kardexData.itemsGrouped[monthName]"
+            :key="item.month_key + '_' + item.sku + '_' + item.description"
+            class="mobile-kardex-product-card"
+          >
+            <!-- Fila Superior: SKU/Código y Tipo -->
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+              <div class="d-flex align-center gap-1.5 flex-wrap">
+                <span class="text-caption font-mono font-weight-bold text-high-emphasis">
+                  {{ item.sku || 'SIN SKU' }}
+                </span>
+                <span
+                  v-if="item.code_aux"
+                  class="text-caption text-medium-emphasis"
+                >
+                  ({{ item.code_aux }})
+                </span>
+              </div>
+              <div
+                class="status-pill-clean"
+                :class="item.tipo === 'servicio' ? 'status-info' : 'status-partial'"
+              >
+                <span class="status-dot" />
+                <span>{{ item.tipo }}</span>
+              </div>
+            </div>
+
+            <!-- Fila Central: Avatar y Descripción -->
+            <div class="d-flex align-start gap-3 mb-3">
+              <VAvatar
+                size="38"
+                color="primary"
+                variant="tonal"
+                rounded="lg"
+                class="flex-shrink-0 mt-0.5"
+              >
+                <VIcon
+                  :icon="item.tipo === 'servicio' ? 'ri-tools-line' : 'ri-box-3-line'"
+                  size="20"
+                />
+              </VAvatar>
+              <div class="min-w-0 flex-grow-1">
+                <div class="font-weight-bold text-high-emphasis text-body-2">
+                  {{ item.description }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Cuadrícula Ventas vs Compras -->
+            <div class="d-flex flex-column gap-2">
+              <!-- Bloque Ventas -->
+              <div class="d-flex align-center justify-space-between pa-2.5 rounded-lg bg-success-light">
+                <div class="d-flex align-center gap-2">
+                  <VIcon
+                    icon="ri-shopping-cart-2-line"
+                    size="18"
+                    color="success"
+                  />
+                  <span class="text-caption font-weight-medium text-success">Ventas:</span>
+                  <span class="text-caption font-weight-bold text-success">
+                    {{ formatQuantity(item.cantidad_vendida) }} uds.
+                  </span>
+                </div>
+                <span class="text-body-2 font-weight-bold text-success">
+                  {{ formatCurrency(item.monto_vendido) }}
+                </span>
+              </div>
+
+              <!-- Bloque Compras (si no es servicio) -->
+              <div
+                v-if="item.tipo !== 'servicio'"
+                class="d-flex align-center justify-space-between pa-2.5 rounded-lg bg-error-light"
+              >
+                <div class="d-flex align-center gap-2">
+                  <VIcon
+                    icon="ri-truck-line"
+                    size="18"
+                    color="error"
+                  />
+                  <span class="text-caption font-weight-medium text-error">Compras:</span>
+                  <span class="text-caption font-weight-bold text-error">
+                    {{ formatQuantity(item.cantidad_comprada) }} uds.
+                  </span>
+                </div>
+                <span class="text-body-2 font-weight-bold text-error">
+                  {{ formatCurrency(item.monto_comprado) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
+        <VCard class="d-none d-md-block rounded-lg border-light border overflow-hidden elevation-0">
           <div class="overflow-x-auto">
             <VTable
               hover
@@ -530,113 +624,3 @@ definePage({ meta: { permission: 'kardex' } })
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.border-light {
-  border-color: rgba(var(--v-border-color), 0.12) !important;
-}
-
-.day-header {
-  background-color: rgba(var(--v-theme-primary), 0.03);
-}
-
-.bg-success-header {
-  background-color: rgba(16, 185, 129, 0.08) !important;
-  color: #065f46 !important;
-}
-
-.bg-success-light {
-  background-color: rgba(16, 185, 129, 0.03) !important;
-}
-
-.bg-error-header {
-  background-color: rgba(239, 68, 68, 0.08) !important;
-  color: #991b1b !important;
-}
-
-.bg-error-light {
-  background-color: rgba(239, 68, 68, 0.03) !important;
-}
-
-// Status Pills (Estilo listado de clientes / ventas)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-.status-partial {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-info {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-secondary {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
-
-  .status-dot {
-    background-color: #94a3b8 !important;
-  }
-}
-
-.status-primary {
-  background-color: #eef2ff !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
-
-  .status-dot {
-    background-color: #6366f1 !important;
-  }
-}
-</style>

@@ -95,6 +95,7 @@ const loadUnitConversions = async () => {
 // Cargar unidades desde props cuando el componente se monta
 const loadUnits = () => {
   const incoming = (props.units && props.units.length) ? props.units : (props.listUnits || [])
+
   list_units.value = Array.isArray(incoming) ? incoming : (incoming.data || [])
 }
 
@@ -104,6 +105,7 @@ loadUnits()
 // Watch para actualizar las unidades cuando cambian los props
 watch([() => props.units, () => props.listUnits], ([newUnits, newListUnits]) => {
   const incoming = (newUnits && newUnits.length) ? newUnits : (newListUnits || [])
+
   list_units.value = Array.isArray(incoming) ? incoming : (incoming.data || [])
 }, { immediate: true })
 

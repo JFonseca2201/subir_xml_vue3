@@ -50,6 +50,7 @@ export const canViewNavMenuGroup = item => {
   if (item.children && Array.isArray(item.children)) {
     const hasAnyVisibleChild = item.children.some(i => {
       if (i.permission) return checkPerm(i.permission)
+      
       return can(i.action, i.subject, i.permission, i.permissions)
     })
 
@@ -68,5 +69,6 @@ export const canNavigate = to => {
   if (to.meta && to.meta.permission) {
     return checkPerm(to.meta.permission)
   }
+  
   return true
 }

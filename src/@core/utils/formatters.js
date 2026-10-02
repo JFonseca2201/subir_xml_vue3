@@ -22,7 +22,7 @@ export const kFormatter = num => {
  * @param {string} value date to format
  * @param {Intl.DateTimeFormatOptions} formatting Intl object to format with
  */
-export const formatDate = (value) => {
+export const formatDate = value => {
   if (!value)
     return value
   
@@ -36,6 +36,7 @@ export const formatDate = (value) => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
+  
   return `${y}/${m}/${d}`
 }
 

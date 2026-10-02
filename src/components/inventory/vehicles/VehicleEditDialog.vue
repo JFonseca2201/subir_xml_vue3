@@ -108,6 +108,7 @@ const colorOptions = [
 const getColorHex = colorName => {
   if (!colorName) return '#9e9e9e'
   const match = colorOptions.find(c => c.value.toLowerCase() === String(colorName).toLowerCase())
+  
   return match ? match.hex : '#9e9e9e'
 }
 
@@ -333,11 +334,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <VDialog scrollable max-width="620" :model-value="props.isDialogVisible" persistent @update:model-value="closeDialog">
+  <VDialog
+    scrollable
+    max-width="620"
+    :model-value="props.isDialogVisible"
+    persistent
+    @update:model-value="closeDialog"
+  >
     <VCard class="custom-dialog-card pa-0 rounded-xl overflow-hidden">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
-        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="closeDialog" />
+        <VBtn
+          icon="ri-close-line"
+          variant="text"
+          size="small"
+          class="custom-dialog-close-btn"
+          @click="closeDialog"
+        />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-edit-box-line" />
         </div>
@@ -350,12 +363,29 @@ onMounted(() => {
       </div>
 
       <VCardText class="pa-sm-6 pa-4">
-        <VForm id="vehicleEditForm" ref="formRef" @submit.prevent="updateVehicle">
-          <VRow dense class="gap-y-3">
+        <VForm
+          id="vehicleEditForm"
+          ref="formRef"
+          @submit.prevent="updateVehicle"
+        >
+          <VRow
+            dense
+            class="gap-y-3"
+          >
             <!-- 1. PROPIETARIO DEL VEHÍCULO -->
-            <VCol cols="12" class="d-flex align-center gap-2 pt-1">
-              <VAvatar size="28" color="primary" variant="tonal">
-                <VIcon size="16" icon="ri-user-star-line" />
+            <VCol
+              cols="12"
+              class="d-flex align-center gap-2 pt-1"
+            >
+              <VAvatar
+                size="28"
+                color="primary"
+                variant="tonal"
+              >
+                <VIcon
+                  size="16"
+                  icon="ri-user-star-line"
+                />
               </VAvatar>
               <span class="text-subtitle-2 font-weight-bold text-uppercase text-high-emphasis">
                 1. Propietario del Vehículo
@@ -364,27 +394,60 @@ onMounted(() => {
 
             <!-- Propietario / Cliente -->
             <VCol cols="12">
-              <VSearch v-model="initialClient" :return-object="true" endpoint="clients/search" item-title="full_name"
-                label="Propietario / Cliente *" placeholder="Buscar por nombre o número de documento..."
-                icon="ri-user-line" :rules="rules.client_id" :initial-item="initialClient">
+              <VSearch
+                v-model="initialClient"
+                :return-object="true"
+                endpoint="clients/search"
+                item-title="full_name"
+                label="Propietario / Cliente *"
+                placeholder="Buscar por nombre o número de documento..."
+                icon="ri-user-line"
+                :rules="rules.client_id"
+                :initial-item="initialClient"
+              >
                 <template #item="{ props: itemProps, item }">
-                  <VListItem v-bind="itemProps" :title="undefined" class="py-2">
+                  <VListItem
+                    v-bind="itemProps"
+                    :title="undefined"
+                    class="py-2"
+                  >
                     <template #prepend>
-                      <VAvatar size="34" color="primary" variant="tonal" class="me-3">
-                        <VIcon size="18" icon="ri-user-3-line" />
+                      <VAvatar
+                        size="34"
+                        color="primary"
+                        variant="tonal"
+                        class="me-3"
+                      >
+                        <VIcon
+                          size="18"
+                          icon="ri-user-3-line"
+                        />
                       </VAvatar>
                     </template>
-                    <VListItemTitle class="font-weight-semibold text-body-2"
-                      style="white-space: normal !important; line-height: 1.3;">
+                    <VListItemTitle
+                      class="font-weight-semibold text-body-2"
+                      style="white-space: normal !important; line-height: 1.3;"
+                    >
                       {{ item.raw.full_name }}
                     </VListItemTitle>
                     <VListItemSubtitle class="mt-1 d-flex flex-wrap gap-2 text-caption">
                       <span class="d-inline-flex align-center">
-                        <VIcon size="13" icon="ri-id-card-line" class="me-1 text-primary" />
+                        <VIcon
+                          size="13"
+                          icon="ri-id-card-line"
+                          class="me-1 text-primary"
+                        />
                         {{ item.raw.n_document || 'Sin Doc.' }}
                       </span>
-                      <span v-if="item.raw.phone" class="d-inline-flex align-center text-grey">
-                        <VIcon size="13" icon="ri-phone-line" class="me-1" />
+                      <span
+                        v-if="item.raw.phone"
+                        class="d-inline-flex align-center text-grey"
+                      >
+                        <VIcon
+                          size="13"
+                          icon="ri-phone-line"
+                          class="me-1"
+                        />
                         {{ item.raw.phone }}
                       </span>
                     </VListItemSubtitle>
@@ -397,12 +460,26 @@ onMounted(() => {
                 v-if="initialClient && (initialClient.n_document || initialClient.phone)"
                 class="mt-1 d-flex flex-wrap align-center gap-4 px-1 text-caption text-medium-emphasis"
               >
-                <span v-if="initialClient.n_document" class="d-inline-flex align-center">
-                  <VIcon size="14" icon="ri-id-card-line" class="me-1 text-primary" />
+                <span
+                  v-if="initialClient.n_document"
+                  class="d-inline-flex align-center"
+                >
+                  <VIcon
+                    size="14"
+                    icon="ri-id-card-line"
+                    class="me-1 text-primary"
+                  />
                   Doc: <strong class="ms-1 text-high-emphasis">{{ initialClient.n_document }}</strong>
                 </span>
-                <span v-if="initialClient.phone" class="d-inline-flex align-center">
-                  <VIcon size="14" icon="ri-phone-line" class="me-1 text-success" />
+                <span
+                  v-if="initialClient.phone"
+                  class="d-inline-flex align-center"
+                >
+                  <VIcon
+                    size="14"
+                    icon="ri-phone-line"
+                    class="me-1 text-success"
+                  />
                   Tel: <strong class="ms-1 text-high-emphasis">{{ initialClient.phone }}</strong>
                 </span>
               </div>
@@ -413,9 +490,19 @@ onMounted(() => {
             </VCol>
 
             <!-- 2. DATOS DEL VEHÍCULO -->
-            <VCol cols="12" class="d-flex align-center gap-2">
-              <VAvatar size="28" color="primary" variant="tonal">
-                <VIcon size="16" icon="ri-car-line" />
+            <VCol
+              cols="12"
+              class="d-flex align-center gap-2"
+            >
+              <VAvatar
+                size="28"
+                color="primary"
+                variant="tonal"
+              >
+                <VIcon
+                  size="16"
+                  icon="ri-car-line"
+                />
               </VAvatar>
               <span class="text-subtitle-2 font-weight-bold text-uppercase text-high-emphasis">
                 2. Datos del Vehículo
@@ -423,78 +510,188 @@ onMounted(() => {
             </VCol>
 
             <!-- Fila 1: Placa, Tipo de Vehículo, Año -->
-            <VCol cols="12" sm="4">
-              <VTextField v-model="vehicleForm.license_plate" label="Placa *" placeholder="Ej: ABC-1234"
-                prepend-inner-icon="ri-id-card-line" :rules="rules.license_plate" variant="outlined" density="compact"
-                maxlength="9" hide-details="auto" class="text-uppercase" />
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VTextField
+                v-model="vehicleForm.license_plate"
+                label="Placa *"
+                placeholder="Ej: ABC-1234"
+                prepend-inner-icon="ri-id-card-line"
+                :rules="rules.license_plate"
+                variant="outlined"
+                density="compact"
+                maxlength="9"
+                hide-details="auto"
+                class="text-uppercase"
+              />
             </VCol>
 
-            <VCol cols="12" sm="4">
-              <VSelect v-model="vehicleForm.vehicle_type" :items="vehicleTypeOptions" label="Tipo de Vehículo *"
-                placeholder="Seleccione tipo" prepend-inner-icon="ri-roadster-line" :rules="rules.vehicle_type"
-                density="compact" variant="outlined" hide-details="auto" />
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VSelect
+                v-model="vehicleForm.vehicle_type"
+                :items="vehicleTypeOptions"
+                label="Tipo de Vehículo *"
+                placeholder="Seleccione tipo"
+                prepend-inner-icon="ri-roadster-line"
+                :rules="rules.vehicle_type"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              />
             </VCol>
 
-            <VCol cols="12" sm="4">
-              <VSelect v-model="vehicleForm.year" :items="yearOptions" label="Año *" placeholder="Seleccione año"
-                prepend-inner-icon="ri-calendar-line" :rules="rules.year" density="compact" variant="outlined"
-                hide-details="auto" />
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VSelect
+                v-model="vehicleForm.year"
+                :items="yearOptions"
+                label="Año *"
+                placeholder="Seleccione año"
+                prepend-inner-icon="ri-calendar-line"
+                :rules="rules.year"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              />
             </VCol>
 
             <!-- Fila 2: Marca y Modelo (Espacio amplio para modelos con nombres largos) -->
-            <VCol cols="12" sm="4">
-              <VAutocomplete v-model="vehicleForm.brand" :items="brandOptions" item-title="title" item-value="value"
-                label="Marca *" placeholder="Seleccione marca" prepend-inner-icon="ri-building-line"
-                :rules="rules.brand" :filter="filterBrands" density="compact" variant="outlined"
-                no-data-text="No se encontraron marcas" hide-details="auto" clearable @update:search="searchBrands" />
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VAutocomplete
+                v-model="vehicleForm.brand"
+                :items="brandOptions"
+                item-title="title"
+                item-value="value"
+                label="Marca *"
+                placeholder="Seleccione marca"
+                prepend-inner-icon="ri-building-line"
+                :rules="rules.brand"
+                :filter="filterBrands"
+                density="compact"
+                variant="outlined"
+                no-data-text="No se encontraron marcas"
+                hide-details="auto"
+                clearable
+                @update:search="searchBrands"
+              />
             </VCol>
 
-            <VCol cols="12" sm="8">
-              <VTextField v-model="vehicleForm.model" label="Modelo *"
-                placeholder="Ej: Corolla Cross XEI, D-Max 3.0 CD 4x4, Tucson TL..." prepend-inner-icon="ri-car-line"
-                :rules="rules.model" density="compact" variant="outlined" hide-details="auto" />
+            <VCol
+              cols="12"
+              sm="8"
+            >
+              <VTextField
+                v-model="vehicleForm.model"
+                label="Modelo *"
+                placeholder="Ej: Corolla Cross XEI, D-Max 3.0 CD 4x4, Tucson TL..."
+                prepend-inner-icon="ri-car-line"
+                :rules="rules.model"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              />
             </VCol>
 
             <!-- Fila 3: Color, Uso y Estado -->
-            <VCol cols="12" sm="4">
-              <VSelect v-model="vehicleForm.color" :items="colorOptions" item-title="title" item-value="value"
-                label="Color *" placeholder="Seleccione color" prepend-inner-icon="ri-palette-line" :rules="rules.color"
-                density="compact" variant="outlined" hide-details="auto">
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VSelect
+                v-model="vehicleForm.color"
+                :items="colorOptions"
+                item-title="title"
+                item-value="value"
+                label="Color *"
+                placeholder="Seleccione color"
+                prepend-inner-icon="ri-palette-line"
+                :rules="rules.color"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              >
                 <template #selection="{ item }">
                   <div class="d-flex align-center gap-2">
-                    <span class="color-dot-indicator" :style="{ backgroundColor: getColorHex(item.value) }" />
+                    <span
+                      class="color-dot-indicator"
+                      :style="{ backgroundColor: getColorHex(item.value) }"
+                    />
                     <span>{{ item.title }}</span>
                   </div>
                 </template>
                 <template #item="{ props: itemProps, item }">
                   <VListItem v-bind="itemProps">
                     <template #prepend>
-                      <span class="color-dot-indicator me-2" :style="{ backgroundColor: item.raw.hex }" />
+                      <span
+                        class="color-dot-indicator me-2"
+                        :style="{ backgroundColor: item.raw.hex }"
+                      />
                     </template>
                   </VListItem>
                 </template>
               </VSelect>
             </VCol>
 
-            <VCol cols="12" sm="4">
-              <VSelect v-model="vehicleForm.usage_type" :items="vehicleUsageTypeOptions" label="Tipo de Uso"
-                placeholder="Seleccione uso" prepend-inner-icon="ri-dashboard-3-line" density="compact"
-                variant="outlined" hide-details="auto" />
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VSelect
+                v-model="vehicleForm.usage_type"
+                :items="vehicleUsageTypeOptions"
+                label="Tipo de Uso"
+                placeholder="Seleccione uso"
+                prepend-inner-icon="ri-dashboard-3-line"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              />
             </VCol>
 
-            <VCol cols="12" sm="4">
-              <VSelect v-model="vehicleForm.status" :items="statusOptions" item-title="title" item-value="value"
-                label="Estado del Vehículo" prepend-inner-icon="ri-toggle-line" density="compact" variant="outlined"
-                hide-details="auto">
+            <VCol
+              cols="12"
+              sm="4"
+            >
+              <VSelect
+                v-model="vehicleForm.status"
+                :items="statusOptions"
+                item-title="title"
+                item-value="value"
+                label="Estado del Vehículo"
+                prepend-inner-icon="ri-toggle-line"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+              >
                 <template #selection="{ item }">
-                  <VChip :color="item.raw.color" size="small" variant="tonal" class="font-weight-bold">
+                  <VChip
+                    :color="item.raw.color"
+                    size="small"
+                    variant="tonal"
+                    class="font-weight-bold"
+                  >
                     {{ item.title }}
                   </VChip>
                 </template>
                 <template #item="{ props: itemProps, item }">
                   <VListItem v-bind="itemProps">
                     <template #prepend>
-                      <VBadge dot :color="item.raw.color" inline class="me-2" />
+                      <VBadge
+                        dot
+                        :color="item.raw.color"
+                        inline
+                        class="me-2"
+                      />
                     </template>
                   </VListItem>
                 </template>
@@ -506,9 +703,19 @@ onMounted(() => {
             </VCol>
 
             <!-- 3. OBSERVACIONES & DETALLES (OPCIONAL) -->
-            <VCol cols="12" class="d-flex align-center gap-2">
-              <VAvatar size="28" color="primary" variant="tonal">
-                <VIcon size="16" icon="ri-file-text-line" />
+            <VCol
+              cols="12"
+              class="d-flex align-center gap-2"
+            >
+              <VAvatar
+                size="28"
+                color="primary"
+                variant="tonal"
+              >
+                <VIcon
+                  size="16"
+                  icon="ri-file-text-line"
+                />
               </VAvatar>
               <span class="text-subtitle-2 font-weight-bold text-uppercase text-high-emphasis">
                 3. Observaciones & Detalles (Opcional)
@@ -516,14 +723,30 @@ onMounted(() => {
             </VCol>
 
             <VCol cols="12">
-              <VTextarea v-model="vehicleForm.description" label="Observaciones (Opcional)"
+              <VTextarea
+                v-model="vehicleForm.description"
+                label="Observaciones (Opcional)"
                 placeholder="Detalles sobre estado mecánico, carrocería, accesorios especiales, etc."
-                prepend-inner-icon="ri-sticky-note-line" rows="2" density="compact" variant="outlined"
-                hide-details="auto" auto-grow />
+                prepend-inner-icon="ri-sticky-note-line"
+                rows="2"
+                density="compact"
+                variant="outlined"
+                hide-details="auto"
+                auto-grow
+              />
             </VCol>
 
-            <VCol v-if="error" cols="12">
-              <VAlert type="error" variant="tonal" closable class="rounded-lg" @click:close="error = ''">
+            <VCol
+              v-if="error"
+              cols="12"
+            >
+              <VAlert
+                type="error"
+                variant="tonal"
+                closable
+                class="rounded-lg"
+                @click:close="error = ''"
+              >
                 {{ error }}
               </VAlert>
             </VCol>
@@ -533,22 +756,45 @@ onMounted(() => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
-        style="position: sticky; bottom: 0; z-index: 2;">
-        <VBtn variant="outlined" color="secondary" prepend-icon="ri-close-line"
-          class="rounded-lg px-5 font-weight-medium" height="40" :disabled="loading" @click="closeDialog">
+      <VCardActions
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        style="position: sticky; bottom: 0; z-index: 2;"
+      >
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium"
+          height="40"
+          :disabled="loading"
+          @click="closeDialog"
+        >
           Cancelar
         </VBtn>
 
-        <VBtn type="submit" form="vehicleEditForm" color="primary" variant="elevated" prepend-icon="ri-refresh-line"
-          class="rounded-lg px-6 font-weight-bold" height="40" :loading="loading" :disabled="loading">
+        <VBtn
+          type="submit"
+          form="vehicleEditForm"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-refresh-line"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
+          :loading="loading"
+          :disabled="loading"
+        >
           Actualizar Vehículo
         </VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
 
-  <VSnackbar v-model="notificationShow" :color="notificationType" :timeout="3000" location="top">
+  <VSnackbar
+    v-model="notificationShow"
+    :color="notificationType"
+    :timeout="3000"
+    location="top"
+  >
     {{ notificationMessage }}
   </VSnackbar>
 </template>

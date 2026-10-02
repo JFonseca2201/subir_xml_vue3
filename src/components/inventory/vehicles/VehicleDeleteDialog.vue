@@ -136,9 +136,9 @@ const cancelDelete = () => {
           <!-- Placa Ecuatoriana Estilizada -->
           <div class="ecuador-delete-plate mb-3">
             <div class="plate-top">
-              <span class="stripe-y"></span>
-              <span class="stripe-b"></span>
-              <span class="stripe-r"></span>
+              <span class="stripe-y" />
+              <span class="stripe-b" />
+              <span class="stripe-r" />
               <span class="country-text">ECUADOR</span>
             </div>
             <div class="plate-code">
@@ -154,7 +154,10 @@ const cancelDelete = () => {
           </p>
 
           <!-- Resumen del Vehículo en Tarjeta -->
-          <div class="w-100 pa-3 rounded-lg border mb-4 text-start" style="background: rgba(var(--v-theme-on-surface), 0.02);">
+          <div
+            class="w-100 pa-3 rounded-lg border mb-4 text-start"
+            style="background: rgba(var(--v-theme-on-surface), 0.02);"
+          >
             <div class="d-flex justify-space-between py-1 border-b text-body-2">
               <span class="text-medium-emphasis">ID Vehículo:</span>
               <span class="font-weight-bold font-mono">#{{ props.vehicleSelected?.id || 'N/A' }}</span>
@@ -163,7 +166,10 @@ const cancelDelete = () => {
               <span class="text-medium-emphasis">Color:</span>
               <span class="font-weight-semibold text-capitalize">{{ props.vehicleSelected?.color || 'No especificado' }}</span>
             </div>
-            <div v-if="props.vehicleSelected?.client" class="d-flex justify-space-between py-1 text-body-2">
+            <div
+              v-if="props.vehicleSelected?.client"
+              class="d-flex justify-space-between py-1 text-body-2"
+            >
               <span class="text-medium-emphasis">Propietario:</span>
               <span class="font-weight-semibold">{{ props.vehicleSelected.client.full_name || 'N/A' }}</span>
             </div>

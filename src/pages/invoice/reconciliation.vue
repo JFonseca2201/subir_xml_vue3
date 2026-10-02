@@ -12,6 +12,7 @@ const loading = ref(false)
 const isSubmitting = ref(false)
 const suppliers = ref([])
 const accounts = ref([])
+
 const paymentMethods = [
   'Transferencia',
   'Efectivo',
@@ -50,6 +51,7 @@ const filterSupplier = (value, query, item) => {
   const q = query.toLowerCase().trim()
   const name = (item.raw.name || '').toLowerCase()
   const ruc = (item.raw.ruc || item.raw.tax_id || '').toLowerCase()
+  
   return name.includes(q) || ruc.includes(q)
 }
 
@@ -65,6 +67,7 @@ const loadInitialData = async () => {
     suppliers.value = configRes?.suppliers || []
     
     const rawAccounts = accountsRes?.data || accountsRes?.accounts || accountsRes || []
+
     accounts.value = rawAccounts.map(acc => {
       const cleaned = (acc.name || '')
         .replace(/\(EFECTIVO\)/gi, '')
@@ -81,6 +84,7 @@ const loadInitialData = async () => {
     if (accounts.value.length > 0 && !form.value.account_id) {
       // Pre-seleccionar cuenta bancaria o caja principal
       const defaultAcc = accounts.value.find(a => a.type === 'bank' || a.name?.toLowerCase().includes('banco') || a.id === 1)
+
       form.value.account_id = defaultAcc ? defaultAcc.id : accounts.value[0].id
       form.value.refund_account_id = form.value.account_id
     }
@@ -93,7 +97,7 @@ const loadInitialData = async () => {
 }
 
 // Cargar facturas pendientes y saldos a favor al cambiar de proveedor
-const onSupplierChange = async (newSupplierId) => {
+const onSupplierChange = async newSupplierId => {
   pendingInvoices.value = []
   selectedInvoices.value = []
   availableCredits.value = []
@@ -131,7 +135,7 @@ const onSupplierChange = async (newSupplierId) => {
   }
 }
 
-watch(() => form.value.supplier_id, (val) => {
+watch(() => form.value.supplier_id, val => {
   onSupplierChange(val)
 })
 
@@ -141,16 +145,18 @@ const invoiceSearch = ref('')
 const filteredInvoices = computed(() => {
   if (!invoiceSearch.value) return pendingInvoices.value
   const q = invoiceSearch.value.toLowerCase().trim()
+  
   return pendingInvoices.value.filter(inv => {
     const num = (inv.invoice_number || '').toLowerCase()
     const date = (inv.issue_date || '').toLowerCase()
     const total = String(inv.total_amount || '')
+    
     return num.includes(q) || date.includes(q) || total.includes(q)
   })
 })
 
 // Toggle selección de factura
-const toggleInvoiceSelection = (invoice) => {
+const toggleInvoiceSelection = invoice => {
   invoice.selected = !invoice.selected
   if (invoice.selected && (!invoice.amount_to_pay || invoice.amount_to_pay <= 0)) {
     invoice.amount_to_pay = Number(invoice.balance_due)
@@ -160,6 +166,7 @@ const toggleInvoiceSelection = (invoice) => {
 // Seleccionar todas las facturas
 const selectAllInvoices = () => {
   const allSelected = pendingInvoices.value.every(i => i.selected)
+
   pendingInvoices.value.forEach(i => {
     i.selected = !allSelected
     if (i.selected && (!i.amount_to_pay || i.amount_to_pay <= 0)) {
@@ -184,6 +191,7 @@ const actualPayment = computed(() => {
 // Diferencia calculada (Positiva = Sobrante a favor, Negativa = Falta para cubrir)
 const difference = computed(() => {
   if (actualPayment.value <= 0 || totalInvoicesSelected.value <= 0) return 0
+  
   return Number((actualPayment.value - totalInvoicesSelected.value).toFixed(2))
 })
 
@@ -191,7 +199,7 @@ const isOverpayment = computed(() => difference.value > 0.001)
 const isUnderpayment = computed(() => difference.value < -0.001)
 
 // Formateo de moneda
-const formatMoney = (val) => {
+const formatMoney = val => {
   return new Intl.NumberFormat('es-EC', {
     style: 'currency',
     currency: 'USD',
@@ -200,7 +208,7 @@ const formatMoney = (val) => {
 }
 
 // Auto-ajustar monto real al total de facturas seleccionadas si está vacío
-watch(() => totalInvoicesSelected.value, (newTotal) => {
+watch(() => totalInvoicesSelected.value, newTotal => {
   if (!form.value.actual_payment_amount || form.value.actual_payment_amount === 0) {
     form.value.actual_payment_amount = newTotal > 0 ? Number(newTotal.toFixed(2)) : null
   }
@@ -210,31 +218,37 @@ watch(() => totalInvoicesSelected.value, (newTotal) => {
 const submitReconciliation = async () => {
   if (!form.value.supplier_id) {
     showNotification('Seleccione un proveedor.', 'warning')
+    
     return
   }
 
   if (!form.value.account_id) {
     showNotification('Seleccione la cuenta bancaria o de caja de origen.', 'warning')
+    
     return
   }
 
   if (actualPayment.value <= 0) {
     showNotification('Ingrese el monto real desembolsado.', 'warning')
+    
     return
   }
 
   if (selectedInvoicesList.value.length === 0) {
     showNotification('Seleccione al menos una factura a pagar.', 'warning')
+    
     return
   }
 
   if (isOverpayment.value && form.value.difference_resolution === 'credit_note' && !form.value.credit_note_number) {
     showNotification('Ingrese el número de la Nota de Crédito recibida.', 'warning')
+    
     return
   }
 
   if (isOverpayment.value && form.value.difference_resolution === 'immediate_refund' && !form.value.refund_account_id) {
     showNotification('Seleccione la cuenta de destino para la devolución.', 'warning')
+    
     return
   }
 
@@ -265,6 +279,7 @@ const submitReconciliation = async () => {
 
     if (response.success) {
       showNotification(response.message || 'Conciliación procesada exitosamente.', 'success')
+
       // Redirigir a listado de compras o saldos
       router.push('/invoice/list')
     } else {
@@ -296,7 +311,10 @@ onMounted(() => {
             color="secondary"
             to="/invoice/list"
           >
-            <VIcon icon="ri-arrow-left-line" size="22" />
+            <VIcon
+              icon="ri-arrow-left-line"
+              size="22"
+            />
           </VBtn>
           <h4 class="text-h4 font-weight-bold text-grey-darken-4 mb-0">
             Conciliación y Pago a Proveedores
@@ -322,12 +340,17 @@ onMounted(() => {
 
     <VRow>
       <!-- COLUMNA IZQUIERDA: Formulario y Selección de Facturas -->
-      <VCol cols="12" lg="8">
+      <VCol
+        cols="12"
+        lg="8"
+      >
         <!-- PASO 1: Datos del Desembolso / Pago Real -->
         <VCard class="mb-6 rounded-xl border border-light elevation-0 overflow-hidden">
           <VCardItem class="bg-grey-lighten-5 py-3 border-b border-light">
             <template #prepend>
-              <div class="step-badge me-3">1</div>
+              <div class="step-badge me-3">
+                1
+              </div>
             </template>
             <VCardTitle class="text-subtitle-1 font-weight-bold text-grey-darken-3">
               Datos del Pago Real / Desembolso
@@ -340,7 +363,11 @@ onMounted(() => {
           <VCardText class="pa-5">
             <VRow dense>
               <!-- Proveedor -->
-              <VCol cols="12" md="6" class="mb-3">
+              <VCol
+                cols="12"
+                md="6"
+                class="mb-3"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Proveedor <span class="text-error">*</span>
                 </label>
@@ -370,7 +397,11 @@ onMounted(() => {
               </VCol>
 
               <!-- Cuenta Origen -->
-              <VCol cols="12" md="6" class="mb-3">
+              <VCol
+                cols="12"
+                md="6"
+                class="mb-3"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Cuenta de Egreso (Origen) <span class="text-error">*</span>
                 </label>
@@ -397,7 +428,12 @@ onMounted(() => {
               </VCol>
 
               <!-- Monto Real Pagado -->
-              <VCol cols="12" sm="6" md="4" class="mb-3">
+              <VCol
+                cols="12"
+                sm="6"
+                md="4"
+                class="mb-3"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Monto Real Pagado ($) <span class="text-error">*</span>
                 </label>
@@ -417,7 +453,12 @@ onMounted(() => {
               </VCol>
 
               <!-- Método de Pago -->
-              <VCol cols="12" sm="6" md="4" class="mb-3">
+              <VCol
+                cols="12"
+                sm="6"
+                md="4"
+                class="mb-3"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Método de Pago <span class="text-error">*</span>
                 </label>
@@ -432,7 +473,12 @@ onMounted(() => {
               </VCol>
 
               <!-- Fecha de Pago -->
-              <VCol cols="12" sm="6" md="4" class="mb-3">
+              <VCol
+                cols="12"
+                sm="6"
+                md="4"
+                class="mb-3"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Fecha de Pago <span class="text-error">*</span>
                 </label>
@@ -447,7 +493,11 @@ onMounted(() => {
               </VCol>
 
               <!-- Referencia / Comprobante -->
-              <VCol cols="12" sm="6" md="6">
+              <VCol
+                cols="12"
+                sm="6"
+                md="6"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   # Referencia / Transferencia
                 </label>
@@ -462,7 +512,11 @@ onMounted(() => {
               </VCol>
 
               <!-- Observaciones -->
-              <VCol cols="12" sm="6" md="6">
+              <VCol
+                cols="12"
+                sm="6"
+                md="6"
+              >
                 <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                   Notas / Observación
                 </label>
@@ -508,7 +562,9 @@ onMounted(() => {
         <VCard class="mb-6 rounded-xl border border-light elevation-0 overflow-hidden">
           <VCardItem class="bg-grey-lighten-5 py-3 border-b border-light">
             <template #prepend>
-              <div class="step-badge me-3">2</div>
+              <div class="step-badge me-3">
+                2
+              </div>
             </template>
             <div class="d-flex align-center justify-space-between flex-wrap gap-2 w-100">
               <div>
@@ -534,14 +590,31 @@ onMounted(() => {
 
           <VCardText class="pa-0">
             <!-- Loading -->
-            <div v-if="loadingInvoices" class="text-center py-8">
-              <VProgressCircular indeterminate color="primary" size="36" />
-              <p class="text-caption text-medium-emphasis mt-2 mb-0">Cargando facturas del proveedor...</p>
+            <div
+              v-if="loadingInvoices"
+              class="text-center py-8"
+            >
+              <VProgressCircular
+                indeterminate
+                color="primary"
+                size="36"
+              />
+              <p class="text-caption text-medium-emphasis mt-2 mb-0">
+                Cargando facturas del proveedor...
+              </p>
             </div>
 
             <!-- Sin proveedor seleccionado -->
-            <div v-else-if="!form.supplier_id" class="text-center py-10 px-4">
-              <VIcon icon="ri-store-2-line" size="40" color="grey-lighten-1" class="mb-2" />
+            <div
+              v-else-if="!form.supplier_id"
+              class="text-center py-10 px-4"
+            >
+              <VIcon
+                icon="ri-store-2-line"
+                size="40"
+                color="grey-lighten-1"
+                class="mb-2"
+              />
               <p class="text-body-2 font-weight-medium text-grey-darken-2 mb-1">
                 Selecciona un proveedor en el Paso 1
               </p>
@@ -551,8 +624,16 @@ onMounted(() => {
             </div>
 
             <!-- Proveedor sin facturas registradas -->
-            <div v-else-if="pendingInvoices.length === 0" class="text-center py-10 px-4">
-              <VIcon icon="ri-file-warning-line" size="40" color="warning" class="mb-2" />
+            <div
+              v-else-if="pendingInvoices.length === 0"
+              class="text-center py-10 px-4"
+            >
+              <VIcon
+                icon="ri-file-warning-line"
+                size="40"
+                color="warning"
+                class="mb-2"
+              />
               <p class="text-body-2 font-weight-medium text-grey-darken-2 mb-1">
                 No hay facturas registradas para este proveedor
               </p>
@@ -583,10 +664,16 @@ onMounted(() => {
               </div>
 
               <div class="table-responsive">
-                <VTable hover class="reconciliation-table">
+                <VTable
+                  hover
+                  class="reconciliation-table"
+                >
                   <thead class="bg-grey-lighten-4">
                     <tr>
-                      <th style="width: 48px;" class="text-center">
+                      <th
+                        style="width: 48px;"
+                        class="text-center"
+                      >
                         <VCheckbox
                           :model-value="pendingInvoices.length > 0 && pendingInvoices.every(i => i.selected)"
                           density="compact"
@@ -594,10 +681,21 @@ onMounted(() => {
                           @click.stop="selectAllInvoices"
                         />
                       </th>
-                      <th class="text-left font-weight-bold text-caption text-grey-darken-3"># Factura</th>
-                      <th class="text-left font-weight-bold text-caption text-grey-darken-3">Fecha Emisión</th>
-                      <th class="text-right font-weight-bold text-caption text-grey-darken-3">Total Factura</th>
-                      <th class="text-right font-weight-bold text-caption text-grey-darken-3" style="min-width: 140px;">Monto a Conciliar</th>
+                      <th class="text-left font-weight-bold text-caption text-grey-darken-3">
+                        # Factura
+                      </th>
+                      <th class="text-left font-weight-bold text-caption text-grey-darken-3">
+                        Fecha Emisión
+                      </th>
+                      <th class="text-right font-weight-bold text-caption text-grey-darken-3">
+                        Total Factura
+                      </th>
+                      <th
+                        class="text-right font-weight-bold text-caption text-grey-darken-3"
+                        style="min-width: 140px;"
+                      >
+                        Monto a Conciliar
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -608,7 +706,10 @@ onMounted(() => {
                       class="cursor-pointer transition-all"
                       @click="toggleInvoiceSelection(invoice)"
                     >
-                      <td class="text-center" @click.stop>
+                      <td
+                        class="text-center"
+                        @click.stop
+                      >
                         <VCheckbox
                           v-model="invoice.selected"
                           density="compact"
@@ -624,7 +725,10 @@ onMounted(() => {
                       <td class="text-right font-weight-bold text-body-2 text-grey-darken-4">
                         {{ formatMoney(invoice.total_amount) }}
                       </td>
-                      <td class="text-right" @click.stop>
+                      <td
+                        class="text-right"
+                        @click.stop
+                      >
                         <VTextField
                           v-model.number="invoice.amount_to_pay"
                           type="number"
@@ -649,12 +753,18 @@ onMounted(() => {
       </VCol>
 
       <!-- COLUMNA DERECHA: Resumen, Cuadratura y Resolución de Diferencia -->
-      <VCol cols="12" lg="4">
+      <VCol
+        cols="12"
+        lg="4"
+      >
         <!-- Card de Cuadratura Financiera -->
         <VCard class="mb-6 rounded-xl border border-light elevation-1 sticky-card">
           <VCardItem class="bg-primary text-white py-4">
             <VCardTitle class="text-subtitle-1 font-weight-bold text-white d-flex align-center gap-2">
-              <VIcon icon="ri-calculator-line" size="20" />
+              <VIcon
+                icon="ri-calculator-line"
+                size="20"
+              />
               Cuadratura de Pago
             </VCardTitle>
             <VCardSubtitle class="text-caption text-white text-opacity-75">
@@ -693,7 +803,11 @@ onMounted(() => {
               class="diferencia-box overpayment pa-3 rounded-lg border mb-4"
             >
               <div class="d-flex align-center gap-2 mb-1">
-                <VIcon icon="ri-add-circle-fill" color="success" size="18" />
+                <VIcon
+                  icon="ri-add-circle-fill"
+                  color="success"
+                  size="18"
+                />
                 <span class="text-caption font-weight-bold text-success text-uppercase">
                   Saldo a Favor Generado (+{{ formatMoney(difference) }})
                 </span>
@@ -708,7 +822,11 @@ onMounted(() => {
               class="diferencia-box underpayment pa-3 rounded-lg border mb-4"
             >
               <div class="d-flex align-center gap-2 mb-1">
-                <VIcon icon="ri-error-warning-fill" color="warning" size="18" />
+                <VIcon
+                  icon="ri-error-warning-fill"
+                  color="warning"
+                  size="18"
+                />
                 <span class="text-caption font-weight-bold text-warning text-uppercase">
                   Pago Parcial (Faltan {{ formatMoney(Math.abs(difference)) }})
                 </span>
@@ -722,21 +840,36 @@ onMounted(() => {
               v-else-if="actualPayment > 0 && totalInvoicesSelected > 0"
               class="diferencia-box exact pa-3 rounded-lg border mb-4 text-center"
             >
-              <VIcon icon="ri-checkbox-circle-fill" color="success" size="20" class="mb-1" />
+              <VIcon
+                icon="ri-checkbox-circle-fill"
+                color="success"
+                size="20"
+                class="mb-1"
+              />
               <div class="text-caption font-weight-bold text-success">
                 Cuadratura Exacta ($0.00 de diferencia)
               </div>
             </div>
 
             <!-- SECCIÓN DE RESOLUCIÓN DE LA DIFERENCIA (Solo si hay excedente) -->
-            <div v-if="isOverpayment" class="mt-4 pt-3 border-t border-light">
+            <div
+              v-if="isOverpayment"
+              class="mt-4 pt-3 border-t border-light"
+            >
               <label class="text-caption font-weight-bold text-grey-darken-4 d-block mb-2">
                 ¿Cómo gestionar el sobrante de {{ formatMoney(difference) }}?
               </label>
 
-              <VRadioGroup v-model="form.difference_resolution" density="compact" class="resolution-radios">
+              <VRadioGroup
+                v-model="form.difference_resolution"
+                density="compact"
+                class="resolution-radios"
+              >
                 <!-- Opción A -->
-                <div class="resolution-option pa-3 rounded-lg border mb-2" :class="{ active: form.difference_resolution === 'credit_balance' }">
+                <div
+                  class="resolution-option pa-3 rounded-lg border mb-2"
+                  :class="{ active: form.difference_resolution === 'credit_balance' }"
+                >
                   <VRadio
                     value="credit_balance"
                     color="primary"
@@ -755,7 +888,10 @@ onMounted(() => {
                 </div>
 
                 <!-- Opción B -->
-                <div class="resolution-option pa-3 rounded-lg border mb-2" :class="{ active: form.difference_resolution === 'credit_note' }">
+                <div
+                  class="resolution-option pa-3 rounded-lg border mb-2"
+                  :class="{ active: form.difference_resolution === 'credit_note' }"
+                >
                   <VRadio
                     value="credit_note"
                     color="primary"
@@ -772,7 +908,10 @@ onMounted(() => {
                     </template>
                   </VRadio>
 
-                  <div v-if="form.difference_resolution === 'credit_note'" class="mt-2 ms-8">
+                  <div
+                    v-if="form.difference_resolution === 'credit_note'"
+                    class="mt-2 ms-8"
+                  >
                     <VTextField
                       v-model="form.credit_note_number"
                       placeholder="Número de NC (ej: NC-001-001-00451)"
@@ -785,7 +924,10 @@ onMounted(() => {
                 </div>
 
                 <!-- Opción C -->
-                <div class="resolution-option pa-3 rounded-lg border mb-2" :class="{ active: form.difference_resolution === 'immediate_refund' }">
+                <div
+                  class="resolution-option pa-3 rounded-lg border mb-2"
+                  :class="{ active: form.difference_resolution === 'immediate_refund' }"
+                >
                   <VRadio
                     value="immediate_refund"
                     color="primary"
@@ -802,7 +944,10 @@ onMounted(() => {
                     </template>
                   </VRadio>
 
-                  <div v-if="form.difference_resolution === 'immediate_refund'" class="mt-2 ms-8">
+                  <div
+                    v-if="form.difference_resolution === 'immediate_refund'"
+                    class="mt-2 ms-8"
+                  >
                     <VSelect
                       v-model="form.refund_account_id"
                       :items="accounts"
@@ -830,7 +975,10 @@ onMounted(() => {
               :disabled="selectedInvoicesList.length === 0 || actualPayment <= 0"
               @click="submitReconciliation"
             >
-              <VIcon icon="ri-check-double-line" start />
+              <VIcon
+                icon="ri-check-double-line"
+                start
+              />
               Procesar y Conciliar Pago ({{ formatMoney(actualPayment) }})
             </VBtn>
           </VCardText>

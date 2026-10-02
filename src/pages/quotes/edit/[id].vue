@@ -108,6 +108,7 @@ const isManualProductDialogVisible = ref(false)
 
 // Manual Product Form State
 const manualFormRef = ref(null)
+
 const manualProduct = ref({
   description: '',
   sku: '',
@@ -141,6 +142,7 @@ const addManualItem = async () => {
   const desc = (manualProduct.value.description || '').trim()
   if (!desc) {
     showNotification('La descripción del producto es requerida', 'warning')
+    
     return
   }
 
@@ -837,18 +839,32 @@ onMounted(async () => {
                     :key="index"
                   >
                     <td class="text-left font-weight-medium">
-                      <div v-if="item.product_id" class="d-flex flex-column">
+                      <div
+                        v-if="item.product_id"
+                        class="d-flex flex-column"
+                      >
                         <span>{{ item.description }}</span>
                         <div class="text-caption text-medium-emphasis">
                           {{ item.sku || 'Sin Código' }}
                         </div>
                       </div>
-                      <div v-else class="d-flex flex-column gap-1 py-1">
+                      <div
+                        v-else
+                        class="d-flex flex-column gap-1 py-1"
+                      >
                         <div class="d-flex align-center gap-2">
-                          <VChip size="x-small" color="primary" variant="tonal" class="font-weight-bold">
+                          <VChip
+                            size="x-small"
+                            color="primary"
+                            variant="tonal"
+                            class="font-weight-bold"
+                          >
                             {{ item.type === 'service' ? 'Servicio Manual' : 'Producto Manual' }}
                           </VChip>
-                          <span v-if="item.sku && item.sku !== 'MANUAL'" class="text-caption text-medium-emphasis font-weight-medium">
+                          <span
+                            v-if="item.sku && item.sku !== 'MANUAL'"
+                            class="text-caption text-medium-emphasis font-weight-medium"
+                          >
                             Ref: {{ item.sku }}
                           </span>
                         </div>
@@ -1058,7 +1074,11 @@ onMounted(async () => {
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <VCardTitle class="pa-4 bg-primary d-flex align-center justify-space-between text-white">
           <div class="d-flex align-center gap-2">
-            <VIcon icon="ri-file-add-line" size="22" color="white" />
+            <VIcon
+              icon="ri-file-add-line"
+              size="22"
+              color="white"
+            />
             <span class="font-weight-bold text-subtitle-1 text-white">Agregar Producto Manual a Cotización</span>
           </div>
           <VBtn
@@ -1088,7 +1108,10 @@ onMounted(async () => {
                 />
               </VCol>
 
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <VTextField
                   v-model="manualProduct.sku"
                   label="Código / Referencia (Opcional)"
@@ -1098,7 +1121,10 @@ onMounted(async () => {
                 />
               </VCol>
 
-              <VCol cols="12" sm="6">
+              <VCol
+                cols="12"
+                sm="6"
+              >
                 <VSelect
                   v-model="manualProduct.type"
                   label="Tipo de Ítem"
@@ -1113,7 +1139,10 @@ onMounted(async () => {
                 />
               </VCol>
 
-              <VCol cols="12" sm="4">
+              <VCol
+                cols="12"
+                sm="4"
+              >
                 <VTextField
                   v-model.number="manualProduct.quantity"
                   type="number"
@@ -1125,7 +1154,10 @@ onMounted(async () => {
                 />
               </VCol>
 
-              <VCol cols="12" sm="4">
+              <VCol
+                cols="12"
+                sm="4"
+              >
                 <VTextField
                   v-model.number="manualProduct.price"
                   type="number"
@@ -1140,7 +1172,10 @@ onMounted(async () => {
                 />
               </VCol>
 
-              <VCol cols="12" sm="4">
+              <VCol
+                cols="12"
+                sm="4"
+              >
                 <VTextField
                   v-model.number="manualProduct.discount"
                   type="number"

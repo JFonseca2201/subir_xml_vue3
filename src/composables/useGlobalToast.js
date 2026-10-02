@@ -20,6 +20,7 @@ export function extractErrorMessage(err, fallback = 'Ha ocurrido un error inespe
 
   if (typeof err === 'string') {
     const isGeneric = genericMessages.includes(err.trim())
+    
     return isGeneric ? fallback : err
   }
 
@@ -75,6 +76,7 @@ export function useGlobalToast() {
       !validTypes.includes(type.toLowerCase().trim())
     ) {
       const temp = messageOrError.toLowerCase().trim()
+
       messageOrError = type
       type = temp
     }

@@ -45,6 +45,7 @@ const loadFreshProfile = async () => {
     const resp = await $api(`users/${props.userData.id}`, { method: 'GET' })
     if (resp && (resp.user || resp.data)) {
       const u = resp.user || resp.data
+
       formData.value.name = u.name || formData.value.name
       formData.value.surname = u.surname || formData.value.surname
       formData.value.phone = u.phone || formData.value.phone
@@ -52,6 +53,7 @@ const loadFreshProfile = async () => {
       formData.value.identification = u.identification || formData.value.identification
 
       const updatedUser = { ...props.userData, ...u }
+
       refreshPermissionsUser(updatedUser)
       emit('profile-updated', updatedUser)
     }
@@ -105,6 +107,7 @@ const saveGeneralInfo = async () => {
     })
 
     const updatedUser = resp.user || { ...props.userData, ...formData.value }
+
     localStorage.setItem('user', JSON.stringify(updatedUser))
 
     showNotification(resp.message || 'Perfil actualizado correctamente', 'success')
@@ -112,6 +115,7 @@ const saveGeneralInfo = async () => {
     closeDialog()
   } catch (error) {
     const backendMessage = error.response?._data?.message || error.response?.data?.message || 'Error al actualizar el perfil'
+
     showNotification(backendMessage, 'error')
     console.error(error)
   } finally {
@@ -122,26 +126,31 @@ const saveGeneralInfo = async () => {
 const savePassword = async () => {
   if (!passwordData.value.current_password) {
     showNotification('Debe ingresar su contraseña actual', 'error')
+    
     return
   }
 
   if (!passwordData.value.new_password) {
     showNotification('Debe ingresar la nueva contraseña', 'error')
+    
     return
   }
 
   if (!passwordData.value.new_password_confirmation) {
     showNotification('Debe confirmar la nueva contraseña', 'error')
+    
     return
   }
 
   if (passwordData.value.new_password !== passwordData.value.new_password_confirmation) {
     showNotification('La nueva contraseña y su confirmación no coinciden', 'error')
+    
     return
   }
 
   if (passwordData.value.new_password.length < 6) {
     showNotification('La nueva contraseña debe tener al menos 6 caracteres', 'error')
+    
     return
   }
 
@@ -165,6 +174,7 @@ const savePassword = async () => {
     closeDialog()
   } catch (error) {
     const backendMessage = error.data?.message || error.response?._data?.message || error.response?.data?.message || error.message || 'Error al cambiar la contraseña'
+
     showNotification(backendMessage, 'error')
     console.error('Error al cambiar contraseña:', error)
   } finally {
@@ -186,6 +196,7 @@ const userRoleName = computed(() => {
   const role = props.userData?.role
   if (!role) return 'Usuario'
   if (typeof role === 'object') return role.name || 'Usuario'
+  
   return role
 })
 

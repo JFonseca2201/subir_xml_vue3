@@ -405,6 +405,7 @@ const exportKardexPDF = () => {
   const apiBaseUrl = getApiBaseUrl().replace(/\/$/, '')
 
   const params = new URLSearchParams()
+
   params.append('token', token)
 
   if (search.value && search.value.trim()) {
@@ -440,7 +441,12 @@ definePage({ meta: { permission: 'kardex' } })
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VIcon icon="ri-file-list-3-line" color="primary" class="me-2" size="28" />
+          <VIcon
+            icon="ri-file-list-3-line"
+            color="primary"
+            class="me-2"
+            size="28"
+          />
           Kardex
         </h1>
         <p class="text-medium-emphasis mb-0">
@@ -474,7 +480,11 @@ definePage({ meta: { permission: 'kardex' } })
       <VCardText class="pa-4">
         <VRow dense>
           <!-- Buscador -->
-          <VCol cols="12" sm="6" md="4">
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
             <VTextField
               v-model="search"
               label="Buscar por descripción o artículo"
@@ -489,33 +499,90 @@ definePage({ meta: { permission: 'kardex' } })
           </VCol>
 
           <!-- Tipo de Movimiento -->
-          <VCol cols="12" sm="6" md="4">
-            <VSelect v-model="movimientoTipo" :items="movimientoTipoOptions" item-title="title" item-value="value"
-              label="Tipo Flujo" placeholder="Todos" density="comfortable" variant="outlined" hide-details clearable />
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <VSelect
+              v-model="movimientoTipo"
+              :items="movimientoTipoOptions"
+              item-title="title"
+              item-value="value"
+              label="Tipo Flujo"
+              placeholder="Todos"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              clearable
+            />
           </VCol>
 
           <!-- Rango rápido -->
-          <VCol cols="12" sm="6" md="4">
-            <VSelect v-model="selectedRange" :items="rangeOptions" item-title="title" item-value="value"
-              label="Rango rápido" placeholder="Seleccionar rango" density="comfortable" variant="outlined" hide-details
-              @update:model-value="onRangeChange" />
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <VSelect
+              v-model="selectedRange"
+              :items="rangeOptions"
+              item-title="title"
+              item-value="value"
+              label="Rango rápido"
+              placeholder="Seleccionar rango"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              @update:model-value="onRangeChange"
+            />
           </VCol>
         </VRow>
 
-        <VRow dense class="mt-2">
+        <VRow
+          dense
+          class="mt-2"
+        >
           <!-- Rango de Fechas -->
-          <VCol cols="12" sm="6" md="4">
-            <VTextField v-model="startDate" type="date" label="Desde" density="comfortable" variant="outlined"
-              hide-details clearable />
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <VTextField
+              v-model="startDate"
+              type="date"
+              label="Desde"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              clearable
+            />
           </VCol>
 
-          <VCol cols="12" sm="6" md="4">
-            <VTextField v-model="endDate" type="date" label="Hasta" density="comfortable" variant="outlined"
-              hide-details clearable />
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <VTextField
+              v-model="endDate"
+              type="date"
+              label="Hasta"
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              clearable
+            />
           </VCol>
 
           <!-- Botones de Acción -->
-          <VCol cols="12" sm="12" md="4" class="d-flex align-center gap-2">
+          <VCol
+            cols="12"
+            sm="12"
+            md="4"
+            class="d-flex align-center gap-2"
+          >
             <VBtn
               color="primary"
               variant="elevated"
@@ -541,19 +608,36 @@ definePage({ meta: { permission: 'kardex' } })
     </VCard>
 
     <!-- Skeleton Loader para Kardex -->
-    <div v-if="isTableLoading" class="kardex-container">
-      <div v-for="n in 2" :key="n" class="mb-6">
+    <div
+      v-if="isTableLoading"
+      class="kardex-container"
+    >
+      <div
+        v-for="n in 2"
+        :key="n"
+        class="mb-6"
+      >
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
           <VCardText class="pa-4">
             <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-4">
               <div>
-                <div class="shimmer-line w-60 mb-2" style="height: 20px;" />
+                <div
+                  class="shimmer-line w-60 mb-2"
+                  style="height: 20px;"
+                />
                 <div class="shimmer-line w-40" />
               </div>
               <div class="d-flex gap-4 flex-wrap">
-                <div v-for="k in 4" :key="k" class="text-center">
+                <div
+                  v-for="k in 4"
+                  :key="k"
+                  class="text-center"
+                >
                   <div class="shimmer-line w-60 mx-auto mb-1" />
-                  <div class="shimmer-line w-80 mx-auto" style="height: 18px;" />
+                  <div
+                    class="shimmer-line w-80 mx-auto"
+                    style="height: 18px;"
+                  />
                 </div>
               </div>
             </div>
@@ -564,22 +648,50 @@ definePage({ meta: { permission: 'kardex' } })
           <VTable class="kardex-table">
             <thead>
               <tr>
-                <th class="text-left font-weight-bold">FECHA</th>
-                <th class="text-left font-weight-bold">CONCEPTO</th>
-                <th class="text-left font-weight-bold">DETALLES</th>
-                <th class="text-center font-weight-bold">CANTIDAD</th>
-                <th class="text-right font-weight-bold">ENTRADA (+)</th>
-                <th class="text-right font-weight-bold">SALIDA (-)</th>
+                <th class="text-left font-weight-bold">
+                  FECHA
+                </th>
+                <th class="text-left font-weight-bold">
+                  CONCEPTO
+                </th>
+                <th class="text-left font-weight-bold">
+                  DETALLES
+                </th>
+                <th class="text-center font-weight-bold">
+                  CANTIDAD
+                </th>
+                <th class="text-right font-weight-bold">
+                  ENTRADA (+)
+                </th>
+                <th class="text-right font-weight-bold">
+                  SALIDA (-)
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in 3" :key="row" class="skeleton-row align-middle">
-                <td class="py-3"><div class="shimmer-line w-60" /></td>
-                <td class="py-3"><div class="shimmer-line w-75" /></td>
-                <td class="py-3"><div class="shimmer-line w-90 mb-1" /><div class="shimmer-line w-50" /></td>
-                <td class="text-center py-3"><div class="shimmer-chip mx-auto" /></td>
-                <td class="text-right py-3"><div class="shimmer-line w-50 ms-auto" /></td>
-                <td class="text-right py-3"><div class="shimmer-line w-50 ms-auto" /></td>
+              <tr
+                v-for="row in 3"
+                :key="row"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-3">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="py-3">
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-3">
+                  <div class="shimmer-line w-90 mb-1" /><div class="shimmer-line w-50" />
+                </td>
+                <td class="text-center py-3">
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td class="text-right py-3">
+                  <div class="shimmer-line w-50 ms-auto" />
+                </td>
+                <td class="text-right py-3">
+                  <div class="shimmer-line w-50 ms-auto" />
+                </td>
               </tr>
             </tbody>
           </VTable>
@@ -587,8 +699,15 @@ definePage({ meta: { permission: 'kardex' } })
       </div>
     </div>
 
-    <div v-else-if="Object.keys(groupedByProduct).length === 0" class="text-center pa-8">
-      <VIcon size="64" class="mb-3" color="grey-lighten-1">
+    <div
+      v-else-if="Object.keys(groupedByProduct).length === 0"
+      class="text-center pa-8"
+    >
+      <VIcon
+        size="64"
+        class="mb-3"
+        color="grey-lighten-1"
+      >
         ri-file-list-3-line
       </VIcon>
       <div class="text-h6 mb-2">
@@ -599,15 +718,26 @@ definePage({ meta: { permission: 'kardex' } })
       </div>
     </div>
 
-    <div v-else class="kardex-container">
-      <div v-for="(group, key) in groupedByProduct" :key="key" class="mb-6">
+    <div
+      v-else
+      class="kardex-container"
+    >
+      <div
+        v-for="(group, key) in groupedByProduct"
+        :key="key"
+        class="mb-6"
+      >
         <!-- Encabezado del Producto con Resumen -->
         <VCard class="rounded-lg border-light border overflow-hidden elevation-0 mb-2 day-header">
           <VCardText class="pa-4">
             <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center gap-4">
               <div>
                 <h2 class="text-h6 font-weight-bold mb-1 d-flex align-center gap-2">
-                  <VIcon :icon="group.isProduct ? 'ri-box-3-line' : 'ri-wallet-3-line'" color="primary" size="24" />
+                  <VIcon
+                    :icon="group.isProduct ? 'ri-box-3-line' : 'ri-wallet-3-line'"
+                    color="primary"
+                    size="24"
+                  />
                   <span>{{ group.name }}</span>
                 </h2>
                 <div class="d-flex align-center gap-2 flex-wrap text-body-2 text-medium-emphasis mt-1">
@@ -624,7 +754,10 @@ definePage({ meta: { permission: 'kardex' } })
                 </div>
               </div>
               <div class="d-flex gap-4 flex-wrap">
-                <div v-if="group.isProduct" class="text-center">
+                <div
+                  v-if="group.isProduct"
+                  class="text-center"
+                >
                   <div class="text-caption text-medium-emphasis">
                     Und. Compradas
                   </div>
@@ -632,7 +765,10 @@ definePage({ meta: { permission: 'kardex' } })
                     {{ formatQuantity(group.totalEntradasFisicas) }}
                   </div>
                 </div>
-                <div v-if="group.isProduct" class="text-center">
+                <div
+                  v-if="group.isProduct"
+                  class="text-center"
+                >
                   <div class="text-caption text-medium-emphasis">
                     Und. Vendidas
                   </div>
@@ -661,10 +797,102 @@ definePage({ meta: { permission: 'kardex' } })
           </VCardText>
         </VCard>
 
-        <!-- Tabla de Movimientos del Producto -->
-        <VCard class="rounded-lg border-light border overflow-hidden elevation-0">
+        <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+        <div class="d-md-none d-flex flex-column gap-3 mb-4">
+          <div
+            v-for="movimiento in group.items"
+            :key="movimiento.id"
+            class="mobile-kardex-card"
+          >
+            <!-- Fila Superior: Fecha y Concepto -->
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+              <span class="text-caption font-weight-medium text-medium-emphasis">
+                {{ movimiento.fecha_formateada }}
+              </span>
+              <div
+                class="status-pill-clean"
+                :class="getConceptoPillClass(movimiento.concepto_tipo)"
+              >
+                <VIcon
+                  :icon="getConceptoIcon(movimiento.concepto_tipo)"
+                  size="12"
+                />
+                <span>{{ getConceptoLabel(movimiento.concepto_tipo) }}</span>
+              </div>
+            </div>
+
+            <!-- Fila Central: Descripción / Referencia / Cuenta -->
+            <div class="mb-2">
+              <div class="text-body-2 font-weight-medium text-high-emphasis">
+                {{ movimiento.descripcion || 'Sin descripción' }}
+              </div>
+              <div
+                v-if="movimiento.sku || (movimiento.producto && movimiento.producto.sku) || movimiento.codigo_aux"
+                class="d-flex align-center gap-1 mt-1"
+              >
+                <div
+                  class="status-pill-clean status-primary"
+                  style="font-size: 0.68rem !important; padding: 2px 8px !important;"
+                >
+                  <span class="status-dot" />
+                  <span>COD: {{ movimiento.sku || movimiento.producto?.sku || movimiento.codigo_aux }}</span>
+                </div>
+              </div>
+              <div
+                v-if="movimiento.account"
+                class="text-caption text-medium-emphasis d-flex align-center mt-1"
+              >
+                <VIcon
+                  icon="ri-bank-card-line"
+                  size="x-small"
+                  class="me-1"
+                />
+                {{ movimiento.account.name }}
+              </div>
+            </div>
+
+            <!-- Fila Inferior: Cantidad y Flujo Financiero -->
+            <div class="pt-2 border-t d-flex align-center justify-space-between flex-wrap gap-2">
+              <div v-if="group.isProduct && movimiento.cantidad_movida">
+                <div
+                  class="status-pill-clean"
+                  :class="isStockEntry(movimiento) ? 'status-paid' : 'status-pending'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ isStockEntry(movimiento) ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }} uds.</span>
+                </div>
+              </div>
+              <div v-else />
+
+              <div>
+                <span
+                  v-if="movimiento.movimiento_tipo === 'entrada'"
+                  class="text-body-2 font-weight-bold text-success"
+                >
+                  +{{ formatCurrency(movimiento.monto_financiero) }}
+                </span>
+                <span
+                  v-else-if="movimiento.movimiento_tipo === 'salida'"
+                  class="text-body-2 font-weight-bold text-error"
+                >
+                  -{{ formatCurrency(movimiento.monto_financiero) }}
+                </span>
+                <span
+                  v-else
+                  class="text-grey-lighten-2"
+                >-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
+        <VCard class="d-none d-md-block rounded-lg border-light border overflow-hidden elevation-0">
           <div class="overflow-x-auto">
-            <VTable hover class="kardex-table">
+            <VTable
+              hover
+              class="kardex-table"
+            >
               <thead>
                 <tr>
                   <th class="text-left font-weight-bold">
@@ -676,7 +904,10 @@ definePage({ meta: { permission: 'kardex' } })
                   <th class="text-left font-weight-bold">
                     DETALLES
                   </th>
-                  <th v-if="group.isProduct" class="text-center font-weight-bold">
+                  <th
+                    v-if="group.isProduct"
+                    class="text-center font-weight-bold"
+                  >
                     CANTIDAD
                   </th>
                   <th class="text-right font-weight-bold">
@@ -688,14 +919,20 @@ definePage({ meta: { permission: 'kardex' } })
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="movimiento in group.items" :key="movimiento.id">
+                <tr
+                  v-for="movimiento in group.items"
+                  :key="movimiento.id"
+                >
                   <td>{{ movimiento.fecha_formateada }}</td>
                   <td>
                     <div
                       class="status-pill-clean"
                       :class="getConceptoPillClass(movimiento.concepto_tipo)"
                     >
-                      <VIcon :icon="getConceptoIcon(movimiento.concepto_tipo)" size="12" />
+                      <VIcon
+                        :icon="getConceptoIcon(movimiento.concepto_tipo)"
+                        size="12"
+                      />
                       <span>{{ getConceptoLabel(movimiento.concepto_tipo) }}</span>
                     </div>
                   </td>
@@ -717,14 +954,24 @@ definePage({ meta: { permission: 'kardex' } })
                         <span>COD: {{ movimiento.sku || movimiento.producto?.sku || movimiento.codigo_aux }}</span>
                       </div>
                     </div>
-                    <div v-if="movimiento.account" class="text-caption text-medium-emphasis d-flex align-center mt-1">
-                      <VIcon icon="ri-bank-card-line" size="x-small" class="me-1" />
+                    <div
+                      v-if="movimiento.account"
+                      class="text-caption text-medium-emphasis d-flex align-center mt-1"
+                    >
+                      <VIcon
+                        icon="ri-bank-card-line"
+                        size="x-small"
+                        class="me-1"
+                      />
                       {{ movimiento.account.name }}
                     </div>
                   </td>
 
                   <!-- CANTIDAD FÍSICA -->
-                  <td v-if="group.isProduct" class="text-center">
+                  <td
+                    v-if="group.isProduct"
+                    class="text-center"
+                  >
                     <div
                       v-if="movimiento.cantidad_movida"
                       class="status-pill-clean"
@@ -733,23 +980,38 @@ definePage({ meta: { permission: 'kardex' } })
                       <span class="status-dot" />
                       <span>{{ isStockEntry(movimiento) ? '+' : '-' }}{{ formatQuantity(movimiento.cantidad_movida) }}</span>
                     </div>
-                    <span v-else class="text-grey">-</span>
+                    <span
+                      v-else
+                      class="text-grey"
+                    >-</span>
                   </td>
 
                   <!-- FLUJO FINANCIERO: ENTRADA -->
                   <td class="text-right flow-in-cell">
-                    <span v-if="movimiento.movimiento_tipo === 'entrada'" class="font-weight-bold text-success">
+                    <span
+                      v-if="movimiento.movimiento_tipo === 'entrada'"
+                      class="font-weight-bold text-success"
+                    >
                       +{{ formatCurrency(movimiento.monto_financiero) }}
                     </span>
-                    <span v-else class="text-grey-lighten-2">-</span>
+                    <span
+                      v-else
+                      class="text-grey-lighten-2"
+                    >-</span>
                   </td>
 
                   <!-- FLUJO FINANCIERO: SALIDA -->
                   <td class="text-right flow-out-cell">
-                    <span v-if="movimiento.movimiento_tipo === 'salida'" class="font-weight-bold text-error">
+                    <span
+                      v-if="movimiento.movimiento_tipo === 'salida'"
+                      class="font-weight-bold text-error"
+                    >
                       -{{ formatCurrency(movimiento.monto_financiero) }}
                     </span>
-                    <span v-else class="text-grey-lighten-2">-</span>
+                    <span
+                      v-else
+                      class="text-grey-lighten-2"
+                    >-</span>
                   </td>
                 </tr>
               </tbody>
@@ -760,95 +1022,3 @@ definePage({ meta: { permission: 'kardex' } })
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.border-light {
-  border-color: rgba(var(--v-border-color), 0.12) !important;
-}
-
-.day-header {
-  background-color: rgba(var(--v-theme-primary), 0.03);
-}
-
-// Status Pills (Estilo listado de clientes / ventas)
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-pending {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-
-.status-partial {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-info {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-secondary {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
-
-  .status-dot {
-    background-color: #94a3b8 !important;
-  }
-}
-
-.status-primary {
-  background-color: #eef2ff !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
-
-  .status-dot {
-    background-color: #6366f1 !important;
-  }
-}
-</style>

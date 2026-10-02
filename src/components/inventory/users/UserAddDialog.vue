@@ -24,6 +24,7 @@ const emit = defineEmits([
 const getActiveSucursaleId = () => {
   try {
     const user = JSON.parse(localStorage.getItem('user') || '{}')
+    
     return String(user.sucursale_id || '1')
   } catch (e) {
     return '1'

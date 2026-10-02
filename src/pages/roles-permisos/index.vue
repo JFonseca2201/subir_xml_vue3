@@ -103,6 +103,7 @@ const getRoleColor = roleName => {
   if (name.includes('admin')) return 'warning'
   if (name.includes('vendedor') || name.includes('seller')) return 'success'
   if (name.includes('gerente') || name.includes('manager')) return 'primary'
+  
   return 'secondary'
 }
 
@@ -111,6 +112,7 @@ const getRoleIcon = roleName => {
   if (name.includes('admin')) return 'ri-vip-crown-line'
   if (name.includes('vendedor') || name.includes('seller')) return 'ri-shopping-cart-line'
   if (name.includes('gerente') || name.includes('manager')) return 'ri-briefcase-4-line'
+  
   return 'ri-shield-user-line'
 }
 
@@ -145,8 +147,17 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-shield-keyhole-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-shield-keyhole-line"
+              size="26"
+            />
           </VAvatar>
           Roles y Permisos
         </h1>
@@ -169,14 +180,30 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
-            <VIcon icon="ri-shield-check-line" size="24" />
+          <VAvatar
+            size="46"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-shield-check-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Roles Definidos</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Roles Definidos
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ list_roles.length }} <span class="text-caption text-disabled font-weight-regular">roles activos</span>
             </div>
@@ -184,13 +211,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
-            <VIcon icon="ri-lock-unlock-line" size="24" />
+          <VAvatar
+            size="46"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-lock-unlock-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Permisos Asignados Totales</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Permisos Asignados Totales
+            </div>
             <div class="text-h6 font-weight-bold text-success">
               {{ totalPermissionsCount }} <span class="text-caption text-disabled font-weight-regular">permisos</span>
             </div>
@@ -198,13 +238,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
-            <VIcon icon="ri-user-shared-line" size="24" />
+          <VAvatar
+            size="46"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-user-shared-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Seguridad del Sistema</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Seguridad del Sistema
+            </div>
             <div class="text-h6 font-weight-bold text-warning">
               Activa <span class="text-caption text-disabled font-weight-regular">(Control granular)</span>
             </div>
@@ -218,7 +271,11 @@ onMounted(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Búsqueda</span>
           </div>
 
@@ -235,7 +292,10 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
           <VCol cols="12">
             <VTextField
               v-model="seachQuery"
@@ -255,69 +315,278 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4"><div class="shimmer-line w-40" /></td>
-            <td class="py-4 text-center" style="width: 120px;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="loading">
+      <!-- Loading móvil -->
+      <div class="d-md-none d-flex flex-column gap-3">
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="mobile-role-card"
+        >
+          <div class="d-flex justify-space-between align-center pb-2 border-b mb-2">
+            <div
+              class="shimmer-line w-25"
+              style="height: 14px;"
+            />
+            <div
+              class="shimmer-button rounded"
+              style="width: 70px; height: 26px;"
+            />
+          </div>
+          <div class="d-flex align-center gap-3 mb-2">
+            <div
+              class="shimmer-avatar rounded-lg"
+              style="width: 40px; height: 40px;"
+            />
+            <div class="flex-grow-1">
+              <div
+                class="shimmer-line w-50 mb-1"
+                style="height: 16px;"
+              />
+              <div
+                class="shimmer-line w-30"
+                style="height: 12px;"
+              />
+            </div>
+          </div>
+          <div class="pt-2 border-t">
+            <div
+              class="shimmer-line w-40"
+              style="height: 22px; border-radius: 12px;"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading desktop -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 70px;"
+              >
+                <div class="shimmer-line w-40" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-50" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-40" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 120px;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!list_roles || list_roles.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-shield-keyhole-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-shield-keyhole-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron roles
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar los filtros de búsqueda o crea un nuevo rol de acceso.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn v-if="can('register_role')" color="primary" prepend-icon="ri-add-line" @click="isRoleAddDialogVisible = true">
+        <VBtn
+          v-if="can('register_role')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="isRoleAddDialogVisible = true"
+        >
           Nuevo Rol
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA DE ROLES -->
+    <!-- LISTA DE ROLES -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="roles-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <div
+          v-for="item in list_roles"
+          :key="item.id"
+          class="mobile-role-card"
+        >
+          <!-- Fila Superior: ID, Fecha y Acciones -->
+          <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+            <div class="d-flex align-center gap-2">
+              <span class="text-caption font-weight-bold text-disabled">#{{ item.id }}</span>
+              <span class="text-caption text-medium-emphasis">
+                {{ item.created_at ? new Date(item.created_at.replace(' ', 'T')).toLocaleDateString('es-EC') : 'N/A' }}
+              </span>
+            </div>
+            <div class="d-flex align-center gap-1">
+              <VBtn
+                size="small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Rol y Permisos"
+                @click="viewItem(item)"
+              />
+              <VBtn
+                v-if="item.id !== 1 && can('edit_role')"
+                size="small"
+                color="warning"
+                variant="tonal"
+                icon="ri-pencil-line"
+                title="Editar Rol"
+                @click="editItem(item)"
+              />
+              <VBtn
+                v-if="item.id !== 1 && can('delete_role')"
+                size="small"
+                color="error"
+                variant="tonal"
+                icon="ri-delete-bin-line"
+                title="Eliminar Rol"
+                @click="deleteItem(item)"
+              />
+            </div>
+          </div>
+
+          <!-- Fila Central: Rol con Avatar e Icono -->
+          <div class="d-flex align-center gap-3 mb-2">
+            <VAvatar
+              :color="getRoleColor(item.name)"
+              variant="tonal"
+              size="42"
+              rounded="lg"
+              class="elevation-0"
+            >
+              <VIcon
+                :icon="getRoleIcon(item.name)"
+                size="22"
+              />
+            </VAvatar>
+            <div class="min-w-0 flex-grow-1">
+              <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate">
+                {{ item.name }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Fila Inferior: Permisos asignados -->
+          <div class="pt-2 border-t d-flex align-center justify-space-between flex-wrap gap-2">
+            <div
+              v-if="!item.permissions_pluck || item.permissions_pluck.length === 0"
+              class="text-caption text-disabled font-italic"
+            >
+              Sin permisos asignados
+            </div>
+            <div
+              v-else
+              class="d-flex align-center gap-2"
+            >
+              <VChip
+                size="small"
+                color="primary"
+                variant="tonal"
+                class="font-weight-semibold"
+              >
+                <VIcon
+                  icon="ri-checkbox-circle-line"
+                  size="14"
+                  class="me-1"
+                />
+                {{ item.permissions_pluck.length }} permisos asignados
+              </VChip>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA DESKTOP: TABLA COMPLETA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="roles-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 70px;"
+              >
                 ID
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 250px;"
+              >
                 Perfil de Rol
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 150px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 150px;"
+              >
                 Fecha Reg.
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 220px;"
+              >
                 Permisos Asignados
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 120px;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in list_roles" :key="item.id" class="role-table-row">
+            <tr
+              v-for="item in list_roles"
+              :key="item.id"
+              class="role-table-row"
+            >
               <td class="font-weight-bold text-disabled">
                 #{{ item.id }}
               </td>
@@ -325,8 +594,17 @@ onMounted(() => {
               <!-- Rol con Avatar e Icono -->
               <td class="py-3">
                 <div class="d-flex align-center gap-3">
-                  <VAvatar :color="getRoleColor(item.name)" variant="tonal" size="38" rounded="lg" class="elevation-0">
-                    <VIcon :icon="getRoleIcon(item.name)" size="22" />
+                  <VAvatar
+                    :color="getRoleColor(item.name)"
+                    variant="tonal"
+                    size="38"
+                    rounded="lg"
+                    class="elevation-0"
+                  >
+                    <VIcon
+                      :icon="getRoleIcon(item.name)"
+                      size="22"
+                    />
                   </VAvatar>
                   <div>
                     <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
@@ -345,12 +623,27 @@ onMounted(() => {
 
               <!-- Permisos Asignados (Limpio, sin saturar con 20 chips) -->
               <td class="py-3">
-                <div v-if="!item.permissions_pluck || item.permissions_pluck.length === 0" class="text-caption text-disabled font-italic">
+                <div
+                  v-if="!item.permissions_pluck || item.permissions_pluck.length === 0"
+                  class="text-caption text-disabled font-italic"
+                >
                   Sin permisos asignados
                 </div>
-                <div v-else class="d-flex align-center gap-2">
-                  <VChip size="small" color="primary" variant="tonal" class="font-weight-semibold">
-                    <VIcon icon="ri-checkbox-circle-line" size="14" class="me-1" />
+                <div
+                  v-else
+                  class="d-flex align-center gap-2"
+                >
+                  <VChip
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    class="font-weight-semibold"
+                  >
+                    <VIcon
+                      icon="ri-checkbox-circle-line"
+                      size="14"
+                      class="me-1"
+                    />
                     {{ item.permissions_pluck.length }} permisos asignados
                   </VChip>
                 </div>
@@ -427,22 +720,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style scoped lang="scss">
-.kpi-stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-color: rgba(var(--v-border-color), 0.1) !important;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--v-theme-on-surface), 0.06);
-  }
-}
-
-.role-table-row {
-  transition: background-color 0.15s ease;
-  &:hover {
-    background-color: rgba(var(--v-theme-primary), 0.02) !important;
-  }
-}
-</style>

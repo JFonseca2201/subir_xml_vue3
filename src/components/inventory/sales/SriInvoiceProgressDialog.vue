@@ -71,6 +71,7 @@ const copyAccessKey = async () => {
 
   if (!key) {
     showNotification('No hay clave de acceso disponible', 'warning')
+    
     return
   }
 
@@ -139,6 +140,7 @@ const startProgressAnimation = () => {
   timerInterval.value = setInterval(() => {
     if (processStatus.value !== 'processing') {
       clearInterval(timerInterval.value)
+      
       return
     }
 
@@ -175,6 +177,7 @@ const executeSriEmission = async () => {
   // ── FASE 1: Comprobación previa del estado del SRI ──
   try {
     const amb = props.sriEnvironment ? (String(props.sriEnvironment) === '2' ? 2 : 1) : 1
+
     const checkResponse = await $api('sri/check-status', {
       params: { ambiente: amb },
     })
@@ -182,6 +185,7 @@ const executeSriEmission = async () => {
     const health = checkResponse?.data
     if (health) {
       sriDiagnostic.value = health
+
       const recepcionOnline = health.services?.recepcion?.online !== false
       const isDown = !health.online || !recepcionOnline || health.status === 'FUERA_DE_SERVICIO' || health.status === 'CAIDO'
 
@@ -198,6 +202,7 @@ const executeSriEmission = async () => {
         statusMessage.value = 'No es posible generar la factura por problemas en el SRI'
         errorMessage.value = health.message || 'Los servidores del SRI no están disponibles o se encuentran fuera de servicio en este momento. La emisión fue detenida para proteger tu comprobante.'
         emit('error', errorMessage.value)
+        
         return
       }
     }
@@ -268,6 +273,7 @@ const executeSriEmission = async () => {
     if (timerInterval.value) clearInterval(timerInterval.value)
 
     processStatus.value = 'error'
+
     const backendMsg =
       err.data?.error ||
       err.data?.message ||
@@ -328,9 +334,11 @@ const downloadRide = async () => {
       method: 'GET',
       responseType: 'blob',
     })
+
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
+
     a.href = url
     a.download = `RIDE_${responseData.value?.document_number || saleId}.pdf`
     document.body.appendChild(a)
@@ -372,23 +380,38 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="620" persistent transition="dialog-bottom-transition">
+  <VDialog
+    :model-value="props.isDialogVisible"
+    max-width="620"
+    persistent
+    transition="dialog-bottom-transition"
+  >
     <VCard class="sri-progress-dialog-card elevation-24">
       <!-- Header con Identidad SRI -->
       <div class="sri-progress-header">
         <div class="d-flex align-center justify-space-between gap-3">
           <div class="d-flex align-center gap-3">
-            <div class="d-flex align-center justify-center rounded-xl"
-              style="width: 48px; height: 48px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35);">
-              <VIcon icon="ri-shield-flash-line" size="26" color="white" />
+            <div
+              class="d-flex align-center justify-center rounded-xl"
+              style="width: 48px; height: 48px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35);"
+            >
+              <VIcon
+                icon="ri-shield-flash-line"
+                size="26"
+                color="white"
+              />
             </div>
             <div>
               <div class="d-flex align-center gap-2">
                 <span class="text-caption font-weight-bold text-white opacity-85 text-uppercase letter-spacing-1">
                   Facturación Electrónica SRI
                 </span>
-                <VChip size="x-small" :color="isProd ? 'success' : 'amber-darken-2'" variant="flat"
-                  class="font-weight-bold text-white">
+                <VChip
+                  size="x-small"
+                  :color="isProd ? 'success' : 'amber-darken-2'"
+                  variant="flat"
+                  class="font-weight-bold text-white"
+                >
                   {{ isProd ? 'PRODUCCIÓN' : 'PRUEBAS' }}
                 </VChip>
               </div>
@@ -399,8 +422,10 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- Total Pill Flotante -->
-          <div class="d-none d-sm-flex flex-column align-end px-3 py-1.5 rounded-lg"
-            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28);">
+          <div
+            class="d-none d-sm-flex flex-column align-end px-3 py-1.5 rounded-lg"
+            style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.28);"
+          >
             <span style="font-size: 0.68rem; color: rgba(255, 255, 255, 0.85); font-weight: 600;">TOTAL</span>
             <span class="text-subtitle-1 font-weight-black text-white font-mono leading-none">
               {{ formatCurrency(props.totalAmount) }}
@@ -409,13 +434,21 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Info Cliente Ribbon -->
-        <div class="d-flex align-center justify-space-between gap-2 mt-3 pt-2.5 text-caption font-weight-medium"
-          style="border-top: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.9);">
+        <div
+          class="d-flex align-center justify-space-between gap-2 mt-3 pt-2.5 text-caption font-weight-medium"
+          style="border-top: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255, 255, 255, 0.9);"
+        >
           <div class="d-flex align-center gap-1.5 text-truncate">
-            <VIcon icon="ri-user-3-line" size="14" />
+            <VIcon
+              icon="ri-user-3-line"
+              size="14"
+            />
             <span class="text-truncate"><strong>Cliente:</strong> {{ props.clientName }}</span>
           </div>
-          <div v-if="props.clientDocument" class="d-none d-sm-block font-mono">
+          <div
+            v-if="props.clientDocument"
+            class="d-none d-sm-block font-mono"
+          >
             <strong>ID:</strong> {{ props.clientDocument }}
           </div>
         </div>
@@ -429,7 +462,12 @@ onBeforeUnmount(() => {
           <div class="sri-progress-bar-container mb-5">
             <div class="d-flex align-center justify-space-between mb-1">
               <span class="text-caption font-weight-bold d-flex align-center gap-1.5 text-high-emphasis">
-                <VProgressCircular indeterminate size="14" width="2" color="primary" />
+                <VProgressCircular
+                  indeterminate
+                  size="14"
+                  width="2"
+                  color="primary"
+                />
                 {{ statusMessage }}
               </span>
               <span class="text-subtitle-2 font-weight-black text-primary font-mono">
@@ -438,7 +476,10 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="progress-track-wrapper">
-              <div class="progress-track-fill" :style="{ width: `${progressPercent}%` }" />
+              <div
+                class="progress-track-fill"
+                :style="{ width: `${progressPercent}%` }"
+              />
             </div>
 
             <div class="d-flex align-center justify-space-between text-caption text-medium-emphasis mt-1">
@@ -449,16 +490,34 @@ onBeforeUnmount(() => {
 
           <!-- Stepper de 4 Fases con Micro-animaciones -->
           <div class="sri-step-list mb-2">
-            <div v-for="(step, idx) in steps" :key="step.id" class="sri-step-item" :class="{
-              'sri-step-completed': idx < currentStepIndex,
-              'sri-step-active': idx === currentStepIndex,
-              'sri-step-pending': idx > currentStepIndex,
-            }">
+            <div
+              v-for="(step, idx) in steps"
+              :key="step.id"
+              class="sri-step-item"
+              :class="{
+                'sri-step-completed': idx < currentStepIndex,
+                'sri-step-active': idx === currentStepIndex,
+                'sri-step-pending': idx > currentStepIndex,
+              }"
+            >
               <div class="sri-step-icon-badge">
-                <VIcon v-if="idx < currentStepIndex" icon="ri-check-line" size="18" />
-                <VProgressCircular v-else-if="idx === currentStepIndex" indeterminate size="18" width="2.5"
-                  color="white" />
-                <VIcon v-else :icon="step.icon" size="18" />
+                <VIcon
+                  v-if="idx < currentStepIndex"
+                  icon="ri-check-line"
+                  size="18"
+                />
+                <VProgressCircular
+                  v-else-if="idx === currentStepIndex"
+                  indeterminate
+                  size="18"
+                  width="2.5"
+                  color="white"
+                />
+                <VIcon
+                  v-else
+                  :icon="step.icon"
+                  size="18"
+                />
               </div>
 
               <div class="sri-step-content">
@@ -471,15 +530,28 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="sri-step-status">
-                <VChip v-if="idx < currentStepIndex" size="x-small" color="success" variant="tonal"
-                  class="font-weight-bold">
+                <VChip
+                  v-if="idx < currentStepIndex"
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                  class="font-weight-bold"
+                >
                   Completado
                 </VChip>
-                <VChip v-else-if="idx === currentStepIndex" size="x-small" color="primary" variant="flat"
-                  class="font-weight-bold">
+                <VChip
+                  v-else-if="idx === currentStepIndex"
+                  size="x-small"
+                  color="primary"
+                  variant="flat"
+                  class="font-weight-bold"
+                >
                   En curso...
                 </VChip>
-                <span v-else class="text-caption text-disabled">Pendiente</span>
+                <span
+                  v-else
+                  class="text-caption text-disabled"
+                >Pendiente</span>
               </div>
             </div>
           </div>
@@ -492,7 +564,11 @@ onBeforeUnmount(() => {
             <div class="sri-progress-bar-container mb-4">
               <div class="d-flex align-center justify-space-between mb-1">
                 <span class="text-caption font-weight-bold text-error d-flex align-center gap-1.5">
-                  <VIcon icon="ri-wifi-off-line" color="error" size="18" />
+                  <VIcon
+                    icon="ri-wifi-off-line"
+                    color="error"
+                    size="18"
+                  />
                   No es posible generar la factura por problemas en el SRI
                 </span>
                 <span class="text-subtitle-2 font-weight-black text-error font-mono">
@@ -501,7 +577,10 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="progress-track-wrapper">
-                <div class="progress-track-fill is-sri-error" style="width: 100%;" />
+                <div
+                  class="progress-track-fill is-sri-error"
+                  style="width: 100%;"
+                />
               </div>
 
               <div class="d-flex align-center justify-space-between text-caption text-error font-weight-medium mt-1">
@@ -514,7 +593,11 @@ onBeforeUnmount(() => {
             <div class="sri-offline-card pa-4 rounded-xl border mb-4">
               <div class="d-flex align-start gap-3 mb-3">
                 <div class="sri-offline-icon-circle flex-shrink-0">
-                  <VIcon icon="ri-cloud-off-line" size="26" color="error" />
+                  <VIcon
+                    icon="ri-cloud-off-line"
+                    size="26"
+                    color="error"
+                  />
                 </div>
                 <div>
                   <h4 class="text-subtitle-1 font-weight-bold text-error mb-1">
@@ -530,20 +613,38 @@ onBeforeUnmount(() => {
               <div class="d-flex flex-column gap-2 mb-3">
                 <div class="d-flex align-center justify-space-between pa-2.5 rounded-lg border bg-surface text-caption">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-upload-cloud-2-line" size="16" color="primary" />
+                    <VIcon
+                      icon="ri-upload-cloud-2-line"
+                      size="16"
+                      color="primary"
+                    />
                     <span class="font-weight-medium">Recepción (RecepcionComprobantesOffline):</span>
                   </div>
-                  <VChip size="x-small" :color="sriDiagnostic?.services?.recepcion?.online ? 'success' : 'error'" variant="flat" class="font-weight-bold">
+                  <VChip
+                    size="x-small"
+                    :color="sriDiagnostic?.services?.recepcion?.online ? 'success' : 'error'"
+                    variant="flat"
+                    class="font-weight-bold"
+                  >
                     {{ sriDiagnostic?.services?.recepcion?.status_label || (sriDiagnostic?.services?.recepcion?.online ? 'Operativo' : 'Sin Conexión') }}
                   </VChip>
                 </div>
 
                 <div class="d-flex align-center justify-space-between pa-2.5 rounded-lg border bg-surface text-caption">
                   <div class="d-flex align-center gap-2">
-                    <VIcon icon="ri-shield-check-line" size="16" color="success" />
+                    <VIcon
+                      icon="ri-shield-check-line"
+                      size="16"
+                      color="success"
+                    />
                     <span class="font-weight-medium">Autorización (AutorizacionComprobantesOffline):</span>
                   </div>
-                  <VChip size="x-small" :color="sriDiagnostic?.services?.autorizacion?.online ? 'success' : 'error'" variant="flat" class="font-weight-bold">
+                  <VChip
+                    size="x-small"
+                    :color="sriDiagnostic?.services?.autorizacion?.online ? 'success' : 'error'"
+                    variant="flat"
+                    class="font-weight-bold"
+                  >
                     {{ sriDiagnostic?.services?.autorizacion?.status_label || (sriDiagnostic?.services?.autorizacion?.online ? 'Operativo' : 'Sin Conexión') }}
                   </VChip>
                 </div>
@@ -551,7 +652,12 @@ onBeforeUnmount(() => {
 
               <!-- Tip informativo -->
               <div class="info-safety-box pa-3 rounded-lg border d-flex align-start gap-2.5">
-                <VIcon icon="ri-shield-check-line" size="18" color="success" class="flex-shrink-0 mt-0.5" />
+                <VIcon
+                  icon="ri-shield-check-line"
+                  size="18"
+                  color="success"
+                  class="flex-shrink-0 mt-0.5"
+                />
                 <div class="text-caption text-high-emphasis opacity-90">
                   <strong>Tus datos están intactos:</strong> Los ítems, productos y montos ingresados permanecen guardados en el formulario de venta. Puedes esperar a que el SRI se restablezca y pulsar <strong>Reintentar Emisión</strong>, o <strong>Cerrar</strong> para emitir como Nota de Venta si es urgente.
                 </div>
@@ -563,9 +669,14 @@ onBeforeUnmount(() => {
         <!-- ESTADO: ÉXITO (AUTORIZADA) -->
         <template v-else-if="processStatus === 'success'">
           <div class="sri-success-celebration text-center py-4">
-            <div class="d-inline-flex align-center justify-center rounded-circle mb-3 elevation-4"
-              style="width: 76px; height: 76px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
-              <VIcon icon="ri-checkbox-circle-fill" size="48" />
+            <div
+              class="d-inline-flex align-center justify-center rounded-circle mb-3 elevation-4"
+              style="width: 76px; height: 76px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;"
+            >
+              <VIcon
+                icon="ri-checkbox-circle-fill"
+                size="48"
+              />
             </div>
 
             <h3 class="text-h5 font-weight-bold text-high-emphasis mb-1">
@@ -577,15 +688,20 @@ onBeforeUnmount(() => {
 
             <!-- Card de Resumen de la Factura -->
             <div class="pa-4 rounded-xl border mb-4 text-start bg-surface elevation-1">
-              <div v-if="responseData?.document_number || responseData?.sequential"
-                class="d-flex justify-space-between align-center pb-2 border-b mb-2">
+              <div
+                v-if="responseData?.document_number || responseData?.sequential"
+                class="d-flex justify-space-between align-center pb-2 border-b mb-2"
+              >
                 <span class="text-caption text-medium-emphasis font-weight-medium">SECUENCIAL FACTURA</span>
                 <span class="text-body-2 font-weight-bold text-primary font-mono">
                   #{{ responseData?.document_number || responseData?.sequential }}
                 </span>
               </div>
 
-              <div v-if="responseData?.sri_access_key || responseData?.sale?.sri_access_key" class="d-flex flex-column pb-2 border-b mb-2">
+              <div
+                v-if="responseData?.sri_access_key || responseData?.sale?.sri_access_key"
+                class="d-flex flex-column pb-2 border-b mb-2"
+              >
                 <div class="d-flex justify-space-between align-center mb-1">
                   <span class="text-caption text-medium-emphasis font-weight-medium">CLAVE DE ACCESO SRI (49 DÍGITOS)</span>
                   <VBtn
@@ -603,15 +719,25 @@ onBeforeUnmount(() => {
                   class="text-caption font-mono font-weight-bold pa-2 rounded bg-background border text-break user-select-all cursor-pointer"
                   style="font-size: 0.72rem !important; word-break: break-all;"
                   title="Clic para copiar la clave de acceso"
-                  @click="copyAccessKey">
+                  @click="copyAccessKey"
+                >
                   {{ responseData?.sri_access_key || responseData?.sale?.sri_access_key }}
                 </div>
               </div>
 
               <div class="d-flex justify-space-between align-center">
                 <span class="text-caption text-medium-emphasis font-weight-medium">ESTADO FISCAL</span>
-                <VChip color="success" size="small" variant="flat" class="font-weight-bold px-3">
-                  <VIcon icon="ri-shield-check-line" size="14" class="me-1" />
+                <VChip
+                  color="success"
+                  size="small"
+                  variant="flat"
+                  class="font-weight-bold px-3"
+                >
+                  <VIcon
+                    icon="ri-shield-check-line"
+                    size="14"
+                    class="me-1"
+                  />
                   AUTORIZADA
                 </VChip>
               </div>
@@ -619,10 +745,19 @@ onBeforeUnmount(() => {
 
             <!-- Contador de Redirección Automática -->
             <div class="text-caption text-medium-emphasis d-flex align-center justify-center gap-1 mb-1">
-              <VIcon icon="ri-time-line" size="14" />
+              <VIcon
+                icon="ri-time-line"
+                size="14"
+              />
               <span>Redirigiendo al listado de ventas en <strong>{{ countdownSeconds }}s</strong>...</span>
-              <VBtn variant="text" density="compact" size="x-small" color="primary" class="ms-1"
-                @click="cancelAutoRedirect">
+              <VBtn
+                variant="text"
+                density="compact"
+                size="x-small"
+                color="primary"
+                class="ms-1"
+                @click="cancelAutoRedirect"
+              >
                 Pausar
               </VBtn>
             </div>
@@ -632,9 +767,14 @@ onBeforeUnmount(() => {
         <!-- ESTADO: ERROR GENERAL -->
         <template v-else-if="processStatus === 'error'">
           <div class="text-center py-4">
-            <div class="d-inline-flex align-center justify-center rounded-circle mb-3"
-              style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.12); color: #ef4444;">
-              <VIcon icon="ri-error-warning-fill" size="42" />
+            <div
+              class="d-inline-flex align-center justify-center rounded-circle mb-3"
+              style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.12); color: #ef4444;"
+            >
+              <VIcon
+                icon="ri-error-warning-fill"
+                size="42"
+              />
             </div>
 
             <h3 class="text-h6 font-weight-bold text-error mb-1">
@@ -644,8 +784,11 @@ onBeforeUnmount(() => {
               Ocurrió un inconveniente durante el procesamiento ante el SRI.
             </p>
 
-            <VAlert type="error" variant="tonal"
-              class="text-start text-caption pa-4 rounded-xl mb-4 font-weight-medium">
+            <VAlert
+              type="error"
+              variant="tonal"
+              class="text-start text-caption pa-4 rounded-xl mb-4 font-weight-medium"
+            >
               <div class="font-weight-bold mb-1">
                 Detalle del Error:
               </div>
@@ -661,48 +804,100 @@ onBeforeUnmount(() => {
       <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-surface">
         <template v-if="processStatus === 'processing'">
           <span class="text-caption text-medium-emphasis me-auto d-flex align-center gap-1.5">
-            <VIcon icon="ri-information-line" size="15" color="primary" />
+            <VIcon
+              icon="ri-information-line"
+              size="15"
+              color="primary"
+            />
             Por favor, no cierres esta ventana mientras el SRI autoriza.
           </span>
         </template>
 
         <template v-else-if="processStatus === 'sri_offline'">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-5 font-weight-medium" height="40" @click="closeDialog">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium"
+            height="40"
+            @click="closeDialog"
+          >
             Cerrar / Modificar
           </VBtn>
-          <VBtn color="info" variant="tonal" prepend-icon="ri-wifi-line"
-            class="rounded-lg px-5 font-weight-medium" height="40" @click="isDetailsDialogVisible = true">
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-wifi-line"
+            class="rounded-lg px-5 font-weight-medium"
+            height="40"
+            @click="isDetailsDialogVisible = true"
+          >
             Diagnóstico SRI
           </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-refresh-line"
-            class="rounded-lg px-6 font-weight-bold" height="40" @click="retryEmission">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-refresh-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="retryEmission"
+          >
             Reintentar Emisión
           </VBtn>
         </template>
 
         <template v-else-if="processStatus === 'success'">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-file-pdf-line"
-            class="rounded-lg px-4 font-weight-medium" height="40" @click="downloadRide">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-file-pdf-line"
+            class="rounded-lg px-4 font-weight-medium"
+            height="40"
+            @click="downloadRide"
+          >
             Descargar RIDE PDF
           </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-arrow-right-line"
-            class="rounded-lg px-6 font-weight-bold elevation-2" height="40" @click="goToList">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-arrow-right-line"
+            class="rounded-lg px-6 font-weight-bold elevation-2"
+            height="40"
+            @click="goToList"
+          >
             Ir a Ventas
           </VBtn>
         </template>
 
         <template v-else-if="processStatus === 'error'">
-          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
-            class="rounded-lg px-5 font-weight-medium" height="40" @click="closeDialog">
+          <VBtn
+            color="secondary"
+            variant="outlined"
+            prepend-icon="ri-close-line"
+            class="rounded-lg px-5 font-weight-medium"
+            height="40"
+            @click="closeDialog"
+          >
             Cerrar y Revisar
           </VBtn>
-          <VBtn color="info" variant="tonal" prepend-icon="ri-wifi-line"
-            class="rounded-lg px-5 font-weight-medium" height="40" @click="isDetailsDialogVisible = true">
+          <VBtn
+            color="info"
+            variant="tonal"
+            prepend-icon="ri-wifi-line"
+            class="rounded-lg px-5 font-weight-medium"
+            height="40"
+            @click="isDetailsDialogVisible = true"
+          >
             Diagnóstico SRI
           </VBtn>
-          <VBtn color="primary" variant="elevated" prepend-icon="ri-refresh-line"
-            class="rounded-lg px-6 font-weight-bold" height="40" @click="retryEmission">
+          <VBtn
+            color="primary"
+            variant="elevated"
+            prepend-icon="ri-refresh-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            @click="retryEmission"
+          >
             Reintentar Emisión
           </VBtn>
         </template>

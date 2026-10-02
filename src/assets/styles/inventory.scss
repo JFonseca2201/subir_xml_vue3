@@ -3291,7 +3291,8 @@
   }
 }
 
-.status-paid {
+.status-paid,
+.status-available {
   background-color: #ecfdf5 !important;
   color: #065f46 !important;
   border: 1px solid #a7f3d0 !important;
@@ -3301,13 +3302,198 @@
   }
 }
 
-.status-pending {
+.status-pending,
+.status-canceled {
   background-color: #fef2f2 !important;
   color: #991b1b !important;
   border: 1px solid #fecaca !important;
 
   .status-dot {
     background-color: #ef4444 !important;
+  }
+}
+
+.status-partially_used {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-fully_used,
+.status-liquidated {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
+}
+
+.status-refunded {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.supplier-credits-container {
+  .credits-table,
+  .usages-table {
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+.status-partial {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+
+  .status-dot {
+    background-color: #f59e0b !important;
+  }
+}
+
+.status-info {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-secondary {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #94a3b8 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
+  }
+}
+
+.status-quote {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+
+  .status-dot {
+    background-color: #0ea5e9 !important;
+  }
+}
+
+.status-transfer {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe !important;
+
+  .status-dot {
+    background-color: #3b82f6 !important;
+  }
+}
+
+.status-other {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+
+  .status-dot {
+    background-color: #64748b !important;
+  }
+}
+
+// Document Type Badges
+.doc-type-badge-mini {
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+
+  &.doc-factura {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+  }
+
+  &.doc-nota_venta {
+    background-color: #faf5ff !important;
+    color: #7e22ce !important;
+    border: 1px solid #e9d5ff !important;
+  }
+
+  &.doc-cotizacion {
+    background-color: #fff7ed !important;
+    color: #c2410c !important;
+    border: 1px solid #fed7aa !important;
+  }
+}
+
+.kardex-product-page,
+.kardex-page {
+  .day-header {
+    background-color: rgba(var(--v-theme-primary), 0.03);
+  }
+
+  .bg-success-header {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    color: #065f46 !important;
+  }
+
+  .bg-success-light {
+    background-color: rgba(16, 185, 129, 0.03) !important;
+  }
+
+  .bg-error-header {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    color: #991b1b !important;
+  }
+
+  .bg-error-light {
+    background-color: rgba(239, 68, 68, 0.03) !important;
+  }
+}
+
+.warehouse-table-row,
+.category-table-row,
+.unit-table-row,
+.conversion-table-row,
+.role-table-row,
+.kardex-row {
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }
 }
 
@@ -3682,6 +3868,61 @@
       text-transform: none;
       height: 38px;
     }
+  }
+}
+
+// =======================================================
+// MOBILE RECORD CARDS (Touch-Friendly Responsive UI)
+// =======================================================
+.mobile-sale-card,
+.mobile-wo-card,
+.mobile-quote-card,
+.mobile-client-card,
+.mobile-vehicle-card,
+.mobile-invoice-card,
+.mobile-pedido-card,
+.mobile-return-card,
+.mobile-employee-card,
+.mobile-partner-card,
+.mobile-provider-card,
+.mobile-user-card,
+.mobile-role-card,
+.mobile-credit-card,
+.mobile-warehouse-card,
+.mobile-category-card,
+.mobile-unit-card,
+.mobile-conversion-card,
+.mobile-kardex-product-card,
+.mobile-kardex-card,
+.mobile-account-card,
+.mobile-movement-card,
+.mobile-expense-card,
+.mobile-transfer-card,
+.mobile-aporte-card {
+  background-color: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover,
+  &:active {
+    border-color: rgba(var(--v-theme-primary), 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  &.border-error-light {
+    border-color: #fecaca;
+    background-color: #fffbfb;
+  }
+
+  .border-b {
+    border-bottom: 1px solid rgba(var(--v-border-color), 0.08);
+  }
+
+  .border-t {
+    border-top: 1px solid rgba(var(--v-border-color), 0.08);
   }
 }
 
@@ -5014,7 +5255,8 @@
 .status-composite-card {
   display: inline-flex;
   flex-direction: column;
-  min-width: 120px;
+  align-items: flex-start;
+  min-width: 110px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #a7f3d0;
@@ -5025,7 +5267,7 @@
   .composite-payment-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 5px;
     padding: 3.5px 8px 3px 8px;
     font-size: 0.72rem;
@@ -5040,6 +5282,7 @@
       height: 6px;
       border-radius: 50%;
       background-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
       flex-shrink: 0;
     }
   }
@@ -5047,8 +5290,9 @@
   .composite-sri-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 4.5px;
+    width: 100%;
     padding: 2.5px 8px 3.5px 8px;
     font-size: 0.68rem;
     font-weight: 600;
@@ -5082,6 +5326,7 @@
 
       .status-dot {
         background-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
       }
     }
 
@@ -5099,6 +5344,7 @@
 
       .status-dot {
         background-color: #f59e0b;
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
       }
     }
 
@@ -5142,6 +5388,161 @@
 }
 
 // =======================================================
+// SRI STATUS TAG (Sleek, Left-Aligned Micro-Badge)
+// =======================================================
+.sri-status-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 2.5px 7.5px !important;
+  border-radius: 6px !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.01em !important;
+  user-select: none !important;
+  border: 1px solid transparent !important;
+  transition: all 0.18s ease-in-out !important;
+
+  .v-icon {
+    font-size: 12px !important;
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .sri-tag-text {
+    line-height: 1;
+  }
+
+  .sri-sync-icon {
+    transition: transform 0.3s ease;
+  }
+
+  &.is-interactive {
+    cursor: pointer !important;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+
+      .sri-sync-icon {
+        transform: rotate(180deg);
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &.is-loading {
+    cursor: wait !important;
+    opacity: 0.85 !important;
+  }
+
+  // Variations by SRI status
+  &.sri-tag-autorizada {
+    background-color: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
+
+    .v-icon {
+      color: #10b981 !important;
+    }
+  }
+
+  &.sri-tag-creada {
+    background-color: #eff6ff !important;
+    color: #1e40af !important;
+    border-color: #bfdbfe !important;
+
+    .v-icon {
+      color: #3b82f6 !important;
+    }
+
+    &.is-interactive:hover {
+      background-color: #dbeafe !important;
+      border-color: #93c5fd !important;
+    }
+  }
+
+  &.sri-tag-enviada {
+    background-color: #f0f9ff !important;
+    color: #0369a1 !important;
+    border-color: #bae6fd !important;
+
+    .v-icon {
+      color: #0ea5e9 !important;
+    }
+
+    &.is-interactive:hover {
+      background-color: #e0f2fe !important;
+      border-color: #7dd3fc !important;
+    }
+  }
+
+  &.sri-tag-firmada {
+    background-color: #f5f3ff !important;
+    color: #5b21b6 !important;
+    border-color: #ddd6fe !important;
+
+    .v-icon {
+      color: #7c3aed !important;
+    }
+
+    &.is-interactive:hover {
+      background-color: #ede9fe !important;
+      border-color: #c4b5fd !important;
+    }
+  }
+
+  &.sri-tag-devuelta {
+    background-color: #fffbeb !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+
+    .v-icon {
+      color: #f59e0b !important;
+    }
+
+    &.is-interactive:hover {
+      background-color: #fef3c7 !important;
+      border-color: #fcd34d !important;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.18) !important;
+    }
+  }
+
+  &.sri-tag-rechazada {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+
+    .v-icon {
+      color: #ef4444 !important;
+    }
+
+    &.is-interactive:hover {
+      background-color: #fee2e2 !important;
+      border-color: #fca5a5 !important;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.18) !important;
+    }
+  }
+
+  // Fallback
+  &.sri-tag-grey,
+  &.sri-tag-pendiente {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-color: #e2e8f0 !important;
+
+    .v-icon {
+      color: #94a3b8 !important;
+    }
+  }
+}
+
+// =======================================================
 // UNIFIED STATUS PILLS (Clean Dot Badges)
 // =======================================================
 .status-pill-clean {
@@ -5173,6 +5574,7 @@
 
   .status-dot {
     background-color: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
   }
 }
 
@@ -5184,6 +5586,7 @@
 
   .status-dot {
     background-color: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
   }
 }
 
@@ -5195,6 +5598,7 @@
 
   .status-dot {
     background-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
   }
 }
 
@@ -5206,6 +5610,7 @@
 
   .status-dot {
     background-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
   }
 }
 
@@ -5216,6 +5621,7 @@
 
   .status-dot {
     background-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2) !important;
   }
 }
 
@@ -5228,6 +5634,7 @@
 
   .status-dot {
     background-color: #94a3b8 !important;
+    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.2) !important;
   }
 }
 
@@ -5638,6 +6045,396 @@
     background: rgba(var(--v-theme-success), 0.05) !important;
   }
 }
+
+// =======================================================
+// SECCIÓN FINANZAS: CUENTAS, MOVIMIENTOS, TRANSFERENCIAS, APORTES Y NÓMINA
+// =======================================================
+
+// 1. Balance Card Pill (Cuentas y Cajas)
+.balance-card-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 6px 12px;
+  border-radius: 10px;
+  min-width: 135px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  .balance-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .balance-number {
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-family: inherit;
+  }
+
+  &.balance-cash {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border: 1px solid #6ee7b7 !important;
+    color: #065f46 !important;
+
+    .balance-tag {
+      color: #047857 !important;
+    }
+
+    .balance-number {
+      color: #064e3b !important;
+    }
+  }
+
+  &.balance-pichincha {
+    background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%) !important;
+    border: 1px solid #facc15 !important;
+    color: #854d0e !important;
+
+    .balance-tag {
+      color: #a16207 !important;
+    }
+
+    .balance-number {
+      color: #713f12 !important;
+    }
+  }
+
+  &.balance-guayaquil {
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
+    border: 1px solid #f472b6 !important;
+    color: #9d174d !important;
+
+    .balance-tag {
+      color: #db2777 !important;
+    }
+
+    .balance-number {
+      color: #831843 !important;
+    }
+  }
+
+  &.balance-transfer {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1e40af !important;
+
+    .balance-tag {
+      color: #2563eb !important;
+    }
+
+    .balance-number {
+      color: #1e3a8a !important;
+    }
+  }
+
+  &.balance-negative {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+    border: 1px solid #fecaca !important;
+    color: #b91c1c !important;
+
+    .balance-tag {
+      color: #dc2626 !important;
+    }
+
+    .balance-number {
+      color: #991b1b !important;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+  }
+}
+
+// 2. Transfer Flow Container & Arrow Separator
+.transfer-flow-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  max-width: 100%;
+
+  &:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.06);
+    border-color: rgba(var(--v-theme-primary), 0.25);
+  }
+
+  .transfer-endpoint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity));
+
+    .account-name {
+      white-space: nowrap;
+    }
+  }
+
+  .transfer-arrow-separator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: rgba(var(--v-theme-primary), 0.1);
+    color: rgb(var(--v-theme-primary));
+    flex-shrink: 0;
+  }
+}
+
+// 3. Attachments & Receipts Badge
+.attachment-thumb-wrapper {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.08);
+
+    .attachment-thumbnail {
+      border-color: rgb(var(--v-theme-primary)) !important;
+      box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2) !important;
+    }
+  }
+}
+
+.attachment-thumbnail {
+  border: 1.5px solid rgba(var(--v-border-color), 0.25) !important;
+  transition: all 0.2s ease;
+}
+
+.attachment-count-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: rgb(var(--v-theme-primary));
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 6px;
+  border: 1.5px solid white;
+  line-height: 1;
+}
+
+// 4. Badges y Chips para Movimientos & Finanzas
+.ot-chip-badge {
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+.license-plate-badge {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  font-family: monospace;
+}
+
+.payment-method-chip {
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.method-badge-cash {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.method-badge-pichincha {
+    background-color: #fefce8;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+  }
+
+  &.method-badge-guayaquil {
+    background-color: #fdf2f8;
+    color: #9d174d;
+    border: 1px solid #fbcfe8;
+  }
+
+  &.method-badge-transfer {
+    background-color: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+}
+
+// 5. Denomination Badges & Stepper UI (Arqueo de Caja)
+.bill-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12) 0%, rgba(var(--v-theme-primary), 0.05) 100%);
+  color: rgb(var(--v-theme-primary));
+  border: 1px solid rgba(var(--v-theme-primary), 0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+.coin-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
+}
+
+.cash-row {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+
+  &:hover {
+    background-color: #f8fafc;
+  }
+
+  &.row-active {
+    background-color: rgba(var(--v-theme-primary), 0.04);
+  }
+}
+
+.cash-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 34px;
+  width: 120px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+  }
+
+  &:focus-within {
+    border-color: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.12);
+    background: #ffffff;
+  }
+
+  &.has-qty {
+    border-color: rgba(var(--v-theme-primary), 0.45);
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  &.coin-stepper.has-qty {
+    border-color: #f59e0b;
+  }
+
+  .stepper-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    flex-shrink: 0;
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--v-theme-primary), 0.1);
+      color: rgb(var(--v-theme-primary));
+    }
+
+    &:active:not(:disabled) {
+      background: rgba(var(--v-theme-primary), 0.2);
+    }
+
+    &:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+  }
+
+  .stepper-input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+    padding: 0 2px;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    -moz-appearance: textfield;
+  }
+}
+
+// 6. Mobile Responsiveness for Operations Items (< 600px)
+@media (max-width: 599.98px) {
+  .operations-movement-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
+
+    .ps-5 {
+      padding-left: 0 !important;
+      width: 100% !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      border-top: 1px solid rgba(var(--v-border-color), 0.08) !important;
+      padding-top: 8px !important;
+    }
+  }
+}
+
+
 
 
 

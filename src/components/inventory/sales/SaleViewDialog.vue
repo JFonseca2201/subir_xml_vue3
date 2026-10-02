@@ -6,8 +6,6 @@ import { $api, getApiBaseUrl } from '@/utils/api'
 import { copyToClipboard } from '@/utils/clipboard'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 
-const router = useRouter()
-
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
@@ -24,6 +22,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:isDialogVisible'])
+
+const router = useRouter()
 
 const { showNotification } = useGlobalToast()
 const copiedKey = ref(false)
@@ -54,6 +54,7 @@ const formattedSequential = computed(() => {
   if (cleanNum && isInvoice.value) {
     return `001-001-${cleanNum.padStart(9, '0')}`
   }
+  
   return docNum || '—'
 })
 
@@ -62,6 +63,7 @@ const sriEnvironment = computed(() => {
   if (key.length >= 24) {
     return key.charAt(23) === '2' ? 'PRODUCCIÓN' : 'PRUEBAS'
   }
+  
   return props.saleData?.sri_environment || 'PRUEBAS'
 })
 
@@ -72,6 +74,7 @@ const sriStatusColor = computed(() => {
   if (s === 'AUTORIZADA' || s === 'AUTORIZADO') return 'success'
   if (s === 'DEVUELTA' || s === 'RECHAZADA') return 'error'
   if (s === 'ENVIADA' || s === 'FIRMADA' || s === 'PROCESO') return 'info'
+  
   return 'warning'
 })
 
@@ -80,6 +83,7 @@ const sriStatusIcon = computed(() => {
   if (s === 'AUTORIZADA' || s === 'AUTORIZADO') return 'ri-checkbox-circle-line'
   if (s === 'DEVUELTA' || s === 'RECHAZADA') return 'ri-close-circle-line'
   if (s === 'ENVIADA' || s === 'FIRMADA' || s === 'PROCESO') return 'ri-loader-4-line'
+  
   return 'ri-time-line'
 })
 
@@ -203,6 +207,7 @@ const displayTaxAmount = computed(() => {
 
 const totalDiscount = computed(() => {
   if (!props.saleData?.details) return 0
+  
   return props.saleData.details.reduce((sum, d) => sum + Number(d.discount || 0), 0)
 })
 
@@ -211,12 +216,14 @@ const subtotalIva15 = computed(() => {
     return Number(props.saleData.subtotal_iva_15)
   }
   if (!props.saleData?.details) return displaySubtotal.value
+  
   return props.saleData.details
     .filter(d => Number(d.tax_rate ?? 15) > 0)
     .reduce((sum, d) => {
       const gross = Number(d.quantity || 1) * Number(d.price || 0)
       const disc = Number(d.discount || 0)
       const rate = Number(d.tax_rate ?? 15)
+      
       return sum + ((gross - disc) / (1 + (rate / 100)))
     }, 0)
 })
@@ -226,11 +233,13 @@ const subtotalIva0 = computed(() => {
     return Number(props.saleData.subtotal_iva_0)
   }
   if (!props.saleData?.details) return 0
+  
   return props.saleData.details
     .filter(d => Number(d.tax_rate ?? 15) === 0)
     .reduce((sum, d) => {
       const gross = Number(d.quantity || 1) * Number(d.price || 0)
       const disc = Number(d.discount || 0)
+      
       return sum + (gross - disc)
     }, 0)
 })
@@ -249,6 +258,7 @@ const displayPaymentMethod = computed(() => {
 
       return d.payment_method
     }).filter(Boolean)
+
     const uniqueMethods = [...new Set(methods)]
     if (uniqueMethods.length) return uniqueMethods.join(', ')
   }
@@ -267,6 +277,7 @@ const formatDate = dateString => {
   if (parts.length === 3) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`
   }
+  
   return dateString
 }
 
@@ -282,6 +293,7 @@ const formatDateTime = dateStr => {
     const hours = pad(d.getHours())
     const mins = pad(d.getMinutes())
     const secs = pad(d.getSeconds())
+    
     return `${day}/${month}/${year} ${hours}:${mins}:${secs}`
   } catch (e) {
     return dateStr
@@ -292,6 +304,7 @@ const copyAccessKey = async () => {
   const key = props.saleData?.sri_access_key || props.saleData?.access_key || props.saleData?.clave_acceso || ''
   if (!key) {
     showNotification('No hay clave de acceso registrada', 'warning')
+    
     return
   }
 
@@ -313,9 +326,11 @@ const downloadXml = async () => {
       method: 'GET',
       responseType: 'blob',
     })
+
     const blob = new Blob([response], { type: 'application/xml' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
+
     a.href = url
     a.download = `FAC_${props.saleData.document_number || props.saleData.id}.xml`
     document.body.appendChild(a)
@@ -335,9 +350,11 @@ const downloadRide = async () => {
       method: 'GET',
       responseType: 'blob',
     })
+
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
+
     a.href = url
     a.download = `RIDE_${props.saleData.document_number || props.saleData.id}.pdf`
     document.body.appendChild(a)
@@ -358,11 +375,13 @@ const syncSriStatus = async () => {
   isSyncingSri.value = true
   try {
     showNotification('Consultando estado en el SRI...', 'info')
+
     const response = await $api(`sales/${props.saleData.id}/sri/estado`)
     
     // ── Diagnóstico de Consola SRI ──
     const status = response?.data?.sri_status || response?.sri_status || 'DESCONOCIDO'
     const sriError = response?.data?.sri_error || response?.data?.sync_error || response?.sync_error || response?.error || ''
+
     const errorSource = response?.error_source || response?.data?.error_source || (
       ['RECHAZADA', 'DEVUELTA', 'NO AUTORIZADO'].includes(status) || /sri|soap|comprobante|clave|autorizacion|wsdl|recepcion/i.test(sriError)
         ? 'SRI'
@@ -445,6 +464,7 @@ const resendSri = async () => {
 }
 
 const isSendingEmail = ref(false)
+
 const sendEmail = async () => {
   if (!props.saleData?.id) return
   isSendingEmail.value = true
@@ -452,6 +472,7 @@ const sendEmail = async () => {
     const response = await $api(`sales/${props.saleData.id}/sri/enviar-email`, {
       method: 'POST',
     })
+
     if (response?.success) {
       showNotification('Factura electrónica enviada por correo al cliente', 'success')
     } else {
@@ -512,6 +533,7 @@ const canConvertQuote = computed(() => {
 
 const convertToWorkOrder = () => {
   const quoteId = props.saleData?.id
+
   closeDialog()
   router.push({
     path: '/work-orders/add',
@@ -521,6 +543,7 @@ const convertToWorkOrder = () => {
 
 const convertToSale = () => {
   const quoteId = props.saleData?.id
+
   closeDialog()
   router.push({
     path: '/sales/add',
@@ -530,14 +553,23 @@ const convertToSale = () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="1140" scrollable transition="dialog-bottom-transition"
-    @update:model-value="closeDialog">
+  <VDialog
+    :model-value="props.isDialogVisible"
+    max-width="1140"
+    scrollable
+    transition="dialog-bottom-transition"
+    @update:model-value="closeDialog"
+  >
     <VCard class="sale-view-dialog-card rounded-xl overflow-hidden elevation-12">
       <!-- Modern Sleek Horizontal Header Banner -->
       <div class="sale-dialog-header-banner">
         <div class="header-left-group">
           <div class="header-avatar-badge">
-            <VIcon :icon="documentTypeIcon" size="24" color="white" />
+            <VIcon
+              :icon="documentTypeIcon"
+              size="24"
+              color="white"
+            />
           </div>
 
           <div>
@@ -558,7 +590,7 @@ const convertToSale = () => {
 
             <h2 class="header-title-text d-flex align-center gap-2 flex-wrap">
               <span>{{ isInvoice ? 'Factura' : (isQuote ? 'Cotización' : 'Nota de Venta') }} #{{ formattedSequential
-                }}</span>
+              }}</span>
             </h2>
           </div>
         </div>
@@ -566,16 +598,25 @@ const convertToSale = () => {
         <!-- Header Badges and Close Button -->
         <div class="header-meta-group">
           <div class="glass-header-pill">
-            <VIcon icon="ri-calendar-event-line" size="14" class="me-1 text-white-70" />
+            <VIcon
+              icon="ri-calendar-event-line"
+              size="14"
+              class="me-1 text-white-70"
+            />
             <span>{{ formatDate(saleData.service_date) }}</span>
           </div>
 
           <div
             v-if="saleData.work_order_id || saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number"
-            class="glass-header-pill">
-            <VIcon icon="ri-tools-line" size="14" class="me-1 text-amber-lighten-2" />
+            class="glass-header-pill"
+          >
+            <VIcon
+              icon="ri-tools-line"
+              size="14"
+              class="me-1 text-amber-lighten-2"
+            />
             <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
-              }}</span>
+            }}</span>
           </div>
 
           <div
@@ -587,14 +628,27 @@ const convertToSale = () => {
             <span>{{ isInvoice && sriStatus ? sriStatus : getStatusLabel }}</span>
           </div>
 
-          <VBtn icon="ri-close-line" variant="text" size="small" class="header-close-button ms-1"
-            @click="closeDialog" />
+          <VBtn
+            icon="ri-close-line"
+            variant="text"
+            size="small"
+            class="header-close-button ms-1"
+            @click="closeDialog"
+          />
         </div>
       </div>
 
       <VCardText class="pa-6 dialog-body-content bg-slate-50">
-        <div v-if="loading" class="d-flex flex-column align-center justify-center py-16">
-          <VProgressCircular indeterminate color="primary" size="54" width="4" />
+        <div
+          v-if="loading"
+          class="d-flex flex-column align-center justify-center py-16"
+        >
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="54"
+            width="4"
+          />
           <p class="text-body-2 text-medium-emphasis mt-4 font-weight-medium">
             Cargando información del comprobante...
           </p>
@@ -604,12 +658,19 @@ const convertToSale = () => {
           <!-- 4 Stat Cards Modernas (Layout Superior) -->
           <VRow class="mb-5 g-3">
             <!-- 1. Total -->
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <div class="stat-glass-card stat-card--total h-100 pa-4">
                 <div class="d-flex align-center justify-space-between gap-2">
                   <div class="d-flex align-center gap-2">
                     <div class="stat-icon-wrapper stat-icon--total">
-                      <VIcon icon="ri-money-dollar-circle-line" size="20" />
+                      <VIcon
+                        icon="ri-money-dollar-circle-line"
+                        size="20"
+                      />
                     </div>
                     <div class="stat-label">
                       Total
@@ -623,12 +684,19 @@ const convertToSale = () => {
             </VCol>
 
             <!-- 2. Estado de pago / SRI -->
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <div class="stat-glass-card stat-card--status h-100 pa-4">
                 <div class="d-flex align-center justify-space-between gap-2">
                   <div class="d-flex align-center gap-2">
                     <div class="stat-icon-wrapper stat-icon--status">
-                      <VIcon :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'" size="20" />
+                      <VIcon
+                        :icon="isInvoice ? 'ri-shield-check-line' : 'ri-wallet-3-line'"
+                        size="20"
+                      />
                     </div>
                     <div class="stat-label">
                       {{ isInvoice ? 'Estado SRI' : 'Estado Pago' }}
@@ -646,12 +714,19 @@ const convertToSale = () => {
             </VCol>
 
             <!-- 3. Ítems -->
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <div class="stat-glass-card stat-card--items h-100 pa-4">
                 <div class="d-flex align-center justify-space-between gap-2">
                   <div class="d-flex align-center gap-2">
                     <div class="stat-icon-wrapper stat-icon--items">
-                      <VIcon icon="ri-shopping-bag-3-line" size="20" />
+                      <VIcon
+                        icon="ri-shopping-bag-3-line"
+                        size="20"
+                      />
                     </div>
                     <div class="stat-label">
                       Ítems
@@ -666,19 +741,28 @@ const convertToSale = () => {
             </VCol>
 
             <!-- 4. Método de pago -->
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <div class="stat-glass-card stat-card--payment h-100 pa-4">
                 <div class="d-flex align-center justify-space-between gap-2">
                   <div class="d-flex align-center gap-2 overflow-hidden">
                     <div class="stat-icon-wrapper stat-icon--payment flex-shrink-0">
-                      <VIcon icon="ri-bank-card-line" size="20" />
+                      <VIcon
+                        icon="ri-bank-card-line"
+                        size="20"
+                      />
                     </div>
                     <div class="stat-label text-truncate">
                       Pago
                     </div>
                   </div>
-                  <div class="text-body-2 font-weight-bold text-slate-800 text-right text-truncate"
-                    :title="displayPaymentMethod">
+                  <div
+                    class="text-body-2 font-weight-bold text-slate-800 text-right text-truncate"
+                    :title="displayPaymentMethod"
+                  >
                     {{ displayPaymentMethod }}
                   </div>
                 </div>
@@ -687,10 +771,17 @@ const convertToSale = () => {
           </VRow>
 
           <!-- Clave de Acceso SRI (49 dígitos) - Cyber Ribbon Card -->
-          <div v-if="saleData.sri_access_key" class="sri-security-ribbon mb-5">
+          <div
+            v-if="saleData.sri_access_key"
+            class="sri-security-ribbon mb-5"
+          >
             <div class="d-flex align-center gap-3 flex-grow-1 min-w-0">
               <div class="sri-shield-avatar">
-                <VIcon icon="ri-shield-keyhole-line" size="22" color="indigo-darken-2" />
+                <VIcon
+                  icon="ri-shield-keyhole-line"
+                  size="22"
+                  color="indigo-darken-2"
+                />
               </div>
               <div class="overflow-hidden">
                 <div class="d-flex align-center gap-2 flex-wrap">
@@ -702,27 +793,49 @@ const convertToSale = () => {
                 <div
                   class="font-monospace text-body-2 font-weight-bold text-indigo-darken-4 text-break user-select-all mt-0.5 tracking-wide cursor-pointer"
                   title="Clic para copiar la clave de acceso"
-                  @click="copyAccessKey">
+                  @click="copyAccessKey"
+                >
                   {{ saleData.sri_access_key }}
                 </div>
               </div>
             </div>
 
-            <VBtn v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'" size="small"
-              variant="outlined" color="info" :loading="isSyncingSri" :disabled="isResending"
-              prepend-icon="ri-refresh-line" class="font-weight-bold rounded-lg" @click="syncSriStatus">
+            <VBtn
+              v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'"
+              size="small"
+              variant="outlined"
+              color="info"
+              :loading="isSyncingSri"
+              :disabled="isResending"
+              prepend-icon="ri-refresh-line"
+              class="font-weight-bold rounded-lg"
+              @click="syncSriStatus"
+            >
               Sincronizar con SRI
             </VBtn>
 
-            <VBtn v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'" size="small"
-              variant="outlined" color="warning" :loading="isResending" :disabled="isSyncingSri"
-              prepend-icon="ri-restart-line" class="font-weight-bold rounded-lg" @click="resendSri">
+            <VBtn
+              v-if="sriStatus && sriStatus !== 'AUTORIZADA' && sriStatus !== 'AUTORIZADO'"
+              size="small"
+              variant="outlined"
+              color="warning"
+              :loading="isResending"
+              :disabled="isSyncingSri"
+              prepend-icon="ri-restart-line"
+              class="font-weight-bold rounded-lg"
+              @click="resendSri"
+            >
               Reenviar al SRI
             </VBtn>
 
-            <VBtn size="small" variant="flat" :color="copiedKey ? 'success' : 'primary'"
+            <VBtn
+              size="small"
+              variant="flat"
+              :color="copiedKey ? 'success' : 'primary'"
               :prepend-icon="copiedKey ? 'ri-check-line' : 'ri-file-copy-line'"
-              class="copy-key-btn rounded-lg text-white font-weight-bold px-3" @click="copyAccessKey">
+              class="copy-key-btn rounded-lg text-white font-weight-bold px-3"
+              @click="copyAccessKey"
+            >
               {{ copiedKey ? '¡Copiada!' : 'Copiar Clave' }}
             </VBtn>
           </div>
@@ -731,11 +844,17 @@ const convertToSale = () => {
           <!-- Cliente y Vehículo -->
           <VRow class="mb-5">
             <!-- Cliente -->
-            <VCol cols="12" :md="hasVehicle ? 6 : 12">
+            <VCol
+              cols="12"
+              :md="hasVehicle ? 6 : 12"
+            >
               <div class="modern-section-panel h-100">
                 <div class="panel-header mb-4">
                   <div class="panel-icon-circle bg-emerald-50 text-emerald-600">
-                    <VIcon icon="ri-user-smile-line" size="20" />
+                    <VIcon
+                      icon="ri-user-smile-line"
+                      size="20"
+                    />
                   </div>
                   <div>
                     <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
@@ -748,31 +867,49 @@ const convertToSale = () => {
                 <div class="detail-rows">
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-user-line" size="15" /> Razón Social
+                      <VIcon
+                        icon="ri-user-line"
+                        size="15"
+                      /> Razón Social
                     </span>
                     <span class="detail-value font-weight-bold text-slate-900">{{ getClientName }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-id-card-line" size="15" /> RUC / Cédula
+                      <VIcon
+                        icon="ri-id-card-line"
+                        size="15"
+                      /> RUC / Cédula
                     </span>
                     <span class="detail-value font-monospace font-weight-semibold">{{ getClientDocument }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-phone-line" size="15" /> Teléfono
+                      <VIcon
+                        icon="ri-phone-line"
+                        size="15"
+                      /> Teléfono
                     </span>
                     <span class="detail-value">{{ getClientPhone }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-mail-line" size="15" /> Email
+                      <VIcon
+                        icon="ri-mail-line"
+                        size="15"
+                      /> Email
                     </span>
                     <span class="detail-value text-lowercase">{{ getClientEmail }}</span>
                   </div>
-                  <div v-if="!hasVehicle && technicians.length" class="detail-row align-start mt-2">
+                  <div
+                    v-if="!hasVehicle && technicians.length"
+                    class="detail-row align-start mt-2"
+                  >
                     <span class="detail-label">
-                      <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
+                      <VIcon
+                        icon="ri-user-settings-line"
+                        size="15"
+                      /> Técnicos
                     </span>
                     <span class="detail-value">
                       <div class="d-flex flex-wrap gap-1.5 justify-end">
@@ -793,11 +930,18 @@ const convertToSale = () => {
             </VCol>
 
             <!-- Vehículo -->
-            <VCol v-if="hasVehicle" cols="12" md="6">
+            <VCol
+              v-if="hasVehicle"
+              cols="12"
+              md="6"
+            >
               <div class="modern-section-panel h-100">
                 <div class="panel-header mb-4">
                   <div class="panel-icon-circle bg-blue-50 text-blue-600">
-                    <VIcon icon="ri-car-line" size="20" />
+                    <VIcon
+                      icon="ri-car-line"
+                      size="20"
+                    />
                   </div>
                   <div>
                     <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
@@ -810,32 +954,56 @@ const convertToSale = () => {
                 <div class="detail-rows">
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-qr-code-line" size="15" /> Placa
+                      <VIcon
+                        icon="ri-qr-code-line"
+                        size="15"
+                      /> Placa
                     </span>
                     <span class="detail-value">
-                      <span v-if="getVehicleLicensePlate" class="kardex-plate-badge">
+                      <span
+                        v-if="getVehicleLicensePlate"
+                        class="kardex-plate-badge"
+                      >
                         {{ getVehicleLicensePlate }}
                       </span>
-                      <span v-else class="text-medium-emphasis">—</span>
+                      <span
+                        v-else
+                        class="text-medium-emphasis"
+                      >—</span>
                     </span>
                   </div>
-                  <div v-if="saleData.vehicle" class="detail-row">
+                  <div
+                    v-if="saleData.vehicle"
+                    class="detail-row"
+                  >
                     <span class="detail-label">
-                      <VIcon icon="ri-roadster-line" size="15" /> Modelo
+                      <VIcon
+                        icon="ri-roadster-line"
+                        size="15"
+                      /> Modelo
                     </span>
                     <span class="detail-value font-weight-semibold">{{ getVehicleInfo }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">
-                      <VIcon icon="ri-dashboard-3-line" size="15" /> Kilometraje
+                      <VIcon
+                        icon="ri-dashboard-3-line"
+                        size="15"
+                      /> Kilometraje
                     </span>
                     <span class="detail-value font-weight-semibold">
                       {{ saleData.mileage ? `${saleData.mileage} km` : '—' }}
                     </span>
                   </div>
-                  <div v-if="technicians.length" class="detail-row align-start mt-2">
+                  <div
+                    v-if="technicians.length"
+                    class="detail-row align-start mt-2"
+                  >
                     <span class="detail-label">
-                      <VIcon icon="ri-user-settings-line" size="15" /> Técnicos
+                      <VIcon
+                        icon="ri-user-settings-line"
+                        size="15"
+                      /> Técnicos
                     </span>
                     <span class="detail-value">
                       <div class="d-flex flex-wrap gap-1.5 justify-end">
@@ -862,7 +1030,10 @@ const convertToSale = () => {
               <div class="modern-section-panel">
                 <div class="panel-header mb-3">
                   <div class="panel-icon-circle bg-amber-50 text-amber-600">
-                    <VIcon icon="ri-wallet-3-line" size="20" />
+                    <VIcon
+                      icon="ri-wallet-3-line"
+                      size="20"
+                    />
                   </div>
                   <div>
                     <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
@@ -872,8 +1043,14 @@ const convertToSale = () => {
                   </div>
                 </div>
 
-                <div v-if="hasPaymentDistributions" class="rounded-lg overflow-hidden border border-slate-200">
-                  <VTable density="compact" class="app-data-table">
+                <div
+                  v-if="hasPaymentDistributions"
+                  class="rounded-lg overflow-hidden border border-slate-200"
+                >
+                  <VTable
+                    density="compact"
+                    class="app-data-table"
+                  >
                     <thead>
                       <tr>
                         <th style="width: 50px;">
@@ -881,20 +1058,28 @@ const convertToSale = () => {
                         </th>
                         <th>Método de Pago</th>
                         <th>Cuenta Destino</th>
-                        <th class="text-right" style="width: 160px;">
+                        <th
+                          class="text-right"
+                          style="width: 160px;"
+                        >
                           Monto Recibido
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(dist, index) in getPaymentDistributions" :key="dist.id || index">
+                      <tr
+                        v-for="(dist, index) in getPaymentDistributions"
+                        :key="dist.id || index"
+                      >
                         <td class="text-medium-emphasis font-weight-medium">
                           {{ index + 1 }}
                         </td>
                         <td>
-                          <span class="status-pill-clean"
-                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'">
-                            <span class="status-dot"></span>
+                          <span
+                            class="status-pill-clean"
+                            :class="dist.payment_method?.toLowerCase().includes('transf') ? 'status-transfer' : 'status-paid'"
+                          >
+                            <span class="status-dot" />
                             {{ dist.payment_method }}
                           </span>
                         </td>
@@ -909,10 +1094,16 @@ const convertToSale = () => {
                   </VTable>
                 </div>
 
-                <div v-else class="empty-panel-hint pa-6 text-center rounded-lg border border-dashed">
+                <div
+                  v-else
+                  class="empty-panel-hint pa-6 text-center rounded-lg border border-dashed"
+                >
                   <VIcon
                     :icon="isQuote ? 'ri-file-list-3-line' : (saleData.is_credited ? 'ri-file-shield-2-line' : 'ri-checkbox-circle-line')"
-                    size="34" :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')" class="mb-2" />
+                    size="34"
+                    :color="isQuote ? 'info' : (saleData.is_credited ? 'warning' : 'success')"
+                    class="mb-2"
+                  />
                   <div class="text-body-2 font-weight-bold text-slate-800">
                     {{ isQuote ? 'Documento de Cotización' : (saleData.is_credited ? 'Venta a Crédito' :
                       'Venta de Contado') }}
@@ -930,7 +1121,10 @@ const convertToSale = () => {
           <div class="modern-section-panel mb-5">
             <div class="panel-header mb-4">
               <div class="panel-icon-circle bg-indigo-50 text-indigo-600">
-                <VIcon icon="ri-shopping-cart-2-line" size="20" />
+                <VIcon
+                  icon="ri-shopping-cart-2-line"
+                  size="20"
+                />
               </div>
               <div>
                 <h4 class="text-subtitle-1 font-weight-bold text-slate-800">
@@ -941,34 +1135,58 @@ const convertToSale = () => {
               </div>
             </div>
 
-            <div v-if="saleData.details?.length" class="rounded-lg overflow-hidden border border-slate-200">
-              <VTable density="comfortable" class="app-data-table">
+            <div
+              v-if="saleData.details?.length"
+              class="rounded-lg overflow-hidden border border-slate-200"
+            >
+              <VTable
+                density="comfortable"
+                class="app-data-table"
+              >
                 <thead>
                   <tr>
                     <th style="width: 48%;">
                       Descripción del Ítem
                     </th>
-                    <th class="text-center" style="width: 10%;">
+                    <th
+                      class="text-center"
+                      style="width: 10%;"
+                    >
                       Cant.
                     </th>
-                    <th class="text-right" style="width: 14%;">
+                    <th
+                      class="text-right"
+                      style="width: 14%;"
+                    >
                       P. Unitario
                     </th>
-                    <th class="text-right" style="width: 12%;">
+                    <th
+                      class="text-right"
+                      style="width: 12%;"
+                    >
                       Desc.
                     </th>
-                    <th class="text-right" style="width: 16%;">
+                    <th
+                      class="text-right"
+                      style="width: 16%;"
+                    >
                       Total
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in saleData.details" :key="item.id || index">
+                  <tr
+                    v-for="(item, index) in saleData.details"
+                    :key="item.id || index"
+                  >
                     <td>
                       <div class="font-weight-semibold text-slate-900 text-body-2">
                         {{ item.description }}
                       </div>
-                      <div v-if="item.product?.sku" class="mt-1">
+                      <div
+                        v-if="item.product?.sku"
+                        class="mt-1"
+                      >
                         <span class="sku-badge">SKU: {{ item.product.sku }}</span>
                       </div>
                     </td>
@@ -989,8 +1207,16 @@ const convertToSale = () => {
               </VTable>
             </div>
 
-            <div v-else class="empty-panel-hint pa-8 text-center rounded-lg border border-dashed">
-              <VIcon icon="ri-shopping-bag-3-line" size="42" color="grey-lighten-1" class="mb-2" />
+            <div
+              v-else
+              class="empty-panel-hint pa-8 text-center rounded-lg border border-dashed"
+            >
+              <VIcon
+                icon="ri-shopping-bag-3-line"
+                size="42"
+                color="grey-lighten-1"
+                class="mb-2"
+              />
               <p class="text-body-2 text-medium-emphasis mb-0">
                 No hay productos registrados en este comprobante
               </p>
@@ -999,10 +1225,19 @@ const convertToSale = () => {
 
           <!-- Totales y Observaciones -->
           <VRow>
-            <VCol cols="12" md="7">
-              <div v-if="saleData.observations" class="modern-section-panel h-100">
+            <VCol
+              cols="12"
+              md="7"
+            >
+              <div
+                v-if="saleData.observations"
+                class="modern-section-panel h-100"
+              >
                 <div class="d-flex align-center gap-2 mb-2 text-indigo-darken-2">
-                  <VIcon icon="ri-chat-1-line" size="18" />
+                  <VIcon
+                    icon="ri-chat-1-line"
+                    size="18"
+                  />
                   <span class="text-subtitle-2 font-weight-bold">Observaciones</span>
                 </div>
                 <p class="text-body-2 mb-0 text-slate-700 bg-slate-50 pa-3 rounded-lg border border-slate-200">
@@ -1011,7 +1246,10 @@ const convertToSale = () => {
               </div>
             </VCol>
 
-            <VCol cols="12" md="5">
+            <VCol
+              cols="12"
+              md="5"
+            >
               <div class="totals-summary-card pa-5 rounded-xl shadow-sm">
                 <div class="d-flex justify-space-between align-center mb-2">
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">Subtotal</span>
@@ -1019,13 +1257,19 @@ const convertToSale = () => {
                   }}</span>
                 </div>
 
-                <div v-if="displayTaxAmount > 0" class="d-flex justify-space-between align-center mb-2">
+                <div
+                  v-if="displayTaxAmount > 0"
+                  class="d-flex justify-space-between align-center mb-2"
+                >
                   <span class="text-body-2 text-medium-emphasis font-weight-medium">IVA (15%)</span>
                   <span class="text-body-1 font-weight-semibold text-slate-800">{{ formatCurrency(displayTaxAmount)
                   }}</span>
                 </div>
 
-                <div v-if="totalDiscount > 0" class="d-flex justify-space-between align-center mb-2 text-error">
+                <div
+                  v-if="totalDiscount > 0"
+                  class="d-flex justify-space-between align-center mb-2 text-error"
+                >
                   <span class="text-body-2 font-weight-medium">Descuento</span>
                   <span class="text-body-1 font-weight-bold">-{{ formatCurrency(totalDiscount) }}</span>
                 </div>
@@ -1047,47 +1291,100 @@ const convertToSale = () => {
       <!-- Footer Actions Flotante y Moderno -->
       <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white flex-wrap sticky-dialog-footer">
         <!-- Conversión Directa de Cotizaciones Activas -->
-        <VBtn v-if="canConvertQuote" color="primary" variant="elevated" prepend-icon="ri-tools-line"
-          class="rounded-lg px-4 font-weight-bold elevation-2" height="42" @click="convertToWorkOrder">
+        <VBtn
+          v-if="canConvertQuote"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-tools-line"
+          class="rounded-lg px-4 font-weight-bold elevation-2"
+          height="42"
+          @click="convertToWorkOrder"
+        >
           Convertir a Orden de Trabajo
         </VBtn>
 
-        <VBtn v-if="canConvertQuote" color="success" variant="tonal" prepend-icon="ri-shopping-cart-2-line"
-          class="rounded-lg px-4 font-weight-bold" height="42" @click="convertToSale">
+        <VBtn
+          v-if="canConvertQuote"
+          color="success"
+          variant="tonal"
+          prepend-icon="ri-shopping-cart-2-line"
+          class="rounded-lg px-4 font-weight-bold"
+          height="42"
+          @click="convertToSale"
+        >
           Facturar Venta
         </VBtn>
 
         <!-- Descargar XML (Facturas SRI) -->
-        <VBtn v-if="isInvoice || saleData.sri_access_key" color="info" variant="outlined"
-          prepend-icon="ri-file-code-line" class="rounded-lg px-4 font-weight-bold" height="42" @click="downloadXml">
+        <VBtn
+          v-if="isInvoice || saleData.sri_access_key"
+          color="info"
+          variant="outlined"
+          prepend-icon="ri-file-code-line"
+          class="rounded-lg px-4 font-weight-bold"
+          height="42"
+          @click="downloadXml"
+        >
           Descargar XML
         </VBtn>
 
         <!-- Descargar RIDE / Ver PDF -->
-        <VBtn v-if="isInvoice || saleData.sri_access_key" color="primary" variant="elevated"
-          prepend-icon="ri-file-pdf-line" class="rounded-lg px-5 font-weight-bold elevation-2" height="42"
-          @click="downloadRide">
+        <VBtn
+          v-if="isInvoice || saleData.sri_access_key"
+          color="primary"
+          variant="elevated"
+          prepend-icon="ri-file-pdf-line"
+          class="rounded-lg px-5 font-weight-bold elevation-2"
+          height="42"
+          @click="downloadRide"
+        >
           Descargar RIDE
         </VBtn>
-        <VBtn v-else color="secondary" variant="outlined" prepend-icon="ri-file-pdf-line"
-          class="rounded-lg px-5 font-weight-bold" height="42" @click="generateSinglePDF(props.saleData)">
+        <VBtn
+          v-else
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-file-pdf-line"
+          class="rounded-lg px-5 font-weight-bold"
+          height="42"
+          @click="generateSinglePDF(props.saleData)"
+        >
           Ver PDF
         </VBtn>
 
         <!-- Enviar por Email (si tiene email) -->
-        <VBtn v-if="(isInvoice || saleData.sri_access_key) && saleData.client?.email" color="success" variant="tonal"
-          prepend-icon="ri-mail-send-line" :loading="isSendingEmail" class="rounded-lg px-4 font-weight-bold"
-          height="42" @click="sendEmail">
+        <VBtn
+          v-if="(isInvoice || saleData.sri_access_key) && saleData.client?.email"
+          color="success"
+          variant="tonal"
+          prepend-icon="ri-mail-send-line"
+          :loading="isSendingEmail"
+          class="rounded-lg px-4 font-weight-bold"
+          height="42"
+          @click="sendEmail"
+        >
           Enviar Email
         </VBtn>
 
-        <VBtn color="secondary" variant="tonal" prepend-icon="ri-printer-line" class="rounded-lg px-4 font-weight-bold"
-          height="42" @click="printSale(props.saleData.id)">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-printer-line"
+          class="rounded-lg px-4 font-weight-bold"
+          height="42"
+          @click="printSale(props.saleData.id)"
+        >
           Imprimir
         </VBtn>
 
-        <VBtn color="slate" variant="outlined" prepend-icon="ri-close-line" class="rounded-lg px-5 font-weight-medium"
-          height="42" @click="closeDialog">
+        <VBtn
+          color="slate"
+          variant="outlined"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-5 font-weight-medium"
+          height="42"
+          @click="closeDialog"
+        >
           Cerrar
         </VBtn>
       </VCardActions>

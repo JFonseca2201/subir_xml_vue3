@@ -136,6 +136,7 @@ const formatDateForInput = dateVal => {
       return d.toISOString().split('T')[0]
     }
   } catch (e) {}
+  
   return String(dateVal).substring(0, 10)
 }
 
@@ -147,6 +148,7 @@ watch(() => props.editingMovement, newVal => {
     if (newVal.payment_distributions && newVal.payment_distributions.length > 0) {
       payments = newVal.payment_distributions.map((dist, index) => {
         paymentIdMap.value.set(index, dist.id)
+        
         return {
           account_id: dist.account_id,
           amount: dist.amount.toString(),
@@ -211,17 +213,20 @@ const saveExpense = async () => {
   try {
     if (totalToRegister.value <= 0) {
       showNotification('El total a registrar debe ser mayor a 0', 'error')
+      
       return
     }
 
     const hasInvalidPayments = form.value.payments.some(p => !p.account_id)
     if (hasInvalidPayments) {
       showNotification('Debe seleccionar una cuenta para cada método de pago', 'warning')
+      
       return
     }
 
     if (!props.editingMovement && (!receiptFiles.value || receiptFiles.value.length === 0)) {
       showNotification('Es obligatorio adjuntar la foto o comprobante de respaldo del egreso', 'warning')
+      
       return
     }
 
@@ -251,6 +256,7 @@ const addPayment = () => {
 const removePayment = async index => {
   if (form.value.payments.length <= 1) {
     showNotification('Debe haber al menos un método de pago', 'error')
+    
     return
   }
 
@@ -265,6 +271,7 @@ const removePayment = async index => {
     } catch (error) {
       console.error('Error al eliminar método de pago:', error)
       showNotification('Error al eliminar método de pago', 'error')
+      
       return
     }
   }
@@ -272,6 +279,7 @@ const removePayment = async index => {
   form.value.payments.splice(index, 1)
 
   const newMap = new Map()
+
   paymentIdMap.value.forEach((id, mapIndex) => {
     if (mapIndex < index) {
       newMap.set(mapIndex, id)
@@ -320,21 +328,63 @@ const formatCurrency = value => {
       </div>
 
       <!-- Cuerpo del Formulario con Scroll Interno -->
-      <VCardText class="pa-4" style="overflow-x: hidden;">
+      <VCardText
+        class="pa-4"
+        style="overflow-x: hidden;"
+      >
         <!-- Skeleton Loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-2">
+        <div
+          v-if="isLoadingData"
+          class="py-2"
+        >
           <VRow>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VSkeletonLoader
+                type="article"
+                class="rounded-lg"
+              />
+            </VCol>
           </VRow>
         </div>
 
-        <VForm v-else ref="formRef" @submit.prevent="saveExpense">
+        <VForm
+          v-else
+          ref="formRef"
+          @submit.prevent="saveExpense"
+        >
           <VRow dense>
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-model="form.invoice_number"
                 label="Número de Factura / Código"
@@ -345,7 +395,10 @@ const formatCurrency = value => {
               />
             </VCol>
 
-            <VCol cols="12" md="6">
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-model="form.entry_date"
                 label="Fecha *"
@@ -374,7 +427,11 @@ const formatCurrency = value => {
           <div class="mt-4">
             <div class="d-flex justify-space-between align-center mb-2">
               <span class="text-subtitle-2 font-weight-bold text-high-emphasis d-flex align-center gap-1">
-                <VIcon icon="ri-bank-card-line" size="18" color="primary" />
+                <VIcon
+                  icon="ri-bank-card-line"
+                  size="18"
+                  color="primary"
+                />
                 Métodos de Pago / Cuentas Origen
               </span>
               <VBtn
@@ -399,8 +456,14 @@ const formatCurrency = value => {
                 variant="outlined"
                 class="pa-3 rounded-lg bg-grey-lighten-5 border"
               >
-                <VRow dense class="align-center">
-                  <VCol cols="12" sm="6">
+                <VRow
+                  dense
+                  class="align-center"
+                >
+                  <VCol
+                    cols="12"
+                    sm="6"
+                  >
                     <VSelect
                       v-model="payment.account_id"
                       :items="accountOptions"
@@ -414,7 +477,10 @@ const formatCurrency = value => {
                       required
                     />
                   </VCol>
-                  <VCol cols="10" sm="5">
+                  <VCol
+                    cols="10"
+                    sm="5"
+                  >
                     <VTextField
                       v-model="payment.amount"
                       label="Monto *"
@@ -427,7 +493,11 @@ const formatCurrency = value => {
                       required
                     />
                   </VCol>
-                  <VCol cols="2" sm="1" class="text-center">
+                  <VCol
+                    cols="2"
+                    sm="1"
+                    class="text-center"
+                  >
                     <VBtn
                       icon="ri-delete-bin-line"
                       size="x-small"
@@ -450,7 +520,10 @@ const formatCurrency = value => {
           >
             <div class="d-flex align-center justify-space-between">
               <span class="d-flex align-center gap-1 font-weight-medium">
-                <VIcon icon="ri-calculator-line" size="18" />
+                <VIcon
+                  icon="ri-calculator-line"
+                  size="18"
+                />
                 Total a Registrar:
               </span>
               <span class="text-h6 font-weight-extrabold text-primary">

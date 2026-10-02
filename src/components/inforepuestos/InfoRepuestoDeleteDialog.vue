@@ -36,7 +36,9 @@ const confirmDelete = async () => {
     emit('update:isDialogVisible', false)
   } catch (error) {
     console.error('Error al eliminar registro:', error)
+
     const errorMsg = error?.response?._data?.message || 'Error al eliminar el registro'
+
     showNotification(errorMsg, 'error')
   } finally {
     loading.value = false
@@ -102,36 +104,63 @@ const cancelDelete = () => {
             </h4>
 
             <div class="d-flex flex-column gap-1">
-              <div v-if="props.requestSelected?.year" class="d-flex align-center justify-center gap-2">
-                <VIcon icon="ri-calendar-line" size="16" />
+              <div
+                v-if="props.requestSelected?.year"
+                class="d-flex align-center justify-center gap-2"
+              >
+                <VIcon
+                  icon="ri-calendar-line"
+                  size="16"
+                />
                 <span class="text-body-2">
                   <strong>Año:</strong> {{ props.requestSelected.year }}
                 </span>
               </div>
 
-              <div v-if="props.requestSelected?.traction" class="d-flex align-center justify-center gap-2">
-                <VIcon icon="ri-compass-3-line" size="16" />
+              <div
+                v-if="props.requestSelected?.traction"
+                class="d-flex align-center justify-center gap-2"
+              >
+                <VIcon
+                  icon="ri-compass-3-line"
+                  size="16"
+                />
                 <span class="text-body-2">
                   <strong>Tracción:</strong> {{ props.requestSelected.traction }}
                 </span>
               </div>
 
-              <div v-if="props.requestSelected?.origin_country" class="d-flex align-center justify-center gap-2">
-                <VIcon icon="ri-earth-line" size="16" />
+              <div
+                v-if="props.requestSelected?.origin_country"
+                class="d-flex align-center justify-center gap-2"
+              >
+                <VIcon
+                  icon="ri-earth-line"
+                  size="16"
+                />
                 <span class="text-body-2">
                   <strong>País de Origen:</strong> {{ props.requestSelected.origin_country }}
                 </span>
               </div>
 
               <div class="d-flex align-center justify-center gap-2">
-                <VIcon icon="ri-tools-line" size="16" />
+                <VIcon
+                  icon="ri-tools-line"
+                  size="16"
+                />
                 <span class="text-body-2">
                   <strong>Repuestos Asociados:</strong> {{ (props.requestSelected?.items || []).length }}
                 </span>
               </div>
 
-              <div v-if="props.requestSelected?.id" class="d-flex align-center justify-center gap-2">
-                <VIcon icon="ri-hashtag" size="16" />
+              <div
+                v-if="props.requestSelected?.id"
+                class="d-flex align-center justify-center gap-2"
+              >
+                <VIcon
+                  icon="ri-hashtag"
+                  size="16"
+                />
                 <span class="text-body-2">
                   <strong>ID:</strong> {{ props.requestSelected.id }}
                 </span>

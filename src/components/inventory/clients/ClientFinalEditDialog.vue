@@ -520,18 +520,36 @@ onMounted(() => {
         >
           <VRow>
             <!-- 👉 Sección 1: Identificación y Estado -->
-            <VCol cols="12" class="pb-1 pt-1">
+            <VCol
+              cols="12"
+              class="pb-1 pt-1"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-id-card-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-id-card-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   1. Identificación y Estado
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.type_document"
                 :items="typeDocumentOptions"
@@ -544,7 +562,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.n_document"
                 label="Número de Documento *"
@@ -559,7 +581,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.state"
                 :items="stateOptions"
@@ -595,21 +621,41 @@ onMounted(() => {
               </VSelect>
             </VCol>
 
-            <VCol cols="12"><VDivider class="my-1" /></VCol>
+            <VCol cols="12">
+              <VDivider class="my-1" />
+            </VCol>
 
             <!-- 👉 Sección 2: Datos Personales -->
-            <VCol cols="12" class="pb-1 pt-2">
+            <VCol
+              cols="12"
+              class="pb-1 pt-2"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-user-smile-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-user-smile-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   2. Datos Personales
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.name"
                 label="Nombres *"
@@ -625,7 +671,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.surname"
                 label="Apellidos *"
@@ -641,7 +691,10 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" class="py-2">
+            <VCol
+              cols="12"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.full_name"
                 label="Nombre Completo (Generado automáticamente)"
@@ -654,7 +707,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.phone"
                 label="Teléfono / Celular"
@@ -669,7 +726,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.email"
                 label="Correo Electrónico"
@@ -683,7 +744,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.gender"
                 :items="genderOptions"
@@ -698,7 +763,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" class="py-2">
+            <VCol
+              cols="12"
+              sm="6"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.birth_date"
                 label="Fecha de Nacimiento"
@@ -710,21 +779,40 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12"><VDivider class="my-1" /></VCol>
+            <VCol cols="12">
+              <VDivider class="my-1" />
+            </VCol>
 
             <!-- 👉 Sección 3: Dirección y Ubicación -->
-            <VCol cols="12" class="pb-1 pt-2">
+            <VCol
+              cols="12"
+              class="pb-1 pt-2"
+            >
               <div class="d-flex align-center gap-2 mb-2">
-                <VAvatar size="26" color="primary" variant="tonal" class="rounded">
-                  <VIcon size="16" icon="ri-map-pin-line" />
+                <VAvatar
+                  size="26"
+                  color="primary"
+                  variant="tonal"
+                  class="rounded"
+                >
+                  <VIcon
+                    size="16"
+                    icon="ri-map-pin-line"
+                  />
                 </VAvatar>
-                <span class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase" style="letter-spacing: 0.5px;">
+                <span
+                  class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase"
+                  style="letter-spacing: 0.5px;"
+                >
                   3. Dirección y Ubicación
                 </span>
               </div>
             </VCol>
 
-            <VCol cols="12" class="py-2">
+            <VCol
+              cols="12"
+              class="py-2"
+            >
               <VTextField
                 v-model="clientForm.address"
                 label="Dirección Domiciliaria"
@@ -736,7 +824,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_region"
                 :items="regions"
@@ -751,7 +843,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_provincia"
                 :items="provinces"
@@ -767,7 +863,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="4" class="py-2">
+            <VCol
+              cols="12"
+              sm="4"
+              class="py-2"
+            >
               <VSelect
                 v-model="clientForm.ubigeo_distrito"
                 :items="districts"
@@ -784,7 +884,10 @@ onMounted(() => {
             </VCol>
 
             <!-- Alerts -->
-            <VCol v-if="error" cols="12">
+            <VCol
+              v-if="error"
+              cols="12"
+            >
               <VAlert
                 type="error"
                 variant="tonal"
@@ -796,7 +899,10 @@ onMounted(() => {
               </VAlert>
             </VCol>
 
-            <VCol v-if="success" cols="12">
+            <VCol
+              v-if="success"
+              cols="12"
+            >
               <VAlert
                 type="success"
                 variant="tonal"

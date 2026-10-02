@@ -66,6 +66,7 @@ function fallbackExecCopy(textToCopy) {
         activeContainer.removeChild(textArea)
       } catch (_) {}
     }
+    
     return false
   }
 }
@@ -89,6 +90,7 @@ export async function copyToClipboard(text) {
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(textToCopy)
+      
       return true
     } catch (err) {
       console.warn('[Clipboard] navigator.clipboard.writeText rejected, attempting fallback:', err)

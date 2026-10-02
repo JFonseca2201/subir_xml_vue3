@@ -151,6 +151,7 @@ const getClientInitials = client => {
   if (!name || name === 'N/A') return 'CL'
   const parts = name.split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  
   return name.slice(0, 2).toUpperCase()
 }
 
@@ -208,6 +209,7 @@ const formatDate = dateString => {
   const parts = clean.split('-')
   if (parts.length === 3) {
     const [year, month, day] = parts
+    
     return `${year}/${month}/${day}`
   }
   const date = new Date(dateString)
@@ -215,8 +217,10 @@ const formatDate = dateString => {
     const y = date.getFullYear()
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
+    
     return `${y}/${m}/${d}`
   }
+  
   return dateString
 }
 
@@ -245,12 +249,14 @@ const getStatusInfo = (status, quote = null) => {
     }
     if (quote.converted_work_order_id || quote.converted_work_order) {
       const otNum = quote.converted_work_order?.number ? ` #${quote.converted_work_order.number}` : ''
+      
       return { color: 'primary', text: `Convertida a OT${otNum}`, icon: 'ri-tools-line' }
     }
     if (quote.converted_sale_id || quote.converted_sale) {
       return { color: 'success', text: 'Convertida a Venta', icon: 'ri-check-line' }
     }
   }
+
   const map = {
     pending: { color: 'info', text: 'Activa', icon: 'ri-time-line' },
     completed: { color: 'success', text: 'Convertida', icon: 'ri-check-line' },
@@ -262,6 +268,7 @@ const getStatusInfo = (status, quote = null) => {
 
 const isQuoteCanceled = quote => {
   if (!quote) return false
+  
   return quote.status === 'canceled' || !!quote.deleted_at || !!quote.canceled_at
 }
 
@@ -274,6 +281,7 @@ const getQuoteStatusPill = quote => {
 
   if (quote.converted_work_order_id || quote.converted_work_order) {
     const otNum = quote.converted_work_order?.number ? ` #${quote.converted_work_order.number}` : ''
+    
     return { class: 'status-paid', text: `SELLADA - OT${otNum}` }
   }
 
@@ -291,10 +299,12 @@ const getQuoteStatusPill = quote => {
 const convertToWorkOrderDirect = quote => {
   if (quote.converted_sale_id || quote.converted_work_order_id || quote.status === 'completed') {
     showNotification('Esta cotización ya fue convertida y sellada', 'warning')
+    
     return
   }
   if (isQuoteCanceled(quote)) {
     showNotification('No se puede convertir una cotización anulada', 'warning')
+    
     return
   }
 
@@ -376,9 +386,11 @@ const downloadSinglePDF = async quote => {
     const blob = new Blob([response], { type: 'application/pdf' })
     const url = window.URL.createObjectURL(blob)
     const rawClient = quote.client?.full_name || getClientName(quote.client) || 'Cliente'
+
     const clientName = rawClient
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').toUpperCase()
+
     const plate = (quote.vehicle?.license_plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
     const docNumber = (quote.document_number || 'Cotizacion').replace(/[^a-zA-Z0-9\-_]/g, '')
     const parts = ['Cotizacion', docNumber, clientName]
@@ -539,6 +551,7 @@ const openConvertDialog = quote => {
 const confirmConvert = () => {
   if (!selectedQuote.value) return
   const quote = selectedQuote.value
+
   isConvertDialogVisible.value = false
 
   if (convertForm.value.document_type === 'work_order') {
@@ -610,8 +623,17 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-file-list-3-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-file-list-3-line"
+              size="26"
+            />
           </VAvatar>
           Cotizaciones y Proformas
         </h1>
@@ -633,14 +655,30 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
-            <VIcon icon="ri-file-text-line" size="24" />
+          <VAvatar
+            size="46"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-file-text-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total Cotizaciones</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total Cotizaciones
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
             </div>
@@ -648,13 +686,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
-            <VIcon icon="ri-money-dollar-circle-line" size="24" />
+          <VAvatar
+            size="46"
+            color="success"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-money-dollar-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Total en Proforma (Pág.)</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Total en Proforma (Pág.)
+            </div>
             <div class="text-h6 font-weight-bold text-success font-mono">
               ${{ totalQuotesInPage.toFixed(2) }}
             </div>
@@ -662,13 +713,26 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar size="46" color="info" variant="tonal" rounded="lg">
-            <VIcon icon="ri-checkbox-circle-line" size="24" />
+          <VAvatar
+            size="46"
+            color="info"
+            variant="tonal"
+            rounded="lg"
+          >
+            <VIcon
+              icon="ri-checkbox-circle-line"
+              size="24"
+            />
           </VAvatar>
           <div>
-            <div class="text-caption text-medium-emphasis font-weight-medium">Cotizaciones Vigentes</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium">
+              Cotizaciones Vigentes
+            </div>
             <div class="text-h6 font-weight-bold text-info">
               {{ activeQuotesCount }} <span class="text-caption text-disabled font-weight-regular">no anuladas</span>
             </div>
@@ -682,7 +746,11 @@ onMounted(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Cotizaciones</span>
           </div>
 
@@ -698,8 +766,14 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
-          <VCol cols="12" md="6">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="searchForm.search"
               label="Buscar cotización"
@@ -714,7 +788,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
             <VTextField
               v-model="searchForm.start_date"
               type="date"
@@ -727,7 +805,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
             <VTextField
               v-model="searchForm.end_date"
               type="date"
@@ -744,79 +826,402 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 140px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4"><div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" /></td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4" style="width: 130px;"><div class="shimmer-line w-50" /></td>
-            <td class="py-4" style="width: 120px;"><div class="shimmer-line w-60 ms-auto" /></td>
-            <td class="py-4" style="width: 130px;"><div class="shimmer-chip mx-auto" /></td>
-            <td class="py-4 text-center" style="width: 140px;"><div class="shimmer-button rounded mx-auto" /></td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="loading">
+      <!-- Skeleton Móvil (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="n in 4"
+          :key="'mob-skel-quote-' + n"
+          class="mobile-quote-card elevation-0 pa-4"
+        >
+          <div class="d-flex justify-space-between mb-2">
+            <div class="shimmer-line w-40" />
+            <div
+              class="shimmer-button rounded"
+              style="width: 24px; height: 24px;"
+            />
+          </div>
+          <div class="d-flex align-center gap-2 mb-3">
+            <div
+              class="shimmer-button rounded-lg"
+              style="width: 34px; height: 34px;"
+            />
+            <div class="flex-grow-1">
+              <div class="shimmer-line w-60 mb-1" />
+              <div class="shimmer-line w-35" />
+            </div>
+          </div>
+          <div class="d-flex justify-space-between align-center pt-2 border-t">
+            <div class="shimmer-line w-30" />
+            <div
+              class="shimmer-chip"
+              style="width: 70px;"
+            />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio (d-none d-md-block) -->
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 130px;"
+              >
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 120px;"
+              >
+                <div class="shimmer-line w-60 ms-auto" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 130px;"
+              >
+                <div class="shimmer-chip mx-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 140px;"
+              >
+                <div class="shimmer-button rounded mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!quotes || quotes.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-file-text-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-file-text-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron cotizaciones
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar los criterios de búsqueda o registra una nueva propuesta técnica.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn color="primary" prepend-icon="ri-add-line" to="/quotes/add">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/quotes/add"
+        >
           Nueva Cotización
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA MODERNA DE COTIZACIONES -->
+    <!-- LISTADO DE COTIZACIONES (MÓVIL Y ESCRITORIO) -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="quotes-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="(item, index) in quotes"
+          :key="'mob-quote-' + (item?.id || index)"
+          class="mobile-quote-card elevation-0"
+        >
+          <!-- Fila superior: Proforma # + Acciones rápidas -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-1 border-b">
+            <div class="d-flex align-center gap-1.5 min-w-0">
+              <span
+                class="text-caption font-weight-bold text-info text-uppercase"
+                style="font-size: 0.65rem;"
+              >
+                Proforma
+              </span>
+              <span
+                class="font-mono font-weight-bold text-body-2 text-primary cursor-pointer hover-underline text-truncate"
+                :class="isQuoteCanceled(item) ? 'text-decoration-line-through text-disabled' : ''"
+                @click="viewQuote(item)"
+              >
+                {{ item.document_number || 'S/N' }}
+              </span>
+            </div>
+
+            <!-- Botones de Acción en Cabecera Móvil -->
+            <div class="d-flex align-center gap-1">
+              <VBtn
+                size="x-small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Cotización"
+                @click="viewQuote(item)"
+              />
+              <VBtn
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+                icon="ri-more-2-line"
+                title="Más Opciones"
+              >
+                <VIcon
+                  icon="ri-more-2-line"
+                  size="16"
+                />
+                <VMenu
+                  activator="parent"
+                  transition="slide-y-transition"
+                  align="end"
+                  location="bottom end"
+                >
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-4 border"
+                    min-width="220"
+                  >
+                    <VListItem
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      prepend-icon="ri-tools-line"
+                      title="Convertir a Orden"
+                      class="text-primary text-body-2"
+                      @click="convertToWorkOrderDirect(item)"
+                    />
+                    <VListItem
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      prepend-icon="ri-shopping-cart-2-line"
+                      title="Facturar / Emitir Venta"
+                      class="text-success text-body-2"
+                      @click="openConvertDialog(item)"
+                    />
+                    <VListItem
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      prepend-icon="ri-pencil-line"
+                      title="Editar Cotización"
+                      class="text-warning text-body-2"
+                      @click="editQuote(item)"
+                    />
+                    <VDivider
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      class="my-1"
+                    />
+                    <VListItem
+                      prepend-icon="ri-printer-line"
+                      title="Imprimir"
+                      class="text-info text-body-2"
+                      @click="printQuote(item.id)"
+                    />
+                    <VListItem
+                      prepend-icon="ri-file-pdf-line"
+                      title="Ver PDF"
+                      class="text-success text-body-2"
+                      @click="generateSinglePDF(item)"
+                    />
+                    <VListItem
+                      prepend-icon="ri-download-2-line"
+                      title="Descargar PDF"
+                      class="text-primary text-body-2"
+                      @click="downloadSinglePDF(item)"
+                    />
+                    <VDivider
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      class="my-1"
+                    />
+                    <VListItem
+                      v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
+                      prepend-icon="ri-close-circle-line"
+                      title="Anular Cotización"
+                      class="text-error text-body-2"
+                      @click="cancelQuote(item)"
+                    />
+                  </VList>
+                </VMenu>
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Cliente -->
+          <div class="d-flex align-center gap-2 mb-2">
+            <VAvatar
+              size="32"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              class="elevation-0 flex-shrink-0"
+            >
+              <span
+                style="font-size: 0.75rem;"
+                class="font-weight-bold"
+              >{{ getClientInitials(item.client) }}</span>
+            </VAvatar>
+            <div class="min-w-0 flex-grow-1">
+              <div
+                class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                :title="getClientName(item.client)"
+              >
+                {{ getClientName(item.client) }}
+              </div>
+              <div
+                v-if="item.client?.n_document"
+                class="text-caption text-medium-emphasis font-mono text-truncate"
+              >
+                {{ item.client.n_document }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Vehículo -->
+          <div
+            v-if="item.vehicle"
+            class="d-flex align-center gap-2 mb-2.5 py-1 px-2.5 rounded-lg bg-grey-lighten-5 border"
+          >
+            <VIcon
+              icon="ri-car-line"
+              size="15"
+              color="secondary"
+              class="flex-shrink-0"
+            />
+            <span class="font-mono font-weight-bold text-caption text-high-emphasis flex-shrink-0">
+              {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
+            </span>
+            <span class="text-caption text-medium-emphasis text-truncate">
+              {{ formatVehicleInfo(item.vehicle) }}
+            </span>
+          </div>
+
+          <!-- Fila inferior: Fecha (Izquierda) + Total y Estado (Derecha) -->
+          <div class="d-flex align-end justify-space-between gap-2 pt-1 border-t">
+            <!-- Fecha -->
+            <div class="d-flex align-center text-caption text-medium-emphasis">
+              <VIcon
+                icon="ri-calendar-line"
+                size="13"
+                class="me-1 text-disabled"
+              />
+              <span class="font-weight-medium">{{ formatDate(item.date || item.created_at) }}</span>
+            </div>
+
+            <!-- Total y Estado -->
+            <div class="d-flex flex-column align-end gap-1">
+              <span
+                class="font-mono font-weight-bold text-h6 text-high-emphasis"
+                style="line-height: 1.1;"
+              >
+                ${{ parseFloat(item.total || 0).toFixed(2) }}
+              </span>
+
+              <!-- Estado -->
+              <div
+                class="status-pill-clean"
+                :class="getStatusInfo(item.status, item).class"
+              >
+                <span class="status-dot" />
+                <span>{{ getStatusInfo(item.status, item).text }}</span>
+              </div>
+            </div>
+          </div>
+        </VCard>
+      </div>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
+        <VTable
+          hover
+          class="quotes-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 140px; min-width: 130px; white-space: nowrap;"
+              >
                 Cotización
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 220px; min-width: 180px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 220px; min-width: 180px;"
+              >
                 Cliente
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 220px;"
+              >
                 Vehículo
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 130px; min-width: 120px; white-space: nowrap;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;"
+              >
                 Fecha
               </th>
-              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px; min-width: 100px; white-space: nowrap;">
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 110px; min-width: 100px; white-space: nowrap;"
+              >
                 Total
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px; min-width: 130px; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 140px; min-width: 130px; white-space: nowrap;"
+              >
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px; min-width: 80px; white-space: nowrap;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 90px; min-width: 80px; white-space: nowrap;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in quotes" :key="item?.id || index" class="quote-table-row">
+            <tr
+              v-for="(item, index) in quotes"
+              :key="item?.id || index"
+              class="quote-table-row"
+            >
               <!-- N° Documento -->
-              <td class="py-3" style="white-space: nowrap;">
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
                 <div class="d-flex flex-column gap-0.5">
                   <span class="text-caption font-weight-bold text-info text-uppercase">
                     Proforma
@@ -832,16 +1237,37 @@ onMounted(() => {
               </td>
 
               <!-- Cliente -->
-              <td class="py-3" style="max-width: 240px;">
+              <td
+                class="py-3"
+                style="max-width: 240px;"
+              >
                 <div class="d-flex align-center gap-2">
-                  <VAvatar size="34" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <span style="font-size: 0.8rem;" class="font-weight-bold">{{ getClientInitials(item.client) }}</span>
+                  <VAvatar
+                    size="34"
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="elevation-0 flex-shrink-0"
+                  >
+                    <span
+                      style="font-size: 0.8rem;"
+                      class="font-weight-bold"
+                    >{{ getClientInitials(item.client) }}</span>
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 180px;">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate" :title="getClientName(item.client)">
+                  <div
+                    class="min-w-0"
+                    style="max-width: 180px;"
+                  >
+                    <div
+                      class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                      :title="getClientName(item.client)"
+                    >
                       {{ getClientName(item.client) }}
                     </div>
-                    <div v-if="item.client?.n_document" class="text-caption text-medium-emphasis font-mono text-truncate">
+                    <div
+                      v-if="item.client?.n_document"
+                      class="text-caption text-medium-emphasis font-mono text-truncate"
+                    >
                       {{ item.client.n_document }}
                     </div>
                   </div>
@@ -850,11 +1276,27 @@ onMounted(() => {
 
               <!-- Vehículo -->
               <td class="py-3">
-                <div v-if="item.vehicle" class="d-flex align-center gap-2">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0">
-                    <VIcon icon="ri-car-line" size="18" color="secondary" />
+                <div
+                  v-if="item.vehicle"
+                  class="d-flex align-center gap-2"
+                >
+                  <VAvatar
+                    size="34"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="elevation-0 flex-shrink-0"
+                  >
+                    <VIcon
+                      icon="ri-car-line"
+                      size="18"
+                      color="secondary"
+                    />
                   </VAvatar>
-                  <div class="min-w-0" style="max-width: 250px;">
+                  <div
+                    class="min-w-0"
+                    style="max-width: 250px;"
+                  >
                     <div
                       class="font-mono text-truncate"
                       :class="(item.vehicle.plate || item.vehicle.license_plate) ? 'vehicle-plate-large text-high-emphasis' : 'text-body-2 font-weight-medium text-disabled'"
@@ -870,24 +1312,53 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-                <div v-else class="d-flex align-center gap-2 text-disabled text-caption">
-                  <VAvatar size="34" color="secondary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 opacity-40">
-                    <VIcon icon="ri-car-line" size="18" />
+                <div
+                  v-else
+                  class="d-flex align-center gap-2 text-disabled text-caption"
+                >
+                  <VAvatar
+                    size="34"
+                    color="secondary"
+                    variant="tonal"
+                    rounded="lg"
+                    class="elevation-0 flex-shrink-0 opacity-40"
+                  >
+                    <VIcon
+                      icon="ri-car-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <span>Sin vehículo</span>
                 </div>
               </td>
 
               <!-- Fecha -->
-              <td class="py-3" style="white-space: nowrap;">
-                <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap" style="white-space: nowrap;">
-                  <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
-                  <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{ formatDate(item.service_date || item.created_at) }}</span>
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                  style="white-space: nowrap;"
+                >
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="16"
+                    color="medium-emphasis"
+                    class="me-1 flex-shrink-0"
+                  />
+                  <span
+                    class="text-no-wrap font-weight-medium"
+                    style="white-space: nowrap;"
+                  >{{ formatDate(item.service_date || item.created_at) }}</span>
                 </div>
               </td>
 
               <!-- Total -->
-              <td class="text-right py-3" style="white-space: nowrap;">
+              <td
+                class="text-right py-3"
+                style="white-space: nowrap;"
+              >
                 <span
                   class="font-mono font-weight-bold text-body-1 text-high-emphasis"
                   :class="isQuoteCanceled(item) ? 'text-decoration-line-through text-disabled' : ''"
@@ -897,7 +1368,10 @@ onMounted(() => {
               </td>
 
               <!-- Estado (Píldora limpia estilo socios con punto) -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <div
                   class="status-pill-clean"
                   :class="[getQuoteStatusPill(item).class, isQuoteCanceled(item) ? 'cursor-pointer' : '']"
@@ -910,7 +1384,10 @@ onMounted(() => {
               </td>
 
               <!-- Acciones -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <div class="d-flex justify-center align-center gap-1">
                   <!-- Ver detalle -->
                   <VBtn
@@ -930,9 +1407,21 @@ onMounted(() => {
                     icon="ri-more-2-line"
                     title="Más Opciones"
                   >
-                    <VIcon icon="ri-more-2-line" size="18" />
-                    <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                      <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="220">
+                    <VIcon
+                      icon="ri-more-2-line"
+                      size="18"
+                    />
+                    <VMenu
+                      activator="parent"
+                      transition="slide-y-transition"
+                      align="end"
+                      location="bottom end"
+                    >
+                      <VList
+                        density="compact"
+                        class="py-1 rounded-lg elevation-4 border"
+                        min-width="220"
+                      >
                         <!-- Convertir a Orden de Trabajo -->
                         <VListItem
                           v-if="!item.converted_sale_id && !item.converted_work_order_id && item.status !== 'completed' && !isQuoteCanceled(item)"
@@ -966,10 +1455,30 @@ onMounted(() => {
                         />
 
                         <!-- Imprimir y PDF -->
-                        <VListItem prepend-icon="ri-printer-line" title="Imprimir" class="text-info text-body-2" @click="printQuote(item.id)" />
-                        <VListItem prepend-icon="ri-file-pdf-line" title="Ver PDF" class="text-success text-body-2" @click="generateSinglePDF(item)" />
-                        <VListItem prepend-icon="ri-download-2-line" title="Descargar PDF" class="text-primary text-body-2" @click="downloadSinglePDF(item)" />
-                        <VListItem prepend-icon="ri-mail-send-line" title="Enviar por Correo" class="text-secondary text-body-2" @click="openMailDialog(item)" />
+                        <VListItem
+                          prepend-icon="ri-printer-line"
+                          title="Imprimir"
+                          class="text-info text-body-2"
+                          @click="printQuote(item.id)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-file-pdf-line"
+                          title="Ver PDF"
+                          class="text-success text-body-2"
+                          @click="generateSinglePDF(item)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-download-2-line"
+                          title="Descargar PDF"
+                          class="text-primary text-body-2"
+                          @click="downloadSinglePDF(item)"
+                        />
+                        <VListItem
+                          prepend-icon="ri-mail-send-line"
+                          title="Enviar por Correo"
+                          class="text-secondary text-body-2"
+                          @click="openMailDialog(item)"
+                        />
                         
                         <VDivider class="my-1" />
                         

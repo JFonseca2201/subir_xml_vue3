@@ -31,6 +31,7 @@ const emit = defineEmits([
 const { showNotification } = useGlobalToast()
 
 const isSubmitting = ref(false)
+
 const paymentForm = ref({
   payment_method: 'efectivo',
   convert_to_invoice: false,

@@ -25,6 +25,7 @@ app.config.warnHandler = (msg, instance, trace) => {
 if (typeof window !== 'undefined') {
   const isDevToolsBug = (err, msg) => {
     const text = ((err?.message || '') + ' ' + (err?.stack || '') + ' ' + (msg || '')).toLowerCase()
+    
     return (text.includes("reading 'starttime'") || text.includes('starttime')) && (text.includes('reportallchanges') || text.includes('anonymous') || text.includes('timeout'))
   }
 
@@ -37,6 +38,7 @@ if (typeof window !== 'undefined') {
     if (isDevToolsBug(event?.error, event?.message)) {
       event.preventDefault()
       event.stopImmediatePropagation()
+      
       return true
     }
   }, true)
@@ -44,6 +46,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', event => {
     if (isDevToolsBug(event?.reason)) {
       event.preventDefault()
+      
       return true
     }
   })

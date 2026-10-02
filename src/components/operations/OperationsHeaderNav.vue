@@ -17,6 +17,7 @@ const currentDateDisplay = computed(() => {
     const now = new Date()
     const options = { weekday: 'short', day: 'numeric', month: 'short' }
     const formatted = new Intl.DateTimeFormat('es-EC', options).format(now)
+    
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
   } catch (e) {
     return ''
@@ -81,7 +82,10 @@ const navigateTo = itemRoute => {
           rounded="lg"
           class="me-3"
         >
-          <VIcon icon="ri-exchange-funds-line" size="26" />
+          <VIcon
+            icon="ri-exchange-funds-line"
+            size="26"
+          />
         </VAvatar>
         Gestión de Operaciones
       </h1>
@@ -97,7 +101,10 @@ const navigateTo = itemRoute => {
         role="tablist"
         aria-label="Navegación de Operaciones"
       >
-        <template v-for="(item, index) in navItems" :key="item.id">
+        <template
+          v-for="(item, index) in navItems"
+          :key="item.id"
+        >
           <!-- Divisor vertical sutil estilo pestañas de navegador (solo entre pestañas inactivas) -->
           <span
             v-if="index > 0 && !isCurrentActive(item) && !isCurrentActive(navItems[index - 1])"
@@ -114,7 +121,11 @@ const navigateTo = itemRoute => {
             :class="{ 'is-active': isCurrentActive(item) }"
             @click="navigateTo(item.route)"
           >
-            <VIcon :icon="item.icon" size="16" class="operations-tab-icon operations-menu-icon tab-icon" />
+            <VIcon
+              :icon="item.icon"
+              size="16"
+              class="operations-tab-icon operations-menu-icon tab-icon"
+            />
             <span class="operations-tab-label operations-menu-label tab-label">{{ item.title }}</span>
           </button>
         </template>

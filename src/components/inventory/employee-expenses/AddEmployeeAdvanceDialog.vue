@@ -164,6 +164,7 @@ const handleSubmit = async () => {
 
   try {
     const formData = new FormData()
+
     formData.append('employee_id', form.value.employee_id)
     formData.append('account_id', form.value.account_id)
     formData.append('amount', parseFloat(form.value.amount))
@@ -251,14 +252,52 @@ onMounted(() => {
       </div>
       <VCardText class="pa-4">
         <!-- Skeleton loader mientras cargan datos -->
-        <div v-if="isLoadingData" class="py-2">
+        <div
+          v-if="isLoadingData"
+          class="py-2"
+        >
           <VRow>
-            <VCol cols="12"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="6"><VSkeletonLoader type="text" height="52" class="rounded-lg mb-2" /></VCol>
-            <VCol cols="12"><VSkeletonLoader type="article" class="rounded-lg" /></VCol>
+            <VCol cols="12">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="6">
+              <VSkeletonLoader
+                type="text"
+                height="52"
+                class="rounded-lg mb-2"
+              />
+            </VCol>
+            <VCol cols="12">
+              <VSkeletonLoader
+                type="article"
+                class="rounded-lg"
+              />
+            </VCol>
           </VRow>
         </div>
 

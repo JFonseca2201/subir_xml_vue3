@@ -40,11 +40,13 @@ const sourceTypeOptions = [
 // Modal de Reembolso a Cuenta
 const isRefundDialogVisible = ref(false)
 const selectedCreditForRefund = ref(null)
+
 const refundForm = ref({
   account_id: null,
   amount: null,
   notes: '',
 })
+
 const isRefundSubmitting = ref(false)
 
 // Modal de Detalle de Usos / Cruces
@@ -57,6 +59,7 @@ const filterSupplier = (value, query, item) => {
   const q = query.toLowerCase().trim()
   const name = (item.raw.name || '').toLowerCase()
   const ruc = (item.raw.ruc || item.raw.tax_id || '').toLowerCase()
+  
   return name.includes(q) || ruc.includes(q)
 }
 
@@ -69,7 +72,9 @@ const loadInitialConfig = async () => {
     ])
 
     suppliers.value = configRes?.suppliers || []
+
     const rawAccounts = accountsRes?.data || accountsRes?.accounts || accountsRes || []
+
     accounts.value = (Array.isArray(rawAccounts) ? rawAccounts : []).map(acc => {
       let displayName = acc.name || 'Sin nombre'
       if (acc.bank_name && !displayName.toLowerCase().includes(acc.bank_name.toLowerCase())) {
@@ -108,6 +113,7 @@ const loadCredits = async () => {
 
     if (response.success) {
       const paginator = response.data
+
       credits.value = paginator.data || []
       totalPages.value = paginator.last_page || 1
       totalItems.value = paginator.total || 0
@@ -135,7 +141,7 @@ const resetFilters = () => {
 }
 
 // Helpers de visualización
-const formatMoney = (val) => {
+const formatMoney = val => {
   return new Intl.NumberFormat('es-EC', {
     style: 'currency',
     currency: 'USD',
@@ -143,13 +149,14 @@ const formatMoney = (val) => {
   }).format(val || 0)
 }
 
-const formatDate = (dateStr) => {
+const formatDate = dateStr => {
   if (!dateStr) return '-'
   const [year, month, day] = dateStr.split('T')[0].split(' ')[0].split('-')
+  
   return `${day}/${month}/${year}`
 }
 
-const getStatusBadge = (status) => {
+const getStatusBadge = status => {
   const map = {
     available: { color: 'success', text: 'Disponible', icon: 'ri-checkbox-circle-line' },
     partially_used: { color: 'warning', text: 'Parcial', icon: 'ri-pie-chart-line' },
@@ -157,20 +164,24 @@ const getStatusBadge = (status) => {
     refunded: { color: 'info', text: 'Reembolsado', icon: 'ri-refund-2-line' },
     canceled: { color: 'error', text: 'Anulado', icon: 'ri-close-circle-line' },
   }
+
+  
   return map[status] || { color: 'grey', text: status, icon: 'ri-question-line' }
 }
 
-const getSourceTypeBadge = (type) => {
+const getSourceTypeBadge = type => {
   const map = {
     overpayment: { color: 'primary', text: 'Saldo a Favor' },
     credit_note: { color: 'warning', text: 'Nota de Crédito' },
     manual_adjustment: { color: 'info', text: 'Ajuste Manual' },
   }
+
+  
   return map[type] || { color: 'secondary', text: type }
 }
 
 // Abrir diálogo de reembolso
-const openRefundDialog = (credit) => {
+const openRefundDialog = credit => {
   selectedCreditForRefund.value = credit
   refundForm.value = {
     account_id: null, // Obligar a seleccionar la cuenta conscientemente
@@ -184,11 +195,13 @@ const openRefundDialog = (credit) => {
 const submitRefund = async () => {
   if (!refundForm.value.account_id) {
     showNotification('Seleccione la cuenta bancaria de destino.', 'warning')
+    
     return
   }
 
   if (!refundForm.value.amount || refundForm.value.amount <= 0) {
     showNotification('Ingrese un monto válido para el reembolso.', 'warning')
+    
     return
   }
 
@@ -196,6 +209,7 @@ const submitRefund = async () => {
 
   try {
     const creditId = selectedCreditForRefund.value.id
+
     const response = await $api(`supplier-credit-balances/${creditId}/refund`, {
       method: 'POST',
       body: refundForm.value,
@@ -210,7 +224,9 @@ const submitRefund = async () => {
     }
   } catch (error) {
     console.error('Error en reembolso:', error)
+
     const errData = error?.data || error?._data || error?.response?._data || error?.response?.data
+
     showNotification(errData?.message || error?.message || 'Error al procesar el reembolso.', 'error')
   } finally {
     isRefundSubmitting.value = false
@@ -218,7 +234,7 @@ const submitRefund = async () => {
 }
 
 // Abrir diálogo de usos / aplicaciones
-const openUsagesDialog = (credit) => {
+const openUsagesDialog = credit => {
   selectedCreditForUsages.value = credit
   isUsagesDialogVisible.value = true
 }
@@ -257,9 +273,15 @@ onMounted(() => {
     <!-- Filtros -->
     <VCard class="mb-6 rounded-xl border border-light elevation-0">
       <VCardText class="pa-4 bg-grey-lighten-5">
-        <VRow dense class="align-center">
+        <VRow
+          dense
+          class="align-center"
+        >
           <!-- Búsqueda -->
-          <VCol cols="12" md="4">
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VTextField
               v-model="filters.search"
               placeholder="Buscar por referencia, NC o proveedor..."
@@ -275,7 +297,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Proveedor -->
-          <VCol cols="12" sm="6" md="3">
+          <VCol
+            cols="12"
+            sm="6"
+            md="3"
+          >
             <VAutocomplete
               v-model="filters.supplier_id"
               :items="suppliers"
@@ -293,7 +319,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Estado -->
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VSelect
               v-model="filters.status"
               :items="statusOptions"
@@ -310,7 +340,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Tipo de Origen -->
-          <VCol cols="12" sm="6" md="2">
+          <VCol
+            cols="12"
+            sm="6"
+            md="2"
+          >
             <VSelect
               v-model="filters.source_type"
               :items="sourceTypeOptions"
@@ -327,7 +361,12 @@ onMounted(() => {
           </VCol>
 
           <!-- Botón Limpiar -->
-          <VCol cols="12" sm="6" md="1" class="text-right">
+          <VCol
+            cols="12"
+            sm="6"
+            md="1"
+            class="text-right"
+          >
             <VBtn
               variant="text"
               color="secondary"
@@ -343,10 +382,23 @@ onMounted(() => {
 
     <!-- Listado Principal -->
     <VCard class="rounded-xl border border-light elevation-0 overflow-hidden">
-      <VProgressLinear v-if="loading" indeterminate color="primary" height="3" />
+      <VProgressLinear
+        v-if="loading"
+        indeterminate
+        color="primary"
+        height="3"
+      />
 
-      <div v-if="!loading && credits.length === 0" class="text-center py-12">
-        <VIcon icon="ri-hand-coin-line" size="48" color="grey-lighten-1" class="mb-3" />
+      <div
+        v-if="!loading && credits.length === 0"
+        class="text-center py-12"
+      >
+        <VIcon
+          icon="ri-hand-coin-line"
+          size="48"
+          color="grey-lighten-1"
+          class="mb-3"
+        />
         <div class="text-h6 text-grey-darken-2 font-weight-regular">
           No se encontraron saldos a favor ni notas de crédito
         </div>
@@ -355,121 +407,269 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-else class="table-responsive">
-        <VTable hover class="credits-table">
-          <thead class="bg-grey-lighten-4">
-            <tr>
-              <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Proveedor</th>
-              <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Tipo & Referencia</th>
-              <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Monto Original</th>
-              <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Monto Usado</th>
-              <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Saldo Disponible</th>
-              <th class="text-center font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Estado</th>
-              <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">Fecha</th>
-              <th class="text-center font-weight-bold text-caption text-grey-darken-3 py-3 px-4" style="width: 140px;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="item in credits"
-              :key="item.id"
-              class="align-middle border-b border-opacity-25"
-            >
-              <!-- Proveedor -->
-              <td class="py-3 px-4">
-                <div class="text-body-2 font-weight-bold text-grey-darken-4">
-                  {{ item.supplier?.name || 'Proveedor #' + item.supplier_id }}
-                </div>
-                <div v-if="item.supplier?.ruc" class="text-caption text-medium-emphasis">
-                  RUC: {{ item.supplier.ruc }}
-                </div>
-              </td>
-
-              <!-- Tipo & Referencia -->
-              <td class="py-3 px-4">
-                <div class="d-flex align-center gap-2 mb-1">
-                  <VChip
-                    size="x-small"
-                    variant="tonal"
-                    :color="getSourceTypeBadge(item.source_type).color"
-                    class="font-weight-bold"
-                  >
-                    {{ getSourceTypeBadge(item.source_type).text }}
-                  </VChip>
-                </div>
-                <div class="text-caption font-mono font-weight-medium text-grey-darken-3">
+      <div v-else>
+        <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+        <div class="d-md-none d-flex flex-column gap-3 pa-3">
+          <div
+            v-for="item in credits"
+            :key="item.id"
+            class="mobile-credit-card"
+          >
+            <!-- Fila Superior: Tipo & Referencia, y Acciones -->
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+              <div class="d-flex align-center gap-2 flex-wrap">
+                <VChip
+                  size="x-small"
+                  variant="tonal"
+                  :color="getSourceTypeBadge(item.source_type).color"
+                  class="font-weight-bold"
+                >
+                  {{ getSourceTypeBadge(item.source_type).text }}
+                </VChip>
+                <span class="text-caption font-mono font-weight-medium text-grey-darken-3">
                   {{ item.reference_number || 'Sin ref.' }}
+                </span>
+              </div>
+              <div class="d-flex align-center gap-1">
+                <!-- Ver Usos -->
+                <VBtn
+                  variant="tonal"
+                  icon="ri-history-line"
+                  size="small"
+                  color="info"
+                  title="Ver Historial de Cruces"
+                  @click="openUsagesDialog(item)"
+                />
+                <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
+                <VBtn
+                  v-if="Number(item.remaining_balance) > 0"
+                  variant="tonal"
+                  icon="ri-refund-2-line"
+                  size="small"
+                  color="success"
+                  title="Reembolsar a Cuenta Bancaria"
+                  @click="openRefundDialog(item)"
+                />
+              </div>
+            </div>
+
+            <!-- Fila Proveedor y Fecha -->
+            <div class="d-flex align-start justify-space-between gap-2 mb-3">
+              <div class="d-flex align-center gap-2 min-w-0">
+                <VAvatar
+                  size="36"
+                  color="primary"
+                  variant="tonal"
+                  rounded="lg"
+                >
+                  <VIcon
+                    icon="ri-store-2-line"
+                    size="20"
+                  />
+                </VAvatar>
+                <div class="min-w-0">
+                  <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate">
+                    {{ item.supplier?.name || 'Proveedor #' + item.supplier_id }}
+                  </div>
+                  <div
+                    v-if="item.supplier?.ruc"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    RUC: {{ item.supplier.ruc }}
+                  </div>
                 </div>
-              </td>
+              </div>
+              <span class="text-caption text-medium-emphasis text-no-wrap mt-0.5">
+                {{ formatDate(item.created_at) }}
+              </span>
+            </div>
 
-              <!-- Monto Original -->
-              <td class="text-right py-3 px-4 text-body-2 font-weight-medium text-grey-darken-3">
-                {{ formatMoney(item.amount) }}
-              </td>
-
-              <!-- Monto Usado -->
-              <td class="text-right py-3 px-4 text-body-2 text-medium-emphasis">
-                {{ formatMoney(item.used_amount) }}
-              </td>
-
-              <!-- Saldo Disponible -->
-              <td class="text-right py-3 px-4">
+            <!-- Resumen de Montos (Original, Usado, Saldo) -->
+            <div class="bg-grey-lighten-4 pa-2.5 rounded-lg mb-2">
+              <div class="d-flex justify-space-between align-center mb-1">
+                <span class="text-caption text-medium-emphasis">Monto Original:</span>
+                <span class="text-body-2 font-weight-medium text-grey-darken-3">
+                  {{ formatMoney(item.amount) }}
+                </span>
+              </div>
+              <div class="d-flex justify-space-between align-center mb-1">
+                <span class="text-caption text-medium-emphasis">Monto Usado:</span>
+                <span class="text-body-2 text-medium-emphasis">
+                  {{ formatMoney(item.used_amount) }}
+                </span>
+              </div>
+              <div class="d-flex justify-space-between align-center pt-1 border-t">
+                <span class="text-caption font-weight-bold text-high-emphasis">Saldo Disponible:</span>
                 <span
                   class="text-body-1 font-weight-bold"
                   :class="Number(item.remaining_balance) > 0 ? 'text-success' : 'text-grey-darken-1'"
                 >
                   {{ formatMoney(item.remaining_balance) }}
                 </span>
-              </td>
+              </div>
+            </div>
 
-              <!-- Estado -->
-              <td class="text-center py-3 px-4" style="white-space: nowrap;">
-                <div
-                  class="status-pill-clean"
-                  :class="`status-${item.status}`"
+            <!-- Fila Inferior: Estado -->
+            <div class="d-flex align-center justify-end">
+              <div
+                class="status-pill-clean"
+                :class="`status-${item.status}`"
+              >
+                <span class="status-dot" />
+                <span>{{ getStatusBadge(item.status).text }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
+        <div class="d-none d-md-block table-responsive">
+          <VTable
+            hover
+            class="credits-table"
+          >
+            <thead class="bg-grey-lighten-4">
+              <tr>
+                <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Proveedor
+                </th>
+                <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Tipo & Referencia
+                </th>
+                <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Monto Original
+                </th>
+                <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Monto Usado
+                </th>
+                <th class="text-right font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Saldo Disponible
+                </th>
+                <th class="text-center font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Estado
+                </th>
+                <th class="text-left font-weight-bold text-caption text-grey-darken-3 py-3 px-4">
+                  Fecha
+                </th>
+                <th
+                  class="text-center font-weight-bold text-caption text-grey-darken-3 py-3 px-4"
+                  style="width: 140px;"
                 >
-                  <span class="status-dot" />
-                  <span>{{ getStatusBadge(item.status).text }}</span>
-                </div>
-              </td>
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in credits"
+                :key="item.id"
+                class="align-middle border-b border-opacity-25"
+              >
+                <!-- Proveedor -->
+                <td class="py-3 px-4">
+                  <div class="text-body-2 font-weight-bold text-grey-darken-4">
+                    {{ item.supplier?.name || 'Proveedor #' + item.supplier_id }}
+                  </div>
+                  <div
+                    v-if="item.supplier?.ruc"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    RUC: {{ item.supplier.ruc }}
+                  </div>
+                </td>
 
-              <!-- Fecha -->
-              <td class="py-3 px-4 text-caption text-medium-emphasis">
-                {{ formatDate(item.created_at) }}
-              </td>
+                <!-- Tipo & Referencia -->
+                <td class="py-3 px-4">
+                  <div class="d-flex align-center gap-2 mb-1">
+                    <VChip
+                      size="x-small"
+                      variant="tonal"
+                      :color="getSourceTypeBadge(item.source_type).color"
+                      class="font-weight-bold"
+                    >
+                      {{ getSourceTypeBadge(item.source_type).text }}
+                    </VChip>
+                  </div>
+                  <div class="text-caption font-mono font-weight-medium text-grey-darken-3">
+                    {{ item.reference_number || 'Sin ref.' }}
+                  </div>
+                </td>
 
-              <!-- Acciones -->
-              <td class="text-center py-3 px-4">
-                <div class="d-flex justify-center align-center gap-1">
-                  <!-- Ver Usos -->
-                  <VBtn
-                    variant="tonal"
-                    icon="ri-history-line"
-                    size="small"
-                    color="info"
-                    title="Ver Historial de Cruces"
-                    @click="openUsagesDialog(item)"
-                  />
+                <!-- Monto Original -->
+                <td class="text-right py-3 px-4 text-body-2 font-weight-medium text-grey-darken-3">
+                  {{ formatMoney(item.amount) }}
+                </td>
 
-                  <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
-                  <VBtn
-                    v-if="Number(item.remaining_balance) > 0"
-                    variant="tonal"
-                    icon="ri-refund-2-line"
-                    size="small"
-                    color="success"
-                    title="Reembolsar a Cuenta Bancaria"
-                    @click="openRefundDialog(item)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
+                <!-- Monto Usado -->
+                <td class="text-right py-3 px-4 text-body-2 text-medium-emphasis">
+                  {{ formatMoney(item.used_amount) }}
+                </td>
+
+                <!-- Saldo Disponible -->
+                <td class="text-right py-3 px-4">
+                  <span
+                    class="text-body-1 font-weight-bold"
+                    :class="Number(item.remaining_balance) > 0 ? 'text-success' : 'text-grey-darken-1'"
+                  >
+                    {{ formatMoney(item.remaining_balance) }}
+                  </span>
+                </td>
+
+                <!-- Estado -->
+                <td
+                  class="text-center py-3 px-4"
+                  style="white-space: nowrap;"
+                >
+                  <div
+                    class="status-pill-clean"
+                    :class="`status-${item.status}`"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ getStatusBadge(item.status).text }}</span>
+                  </div>
+                </td>
+
+                <!-- Fecha -->
+                <td class="py-3 px-4 text-caption text-medium-emphasis">
+                  {{ formatDate(item.created_at) }}
+                </td>
+
+                <!-- Acciones -->
+                <td class="text-center py-3 px-4">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <!-- Ver Usos -->
+                    <VBtn
+                      variant="tonal"
+                      icon="ri-history-line"
+                      size="small"
+                      color="info"
+                      title="Ver Historial de Cruces"
+                      @click="openUsagesDialog(item)"
+                    />
+
+                    <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
+                    <VBtn
+                      v-if="Number(item.remaining_balance) > 0"
+                      variant="tonal"
+                      icon="ri-refund-2-line"
+                      size="small"
+                      color="success"
+                      title="Reembolsar a Cuenta Bancaria"
+                      @click="openRefundDialog(item)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </div>
 
       <!-- Paginación -->
-      <div v-if="totalPages > 1" class="d-flex justify-space-between align-center px-4 py-3 border-t border-light">
+      <div
+        v-if="totalPages > 1"
+        class="d-flex justify-space-between align-center px-4 py-3 border-t border-light"
+      >
         <div class="text-caption text-medium-emphasis">
           Mostrando {{ credits.length }} de {{ totalItems }} registros
         </div>
@@ -484,17 +684,31 @@ onMounted(() => {
     </VCard>
 
     <!-- DIÁLOGO: Reembolso de Saldo a Cuenta Bancaria -->
-    <VDialog v-model="isRefundDialogVisible" max-width="520" persistent>
+    <VDialog
+      v-model="isRefundDialogVisible"
+      max-width="520"
+      persistent
+    >
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <!-- Header Banner Primary -->
         <VCardItem class="bg-primary text-white py-4 px-5">
           <div class="d-flex align-center justify-space-between w-100">
             <div class="d-flex align-center gap-3">
-              <div class="d-flex align-center justify-center rounded-circle bg-white bg-opacity-20 pa-2" style="width: 40px; height: 40px;">
-                <VIcon icon="ri-refund-2-line" size="22" color="white" />
+              <div
+                class="d-flex align-center justify-center rounded-circle bg-white bg-opacity-20 pa-2"
+                style="width: 40px; height: 40px;"
+              >
+                <VIcon
+                  icon="ri-refund-2-line"
+                  size="22"
+                  color="white"
+                />
               </div>
               <div>
-                <VCardTitle class="text-h6 font-weight-bold text-white mb-0" style="line-height: 1.2;">
+                <VCardTitle
+                  class="text-h6 font-weight-bold text-white mb-0"
+                  style="line-height: 1.2;"
+                >
                   Reembolso de Saldo a Favor
                 </VCardTitle>
                 <VCardSubtitle class="text-caption text-white text-opacity-80 pa-0 mt-0.5">
@@ -515,19 +729,29 @@ onMounted(() => {
 
         <VCardText class="pa-6">
           <!-- Tarjeta Informativa del Proveedor y Saldo -->
-          <div v-if="selectedCreditForRefund" class="pa-3 rounded-lg bg-grey-lighten-4 border mb-5">
+          <div
+            v-if="selectedCreditForRefund"
+            class="pa-3 rounded-lg bg-grey-lighten-4 border mb-5"
+          >
             <div class="d-flex align-center justify-space-between flex-wrap gap-2">
               <div>
-                <div class="text-caption text-medium-emphasis">Proveedor</div>
+                <div class="text-caption text-medium-emphasis">
+                  Proveedor
+                </div>
                 <div class="text-body-2 font-weight-bold text-high-emphasis">
                   {{ selectedCreditForRefund.supplier?.trade_name || selectedCreditForRefund.supplier?.name || 'Proveedor' }}
                 </div>
-                <div v-if="selectedCreditForRefund.supplier?.ruc || selectedCreditForRefund.supplier?.tax_id" class="text-caption text-medium-emphasis">
+                <div
+                  v-if="selectedCreditForRefund.supplier?.ruc || selectedCreditForRefund.supplier?.tax_id"
+                  class="text-caption text-medium-emphasis"
+                >
                   RUC: {{ selectedCreditForRefund.supplier?.ruc || selectedCreditForRefund.supplier?.tax_id }}
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-caption text-medium-emphasis">Saldo Disponible</div>
+                <div class="text-caption text-medium-emphasis">
+                  Saldo Disponible
+                </div>
                 <div class="text-h6 font-weight-bold text-primary">
                   {{ formatMoney(selectedCreditForRefund.remaining_balance) }}
                 </div>
@@ -536,7 +760,10 @@ onMounted(() => {
           </div>
 
           <VRow dense>
-            <VCol cols="12" class="mb-3">
+            <VCol
+              cols="12"
+              class="mb-3"
+            >
               <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                 Cuenta de Destino del Reembolso <span class="text-error">*</span>
               </label>
@@ -553,7 +780,10 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" class="mb-3">
+            <VCol
+              cols="12"
+              class="mb-3"
+            >
               <label class="text-caption font-weight-bold text-grey-darken-3 d-block mb-1">
                 Monto a Reembolsar ($) <span class="text-error">*</span>
               </label>
@@ -622,11 +852,17 @@ onMounted(() => {
     </VDialog>
 
     <!-- DIÁLOGO: Historial de Cruces / Usos del Saldo -->
-    <VDialog v-model="isUsagesDialogVisible" max-width="600">
+    <VDialog
+      v-model="isUsagesDialogVisible"
+      max-width="600"
+    >
       <VCard class="rounded-xl overflow-hidden">
         <VCardItem class="bg-primary text-white py-3">
           <VCardTitle class="text-subtitle-1 font-weight-bold text-white d-flex align-center gap-2">
-            <VIcon icon="ri-history-line" size="20" />
+            <VIcon
+              icon="ri-history-line"
+              size="20"
+            />
             Historial de Cruces y Aplicaciones
           </VCardTitle>
           <VCardSubtitle class="text-caption text-white text-opacity-75">
@@ -635,23 +871,43 @@ onMounted(() => {
         </VCardItem>
 
         <VCardText class="pa-5">
-          <div v-if="!selectedCreditForUsages?.usages || selectedCreditForUsages.usages.length === 0" class="text-center py-6">
-            <VIcon icon="ri-time-line" size="36" color="grey-lighten-1" class="mb-2" />
+          <div
+            v-if="!selectedCreditForUsages?.usages || selectedCreditForUsages.usages.length === 0"
+            class="text-center py-6"
+          >
+            <VIcon
+              icon="ri-time-line"
+              size="36"
+              color="grey-lighten-1"
+              class="mb-2"
+            />
             <p class="text-body-2 text-medium-emphasis mb-0">
               Este saldo aún no ha sido aplicado en ninguna compra posterior.
             </p>
           </div>
 
-          <VTable v-else class="usages-table border rounded-lg">
+          <VTable
+            v-else
+            class="usages-table border rounded-lg"
+          >
             <thead class="bg-grey-lighten-4">
               <tr>
-                <th class="text-left py-2 px-3 text-caption font-weight-bold">Factura de Compra</th>
-                <th class="text-right py-2 px-3 text-caption font-weight-bold">Monto Aplicado</th>
-                <th class="text-left py-2 px-3 text-caption font-weight-bold">Fecha</th>
+                <th class="text-left py-2 px-3 text-caption font-weight-bold">
+                  Factura de Compra
+                </th>
+                <th class="text-right py-2 px-3 text-caption font-weight-bold">
+                  Monto Aplicado
+                </th>
+                <th class="text-left py-2 px-3 text-caption font-weight-bold">
+                  Fecha
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="usage in selectedCreditForUsages.usages" :key="usage.id">
+              <tr
+                v-for="usage in selectedCreditForUsages.usages"
+                :key="usage.id"
+              >
                 <td class="py-2 px-3 text-body-2 font-weight-medium">
                   {{ usage.invoice?.invoice_number || 'Compra #' + (usage.invoice_id || 'N/A') }}
                 </td>
@@ -680,90 +936,3 @@ onMounted(() => {
     </VDialog>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.supplier-credits-container {
-  .credits-table, .usages-table {
-    border-collapse: separate;
-    border-spacing: 0;
-
-    th {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-}
-
-/* Pastillas de Estado */
-.status-pill-clean {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 4px 10px !important;
-  border-radius: 9999px !important;
-  font-size: 0.74rem !important;
-  font-weight: 700 !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  letter-spacing: 0.03em !important;
-  text-transform: uppercase !important;
-
-  .status-dot {
-    width: 6px !important;
-    height: 6px !important;
-    border-radius: 50% !important;
-    flex-shrink: 0 !important;
-  }
-}
-
-.status-available {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
-
-  .status-dot {
-    background-color: #10b981 !important;
-  }
-}
-
-.status-partially_used {
-  background-color: #fffbeb !important;
-  color: #92400e !important;
-  border: 1px solid #fde68a !important;
-
-  .status-dot {
-    background-color: #f59e0b !important;
-  }
-}
-
-.status-fully_used, .status-liquidated {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
-
-  .status-dot {
-    background-color: #64748b !important;
-  }
-}
-
-.status-refunded {
-  background-color: #eff6ff !important;
-  color: #1e40af !important;
-  border: 1px solid #bfdbfe !important;
-
-  .status-dot {
-    background-color: #3b82f6 !important;
-  }
-}
-
-.status-canceled {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-
-  .status-dot {
-    background-color: #ef4444 !important;
-  }
-}
-</style>

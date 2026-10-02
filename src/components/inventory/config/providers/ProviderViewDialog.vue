@@ -19,6 +19,7 @@ const providerData = computed(() => props.providerSelected || {})
 const formattedCode = computed(() => {
   const id = providerData.value.id
   if (!id) return 'PROV-000'
+  
   return `PROV-${String(id).padStart(3, '0')}`
 })
 
@@ -31,6 +32,7 @@ const isProviderActive = computed(() => {
   if (p.status !== undefined && p.status !== null) {
     return p.status === 'active' || p.status === 1 || String(p.status) === '1' || p.status === 'activo'
   }
+  
   return true
 })
 
@@ -47,6 +49,7 @@ const formatDate = dateStr => {
       minute: '2-digit',
     })
   }
+  
   return dateStr
 }
 
@@ -99,7 +102,10 @@ const closeDialog = () => {
             </span>
           </VAvatar>
 
-          <div class="text-center text-sm-start flex-grow-1 min-w-0" style="width: 100%;">
+          <div
+            class="text-center text-sm-start flex-grow-1 min-w-0"
+            style="width: 100%;"
+          >
             <div class="d-flex flex-wrap align-center justify-center justify-sm-start gap-2 mb-1">
               <span class="provider-code-chip">
                 {{ formattedCode }}
@@ -120,19 +126,40 @@ const closeDialog = () => {
         </div>
 
         <!-- Grid de Información -->
-        <VRow dense class="gap-y-3">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
           <!-- RUC -->
-          <VCol cols="12" sm="6">
-            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+          <VCol
+            cols="12"
+            sm="6"
+          >
+            <VCard
+              variant="outlined"
+              class="info-metric-card h-100 pa-3.5 rounded-xl border"
+            >
               <div class="d-flex align-center gap-3">
-                <VAvatar color="info" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
-                  <VIcon icon="ri-file-list-3-line" size="22" />
+                <VAvatar
+                  color="info"
+                  variant="tonal"
+                  rounded="lg"
+                  size="42"
+                  class="flex-shrink-0"
+                >
+                  <VIcon
+                    icon="ri-file-list-3-line"
+                    size="22"
+                  />
                 </VAvatar>
                 <div class="min-w-0 flex-grow-1">
                   <div class="text-caption text-medium-emphasis font-weight-medium">
                     RUC / Identificación
                   </div>
-                  <div class="font-weight-bold text-body-1 text-high-emphasis font-mono text-truncate" :title="providerData.ruc">
+                  <div
+                    class="font-weight-bold text-body-1 text-high-emphasis font-mono text-truncate"
+                    :title="providerData.ruc"
+                  >
                     {{ providerData.ruc || 'Sin RUC' }}
                   </div>
                 </div>
@@ -141,17 +168,35 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Teléfono -->
-          <VCol cols="12" sm="6">
-            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+          <VCol
+            cols="12"
+            sm="6"
+          >
+            <VCard
+              variant="outlined"
+              class="info-metric-card h-100 pa-3.5 rounded-xl border"
+            >
               <div class="d-flex align-center gap-3">
-                <VAvatar color="warning" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
-                  <VIcon icon="ri-phone-line" size="22" />
+                <VAvatar
+                  color="warning"
+                  variant="tonal"
+                  rounded="lg"
+                  size="42"
+                  class="flex-shrink-0"
+                >
+                  <VIcon
+                    icon="ri-phone-line"
+                    size="22"
+                  />
                 </VAvatar>
                 <div class="min-w-0 flex-grow-1">
                   <div class="text-caption text-medium-emphasis font-weight-medium">
                     Teléfono Comercial
                   </div>
-                  <div class="font-weight-bold text-body-1 text-high-emphasis text-truncate" :title="providerData.phone">
+                  <div
+                    class="font-weight-bold text-body-1 text-high-emphasis text-truncate"
+                    :title="providerData.phone"
+                  >
                     {{ providerData.phone || 'Sin teléfono' }}
                   </div>
                 </div>
@@ -160,17 +205,35 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Correo Electrónico -->
-          <VCol cols="12" sm="6">
-            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+          <VCol
+            cols="12"
+            sm="6"
+          >
+            <VCard
+              variant="outlined"
+              class="info-metric-card h-100 pa-3.5 rounded-xl border"
+            >
               <div class="d-flex align-center gap-3">
-                <VAvatar color="primary" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
-                  <VIcon icon="ri-mail-line" size="22" />
+                <VAvatar
+                  color="primary"
+                  variant="tonal"
+                  rounded="lg"
+                  size="42"
+                  class="flex-shrink-0"
+                >
+                  <VIcon
+                    icon="ri-mail-line"
+                    size="22"
+                  />
                 </VAvatar>
                 <div class="min-w-0 flex-grow-1">
                   <div class="text-caption text-medium-emphasis font-weight-medium">
                     Correo Electrónico
                   </div>
-                  <div class="font-weight-bold text-body-2 text-high-emphasis text-truncate" :title="providerData.email">
+                  <div
+                    class="font-weight-bold text-body-2 text-high-emphasis text-truncate"
+                    :title="providerData.email"
+                  >
                     {{ providerData.email || 'Sin correo registrado' }}
                   </div>
                 </div>
@@ -179,17 +242,35 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Fecha de Registro -->
-          <VCol cols="12" sm="6">
-            <VCard variant="outlined" class="info-metric-card h-100 pa-3.5 rounded-xl border">
+          <VCol
+            cols="12"
+            sm="6"
+          >
+            <VCard
+              variant="outlined"
+              class="info-metric-card h-100 pa-3.5 rounded-xl border"
+            >
               <div class="d-flex align-center gap-3">
-                <VAvatar color="success" variant="tonal" rounded="lg" size="42" class="flex-shrink-0">
-                  <VIcon icon="ri-calendar-line" size="22" />
+                <VAvatar
+                  color="success"
+                  variant="tonal"
+                  rounded="lg"
+                  size="42"
+                  class="flex-shrink-0"
+                >
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="22"
+                  />
                 </VAvatar>
                 <div class="min-w-0 flex-grow-1">
                   <div class="text-caption text-medium-emphasis font-weight-medium">
                     Fecha de Registro
                   </div>
-                  <div class="font-weight-bold text-body-2 text-high-emphasis text-truncate" :title="formatDate(providerData.created_at)">
+                  <div
+                    class="font-weight-bold text-body-2 text-high-emphasis text-truncate"
+                    :title="formatDate(providerData.created_at)"
+                  >
                     {{ formatDate(providerData.created_at) }}
                   </div>
                 </div>
@@ -199,10 +280,22 @@ const closeDialog = () => {
 
           <!-- Dirección Comercial (Full Width) -->
           <VCol cols="12">
-            <VCard variant="outlined" class="info-metric-card pa-4 rounded-xl border">
+            <VCard
+              variant="outlined"
+              class="info-metric-card pa-4 rounded-xl border"
+            >
               <div class="d-flex align-start gap-3">
-                <VAvatar color="secondary" variant="tonal" rounded="lg" size="42" class="flex-shrink-0 mt-0.5">
-                  <VIcon icon="ri-map-pin-line" size="22" />
+                <VAvatar
+                  color="secondary"
+                  variant="tonal"
+                  rounded="lg"
+                  size="42"
+                  class="flex-shrink-0 mt-0.5"
+                >
+                  <VIcon
+                    icon="ri-map-pin-line"
+                    size="22"
+                  />
                 </VAvatar>
                 <div class="min-w-0 flex-grow-1">
                   <div class="text-caption text-medium-emphasis font-weight-medium mb-0.5">

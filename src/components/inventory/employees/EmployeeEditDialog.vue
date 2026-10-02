@@ -485,7 +485,10 @@ watch(() => props.employee, () => {
                     </div>
                   </template>
                   <template #item="{ item, props: itemProps }">
-                    <VListItem v-bind="itemProps" :title="undefined">
+                    <VListItem
+                      v-bind="itemProps"
+                      :title="undefined"
+                    >
                       <template #prepend>
                         <VBadge
                           dot

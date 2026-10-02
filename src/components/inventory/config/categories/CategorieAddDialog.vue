@@ -210,7 +210,10 @@ const dialogVisibleUpdate = val => {
                     class="d-flex flex-column align-center justify-center border border-dashed rounded-lg pa-3 text-disabled"
                     style="width: 80px; height: 80px;"
                   >
-                    <VIcon icon="ri-image-line" size="28" />
+                    <VIcon
+                      icon="ri-image-line"
+                      size="28"
+                    />
                     <span style="font-size: 0.65rem;">Sin imagen</span>
                   </div>
                 </VCol>

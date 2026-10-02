@@ -104,6 +104,7 @@ const getClientInitials = client => {
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase()
   }
+  
   return name.slice(0, 2).toUpperCase()
 }
 
@@ -240,8 +241,17 @@ onMounted(() => {
     <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-user-3-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-user-3-line"
+              size="26"
+            />
           </VAvatar>
           Gestión de Clientes
         </h1>
@@ -286,14 +296,31 @@ onMounted(() => {
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow class="mb-4" dense>
-      <VCol cols="12" sm="4">
+    <VRow
+      class="mb-4"
+      dense
+    >
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-team-line" size="24" />
+          <VAvatar
+            size="44"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-team-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Total Clientes</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Total Clientes
+            </div>
             <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
             </div>
@@ -301,13 +328,27 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-user-smile-line" size="24" />
+          <VAvatar
+            size="44"
+            color="info"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-user-smile-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Personas Naturales</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Personas Naturales
+            </div>
             <div class="text-h6 font-weight-bold text-info text-truncate">
               {{ naturalClientsCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
             </div>
@@ -315,13 +356,27 @@ onMounted(() => {
         </VCard>
       </VCol>
 
-      <VCol cols="12" sm="4">
+      <VCol
+        cols="12"
+        sm="4"
+      >
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar size="44" color="warning" variant="tonal" rounded="lg" class="flex-shrink-0">
-            <VIcon icon="ri-building-2-line" size="24" />
+          <VAvatar
+            size="44"
+            color="warning"
+            variant="tonal"
+            rounded="lg"
+            class="flex-shrink-0"
+          >
+            <VIcon
+              icon="ri-building-2-line"
+              size="24"
+            />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
-            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">Empresas / Jurídicos</div>
+            <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
+              Empresas / Jurídicos
+            </div>
             <div class="text-h6 font-weight-bold text-warning text-truncate">
               {{ companyClientsCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
             </div>
@@ -336,7 +391,11 @@ onMounted(() => {
         <VForm ref="searchFormRef">
           <div class="d-flex align-center justify-space-between mb-3">
             <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-              <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+              <VIcon
+                icon="ri-filter-3-line"
+                size="18"
+                color="primary"
+              />
               <span>Filtros de Búsqueda</span>
             </div>
 
@@ -353,8 +412,14 @@ onMounted(() => {
             </VBtn>
           </div>
 
-          <VRow dense class="gap-y-3">
-            <VCol cols="12" md="6">
+          <VRow
+            dense
+            class="gap-y-3"
+          >
+            <VCol
+              cols="12"
+              md="6"
+            >
               <VTextField
                 v-model="searchForm.search"
                 label="Buscar cliente"
@@ -369,7 +434,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <VSelect
                 v-model="searchForm.type_client"
                 :items="typeClientOptions"
@@ -386,7 +455,11 @@ onMounted(() => {
               />
             </VCol>
 
-            <VCol cols="12" sm="6" md="3">
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+            >
               <VSelect
                 v-model="searchForm.state"
                 :items="stateOptions"
@@ -408,85 +481,397 @@ onMounted(() => {
     </VCard>
 
     <!-- ESTADO DE CARGA -->
-    <VCard v-if="loading" class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-      <VTable>
-        <tbody>
-          <tr v-for="n in 5" :key="n" class="skeleton-row align-middle">
-            <td class="py-4" style="width: 70px;"><div class="shimmer-line w-40" /></td>
-            <td class="py-4" style="width: 160px;"><div class="shimmer-line w-75" /></td>
-            <td class="py-4">
-              <div class="shimmer-line w-75 mb-2" />
-              <div class="shimmer-line w-50" />
-            </td>
-            <td class="py-4"><div class="shimmer-line w-60" /></td>
-            <td class="py-4"><div class="shimmer-line w-50" /></td>
-            <td class="py-4" style="width: 110px;"><div class="shimmer-chip" /></td>
-            <td class="py-4 text-center" style="width: 140px;">
-              <div class="d-flex justify-center gap-2">
-                <div class="shimmer-button rounded" />
-                <div class="shimmer-button rounded" />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+    <div v-if="loading">
+      <!-- Skeleton Móvil -->
+      <div class="d-md-none d-flex flex-column gap-3">
+        <VCard
+          v-for="n in 4"
+          :key="'mob-skel-client-' + n"
+          class="mobile-client-card elevation-0 pa-4"
+        >
+          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+            <div
+              class="shimmer-line"
+              style="width: 70px; height: 16px;"
+            />
+            <div class="d-flex gap-1">
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+              <div
+                class="shimmer-button rounded"
+                style="width: 28px; height: 28px;"
+              />
+            </div>
+          </div>
+          <div class="d-flex align-center gap-3 mb-3">
+            <div
+              class="shimmer-circle"
+              style="width: 42px; height: 42px; border-radius: 10px;"
+            />
+            <div class="flex-grow-1">
+              <div
+                class="shimmer-line w-75 mb-2"
+                style="height: 16px;"
+              />
+              <div
+                class="shimmer-line w-50"
+                style="height: 12px;"
+              />
+            </div>
+          </div>
+          <div
+            class="shimmer-line w-100 mb-2"
+            style="height: 14px;"
+          />
+          <div class="d-flex justify-space-between pt-2 border-t">
+            <div
+              class="shimmer-chip"
+              style="width: 90px; height: 24px;"
+            />
+            <div
+              class="shimmer-chip"
+              style="width: 70px; height: 24px;"
+            />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable>
+          <tbody>
+            <tr
+              v-for="n in 5"
+              :key="n"
+              class="skeleton-row align-middle"
+            >
+              <td
+                class="py-4"
+                style="width: 70px;"
+              >
+                <div class="shimmer-line w-40" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 160px;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-75 mb-2" />
+                <div class="shimmer-line w-50" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-60" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 110px;"
+              >
+                <div class="shimmer-chip" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 140px;"
+              >
+                <div class="d-flex justify-center gap-2">
+                  <div class="shimmer-button rounded" />
+                  <div class="shimmer-button rounded" />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="!clients.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
-        <VIcon size="38" icon="ri-user-line" />
+      <VAvatar
+        size="76"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          size="38"
+          icon="ri-user-line"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron clientes
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 480px;"
+      >
         Intenta ajustar tus criterios de búsqueda o registra un nuevo cliente al sistema.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Restablecer Filtros
         </VBtn>
-        <VBtn v-if="can('register_client')" color="primary" prepend-icon="ri-add-line" @click="addNewClientFinal">
+        <VBtn
+          v-if="can('register_client')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="addNewClientFinal"
+        >
           Registrar Cliente
         </VBtn>
       </div>
     </VCard>
 
-    <!-- TABLA MODERNA DE CLIENTES -->
+    <!-- LISTADO DE CLIENTES (MÓVIL Y ESCRITORIO) -->
     <div v-else>
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable hover class="client-modern-table overflow-x-auto">
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="client in clients"
+          :key="'mob-client-' + client.id"
+          class="mobile-client-card elevation-0"
+        >
+          <!-- Cabecera Móvil: ID + Tipo de Documento / N° Doc + Acciones Rápidas -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
+            <div class="d-flex align-center gap-2 min-w-0">
+              <span class="text-caption font-weight-bold text-disabled">#{{ client.id }}</span>
+              <div class="d-flex align-center gap-1">
+                <span class="text-caption text-disabled text-uppercase font-weight-bold">
+                  {{ client.type_document === 2 || client.type_document === '2' ? 'RUC' : (client.type_document === 3 || client.type_document === '3' ? 'Pasaporte' : 'Cédula') }}:
+                </span>
+                <span class="font-mono font-weight-bold text-high-emphasis text-body-2">
+                  {{ client.n_document || 'S/D' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción Móvil -->
+            <div class="d-flex align-center gap-1 flex-shrink-0">
+              <VBtn
+                size="x-small"
+                color="info"
+                variant="tonal"
+                icon="ri-eye-line"
+                title="Ver Ficha"
+                @click="showClient(client)"
+              />
+              <VBtn
+                v-if="can('edit_client')"
+                size="x-small"
+                color="warning"
+                variant="tonal"
+                icon="ri-pencil-line"
+                title="Editar Cliente"
+                @click="editClient(client)"
+              />
+              <VBtn
+                size="x-small"
+                color="secondary"
+                variant="tonal"
+                icon="ri-more-2-line"
+                title="Más Opciones"
+              >
+                <VIcon
+                  icon="ri-more-2-line"
+                  size="16"
+                />
+                <VMenu
+                  activator="parent"
+                  transition="slide-y-transition"
+                  align="end"
+                  location="bottom end"
+                >
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-3 border"
+                  >
+                    <VListItem
+                      prepend-icon="ri-history-line"
+                      title="Ver Historial"
+                      class="text-info text-body-2"
+                      @click="showHistory(client)"
+                    />
+                    <VDivider
+                      v-if="can('delete_client')"
+                      class="my-1"
+                    />
+                    <VListItem
+                      v-if="can('delete_client')"
+                      prepend-icon="ri-delete-bin-6-line"
+                      title="Eliminar Cliente"
+                      class="text-error text-body-2"
+                      @click="deleteClient(client)"
+                    />
+                  </VList>
+                </VMenu>
+              </VBtn>
+            </div>
+          </div>
+
+          <!-- Cuerpo Móvil: Avatar + Nombre/Razón Social + Dirección -->
+          <div class="d-flex align-start gap-3 mb-2.5">
+            <VAvatar
+              size="42"
+              :color="isCompanyClient(client) ? 'warning' : 'primary'"
+              variant="tonal"
+              rounded="lg"
+              class="font-weight-bold elevation-0 flex-shrink-0 mt-0.5"
+            >
+              <VIcon
+                v-if="isCompanyClient(client)"
+                icon="ri-building-line"
+                size="22"
+              />
+              <span
+                v-else
+                class="text-body-2 font-weight-bold"
+              >{{ getClientInitials(client) }}</span>
+            </VAvatar>
+
+            <div class="min-w-0 flex-grow-1">
+              <div
+                class="font-weight-bold text-high-emphasis text-uppercase text-body-1"
+                style="line-height: 1.25;"
+              >
+                {{ client.full_name || `${client.name || ''} ${client.surname || ''}`.trim() || 'Sin Nombre' }}
+              </div>
+              <div
+                v-if="client.address"
+                class="text-caption text-medium-emphasis text-uppercase mt-1 d-flex align-center gap-1"
+              >
+                <VIcon
+                  icon="ri-map-pin-line"
+                  size="13"
+                  class="flex-shrink-0"
+                />
+                <span class="text-truncate">{{ client.address }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contacto Móvil (Teléfono y Email) -->
+          <div
+            v-if="client.phone || client.email"
+            class="d-flex flex-wrap gap-x-4 gap-y-1 mb-2.5 px-2.5 py-1.5 bg-grey-lighten-4 rounded-lg text-caption"
+          >
+            <div
+              v-if="client.phone"
+              class="d-flex align-center gap-1 text-high-emphasis font-weight-medium"
+            >
+              <VIcon
+                icon="ri-phone-line"
+                size="14"
+                color="primary"
+              />
+              <span>{{ client.phone }}</span>
+            </div>
+            <div
+              v-if="client.email"
+              class="d-flex align-center gap-1 text-medium-emphasis text-truncate"
+              style="max-width: 220px;"
+            >
+              <VIcon
+                icon="ri-mail-line"
+                size="14"
+                color="info"
+              />
+              <span class="text-truncate">{{ client.email }}</span>
+            </div>
+          </div>
+
+          <!-- Pie Móvil: Tipo (Empresa/Natural) y Estado (Activo/Inactivo) -->
+          <div class="d-flex align-center justify-space-between pt-1 border-t">
+            <div
+              class="status-pill-clean"
+              :class="isCompanyClient(client) ? 'status-partial' : 'status-primary'"
+            >
+              <span class="status-dot" />
+              <span>{{ isCompanyClient(client) ? 'Empresa / Jurídico' : 'Natural' }}</span>
+            </div>
+
+            <div
+              class="status-pill-clean"
+              :class="parseInt(client.state) === 1 ? 'status-paid' : 'status-pending'"
+            >
+              <span class="status-dot" />
+              <span>{{ parseInt(client.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+            </div>
+          </div>
+        </VCard>
+      </div>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="client-modern-table overflow-x-auto"
+        >
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 70px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 70px;"
+              >
                 ID
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 170px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 170px;"
+              >
                 Identificación
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="min-width: 250px;"
+              >
                 Cliente / Razón Social
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 240px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 240px;"
+              >
                 Contacto
               </th>
-              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 140px;"
+              >
                 Tipo
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 120px;"
+              >
                 Estado
               </th>
-              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 140px;">
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 140px;"
+              >
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="client in clients" :key="client.id" class="client-table-row">
+            <tr
+              v-for="client in clients"
+              :key="client.id"
+              class="client-table-row"
+            >
               <td class="font-weight-bold text-disabled">
                 #{{ client.id }}
               </td>
@@ -511,14 +896,29 @@ onMounted(() => {
                     rounded="lg"
                     class="font-weight-bold elevation-0"
                   >
-                    <VIcon v-if="isCompanyClient(client)" icon="ri-building-line" size="20" />
-                    <span v-else class="text-caption font-weight-bold">{{ getClientInitials(client) }}</span>
+                    <VIcon
+                      v-if="isCompanyClient(client)"
+                      icon="ri-building-line"
+                      size="20"
+                    />
+                    <span
+                      v-else
+                      class="text-caption font-weight-bold"
+                    >{{ getClientInitials(client) }}</span>
                   </VAvatar>
                   <div class="min-w-0">
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate" style="max-width: 280px;" :title="client.full_name || `${client.name} ${client.surname}`">
+                    <div
+                      class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate"
+                      style="max-width: 280px;"
+                      :title="client.full_name || `${client.name} ${client.surname}`"
+                    >
                       {{ client.full_name || `${client.name} ${client.surname}` }}
                     </div>
-                    <div v-if="client.address" class="text-caption text-disabled text-uppercase text-truncate" style="max-width: 280px;">
+                    <div
+                      v-if="client.address"
+                      class="text-caption text-disabled text-uppercase text-truncate"
+                      style="max-width: 280px;"
+                    >
                       {{ client.address }}
                     </div>
                   </div>
@@ -528,12 +928,24 @@ onMounted(() => {
               <!-- Contacto -->
               <td class="py-3">
                 <div class="d-flex flex-column">
-                  <div class="text-body-2 text-medium-emphasis text-truncate" style="max-width: 220px;" :title="client.email">
-                    <VIcon icon="ri-mail-line" size="14" class="me-1" />
+                  <div
+                    class="text-body-2 text-medium-emphasis text-truncate"
+                    style="max-width: 220px;"
+                    :title="client.email"
+                  >
+                    <VIcon
+                      icon="ri-mail-line"
+                      size="14"
+                      class="me-1"
+                    />
                     {{ client.email || '-' }}
                   </div>
                   <div class="text-caption text-disabled">
-                    <VIcon icon="ri-phone-line" size="14" class="me-1" />
+                    <VIcon
+                      icon="ri-phone-line"
+                      size="14"
+                      class="me-1"
+                    />
                     {{ client.phone || '-' }}
                   </div>
                 </div>
@@ -551,7 +963,10 @@ onMounted(() => {
               </td>
 
               <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td class="text-center py-3" style="white-space: nowrap;">
+              <td
+                class="text-center py-3"
+                style="white-space: nowrap;"
+              >
                 <div
                   class="status-pill-clean"
                   :class="parseInt(client.state) === 1 ? 'status-paid' : 'status-pending'"
@@ -584,13 +999,44 @@ onMounted(() => {
                   />
 
                   <!-- Menú Más Opciones -->
-                  <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
-                    <VIcon icon="ri-more-2-line" size="18" />
-                    <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
-                      <VList density="compact" class="py-1 rounded-lg elevation-3 border">
-                        <VListItem prepend-icon="ri-history-line" title="Ver Historial" class="text-info text-body-2" @click="showHistory(client)" />
-                        <VDivider v-if="can('delete_client')" class="my-1" />
-                        <VListItem v-if="can('delete_client')" prepend-icon="ri-delete-bin-6-line" title="Eliminar Cliente" class="text-error text-body-2" @click="deleteClient(client)" />
+                  <VBtn
+                    size="small"
+                    color="secondary"
+                    variant="tonal"
+                    icon="ri-more-2-line"
+                    title="Más Opciones"
+                  >
+                    <VIcon
+                      icon="ri-more-2-line"
+                      size="18"
+                    />
+                    <VMenu
+                      activator="parent"
+                      transition="slide-y-transition"
+                      align="end"
+                      location="bottom end"
+                    >
+                      <VList
+                        density="compact"
+                        class="py-1 rounded-lg elevation-3 border"
+                      >
+                        <VListItem
+                          prepend-icon="ri-history-line"
+                          title="Ver Historial"
+                          class="text-info text-body-2"
+                          @click="showHistory(client)"
+                        />
+                        <VDivider
+                          v-if="can('delete_client')"
+                          class="my-1"
+                        />
+                        <VListItem
+                          v-if="can('delete_client')"
+                          prepend-icon="ri-delete-bin-6-line"
+                          title="Eliminar Cliente"
+                          class="text-error text-body-2"
+                          @click="deleteClient(client)"
+                        />
                       </VList>
                     </VMenu>
                   </VBtn>
@@ -659,7 +1105,10 @@ onMounted(() => {
       @delete-client="handleClientDeleted"
     />
 
-    <SalesHistoryDialog v-model="isHistoryDialogVisible" :client-id="historyClientId" />
+    <SalesHistoryDialog
+      v-model="isHistoryDialogVisible"
+      :client-id="historyClientId"
+    />
 
     <ImportData
       v-model:is-dialog-visible="isImportDialogVisible"

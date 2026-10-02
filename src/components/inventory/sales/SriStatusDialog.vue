@@ -33,35 +33,35 @@ const ambienteOptions = [
 
 const getStatusColor = status => {
   switch (status) {
-    case 'OPERATIVO':
-      return 'success'
-    case 'LENTO':
-      return 'warning'
-    case 'PARCIAL':
-      return 'amber-darken-3'
-    case 'FUERA_DE_SERVICIO':
-    case 'CAIDO':
-    case 'ERROR_SERVIDOR':
-      return 'error'
-    default:
-      return 'grey'
+  case 'OPERATIVO':
+    return 'success'
+  case 'LENTO':
+    return 'warning'
+  case 'PARCIAL':
+    return 'amber-darken-3'
+  case 'FUERA_DE_SERVICIO':
+  case 'CAIDO':
+  case 'ERROR_SERVIDOR':
+    return 'error'
+  default:
+    return 'grey'
   }
 }
 
 const getStatusIcon = status => {
   switch (status) {
-    case 'OPERATIVO':
-      return 'ri-checkbox-circle-fill'
-    case 'LENTO':
-      return 'ri-time-fill'
-    case 'PARCIAL':
-      return 'ri-alert-fill'
-    case 'FUERA_DE_SERVICIO':
-    case 'CAIDO':
-    case 'ERROR_SERVIDOR':
-      return 'ri-close-circle-fill'
-    default:
-      return 'ri-question-fill'
+  case 'OPERATIVO':
+    return 'ri-checkbox-circle-fill'
+  case 'LENTO':
+    return 'ri-time-fill'
+  case 'PARCIAL':
+    return 'ri-alert-fill'
+  case 'FUERA_DE_SERVICIO':
+  case 'CAIDO':
+  case 'ERROR_SERVIDOR':
+    return 'ri-close-circle-fill'
+  default:
+    return 'ri-question-fill'
   }
 }
 
@@ -69,6 +69,7 @@ const getLatencyColor = ms => {
   if (ms <= 600) return 'text-success'
   if (ms <= 1800) return 'text-primary'
   if (ms <= 3500) return 'text-warning'
+  
   return 'text-error'
 }
 
@@ -76,6 +77,7 @@ const checkSriConnection = async (amb = null) => {
   loading.value = true
   try {
     const targetAmb = amb !== null ? amb : selectedAmbiente.value
+
     const response = await $api('sri/check-status', {
       params: { ambiente: targetAmb },
     })
@@ -155,7 +157,10 @@ watch(
           @click="emit('update:isDialogVisible', false)"
         />
         <div class="custom-dialog-avatar">
-          <VIcon icon="ri-wifi-line" size="28" />
+          <VIcon
+            icon="ri-wifi-line"
+            size="28"
+          />
         </div>
         <h3 class="custom-dialog-title">
           Estado de Servidores SRI
@@ -182,15 +187,28 @@ watch(
               :disabled="loading"
               @click="onSelectAmbiente(opt.value)"
             >
-              <VIcon :icon="opt.icon" size="15" class="me-1" />
+              <VIcon
+                :icon="opt.icon"
+                size="15"
+                class="me-1"
+              />
               <span>{{ opt.label }}</span>
             </button>
           </div>
         </div>
 
         <!-- SKELETON LOADER -->
-        <div v-if="loading && !checkResult" class="py-6 text-center">
-          <VProgressCircular indeterminate color="primary" size="48" width="4" class="mb-3" />
+        <div
+          v-if="loading && !checkResult"
+          class="py-6 text-center"
+        >
+          <VProgressCircular
+            indeterminate
+            color="primary"
+            size="48"
+            width="4"
+            class="mb-3"
+          />
           <div class="text-body-1 font-weight-bold text-high-emphasis">
             Consultando servidores del SRI...
           </div>
@@ -199,7 +217,10 @@ watch(
           </div>
         </div>
 
-        <div v-else-if="checkResult" class="d-flex flex-column gap-4">
+        <div
+          v-else-if="checkResult"
+          class="d-flex flex-column gap-4"
+        >
           <!-- BANNER DE ESTADO GENERAL -->
           <div
             class="general-status-banner rounded-xl pa-4"
@@ -207,7 +228,10 @@ watch(
           >
             <div class="d-flex align-start gap-3">
               <div class="status-icon-circle flex-shrink-0 mt-0.5">
-                <VIcon :icon="getStatusIcon(globalStatus)" size="26" />
+                <VIcon
+                  :icon="getStatusIcon(globalStatus)"
+                  size="26"
+                />
               </div>
               <div class="min-w-0 flex-grow-1">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-1 mb-1">
@@ -216,13 +240,16 @@ watch(
                       globalStatus === 'OPERATIVO'
                         ? 'Servicios SRI Operativos'
                         : globalStatus === 'LENTO'
-                        ? 'Servicios con Alta Latencia'
-                        : globalStatus === 'PARCIAL'
-                        ? 'Disponibilidad Parcial'
-                        : 'Servidores del SRI Fuera de Servicio'
+                          ? 'Servicios con Alta Latencia'
+                          : globalStatus === 'PARCIAL'
+                            ? 'Disponibilidad Parcial'
+                            : 'Servidores del SRI Fuera de Servicio'
                     }}
                   </span>
-                  <span v-if="lastCheckedAt" class="text-xxs opacity-80 font-mono">
+                  <span
+                    v-if="lastCheckedAt"
+                    class="text-xxs opacity-80 font-mono"
+                  >
                     Último chequeo: {{ lastCheckedAt }}
                   </span>
                 </div>
@@ -242,8 +269,16 @@ watch(
             >
               <div class="d-flex align-center justify-space-between mb-2">
                 <div class="d-flex align-center gap-2 min-w-0">
-                  <VAvatar size="32" color="primary" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-upload-cloud-2-line" size="18" />
+                  <VAvatar
+                    size="32"
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-upload-cloud-2-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <div class="min-w-0">
                     <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate">
@@ -280,7 +315,11 @@ watch(
                 </div>
 
                 <div class="d-flex align-center gap-1.5 font-mono text-xs">
-                  <VIcon icon="ri-speed-line" size="14" class="text-medium-emphasis" />
+                  <VIcon
+                    icon="ri-speed-line"
+                    size="14"
+                    class="text-medium-emphasis"
+                  />
                   <span class="text-medium-emphasis">Latencia:</span>
                   <span
                     class="font-weight-bold"
@@ -307,8 +346,16 @@ watch(
             >
               <div class="d-flex align-center justify-space-between mb-2">
                 <div class="d-flex align-center gap-2 min-w-0">
-                  <VAvatar size="32" color="success" variant="tonal" rounded="lg">
-                    <VIcon icon="ri-shield-check-line" size="18" />
+                  <VAvatar
+                    size="32"
+                    color="success"
+                    variant="tonal"
+                    rounded="lg"
+                  >
+                    <VIcon
+                      icon="ri-shield-check-line"
+                      size="18"
+                    />
                   </VAvatar>
                   <div class="min-w-0">
                     <div class="text-body-2 font-weight-bold text-high-emphasis text-truncate">
@@ -345,7 +392,11 @@ watch(
                 </div>
 
                 <div class="d-flex align-center gap-1.5 font-mono text-xs">
-                  <VIcon icon="ri-speed-line" size="14" class="text-medium-emphasis" />
+                  <VIcon
+                    icon="ri-speed-line"
+                    size="14"
+                    class="text-medium-emphasis"
+                  />
                   <span class="text-medium-emphasis">Latencia:</span>
                   <span
                     class="font-weight-bold"
@@ -369,7 +420,11 @@ watch(
           <!-- NOTA INFORMATIVA SOBRE FACTURAS RECHAZADAS -->
           <div class="info-help-box pa-3.5 rounded-xl border d-flex align-start gap-3">
             <div class="info-help-icon-wrap flex-shrink-0 mt-0.5">
-              <VIcon icon="ri-lightbulb-line" size="22" color="primary" />
+              <VIcon
+                icon="ri-lightbulb-line"
+                size="22"
+                color="primary"
+              />
             </div>
             <div class="min-w-0 flex-grow-1">
               <div class="info-help-title mb-1">
@@ -405,7 +460,7 @@ watch(
           class="rounded-lg px-6 font-weight-bold"
           height="40"
           :loading="loading"
-          @click="checkSriConnection()"
+          @click="checkSriConnection"
         >
           Verificar Ahora
         </VBtn>

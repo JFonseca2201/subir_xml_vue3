@@ -208,14 +208,17 @@ const getNodeVal = (node, defaultVal = '') => {
         if (typeof val === 'string' || typeof val === 'number') return String(val).trim()
       }
     }
+    
     return defaultVal
   }
+  
   return String(node).trim()
 }
 
 const getNodeNum = (node, defaultVal = 0) => {
   const raw = getNodeVal(node, defaultVal)
   const parsed = parseFloat(raw)
+  
   return isNaN(parsed) ? defaultVal : parsed
 }
 

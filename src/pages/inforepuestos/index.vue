@@ -28,6 +28,7 @@ const yearFilter = ref(null)
 
 // Dynamic Categories
 const availableCategories = ref([])
+
 const categoryOptions = computed(() => {
   return [
     { title: 'Todas las Categorías', value: 'ALL' },
@@ -138,6 +139,7 @@ const resetFilters = () => {
 // Helpers for highlighting matching items
 const isMatchingCategory = cat => {
   if (!categoryFilter.value || categoryFilter.value === 'ALL') return false
+  
   return (cat || '').toUpperCase().trim() === categoryFilter.value.toUpperCase().trim()
 }
 
@@ -148,6 +150,7 @@ const isMatchingPrice = price => {
   if (!hasMin && !hasMax) return false
   if (hasMin && p < parseFloat(minPriceFilter.value)) return false
   if (hasMax && p > parseFloat(maxPriceFilter.value)) return false
+  
   return true
 }
 
@@ -160,6 +163,7 @@ const getBrandColor = brand => {
   if (b.includes('NISSAN') || b.includes('RENAULT')) return 'secondary'
   if (b.includes('FORD') || b.includes('MAZDA')) return 'primary'
   if (b.includes('VOLKSWAGEN') || b.includes('AUDI')) return 'success'
+  
   return 'primary'
 }
 
@@ -210,8 +214,17 @@ onMounted(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
-            <VIcon icon="ri-roadster-line" size="26" />
+          <VAvatar
+            size="42"
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            class="me-3"
+          >
+            <VIcon
+              icon="ri-roadster-line"
+              size="26"
+            />
           </VAvatar>
           Gestión y Búsqueda de Repuestos por Vehículo
         </h1>
@@ -237,7 +250,11 @@ onMounted(() => {
       <VCardText class="pa-5">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
+            <VIcon
+              icon="ri-filter-3-line"
+              size="18"
+              color="primary"
+            />
             <span>Filtros de Búsqueda</span>
           </div>
 
@@ -254,9 +271,15 @@ onMounted(() => {
           </VBtn>
         </div>
 
-        <VRow dense class="gap-y-3">
+        <VRow
+          dense
+          class="gap-y-3"
+        >
           <!-- Búsqueda General -->
-          <VCol cols="12" md="4">
+          <VCol
+            cols="12"
+            md="4"
+          >
             <VTextField
               v-model="searchQuery"
               label="Buscar por Palabra Clave"
@@ -270,7 +293,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Filtro Categoría -->
-          <VCol cols="12" sm="6" md="4">
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
             <VAutocomplete
               v-model="categoryFilter"
               label="Categoría del Repuesto"
@@ -287,7 +314,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Tracción -->
-          <VCol cols="12" sm="6" md="4">
+          <VCol
+            cols="12"
+            sm="6"
+            md="4"
+          >
             <VSelect
               v-model="tractionFilter"
               label="Tracción / Suspensión"
@@ -308,7 +339,11 @@ onMounted(() => {
           </VCol>
 
           <!-- Rango de Precios y Año -->
-          <VCol cols="6" sm="4" md="4">
+          <VCol
+            cols="6"
+            sm="4"
+            md="4"
+          >
             <VTextField
               v-model.number="minPriceFilter"
               label="Precio Venta Mínimo"
@@ -325,7 +360,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="6" sm="4" md="4">
+          <VCol
+            cols="6"
+            sm="4"
+            md="4"
+          >
             <VTextField
               v-model.number="maxPriceFilter"
               label="Precio Venta Máximo"
@@ -342,7 +381,11 @@ onMounted(() => {
             />
           </VCol>
 
-          <VCol cols="12" sm="4" md="4">
+          <VCol
+            cols="12"
+            sm="4"
+            md="4"
+          >
             <VTextField
               v-model.number="yearFilter"
               label="Año del Vehículo"
@@ -360,17 +403,39 @@ onMounted(() => {
     </VCard>
 
     <!-- Estado de Carga (Skeleton) -->
-    <div v-if="loading" class="d-flex flex-column gap-4">
-      <VCard v-for="i in 3" :key="'sk-' + i" class="rounded-xl border pa-5 elevation-0 bg-surface">
+    <div
+      v-if="loading"
+      class="d-flex flex-column gap-4"
+    >
+      <VCard
+        v-for="i in 3"
+        :key="'sk-' + i"
+        class="rounded-xl border pa-5 elevation-0 bg-surface"
+      >
         <div class="d-flex align-center gap-3 mb-4">
-          <div class="shimmer-circle" style="width: 48px; height: 48px; border-radius: 12px;" />
+          <div
+            class="shimmer-circle"
+            style="width: 48px; height: 48px; border-radius: 12px;"
+          />
           <div class="flex-grow-1">
-            <div class="shimmer-line w-40 mb-2" style="height: 18px;" />
-            <div class="shimmer-line w-25" style="height: 12px;" />
+            <div
+              class="shimmer-line w-40 mb-2"
+              style="height: 18px;"
+            />
+            <div
+              class="shimmer-line w-25"
+              style="height: 12px;"
+            />
           </div>
         </div>
-        <div class="shimmer-line w-100 mb-2" style="height: 36px; border-radius: 6px;" />
-        <div class="shimmer-line w-100 mb-2" style="height: 36px; border-radius: 6px;" />
+        <div
+          class="shimmer-line w-100 mb-2"
+          style="height: 36px; border-radius: 6px;"
+        />
+        <div
+          class="shimmer-line w-100 mb-2"
+          style="height: 36px; border-radius: 6px;"
+        />
       </VCard>
     </div>
 
@@ -379,38 +444,72 @@ onMounted(() => {
       v-else-if="requests.length === 0"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
-      <VAvatar size="80" color="primary" variant="tonal" class="mb-4">
-        <VIcon icon="ri-search-eye-line" size="40" />
+      <VAvatar
+        size="80"
+        color="primary"
+        variant="tonal"
+        class="mb-4"
+      >
+        <VIcon
+          icon="ri-search-eye-line"
+          size="40"
+        />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron vehículos ni repuestos
       </h3>
-      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 520px;">
+      <p
+        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
+        style="max-width: 520px;"
+      >
         No hay registros que coincidan con los filtros aplicados. Puedes restablecer los filtros para ver todo el catálogo o registrar una nueva búsqueda.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line" @click="resetFilters">
+        <VBtn
+          v-if="hasActiveFilters"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          @click="resetFilters"
+        >
           Limpiar Filtros
         </VBtn>
-        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" @click="openCreate">
+        <VBtn
+          v-if="can('register_product')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          @click="openCreate"
+        >
           Registrar Repuesto
         </VBtn>
       </div>
     </VCard>
 
     <!-- LISTADO DE VEHÍCULOS Y REPUESTOS (DISEÑO CLARO Y ORDENADO) -->
-    <div v-else class="vehicle-catalog-container d-flex flex-column gap-5">
+    <div
+      v-else
+      class="vehicle-catalog-container d-flex flex-column gap-5"
+    >
       <VCard
         v-for="item in requests"
         :key="item.id"
         class="vehicle-block-card rounded-xl border elevation-0 bg-surface overflow-hidden"
       >
         <!-- Cabecera del Vehículo -->
-        <div class="vehicle-block-header pa-4 pa-sm-5 bg-grey-lighten-5 border-b d-flex flex-wrap align-center justify-space-between gap-4">
+        <div class="vehicle-block-header pa-4 pa-sm-5 bg-grey-lighten-5 border-b d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
           <!-- Identificación del Vehículo -->
           <div class="d-flex align-center gap-3">
-            <VAvatar size="50" rounded="lg" :color="getBrandColor(item.brand)" variant="tonal" class="elevation-0">
-              <VIcon icon="ri-car-line" size="28" />
+            <VAvatar
+              size="50"
+              rounded="lg"
+              :color="getBrandColor(item.brand)"
+              variant="tonal"
+              class="elevation-0"
+            >
+              <VIcon
+                icon="ri-car-line"
+                size="28"
+              />
             </VAvatar>
             <div>
               <div class="text-caption font-weight-bold text-uppercase text-primary">
@@ -421,15 +520,30 @@ onMounted(() => {
               </h2>
               <div class="d-flex flex-wrap align-center gap-2">
                 <div class="status-pill-clean status-secondary">
-                  <VIcon icon="ri-calendar-line" size="12" />
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="12"
+                  />
                   <span>Año {{ item.year }}</span>
                 </div>
-                <div v-if="item.traction" class="status-pill-clean status-info">
-                  <VIcon icon="ri-compass-3-line" size="12" />
+                <div
+                  v-if="item.traction"
+                  class="status-pill-clean status-info"
+                >
+                  <VIcon
+                    icon="ri-compass-3-line"
+                    size="12"
+                  />
                   <span>{{ item.traction }}</span>
                 </div>
-                <div v-if="item.origin_country" class="status-pill-clean status-partial">
-                  <VIcon icon="ri-earth-line" size="12" />
+                <div
+                  v-if="item.origin_country"
+                  class="status-pill-clean status-partial"
+                >
+                  <VIcon
+                    icon="ri-earth-line"
+                    size="12"
+                  />
                   <span>{{ item.origin_country }}</span>
                 </div>
               </div>
@@ -437,9 +551,12 @@ onMounted(() => {
           </div>
 
           <!-- Resumen y Acciones Rápidas -->
-          <div class="d-flex align-center flex-wrap gap-3">
+          <div class="d-flex align-center justify-space-between justify-sm-end w-100 w-sm-auto flex-wrap gap-3">
             <div class="status-pill-clean status-primary py-1 px-3">
-              <VIcon icon="ri-tools-line" size="14" />
+              <VIcon
+                icon="ri-tools-line"
+                size="14"
+              />
               <span>{{ (item.items || []).length }} {{ (item.items || []).length === 1 ? 'Repuesto' : 'Repuestos' }}</span>
             </div>
 
@@ -479,18 +596,98 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Tabla Limpia de Repuestos Compatibles -->
+        <!-- Repuestos Compatibles -->
         <VCardText class="pa-0">
-          <div class="table-responsive">
+          <!-- VISTA MÓVIL: Repuestos en tarjetas compactas (d-md-none) -->
+          <div class="d-md-none pa-3 d-flex flex-column gap-2.5">
+            <div
+              v-for="(subItem, idx) in (item.items || [])"
+              :key="'mob-subitem-' + idx"
+              class="pa-3 rounded-lg border bg-surface"
+              :class="{
+                'row-highlighted': isMatchingCategory(subItem.category) || isMatchingPrice(subItem.public_price)
+              }"
+            >
+              <div class="d-flex align-start justify-space-between gap-2 mb-1.5">
+                <div class="text-body-1 font-weight-bold text-uppercase text-high-emphasis">
+                  {{ subItem.spare_parts_detail }}
+                </div>
+                <div
+                  class="status-pill-clean flex-shrink-0"
+                  :class="isMatchingCategory(subItem.category) ? 'status-paid' : 'status-info'"
+                >
+                  <span class="status-dot" />
+                  <span>{{ subItem.category }}</span>
+                </div>
+              </div>
+
+              <div class="text-caption text-medium-emphasis mb-2">
+                Marca: <strong class="text-high-emphasis">{{ subItem.spare_part_brand || 'Genérica' }}</strong>
+              </div>
+
+              <div class="d-flex align-center justify-space-between pt-1.5 border-t">
+                <div class="text-caption text-medium-emphasis">
+                  Compra: <span class="font-family-mono font-weight-medium text-high-emphasis">${{ parseFloat(subItem.purchase_price || 0).toFixed(2) }}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-caption text-disabled me-1">PVP:</span>
+                  <span
+                    class="font-weight-bold text-h6 font-family-mono"
+                    :class="isMatchingPrice(subItem.public_price) ? 'text-primary' : 'text-success'"
+                  >
+                    ${{ parseFloat(subItem.public_price || 0).toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Si no tiene repuestos en móvil -->
+            <div
+              v-if="!item.items || item.items.length === 0"
+              class="text-center py-4 text-disabled text-caption"
+            >
+              No hay repuestos registrados para este vehículo.
+            </div>
+          </div>
+
+          <!-- VISTA ESCRITORIO: Tabla Limpia (d-none d-md-block) -->
+          <div class="d-none d-md-block table-responsive">
             <VTable class="spare-parts-clean-table">
               <thead>
                 <tr class="table-sub-header">
-                  <th class="text-center font-weight-bold" style="width: 50px;">#</th>
-                  <th class="text-left font-weight-bold">Repuesto / Detalle Técnico</th>
-                  <th class="text-left font-weight-bold" style="width: 180px;">Marca del Repuesto</th>
-                  <th class="text-left font-weight-bold" style="width: 180px;">Categoría</th>
-                  <th class="text-right font-weight-bold" style="width: 140px;">Precio Compra</th>
-                  <th class="text-right font-weight-bold" style="width: 160px;">Precio Venta (PVP)</th>
+                  <th
+                    class="text-center font-weight-bold"
+                    style="width: 50px;"
+                  >
+                    #
+                  </th>
+                  <th class="text-left font-weight-bold">
+                    Repuesto / Detalle Técnico
+                  </th>
+                  <th
+                    class="text-left font-weight-bold"
+                    style="width: 180px;"
+                  >
+                    Marca del Repuesto
+                  </th>
+                  <th
+                    class="text-left font-weight-bold"
+                    style="width: 180px;"
+                  >
+                    Categoría
+                  </th>
+                  <th
+                    class="text-right font-weight-bold"
+                    style="width: 140px;"
+                  >
+                    Precio Compra
+                  </th>
+                  <th
+                    class="text-right font-weight-bold"
+                    style="width: 160px;"
+                  >
+                    Precio Venta (PVP)
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -554,7 +751,10 @@ onMounted(() => {
 
                 <!-- Si no tiene repuestos -->
                 <tr v-if="!item.items || item.items.length === 0">
-                  <td colspan="6" class="text-center py-5 text-disabled">
+                  <td
+                    colspan="6"
+                    class="text-center py-5 text-disabled"
+                  >
                     No hay repuestos registrados para este vehículo.
                   </td>
                 </tr>
@@ -566,11 +766,17 @@ onMounted(() => {
         <!-- Pie de la tarjeta: Creador -->
         <div class="pa-3 px-5 bg-grey-lighten-5 border-t d-flex align-center justify-space-between text-caption text-medium-emphasis">
           <div class="d-flex align-center gap-1.5">
-            <VIcon icon="ri-user-smile-line" size="14" />
+            <VIcon
+              icon="ri-user-smile-line"
+              size="14"
+            />
             <span>Registrado por: <strong class="text-high-emphasis">{{ item.user ? (item.user.name + ' ' + (item.user.surname || '')) : 'Sistema' }}</strong></span>
           </div>
 
-          <div v-if="item.created_at" class="text-disabled">
+          <div
+            v-if="item.created_at"
+            class="text-disabled"
+          >
             Fecha: {{ new Date(item.created_at).toLocaleDateString() }}
           </div>
         </div>

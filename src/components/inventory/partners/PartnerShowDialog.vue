@@ -77,6 +77,7 @@ const isPartnerActive = computed(() => {
   if (partner.value.status !== undefined && partner.value.status !== null) {
     return partner.value.status === 'active' || partner.value.status === 1 || partner.value.status === '1'
   }
+  
   return true
 })
 

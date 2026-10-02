@@ -23,6 +23,7 @@ const openCheckDialog = (query = '', field = 'all') => {
   const q = query !== undefined && query !== null && query !== ''
     ? query
     : (field === 'sku' ? product.value.sku : (field === 'description' ? product.value.description : (product.value.sku || product.value.description || '')))
+
   checkInitialQuery.value = (q || '').trim()
   checkSearchField.value = field || 'all'
   isCheckDialogVisible.value = true
@@ -32,6 +33,7 @@ const handleSkuCheck = async () => {
   const query = product.value.sku?.trim()
   if (!query) {
     skuExistsAlert.value = null
+    
     return
   }
 
@@ -48,6 +50,7 @@ const handleSkuCheck = async () => {
     } else if (otherProducts.length === 1) {
       // 1 sola coincidencia: no abre VDialog, muestra VAlert
       const exactMatch = otherProducts[0]
+
       skuExistsAlert.value = {
         type: 'error',
         title: `¡Atención! El SKU "${query}" ya pertenece a otro producto`,
@@ -77,6 +80,7 @@ const handleSkuSearchClick = async () => {
   const query = product.value.sku?.trim()
   if (!query) {
     showNotification('Ingresa al menos parte de un SKU para buscar', 'warning')
+    
     return
   }
 
@@ -94,6 +98,7 @@ const handleSkuSearchClick = async () => {
     } else if (otherProducts.length === 1) {
       // 1 sola coincidencia: no abre VDialog, muestra VAlert
       const exactMatch = otherProducts[0]
+
       skuExistsAlert.value = {
         type: 'error',
         title: `¡Atención! El SKU "${query}" ya pertenece a otro producto`,
@@ -144,6 +149,7 @@ async function onDrop(DroppedFiles) {
     }
     if (fileData.value.length < 1) {
       const optimizedFile = await compressImage(rawFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 })
+
       fileData.value.push({
         file: optimizedFile,
         url: createPreview(optimizedFile),
@@ -163,6 +169,7 @@ onChange(async selectedFiles => {
   for (const rawFile of selectedFiles) {
     if (fileData.value.length < 1) {
       const optimizedFile = await compressImage(rawFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 })
+
       fileData.value.push({
         file: optimizedFile,
         url: createPreview(optimizedFile),
@@ -205,6 +212,7 @@ const loadBrandsByCategory = async categoryId => {
       const catBrands = resp.data
       const currentList = brandOptions.value || []
       const combined = [...new Set([...catBrands, ...currentList])]
+
       brandOptions.value = combined
     }
   } catch (error) {
@@ -246,6 +254,7 @@ const calculateMaxDiscount = () => {
 
   if (salePrice > 0 && discountPercentage > 0) {
     const maxDiscountAmount = (salePrice * discountPercentage) / 100
+
     product.value.max_discount = parseFloat(maxDiscountAmount.toFixed(2))
   }
 }
@@ -453,6 +462,7 @@ const updateProduct = async () => {
     formData.append('_method', 'PUT')
 
     let errorMessageHandled = false
+
     const response = await $api(`products/${product.value.id}`, {
       method: 'POST',
       body: formData,
@@ -466,6 +476,7 @@ const updateProduct = async () => {
           }
         }
         const finalMsg = msg || 'Error al actualizar el producto'
+
         error_exist.value = finalMsg
         showNotification(finalMsg, 'error')
         errorMessageHandled = true
@@ -477,12 +488,14 @@ const updateProduct = async () => {
       showNotification('Producto actualizado correctamente', 'success')
     } else if (!errorMessageHandled && (response?.message_text || response?.message)) {
       const finalMsg = response.message_text || response.message
+
       showNotification(finalMsg, 'warning')
       error_exist.value = finalMsg
     }
   } catch (error) {
     if (!error_exist.value) {
       const msg = error?.data?.message || error?.message || 'Error al actualizar el producto'
+
       error_exist.value = msg
       showNotification(msg, 'error')
     }
@@ -792,7 +805,10 @@ onMounted(() => {
 
           <!-- Tarjeta 2: Información Principal y Códigos + Imagen -->
           <VCard class="rounded-xl border-light elevation-1 mb-6 overflow-hidden">
-            <VRow no-gutters class="align-stretch">
+            <VRow
+              no-gutters
+              class="align-stretch"
+            >
               <!-- Sub-sección Izquierda: Información Principal y Códigos -->
               <VCol
                 cols="12"
@@ -1525,7 +1541,10 @@ onMounted(() => {
                   </VCol>
 
                   <!-- Almacén -->
-                  <VCol cols="12" class="mt-2">
+                  <VCol
+                    cols="12"
+                    class="mt-2"
+                  >
                     <VSelect
                       v-model="product.warehouse_id"
                       :items="warehouses"
@@ -1545,7 +1564,10 @@ onMounted(() => {
                   </VCol>
 
                   <!-- Unidad de Medida -->
-                  <VCol cols="12" class="mt-2">
+                  <VCol
+                    cols="12"
+                    class="mt-2"
+                  >
                     <VSelect
                       v-model="product.unit_id"
                       :items="units"
@@ -1580,7 +1602,10 @@ onMounted(() => {
                   </VCol>
 
                   <!-- Proveedor -->
-                  <VCol cols="12" class="mt-2">
+                  <VCol
+                    cols="12"
+                    class="mt-2"
+                  >
                     <VSelect
                       v-model="product.supplier_id"
                       :items="suppliers"

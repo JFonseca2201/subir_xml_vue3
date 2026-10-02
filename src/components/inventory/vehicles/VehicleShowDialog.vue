@@ -125,9 +125,7 @@ const closeDialog = () => {
     persistent
     @update:model-value="closeDialog"
   >
-    <VCard
-      class="custom-dialog-card vehicle-dialog-card pa-0 rounded-xl overflow-hidden elevation-10"
-    >
+    <VCard class="custom-dialog-card vehicle-dialog-card pa-0 rounded-xl overflow-hidden elevation-10">
       <!-- Header Banner Primary -->
       <div class="custom-dialog-header-primary">
         <VBtn
@@ -151,14 +149,17 @@ const closeDialog = () => {
       <!-- Contenido principal -->
       <VCardText class="pa-sm-6 pa-4">
         <!-- Hero: Placa Ecuatoriana + Estado -->
-        <div class="d-flex flex-wrap align-center justify-space-between gap-3 pa-4 mb-4 rounded-xl border bg-surface" style="border-color: rgba(var(--v-theme-primary), 0.15) !important;">
+        <div
+          class="d-flex flex-wrap align-center justify-space-between gap-3 pa-4 mb-4 rounded-xl border bg-surface"
+          style="border-color: rgba(var(--v-theme-primary), 0.15) !important;"
+        >
           <div class="d-flex align-center gap-3">
             <!-- Placa Ecuatoriana Realista -->
             <div class="ecuador-hero-plate">
               <div class="plate-top">
-                <span class="stripe-y"></span>
-                <span class="stripe-b"></span>
-                <span class="stripe-r"></span>
+                <span class="stripe-y" />
+                <span class="stripe-b" />
+                <span class="stripe-r" />
                 <span class="country-text">ECUADOR</span>
               </div>
               <div class="plate-code">
@@ -191,25 +192,41 @@ const closeDialog = () => {
         <!-- Grid de Métricas Rápidas -->
         <div class="vehicle-metrics-grid mb-4">
           <div class="metric-box">
-            <VIcon icon="ri-building-line" size="18" class="text-primary mb-1" />
+            <VIcon
+              icon="ri-building-line"
+              size="18"
+              class="text-primary mb-1"
+            />
             <span class="metric-label">Marca</span>
             <span class="metric-val text-uppercase">{{ getBrandName }}</span>
           </div>
 
           <div class="metric-box">
-            <VIcon icon="ri-car-line" size="18" class="text-info mb-1" />
+            <VIcon
+              icon="ri-car-line"
+              size="18"
+              class="text-info mb-1"
+            />
             <span class="metric-label">Tipo</span>
             <span class="metric-val text-uppercase">{{ getVehicleTypeLabel }}</span>
           </div>
 
           <div class="metric-box">
-            <VIcon icon="ri-calendar-line" size="18" class="text-warning mb-1" />
+            <VIcon
+              icon="ri-calendar-line"
+              size="18"
+              class="text-warning mb-1"
+            />
             <span class="metric-label">Año Fab.</span>
             <span class="metric-val">{{ vehicleData.year || 'N/A' }}</span>
           </div>
 
           <div class="metric-box">
-            <VIcon icon="ri-palette-line" size="18" class="text-error mb-1" />
+            <VIcon
+              icon="ri-palette-line"
+              size="18"
+              class="text-error mb-1"
+            />
             <span class="metric-label">Color</span>
             <span class="metric-val text-uppercase d-flex align-center justify-center gap-1.5">
               <span
@@ -221,7 +238,11 @@ const closeDialog = () => {
           </div>
 
           <div class="metric-box">
-            <VIcon icon="ri-dashboard-3-line" size="18" class="text-success mb-1" />
+            <VIcon
+              icon="ri-dashboard-3-line"
+              size="18"
+              class="text-success mb-1"
+            />
             <span class="metric-label">Uso</span>
             <span class="metric-val text-capitalize">{{ vehicleData.usage_type || 'Particular' }}</span>
           </div>
@@ -229,10 +250,20 @@ const closeDialog = () => {
 
         <VRow>
           <!-- Tarjeta de Especificaciones Técnicas -->
-          <VCol cols="12" md="6" class="py-2">
-            <VCard class="pa-4 h-100 rounded-lg border info-card-flat" variant="flat">
+          <VCol
+            cols="12"
+            md="6"
+            class="py-2"
+          >
+            <VCard
+              class="pa-4 h-100 rounded-lg border info-card-flat"
+              variant="flat"
+            >
               <div class="d-flex align-center gap-2 mb-3 text-primary font-weight-bold text-subtitle-2 text-uppercase">
-                <VIcon icon="ri-file-info-line" size="18" />
+                <VIcon
+                  icon="ri-file-info-line"
+                  size="18"
+                />
                 Especificaciones del Registro
               </div>
 
@@ -262,10 +293,20 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Tarjeta de Observaciones -->
-          <VCol cols="12" md="6" class="py-2">
-            <VCard class="pa-4 h-100 rounded-lg border info-card-flat" variant="flat">
+          <VCol
+            cols="12"
+            md="6"
+            class="py-2"
+          >
+            <VCard
+              class="pa-4 h-100 rounded-lg border info-card-flat"
+              variant="flat"
+            >
               <div class="d-flex align-center gap-2 mb-3 text-success font-weight-bold text-subtitle-2 text-uppercase">
-                <VIcon icon="ri-chat-check-line" size="18" />
+                <VIcon
+                  icon="ri-chat-check-line"
+                  size="18"
+                />
                 Observaciones y Notas
               </div>
               <div
@@ -278,18 +319,38 @@ const closeDialog = () => {
           </VCol>
 
           <!-- Tarjeta de Información del Propietario / Cliente -->
-          <VCol cols="12" class="py-2">
-            <VCard class="pa-4 rounded-lg border info-card-flat" variant="flat">
+          <VCol
+            cols="12"
+            class="py-2"
+          >
+            <VCard
+              class="pa-4 rounded-lg border info-card-flat"
+              variant="flat"
+            >
               <div class="d-flex align-center gap-2 mb-3 text-secondary font-weight-bold text-subtitle-2 text-uppercase">
-                <VIcon icon="ri-user-star-line" size="18" />
+                <VIcon
+                  icon="ri-user-star-line"
+                  size="18"
+                />
                 Información del Propietario
               </div>
 
               <div v-if="vehicleData.client">
-                <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3 pa-3 rounded-lg" style="background: rgba(var(--v-theme-primary), 0.04);">
+                <div
+                  class="d-flex flex-wrap align-center justify-space-between gap-3 mb-3 pa-3 rounded-lg"
+                  style="background: rgba(var(--v-theme-primary), 0.04);"
+                >
                   <div class="d-flex align-center gap-3">
-                    <VAvatar size="40" color="primary" variant="tonal" class="rounded-circle">
-                      <VIcon size="22" icon="ri-user-3-line" />
+                    <VAvatar
+                      size="40"
+                      color="primary"
+                      variant="tonal"
+                      class="rounded-circle"
+                    >
+                      <VIcon
+                        size="22"
+                        icon="ri-user-3-line"
+                      />
                     </VAvatar>
                     <div>
                       <div class="text-subtitle-2 font-weight-bold text-high-emphasis text-uppercase">
@@ -302,27 +363,61 @@ const closeDialog = () => {
                   </div>
 
                   <div class="d-flex flex-wrap align-center gap-2">
-                    <VChip size="small" variant="tonal" color="primary" class="font-weight-medium px-2.5">
-                      <VIcon size="14" icon="ri-id-card-line" class="me-1" />
+                    <VChip
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      class="font-weight-medium px-2.5"
+                    >
+                      <VIcon
+                        size="14"
+                        icon="ri-id-card-line"
+                        class="me-1"
+                      />
                       Doc: {{ vehicleData.client.n_document || 'N/A' }}
                     </VChip>
-                    <VChip v-if="vehicleData.client.phone" size="small" variant="tonal" color="secondary" class="font-weight-medium px-2.5">
-                      <VIcon size="14" icon="ri-phone-line" class="me-1" />
+                    <VChip
+                      v-if="vehicleData.client.phone"
+                      size="small"
+                      variant="tonal"
+                      color="secondary"
+                      class="font-weight-medium px-2.5"
+                    >
+                      <VIcon
+                        size="14"
+                        icon="ri-phone-line"
+                        class="me-1"
+                      />
                       {{ vehicleData.client.phone }}
                     </VChip>
                   </div>
                 </div>
 
-                <VRow no-gutters class="pt-1">
-                  <VCol cols="12" sm="6" class="py-1">
-                    <div class="text-caption text-medium-emphasis">Correo Electrónico</div>
+                <VRow
+                  no-gutters
+                  class="pt-1"
+                >
+                  <VCol
+                    cols="12"
+                    sm="6"
+                    class="py-1"
+                  >
+                    <div class="text-caption text-medium-emphasis">
+                      Correo Electrónico
+                    </div>
                     <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ vehicleData.client.email || 'No registrado' }}
                     </div>
                   </VCol>
 
-                  <VCol cols="12" sm="6" class="py-1">
-                    <div class="text-caption text-medium-emphasis">Dirección Domiciliaria</div>
+                  <VCol
+                    cols="12"
+                    sm="6"
+                    class="py-1"
+                  >
+                    <div class="text-caption text-medium-emphasis">
+                      Dirección Domiciliaria
+                    </div>
                     <div class="text-body-2 font-weight-medium text-high-emphasis">
                       {{ vehicleData.client.address || 'No registrada' }}
                     </div>
@@ -334,7 +429,11 @@ const closeDialog = () => {
                 class="text-body-2 text-medium-emphasis pa-4 text-center rounded-lg border border-dashed"
                 style="background: rgba(var(--v-theme-on-surface), 0.02);"
               >
-                <VIcon icon="ri-user-unfollow-line" size="24" class="mb-1 text-grey" /><br>
+                <VIcon
+                  icon="ri-user-unfollow-line"
+                  size="24"
+                  class="mb-1 text-grey"
+                /><br>
                 Este vehículo no tiene un propietario asociado en el sistema.
               </div>
             </VCard>

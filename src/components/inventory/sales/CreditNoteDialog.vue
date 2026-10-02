@@ -35,6 +35,7 @@ const copyAccessKey = async key => {
     setTimeout(() => { copiedKey.value = false }, 2500)
   }
 }
+
 const customReason = ref('')
 const restoreStock = ref(true)
 const reverseBalance = ref(true)
@@ -51,10 +52,11 @@ const finalReason = computed(() => {
   if (reasonType.value === 'OTRO MOTIVO') {
     return customReason.value.trim()
   }
+  
   return reasonType.value
 })
 
-watch(() => props.isDialogVisible, (newVal) => {
+watch(() => props.isDialogVisible, newVal => {
   if (newVal) {
     reasonType.value = 'ANULACIÓN TOTAL DE FACTURA'
     customReason.value = ''
@@ -72,6 +74,7 @@ const formatCurrency = value => {
 
 const getClientName = computed(() => {
   if (!props.saleSelected?.client) return 'Cliente no disponible'
+  
   return props.saleSelected.client.full_name || props.saleSelected.client.name || 'Cliente sin nombre'
 })
 
@@ -85,6 +88,7 @@ const submitCreditNote = async () => {
 
   if (!finalReason.value) {
     showNotification('Por favor ingrese el motivo de la Nota de Crédito', 'warning')
+    
     return
   }
 
@@ -111,7 +115,9 @@ const submitCreditNote = async () => {
     }
   } catch (error) {
     console.error('Error al emitir Nota de Crédito:', error)
+
     const msg = error?.data?.message || (error?.data?.errors ? Object.values(error.data.errors).flat().join(', ') : 'Error al procesar la Nota de Crédito ante el SRI')
+
     showNotification(msg, 'error')
   } finally {
     isSubmitting.value = false
@@ -130,7 +136,11 @@ const submitCreditNote = async () => {
       <!-- Encabezado con estilo de alerta / comprobante -->
       <div class="bg-gradient-to-r from-red-600 to-rose-700 pa-5 text-white d-flex align-center gap-3">
         <div class="pa-2 bg-white bg-opacity-20 rounded-lg">
-          <VIcon icon="ri-refund-2-line" size="28" color="white" />
+          <VIcon
+            icon="ri-refund-2-line"
+            size="28"
+            color="white"
+          />
         </div>
         <div>
           <h3 class="text-h6 font-weight-bold text-white mb-0">
@@ -144,17 +154,29 @@ const submitCreditNote = async () => {
 
       <VCardText class="pa-5">
         <!-- Resumen de la Factura -->
-        <VCard variant="tonal" color="grey-lighten-4" class="pa-4 mb-4 rounded-lg border border-slate-200">
+        <VCard
+          variant="tonal"
+          color="grey-lighten-4"
+          class="pa-4 mb-4 rounded-lg border border-slate-200"
+        >
           <div class="d-flex justify-space-between align-center mb-2">
             <span class="text-caption font-weight-bold text-slate-600 text-uppercase">Factura a Modificar / Anular:</span>
-            <VChip size="small" color="primary" variant="flat" class="font-weight-bold">
+            <VChip
+              size="small"
+              color="primary"
+              variant="flat"
+              class="font-weight-bold"
+            >
               FAC {{ props.saleSelected?.document_number }}
             </VChip>
           </div>
 
           <div class="text-body-2 text-slate-800 mb-1">
             <strong>Cliente:</strong> {{ getClientName }}
-            <span class="text-slate-500" v-if="props.saleSelected?.client?.n_document">({{ props.saleSelected.client.n_document }})</span>
+            <span
+              v-if="props.saleSelected?.client?.n_document"
+              class="text-slate-500"
+            >({{ props.saleSelected.client.n_document }})</span>
           </div>
 
           <div class="d-flex justify-space-between align-center mt-3 pt-2 border-t border-slate-200">
@@ -164,8 +186,14 @@ const submitCreditNote = async () => {
             </span>
           </div>
 
-          <div v-if="props.saleSelected?.sri_access_key" class="mt-2 text-caption text-slate-600 d-flex align-center justify-space-between gap-2 bg-slate-50 pa-2 rounded border">
-            <span class="font-monospace text-truncate user-select-all" style="font-size: 0.75rem;">
+          <div
+            v-if="props.saleSelected?.sri_access_key"
+            class="mt-2 text-caption text-slate-600 d-flex align-center justify-space-between gap-2 bg-slate-50 pa-2 rounded border"
+          >
+            <span
+              class="font-monospace text-truncate user-select-all"
+              style="font-size: 0.75rem;"
+            >
               <strong>Clave SRI:</strong> {{ props.saleSelected.sri_access_key }}
             </span>
             <VBtn
@@ -230,7 +258,11 @@ const submitCreditNote = async () => {
         </div>
 
         <div class="text-caption text-slate-500 d-flex align-start gap-2">
-          <VIcon icon="ri-information-line" size="16" class="text-slate-400 mt-0.5" />
+          <VIcon
+            icon="ri-information-line"
+            size="16"
+            class="text-slate-400 mt-0.5"
+          />
           <span>
             Al confirmar, el sistema generará y firmará digitalmente el XML de Nota de Crédito, enviándolo de inmediato al SRI.
           </span>

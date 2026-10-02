@@ -43,6 +43,7 @@ const filteredModules = computed(() => {
   return PERMISOS.filter(mod => {
     const matchModName = mod.name.toLowerCase().includes(q)
     const matchPerm = (mod.permisos || []).some(p => p.name.toLowerCase().includes(q) || p.permiso.toLowerCase().includes(q))
+    
     return matchModName || matchPerm
   })
 })
@@ -52,6 +53,7 @@ const initRoleData = () => {
   name.value = props.roleSelected.name || ''
 
   const rawPerms = props.roleSelected.permissions_pluck || props.roleSelected.permissions || []
+
   permissions.value = rawPerms.map(p => (typeof p === 'object' && p ? p.name || p.permiso : p))
 }
 
@@ -82,6 +84,7 @@ const clearAll = () => {
 
 const isModuleFullySelected = mod => {
   const modPerms = (mod.permisos || []).map(p => p.permiso)
+  
   return modPerms.length > 0 && modPerms.every(p => permissions.value.includes(p))
 }
 
@@ -100,6 +103,7 @@ const toggleModule = mod => {
 
 const getModuleSelectedCount = mod => {
   const modPerms = (mod.permisos || []).map(p => p.permiso)
+  
   return modPerms.filter(p => permissions.value.includes(p)).length
 }
 
@@ -110,15 +114,18 @@ const update = async () => {
 
   if (!name.value || !name.value.trim()) {
     warning.value = "Ingresa un nombre para el rol."
+    
     return
   }
 
   if (permissions.value.length === 0) {
     warning.value = "Selecciona al menos un permiso para el rol."
+    
     return
   }
 
   loader.start()
+
   const data = {
     name: name.value.trim(),
     permissions: permissions.value,
@@ -298,7 +305,9 @@ const onFormReset = () => {
             closable
             class="mb-3"
           >
-            <template #prepend><VIcon icon="ri-alert-line" /></template>
+            <template #prepend>
+              <VIcon icon="ri-alert-line" />
+            </template>
             {{ warning }}
           </VAlert>
 
@@ -309,7 +318,9 @@ const onFormReset = () => {
             closable
             class="mb-3"
           >
-            <template #prepend><VIcon icon="ri-error-warning-line" /></template>
+            <template #prepend>
+              <VIcon icon="ri-error-warning-line" />
+            </template>
             {{ error_exist }}
           </VAlert>
 
