@@ -53,6 +53,19 @@ const systemBalances = ref({
   guayaquil: 0,
 })
 
+const expectedBalances = ref({
+  cash: 0,
+  pichincha: 0,
+  guayaquil: 0,
+  total: 0,
+})
+
+const dailyMovements = ref({
+  cash: { income: 0, expense: 0, net: 0 },
+  pichincha: { income: 0, expense: 0, net: 0 },
+  guayaquil: { income: 0, expense: 0, net: 0 },
+})
+
 import { usePermissions } from '@/composables/usePermissions'
 
 const { can } = usePermissions()
@@ -341,6 +354,19 @@ const fetchStatus = async date => {
           pichincha: parseFloat(response.system_balances.pichincha) || 0,
           guayaquil: parseFloat(response.system_balances.guayaquil) || 0,
         }
+      }
+
+      if (response.expected_balances) {
+        expectedBalances.value = {
+          cash: parseFloat(response.expected_balances.cash) || 0,
+          pichincha: parseFloat(response.expected_balances.pichincha) || 0,
+          guayaquil: parseFloat(response.expected_balances.guayaquil) || 0,
+          total: parseFloat(response.expected_balances.total) || 0,
+        }
+      }
+
+      if (response.daily_movements) {
+        dailyMovements.value = response.daily_movements
       }
 
       // Populate form if there's already counted data for selected date
