@@ -606,34 +606,29 @@ onMounted(() => {
       <VCard class="mb-4 mb-sm-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1">
         <div class="d-flex align-center justify-space-between flex-wrap gap-3">
           <div class="d-flex align-center gap-3">
-            <VSkeletonLoader
-              type="avatar"
-              size="40"
+            <div
+              class="shimmer-box rounded-lg"
+              style="width: 40px; height: 40px;"
             />
-            <div class="d-flex flex-column gap-1">
-              <VSkeletonLoader
-                type="heading"
-                width="220"
-                height="22"
+            <div class="d-flex flex-column gap-2">
+              <div
+                class="shimmer-line"
+                style="width: 220px; height: 20px;"
               />
-              <VSkeletonLoader
-                type="text"
-                width="320"
-                height="14"
-                class="d-none d-sm-block"
+              <div
+                class="shimmer-line d-none d-sm-block"
+                style="width: 320px; height: 12px;"
               />
             </div>
           </div>
           <div class="d-flex align-center gap-2">
-            <VSkeletonLoader
-              type="button"
-              width="130"
-              height="36"
+            <div
+              class="shimmer-button"
+              style="width: 130px; height: 36px;"
             />
-            <VSkeletonLoader
-              type="button"
-              width="120"
-              height="36"
+            <div
+              class="shimmer-button"
+              style="width: 120px; height: 36px;"
             />
           </div>
         </div>
@@ -641,15 +636,13 @@ onMounted(() => {
 
       <!-- Banner Informativo Skeleton -->
       <VCard class="pa-3 pa-sm-4 mb-4 mb-sm-5 rounded-xl bg-slate-50 border elevation-0 d-flex justify-space-between align-center flex-wrap gap-2">
-        <VSkeletonLoader
-          type="text"
-          width="240"
-          height="20"
+        <div
+          class="shimmer-line"
+          style="width: 240px; height: 18px;"
         />
-        <VSkeletonLoader
-          type="button"
-          width="130"
-          height="30"
+        <div
+          class="shimmer-button"
+          style="width: 130px; height: 28px;"
         />
       </VCard>
 
@@ -665,20 +658,18 @@ onMounted(() => {
           >
             <div class="d-flex align-center justify-space-between mb-4 pb-2 border-b">
               <div class="d-flex align-center gap-2">
-                <VSkeletonLoader
-                  type="avatar"
-                  size="32"
+                <div
+                  class="shimmer-box rounded-lg"
+                  style="width: 32px; height: 32px;"
                 />
-                <VSkeletonLoader
-                  type="heading"
-                  width="180"
-                  height="20"
+                <div
+                  class="shimmer-line"
+                  style="width: 180px; height: 18px;"
                 />
               </div>
-              <VSkeletonLoader
-                type="chip"
-                width="140"
-                height="24"
+              <div
+                class="shimmer-chip"
+                style="width: 140px; height: 24px;"
               />
             </div>
             <div class="d-flex flex-column gap-3">
@@ -688,44 +679,38 @@ onMounted(() => {
                 class="pa-3 rounded-lg border bg-slate-50 d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-2"
               >
                 <div class="d-flex align-center gap-2">
-                  <VSkeletonLoader
-                    type="avatar"
-                    size="32"
+                  <div
+                    class="shimmer-box rounded-lg"
+                    style="width: 32px; height: 32px;"
                   />
-                  <VSkeletonLoader
-                    type="text"
-                    width="120"
-                    height="16"
+                  <div
+                    class="shimmer-line"
+                    style="width: 120px; height: 16px;"
                   />
                 </div>
                 <div class="d-flex gap-3 w-100 w-sm-auto justify-space-between">
-                  <VSkeletonLoader
-                    type="text"
-                    width="70"
-                    height="18"
+                  <div
+                    class="shimmer-line"
+                    style="width: 70px; height: 16px;"
                   />
-                  <VSkeletonLoader
-                    type="text"
-                    width="70"
-                    height="18"
+                  <div
+                    class="shimmer-line"
+                    style="width: 70px; height: 16px;"
                   />
-                  <VSkeletonLoader
-                    type="text"
-                    width="70"
-                    height="18"
+                  <div
+                    class="shimmer-line"
+                    style="width: 70px; height: 16px;"
                   />
                 </div>
               </div>
               <div class="pa-3 rounded-xl border-2 border-primary bg-primary-tonal d-flex align-center justify-space-between">
-                <VSkeletonLoader
-                  type="text"
-                  width="120"
-                  height="18"
+                <div
+                  class="shimmer-line"
+                  style="width: 120px; height: 18px;"
                 />
-                <VSkeletonLoader
-                  type="text"
-                  width="100"
-                  height="20"
+                <div
+                  class="shimmer-line"
+                  style="width: 100px; height: 18px;"
                 />
               </div>
             </div>
@@ -741,54 +726,43 @@ onMounted(() => {
             class="rounded-xl border-light pa-4 h-100 d-flex flex-column justify-space-between gap-3"
           >
             <div class="d-flex align-center gap-2 pb-2 border-b">
-              <VSkeletonLoader
-                type="avatar"
-                size="32"
+              <div
+                class="shimmer-box rounded-lg"
+                style="width: 32px; height: 32px;"
               />
-              <VSkeletonLoader
-                type="heading"
-                width="160"
-                height="20"
-              />
-            </div>
-            <div class="pa-3 rounded-lg bg-slate-50">
-              <VSkeletonLoader
-                type="text"
-                width="90"
-                height="14"
-                class="mb-1"
-              />
-              <VSkeletonLoader
-                type="heading"
-                width="130"
-                height="26"
+              <div
+                class="shimmer-line"
+                style="width: 160px; height: 18px;"
               />
             </div>
-            <div class="pa-3 rounded-lg bg-slate-50">
-              <VSkeletonLoader
-                type="text"
-                width="90"
-                height="14"
-                class="mb-1"
+            <div class="pa-3 rounded-lg bg-slate-50 d-flex flex-column gap-2">
+              <div
+                class="shimmer-line"
+                style="width: 90px; height: 12px;"
               />
-              <VSkeletonLoader
-                type="heading"
-                width="130"
-                height="22"
+              <div
+                class="shimmer-line"
+                style="width: 130px; height: 24px;"
               />
             </div>
-            <div class="pa-4 rounded-xl border bg-slate-100 text-center">
-              <VSkeletonLoader
-                type="text"
-                width="140"
-                height="16"
-                class="mx-auto mb-2"
+            <div class="pa-3 rounded-lg bg-slate-50 d-flex flex-column gap-2">
+              <div
+                class="shimmer-line"
+                style="width: 90px; height: 12px;"
               />
-              <VSkeletonLoader
-                type="heading"
-                width="150"
-                height="30"
-                class="mx-auto"
+              <div
+                class="shimmer-line"
+                style="width: 130px; height: 20px;"
+              />
+            </div>
+            <div class="pa-4 rounded-xl border bg-slate-100 text-center d-flex flex-column align-center gap-2">
+              <div
+                class="shimmer-line"
+                style="width: 140px; height: 14px;"
+              />
+              <div
+                class="shimmer-line"
+                style="width: 150px; height: 26px;"
               />
             </div>
           </VCard>
@@ -806,14 +780,13 @@ onMounted(() => {
             class="rounded-xl border-light pa-4 h-100"
           >
             <div class="d-flex align-center gap-2 mb-4 pb-2 border-b">
-              <VSkeletonLoader
-                type="avatar"
-                size="32"
+              <div
+                class="shimmer-box rounded-lg"
+                style="width: 32px; height: 32px;"
               />
-              <VSkeletonLoader
-                type="heading"
-                width="220"
-                height="20"
+              <div
+                class="shimmer-line"
+                style="width: 220px; height: 18px;"
               />
             </div>
             <VRow>
@@ -826,20 +799,17 @@ onMounted(() => {
                   :key="`sb-${n}`"
                   class="d-flex align-center justify-space-between py-2 border-b"
                 >
-                  <VSkeletonLoader
-                    type="chip"
-                    width="55"
-                    height="24"
+                  <div
+                    class="shimmer-chip"
+                    style="width: 55px; height: 24px;"
                   />
-                  <VSkeletonLoader
-                    type="button"
-                    width="95"
-                    height="30"
+                  <div
+                    class="shimmer-button"
+                    style="width: 95px; height: 28px;"
                   />
-                  <VSkeletonLoader
-                    type="text"
-                    width="50"
-                    height="16"
+                  <div
+                    class="shimmer-line"
+                    style="width: 50px; height: 16px;"
                   />
                 </div>
               </VCol>
@@ -852,20 +822,17 @@ onMounted(() => {
                   :key="`sc-${n}`"
                   class="d-flex align-center justify-space-between py-2 border-b"
                 >
-                  <VSkeletonLoader
-                    type="chip"
-                    width="55"
-                    height="24"
+                  <div
+                    class="shimmer-chip"
+                    style="width: 55px; height: 24px;"
                   />
-                  <VSkeletonLoader
-                    type="button"
-                    width="95"
-                    height="30"
+                  <div
+                    class="shimmer-button"
+                    style="width: 95px; height: 28px;"
                   />
-                  <VSkeletonLoader
-                    type="text"
-                    width="50"
-                    height="16"
+                  <div
+                    class="shimmer-line"
+                    style="width: 50px; height: 16px;"
                   />
                 </div>
               </VCol>
@@ -883,38 +850,33 @@ onMounted(() => {
               class="rounded-xl border-light pa-4"
             >
               <div class="d-flex align-center gap-2 pb-2 border-b mb-3">
-                <VSkeletonLoader
-                  type="avatar"
-                  size="32"
+                <div
+                  class="shimmer-box rounded-lg"
+                  style="width: 32px; height: 32px;"
                 />
-                <VSkeletonLoader
-                  type="heading"
-                  width="140"
-                  height="20"
-                />
-              </div>
-              <div class="mb-3">
-                <VSkeletonLoader
-                  type="text"
-                  width="110"
-                  height="14"
-                  class="mb-1"
-                />
-                <VSkeletonLoader
-                  type="input"
-                  height="40"
+                <div
+                  class="shimmer-line"
+                  style="width: 140px; height: 18px;"
                 />
               </div>
-              <div>
-                <VSkeletonLoader
-                  type="text"
-                  width="110"
-                  height="14"
-                  class="mb-1"
+              <div class="mb-3 d-flex flex-column gap-2">
+                <div
+                  class="shimmer-line"
+                  style="width: 110px; height: 12px;"
                 />
-                <VSkeletonLoader
-                  type="input"
-                  height="40"
+                <div
+                  class="shimmer-box"
+                  style="width: 100%; height: 38px;"
+                />
+              </div>
+              <div class="d-flex flex-column gap-2">
+                <div
+                  class="shimmer-line"
+                  style="width: 110px; height: 12px;"
+                />
+                <div
+                  class="shimmer-box"
+                  style="width: 100%; height: 38px;"
                 />
               </div>
             </VCard>
@@ -923,19 +885,18 @@ onMounted(() => {
               class="rounded-xl border-light pa-4"
             >
               <div class="d-flex align-center gap-2 pb-2 border-b mb-3">
-                <VSkeletonLoader
-                  type="avatar"
-                  size="32"
+                <div
+                  class="shimmer-box rounded-lg"
+                  style="width: 32px; height: 32px;"
                 />
-                <VSkeletonLoader
-                  type="heading"
-                  width="120"
-                  height="20"
+                <div
+                  class="shimmer-line"
+                  style="width: 120px; height: 18px;"
                 />
               </div>
-              <VSkeletonLoader
-                type="paragraph"
-                height="60"
+              <div
+                class="shimmer-box"
+                style="width: 100%; height: 55px;"
               />
             </VCard>
           </div>

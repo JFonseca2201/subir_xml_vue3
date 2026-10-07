@@ -6556,6 +6556,57 @@
   }
 }
 
+// 7. Universal Shimmer Loading Utilities
+@keyframes shimmerAnim {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-line,
+.shimmer-circle,
+.shimmer-chip,
+.shimmer-button,
+.shimmer-box {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%) !important;
+  background-size: 200% 100% !important;
+  animation: shimmerAnim 1.5s infinite ease-in-out !important;
+  border-radius: 6px;
+}
+
+.shimmer-line {
+  height: 14px;
+  display: block;
+}
+
+.shimmer-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+}
+
+.shimmer-chip {
+  height: 24px;
+  width: 80px;
+  border-radius: 12px !important;
+  display: inline-block;
+}
+
+.shimmer-button {
+  height: 36px;
+  width: 110px;
+  border-radius: 8px !important;
+  display: inline-block;
+}
+
+.shimmer-box {
+  border-radius: 8px !important;
+}
+
 
 
 
