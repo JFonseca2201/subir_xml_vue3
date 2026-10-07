@@ -4842,8 +4842,21 @@
 
   // Título y subtítulo
   .movement-title-row {
-    margin-bottom: 9px !important;
+    margin-bottom: 4px !important;
     line-height: 1.35 !important;
+  }
+
+  // Fila del Cliente
+  .movement-client-row {
+    color: #475569 !important;
+    font-size: 0.78rem !important;
+    line-height: 1.3 !important;
+    letter-spacing: 0.01em !important;
+    margin-bottom: 5px !important;
+
+    .v-icon {
+      color: #94a3b8 !important;
+    }
   }
 
   // Fila de Badges: Separada, ordenada y con chips uniformes sobrios
@@ -4851,7 +4864,7 @@
     display: flex !important;
     align-items: center !important;
     flex-wrap: wrap !important;
-    gap: 8px !important;
+    gap: 6px !important;
   }
 
   // Módulo origen (VENTA, COMPRA, etc.)
@@ -6507,20 +6520,39 @@
 // 6. Mobile Responsiveness for Operations Items (< 600px)
 @media (max-width: 599.98px) {
   .operations-movement-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
     padding: 12px 14px !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
 
-    .ps-5 {
-      padding-left: 0 !important;
-      width: 100% !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      border-top: 1px solid rgba(var(--v-border-color), 0.08) !important;
-      padding-top: 8px !important;
+    .movement-direction-avatar {
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 8px !important;
     }
+
+    .amount-display {
+      font-size: 1rem !important;
+    }
+  }
+
+  // Stepper compacto para arqueo en móviles
+  .cash-stepper {
+    width: 105px !important;
+    height: 32px !important;
+
+    .stepper-btn {
+      width: 24px !important;
+    }
+
+    .stepper-input {
+      font-size: 0.88rem !important;
+    }
+  }
+
+  .bill-badge,
+  .coin-badge {
+    padding: 2px 6px !important;
+    font-size: 0.76rem !important;
   }
 }
 

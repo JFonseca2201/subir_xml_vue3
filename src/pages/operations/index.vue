@@ -98,14 +98,14 @@ const getPaymentMethodInfo = (movement, accountsList = []) => {
   return { type: 'EFECTIVO', label: 'Efectivo', icon: 'ri-bill-line', badgeClass: 'method-badge-cash' }
 }
 
-// Extraer OT y Vehículo asociados al movimiento
+// Extraer OT, Vehículo y Cliente asociados al movimiento
 const extractWorkOrderAndVehicle = m => {
   let workOrderNumber = null
   let workOrderId = null
   let licensePlate = null
   let clientName = null
 
-  // Desde movable (Sale)
+  // Desde movable (Sale, PaymentDistribution, WorkOrder, etc.)
   if (m.movable) {
     if (m.movable.work_order_number) workOrderNumber = m.movable.work_order_number
     if (m.movable.work_order_id) workOrderId = m.movable.work_order_id
@@ -115,6 +115,9 @@ const extractWorkOrderAndVehicle = m => {
       if (m.movable.workOrder.vehicle?.license_plate) {
         licensePlate = m.movable.workOrder.vehicle.license_plate
       }
+      if (m.movable.workOrder.client) {
+        clientName = clientName || m.movable.workOrder.client.full_name || `${m.movable.workOrder.client.name || ''} ${m.movable.workOrder.client.surname || ''}`.trim()
+      }
     }
 
     if (!licensePlate && m.movable.vehicle?.license_plate) {
@@ -122,15 +125,26 @@ const extractWorkOrderAndVehicle = m => {
     }
 
     if (m.movable.client) {
-      clientName = m.movable.client.full_name || `${m.movable.client.name || ''} ${m.movable.client.surname || ''}`.trim()
+      clientName = clientName || m.movable.client.full_name || `${m.movable.client.name || ''} ${m.movable.client.surname || ''}`.trim()
     }
 
-    // Si es PaymentDistribution
+    // Si es PaymentDistribution o FinanceRecord
     if (m.movable.finance_record) {
       if (m.movable.finance_record.work_order_number) {
         workOrderNumber = workOrderNumber || m.movable.finance_record.work_order_number
       }
+      if (m.movable.finance_record.client_name) {
+        clientName = clientName || m.movable.finance_record.client_name
+      }
     }
+  }
+
+  // Desde objeto directo
+  if (m.client) {
+    clientName = clientName || m.client.full_name || `${m.client.name || ''} ${m.client.surname || ''}`.trim()
+  }
+  if (m.client_name) {
+    clientName = clientName || m.client_name
   }
 
   // Desde metadata
@@ -140,6 +154,9 @@ const extractWorkOrderAndVehicle = m => {
     }
     if (!licensePlate && (m.metadata.license_plate || m.metadata.placa)) {
       licensePlate = m.metadata.license_plate || m.metadata.placa
+    }
+    if (!clientName && (m.metadata.client_name || m.metadata.client || m.metadata.cliente)) {
+      clientName = m.metadata.client_name || m.metadata.client || m.metadata.cliente
     }
   }
 
@@ -214,13 +231,20 @@ const groupMovementsByDate = movements => {
 
     // Limpieza y formateo del título principal y subtítulo
     let displayTitle = finalDesc
-    let displaySubtitle = clientName || null
 
-    const saleMatch = finalDesc.match(/Venta:\s*(invoice|factura|nota_venta|sale|quote)?\s*[-–]?\s*(\d+)/i)
+    // Regex para detectar ventas, facturas, notas de venta, cotizaciones
+    const saleMatch = finalDesc.match(/(?:Venta:\s*)?(invoice|factura|nota_venta|sale_note|nota\s*de\s*venta|sale|quote|cotizacion|cotización)\s*[-–#:\s]*(\d+)/i)
     if (saleMatch) {
-      const docType = (saleMatch[1] || '').toLowerCase()
+      const docType = (saleMatch[1] || '').toLowerCase().replace(/[\s_]/g, '')
       const docNum = saleMatch[2]
-      const label = (docType === 'invoice' || docType === 'factura') ? 'Factura' : (docType === 'quote' ? 'Cotización' : 'Nota de Venta')
+      let label = 'Venta'
+      if (docType === 'invoice' || docType === 'factura') {
+        label = 'Factura'
+      } else if (docType === 'quote' || docType.includes('cotiz')) {
+        label = 'Cotización'
+      } else if (docType.includes('note') || docType.includes('notadeventa') || docType === 'notaventa') {
+        label = 'Nota de Venta'
+      }
 
       displayTitle = `${label} #${docNum}`
     } else if (finalDesc.toLowerCase().startsWith('venta:')) {
@@ -240,7 +264,6 @@ const groupMovementsByDate = movements => {
       type: m.type, // 'income' | 'expense' | 'transfer'
       description: finalDesc,
       displayTitle: displayTitle,
-      displaySubtitle: displaySubtitle,
       module: moduleName,
       methodInfo: methodInfo,
       workOrderNumber: workOrderNumber,
@@ -905,37 +928,53 @@ onMounted(() => {
                   <div
                     v-for="movement in day.movements"
                     :key="movement.id"
-                    class="operations-movement-item d-flex align-center justify-space-between gap-2.5 mb-2.5 rounded-xl border bg-white"
+                    class="operations-movement-item d-flex align-center justify-space-between gap-3 mb-2.5 rounded-xl border bg-white"
                   >
                     <!-- Izquierda: Avatar Icono + Información -->
-                    <div class="d-flex align-center gap-2.5 overflow-hidden flex-grow-1 min-w-0">
+                    <div class="d-flex align-start gap-2.5 overflow-hidden flex-grow-1 min-w-0">
                       <div
-                        class="movement-direction-avatar shrink-0"
+                        class="movement-direction-avatar shrink-0 mt-0.5"
                         :class="`avatar-${movement.type}`"
                       >
                         <VIcon
                           :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                          size="16"
+                          size="18"
                         />
                       </div>
 
                       <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
-                        <!-- Línea 1: Título claro y espacioso -->
-                        <div class="movement-title-row d-flex align-center flex-wrap gap-1 mb-1">
+                        <!-- Línea 1: Título claro + Monto en Móvil -->
+                        <div class="d-flex align-center justify-space-between gap-2">
                           <span class="text-body-2 font-weight-bold text-slate-900 text-truncate">
                             {{ movement.displayTitle }}
                           </span>
+                          <!-- Monto en móvil arriba a la derecha -->
                           <span
-                            v-if="movement.displaySubtitle"
-                            class="text-caption text-slate-500 font-weight-medium text-truncate"
-                            style="max-width: 100%;"
+                            class="text-body-2 font-weight-bold amount-display d-sm-none shrink-0"
+                            :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
                           >
-                            · {{ movement.displaySubtitle }}
+                            {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}
+                            {{ formatCurrency(movement.amount) }}
                           </span>
                         </div>
 
-                        <!-- Línea 2: Badges ordenados compactos -->
-                        <div class="movement-badges-row d-flex align-center flex-wrap gap-1 text-caption">
+                        <!-- Línea 2: Datos del Cliente con Icono (si existen) -->
+                        <div
+                          v-if="movement.clientName"
+                          class="movement-client-row d-flex align-center gap-1.5 text-caption font-weight-medium my-0.5 text-truncate"
+                        >
+                          <VIcon
+                            icon="ri-user-3-line"
+                            size="13"
+                            class="text-slate-400 shrink-0"
+                          />
+                          <span class="text-slate-700 text-truncate font-weight-semibold">
+                            {{ movement.clientName }}
+                          </span>
+                        </div>
+
+                        <!-- Línea 3: Badges ordenados compactos -->
+                        <div class="movement-badges-row d-flex align-center flex-wrap gap-1 mt-1 text-caption">
                           <!-- Módulo Origen -->
                           <span class="status-pill-clean status-canceled">
                             <span class="status-dot" />
@@ -988,8 +1027,8 @@ onMounted(() => {
                       </div>
                     </div>
 
-                    <!-- Derecha: Monto Destacado con Holgura -->
-                    <div class="movement-amount-container text-right shrink-0 ps-2">
+                    <!-- Derecha: Monto Destacado en Desktop -->
+                    <div class="movement-amount-container text-right shrink-0 ps-3 d-none d-sm-block">
                       <span
                         class="text-body-1 font-weight-bold amount-display"
                         :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
