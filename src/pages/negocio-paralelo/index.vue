@@ -513,17 +513,18 @@ onMounted(() => {
           <h3 class="text-h4 font-weight-bold text-high-emphasis mb-1">
             Negocio Paralelo
           </h3>
-          <p class="text-subtitle-2 text-medium-emphasis mb-0">
+          <p class="text-subtitle-2 text-medium-emphasis mb-0 d-none d-sm-block">
             Control de cuentas rápido y simplificado en base de datos. Registra ingresos y egresos de tu actividad
             comercial independiente.
           </p>
         </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="d-flex gap-2 flex-wrap w-100 w-sm-auto">
         <VBtn
           variant="tonal"
           color="info"
           prepend-icon="ri-calendar-check-line"
+          class="flex-grow-1 flex-sm-grow-0"
           @click="isSummaryDialogOpen = true"
         >
           Resumen del Día
@@ -532,6 +533,7 @@ onMounted(() => {
           variant="outlined"
           color="primary"
           prepend-icon="ri-file-pdf-line"
+          class="flex-grow-1 flex-sm-grow-0"
           @click="openPdfDialog"
         >
           Reporte PDF

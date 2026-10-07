@@ -189,16 +189,16 @@ onMounted(() => {
           </VAvatar>
           Gestión de Socios
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Control de socios de capital, participaciones y directorio de contacto del taller
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
           @click="isPartnerAddDialogVisible = true"
         >
           Nuevo Socio
@@ -208,7 +208,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -761,7 +761,7 @@ onMounted(() => {
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_partners.length }}</strong> registros
           </div>
@@ -769,8 +769,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPage"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
             @update:model-value="list"
           />
         </div>

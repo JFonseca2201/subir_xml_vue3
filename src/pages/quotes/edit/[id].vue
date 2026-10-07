@@ -162,6 +162,18 @@ const addManualItem = async () => {
   resetManualProductForm()
 }
 
+const getProductPriceWithTax = product => {
+  if (!product) return 0
+  const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
+  const taxRate = parseFloat(product.tax_rate) || 0
+
+  if (taxRate > 0) {
+    return parseFloat((rawPrice * (1 + (taxRate / 100))).toFixed(2))
+  }
+
+  return parseFloat(rawPrice.toFixed(2))
+}
+
 const selectedProductTemp = ref(null)
 
 // Item actions
@@ -186,7 +198,7 @@ const addItem = prod => {
     product_id: prod.id,
     description: prod.description || prod.name || '',
     quantity: 1,
-    price: parseFloat(prod.price_sale || prod.price) || 0,
+    price: getProductPriceWithTax(prod),
     discount: 0,
     type: prod.item_type === 2 ? 'service' : 'product',
     sku: prod.sku || prod.code || '',
@@ -788,6 +800,16 @@ onMounted(async () => {
                     >
                       Código/SKU: {{ item.raw.code_aux || item.raw.sku }}
                     </VListItemSubtitle>
+                    <template #append>
+                      <VChip
+                        size="small"
+                        color="success"
+                        variant="tonal"
+                        class="font-weight-bold"
+                      >
+                        ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
+                      </VChip>
+                    </template>
                   </VListItem>
                 </template>
               </VSearch>

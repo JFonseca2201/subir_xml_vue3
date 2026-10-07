@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -152,12 +152,14 @@ const loadWorkOrder = async id => {
 
         return {
           product_id: item.product_id,
+          product: item.product || null,
           description: item.description,
           quantity: item.quantity,
           unit_price: parseFloat(item.unit_price) || 0,
           discount: parseFloat(item.discount) || 0,
           type: item.type,
-          sku: item.product ? item.product.sku : '',
+          sku: item.product ? (item.product.sku || item.product.code_aux || item.product.code || '') : (item.sku || ''),
+          code_aux: item.product ? (item.product.code_aux || '') : (item.code_aux || ''),
         }
       }),
     }
@@ -542,11 +544,9 @@ const calculateTotal = () => {
 const getProductPriceWithTax = product => {
   if (!product) return 0
   const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
+  const taxRate = parseFloat(product.tax_rate) || 0
 
-  const isTaxable = product.is_taxable !== 2 && product.is_taxable !== '2' && product.is_taxable !== 0 && product.is_taxable !== '0' && product.is_taxable !== false
-  const taxRate = parseFloat(product.tax_rate) || 15
-
-  if (isTaxable) {
+  if (taxRate > 0) {
     return parseFloat((rawPrice * (1 + (taxRate / 100))).toFixed(2))
   }
 
@@ -577,6 +577,23 @@ const getProductSku = productId => {
   return product ? (product.sku || product.code_aux || product.code || '') : ''
 }
 
+const getItemCode = item => {
+  if (!item) return ''
+  if (item.sku) return item.sku
+  if (item.code_aux) return item.code_aux
+  if (item.code) return item.code
+  if (item.product) {
+    return item.product.sku || item.product.code_aux || item.product.code || ''
+  }
+  if (item.product_id) {
+    const prod = products.value.find(p => p.id === item.product_id)
+    if (prod) {
+      return prod.sku || prod.code_aux || prod.code || ''
+    }
+  }
+  return ''
+}
+
 const onProductChanged = item => {
   if (item.product_id) {
     const product = products.value.find(p => p.id === item.product_id)
@@ -605,15 +622,19 @@ const addProductFromSearch = product => {
   } else {
     workOrder.value.items.push({
       product_id: product.id,
+      product: product,
       description: product.description || product.name || '',
       quantity: 1,
       unit_price: finalUnitPrice,
       discount: 0,
       type: isService ? 'service' : 'product',
-      sku: product.sku || product.code || '',
+      sku: product.sku || product.code_aux || product.code || '',
+      code_aux: product.code_aux || '',
     })
   }
-  productSearch.value = null
+  nextTick(() => {
+    productSearch.value = null
+  })
 }
 
 watch(() => workOrder.value.vehicle_id, newVal => {
@@ -1417,7 +1438,7 @@ onMounted(() => {
                           variant="tonal"
                           class="font-weight-bold"
                         >
-                          ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
+                          ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
                         </VChip>
                       </template>
                     </VListItem>
@@ -1475,14 +1496,14 @@ onMounted(() => {
                       <td class="py-2">
                         <div class="d-flex align-center gap-2.5">
                           <VAvatar
-                            size="32"
+                            size="24"
                             :color="item.type === 'service' ? 'info' : 'primary'"
                             variant="tonal"
-                            class="rounded-lg flex-shrink-0"
+                            class="rounded-md flex-shrink-0"
                           >
                             <VIcon
                               :icon="item.type === 'service' ? 'ri-tools-line' : 'ri-box-3-line'"
-                              size="16"
+                              size="13"
                             />
                           </VAvatar>
                           <div class="flex-grow-1 min-w-0">
@@ -1493,13 +1514,30 @@ onMounted(() => {
                               class="wo-item-desc-input font-weight-bold text-slate-900"
                             >
                             <div class="text-caption text-medium-emphasis mt-0.5 d-flex align-center flex-wrap gap-1.5">
+                              <!-- Código / SKU en Primer Lugar -->
+                              <span
+                                v-if="getItemCode(item)"
+                                class="font-mono font-weight-bold text-slate-800 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-300 d-inline-flex align-center"
+                                style="font-size: 0.68rem; line-height: 1.2;"
+                              >
+                                <VIcon
+                                  icon="ri-barcode-line"
+                                  size="12"
+                                  class="me-1 text-slate-500"
+                                />
+                                {{ getItemCode(item) }}
+                              </span>
+
+                              <!-- Tipo de Item (Servicio / Producto) -->
                               <span
                                 class="text-uppercase font-weight-bold"
-                                :class="item.type === 'service' ? 'text-primary' : 'text-secondary'"
+                                :class="item.type === 'service' ? 'text-info' : 'text-secondary'"
                                 style="font-size: 0.65rem;"
                               >
                                 {{ item.type === 'service' ? 'Servicio' : 'Producto' }}
                               </span>
+
+                              <!-- Stock si es producto -->
                               <span
                                 v-if="item.type === 'product'"
                                 class="stock-tag"
@@ -1511,13 +1549,6 @@ onMounted(() => {
                                   class="mr-0.5"
                                 />
                                 {{ getProductStock(item.product_id, item) }} stock
-                              </span>
-                              <span
-                                v-if="item.product && (item.product.sku || item.product.code_aux)"
-                                class="text-uppercase font-weight-bold text-slate-500"
-                                style="font-size: 0.65rem;"
-                              >
-                                {{ item.product.sku || item.product.code_aux }}
                               </span>
                             </div>
                           </div>

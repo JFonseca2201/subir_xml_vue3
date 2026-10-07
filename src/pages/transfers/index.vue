@@ -414,13 +414,13 @@ onMounted(() => {
                 <span>{{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'registro' : 'registros' }}</span>
               </div>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
               Control y auditoría de transferencias monetarias entre cuentas y cajas
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-3">
+        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
           <VBtn
             title="Actualizar datos"
             variant="tonal"
@@ -436,7 +436,7 @@ onMounted(() => {
             variant="elevated"
             size="small"
             prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2"
+            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
             @click="openTransferDialog"
           >
             Nueva Transferencia
@@ -446,7 +446,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales e impresiones de texto de alto contraste -->
-    <VRow class="mb-5">
+    <VRow class="mb-5 d-none d-sm-flex">
       <!-- Transferido Hoy -->
       <VCol
         cols="12"
@@ -1194,8 +1194,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
           />
         </div>
       </VCard>

@@ -246,6 +246,19 @@ const subtotalIva0 = computed(() => {
 
 const hasVehicle = computed(() => !!props.saleData?.vehicle || !!getVehicleLicensePlate.value)
 
+const workOrderDate = computed(() => {
+  const raw = props.saleData?.work_order?.date || 
+    props.saleData?.workOrder?.date || 
+    props.saleData?.work_order_date
+  return raw ? String(raw).split('T')[0].split(' ')[0] : null
+})
+
+const isWorkOrderDateDifferent = computed(() => {
+  if (!workOrderDate.value || !props.saleData?.service_date) return false
+  const svD = String(props.saleData.service_date).split('T')[0].split(' ')[0]
+  return workOrderDate.value !== svD
+})
+
 /** Método real: prioriza pagos distribuidos sobre el campo de cabecera (a veces queda "Efectivo" por defecto). */
 const displayPaymentMethod = computed(() => {
   const dists = getPaymentDistributions.value
@@ -617,6 +630,19 @@ const convertToSale = () => {
             />
             <span>OT #{{ saleData.work_order_number || saleData.work_order?.number || saleData.workOrder?.number
             }}</span>
+          </div>
+
+          <div
+            v-if="workOrderDate && isWorkOrderDateDifferent"
+            class="glass-header-pill"
+            title="Fecha en que se creó la Orden de Trabajo"
+          >
+            <VIcon
+              icon="ri-calendar-todo-line"
+              size="14"
+              class="me-1 text-amber-lighten-2"
+            />
+            <span>Fecha OT: {{ formatDate(workOrderDate) }}</span>
           </div>
 
           <div

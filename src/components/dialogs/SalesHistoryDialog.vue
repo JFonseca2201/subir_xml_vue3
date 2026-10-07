@@ -558,6 +558,8 @@ const generateSinglePDF = sale => {
             rounded="circle"
             active-color="primary"
             density="compact"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
           />
         </div>
       </VCardText>

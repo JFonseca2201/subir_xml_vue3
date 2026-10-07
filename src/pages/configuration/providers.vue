@@ -238,17 +238,17 @@ definePage({ meta: { permission: "settings" } })
           </VAvatar>
           Gestión de Proveedores
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Directorio de distribuidores de repuestos, insumos y compras del taller
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           v-if="can('register_supplier')"
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
           @click="isProviderAddDialogVisible = true"
         >
           Nuevo Proveedor
@@ -258,7 +258,7 @@ definePage({ meta: { permission: "settings" } })
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -895,7 +895,7 @@ definePage({ meta: { permission: "settings" } })
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_providers.length }}</strong> proveedores registrados
           </div>
@@ -903,8 +903,11 @@ definePage({ meta: { permission: "settings" } })
             v-model="currentPage"
             :length="totalPage"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
             @update:model-value="list"
           />
         </div>

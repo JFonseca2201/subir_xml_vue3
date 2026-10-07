@@ -323,13 +323,13 @@ onMounted(() => {
                 <span>{{ totalAportesCount }} {{ totalAportesCount === 1 ? 'registro' : 'registros' }}</span>
               </div>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
               Gestión de aportes de socios y control de capital acumulado
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-3">
+        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
           <VBtn
             title="Actualizar datos"
             variant="tonal"
@@ -344,7 +344,7 @@ onMounted(() => {
             variant="elevated"
             size="small"
             prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2"
+            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
             @click="openCreateDialog"
           >
             Nuevo Aporte
@@ -354,7 +354,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
-    <VRow class="mb-5">
+    <VRow class="mb-5 d-none d-sm-flex">
       <!-- Aportes Hoy -->
       <VCol
         cols="12"

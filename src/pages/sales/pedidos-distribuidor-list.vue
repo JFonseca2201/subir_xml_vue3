@@ -456,6 +456,17 @@ const filteredRepuestos = computed(() => {
   return list
 })
 
+const getCategoryPillClass = cat => {
+  if (!cat) return 'status-canceled'
+  const c = String(cat).toLowerCase()
+  if (c.includes('aceite') || c.includes('lubricante') || c.includes('filtro')) return 'status-paid'
+  if (c.includes('freno') || c.includes('pastilla') || c.includes('disco')) return 'status-primary'
+  if (c.includes('suspensi') || c.includes('amortiguador') || c.includes('limpiador')) return 'status-transfer'
+  if (c.includes('motor') || c.includes('repuesto') || c.includes('bateria')) return 'status-partial'
+  
+  return 'status-primary'
+}
+
 const getCategoryColor = category => {
   const colors = {
     'Aceite': 'amber-darken-2',
@@ -509,17 +520,17 @@ onMounted(() => {
           </VAvatar>
           Pedidos a Distribuidor
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Control de pedidos, abastecimiento de repuestos y órdenes a proveedores mayoristas
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           color="info"
           variant="tonal"
           prepend-icon="ri-history-line"
-          class="font-weight-medium"
+          class="font-weight-medium flex-grow-1 flex-md-grow-0"
           @click="openRepuestosDialog"
         >
           Historial Repuestos
@@ -528,7 +539,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-add-line"
           to="/sales/pedidos-distribuidor"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
         >
           Nuevo Pedido
         </VBtn>
@@ -537,7 +548,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -1308,7 +1319,7 @@ onMounted(() => {
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ filteredPedidos.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> pedidos
           </div>
@@ -1316,8 +1327,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
           />
         </div>
       </VCard>
@@ -1445,7 +1459,8 @@ onMounted(() => {
             Ítems Solicitados
           </div>
 
-          <div class="pedido-items-table-wrap">
+          <!-- Desktop Table -->
+          <div class="pedido-items-table-wrap d-none d-md-block">
             <VTable class="pedido-items-table w-100">
               <thead class="bg-grey-lighten-5">
                 <tr>
@@ -1490,17 +1505,15 @@ onMounted(() => {
                     >
                       SKU: {{ item.producto.sku }}
                     </div>
-                    <VChip
+                    <div
                       v-if="!item.producto_id"
-                      size="x-small"
-                      color="orange"
-                      variant="tonal"
-                      class="mt-1"
+                      class="status-pill-clean status-partial mt-1 d-inline-flex"
                     >
-                      Ingreso Manual
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>Ingreso Manual</span>
+                    </div>
                   </td>
-                  <td class="text-center">
+                  <td class="text-center font-weight-bold">
                     {{ item.cantidad }}
                   </td>
                   <td class="text-right">
@@ -1512,6 +1525,53 @@ onMounted(() => {
                 </tr>
               </tbody>
             </VTable>
+          </div>
+
+          <!-- Mobile Cards View for Requested Items -->
+          <div class="d-md-none d-flex flex-column gap-3">
+            <VCard
+              v-for="item in selectedPedido.detalles"
+              :key="item.id"
+              class="border rounded-xl pa-3 bg-white elevation-0"
+            >
+              <div class="d-flex justify-space-between align-start mb-2">
+                <div class="flex-grow-1 me-2">
+                  <div class="font-weight-medium text-grey-darken-4 text-body-2">
+                    {{ item.description }}
+                  </div>
+                  <div
+                    v-if="item.producto?.sku"
+                    class="text-caption text-medium-emphasis mt-0.5"
+                  >
+                    SKU: {{ item.producto.sku }}
+                  </div>
+                </div>
+                <div
+                  v-if="!item.producto_id"
+                  class="status-pill-clean status-partial shrink-0"
+                >
+                  <span class="status-dot" />
+                  <span>Manual</span>
+                </div>
+              </div>
+
+              <VDivider class="my-2" />
+
+              <div class="d-flex justify-space-between align-center text-caption">
+                <div>
+                  <span class="text-medium-emphasis">Cant: </span>
+                  <span class="font-weight-bold text-high-emphasis">{{ item.cantidad }}</span>
+                </div>
+                <div>
+                  <span class="text-medium-emphasis">P. Unit: </span>
+                  <span class="font-weight-medium">{{ formatCurrency(item.precio_compra_estimado) }}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-medium-emphasis">Subtotal: </span>
+                  <span class="font-weight-bold text-primary">{{ formatCurrency(item.cantidad * item.precio_compra_estimado) }}</span>
+                </div>
+              </div>
+            </VCard>
           </div>
 
           <div class="d-flex justify-end pt-5">
@@ -1587,9 +1647,9 @@ onMounted(() => {
           </p>
         </div>
 
-        <VCardText class="pa-6 bg-grey-lighten-5">
+        <VCardText class="pa-3 pa-sm-6 bg-grey-lighten-5">
           <!-- Filtros de búsqueda locales -->
-          <div class="d-flex flex-wrap align-center gap-3 mb-5 bg-white pa-4 rounded-lg border">
+          <div class="d-flex flex-wrap align-center gap-3 mb-4 mb-sm-5 bg-white pa-3 pa-sm-4 rounded-lg border">
             <VTextField
               v-model="searchRepuesto"
               label="Buscar por repuesto, placa, marca..."
@@ -1599,7 +1659,8 @@ onMounted(() => {
               density="compact"
               hide-details
               clearable
-              style="min-width: 240px; flex: 1 1 200px;"
+              class="w-100 flex-grow-1"
+              style="min-width: 200px;"
               color="primary"
               :loading="loading"
             />
@@ -1611,7 +1672,8 @@ onMounted(() => {
               variant="outlined"
               density="compact"
               hide-details
-              style="min-width: 160px; flex: 1 1 120px;"
+              class="w-100 w-sm-auto flex-grow-1"
+              style="min-width: 140px;"
               color="primary"
             />
 
@@ -1623,16 +1685,18 @@ onMounted(() => {
               variant="outlined"
               density="compact"
               hide-details
-              style="min-width: 240px; flex: 1 1 200px;"
+              class="w-100 w-sm-auto flex-grow-1"
+              style="min-width: 200px;"
               color="primary"
             />
 
-            <div class="d-flex gap-2 ms-auto">
+            <div class="d-flex gap-2 ms-auto w-100 w-sm-auto justify-end">
               <VBtn
                 color="secondary"
                 variant="outlined"
                 prepend-icon="ri-filter-off-line"
                 size="comfortable"
+                class="flex-grow-1 flex-sm-grow-0"
                 @click="resetFilters"
               >
                 Limpiar
@@ -1643,6 +1707,7 @@ onMounted(() => {
                 prepend-icon="ri-refresh-line"
                 :loading="loadingRepuestos"
                 size="comfortable"
+                class="flex-grow-1 flex-sm-grow-0"
                 @click="loadRepuestosHistorial"
               >
                 Actualizar
@@ -1665,10 +1730,10 @@ onMounted(() => {
             <span class="text-subtitle-1 text-medium-emphasis">Cargando historial de repuestos...</span>
           </div>
 
-          <!-- Tabla de Resultados -->
+          <!-- Tabla de Resultados Desktop -->
           <div
             v-else-if="filteredRepuestos.length > 0"
-            class="rounded-lg border bg-white overflow-hidden elevation-0"
+            class="d-none d-md-block rounded-lg border bg-white overflow-hidden elevation-0"
           >
             <VTable
               hover
@@ -1706,14 +1771,13 @@ onMounted(() => {
                     {{ item.comprobante }}
                   </td>
                   <td>
-                    <VChip
-                      size="small"
-                      :color="getCategoryColor(item.categoria)"
-                      variant="tonal"
-                      class="font-weight-bold"
+                    <div
+                      class="status-pill-clean"
+                      :class="getCategoryPillClass(item.categoria)"
                     >
-                      {{ item.categoria }}
-                    </VChip>
+                      <span class="status-dot" />
+                      <span>{{ item.categoria }}</span>
+                    </div>
                   </td>
                   <td class="text-center font-weight-bold">
                     {{ item.cantidad }}
@@ -1734,9 +1798,59 @@ onMounted(() => {
             </VTable>
           </div>
 
+          <!-- Vista de Tarjetas Mobile -->
+          <div
+            v-if="!loadingRepuestos && filteredRepuestos.length > 0"
+            class="d-md-none d-flex flex-column gap-3"
+          >
+            <VCard
+              v-for="item in filteredRepuestos"
+              :key="item.id"
+              class="border rounded-xl pa-3 bg-white elevation-0"
+            >
+              <div class="d-flex justify-space-between align-start mb-2">
+                <div class="flex-grow-1 me-2">
+                  <div class="font-weight-bold text-slate-900 text-body-2">
+                    {{ item.repuesto }}
+                  </div>
+                  <div
+                    v-if="item.sku"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    SKU: {{ item.sku }}
+                  </div>
+                </div>
+                <div
+                  class="status-pill-clean shrink-0"
+                  :class="getCategoryPillClass(item.categoria)"
+                >
+                  <span class="status-dot" />
+                  <span>{{ item.categoria }}</span>
+                </div>
+              </div>
+
+              <VDivider class="my-2" />
+
+              <div class="d-flex justify-space-between align-center text-caption text-medium-emphasis">
+                <div class="d-flex align-center gap-1">
+                  <VIcon icon="ri-calendar-line" size="14" />
+                  <span>{{ formatShortDate(item.fecha) }}</span>
+                </div>
+                <div class="d-flex align-center gap-1">
+                  <VIcon icon="ri-file-text-line" size="14" />
+                  <span class="font-weight-medium">{{ item.comprobante }}</span>
+                </div>
+                <div class="d-flex align-center gap-1 font-weight-bold text-high-emphasis">
+                  <span>Cant:</span>
+                  <span class="font-mono font-weight-bold text-body-2 text-primary">{{ item.cantidad }}</span>
+                </div>
+              </div>
+            </VCard>
+          </div>
+
           <!-- Empty State -->
           <div
-            v-else
+            v-else-if="!loadingRepuestos && filteredRepuestos.length === 0"
             class="text-center py-12 bg-white rounded-xl border"
           >
             <VAvatar
@@ -2038,6 +2152,16 @@ onMounted(() => {
 
   .status-dot {
     background-color: #3b82f6 !important;
+  }
+}
+
+.status-primary {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+
+  .status-dot {
+    background-color: #6366f1 !important;
   }
 }
 

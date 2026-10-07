@@ -26,7 +26,7 @@ export default {
     offset: '2px',
   },
   VPagination: {
-    showFirstLastPage: true,
+    showFirstLastPage: false,
     variant: 'tonal',
   },
   VTabs: {

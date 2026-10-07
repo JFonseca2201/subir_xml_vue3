@@ -257,17 +257,17 @@ onMounted(() => {
           </VAvatar>
           Gestión de Usuarios
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Cuentas de acceso, credenciales y asignación de roles en el sistema
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           v-if="can('register_user')"
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
           @click="isUserAddDialogVisible = true"
         >
           Nuevo Usuario
@@ -277,7 +277,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol

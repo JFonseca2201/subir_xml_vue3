@@ -451,19 +451,19 @@ onMounted(() => {
                 {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0.5">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0.5 d-none d-sm-block">
               Gestiona los roles de pago y adelantos concedidos a los empleados
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2.5 flex-wrap">
+        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
           <VBtn
             variant="outlined"
             color="secondary"
             prepend-icon="ri-refresh-line"
             size="default"
-            class="font-weight-medium"
+            class="font-weight-medium flex-grow-1 flex-sm-grow-0"
             :loading="loading"
             @click="loadExpenses"
           >
@@ -474,7 +474,7 @@ onMounted(() => {
             variant="tonal"
             size="default"
             prepend-icon="ri-hand-coin-line"
-            class="font-weight-semibold"
+            class="font-weight-semibold flex-grow-1 flex-sm-grow-0"
             @click="openAddAdvanceDialog"
           >
             Nuevo Adelanto
@@ -484,7 +484,7 @@ onMounted(() => {
             variant="elevated"
             size="default"
             prepend-icon="ri-money-dollar-circle-line"
-            class="font-weight-bold elevation-1"
+            class="font-weight-bold elevation-1 flex-grow-1 flex-sm-grow-0"
             @click="openAddPaymentDialog"
           >
             Nuevo Pago
@@ -495,7 +495,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-5"
+      class="mb-5 d-none d-sm-flex"
       dense
     >
       <!-- Total Pagos -->
@@ -1275,7 +1275,7 @@ onMounted(() => {
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ paginatedExpenses.length }}</strong> de <strong class="text-high-emphasis">{{ filteredExpenses.length }}</strong> registros
           </div>
@@ -1283,8 +1283,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
           />
         </div>
       </VCard>

@@ -756,7 +756,7 @@ const tecnicosOptions = computed(() => {
             class="font-weight-medium text-medium-emphasis"
           >/ ADMIN PANEL</span>
         </h1>
-        <p class="text-caption text-medium-emphasis mb-0">
+        <p class="text-caption text-medium-emphasis mb-0 d-none d-sm-block">
           Gestión Automotriz - Rendimiento y Balance de Operaciones
         </p>
       </div>

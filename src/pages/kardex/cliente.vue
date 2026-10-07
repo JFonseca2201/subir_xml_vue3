@@ -517,16 +517,17 @@ onMounted(() => {
           />
           Kardex por Cliente & Vehículo
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Auditoría comercial, historial de mantenimientos por placa, consumos y compras
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           variant="tonal"
           color="secondary"
           prepend-icon="ri-filter-off-line"
+          class="flex-grow-1 flex-md-grow-0"
           @click="resetFilters"
         >
           Limpiar Filtros
@@ -535,6 +536,7 @@ onMounted(() => {
           variant="outlined"
           color="error"
           prepend-icon="ri-file-pdf-2-line"
+          class="flex-grow-1 flex-md-grow-0"
           :loading="isLoading"
           @click="exportKardexPDF"
         >
@@ -543,6 +545,7 @@ onMounted(() => {
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"
+          class="flex-grow-1 flex-md-grow-0"
           :loading="isLoading"
           @click="loadKardex"
         >
@@ -1362,7 +1365,7 @@ onMounted(() => {
       v-if="totalPages > 1"
       class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
     >
-      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
         <div class="text-body-2 text-medium-emphasis">
           Mostrando <strong class="text-high-emphasis">{{ transactions.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> comprobantes
         </div>
@@ -1372,7 +1375,9 @@ onMounted(() => {
           rounded="circle"
           active-color="primary"
           density="comfortable"
-          :total-visible="7"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          class="my-0"
         />
       </div>
     </VCard>

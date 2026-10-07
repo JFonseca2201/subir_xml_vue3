@@ -112,13 +112,17 @@ const fetchItems = async query => {
   }
 }
 
-const onSearchInput = useDebounceFn(val => {
-  search.value = val || ''
-  fetchItems(search.value)
+const debouncedFetch = useDebounceFn(val => {
+  fetchItems(val)
 }, 300)
 
+const onSearchInput = val => {
+  search.value = val || ''
+  debouncedFetch(search.value)
+}
+
 const hideNoData = computed(() => {
-  return search.value.length < props.minChars
+  return (search.value || '').length < props.minChars
 })
 
 onMounted(() => {
@@ -142,6 +146,17 @@ const onModelValueUpdate = val => {
   }
 }
 
+watch(() => props.modelValue, newVal => {
+  if (!newVal) {
+    search.value = ''
+    if (props.initialItem) {
+      items.value = [props.initialItem]
+    } else {
+      items.value = []
+    }
+  }
+}, { immediate: true })
+
 watch(() => props.initialItem, newVal => {
   if (newVal) {
     items.value = [newVal]
@@ -152,6 +167,7 @@ watch(() => props.initialItem, newVal => {
 <template>
   <VAutocomplete
     :model-value="modelValue"
+    v-model:search="search"
     :items="items"
     :item-title="itemTitle"
     :item-value="itemValue"

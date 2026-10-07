@@ -511,7 +511,7 @@ onMounted(() => {
       <OperationsHeaderNav active-tab="dashboard" />
 
       <!-- Tarjetas de Métricas Principales (KPI Cards) -->
-      <VRow class="mb-5">
+      <VRow class="mb-5 d-none d-sm-flex">
         <!-- Ingresos del Mes -->
         <VCol
           cols="12"
@@ -671,76 +671,80 @@ onMounted(() => {
               style="top: 0; left: 0; right: 0; z-index: 10;"
             />
 
-            <!-- Encabezado de la Tarjeta de Movimientos (Estándar de Sistema idéntico a Ingresos y Gastos) -->
-            <div class="pa-3 pa-sm-4 border-b d-flex align-center justify-space-between flex-wrap gap-4">
-              <div class="d-flex align-center gap-3">
-                <VAvatar
-                  color="primary"
-                  variant="tonal"
-                  rounded="lg"
-                  size="44"
-                  class="elevation-1"
-                >
-                  <VIcon
-                    icon="ri-history-line"
-                    size="24"
-                  />
-                </VAvatar>
-                <div>
-                  <div class="d-flex align-center gap-2">
-                    <h2 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                      Movimientos Recientes
-                    </h2>
-                    <VChip
-                      size="small"
-                      color="primary"
-                      variant="tonal"
-                      class="font-weight-bold"
-                    >
-                      {{ rawMovementsList.length }} {{ rawMovementsList.length === 1 ? 'registro' : 'registros' }}
-                    </VChip>
+            <!-- Encabezado de la Tarjeta de Movimientos -->
+            <div class="pa-3 pa-sm-4 border-b">
+              <div class="d-flex align-center justify-space-between gap-3 w-100">
+                <!-- Título + Avatar -->
+                <div class="d-flex align-center gap-2.5 min-w-0 flex-grow-1">
+                  <VAvatar
+                    color="primary"
+                    variant="tonal"
+                    rounded="lg"
+                    size="38"
+                    class="elevation-0 shrink-0"
+                  >
+                    <VIcon
+                      icon="ri-history-line"
+                      size="22"
+                    />
+                  </VAvatar>
+                  <div class="min-w-0">
+                    <div class="d-flex align-center gap-2 flex-wrap">
+                      <h2 class="text-subtitle-1 text-sm-h6 font-weight-bold text-high-emphasis mb-0">
+                        Movimientos Recientes
+                      </h2>
+                      <span class="status-pill-clean status-primary shrink-0">
+                        <span class="status-dot" />
+                        <span>{{ rawMovementsList.length }} registros</span>
+                      </span>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-0 d-none d-sm-block text-truncate">
+                      Historial cronológico de ingresos, egresos y facturación
+                    </p>
                   </div>
-                  <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
-                    Historial cronológico de ingresos, egresos y facturación
-                  </p>
                 </div>
-              </div>
 
-              <!-- Acciones a la derecha idénticas a las cabeceras de sistema -->
-              <div class="d-flex align-center gap-3 flex-wrap ms-auto">
-                <VBtn
-                  color="secondary"
-                  variant="tonal"
-                  size="small"
-                  prepend-icon="ri-file-pdf-line"
-                  class="font-weight-semibold"
-                  :loading="pdfLoading"
-                  @click="generatePDF"
-                >
-                  Exportar PDF
-                </VBtn>
-
-                <VBtn
-                  icon
-                  size="small"
-                  variant="tonal"
-                  color="secondary"
-                  class="rounded-lg"
-                  title="Actualizar datos"
-                  @click="dashboardOptions"
-                >
-                  <VIcon
-                    icon="ri-refresh-line"
-                    size="18"
+                <!-- Botones de Acción (PDF y Actualizar) -->
+                <div class="d-flex align-center gap-1.5 shrink-0">
+                  <VBtn
+                    color="secondary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="ri-file-pdf-line"
+                    class="font-weight-semibold d-none d-sm-inline-flex"
+                    :loading="pdfLoading"
+                    @click="generatePDF"
+                  >
+                    PDF
+                  </VBtn>
+                  <VBtn
+                    icon="ri-file-pdf-line"
+                    size="small"
+                    variant="tonal"
+                    color="secondary"
+                    class="rounded-lg d-sm-none"
+                    title="Exportar PDF"
+                    :loading="pdfLoading"
+                    @click="generatePDF"
                   />
-                </VBtn>
+
+                  <VBtn
+                    icon="ri-refresh-line"
+                    size="small"
+                    variant="tonal"
+                    color="secondary"
+                    class="rounded-lg"
+                    title="Actualizar datos"
+                    @click="dashboardOptions"
+                  />
+                </div>
               </div>
             </div>
 
             <!-- Barra de Filtros y Búsqueda de Movimientos -->
-            <div class="px-4 py-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-3">
+            <div class="px-3 px-sm-4 py-2.5 py-sm-3 bg-slate-50 border-b d-flex flex-column flex-sm-row align-stretch align-sm-center justify-space-between gap-2.5">
               <!-- Filtros de Segmento -->
-              <div class="movement-filter-pills d-flex align-center">
+              <div class="movement-filter-pills">
                 <button
                   type="button"
                   class="filter-pill-btn"
@@ -774,12 +778,12 @@ onMounted(() => {
                   @click="movementFilter = 'transfer'"
                 >
                   <span class="pill-dot dot-transfer" />
-                  Transferencias
+                  Transf.
                 </button>
               </div>
 
               <!-- Input de Búsqueda Rápida -->
-              <div class="movement-search-input">
+              <div class="movement-search-input flex-grow-1 flex-sm-grow-0">
                 <VTextField
                   v-model="movementSearch"
                   density="compact"
@@ -817,7 +821,7 @@ onMounted(() => {
               <!-- Sin Resultados -->
               <div
                 v-else-if="filteredGroupedMovements.length === 0"
-                class="pa-10 text-center text-slate-500"
+                class="pa-8 pa-sm-10 text-center text-slate-500"
               >
                 <VAvatar
                   color="primary"
@@ -849,10 +853,10 @@ onMounted(() => {
                 </VBtn>
               </div>
 
-              <!-- Lista de Movimientos Agrupada -->
+              <!-- Lista de Movimientos Agrupada (Fluida sin scroll interno) -->
               <div
                 v-else
-                class="overflow-y-auto movements-scroll-container pa-4 pa-sm-5"
+                class="movements-scroll-container pa-3 pa-sm-5"
               >
                 <template
                   v-for="(day, dayIdx) in filteredGroupedMovements"
@@ -860,22 +864,24 @@ onMounted(() => {
                 >
                   <!-- Cabecera de Fecha Separada y Espaciosa -->
                   <div
-                    class="operations-date-header d-flex align-center justify-space-between px-4 py-2.5 mb-3.5"
-                    :class="dayIdx === 0 ? 'mt-1' : 'mt-6'"
+                    class="operations-date-header d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between px-3 px-sm-4 py-2 mb-2.5 gap-2"
+                    :class="dayIdx === 0 ? 'mt-1' : 'mt-4'"
                   >
+                    <!-- Fecha y Calendario -->
                     <div class="d-flex align-center gap-2">
-                      <VIcon
-                        icon="ri-calendar-event-line"
-                        size="16"
-                        class="text-primary"
-                      />
-                      <span class="text-caption font-weight-bold text-uppercase text-slate-800 tracking-wider">
+                      <div class="date-icon-box">
+                        <VIcon
+                          icon="ri-calendar-event-line"
+                          size="15"
+                        />
+                      </div>
+                      <span class="date-title-text font-weight-bold text-uppercase tracking-wider">
                         {{ day.date }}
                       </span>
                     </div>
 
-                    <div class="d-flex align-center gap-2">
-                      <!-- Balance del día -->
+                    <!-- Resumen del día: Subtotales + Conteo de Movimientos (Sin duplicados) -->
+                    <div class="d-flex align-center gap-1.5 flex-wrap ms-auto ms-sm-0">
                       <span
                         v-if="day.totalIncome > 0"
                         class="day-subtotal day-subtotal-income"
@@ -888,10 +894,10 @@ onMounted(() => {
                       >
                         -{{ formatCurrency(day.totalExpense) }}
                       </span>
-                      <div class="status-pill-clean status-transfer">
+                      <span class="status-pill-clean status-transfer">
                         <span class="status-dot" />
                         <span>{{ day.movements.length }} mov.</span>
-                      </div>
+                      </span>
                     </div>
                   </div>
 
@@ -899,37 +905,37 @@ onMounted(() => {
                   <div
                     v-for="movement in day.movements"
                     :key="movement.id"
-                    class="operations-movement-item d-flex align-center justify-space-between gap-4 mb-3.5 rounded-xl border bg-white"
+                    class="operations-movement-item d-flex align-center justify-space-between gap-2.5 mb-2.5 rounded-xl border bg-white"
                   >
                     <!-- Izquierda: Avatar Icono + Información -->
-                    <div class="d-flex align-center gap-4 overflow-hidden flex-grow-1">
+                    <div class="d-flex align-center gap-2.5 overflow-hidden flex-grow-1 min-w-0">
                       <div
                         class="movement-direction-avatar shrink-0"
                         :class="`avatar-${movement.type}`"
                       >
                         <VIcon
                           :icon="movement.type === 'transfer' ? 'ri-arrow-left-right-line' : (movement.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line')"
-                          size="18"
+                          size="16"
                         />
                       </div>
 
                       <div class="d-flex flex-column text-left min-w-0 flex-grow-1">
                         <!-- Línea 1: Título claro y espacioso -->
-                        <div class="movement-title-row d-flex align-center flex-wrap gap-2 mb-2.5">
-                          <span class="text-body-1 font-weight-bold text-slate-900">
+                        <div class="movement-title-row d-flex align-center flex-wrap gap-1 mb-1">
+                          <span class="text-body-2 font-weight-bold text-slate-900 text-truncate">
                             {{ movement.displayTitle }}
                           </span>
                           <span
                             v-if="movement.displaySubtitle"
                             class="text-caption text-slate-500 font-weight-medium text-truncate"
-                            style="max-width: 340px;"
+                            style="max-width: 100%;"
                           >
                             · {{ movement.displaySubtitle }}
                           </span>
                         </div>
 
-                        <!-- Línea 2: Badges ordenados con amplio espacio y diseño sobrio -->
-                        <div class="movement-badges-row d-flex align-center flex-wrap gap-2 text-caption">
+                        <!-- Línea 2: Badges ordenados compactos -->
+                        <div class="movement-badges-row d-flex align-center flex-wrap gap-1 text-caption">
                           <!-- Módulo Origen -->
                           <span class="status-pill-clean status-canceled">
                             <span class="status-dot" />
@@ -944,7 +950,7 @@ onMounted(() => {
                           >
                             <VIcon
                               icon="ri-tools-line"
-                              size="12"
+                              size="11"
                             />
                             <span>{{ movement.workOrderNumber }}</span>
                           </span>
@@ -965,16 +971,16 @@ onMounted(() => {
                           >
                             <VIcon
                               :icon="movement.methodInfo.icon"
-                              size="13"
+                              size="12"
                             />
                             <span>{{ movement.methodInfo.label }}</span>
                           </span>
 
                           <!-- Hora -->
-                          <span class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium ps-1">
+                          <span class="movement-time-chip text-slate-400 d-inline-flex align-center gap-1 font-weight-medium">
                             <VIcon
                               icon="ri-time-line"
-                              size="13"
+                              size="12"
                             />
                             {{ movement.time }}
                           </span>
@@ -983,9 +989,9 @@ onMounted(() => {
                     </div>
 
                     <!-- Derecha: Monto Destacado con Holgura -->
-                    <div class="text-right shrink-0 ps-5">
+                    <div class="movement-amount-container text-right shrink-0 ps-2">
                       <span
-                        class="text-h6 font-weight-bold amount-display"
+                        class="text-body-1 font-weight-bold amount-display"
                         :class="movement.type === 'transfer' ? 'text-info' : (movement.type === 'income' ? 'text-emerald' : 'text-rose')"
                       >
                         {{ movement.type === 'transfer' ? '' : (movement.type === 'income' ? '+' : '-') }}

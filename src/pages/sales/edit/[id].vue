@@ -75,6 +75,9 @@ const sale = ref({
   document_number: '',
   client_id: null,
   vehicle_id: null,
+  work_order_id: null,
+  work_order_number: null,
+  work_order_date: null,
   mileage: null,
   service_date: '',
   payment_status: '',
@@ -110,6 +113,13 @@ const requiredRule = v => (
   v !== '' &&
   !(typeof v === 'number' && Number.isNaN(v))
 ) || 'Campo obligatorio'
+
+const hasDifferentWorkOrderDate = computed(() => {
+  if (!sale.value.work_order_date || !sale.value.service_date) return false
+  const woD = String(sale.value.work_order_date).split('T')[0].split(' ')[0]
+  const svD = String(sale.value.service_date).split('T')[0].split(' ')[0]
+  return woD !== svD
+})
 
 // Helpers
 const getClientName = client => {
@@ -423,6 +433,18 @@ const getPaymentIcon = method => {
   return icons[method] || 'ri-money-dollar-circle-line'
 }
 
+const getProductPriceWithTax = product => {
+  if (!product) return 0
+  const rawPrice = parseFloat(product.price_sale) || parseFloat(product.price) || 0
+  const taxRate = parseFloat(product.tax_rate) || 0
+
+  if (taxRate > 0) {
+    return parseFloat((rawPrice * (1 + (taxRate / 100))).toFixed(2))
+  }
+
+  return parseFloat(rawPrice.toFixed(2))
+}
+
 const onProductSelected = product => {
   if (product && typeof product === 'object') {
     // Caché local para validaciones posteriores
@@ -433,6 +455,13 @@ const onProductSelected = product => {
     const isService = product.item_type === 2 ||
       (product.categorie && product.categorie.title && product.categorie.title.includes('SERVICIO'))
 
+    let calculatedPrice = getProductPriceWithTax(product)
+
+    // Si el producto tiene unidad y factor, calcular el precio dinámico
+    if (product.unit && product.unit.factor && !product.unit.is_base) {
+      calculatedPrice = parseFloat((calculatedPrice * product.unit.factor).toFixed(2))
+    }
+
     const existingItem = sale.value.items.find(i => i.product_id === product.id)
     if (existingItem) {
       existingItem.quantity++
@@ -441,14 +470,18 @@ const onProductSelected = product => {
         product_id: product.id,
         description: product.description || product.name || '',
         quantity: 1,
-        price: product.price_sale || product.price || 0,
+        price: calculatedPrice,
         discount: 0,
         type: isService ? 'service' : 'product',
         sku: product.sku || product.code || '',
+        unit_id: product.unit_id || null,
+        unit: product.unit || null,
       })
     }
     initializePaymentDistribution()
-    searchProduct.value = null
+    nextTick(() => {
+      searchProduct.value = null
+    })
   }
 }
 
@@ -710,6 +743,9 @@ const loadSaleData = async () => {
       document_number: saleData.document_number,
       client_id: saleData.client_id,
       vehicle_id: saleData.vehicle_id,
+      work_order_id: saleData.work_order_id || null,
+      work_order_number: saleData.work_order_number || (saleData.work_order?.number || saleData.workOrder?.number || null),
+      work_order_date: (saleData.work_order?.date || saleData.workOrder?.date) ? formatDateForInput(saleData.work_order?.date || saleData.workOrder?.date) : null,
       mileage: saleData.mileage,
       service_date: initialDate,
       payment_status: saleData.payment_status,
@@ -1595,11 +1631,11 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <!-- Fila 1: Número de documento y Fecha -->
+                <!-- Fila 1: Número de documento, Fecha de Factura y Fecha de OT si difiere -->
                 <VRow>
                   <VCol
                     cols="12"
-                    sm="6"
+                    :sm="hasDifferentWorkOrderDate ? 4 : 6"
                   >
                     <VTextField
                       v-model="sale.document_number"
@@ -1616,12 +1652,12 @@ onMounted(() => {
                   </VCol>
                   <VCol
                     cols="12"
-                    sm="6"
+                    :sm="hasDifferentWorkOrderDate ? 4 : 6"
                   >
                     <VTextField
                       v-model="sale.service_date"
                       :disabled="sale.status === 'canceled'"
-                      label="Fecha de Servicio *"
+                      :label="sale.document_type === 'invoice' ? 'Fecha de Factura *' : 'Fecha de Servicio *'"
                       type="date"
                       :rules="[requiredRule]"
                       variant="outlined"
@@ -1630,6 +1666,26 @@ onMounted(() => {
                       hide-details="auto"
                       required
                       color="primary"
+                    />
+                  </VCol>
+                  <VCol
+                    v-if="hasDifferentWorkOrderDate"
+                    cols="12"
+                    sm="4"
+                  >
+                    <VTextField
+                      :model-value="sale.work_order_date"
+                      label="Fecha Orden de Trabajo"
+                      type="date"
+                      variant="outlined"
+                      density="comfortable"
+                      prepend-inner-icon="ri-calendar-todo-line"
+                      hide-details="auto"
+                      readonly
+                      color="primary"
+                      bg-color="grey-lighten-4"
+                      hint="Fecha original de creación de la O/T"
+                      persistent-hint
                     />
                   </VCol>
 
@@ -2052,7 +2108,7 @@ onMounted(() => {
                             variant="tonal"
                             class="font-weight-bold"
                           >
-                            ${{ parseFloat(item.raw.price_sale || item.raw.price).toFixed(2) }}
+                            ${{ getProductPriceWithTax(item.raw).toFixed(2) }}
                           </VChip>
                         </template>
                       </VListItem>

@@ -668,7 +668,7 @@ onMounted(() => {
       <!-- Paginación -->
       <div
         v-if="totalPages > 1"
-        class="d-flex justify-space-between align-center px-4 py-3 border-t border-light"
+        class="d-flex flex-column flex-sm-row justify-space-between align-center px-4 py-3 border-t border-light gap-3 text-center text-sm-start"
       >
         <div class="text-caption text-medium-emphasis">
           Mostrando {{ credits.length }} de {{ totalItems }} registros
@@ -676,8 +676,12 @@ onMounted(() => {
         <VPagination
           v-model="currentPage"
           :length="totalPages"
-          total-visible="5"
-          density="compact"
+          rounded="circle"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          density="comfortable"
+          color="primary"
+          class="my-0"
           @update:model-value="loadCredits"
         />
       </div>

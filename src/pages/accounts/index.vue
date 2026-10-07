@@ -354,13 +354,13 @@ onMounted(() => {
                 <span>{{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}</span>
               </div>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
               Administración de cuentas bancarias, cajas chicas y saldos financieros
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-3">
+        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
           <VBtn
             title="Actualizar cuentas"
             variant="tonal"
@@ -375,7 +375,7 @@ onMounted(() => {
             variant="elevated"
             size="small"
             prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2"
+            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
             @click="openAccountDialog"
           >
             Nueva Cuenta
@@ -385,7 +385,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
-    <VRow class="mb-5">
+    <VRow class="mb-5 d-none d-sm-flex">
       <!-- Saldo Total Acumulado -->
       <VCol
         cols="12"

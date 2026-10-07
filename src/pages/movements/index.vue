@@ -1042,36 +1042,30 @@ onMounted(() => {
                 {{ totalMovementsCount }} {{ totalMovementsCount === 1 ? 'registro' : 'registros' }}
               </VChip>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
               Administración financiera y control de movimientos de caja y cuentas
             </p>
           </div>
         </div>
 
-        <div class="d-flex align-center gap-3 flex-wrap">
+        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
           <VBtn
             color="secondary"
             variant="tonal"
             size="small"
             prepend-icon="ri-file-pdf-line"
-            class="font-weight-semibold"
+            class="font-weight-semibold flex-grow-1 flex-sm-grow-0"
             :loading="isGeneratingPDF"
             @click="generatePDF"
           >
             Exportar PDF
           </VBtn>
-          <!--
-            <VBtn color="primary" variant="tonal" size="small" prepend-icon="ri-group-line" class="font-weight-semibold"
-            @click="showAporteDialog = true">
-            Aporte Socio
-            </VBtn> 
-          -->
           <VBtn
             color="success"
             variant="elevated"
             size="small"
             prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2"
+            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
             @click="openIncomeDialog"
           >
             Nuevo Ingreso
@@ -1081,7 +1075,7 @@ onMounted(() => {
             variant="elevated"
             size="small"
             prepend-icon="ri-indeterminate-circle-line"
-            class="font-weight-semibold elevation-2"
+            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
             @click="openExpenseDialog"
           >
             Nuevo Egreso
@@ -1091,7 +1085,7 @@ onMounted(() => {
     </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
-    <VRow class="mb-5">
+    <VRow class="mb-5 d-none d-sm-flex">
       <!-- Total Ingresos -->
       <VCol
         cols="12"
@@ -2157,8 +2151,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
           />
         </div>
       </VCard>

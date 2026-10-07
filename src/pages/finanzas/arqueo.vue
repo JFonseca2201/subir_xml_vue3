@@ -642,19 +642,19 @@ onMounted(() => {
                   <span>PENDIENTE POR ARCHIVAR</span>
                 </div>
               </div>
-              <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
                 Cierre diario de control físico de dinero y conciliación bancaria
               </p>
             </div>
           </div>
 
-          <div class="d-flex align-center flex-wrap gap-2">
+          <div class="d-flex align-center flex-wrap gap-2 w-100 w-sm-auto">
             <!-- Botón Buscar / Historial de Cuadres -->
             <VBtn
               variant="tonal"
               color="primary"
               size="small"
-              class="rounded-lg text-none font-weight-bold"
+              class="rounded-lg text-none font-weight-bold flex-grow-1 flex-sm-grow-0"
               prepend-icon="ri-history-line"
               @click="openHistoryDialog"
             >
@@ -2266,7 +2266,7 @@ onMounted(() => {
                 v-if="historyLastPage > 1"
                 v-model="historyPage"
                 :length="historyLastPage"
-                :total-visible="5"
+                :total-visible="$vuetify.display.xs ? 3 : 5"
                 density="compact"
                 size="small"
                 @update:model-value="fetchHistory"

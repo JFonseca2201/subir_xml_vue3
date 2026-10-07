@@ -1131,20 +1131,17 @@ onMounted(() => {
           </VAvatar>
           Ventas y Facturación
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Historial de comprobantes emitidos, notas de venta y facturación electrónica
         </p>
       </div>
 
-      <div
-        class="d-flex gap-3 flex-wrap align-self-md-center align-self-end"
-        style="gap: 12px;"
-      >
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           variant="tonal"
           color="info"
           prepend-icon="ri-wifi-line"
-          class="font-weight-medium"
+          class="font-weight-medium flex-grow-1 flex-md-grow-0"
           @click="isSriStatusDialogVisible = true"
         >
           Estado SRI
@@ -1154,7 +1151,7 @@ onMounted(() => {
           variant="tonal"
           color="secondary"
           prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium"
+          class="font-weight-medium flex-grow-1 flex-md-grow-0"
           :loading="pdfLoading"
           @click="generatePDF"
         >
@@ -1166,7 +1163,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-tools-line"
           to="/work-orders/add"
-          class="font-weight-semibold"
+          class="font-weight-semibold flex-grow-1 flex-md-grow-0"
         >
           Nueva O/T
         </VBtn>
@@ -1175,7 +1172,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-add-line"
           to="/sales/add"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
         >
           Nueva Venta
         </VBtn>
@@ -1184,7 +1181,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs / Pestañas de Filtro Interactivas) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -1807,6 +1804,13 @@ onMounted(() => {
                   class="me-1 text-disabled"
                 />
                 <span class="font-weight-medium">{{ formatDate(item.service_date || item.created_at) }}</span>
+                <span
+                  v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
+                  class="ms-1 text-caption text-disabled"
+                  style="font-size: 0.7rem;"
+                >
+                  (OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }})
+                </span>
               </div>
               <div
                 v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
@@ -2150,11 +2154,21 @@ onMounted(() => {
                     color="medium-emphasis"
                     class="me-1 flex-shrink-0"
                   />
-                  <span
-                    class="text-no-wrap font-weight-medium"
-                    style="white-space: nowrap;"
-                  >{{
-                    formatDate(item.service_date || item.created_at) }}</span>
+                  <div class="d-flex flex-column">
+                    <span
+                      class="text-no-wrap font-weight-medium"
+                      style="white-space: nowrap;"
+                    >{{
+                      formatDate(item.service_date || item.created_at) }}</span>
+                    <span
+                      v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
+                      class="text-caption text-disabled font-weight-medium"
+                      style="font-size: 0.68rem; line-height: 1;"
+                      title="Fecha de creación de la Orden de Trabajo"
+                    >
+                      OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }}
+                    </span>
+                  </div>
                 </div>
               </td>
 
@@ -2422,7 +2436,7 @@ onMounted(() => {
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong class="text-high-emphasis">{{
               totalItems }}</strong> ventas
@@ -2431,8 +2445,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
             @update:model-value="loadSales"
           />
         </div>

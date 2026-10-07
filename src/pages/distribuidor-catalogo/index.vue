@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useDisplay } from 'vuetify'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { usePermissions } from '@/composables/usePermissions'
 import DistributorCatalogImportDialog from '@/components/distribuidor-catalogo/DistributorCatalogImportDialog.vue'
 
+const { xs: isMobileScreen } = useDisplay()
 const { showNotification } = useGlobalToast()
 const { can } = usePermissions()
 
@@ -251,35 +253,35 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="pa-4 pa-sm-6 distributor-catalog-page">
+  <div class="pa-3 pa-sm-6 distributor-catalog-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-5 gap-3 gap-sm-4">
+      <div class="min-w-0">
+        <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center flex-wrap gap-2">
           <VAvatar
-            size="42"
+            size="38"
             color="primary"
             variant="tonal"
             rounded="lg"
-            class="me-3"
+            class="me-1"
           >
             <VIcon
               icon="ri-book-read-line"
-              size="26"
+              size="22"
             />
           </VAvatar>
-          Catálogo de Distribuidores
+          <span>Catálogo de Distribuidores</span>
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 text-caption text-sm-body-2 d-none d-sm-block">
           Consulta de listas de precios, existencias y aplicaciones de repuestos por distribuidor
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-sm-auto mt-2 mt-sm-0">
         <VBtn
           color="primary"
           prepend-icon="ri-upload-cloud-2-line"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-sm-grow-0"
           @click="isImportDialogVisible = true"
         >
           Subir / Importar Lista
@@ -289,7 +291,7 @@ onMounted(async () => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -297,9 +299,9 @@ onMounted(async () => {
         sm="6"
         md="3"
       >
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-3.5 bg-surface d-flex align-center gap-3 h-100">
           <VAvatar
-            size="44"
+            size="40"
             color="primary"
             variant="tonal"
             rounded="lg"
@@ -307,14 +309,14 @@ onMounted(async () => {
           >
             <VIcon
               icon="ri-box-3-line"
-              size="24"
+              size="22"
             />
           </VAvatar>
-          <div class="min-w-0 flex-grow-1">
+          <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Total Productos
             </div>
-            <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
+            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-high-emphasis text-truncate">
               {{ stats.total_products }} <span class="text-caption text-disabled font-weight-regular">ítems</span>
             </div>
           </div>
@@ -326,9 +328,9 @@ onMounted(async () => {
         sm="6"
         md="3"
       >
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-3.5 bg-surface d-flex align-center gap-3 h-100">
           <VAvatar
-            size="44"
+            size="40"
             color="info"
             variant="tonal"
             rounded="lg"
@@ -336,14 +338,14 @@ onMounted(async () => {
           >
             <VIcon
               icon="ri-folder-2-line"
-              size="24"
+              size="22"
             />
           </VAvatar>
-          <div class="min-w-0 flex-grow-1">
+          <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Categorías
             </div>
-            <div class="text-h6 font-weight-bold text-info text-truncate">
+            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-info text-truncate">
               {{ stats.total_categories }} <span class="text-caption text-disabled font-weight-regular">grupos</span>
             </div>
           </div>
@@ -355,9 +357,9 @@ onMounted(async () => {
         sm="6"
         md="3"
       >
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-3.5 bg-surface d-flex align-center gap-3 h-100">
           <VAvatar
-            size="44"
+            size="40"
             color="success"
             variant="tonal"
             rounded="lg"
@@ -365,14 +367,14 @@ onMounted(async () => {
           >
             <VIcon
               icon="ri-checkbox-circle-line"
-              size="24"
+              size="22"
             />
           </VAvatar>
-          <div class="min-w-0 flex-grow-1">
+          <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               En Stock / Disponibles
             </div>
-            <div class="text-h6 font-weight-bold text-success text-truncate">
+            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-success text-truncate">
               {{ stats.total_available }} <span class="text-caption text-disabled font-weight-regular">ítems</span>
             </div>
           </div>
@@ -384,9 +386,9 @@ onMounted(async () => {
         sm="6"
         md="3"
       >
-        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
+        <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3 pa-sm-3.5 bg-surface d-flex align-center gap-3 h-100">
           <VAvatar
-            size="44"
+            size="40"
             color="warning"
             variant="tonal"
             rounded="lg"
@@ -394,14 +396,14 @@ onMounted(async () => {
           >
             <VIcon
               icon="ri-error-warning-line"
-              size="24"
+              size="22"
             />
           </VAvatar>
-          <div class="min-w-0 flex-grow-1">
+          <div class="min-w-0 flex-grow-1 overflow-hidden">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Stock Bajo / Tránsito
             </div>
-            <div class="text-h6 font-weight-bold text-warning text-truncate">
+            <div class="text-subtitle-1 text-sm-h6 font-weight-bold text-warning text-truncate">
               {{ stats.total_low_stock + stats.total_transit }} <span class="text-caption text-disabled font-weight-regular">críticos</span>
             </div>
           </div>
@@ -410,8 +412,8 @@ onMounted(async () => {
     </VRow>
 
     <!-- Filtros y Búsqueda -->
-    <VCard class="rounded-xl border elevation-0 mb-5 bg-surface">
-      <VCardText class="pa-4">
+    <VCard class="rounded-xl border elevation-0 mb-4 bg-surface">
+      <VCardText class="pa-3 pa-sm-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
             <VIcon
@@ -423,6 +425,7 @@ onMounted(async () => {
           </div>
 
           <VBtn
+            v-if="hasActiveFilters"
             variant="text"
             color="error"
             size="small"
@@ -438,16 +441,17 @@ onMounted(async () => {
           dense
           class="gap-y-3"
         >
-          <!-- 3. Búsqueda -->
+          <!-- 1. Búsqueda -->
           <VCol
             cols="12"
             sm="6"
-            md="5"
+            md="4"
+            lg="4"
           >
             <VTextField
               v-model="searchQuery"
               label="Buscar en catálogo"
-              placeholder="Código o aplicación vehicular..."
+              placeholder="Código o aplicación..."
               prepend-inner-icon="ri-search-2-line"
               variant="outlined"
               density="comfortable"
@@ -456,11 +460,13 @@ onMounted(async () => {
               color="primary"
             />
           </VCol>
-          <!-- 1. Distribuidor Activo -->
+
+          <!-- 2. Distribuidor Activo -->
           <VCol
             cols="12"
             sm="6"
             md="3"
+            lg="3"
           >
             <VSelect
               v-model="selectedSupplierId"
@@ -504,12 +510,12 @@ onMounted(async () => {
             </VSelect>
           </VCol>
 
-
-          <!-- 2. Categoría -->
+          <!-- 3. Categoría -->
           <VCol
             cols="12"
             sm="6"
-            md="2"
+            md="3"
+            lg="3"
           >
             <VAutocomplete
               v-model="selectedCategory"
@@ -532,6 +538,7 @@ onMounted(async () => {
             cols="12"
             sm="6"
             md="2"
+            lg="2"
           >
             <VSelect
               v-model="selectedStockStatus"
@@ -552,109 +559,128 @@ onMounted(async () => {
     </VCard>
 
     <!-- ESTADO DE CARGA SKELETON -->
-    <VCard
-      v-if="isLoading"
-      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
-    >
-      <VTable class="distributor-catalog-table">
-        <thead>
-          <tr class="bg-grey-lighten-5">
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="width: 140px; min-width: 130px;"
+    <div v-if="isLoading">
+      <!-- Skeleton Móvil (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="n in 5"
+          :key="'skel-mob-' + n"
+          class="rounded-xl border pa-3.5 bg-surface elevation-0"
+        >
+          <div class="d-flex align-center justify-space-between mb-2.5">
+            <div class="shimmer-line w-40" />
+            <div class="shimmer-chip" />
+          </div>
+          <div class="shimmer-line w-80 mb-2" />
+          <div class="shimmer-line w-60 mb-3" />
+          <div class="d-flex align-center justify-space-between pt-2 border-t">
+            <div class="shimmer-line w-30" />
+            <div class="shimmer-line w-30" />
+          </div>
+        </VCard>
+      </div>
+
+      <!-- Skeleton Escritorio (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable class="distributor-catalog-table">
+          <thead>
+            <tr class="bg-grey-lighten-5">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 140px;"
+              >
+                Código
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+              >
+                Descripción / Aplicación Vehicular
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 130px;"
+              >
+                Referencia
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 180px;"
+              >
+                Categoría
+              </th>
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 130px;"
+              >
+                Precio
+              </th>
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 150px;"
+              >
+                Disponibilidad
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="n in 6"
+              :key="n"
+              class="skeleton-row align-middle"
             >
-              Código
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="min-width: 280px;"
-            >
-              Descripción / Aplicación Vehicular
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="width: 130px; min-width: 110px;"
-            >
-              Referencia
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="min-width: 200px;"
-            >
-              Categoría
-            </th>
-            <th
-              class="text-right font-weight-bold text-uppercase py-3"
-              style="width: 130px; min-width: 110px;"
-            >
-              Precio
-            </th>
-            <th
-              class="text-center font-weight-bold text-uppercase py-3"
-              style="width: 160px; min-width: 140px;"
-            >
-              Disponibilidad
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="n in 6"
-            :key="n"
-            class="skeleton-row align-middle"
-          >
-            <td
-              class="py-4"
-              style="width: 140px;"
-            >
-              <div class="shimmer-line w-75" />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-80 mb-2" />
-              <div class="shimmer-line w-50" />
-            </td>
-            <td
-              class="py-4"
-              style="width: 130px;"
-            >
-              <div class="shimmer-line w-60" />
-            </td>
-            <td
-              class="py-4"
-              style="min-width: 200px;"
-            >
-              <div class="shimmer-line w-60" />
-            </td>
-            <td
-              class="py-4 text-right"
-              style="width: 130px;"
-            >
-              <div class="shimmer-line w-60 ms-auto" />
-            </td>
-            <td
-              class="py-4 text-center"
-              style="width: 160px;"
-            >
-              <div class="shimmer-chip mx-auto" />
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
+              <td
+                class="py-4"
+                style="width: 140px;"
+              >
+                <div class="shimmer-line w-75" />
+              </td>
+              <td class="py-4">
+                <div class="shimmer-line w-80 mb-2" />
+                <div class="shimmer-line w-50" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 130px;"
+              >
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4"
+                style="width: 180px;"
+              >
+                <div class="shimmer-line w-60" />
+              </td>
+              <td
+                class="py-4 text-right"
+                style="width: 130px;"
+              >
+                <div class="shimmer-line w-60 ms-auto" />
+              </td>
+              <td
+                class="py-4 text-center"
+                style="width: 150px;"
+              >
+                <div class="shimmer-chip mx-auto" />
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+    </div>
 
     <!-- ESTADO VACÍO -->
     <VCard
       v-else-if="items.length === 0"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface"
+      class="rounded-xl border elevation-0 pa-8 pa-sm-10 text-center bg-surface"
     >
       <VAvatar
-        size="72"
+        size="64"
         color="primary"
         variant="tonal"
         class="mb-3"
       >
         <VIcon
-          size="36"
+          size="32"
           icon="ri-search-line"
         />
       </VAvatar>
@@ -667,7 +693,7 @@ onMounted(async () => {
       >
         Prueba con otros términos de búsqueda o sube una nueva lista de precios para este distribuidor.
       </p>
-      <div class="d-flex justify-center gap-3">
+      <div class="d-flex flex-wrap justify-center gap-3">
         <VBtn
           v-if="hasActiveFilters"
           variant="outlined"
@@ -686,157 +712,246 @@ onMounted(async () => {
       </div>
     </VCard>
 
-    <!-- TABLA PRINCIPAL DE DATOS -->
-    <VCard
-      v-else
-      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
-    >
-      <VTable
-        hover
-        class="distributor-catalog-table overflow-x-auto"
-      >
-        <thead>
-          <tr class="bg-grey-lighten-5">
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="width: 140px; min-width: 130px;"
+    <!-- LISTADO PRINCIPAL DE PRODUCTOS (MÓVIL Y ESCRITORIO) -->
+    <div v-else>
+      <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
+      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+        <VCard
+          v-for="item in items"
+          :key="'mob-item-' + item.id"
+          class="mobile-catalog-card elevation-0 border rounded-xl pa-3.5 bg-surface"
+        >
+          <!-- Fila 1: Código con acción copiar + Pastilla de disponibilidad -->
+          <div class="d-flex align-center justify-space-between gap-2 mb-2">
+            <div
+              class="d-inline-flex align-center cursor-pointer code-copy-action text-primary min-w-0"
+              title="Clic para copiar código"
+              @click="copyToClipboard(item.code)"
             >
-              Código
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="min-width: 280px;"
-            >
-              Descripción / Aplicación Vehicular
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="width: 130px; min-width: 110px;"
-            >
-              Referencia
-            </th>
-            <th
-              class="text-left font-weight-bold text-uppercase py-3"
-              style="min-width: 200px;"
-            >
-              Categoría
-            </th>
-            <th
-              class="text-right font-weight-bold text-uppercase py-3"
-              style="width: 130px; min-width: 110px;"
-            >
-              Precio
-            </th>
-            <th
-              class="text-center font-weight-bold text-uppercase py-3"
-              style="width: 160px; min-width: 140px;"
-            >
-              Disponibilidad
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in items"
-            :key="item.id"
-            class="catalog-row"
-          >
-            <!-- Código -->
-            <td
-              class="py-3"
-              style="white-space: nowrap;"
-            >
-              <div
-                class="d-inline-flex align-center cursor-pointer code-copy-action text-primary"
-                title="Clic para copiar código"
-                @click="copyToClipboard(item.code)"
-              >
-                <VIcon
-                  icon="ri-file-copy-line"
-                  size="16"
-                  class="me-1.5 copy-action-icon"
-                />
-                <span class="font-mono font-weight-bold text-body-2">
-                  {{ item.code }}
-                </span>
-              </div>
-            </td>
+              <VIcon
+                icon="ri-file-copy-line"
+                size="16"
+                class="me-1.5 copy-action-icon flex-shrink-0"
+              />
+              <span class="font-mono font-weight-bold text-body-2 text-truncate">
+                {{ item.code }}
+              </span>
+            </div>
 
-            <!-- Descripción -->
-            <td class="py-3">
-              <div
-                class="font-weight-semibold text-high-emphasis text-body-2"
-                :title="item.description"
-              >
-                {{ item.description }}
-              </div>
-            </td>
-
-            <!-- Referencia -->
-            <td
-              class="py-3"
-              style="white-space: nowrap;"
+            <div
+              class="status-pill-clean flex-shrink-0"
+              :class="getStockPillClass(item.stock_status)"
             >
+              <span class="status-dot" />
+              <span>{{ item.stock_status }}</span>
+            </div>
+          </div>
+
+          <!-- Fila 2: Descripción y Aplicación Vehicular -->
+          <div class="text-body-2 font-weight-semibold text-high-emphasis mb-2 text-wrap-break">
+            {{ item.description }}
+          </div>
+
+          <!-- Fila 3: Metadatos (Categoría + Referencia) -->
+          <div class="d-flex flex-wrap align-center gap-1.5 mb-2.5">
+            <VChip
+              size="x-small"
+              variant="tonal"
+              color="primary"
+              class="font-weight-medium"
+            >
+              <VIcon
+                icon="ri-price-tag-3-line"
+                size="12"
+                class="me-1"
+              />
               <span
-                v-if="item.reference"
-                class="font-mono text-caption px-2 py-0.5 rounded bg-slate-100 font-weight-bold text-slate-700"
-              >
-                {{ item.reference }}
-              </span>
-              <span
-                v-else
-                class="text-disabled text-caption"
-              >-</span>
-            </td>
+                class="text-truncate"
+                style="max-width: 180px;"
+              >{{ item.category_name || item.category_code || 'General' }}</span>
+            </VChip>
 
-            <!-- Categoría (Nombre de la categoría) -->
-            <td class="py-3">
-              <span class="font-weight-bold text-high-emphasis text-body-2">
-                {{ item.category_name || item.category_code || '-' }}
-              </span>
-            </td>
-
-            <!-- Precio -->
-            <td
-              class="py-3 text-right"
-              style="white-space: nowrap;"
+            <VChip
+              v-if="item.reference"
+              size="x-small"
+              variant="outlined"
+              color="secondary"
+              class="font-mono font-weight-bold"
             >
-              <span class="font-weight-black font-mono text-body-1 text-emerald-700">
-                {{ formatCurrency(item.price) }}
-              </span>
-            </td>
+              <VIcon
+                icon="ri-hashtag"
+                size="12"
+                class="me-0.5"
+              />
+              Ref: {{ item.reference }}
+            </VChip>
+          </div>
 
-            <!-- Disponibilidad (Estilo Status Cliente con punto) -->
-            <td
-              class="py-3 text-center"
-              style="white-space: nowrap;"
-            >
-              <div
-                class="status-pill-clean"
-                :class="getStockPillClass(item.stock_status)"
-              >
-                <span class="status-dot" />
-                <span>{{ item.stock_status }}</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-
-      <!-- Paginación -->
-      <div class="pa-4 border-t bg-surface d-flex flex-column flex-sm-row align-center justify-space-between gap-3">
-        <div class="text-body-2 text-medium-emphasis">
-          Mostrando <strong>{{ items.length }}</strong> de <strong>{{ totalItems }}</strong> productos
-        </div>
-        <VPagination
-          v-model="currentPage"
-          :length="totalPages"
-          rounded="circle"
-          :total-visible="7"
-          color="primary"
-        />
+          <!-- Fila 4: Footer de la tarjeta con Precio -->
+          <div class="d-flex align-center justify-space-between pt-2 border-t mt-1">
+            <span class="text-caption text-medium-emphasis font-weight-medium">
+              Precio Distribuidor:
+            </span>
+            <span class="font-weight-black font-mono text-h6 text-emerald-700">
+              {{ formatCurrency(item.price) }}
+            </span>
+          </div>
+        </VCard>
       </div>
-    </VCard>
+
+      <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
+      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
+        <VTable
+          hover
+          class="distributor-catalog-table"
+        >
+          <thead>
+            <tr class="bg-grey-lighten-5">
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 140px;"
+              >
+                Código
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+              >
+                Descripción / Aplicación Vehicular
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 130px;"
+              >
+                Referencia
+              </th>
+              <th
+                class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 190px;"
+              >
+                Categoría
+              </th>
+              <th
+                class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 130px;"
+              >
+                Precio
+              </th>
+              <th
+                class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 150px;"
+              >
+                Disponibilidad
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in items"
+              :key="item.id"
+              class="catalog-row"
+            >
+              <!-- Código -->
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="d-inline-flex align-center cursor-pointer code-copy-action text-primary"
+                  title="Clic para copiar código"
+                  @click="copyToClipboard(item.code)"
+                >
+                  <VIcon
+                    icon="ri-file-copy-line"
+                    size="16"
+                    class="me-1.5 copy-action-icon"
+                  />
+                  <span class="font-mono font-weight-bold text-body-2">
+                    {{ item.code }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Descripción -->
+              <td class="py-3">
+                <div
+                  class="font-weight-semibold text-high-emphasis text-body-2 text-wrap-break"
+                  :title="item.description"
+                >
+                  {{ item.description }}
+                </div>
+              </td>
+
+              <!-- Referencia -->
+              <td
+                class="py-3"
+                style="white-space: nowrap;"
+              >
+                <span
+                  v-if="item.reference"
+                  class="font-mono text-caption px-2 py-0.5 rounded bg-slate-100 font-weight-bold text-slate-700"
+                >
+                  {{ item.reference }}
+                </span>
+                <span
+                  v-else
+                  class="text-disabled text-caption"
+                >-</span>
+              </td>
+
+              <!-- Categoría -->
+              <td class="py-3">
+                <span class="font-weight-bold text-high-emphasis text-body-2">
+                  {{ item.category_name || item.category_code || '-' }}
+                </span>
+              </td>
+
+              <!-- Precio -->
+              <td
+                class="py-3 text-right"
+                style="white-space: nowrap;"
+              >
+                <span class="font-weight-black font-mono text-body-1 text-emerald-700">
+                  {{ formatCurrency(item.price) }}
+                </span>
+              </td>
+
+              <!-- Disponibilidad -->
+              <td
+                class="py-3 text-center"
+                style="white-space: nowrap;"
+              >
+                <div
+                  class="status-pill-clean"
+                  :class="getStockPillClass(item.stock_status)"
+                >
+                  <span class="status-dot" />
+                  <span>{{ item.stock_status }}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </VCard>
+
+      <!-- Paginación Global Responsiva -->
+      <VCard class="rounded-xl border elevation-0 pa-3 pa-sm-4 bg-surface mt-4">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 text-center text-sm-start">
+          <div class="text-body-2 text-medium-emphasis">
+            Mostrando <strong>{{ items.length }}</strong> de <strong>{{ totalItems }}</strong> productos
+          </div>
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            rounded="circle"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
+            color="primary"
+            class="my-0"
+          />
+        </div>
+      </VCard>
+    </div>
 
     <!-- Modal de Importación -->
     <DistributorCatalogImportDialog
@@ -1034,5 +1149,18 @@ onMounted(async () => {
   .status-dot {
     background-color: #94a3b8 !important;
   }
+}
+
+.mobile-catalog-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  }
+}
+
+.text-wrap-break {
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 </style>

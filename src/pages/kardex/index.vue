@@ -449,16 +449,16 @@ definePage({ meta: { permission: 'kardex' } })
           />
           Kardex
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Movimientos financieros consolidados
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           color="error"
           variant="tonal"
           prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium"
+          class="font-weight-medium flex-grow-1 flex-md-grow-0"
           @click="exportKardexPDF"
         >
           Exportar PDF
@@ -466,6 +466,7 @@ definePage({ meta: { permission: 'kardex' } })
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"
+          class="flex-grow-1 flex-md-grow-0"
           :loading="isRefreshing"
           :disabled="isFiltering || isClearing"
           @click="loadKardex('refresh')"

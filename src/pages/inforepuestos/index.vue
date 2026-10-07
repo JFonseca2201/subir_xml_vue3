@@ -228,7 +228,7 @@ onMounted(() => {
           </VAvatar>
           Gestión y Búsqueda de Repuestos por Vehículo
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Encuentra repuestos compatibles por modelo de vehículo con sus categorías, marcas y precios de compra y venta.
         </p>
       </div>
@@ -238,7 +238,7 @@ onMounted(() => {
         color="primary"
         prepend-icon="ri-add-line"
         size="large"
-        class="elevation-2 font-weight-bold rounded-lg"
+        class="elevation-2 font-weight-bold rounded-lg flex-grow-1 flex-sm-grow-0 w-100 w-sm-auto"
         @click="openCreate"
       >
         Registrar Búsqueda
@@ -784,7 +784,7 @@ onMounted(() => {
 
       <!-- Paginación -->
       <VCard class="rounded-xl border elevation-0 pa-4 bg-surface mt-2">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ requests.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> vehículos registrados
           </div>
@@ -792,8 +792,11 @@ onMounted(() => {
             v-model="page"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
             @update:model-value="handlePageChange"
           />
         </div>

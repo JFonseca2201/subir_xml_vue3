@@ -276,18 +276,18 @@ onMounted(() => {
           </VAvatar>
           Gestión de Vehículos
         </h1>
-        <p class="text-medium-emphasis mb-0">
+        <p class="text-medium-emphasis mb-0 d-none d-sm-block">
           Control de parque automotor, información técnica de clientes y servicios en taller
         </p>
       </div>
 
-      <div class="d-flex gap-3 flex-wrap align-self-md-center align-self-end">
+      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
         <VBtn
           v-if="can('import_xml') || can('register_car')"
           color="secondary"
           variant="tonal"
           prepend-icon="ri-upload-cloud-2-line"
-          class="font-weight-medium"
+          class="font-weight-medium flex-grow-1 flex-md-grow-0"
           @click="isImportDialogVisible = true"
         >
           Importar
@@ -297,7 +297,7 @@ onMounted(() => {
           v-if="can('register_car')"
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold"
+          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
           @click="addVehicle"
         >
           Agregar Vehículo
@@ -307,7 +307,7 @@ onMounted(() => {
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
-      class="mb-4"
+      class="mb-4 d-none d-sm-flex"
       dense
     >
       <VCol
@@ -1085,7 +1085,7 @@ onMounted(() => {
         v-if="totalPages > 1 || totalItems > 0"
         class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
       >
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ vehicles.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> vehículos
           </div>
@@ -1094,8 +1094,11 @@ onMounted(() => {
             v-model="currentPage"
             :length="totalPages"
             rounded="circle"
-            :total-visible="7"
+            :total-visible="$vuetify.display.xs ? 4 : 7"
+            :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable"
             color="primary"
+            class="my-0"
             @update:model-value="loadVehicles"
           />
         </div>
