@@ -469,136 +469,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="isLoading">
-      <!-- Skeleton Móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-inv-' + n"
-          class="mobile-invoice-card elevation-0 pa-4"
-        >
-          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 100px; height: 16px;"
-            />
-            <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 38px; height: 38px; border-radius: 8px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-40"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div
-            class="shimmer-line w-100 mb-2"
-            style="height: 36px; border-radius: 8px;"
-          />
-          <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-line"
-              style="width: 60px; height: 16px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 80px; height: 24px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="i in 5"
-              :key="i"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4 text-center"
-                style="width: 50px;"
-              >
-                <div
-                  class="shimmer-line mx-auto"
-                  style="width: 24px;"
-                />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 150px;"
-              >
-                <div class="shimmer-line w-60" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 110px;"
-              >
-                <div class="shimmer-line w-50 ms-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 110px;"
-              >
-                <div class="shimmer-line w-50 ms-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-60 ms-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 120px;"
-              >
-                <div class="shimmer-chip mx-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 120px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay facturas) -->
     <VCard
-      v-else-if="!list_invoices || list_invoices.length === 0"
+      v-if="!loading && (!list_invoices || list_invoices.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -641,15 +514,73 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE COMPRAS (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE COMPRAS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="(invoice, index) in list_invoices"
-          :key="'mob-inv-' + (invoice.id || index)"
-          class="mobile-invoice-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-inv-' + n"
+            class="mobile-invoice-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+              <div
+                class="shimmer-line"
+                style="width: 100px; height: 16px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div
+                class="shimmer-circle"
+                style="width: 38px; height: 38px; border-radius: 8px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-75 mb-2"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-40"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div
+              class="shimmer-line w-100 mb-2"
+              style="height: 36px; border-radius: 8px;"
+            />
+            <div class="d-flex justify-space-between pt-2 border-t">
+              <div
+                class="shimmer-line"
+                style="width: 60px; height: 16px;"
+              />
+              <div
+                class="shimmer-chip"
+                style="width: 80px; height: 24px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de facturas -->
+        <template v-else>
+          <VCard
+            v-for="(invoice, index) in list_invoices"
+            :key="'mob-inv-' + (invoice.id || index)"
+            class="mobile-invoice-card elevation-0"
+          >
           <!-- Cabecera Móvil: N° Factura + Fecha + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-2 min-w-0">
@@ -681,7 +612,7 @@ onMounted(() => {
                 color="info"
                 variant="tonal"
                 icon="ri-eye-line"
-                title="Ver Factura"
+                title="Ver Ficha"
                 @click="showItem(invoice)"
               />
               <VBtn
@@ -695,8 +626,8 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Proveedor Móvil -->
-          <div class="d-flex align-start gap-3 mb-2.5">
+          <!-- Proveedor -->
+          <div class="d-flex align-center gap-3 mb-2.5">
             <VAvatar
               size="38"
               color="primary"
@@ -774,6 +705,7 @@ onMounted(() => {
             </div>
           </div>
         </VCard>
+        </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
@@ -841,169 +773,219 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="(invoice, index) in list_invoices"
-              :key="invoice.id"
-              class="invoice-table-row"
-            >
-              <!-- Índice -->
-              <td class="text-center py-3">
-                <span class="text-caption font-mono font-weight-bold text-disabled">
-                  {{ (currentPage - 1) * (perPage || 10) + index + 1 }}
-                </span>
-              </td>
-
-              <!-- Proveedor -->
-              <td class="py-3">
-                <div class="d-flex align-center">
-                  <VAvatar
-                    size="36"
-                    color="primary"
-                    variant="tonal"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0 me-4"
-                  >
-                    <VIcon
-                      icon="ri-store-2-line"
-                      size="20"
-                    />
-                  </VAvatar>
-                  <div class="min-w-0">
-                    <div
-                      class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                      style="max-width: 260px;"
-                      :title="invoice.supplier?.name || 'Proveedor no registrado'"
-                    >
-                      {{ invoice.supplier?.name || 'Proveedor no registrado' }}
-                    </div>
-                    <div
-                      v-if="invoice.supplier?.ruc"
-                      class="text-caption text-medium-emphasis font-mono"
-                    >
-                      RUC: {{ invoice.supplier.ruc }}
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-inv-row-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-4 text-center" style="width: 50px;">
+                  <div class="shimmer-line mx-auto" style="width: 24px; height: 16px;" />
+                </td>
+                <td class="py-4">
+                  <div class="d-flex align-center">
+                    <div class="shimmer-circle me-4" style="width: 36px; height: 36px; border-radius: 8px;" />
+                    <div class="flex-grow-1">
+                      <div class="shimmer-line mb-1.5" style="width: 140px; height: 16px;" />
+                      <div class="shimmer-line" style="width: 90px; height: 12px;" />
                     </div>
                   </div>
-                </div>
-              </td>
-
-              <!-- Factura -->
-              <td class="py-3">
-                <span
-                  class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
-                  @click="showItem(invoice)"
-                >
-                  {{ invoice.invoice_number || 'S/N' }}
-                </span>
-              </td>
-
-              <!-- Fecha -->
-              <td
-                class="py-3"
-                style="white-space: nowrap;"
+                </td>
+                <td class="py-4" style="width: 160px;">
+                  <div class="shimmer-line" style="width: 110px; height: 16px;" />
+                </td>
+                <td class="py-4" style="width: 145px;">
+                  <div class="shimmer-line" style="width: 95px; height: 14px;" />
+                </td>
+                <td class="text-right py-4" style="width: 110px;">
+                  <div class="shimmer-line ms-auto" style="width: 60px; height: 14px;" />
+                </td>
+                <td class="text-right py-4" style="width: 110px;">
+                  <div class="shimmer-line ms-auto" style="width: 50px; height: 14px;" />
+                </td>
+                <td class="text-right py-4" style="width: 120px;">
+                  <div class="shimmer-line ms-auto" style="width: 70px; height: 16px;" />
+                </td>
+                <td class="text-center py-4" style="width: 120px;">
+                  <div class="shimmer-chip mx-auto" style="width: 80px; height: 24px;" />
+                </td>
+                <td class="text-center py-4" style="width: 120px;">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="(invoice, index) in list_invoices"
+                :key="invoice.id"
+                class="invoice-table-row"
               >
-                <div
-                  class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                <!-- Índice -->
+                <td class="text-center py-3">
+                  <span class="text-caption font-mono font-weight-bold text-disabled">
+                    {{ (currentPage - 1) * (perPage || 10) + index + 1 }}
+                  </span>
+                </td>
+
+                <!-- Proveedor -->
+                <td class="py-3">
+                  <div class="d-flex align-center">
+                    <VAvatar
+                      size="36"
+                      color="primary"
+                      variant="tonal"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0 me-4"
+                    >
+                      <VIcon
+                        icon="ri-store-2-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div class="min-w-0">
+                      <div
+                        class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                        style="max-width: 260px;"
+                        :title="invoice.supplier?.name || 'Proveedor no registrado'"
+                      >
+                        {{ invoice.supplier?.name || 'Proveedor no registrado' }}
+                      </div>
+                      <div
+                        v-if="invoice.supplier?.ruc"
+                        class="text-caption text-medium-emphasis font-mono"
+                      >
+                        RUC: {{ invoice.supplier.ruc }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Factura -->
+                <td class="py-3">
+                  <span
+                    class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
+                    @click="showItem(invoice)"
+                  >
+                    {{ invoice.invoice_number || 'S/N' }}
+                  </span>
+                </td>
+
+                <!-- Fecha -->
+                <td
+                  class="py-3"
                   style="white-space: nowrap;"
                 >
-                  <VIcon
-                    icon="ri-calendar-line"
-                    size="16"
-                    color="medium-emphasis"
-                    class="me-1 flex-shrink-0"
-                  />
-                  <span
-                    class="text-no-wrap font-weight-medium"
+                  <div
+                    class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
                     style="white-space: nowrap;"
-                  >{{ formatDate(invoice.issue_date) }}</span>
-                </div>
-              </td>
+                  >
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="16"
+                      color="medium-emphasis"
+                      class="me-1 flex-shrink-0"
+                    />
+                    <span
+                      class="text-no-wrap font-weight-medium"
+                      style="white-space: nowrap;"
+                    >{{ formatDate(invoice.issue_date) }}</span>
+                  </div>
+                </td>
 
-              <!-- Subtotal -->
-              <td class="text-right py-3">
-                <span class="font-mono font-weight-medium text-body-2 text-high-emphasis">
-                  ${{ Number(invoice.subtotal || 0).toFixed(2) }}
-                </span>
-              </td>
+                <!-- Subtotal -->
+                <td class="text-right py-3">
+                  <span class="font-mono font-weight-medium text-body-2 text-high-emphasis">
+                    ${{ Number(invoice.subtotal || 0).toFixed(2) }}
+                  </span>
+                </td>
 
-              <!-- IVA -->
-              <td class="text-right py-3">
-                <span class="font-mono font-weight-medium text-body-2 text-medium-emphasis">
-                  ${{ Number(invoice.tax || 0).toFixed(2) }}
-                </span>
-              </td>
+                <!-- IVA -->
+                <td class="text-right py-3">
+                  <span class="font-mono font-weight-medium text-body-2 text-medium-emphasis">
+                    ${{ Number(invoice.tax || 0).toFixed(2) }}
+                  </span>
+                </td>
 
-              <!-- Total -->
-              <td class="text-right py-3">
-                <span class="font-mono font-weight-bold text-body-1 text-success">
-                  ${{ Number(invoice.total || 0).toFixed(2) }}
-                </span>
-              </td>
+                <!-- Total -->
+                <td class="text-right py-3">
+                  <span class="font-mono font-weight-bold text-body-1 text-success">
+                    ${{ Number(invoice.total || 0).toFixed(2) }}
+                  </span>
+                </td>
 
-              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
-              >
-                <div
-                  class="status-pill-clean"
-                  :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
+                <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
                 >
-                  <span class="status-dot" />
-                  <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
-                </div>
-              </td>
+                  <div
+                    class="status-pill-clean"
+                    :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
+                  </div>
+                </td>
 
-              <!-- Acciones -->
-              <td class="text-center py-3">
-                <div class="d-flex justify-center align-center gap-1">
-                  <!-- Procesar Factura -->
-                  <VBtn
-                    v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    icon="ri-check-line"
-                    title="Procesar Factura"
-                    @click="processInvoice(invoice)"
-                  />
-                  <VBtn
-                    v-else
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    icon="ri-file-check-line"
-                    title="Factura Procesada"
-                    disabled
-                  />
+                <!-- Acciones -->
+                <td class="text-center py-3">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <!-- Procesar Factura -->
+                    <VBtn
+                      v-if="!invoice.invoice_process || invoice.invoice_process === 2"
+                      size="small"
+                      color="success"
+                      variant="tonal"
+                      icon="ri-check-line"
+                      title="Procesar Factura"
+                      @click="processInvoice(invoice)"
+                    />
+                    <VBtn
+                      v-else
+                      size="small"
+                      color="success"
+                      variant="tonal"
+                      icon="ri-file-check-line"
+                      title="Factura Procesada"
+                      disabled
+                    />
 
-                  <!-- Ver Detalle -->
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Factura"
-                    @click="showItem(invoice)"
-                  />
+                    <!-- Ver Detalle -->
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-eye-line"
+                      title="Ver Factura"
+                      @click="showItem(invoice)"
+                    />
 
-                  <!-- Eliminar Factura -->
-                  <VBtn
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Factura"
-                    @click="deleteInvoice(invoice)"
-                  />
-                </div>
-              </td>
-            </tr>
+                    <!-- Eliminar Factura -->
+                    <VBtn
+                      size="small"
+                      color="error"
+                      variant="tonal"
+                      icon="ri-delete-bin-line"
+                      title="Eliminar Factura"
+                      @click="deleteInvoice(invoice)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
 
       <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <VCard
+        v-if="totalPage > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_invoices.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> facturas
@@ -1011,6 +993,7 @@ onMounted(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPage"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

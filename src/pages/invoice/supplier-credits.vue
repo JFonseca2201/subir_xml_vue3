@@ -410,11 +410,44 @@ onMounted(() => {
       <div v-else>
         <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
         <div class="d-md-none d-flex flex-column gap-3 pa-3">
-          <div
-            v-for="item in credits"
-            :key="item.id"
-            class="mobile-credit-card"
-          >
+          <!-- Skeleton Móvil mientras carga -->
+          <template v-if="loading">
+            <div
+              v-for="n in 4"
+              :key="'mob-skel-cred-' + n"
+              class="mobile-credit-card pa-4"
+            >
+              <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
+                <div class="shimmer-chip" style="width: 100px; height: 22px;" />
+                <div class="d-flex gap-1">
+                  <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
+                  <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
+                </div>
+              </div>
+              <div class="d-flex align-start gap-3 mb-3">
+                <div class="shimmer-circle" style="width: 36px; height: 36px; border-radius: 8px;" />
+                <div class="flex-grow-1">
+                  <div class="shimmer-line w-75 mb-1.5" style="height: 16px;" />
+                  <div class="shimmer-line w-40" style="height: 12px;" />
+                </div>
+              </div>
+              <div class="bg-grey-lighten-4 pa-2.5 rounded-lg mb-2">
+                <div class="shimmer-line w-100 mb-2" style="height: 14px;" />
+                <div class="shimmer-line w-100" style="height: 18px;" />
+              </div>
+              <div class="d-flex justify-end pt-1">
+                <div class="shimmer-chip" style="width: 80px; height: 22px;" />
+              </div>
+            </div>
+          </template>
+
+          <!-- Tarjetas reales -->
+          <template v-else>
+            <div
+              v-for="item in credits"
+              :key="item.id"
+              class="mobile-credit-card"
+            >
             <!-- Fila Superior: Tipo & Referencia, y Acciones -->
             <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
               <div class="d-flex align-center gap-2 flex-wrap">
@@ -520,6 +553,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
+          </template>
         </div>
 
         <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
@@ -560,106 +594,145 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="item in credits"
-                :key="item.id"
-                class="align-middle border-b border-opacity-25"
-              >
-                <!-- Proveedor -->
-                <td class="py-3 px-4">
-                  <div class="text-body-2 font-weight-bold text-grey-darken-4">
-                    {{ item.supplier?.name || 'Proveedor #' + item.supplier_id }}
-                  </div>
-                  <div
-                    v-if="item.supplier?.ruc"
-                    class="text-caption text-medium-emphasis"
-                  >
-                    RUC: {{ item.supplier.ruc }}
-                  </div>
-                </td>
-
-                <!-- Tipo & Referencia -->
-                <td class="py-3 px-4">
-                  <div class="d-flex align-center gap-2 mb-1">
-                    <VChip
-                      size="x-small"
-                      variant="tonal"
-                      :color="getSourceTypeBadge(item.source_type).color"
-                      class="font-weight-bold"
-                    >
-                      {{ getSourceTypeBadge(item.source_type).text }}
-                    </VChip>
-                  </div>
-                  <div class="text-caption font-mono font-weight-medium text-grey-darken-3">
-                    {{ item.reference_number || 'Sin ref.' }}
-                  </div>
-                </td>
-
-                <!-- Monto Original -->
-                <td class="text-right py-3 px-4 text-body-2 font-weight-medium text-grey-darken-3">
-                  {{ formatMoney(item.amount) }}
-                </td>
-
-                <!-- Monto Usado -->
-                <td class="text-right py-3 px-4 text-body-2 text-medium-emphasis">
-                  {{ formatMoney(item.used_amount) }}
-                </td>
-
-                <!-- Saldo Disponible -->
-                <td class="text-right py-3 px-4">
-                  <span
-                    class="text-body-1 font-weight-bold"
-                    :class="Number(item.remaining_balance) > 0 ? 'text-success' : 'text-grey-darken-1'"
-                  >
-                    {{ formatMoney(item.remaining_balance) }}
-                  </span>
-                </td>
-
-                <!-- Estado -->
-                <td
-                  class="text-center py-3 px-4"
-                  style="white-space: nowrap;"
+              <template v-if="loading">
+                <tr
+                  v-for="n in 5"
+                  :key="'skel-cred-row-' + n"
+                  class="skeleton-row align-middle border-b border-opacity-25"
                 >
-                  <div
-                    class="status-pill-clean"
-                    :class="`status-${item.status}`"
+                  <td class="py-3 px-4">
+                    <div class="shimmer-line mb-1.5" style="width: 150px; height: 16px;" />
+                    <div class="shimmer-line" style="width: 90px; height: 12px;" />
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="shimmer-chip mb-1" style="width: 90px; height: 22px;" />
+                    <div class="shimmer-line" style="width: 80px; height: 14px;" />
+                  </td>
+                  <td class="text-right py-3 px-4">
+                    <div class="shimmer-line ms-auto" style="width: 70px; height: 14px;" />
+                  </td>
+                  <td class="text-right py-3 px-4">
+                    <div class="shimmer-line ms-auto" style="width: 60px; height: 14px;" />
+                  </td>
+                  <td class="text-right py-3 px-4">
+                    <div class="shimmer-line ms-auto" style="width: 75px; height: 18px;" />
+                  </td>
+                  <td class="text-center py-3 px-4">
+                    <div class="shimmer-chip mx-auto" style="width: 70px; height: 24px;" />
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="shimmer-line" style="width: 85px; height: 14px;" />
+                  </td>
+                  <td class="text-center py-3 px-4">
+                    <div class="d-flex justify-center align-center gap-1">
+                      <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                      <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    </div>
+                  </td>
+                </tr>
+              </template>
+              <template v-else>
+                <tr
+                  v-for="item in credits"
+                  :key="item.id"
+                  class="align-middle border-b border-opacity-25"
+                >
+                  <!-- Proveedor -->
+                  <td class="py-3 px-4">
+                    <div class="text-body-2 font-weight-bold text-grey-darken-4">
+                      {{ item.supplier?.name || 'Proveedor #' + item.supplier_id }}
+                    </div>
+                    <div
+                      v-if="item.supplier?.ruc"
+                      class="text-caption text-medium-emphasis"
+                    >
+                      RUC: {{ item.supplier.ruc }}
+                    </div>
+                  </td>
+
+                  <!-- Tipo & Referencia -->
+                  <td class="py-3 px-4">
+                    <div class="d-flex align-center gap-2 mb-1">
+                      <VChip
+                        size="x-small"
+                        variant="tonal"
+                        :color="getSourceTypeBadge(item.source_type).color"
+                        class="font-weight-bold"
+                      >
+                        {{ getSourceTypeBadge(item.source_type).text }}
+                      </VChip>
+                    </div>
+                    <div class="text-caption font-mono font-weight-medium text-grey-darken-3">
+                      {{ item.reference_number || 'Sin ref.' }}
+                    </div>
+                  </td>
+
+                  <!-- Monto Original -->
+                  <td class="text-right py-3 px-4 text-body-2 font-weight-medium text-grey-darken-3">
+                    {{ formatMoney(item.amount) }}
+                  </td>
+
+                  <!-- Monto Usado -->
+                  <td class="text-right py-3 px-4 text-body-2 text-medium-emphasis">
+                    {{ formatMoney(item.used_amount) }}
+                  </td>
+
+                  <!-- Saldo Disponible -->
+                  <td class="text-right py-3 px-4">
+                    <span
+                      class="text-body-1 font-weight-bold"
+                      :class="Number(item.remaining_balance) > 0 ? 'text-success' : 'text-grey-darken-1'"
+                    >
+                      {{ formatMoney(item.remaining_balance) }}
+                    </span>
+                  </td>
+
+                  <!-- Estado -->
+                  <td
+                    class="text-center py-3 px-4"
+                    style="white-space: nowrap;"
                   >
-                    <span class="status-dot" />
-                    <span>{{ getStatusBadge(item.status).text }}</span>
-                  </div>
-                </td>
+                    <div
+                      class="status-pill-clean"
+                      :class="`status-${item.status}`"
+                    >
+                      <span class="status-dot" />
+                      <span>{{ getStatusBadge(item.status).text }}</span>
+                    </div>
+                  </td>
 
-                <!-- Fecha -->
-                <td class="py-3 px-4 text-caption text-medium-emphasis">
-                  {{ formatDate(item.created_at) }}
-                </td>
+                  <!-- Fecha -->
+                  <td class="py-3 px-4 text-caption text-medium-emphasis">
+                    {{ formatDate(item.created_at) }}
+                  </td>
 
-                <!-- Acciones -->
-                <td class="text-center py-3 px-4">
-                  <div class="d-flex justify-center align-center gap-1">
-                    <!-- Ver Usos -->
-                    <VBtn
-                      variant="tonal"
-                      icon="ri-history-line"
-                      size="small"
-                      color="info"
-                      title="Ver Historial de Cruces"
-                      @click="openUsagesDialog(item)"
-                    />
+                  <!-- Acciones -->
+                  <td class="text-center py-3 px-4">
+                    <div class="d-flex justify-center align-center gap-1">
+                      <!-- Ver Usos -->
+                      <VBtn
+                        variant="tonal"
+                        icon="ri-history-line"
+                        size="small"
+                        color="info"
+                        title="Ver Historial de Cruces"
+                        @click="openUsagesDialog(item)"
+                      />
 
-                    <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
-                    <VBtn
-                      v-if="Number(item.remaining_balance) > 0"
-                      variant="tonal"
-                      icon="ri-refund-2-line"
-                      size="small"
-                      color="success"
-                      title="Reembolsar a Cuenta Bancaria"
-                      @click="openRefundDialog(item)"
-                    />
-                  </div>
-                </td>
-              </tr>
+                      <!-- Reembolsar a Cuenta (si tiene saldo disponible) -->
+                      <VBtn
+                        v-if="Number(item.remaining_balance) > 0"
+                        variant="tonal"
+                        icon="ri-refund-2-line"
+                        size="small"
+                        color="success"
+                        title="Reembolsar a Cuenta Bancaria"
+                        @click="openRefundDialog(item)"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </VTable>
         </div>
@@ -667,15 +740,17 @@ onMounted(() => {
 
       <!-- Paginación -->
       <div
-        v-if="totalPages > 1"
+        v-if="totalPages > 1 || totalItems > 0"
         class="d-flex flex-column flex-sm-row justify-space-between align-center px-4 py-3 border-t border-light gap-3 text-center text-sm-start"
       >
         <div class="text-caption text-medium-emphasis">
           Mostrando {{ credits.length }} de {{ totalItems }} registros
         </div>
         <VPagination
+          v-if="totalPages > 1"
           v-model="currentPage"
           :length="totalPages"
+          :disabled="loading"
           rounded="circle"
           :total-visible="$vuetify.display.xs ? 4 : 7"
           :size="$vuetify.display.xs ? 'small' : 'default'"

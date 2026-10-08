@@ -680,69 +680,9 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay productos) -->
     <VCard
-      v-if="loading"
-      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
-    >
-      <VTable>
-        <tbody>
-          <tr
-            v-for="n in 5"
-            :key="n"
-            class="skeleton-row align-middle"
-          >
-            <td
-              class="py-4 text-center"
-              style="width: 70px;"
-            >
-              <div
-                class="shimmer-circle mx-auto"
-                style="width: 36px; height: 36px;"
-              />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-75 mb-2" />
-              <div class="shimmer-line w-40" />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-60" />
-            </td>
-            <td class="py-4">
-              <div class="shimmer-line w-60" />
-            </td>
-            <td
-              class="py-4"
-              style="width: 120px;"
-            >
-              <div class="shimmer-line w-50 ms-auto" />
-            </td>
-            <td
-              class="py-4 text-center"
-              style="width: 100px;"
-            >
-              <div class="shimmer-line w-40 mx-auto" />
-            </td>
-            <td
-              class="py-4 text-center"
-              style="width: 110px;"
-            >
-              <div class="shimmer-chip mx-auto" />
-            </td>
-            <td
-              class="py-4 text-center"
-              style="width: 120px;"
-            >
-              <div class="shimmer-button rounded mx-auto" />
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
-
-    <!-- ESTADO VACÍO -->
-    <VCard
-      v-else-if="!products || products.length === 0"
+      v-if="!loading && (!products || products.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -786,209 +726,244 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
     </VCard>
 
-    <!-- LISTADO DE PRODUCTOS (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE PRODUCTOS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="item in products"
-          :key="'mobile-prod-' + item.id"
-          class="mobile-product-card elevation-0"
-        >
-          <!-- Fila superior: Imagen + Info básica + Estado -->
-          <div class="mobile-card-top">
-            <div
-              class="mobile-card-thumb cursor-pointer"
-              @click="viewProduct(item)"
-            >
-              <img
-                v-if="item.imagen"
-                :src="item.imagen"
-                :alt="item.description"
-                loading="lazy"
-                style="width: 100%; height: 100%; object-fit: cover;"
-              >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'skel-mob-prod-' + n"
+            class="mobile-product-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center gap-3 mb-3">
               <div
-                v-else
-                class="w-100 h-100 d-flex align-center justify-center bg-grey-lighten-4"
-              >
-                <VIcon
-                  icon="ri-box-3-line"
-                  color="primary"
-                  size="24"
-                />
+                class="shimmer-button rounded-lg flex-shrink-0"
+                style="width: 48px; height: 48px;"
+              />
+              <div class="flex-grow-1">
+                <div class="shimmer-line w-40 mb-1.5" />
+                <div class="shimmer-line w-75 mb-1.5" />
+                <div class="shimmer-line w-50" />
               </div>
             </div>
+            <div class="d-flex justify-space-between align-center pt-2 border-t">
+              <div class="shimmer-line w-30" />
+              <div class="shimmer-chip" style="width: 80px;" />
+            </div>
+          </VCard>
+        </template>
 
-            <div style="flex: 1; min-width: 0;">
-              <div class="d-flex align-center justify-space-between gap-1 mb-1">
-                <span class="text-caption font-mono font-weight-semibold text-medium-emphasis">
-                  SKU: {{ item.sku || 'S/C' }}
-                </span>
-                <div
-                  class="status-pill-clean"
-                  :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
+        <!-- Tarjetas reales de productos -->
+        <template v-else>
+          <VCard
+            v-for="item in products"
+            :key="'mobile-prod-' + item.id"
+            class="mobile-product-card elevation-0"
+          >
+            <!-- Fila superior: Imagen + Info básica + Estado -->
+            <div class="mobile-card-top">
+              <div
+                class="mobile-card-thumb cursor-pointer"
+                @click="viewProduct(item)"
+              >
+                <img
+                  v-if="item.imagen"
+                  :src="item.imagen"
+                  :alt="item.description"
+                  loading="lazy"
+                  style="width: 100%; height: 100%; object-fit: cover;"
                 >
-                  <span class="status-dot" />
-                  <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+                <div
+                  v-else
+                  class="w-100 h-100 d-flex align-center justify-center bg-grey-lighten-4"
+                >
+                  <VIcon
+                    icon="ri-box-3-line"
+                    color="primary"
+                    size="24"
+                  />
                 </div>
               </div>
 
+              <div style="flex: 1; min-width: 0;">
+                <div class="d-flex align-center justify-space-between gap-1 mb-1">
+                  <span class="text-caption font-mono font-weight-semibold text-medium-emphasis">
+                    SKU: {{ item.sku || 'S/C' }}
+                  </span>
+                  <div
+                    class="status-pill-clean"
+                    :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </div>
+
+                <div
+                  class="mobile-card-title cursor-pointer text-truncate"
+                  :title="item.description"
+                  @click="viewProduct(item)"
+                >
+                  {{ item.description }}
+                </div>
+
+                <div class="mobile-card-meta">
+                  <VChip
+                    size="x-small"
+                    variant="tonal"
+                    color="primary"
+                    class="font-weight-medium cursor-pointer"
+                    @click="openQuickEdit(item, 'category')"
+                  >
+                    {{ item.categorie?.title || 'Sin Categoría' }}
+                  </VChip>
+                  <VChip
+                    v-if="item.brand"
+                    size="x-small"
+                    variant="outlined"
+                    color="secondary"
+                    class="cursor-pointer"
+                    @click="openQuickEdit(item, 'category')"
+                  >
+                    {{ item.brand }}
+                  </VChip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cuadrícula de estadísticas: Precio Final y Stock interactivos -->
+            <div class="mobile-card-stats-grid">
               <div
-                class="mobile-card-title cursor-pointer text-truncate"
-                :title="item.description"
-                @click="viewProduct(item)"
+                class="stat-col cursor-pointer"
+                title="Toca para editar precio de venta"
+                @click="openQuickEdit(item, 'price')"
               >
-                {{ item.description }}
+                <div class="d-flex align-center justify-space-between">
+                  <span class="stat-label">P.V.P Final</span>
+                  <VIcon
+                    icon="ri-edit-line"
+                    size="14"
+                    color="success"
+                  />
+                </div>
+                <span class="stat-val text-success">
+                  ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
+                </span>
               </div>
 
-              <div class="mobile-card-meta">
-                <VChip
-                  size="x-small"
-                  variant="tonal"
-                  color="primary"
-                  class="font-weight-medium cursor-pointer"
-                  @click="openQuickEdit(item, 'category')"
-                >
-                  {{ item.categorie?.title || 'Sin Categoría' }}
-                </VChip>
-                <VChip
-                  v-if="item.brand"
-                  size="x-small"
-                  variant="outlined"
-                  color="secondary"
-                  class="cursor-pointer"
-                  @click="openQuickEdit(item, 'category')"
-                >
-                  {{ item.brand }}
-                </VChip>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cuadrícula de estadísticas: Precio Final y Stock interactivos -->
-          <div class="mobile-card-stats-grid">
-            <div
-              class="stat-col cursor-pointer"
-              title="Toca para editar precio de venta"
-              @click="openQuickEdit(item, 'price')"
-            >
-              <div class="d-flex align-center justify-space-between">
-                <span class="stat-label">P.V.P Final</span>
-                <VIcon
-                  icon="ri-edit-line"
-                  size="14"
-                  color="success"
-                />
-              </div>
-              <span class="stat-val text-success">
-                ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
-              </span>
-            </div>
-
-            <div
-              class="stat-col cursor-pointer"
-              title="Toca para ajuste rápido de stock"
-              @click="item.item_type == 1 ? openStockDialog(item) : null"
-            >
-              <div class="d-flex align-center justify-space-between">
-                <span class="stat-label">Stock Actual</span>
-                <VIcon
+              <div
+                class="stat-col cursor-pointer"
+                title="Toca para ajuste rápido de stock"
+                @click="item.item_type == 1 ? openStockDialog(item) : null"
+              >
+                <div class="d-flex align-center justify-space-between">
+                  <span class="stat-label">Stock Actual</span>
+                  <VIcon
+                    v-if="item.item_type == 1"
+                    icon="ri-edit-line"
+                    size="14"
+                    color="primary"
+                  />
+                </div>
+                <span
                   v-if="item.item_type == 1"
-                  icon="ri-edit-line"
-                  size="14"
-                  color="primary"
-                />
-              </div>
-              <span
-                v-if="item.item_type == 1"
-                class="stat-val"
-                :class="(item.stock || 0) > 0 ? 'text-primary' : 'text-error'"
-              >
-                {{ item.stock || 0 }} <span class="text-caption text-disabled">{{ item.unit?.name || 'UND' }}</span>
-              </span>
-              <span
-                v-else
-                class="stat-val text-medium-emphasis"
-              >Servicio</span>
-            </div>
-          </div>
-
-          <!-- Acciones en móvil: Botón Edición Rápida + Menú 3 puntos -->
-          <div class="mobile-card-actions">
-            <VBtn
-              v-if="can('edit_product')"
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="ri-flashlight-line"
-              class="btn-quick-edit font-weight-bold"
-              @click="openQuickEdit(item, 'all')"
-            >
-              Edición Rápida
-            </VBtn>
-
-            <!-- Menú de 3 puntos en tarjeta móvil -->
-            <VBtn
-              size="small"
-              color="secondary"
-              variant="tonal"
-              icon="ri-more-2-line"
-              title="Más Opciones"
-            >
-              <VIcon
-                icon="ri-more-2-line"
-                size="18"
-              />
-              <VMenu
-                activator="parent"
-                transition="slide-y-transition"
-                align="end"
-                location="bottom end"
-              >
-                <VList
-                  density="compact"
-                  class="py-1 rounded-lg elevation-4 border"
-                  min-width="190"
+                  class="stat-val"
+                  :class="(item.stock || 0) > 0 ? 'text-primary' : 'text-error'"
                 >
-                  <VListItem
-                    v-if="can('edit_product') && item.item_type == 1"
-                    prepend-icon="ri-box-3-line"
-                    title="Ajustar Stock"
-                    class="text-body-2"
-                    @click="openStockDialog(item)"
-                  />
-                  <VListItem
-                    prepend-icon="ri-eye-line"
-                    title="Ver Detalle"
-                    class="text-body-2"
-                    @click="viewProduct(item)"
-                  />
-                  <VListItem
-                    v-if="can('edit_product')"
-                    prepend-icon="ri-pencil-line"
-                    title="Editar Completo"
-                    class="text-warning text-body-2"
-                    @click="editProduct(item)"
-                  />
-                  <VDivider
-                    v-if="can('delete_product')"
-                    class="my-1"
-                  />
-                  <VListItem
-                    v-if="can('delete_product')"
-                    prepend-icon="ri-delete-bin-line"
-                    title="Eliminar Producto"
-                    class="text-error text-body-2"
-                    @click="deleteProduct(item)"
-                  />
-                </VList>
-              </VMenu>
-            </VBtn>
-          </div>
-        </VCard>
-      </div>
+                  {{ item.stock || 0 }} <span class="text-caption text-disabled">{{ item.unit?.name || 'UND' }}</span>
+                </span>
+                <span
+                  v-else
+                  class="stat-val text-medium-emphasis"
+                >Servicio</span>
+              </div>
+            </div>
 
+            <!-- Acciones en móvil: Botón Edición Rápida + Menú 3 puntos -->
+            <div class="mobile-card-actions">
+              <VBtn
+                v-if="can('edit_product')"
+                color="primary"
+                variant="tonal"
+                size="small"
+                prepend-icon="ri-flashlight-line"
+                class="btn-quick-edit font-weight-bold"
+                @click="openQuickEdit(item, 'all')"
+              >
+                Edición Rápida
+              </VBtn>
+
+              <!-- Menú de 3 puntos en tarjeta móvil -->
+              <VBtn
+                size="small"
+                color="secondary"
+                variant="tonal"
+                icon="ri-more-2-line"
+                title="Más Opciones"
+              >
+                <VIcon
+                  icon="ri-more-2-line"
+                  size="18"
+                />
+                <VMenu
+                  activator="parent"
+                  transition="slide-y-transition"
+                  align="end"
+                  location="bottom end"
+                >
+                  <VList
+                    density="compact"
+                    class="py-1 rounded-lg elevation-4 border"
+                    min-width="190"
+                  >
+                    <!-- Ajustar Stock -->
+                    <VListItem
+                      v-if="can('edit_product') && item.item_type == 1"
+                      prepend-icon="ri-box-3-line"
+                      title="Ajustar Stock"
+                      class="text-body-2"
+                      @click="openStockDialog(item)"
+                    />
+
+                    <!-- Ver Detalle -->
+                    <VListItem
+                      prepend-icon="ri-eye-line"
+                      title="Ver Detalle"
+                      class="text-body-2"
+                      @click="viewProduct(item)"
+                    />
+
+                    <!-- Editar Completo -->
+                    <VListItem
+                      v-if="can('edit_product')"
+                      prepend-icon="ri-pencil-line"
+                      title="Editar Completo"
+                      class="text-warning text-body-2"
+                      @click="editProduct(item)"
+                    />
+
+                    <VDivider
+                      v-if="can('delete_product')"
+                      class="my-1"
+                    />
+
+                    <!-- Eliminar Producto -->
+                    <VListItem
+                      v-if="can('delete_product')"
+                      prepend-icon="ri-delete-bin-line"
+                      title="Eliminar Producto"
+                      class="text-error text-body-2"
+                      @click="deleteProduct(item)"
+                    />
+                  </VList>
+                </VMenu>
+              </VBtn>
+            </div>
+          </VCard>
+        </template>
+      </div>
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
         <VTable
@@ -1048,214 +1023,252 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in products"
-              :key="item.id"
-              class="product-table-row"
-            >
-              <!-- Imagen -->
-              <td class="text-center py-3">
-                <VAvatar
-                  v-if="item.imagen"
-                  size="38"
-                  rounded="lg"
-                  class="cursor-pointer border overflow-hidden"
-                  @click="openProductDialog(item)"
-                >
-                  <img
-                    :src="item.imagen"
-                    :alt="item.description"
-                    loading="lazy"
-                    decoding="async"
-                    class="w-100 h-100"
-                    style="object-fit: cover;"
-                  >
-                </VAvatar>
-                <VAvatar
-                  v-else
-                  color="primary"
-                  variant="tonal"
-                  size="38"
-                  rounded="lg"
-                  class="cursor-pointer"
-                  @click="openProductDialog(item)"
-                >
-                  <VIcon
-                    icon="ri-box-3-line"
-                    size="20"
-                  />
-                </VAvatar>
-              </td>
-
-              <!-- Producto -->
-              <td class="py-3">
-                <div class="d-flex flex-column gap-0.5">
-                  <div
-                    class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer hover-underline text-truncate"
-                    style="max-width: 300px;"
-                    :title="item.description"
-                    @click="viewProduct(item)"
-                  >
-                    {{ item.description }}
-                  </div>
-                  <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
-                    <span v-if="item.sku">Cód. P.: {{ item.sku }}</span>
-                    <span v-if="item.code_aux">• Cód. Aux.: {{ item.code_aux }}</span>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Categoría & Marca (Clicable para edición rápida) -->
-              <td class="py-3">
-                <div class="d-flex flex-column gap-0.5">
-                  <span
-                    class="text-body-2 text-medium-emphasis font-weight-medium cursor-pointer hover-underline"
-                    title="Clic para editar categoría"
-                    @click="openQuickEdit(item, 'category')"
-                  >
-                    {{ item.categorie?.title || 'Sin Categoría' }}
-                  </span>
-                  <span
-                    v-if="item.brand"
-                    class="text-caption text-disabled cursor-pointer hover-underline"
-                    title="Clic para editar marca"
-                    @click="openQuickEdit(item, 'category')"
-                  >
-                    Marca: <strong>{{ item.brand }}</strong>
-                  </span>
-                </div>
-              </td>
-
-              <!-- Almacén -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis font-weight-medium">
-                  {{ item.warehouse?.name || 'General' }}
-                </span>
-              </td>
-
-              <!-- Precio Venta Final (Clicable para editar precio) -->
-              <td class="text-right py-3">
-                <span
-                  class="font-mono font-weight-bold text-body-1 text-high-emphasis cursor-pointer hover-underline"
-                  title="Clic para editar precio de venta"
-                  @click="openQuickEdit(item, 'price')"
-                >
-                  ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
-                </span>
-              </td>
-
-              <!-- Stock (Clicable para ajuste rápido de stock) -->
-              <td class="text-center py-3">
-                <span
-                  v-if="item.item_type == 1"
-                  class="font-mono font-weight-bold text-body-2 px-2 py-0.5 rounded cursor-pointer hover-scale d-inline-block"
-                  :class="(item.stock || 0) > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
-                  title="Clic para ajuste rápido de stock"
-                  @click="openStockDialog(item)"
-                >
-                  {{ item.stock || 0 }}
-                </span>
-                <span
-                  v-else
-                  class="text-caption text-medium-emphasis font-weight-medium"
-                >
-                  Serv.
-                </span>
-              </td>
-
-              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
+            <!-- Skeleton Rows en tabla de escritorio -->
+            <template v-if="loading">
+              <tr
+                v-for="n in (itemsPerPage || 6)"
+                :key="'skel-row-' + n"
+                class="skeleton-row align-middle"
               >
-                <div
-                  class="status-pill-clean"
-                  :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
-                >
-                  <span class="status-dot" />
-                  <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </td>
+                <td class="py-4 text-center" style="width: 70px;">
+                  <div class="shimmer-circle mx-auto" style="width: 36px; height: 36px;" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-75 mb-2" />
+                  <div class="shimmer-line w-40" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td class="py-4 text-right" style="width: 130px;">
+                  <div class="shimmer-line w-50 ms-auto" />
+                </td>
+                <td class="py-4 text-center" style="width: 110px;">
+                  <div class="shimmer-line w-40 mx-auto" />
+                </td>
+                <td class="py-4 text-center" style="width: 120px;">
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td class="py-4 text-center" style="width: 90px;">
+                  <div class="shimmer-button rounded mx-auto" />
+                </td>
+              </tr>
+            </template>
 
-              <!-- Acciones (Menú de 3 puntos desplegable) -->
-              <td class="text-center py-3">
-                <div class="d-flex justify-center align-center">
-                  <VBtn
-                    size="small"
-                    color="secondary"
+            <!-- Filas reales de productos -->
+            <template v-else>
+              <tr
+                v-for="item in products"
+                :key="item.id"
+                class="product-table-row"
+              >
+                <!-- Imagen -->
+                <td class="text-center py-3">
+                  <VAvatar
+                    v-if="item.imagen"
+                    size="38"
+                    rounded="lg"
+                    class="cursor-pointer border overflow-hidden"
+                    @click="openProductDialog(item)"
+                  >
+                    <img
+                      :src="item.imagen"
+                      :alt="item.description"
+                      loading="lazy"
+                      decoding="async"
+                      class="w-100 h-100"
+                      style="object-fit: cover;"
+                    >
+                  </VAvatar>
+                  <VAvatar
+                    v-else
+                    color="primary"
                     variant="tonal"
-                    icon="ri-more-2-line"
-                    title="Opciones del Producto"
+                    size="38"
+                    rounded="lg"
+                    class="cursor-pointer"
+                    @click="openProductDialog(item)"
                   >
                     <VIcon
-                      icon="ri-more-2-line"
-                      size="18"
+                      icon="ri-box-3-line"
+                      size="20"
                     />
-                    <VMenu
-                      activator="parent"
-                      transition="slide-y-transition"
-                      align="end"
-                      location="bottom end"
+                  </VAvatar>
+                </td>
+
+                <!-- Producto -->
+                <td class="py-3">
+                  <div class="d-flex flex-column gap-0.5">
+                    <div
+                      class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer hover-underline text-truncate"
+                      style="max-width: 300px;"
+                      :title="item.description"
+                      @click="viewProduct(item)"
                     >
-                      <VList
-                        density="compact"
-                        class="py-1 rounded-lg elevation-4 border"
-                        min-width="190"
+                      {{ item.description }}
+                    </div>
+                    <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
+                      <span v-if="item.sku">Cód. P.: {{ item.sku }}</span>
+                      <span v-if="item.code_aux">• Cód. Aux.: {{ item.code_aux }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Categoría & Marca (Clicable para edición rápida) -->
+                <td class="py-3">
+                  <div class="d-flex flex-column gap-0.5">
+                    <span
+                      class="text-body-2 text-medium-emphasis font-weight-medium cursor-pointer hover-underline"
+                      title="Clic para editar categoría"
+                      @click="openQuickEdit(item, 'category')"
+                    >
+                      {{ item.categorie?.title || 'Sin Categoría' }}
+                    </span>
+                    <span
+                      v-if="item.brand"
+                      class="text-caption text-disabled cursor-pointer hover-underline"
+                      title="Clic para editar marca"
+                      @click="openQuickEdit(item, 'category')"
+                    >
+                      Marca: <strong>{{ item.brand }}</strong>
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Almacén -->
+                <td class="py-3">
+                  <span class="text-body-2 text-medium-emphasis font-weight-medium">
+                    {{ item.warehouse?.name || 'General' }}
+                  </span>
+                </td>
+
+                <!-- Precio Venta Final (Clicable para editar precio) -->
+                <td class="text-right py-3">
+                  <span
+                    class="font-mono font-weight-bold text-body-1 text-high-emphasis cursor-pointer hover-underline"
+                    title="Clic para editar precio de venta"
+                    @click="openQuickEdit(item, 'price')"
+                  >
+                    ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
+                  </span>
+                </td>
+
+                <!-- Stock (Clicable para ajuste rápido de stock) -->
+                <td class="text-center py-3">
+                  <span
+                    v-if="item.item_type == 1"
+                    class="font-mono font-weight-bold text-body-2 px-2 py-0.5 rounded cursor-pointer hover-scale d-inline-block"
+                    :class="(item.stock || 0) > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
+                    title="Clic para ajuste rápido de stock"
+                    @click="openStockDialog(item)"
+                  >
+                    {{ item.stock || 0 }}
+                  </span>
+                  <span
+                    v-else
+                    class="text-caption text-medium-emphasis font-weight-medium"
+                  >
+                    Serv.
+                  </span>
+                </td>
+
+                <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div
+                    class="status-pill-clean"
+                    :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </td>
+
+                <!-- Acciones (Menú de 3 puntos desplegable) -->
+                <td class="text-center py-3">
+                  <div class="d-flex justify-center align-center">
+                    <VBtn
+                      size="small"
+                      color="secondary"
+                      variant="tonal"
+                      icon="ri-more-2-line"
+                      title="Opciones del Producto"
+                    >
+                      <VIcon
+                        icon="ri-more-2-line"
+                        size="18"
+                      />
+                      <VMenu
+                        activator="parent"
+                        transition="slide-y-transition"
+                        align="end"
+                        location="bottom end"
                       >
-                        <!-- Edición Rápida (Stock, Precio, Categoría, Marca) -->
-                        <VListItem
-                          v-if="can('edit_product')"
-                          prepend-icon="ri-flashlight-line"
-                          title="Edición Rápida"
-                          class="text-primary text-body-2 font-weight-medium"
-                          @click="openQuickEdit(item, 'all')"
-                        />
+                        <VList
+                          density="compact"
+                          class="py-1 rounded-lg elevation-4 border"
+                          min-width="190"
+                        >
+                          <!-- Edición Rápida (Stock, Precio, Categoría, Marca) -->
+                          <VListItem
+                            v-if="can('edit_product')"
+                            prepend-icon="ri-flashlight-line"
+                            title="Edición Rápida"
+                            class="text-primary text-body-2 font-weight-medium"
+                            @click="openQuickEdit(item, 'all')"
+                          />
 
-                        <!-- Ajuste Rápido de Stock -->
-                        <VListItem
-                          v-if="can('edit_product') && item.item_type == 1"
-                          prepend-icon="ri-box-3-line"
-                          title="Ajustar Stock"
-                          class="text-body-2"
-                          @click="openStockDialog(item)"
-                        />
+                          <!-- Ajuste Rápido de Stock -->
+                          <VListItem
+                            v-if="can('edit_product') && item.item_type == 1"
+                            prepend-icon="ri-box-3-line"
+                            title="Ajustar Stock"
+                            class="text-body-2"
+                            @click="openStockDialog(item)"
+                          />
 
-                        <!-- Ver Detalle -->
-                        <VListItem
-                          prepend-icon="ri-eye-line"
-                          title="Ver Detalle"
-                          class="text-body-2"
-                          @click="viewProduct(item)"
-                        />
+                          <!-- Ver Detalle -->
+                          <VListItem
+                            prepend-icon="ri-eye-line"
+                            title="Ver Detalle"
+                            class="text-body-2"
+                            @click="viewProduct(item)"
+                          />
 
-                        <!-- Editar Completo -->
-                        <VListItem
-                          v-if="can('edit_product')"
-                          prepend-icon="ri-pencil-line"
-                          title="Editar Completo"
-                          class="text-warning text-body-2"
-                          @click="editProduct(item)"
-                        />
+                          <!-- Editar Completo -->
+                          <VListItem
+                            v-if="can('edit_product')"
+                            prepend-icon="ri-pencil-line"
+                            title="Editar Completo"
+                            class="text-warning text-body-2"
+                            @click="editProduct(item)"
+                          />
 
-                        <VDivider
-                          v-if="can('delete_product')"
-                          class="my-1"
-                        />
+                          <VDivider
+                            v-if="can('delete_product')"
+                            class="my-1"
+                          />
 
-                        <!-- Eliminar Producto -->
-                        <VListItem
-                          v-if="can('delete_product')"
-                          prepend-icon="ri-delete-bin-line"
-                          title="Eliminar Producto"
-                          class="text-error text-body-2"
-                          @click="deleteProduct(item)"
-                        />
-                      </VList>
-                    </VMenu>
-                  </VBtn>
-                </div>
-              </td>
-            </tr>
+                          <!-- Eliminar Producto -->
+                          <VListItem
+                            v-if="can('delete_product')"
+                            prepend-icon="ri-delete-bin-line"
+                            title="Eliminar Producto"
+                            class="text-error text-body-2"
+                            @click="deleteProduct(item)"
+                          />
+                        </VList>
+                      </VMenu>
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>

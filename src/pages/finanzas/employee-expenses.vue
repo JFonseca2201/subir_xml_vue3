@@ -658,68 +658,9 @@ onMounted(() => {
       </VRow>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <VCard
-      v-if="loading"
-      class="rounded-xl border overflow-hidden elevation-0 bg-surface"
-    >
-      <VTable>
-        <tbody>
-          <tr
-            v-for="n in 5"
-            :key="n"
-            class="skeleton-row align-middle"
-          >
-            <td
-              class="py-4"
-              style="width: 190px;"
-            >
-              <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-            </td>
-            <td
-              class="py-4"
-              style="min-width: 250px;"
-            >
-              <div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" />
-            </td>
-            <td
-              class="py-4"
-              style="min-width: 280px;"
-            >
-              <div class="shimmer-line w-80" />
-            </td>
-            <td
-              class="py-4"
-              style="width: 200px;"
-            >
-              <div class="shimmer-line w-60" />
-            </td>
-            <td
-              class="py-4"
-              style="width: 140px;"
-            >
-              <div class="shimmer-line w-50" />
-            </td>
-            <td
-              class="py-4 text-right"
-              style="width: 130px;"
-            >
-              <div class="shimmer-line w-50 ms-auto" />
-            </td>
-            <td
-              class="py-4 text-center"
-              style="width: 120px;"
-            >
-              <div class="shimmer-button rounded mx-auto" />
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
-    </VCard>
-
     <!-- ESTADO VACÍO -->
     <VCard
-      v-else-if="!filteredExpenses.length"
+      v-if="!loading && (!filteredExpenses || filteredExpenses.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -766,147 +707,176 @@ onMounted(() => {
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <div
-          v-for="item in paginatedExpenses"
-          :key="`mob-exp-${item.type}-${item.id}`"
-          class="mobile-expense-card"
-        >
-          <!-- Fila Superior: Tipo y Estado -->
-          <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
-            <div class="d-flex align-center gap-1.5 flex-wrap">
-              <div
-                v-if="item.type === 'payment'"
-                class="status-pill-clean status-transfer"
-              >
-                <span class="status-dot" />
-                <span>Rol de Pagos</span>
-              </div>
-              <div
-                v-else-if="item.is_deducted"
-                class="status-pill-clean status-paid"
-              >
-                <span class="status-dot" />
-                <span>Adelanto Liquidado</span>
-              </div>
-              <div
-                v-else
-                class="status-pill-clean status-partial"
-              >
-                <span class="status-dot" />
-                <span>Adelanto Pendiente</span>
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-' + n"
+            class="mobile-card pa-4 rounded-xl border elevation-0"
+          >
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-3">
+              <div class="shimmer-chip w-30" />
+              <div class="shimmer-line w-20" />
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div class="shimmer-avatar" />
+              <div class="d-flex flex-column gap-1 flex-grow-1">
+                <div class="shimmer-line w-60" />
+                <div class="shimmer-line w-40" />
               </div>
             </div>
-            <span class="text-caption text-medium-emphasis font-weight-medium">
-              {{ formatDate(item.date) }}
-            </span>
-          </div>
-
-          <!-- Fila Central: Avatar, Empleado y Descripción -->
-          <div class="d-flex align-start gap-3 mb-2.5">
-            <VAvatar
-              size="40"
-              :color="item.type === 'payment' ? 'primary' : 'warning'"
-              variant="tonal"
-              rounded="lg"
-              class="flex-shrink-0 mt-0.5"
-            >
-              <VIcon
-                :icon="item.type === 'payment' ? 'ri-file-user-line' : 'ri-hand-coin-line'"
-                size="20"
-              />
-            </VAvatar>
-            <div class="min-w-0 flex-grow-1">
-              <div class="font-weight-bold text-high-emphasis text-body-1">
-                {{ item.employee_name }}
+            <div class="shimmer-line w-80 mb-3" />
+            <div class="d-flex align-center justify-space-between pt-2 border-t">
+              <div class="shimmer-line w-30" />
+              <div class="d-flex gap-1">
+                <div class="shimmer-button w-25" />
+                <div class="shimmer-button w-25" />
               </div>
-              <div
-                v-if="item.description"
-                class="text-caption text-medium-emphasis mt-0.5"
-              >
-                {{ item.description }}
-              </div>
-              <div class="d-flex align-center gap-1.5 flex-wrap mt-1">
-                <VIcon
-                  icon="ri-bank-card-line"
-                  size="13"
-                  class="text-medium-emphasis"
-                />
-                <span class="text-caption font-weight-medium text-slate-700">
-                  {{ item.account?.name || 'Cuenta General' }}
-                </span>
-                <span
-                  v-if="item.payment_month"
-                  class="text-caption text-primary font-weight-bold"
+            </div>
+          </VCard>
+        </template>
+        <template v-else>
+          <div
+            v-for="item in paginatedExpenses"
+            :key="`mob-exp-${item.type}-${item.id}`"
+            class="mobile-expense-card"
+          >
+            <!-- Fila Superior: Tipo y Estado -->
+            <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
+              <div class="d-flex align-center gap-1.5 flex-wrap">
+                <div
+                  v-if="item.type === 'payment'"
+                  class="status-pill-clean status-transfer"
                 >
-                  · {{ formatMonthLabel(item.payment_month) }}
-                </span>
+                  <span class="status-dot" />
+                  <span>Rol de Pagos</span>
+                </div>
+                <div
+                  v-else-if="item.is_deducted"
+                  class="status-pill-clean status-paid"
+                >
+                  <span class="status-dot" />
+                  <span>Adelanto Liquidado</span>
+                </div>
+                <div
+                  v-else
+                  class="status-pill-clean status-partial"
+                >
+                  <span class="status-dot" />
+                  <span>Adelanto Pendiente</span>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Fila Inferior: Monto y Acciones -->
-          <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
-            <div>
-              <span
-                class="text-caption text-medium-emphasis d-block"
-                style="font-size: 0.68rem;"
-              >MONTO</span>
-              <span class="text-h6 font-weight-black text-slate-900">
-                {{ formatCurrency(item.amount) }}
+              <span class="text-caption text-medium-emphasis font-weight-medium">
+                {{ formatDate(item.date) }}
               </span>
             </div>
 
-            <div class="d-flex align-center gap-1 ms-auto">
-              <VBtn
-                size="small"
+            <!-- Fila Central: Avatar, Empleado y Descripción -->
+            <div class="d-flex align-start gap-3 mb-2.5">
+              <VAvatar
+                size="40"
+                :color="item.type === 'payment' ? 'primary' : 'warning'"
                 variant="tonal"
-                color="secondary"
-                icon="ri-attachment-2"
-                class="rounded-lg"
-                title="Adjuntos"
-                @click="openAttachDialog(item)"
-              />
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="primary"
-                icon="ri-printer-line"
-                class="rounded-lg"
-                title="Imprimir Comprobante"
-                @click="printReceipt(item)"
-              />
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="info"
-                icon="ri-file-pdf-line"
-                class="rounded-lg"
-                title="Descargar PDF"
-                @click="generatePDF(item)"
-              />
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="warning"
-                icon="ri-edit-line"
-                class="rounded-lg"
-                title="Editar"
-                :disabled="item.type === 'advance' && item.is_deducted"
-                @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
-              />
-              <VBtn
-                size="small"
-                variant="tonal"
-                color="error"
-                icon="ri-delete-bin-line"
-                class="rounded-lg"
-                title="Eliminar"
-                :disabled="item.type === 'advance' && item.is_deducted"
-                @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
-              />
+                rounded="lg"
+                class="flex-shrink-0 mt-0.5"
+              >
+                <VIcon
+                  :icon="item.type === 'payment' ? 'ri-file-user-line' : 'ri-hand-coin-line'"
+                  size="20"
+                />
+              </VAvatar>
+              <div class="min-w-0 flex-grow-1">
+                <div class="font-weight-bold text-high-emphasis text-body-1">
+                  {{ item.employee_name }}
+                </div>
+                <div
+                  v-if="item.description"
+                  class="text-caption text-medium-emphasis mt-0.5"
+                >
+                  {{ item.description }}
+                </div>
+                <div class="d-flex align-center gap-1.5 flex-wrap mt-1">
+                  <VIcon
+                    icon="ri-bank-card-line"
+                    size="13"
+                    class="text-medium-emphasis"
+                  />
+                  <span class="text-caption font-weight-medium text-slate-700">
+                    {{ item.account?.name || 'Cuenta General' }}
+                  </span>
+                  <span
+                    v-if="item.payment_month"
+                    class="text-caption text-primary font-weight-bold"
+                  >
+                    · {{ formatMonthLabel(item.payment_month) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fila Inferior: Monto y Acciones -->
+            <div class="d-flex align-center justify-space-between pt-2 border-t flex-wrap gap-2">
+              <div>
+                <span
+                  class="text-caption text-medium-emphasis d-block"
+                  style="font-size: 0.68rem;"
+                >MONTO</span>
+                <span class="text-h6 font-weight-black text-slate-900">
+                  {{ formatCurrency(item.amount) }}
+                </span>
+              </div>
+
+              <div class="d-flex align-center gap-1 ms-auto">
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="secondary"
+                  icon="ri-attachment-2"
+                  class="rounded-lg"
+                  title="Adjuntos"
+                  @click="openAttachDialog(item)"
+                />
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="primary"
+                  icon="ri-printer-line"
+                  class="rounded-lg"
+                  title="Imprimir Comprobante"
+                  @click="printReceipt(item)"
+                />
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="info"
+                  icon="ri-file-pdf-line"
+                  class="rounded-lg"
+                  title="Descargar PDF"
+                  @click="generatePDF(item)"
+                />
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="warning"
+                  icon="ri-edit-line"
+                  class="rounded-lg"
+                  title="Editar"
+                  :disabled="item.type === 'advance' && item.is_deducted"
+                  @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
+                />
+                <VBtn
+                  size="small"
+                  variant="tonal"
+                  color="error"
+                  icon="ri-delete-bin-line"
+                  class="rounded-lg"
+                  title="Eliminar"
+                  :disabled="item.type === 'advance' && item.is_deducted"
+                  @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
@@ -962,313 +932,374 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in paginatedExpenses"
-              :key="`${item.type}-${item.id}`"
-              class="payroll-table-row"
-            >
-              <!-- Tipo / Registro -->
-              <td
-                class="py-3"
-                style="white-space: nowrap;"
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-row-' + n"
+                class="skeleton-row align-middle"
               >
-                <!-- PAGO DE NÓMINA -->
-                <div
-                  v-if="item.type === 'payment'"
-                  class="d-flex align-center gap-3"
+                <td
+                  class="py-4"
+                  style="width: 190px;"
                 >
-                  <VAvatar
-                    size="34"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0"
-                    style="background-color: rgba(99, 102, 241, 0.12); color: #6366f1;"
-                  >
-                    <VIcon
-                      icon="ri-file-user-line"
-                      size="18"
-                      style="color: #6366f1;"
-                    />
-                  </VAvatar>
-                  <div class="d-flex flex-column text-left">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
-                      Rol de Pagos
+                  <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
+                </td>
+                <td
+                  class="py-4"
+                  style="min-width: 240px;"
+                >
+                  <div class="d-flex align-center gap-3">
+                    <div class="shimmer-avatar" />
+                    <div class="d-flex flex-column gap-1 flex-grow-1">
+                      <div class="shimmer-line w-60" />
+                      <div class="shimmer-line w-40" />
                     </div>
-                    <div
-                      v-if="item.payment_month"
-                      class="text-caption d-flex align-center mt-0.5 font-weight-medium"
-                      style="gap: 5px; font-size: 0.74rem; color: #4f46e5;"
+                  </div>
+                </td>
+                <td
+                  class="py-4"
+                  style="min-width: 280px;"
+                >
+                  <div class="shimmer-line w-80" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 200px;"
+                >
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 140px;"
+                >
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td
+                  class="py-4 text-right"
+                  style="width: 130px;"
+                >
+                  <div class="shimmer-line w-50 ms-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 130px;"
+                >
+                  <div class="d-flex justify-center gap-1">
+                    <div class="shimmer-button w-25" />
+                    <div class="shimmer-button w-25" />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="item in paginatedExpenses"
+                :key="`${item.type}-${item.id}`"
+                class="payroll-table-row"
+              >
+                <!-- Tipo / Registro -->
+                <td
+                  class="py-3"
+                  style="white-space: nowrap;"
+                >
+                  <!-- PAGO DE NÓMINA -->
+                  <div
+                    v-if="item.type === 'payment'"
+                    class="d-flex align-center gap-3"
+                  >
+                    <VAvatar
+                      size="34"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0"
+                      style="background-color: rgba(99, 102, 241, 0.12); color: #6366f1;"
                     >
                       <VIcon
-                        icon="ri-calendar-event-line"
-                        size="13"
+                        icon="ri-file-user-line"
+                        size="18"
                         style="color: #6366f1;"
                       />
-                      <span>{{ formatMonthLabel(item.payment_month) }}</span>
-                    </div>
-                    <div
-                      v-else
-                      class="text-caption text-medium-emphasis mt-0.5"
-                      style="font-size: 0.74rem;"
-                    >
-                      Liquidación
+                    </VAvatar>
+                    <div class="d-flex flex-column text-left">
+                      <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                        Rol de Pagos
+                      </div>
+                      <div
+                        v-if="item.payment_month"
+                        class="text-caption d-flex align-center mt-0.5 font-weight-medium"
+                        style="gap: 5px; font-size: 0.74rem; color: #4f46e5;"
+                      >
+                        <VIcon
+                          icon="ri-calendar-event-line"
+                          size="13"
+                          style="color: #6366f1;"
+                        />
+                        <span>{{ formatMonthLabel(item.payment_month) }}</span>
+                      </div>
+                      <div
+                        v-else
+                        class="text-caption text-medium-emphasis mt-0.5"
+                        style="font-size: 0.74rem;"
+                      >
+                        Liquidación
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- ADELANTO DEDUCIDO -->
-                <div
-                  v-else-if="item.is_deducted"
-                  class="d-flex align-center gap-3"
-                >
-                  <VAvatar
-                    size="34"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0"
-                    style="background-color: rgba(16, 185, 129, 0.12); color: #059669;"
+                  <!-- ADELANTO DEDUCIDO -->
+                  <div
+                    v-else-if="item.is_deducted"
+                    class="d-flex align-center gap-3"
                   >
-                    <VIcon
-                      icon="ri-checkbox-circle-line"
-                      size="18"
-                      style="color: #059669;"
-                    />
-                  </VAvatar>
-                  <div class="d-flex flex-column text-left">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
-                      Adelanto
-                    </div>
-                    <div
-                      class="text-caption d-flex align-center mt-0.5 font-weight-medium"
-                      style="gap: 5px; font-size: 0.74rem; color: #047857;"
+                    <VAvatar
+                      size="34"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0"
+                      style="background-color: rgba(16, 185, 129, 0.12); color: #059669;"
                     >
                       <VIcon
-                        icon="ri-check-line"
-                        size="13"
+                        icon="ri-checkbox-circle-line"
+                        size="18"
                         style="color: #059669;"
                       />
-                      <span>Liquidado en Rol</span>
+                    </VAvatar>
+                    <div class="d-flex flex-column text-left">
+                      <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                        Adelanto
+                      </div>
+                      <div
+                        class="text-caption d-flex align-center mt-0.5 font-weight-medium"
+                        style="gap: 5px; font-size: 0.74rem; color: #047857;"
+                      >
+                        <VIcon
+                          icon="ri-check-line"
+                          size="13"
+                          style="color: #059669;"
+                        />
+                        <span>Liquidado en Rol</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- ADELANTO PENDIENTE -->
-                <div
-                  v-else
-                  class="d-flex align-center gap-3"
-                >
-                  <VAvatar
-                    size="34"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0"
-                    style="background-color: rgba(245, 158, 11, 0.12); color: #d97706;"
+                  <!-- ADELANTO PENDIENTE -->
+                  <div
+                    v-else
+                    class="d-flex align-center gap-3"
                   >
-                    <VIcon
-                      icon="ri-hand-coin-line"
-                      size="18"
-                      style="color: #d97706;"
-                    />
-                  </VAvatar>
-                  <div class="d-flex flex-column text-left">
-                    <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
-                      Adelanto
-                    </div>
-                    <div
-                      class="text-caption d-flex align-center mt-0.5 font-weight-medium"
-                      style="gap: 5px; font-size: 0.74rem; color: #b45309;"
+                    <VAvatar
+                      size="34"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0"
+                      style="background-color: rgba(245, 158, 11, 0.12); color: #d97706;"
                     >
                       <VIcon
-                        icon="ri-time-line"
-                        size="13"
+                        icon="ri-hand-coin-line"
+                        size="18"
                         style="color: #d97706;"
                       />
-                      <span>Por Deducir</span>
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Empleado -->
-              <td
-                class="py-3"
-                style="max-width: 240px;"
-              >
-                <div
-                  class="d-flex align-center gap-3"
-                  style="min-width: 0;"
-                >
-                  <VAvatar
-                    size="34"
-                    color="primary"
-                    variant="tonal"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0 font-weight-bold"
-                  >
-                    <span style="font-size: 0.8rem;">{{ getEmployeeInitials(item.employee_name) }}</span>
-                  </VAvatar>
-                  <div
-                    class="d-flex flex-column text-left"
-                    style="min-width: 0; flex: 1 1 auto;"
-                  >
-                    <div
-                      class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                      :title="item.employee_name"
-                    >
-                      {{ item.employee_name }}
-                    </div>
-                    <div
-                      class="text-caption text-medium-emphasis mt-0.5 font-weight-medium text-truncate"
-                      style="font-size: 0.74rem;"
-                    >
-                      {{ item.type === 'payment' ? 'Empleado / Sueldo' : 'Anticipo' }}
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Descripción -->
-              <td class="py-3">
-                <div
-                  class="text-body-2 text-high-emphasis line-clamp-2"
-                  :title="item.description || item.reason"
-                  style="max-width: 320px;"
-                >
-                  {{ item.description || item.reason || 'Sin descripción adicional' }}
-                </div>
-              </td>
-
-              <!-- Cuenta de Pago -->
-              <td
-                class="py-3"
-                style="white-space: nowrap;"
-              >
-                <div class="d-flex align-center gap-2.5">
-                  <VAvatar
-                    size="28"
-                    :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'"
-                    variant="tonal"
-                    rounded="lg"
-                    class="flex-shrink-0"
-                  >
-                    <VIcon
-                      :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
-                      size="15"
-                    />
-                  </VAvatar>
-                  <span class="font-weight-medium text-high-emphasis text-body-2">
-                    {{ cleanAccountName(item.account_name) }}
-                  </span>
-                </div>
-              </td>
-
-              <!-- Fecha -->
-              <td
-                class="py-3"
-                style="white-space: nowrap;"
-              >
-                <div class="d-flex align-center text-body-2 text-medium-emphasis">
-                  <VIcon
-                    icon="ri-calendar-line"
-                    size="15"
-                    class="me-2 flex-shrink-0 text-disabled"
-                  />
-                  <span class="font-weight-medium">{{ item.date }}</span>
-                </div>
-              </td>
-
-              <!-- Monto -->
-              <td
-                class="py-3 text-right"
-                style="white-space: nowrap;"
-              >
-                <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
-                  {{ formatCurrency(item.amount) }}
-                </span>
-              </td>
-
-              <!-- Acciones -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
-              >
-                <div class="d-flex justify-center align-center gap-2">
-                  <VBtn
-                    size="small"
-                    color="primary"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Nota y Comprobantes"
-                    @click="openEmployeeNoteDialog(item)"
-                  />
-
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-printer-line"
-                    title="Imprimir Comprobante"
-                    @click="printReceipt(item)"
-                  />
-
-                  <VBtn
-                    size="small"
-                    color="secondary"
-                    variant="tonal"
-                    icon="ri-more-2-line"
-                    title="Más Opciones"
-                  >
-                    <VIcon
-                      icon="ri-more-2-line"
-                      size="18"
-                    />
-                    <VMenu
-                      activator="parent"
-                      transition="slide-y-transition"
-                      align="end"
-                      location="bottom end"
-                    >
-                      <VList
-                        density="compact"
-                        class="py-1 rounded-lg elevation-4 border"
-                        min-width="220"
+                    </VAvatar>
+                    <div class="d-flex flex-column text-left">
+                      <div class="font-weight-bold text-high-emphasis text-body-2 leading-tight">
+                        Adelanto
+                      </div>
+                      <div
+                        class="text-caption d-flex align-center mt-0.5 font-weight-medium"
+                        style="gap: 5px; font-size: 0.74rem; color: #b45309;"
                       >
-                        <VListItem
-                          prepend-icon="ri-printer-line"
-                          title="Imprimir Comprobante"
-                          class="text-info font-weight-medium"
-                          @click="printReceipt(item)"
+                        <VIcon
+                          icon="ri-time-line"
+                          size="13"
+                          style="color: #d97706;"
                         />
-                        <VListItem
-                          :prepend-icon="item.type === 'payment' ? 'ri-file-pdf-line' : 'ri-file-text-line'"
-                          :title="item.type === 'payment' ? 'Descargar Rol de Pagos (PDF)' : 'Descargar Comprobante (PDF)'"
-                          class="text-primary font-weight-medium"
-                          @click="generatePDF(item)"
-                        />
-                        <VListItem
-                          prepend-icon="ri-attachment-2"
-                          title="Adjuntar Comprobante"
-                          class="text-secondary font-weight-medium"
-                          @click="openAttachDialog(item)"
-                        />
-                        <VDivider class="my-1" />
-                        <VListItem
-                          prepend-icon="ri-edit-line"
-                          title="Editar Registro"
-                          class="text-warning font-weight-medium"
-                          :disabled="item.type === 'advance' && item.is_deducted"
-                          @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
-                        />
-                        <VListItem
-                          prepend-icon="ri-delete-bin-line"
-                          title="Eliminar Registro"
-                          class="text-error font-weight-medium"
-                          :disabled="item.type === 'advance' && item.is_deducted"
-                          @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
-                        />
-                      </VList>
-                    </VMenu>
-                  </VBtn>
-                </div>
-              </td>
-            </tr>
+                        <span>Por Deducir</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Empleado -->
+                <td
+                  class="py-3"
+                  style="max-width: 240px;"
+                >
+                  <div
+                    class="d-flex align-center gap-3"
+                    style="min-width: 0;"
+                  >
+                    <VAvatar
+                      size="34"
+                      color="primary"
+                      variant="tonal"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0 font-weight-bold"
+                    >
+                      <span style="font-size: 0.8rem;">{{ getEmployeeInitials(item.employee_name) }}</span>
+                    </VAvatar>
+                    <div
+                      class="d-flex flex-column text-left"
+                      style="min-width: 0; flex: 1 1 auto;"
+                    >
+                      <div
+                        class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                        :title="item.employee_name"
+                      >
+                        {{ item.employee_name }}
+                      </div>
+                      <div
+                        class="text-caption text-medium-emphasis mt-0.5 font-weight-medium text-truncate"
+                        style="font-size: 0.74rem;"
+                      >
+                        {{ item.type === 'payment' ? 'Empleado / Sueldo' : 'Anticipo' }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Descripción -->
+                <td class="py-3">
+                  <div
+                    class="text-body-2 text-high-emphasis line-clamp-2"
+                    :title="item.description || item.reason"
+                    style="max-width: 320px;"
+                  >
+                    {{ item.description || item.reason || 'Sin descripción adicional' }}
+                  </div>
+                </td>
+
+                <!-- Cuenta de Pago -->
+                <td
+                  class="py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div class="d-flex align-center gap-2.5">
+                    <VAvatar
+                      size="28"
+                      :color="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'success' : 'primary'"
+                      variant="tonal"
+                      rounded="lg"
+                      class="flex-shrink-0"
+                    >
+                      <VIcon
+                        :icon="item.account_name && item.account_name.toLowerCase().includes('efectivo') ? 'ri-money-dollar-circle-line' : 'ri-bank-line'"
+                        size="15"
+                      />
+                    </VAvatar>
+                    <span class="font-weight-medium text-high-emphasis text-body-2">
+                      {{ cleanAccountName(item.account_name) }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Fecha -->
+                <td
+                  class="py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div class="d-flex align-center text-body-2 text-medium-emphasis">
+                    <VIcon
+                      icon="ri-calendar-line"
+                      size="15"
+                      class="me-2 flex-shrink-0 text-disabled"
+                    />
+                    <span class="font-weight-medium">{{ item.date }}</span>
+                  </div>
+                </td>
+
+                <!-- Monto -->
+                <td
+                  class="py-3 text-right"
+                  style="white-space: nowrap;"
+                >
+                  <span class="font-weight-bold font-mono text-body-1 text-high-emphasis">
+                    {{ formatCurrency(item.amount) }}
+                  </span>
+                </td>
+
+                <!-- Acciones -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div class="d-flex justify-center align-center gap-2">
+                    <VBtn
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      icon="ri-eye-line"
+                      title="Ver Nota y Comprobantes"
+                      @click="openEmployeeNoteDialog(item)"
+                    />
+
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-printer-line"
+                      title="Imprimir Comprobante"
+                      @click="printReceipt(item)"
+                    />
+
+                    <VBtn
+                      size="small"
+                      color="secondary"
+                      variant="tonal"
+                      icon="ri-more-2-line"
+                      title="Más Opciones"
+                    >
+                      <VIcon
+                        icon="ri-more-2-line"
+                        size="18"
+                      />
+                      <VMenu
+                        activator="parent"
+                        transition="slide-y-transition"
+                        align="end"
+                        location="bottom end"
+                      >
+                        <VList
+                          density="compact"
+                          class="py-1 rounded-lg elevation-4 border"
+                          min-width="220"
+                        >
+                          <VListItem
+                            prepend-icon="ri-printer-line"
+                            title="Imprimir Comprobante"
+                            class="text-info font-weight-medium"
+                            @click="printReceipt(item)"
+                          />
+                          <VListItem
+                            :prepend-icon="item.type === 'payment' ? 'ri-file-pdf-line' : 'ri-file-text-line'"
+                            :title="item.type === 'payment' ? 'Descargar Rol de Pagos (PDF)' : 'Descargar Comprobante (PDF)'"
+                            class="text-primary font-weight-medium"
+                            @click="generatePDF(item)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-attachment-2"
+                            title="Adjuntar Comprobante"
+                            class="text-secondary font-weight-medium"
+                            @click="openAttachDialog(item)"
+                          />
+                          <VDivider class="my-1" />
+                          <VListItem
+                            prepend-icon="ri-edit-line"
+                            title="Editar Registro"
+                            class="text-warning font-weight-medium"
+                            :disabled="item.type === 'advance' && item.is_deducted"
+                            @click="item.type === 'payment' ? openEditPaymentDialog(item) : openEditAdvanceDialog(item)"
+                          />
+                          <VListItem
+                            prepend-icon="ri-delete-bin-line"
+                            title="Eliminar Registro"
+                            class="text-error font-weight-medium"
+                            :disabled="item.type === 'advance' && item.is_deducted"
+                            @click="item.type === 'payment' ? openDeletePaymentDialog(item) : openDeleteAdvanceDialog(item)"
+                          />
+                        </VList>
+                      </VMenu>
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
@@ -1282,6 +1313,7 @@ onMounted(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPages"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

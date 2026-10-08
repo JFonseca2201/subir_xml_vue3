@@ -309,98 +309,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="isLoading">
-      <!-- Loading móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <div
-          v-for="n in 4"
-          :key="n"
-          class="mobile-unit-card"
-        >
-          <div class="d-flex justify-space-between align-center pb-2 border-b mb-2">
-            <div
-              class="shimmer-line w-25"
-              style="height: 14px;"
-            />
-            <div
-              class="shimmer-button rounded"
-              style="width: 100px; height: 26px;"
-            />
-          </div>
-          <div class="d-flex align-center gap-3 mb-2">
-            <div
-              class="shimmer-avatar rounded-lg"
-              style="width: 40px; height: 40px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-50 mb-1"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-30"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div class="pt-2 border-t d-flex justify-end">
-            <div
-              class="shimmer-chip"
-              style="width: 80px;"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading desktop -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 70px;"
-              >
-                <div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-chip" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 140px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay unidades) -->
     <VCard
-      v-else-if="!list_units || list_units.length === 0"
+      v-if="!isLoading && (!list_units || list_units.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -443,15 +354,69 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTA DE UNIDADES -->
+    <!-- LISTA DE UNIDADES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <div
-          v-for="item in list_units"
-          :key="item.id"
-          class="mobile-unit-card"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="isLoading">
+          <div
+            v-for="n in 4"
+            :key="'mob-skel-unit-' + n"
+            class="mobile-unit-card"
+          >
+            <div class="d-flex justify-space-between align-center pb-2 border-b mb-2">
+              <div
+                class="shimmer-line"
+                style="width: 50px; height: 14px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-2">
+              <div
+                class="shimmer-avatar rounded-lg"
+                style="width: 40px; height: 40px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-50 mb-1"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-30"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div class="pt-2 border-t d-flex justify-end">
+              <div
+                class="shimmer-chip"
+                style="width: 70px; height: 24px;"
+              />
+            </div>
+          </div>
+        </template>
+
+        <!-- Tarjetas reales de unidades -->
+        <template v-else>
+          <div
+            v-for="item in list_units"
+            :key="'mob-unit-' + item.id"
+            class="mobile-unit-card"
+          >
           <!-- Fila Superior: ID, Fecha y Acciones -->
           <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
             <div class="d-flex align-center gap-2">
@@ -526,6 +491,7 @@ onMounted(() => {
             </div>
           </div>
         </div>
+        </template>
       </div>
 
       <!-- VISTA DESKTOP: TABLA (d-none d-md-block) -->
@@ -575,102 +541,142 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in list_units"
-              :key="item.id"
-              class="unit-table-row"
-            >
-              <td class="font-weight-bold text-disabled">
-                #{{ item.id }}
-              </td>
-
-              <!-- Unidad con Avatar -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                    size="38"
-                    rounded="lg"
-                    class="elevation-0"
-                  >
-                    <VIcon
-                      icon="ri-ruler-2-line"
-                      size="22"
-                    />
-                  </VAvatar>
-                  <div>
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
-                      {{ item.name }}
+            <template v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-unit-row-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-4" style="width: 70px;">
+                  <div class="shimmer-line" style="width: 35px; height: 16px;" />
+                </td>
+                <td class="py-4">
+                  <div class="d-flex align-center gap-3">
+                    <div class="shimmer-circle" style="width: 38px; height: 38px; border-radius: 8px;" />
+                    <div class="flex-grow-1">
+                      <div class="shimmer-line mb-1.5" style="width: 140px; height: 16px;" />
                     </div>
                   </div>
-                </div>
-              </td>
-
-              <!-- Descripción (Texto limpio sin vchip) -->
-              <td class="py-3">
-                <span class="text-body-2 text-medium-emphasis">
-                  {{ item.description || '-' }}
-                </span>
-              </td>
-
-              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" style="height: 14px;" />
+                </td>
+                <td class="text-center py-4" style="width: 120px;">
+                  <div class="shimmer-chip mx-auto" style="width: 70px; height: 24px;" />
+                </td>
+                <td class="py-4" style="width: 140px;">
+                  <div class="shimmer-line" style="width: 80px; height: 14px;" />
+                </td>
+                <td class="text-center py-4" style="width: 150px;">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="item in list_units"
+                :key="item.id"
+                class="unit-table-row"
               >
-                <div
-                  class="status-pill-clean"
-                  :class="item.state == 1 ? 'status-paid' : 'status-pending'"
+                <td class="font-weight-bold text-disabled">
+                  #{{ item.id }}
+                </td>
+
+                <!-- Unidad con Avatar -->
+                <td class="py-3">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      color="primary"
+                      variant="tonal"
+                      size="38"
+                      rounded="lg"
+                      class="elevation-0"
+                    >
+                      <VIcon
+                        icon="ri-ruler-2-line"
+                        size="22"
+                      />
+                    </VAvatar>
+                    <div>
+                      <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                        {{ item.name }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Descripción (Texto limpio sin vchip) -->
+                <td class="py-3">
+                  <span class="text-body-2 text-medium-emphasis">
+                    {{ item.description || '-' }}
+                  </span>
+                </td>
+
+                <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
                 >
-                  <span class="status-dot" />
-                  <span>{{ item.state == 1 ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </td>
+                  <div
+                    class="status-pill-clean"
+                    :class="item.state == 1 ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ item.state == 1 ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </td>
 
-              <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-caption text-medium-emphasis">
-                  {{ item.created_at ? new Date(item.created_at).toLocaleDateString() : '-' }}
-                </span>
-              </td>
+                <!-- Fecha -->
+                <td class="py-3">
+                  <span class="text-caption text-medium-emphasis">
+                    {{ item.created_at ? new Date(item.created_at).toLocaleDateString() : '-' }}
+                  </span>
+                </td>
 
-              <!-- Acciones -->
-              <td class="text-center">
-                <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-exchange-line"
-                    title="Agregar Conversión"
-                    @click="addConversion(item)"
-                  />
-                  <VBtn
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Unidad"
-                    @click="editItem(item)"
-                  />
-                  <VBtn
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Unidad"
-                    @click="deleteItem(item)"
-                  />
-                </div>
-              </td>
-            </tr>
+                <!-- Acciones -->
+                <td class="text-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-exchange-line"
+                      title="Agregar Conversión"
+                      @click="addConversion(item)"
+                    />
+                    <VBtn
+                      size="small"
+                      color="warning"
+                      variant="tonal"
+                      icon="ri-pencil-line"
+                      title="Editar Unidad"
+                      @click="editItem(item)"
+                    />
+                    <VBtn
+                      size="small"
+                      color="error"
+                      variant="tonal"
+                      icon="ri-delete-bin-line"
+                      title="Eliminar Unidad"
+                      @click="deleteItem(item)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
 
       <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <VCard
+        v-if="totalPage > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_units.length }}</strong> unidades de medida
@@ -678,6 +684,7 @@ onMounted(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPage"
+            :disabled="isLoading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

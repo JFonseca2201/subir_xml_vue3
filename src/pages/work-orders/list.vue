@@ -845,102 +845,9 @@ watch(() => route.query.search, newSearch => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="isLoading">
-      <!-- Skeleton Móvil (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-wo-' + n"
-          class="mobile-wo-card elevation-0 pa-4"
-        >
-          <div class="d-flex justify-space-between mb-2">
-            <div class="shimmer-line w-40" />
-            <div
-              class="shimmer-button rounded"
-              style="width: 24px; height: 24px;"
-            />
-          </div>
-          <div class="d-flex align-center gap-2 mb-3">
-            <div
-              class="shimmer-button rounded-lg"
-              style="width: 34px; height: 34px;"
-            />
-            <div class="flex-grow-1">
-              <div class="shimmer-line w-60 mb-1" />
-              <div class="shimmer-line w-35" />
-            </div>
-          </div>
-          <div class="d-flex justify-space-between align-center pt-2 border-t">
-            <div class="shimmer-line w-30" />
-            <div
-              class="shimmer-chip"
-              style="width: 70px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio (d-none d-md-block) -->
-      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
-        <VTable class="work-orders-modern-table">
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 13%;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 27%;"
-              >
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 23%;"
-              >
-                <div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 12%;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4 text-right"
-                style="width: 10%;"
-              >
-                <div class="shimmer-line w-60 ms-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 10%;"
-              >
-                <div class="shimmer-chip mx-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 5%;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay órdenes) -->
     <VCard
-      v-else-if="!filteredWorkOrders.length"
+      v-if="!isLoading && !filteredWorkOrders.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -984,18 +891,54 @@ watch(() => route.query.search, newSearch => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE ÓRDENES DE TRABAJO (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE ÓRDENES DE TRABAJO (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="item in paginatedWorkOrders"
-          :key="'mob-wo-' + item.id"
-          class="mobile-wo-card elevation-0"
-          :class="{
-            'wo-row-pending-finish': isPendingFinish(item),
-          }"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="isLoading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-wo-' + n"
+            class="mobile-wo-card elevation-0 pa-4"
+          >
+            <div class="d-flex justify-space-between mb-2">
+              <div class="shimmer-line w-40" />
+              <div
+                class="shimmer-button rounded"
+                style="width: 24px; height: 24px;"
+              />
+            </div>
+            <div class="d-flex align-center gap-2 mb-3">
+              <div
+                class="shimmer-button rounded-lg"
+                style="width: 34px; height: 34px;"
+              />
+              <div class="flex-grow-1">
+                <div class="shimmer-line w-60 mb-1" />
+                <div class="shimmer-line w-35" />
+              </div>
+            </div>
+            <div class="d-flex justify-space-between align-center pt-2 border-t">
+              <div class="shimmer-line w-30" />
+              <div
+                class="shimmer-chip"
+                style="width: 70px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de órdenes de trabajo -->
+        <template v-else>
+          <VCard
+            v-for="item in paginatedWorkOrders"
+            :key="'mob-wo-' + item.id"
+            class="mobile-wo-card elevation-0"
+            :class="{
+              'wo-row-pending-finish': isPendingFinish(item),
+            }"
+          >
           <!-- Fila superior: N° Orden + Alerta + Acciones -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-1 border-b">
             <div class="d-flex align-center gap-1.5 min-w-0">
@@ -1145,18 +1088,25 @@ watch(() => route.query.search, newSearch => {
           <!-- Vehículo -->
           <div
             v-if="item.vehicle"
-            class="d-flex align-center gap-2 mb-2.5 py-1 px-2.5 rounded-lg bg-grey-lighten-5 border"
+            class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0"
           >
             <VIcon
-              icon="ri-car-line"
+              icon="ri-roadster-line"
               size="15"
-              color="secondary"
+              color="primary"
               class="flex-shrink-0"
             />
-            <span class="font-mono font-weight-bold text-caption text-high-emphasis flex-shrink-0">
-              {{ item.vehicle.license_plate ? item.vehicle.license_plate.toUpperCase() : 'SIN PLACA' }}
+            <span
+              v-if="item.vehicle.license_plate"
+              class="font-mono font-weight-bold text-primary flex-shrink-0"
+            >
+              {{ item.vehicle.license_plate.toUpperCase() }}
             </span>
-            <span class="text-caption text-medium-emphasis text-truncate">
+            <span
+              v-if="item.vehicle.license_plate"
+              class="text-disabled"
+            >•</span>
+            <span class="text-medium-emphasis text-truncate font-weight-medium">
               {{ getVehicleInfo(item.vehicle) }}
             </span>
           </div>
@@ -1216,7 +1166,8 @@ watch(() => route.query.search, newSearch => {
             </div>
           </div>
         </VCard>
-      </div>
+      </template>
+    </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
@@ -1271,14 +1222,68 @@ watch(() => route.query.search, newSearch => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in paginatedWorkOrders"
-              :key="item.id"
-              class="wo-table-row"
-              :class="{
-                'wo-row-pending-finish': isPendingFinish(item),
-              }"
-            >
+            <!-- Skeleton Rows en tabla de escritorio -->
+            <template v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-row-wo-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td
+                  class="py-4"
+                  style="width: 13%;"
+                >
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 27%;"
+                >
+                  <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 23%;"
+                >
+                  <div class="shimmer-line w-60 mb-2" /><div class="shimmer-line w-40" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 12%;"
+                >
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td
+                  class="py-4 text-right"
+                  style="width: 10%;"
+                >
+                  <div class="shimmer-line w-60 ms-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 10%;"
+                >
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 5%;"
+                >
+                  <div class="shimmer-button rounded mx-auto" />
+                </td>
+              </tr>
+            </template>
+
+            <!-- Filas reales de órdenes -->
+            <template v-else>
+              <tr
+                v-for="item in paginatedWorkOrders"
+                :key="item.id"
+                class="wo-table-row"
+                :class="{
+                  'wo-row-pending-finish': isPendingFinish(item),
+                }"
+              >
               <!-- N° Orden -->
               <td
                 class="py-3"
@@ -1598,29 +1603,34 @@ watch(() => route.query.search, newSearch => {
                 </div>
               </td>
             </tr>
-          </tbody>
-        </VTable>
-      </VCard>
+          </template>
+        </tbody>
+      </VTable>
+    </VCard>
 
-      <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ paginatedWorkOrders.length }}</strong> de <strong class="text-high-emphasis">{{ filteredWorkOrders.length }}</strong> órdenes
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-          />
+    <!-- Paginación -->
+    <VCard
+      v-if="totalPages > 0"
+      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+    >
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+        <div class="text-body-2 text-medium-emphasis">
+          Mostrando <strong class="text-high-emphasis">{{ paginatedWorkOrders.length }}</strong> de <strong class="text-high-emphasis">{{ filteredWorkOrders.length }}</strong> órdenes
         </div>
-      </VCard>
-    </div>
+        <VPagination
+          v-model="currentPage"
+          :length="totalPages"
+          :disabled="isLoading"
+          rounded="circle"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          density="comfortable"
+          color="primary"
+          class="my-0"
+        />
+      </div>
+    </VCard>
+  </div>
 
     <!-- DIÁLOGOS -->
     <!-- Details Dialog -->

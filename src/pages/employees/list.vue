@@ -384,105 +384,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-emp-' + n"
-          class="mobile-employee-card elevation-0 pa-4"
-        >
-          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 100px; height: 16px;"
-            />
-            <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 40px; height: 40px; border-radius: 8px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-40"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-line"
-              style="width: 70px; height: 16px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 70px; height: 24px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 140px;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-chip mx-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 130px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay empleados) -->
     <VCard
-      v-else-if="!employees || employees.length === 0"
+      v-if="!loading && (!employees || employees.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -526,15 +430,69 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE EMPLEADOS (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE EMPLEADOS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="item in employees"
-          :key="'mob-emp-' + item.id"
-          class="mobile-employee-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-emp-' + n"
+            class="mobile-employee-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+              <div
+                class="shimmer-line"
+                style="width: 100px; height: 16px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div
+                class="shimmer-circle"
+                style="width: 40px; height: 40px; border-radius: 8px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-75 mb-2"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-40"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex justify-space-between pt-2 border-t">
+              <div
+                class="shimmer-line"
+                style="width: 70px; height: 16px;"
+              />
+              <div
+                class="shimmer-chip"
+                style="width: 70px; height: 24px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de empleados -->
+        <template v-else>
+          <VCard
+            v-for="item in employees"
+            :key="'mob-emp-' + item.id"
+            class="mobile-employee-card elevation-0"
+          >
           <!-- Cabecera Móvil: Identificación + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-1.5 min-w-0">
@@ -630,6 +588,7 @@ onMounted(() => {
             </div>
           </div>
         </VCard>
+        </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
@@ -679,117 +638,156 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in employees"
-              :key="item.id"
-              class="employee-table-row"
-            >
-              <!-- Identificación -->
-              <td class="py-3">
-                <span class="font-weight-bold text-high-emphasis font-mono">
-                  {{ item.identification || 'Sin cédula' }}
-                </span>
-              </td>
-
-              <!-- Empleado -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    size="38"
-                    color="primary"
-                    variant="tonal"
-                    rounded="lg"
-                    class="font-weight-bold elevation-0"
-                  >
-                    <span>{{ getEmployeeInitials(item.first_name, item.last_name) }}</span>
-                  </VAvatar>
-                  <div>
-                    <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
-                      {{ item.first_name }} {{ item.last_name }}
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-emp-row-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-4" style="width: 160px;">
+                  <div class="shimmer-line" style="width: 100px; height: 16px;" />
+                </td>
+                <td class="py-4">
+                  <div class="d-flex align-center gap-3">
+                    <div class="shimmer-circle" style="width: 38px; height: 38px; border-radius: 8px;" />
+                    <div class="flex-grow-1">
+                      <div class="shimmer-line mb-1.5" style="width: 150px; height: 16px;" />
                     </div>
                   </div>
-                </div>
-              </td>
-
-              <!-- Email -->
-              <td class="py-3">
-                <span
-                  class="text-body-2 text-medium-emphasis text-truncate"
-                  style="max-width: 230px;"
-                  :title="item.email"
-                >
-                  {{ item.email || '-' }}
-                </span>
-              </td>
-
-              <!-- Cargo (Texto limpio, sin vchip) -->
-              <td class="py-3">
-                <span class="text-body-2 font-weight-medium text-high-emphasis text-uppercase">
-                  {{ item.position || 'No especificado' }}
-                </span>
-              </td>
-
-              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
+                </td>
+                <td class="py-4" style="width: 240px;">
+                  <div class="shimmer-line" style="width: 160px; height: 14px;" />
+                </td>
+                <td class="py-4" style="width: 180px;">
+                  <div class="shimmer-line" style="width: 110px; height: 14px;" />
+                </td>
+                <td class="py-4 text-center" style="width: 120px;">
+                  <div class="shimmer-chip mx-auto" style="width: 70px; height: 24px;" />
+                </td>
+                <td class="py-4 text-center" style="width: 130px;">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="item in employees"
+                :key="item.id"
+                class="employee-table-row"
               >
-                <div
-                  class="status-pill-clean"
-                  :class="isEmployeeActive(item) ? 'status-paid' : 'status-pending'"
-                >
-                  <span class="status-dot" />
-                  <span>{{ isEmployeeActive(item) ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </td>
+                <!-- Identificación -->
+                <td class="py-3">
+                  <span class="font-weight-bold text-high-emphasis font-mono">
+                    {{ item.identification || 'Sin cédula' }}
+                  </span>
+                </td>
 
-              <!-- Acciones -->
-              <td class="text-center">
-                <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha de Empleado"
-                    @click="openViewDialog(item)"
-                  />
-                  <VBtn
-                    v-if="can('edit_employee')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Empleado"
-                    @click="openEditDialog(item)"
-                  />
-                  <VBtn
-                    v-if="!isEmployeeActive(item) && can('edit_employee')"
-                    size="small"
-                    color="success"
-                    variant="tonal"
-                    icon="ri-refresh-line"
-                    title="Restaurar Empleado"
-                    @click="restoreEmployee(item)"
-                  />
-                  <VBtn
-                    v-else-if="can('delete_employee')"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Empleado"
-                    @click="openDeleteDialog(item)"
-                  />
-                </div>
-              </td>
-            </tr>
+                <!-- Empleado -->
+                <td class="py-3">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="38"
+                      color="primary"
+                      variant="tonal"
+                      rounded="lg"
+                      class="font-weight-bold elevation-0"
+                    >
+                      <span>{{ getEmployeeInitials(item.first_name, item.last_name) }}</span>
+                    </VAvatar>
+                    <div>
+                      <div class="font-weight-bold text-high-emphasis text-uppercase text-body-1">
+                        {{ item.first_name }} {{ item.last_name }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Email -->
+                <td class="py-3">
+                  <span
+                    class="text-body-2 text-medium-emphasis text-truncate"
+                    style="max-width: 230px;"
+                    :title="item.email"
+                  >
+                    {{ item.email || '-' }}
+                  </span>
+                </td>
+
+                <!-- Cargo (Texto limpio, sin vchip) -->
+                <td class="py-3">
+                  <span class="text-body-2 font-weight-medium text-high-emphasis text-uppercase">
+                    {{ item.position || 'No especificado' }}
+                  </span>
+                </td>
+
+                <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div
+                    class="status-pill-clean"
+                    :class="isEmployeeActive(item) ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ isEmployeeActive(item) ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </td>
+
+                <!-- Acciones -->
+                <td class="text-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-eye-line"
+                      title="Ver Ficha de Empleado"
+                      @click="openViewDialog(item)"
+                    />
+                    <VBtn
+                      v-if="can('edit_employee')"
+                      size="small"
+                      color="warning"
+                      variant="tonal"
+                      icon="ri-pencil-line"
+                      title="Editar Empleado"
+                      @click="openEditDialog(item)"
+                    />
+                    <VBtn
+                      v-if="!isEmployeeActive(item) && can('edit_employee')"
+                      size="small"
+                      color="success"
+                      variant="tonal"
+                      icon="ri-refresh-line"
+                      title="Restaurar Empleado"
+                      @click="restoreEmployee(item)"
+                    />
+                    <VBtn
+                      v-else-if="can('delete_employee')"
+                      size="small"
+                      color="error"
+                      variant="tonal"
+                      icon="ri-delete-bin-line"
+                      title="Eliminar Empleado"
+                      @click="openDeleteDialog(item)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
 
       <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <VCard
+        v-if="totalPages > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ employees.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> empleados
@@ -797,6 +795,7 @@ onMounted(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPages"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

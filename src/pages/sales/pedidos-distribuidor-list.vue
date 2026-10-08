@@ -739,114 +739,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-ped-' + n"
-          class="mobile-pedido-card elevation-0 pa-4"
-        >
-          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 80px; height: 16px;"
-            />
-            <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 38px; height: 38px; border-radius: 8px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-40"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-line"
-              style="width: 90px; height: 16px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 80px; height: 24px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 150px;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-80 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-60 ms-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 140px;"
-              >
-                <div class="shimmer-chip mx-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 140px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay pedidos) -->
     <VCard
-      v-else-if="!filteredPedidos.length"
+      v-if="!loading && !filteredPedidos.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -889,15 +784,69 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE PEDIDOS (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE PEDIDOS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="item in filteredPedidos"
-          :key="'mob-pedido-' + item.id"
-          class="mobile-pedido-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-ped-' + n"
+            class="mobile-pedido-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+              <div
+                class="shimmer-line"
+                style="width: 80px; height: 16px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div
+                class="shimmer-circle"
+                style="width: 38px; height: 38px; border-radius: 8px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-75 mb-2"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-40"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex justify-space-between pt-2 border-t">
+              <div
+                class="shimmer-line"
+                style="width: 90px; height: 16px;"
+              />
+              <div
+                class="shimmer-chip"
+                style="width: 80px; height: 24px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de pedidos -->
+        <template v-else>
+          <VCard
+            v-for="item in filteredPedidos"
+            :key="'mob-pedido-' + item.id"
+            class="mobile-pedido-card elevation-0"
+          >
           <!-- Cabecera Móvil: N° Pedido + Fecha + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-2 min-w-0">
@@ -1057,7 +1006,8 @@ onMounted(() => {
             </VMenu>
           </div>
         </VCard>
-      </div>
+      </template>
+    </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
@@ -1112,11 +1062,59 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in filteredPedidos"
-              :key="item.id"
-              class="pedido-table-row"
-            >
+            <!-- Skeleton Rows en tabla de escritorio -->
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-row-ped-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td
+                  class="py-4"
+                  style="width: 120px;"
+                >
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 160px;"
+                >
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-80 mb-2" /><div class="shimmer-line w-40" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td
+                  class="py-4 text-right"
+                  style="width: 130px;"
+                >
+                  <div class="shimmer-line w-60 ms-auto" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 160px;"
+                >
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 140px;"
+                >
+                  <div class="shimmer-button rounded mx-auto" />
+                </td>
+              </tr>
+            </template>
+
+            <!-- Filas reales de pedidos -->
+            <template v-else>
+              <tr
+                v-for="item in filteredPedidos"
+                :key="item.id"
+                class="pedido-table-row"
+              >
               <!-- ID Pedido -->
               <td class="py-3">
                 <div
@@ -1313,29 +1311,34 @@ onMounted(() => {
                 </div>
               </td>
             </tr>
-          </tbody>
-        </VTable>
-      </VCard>
+          </template>
+        </tbody>
+      </VTable>
+    </VCard>
 
-      <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ filteredPedidos.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> pedidos
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-          />
+    <!-- Paginación -->
+    <VCard
+      v-if="totalPages > 0"
+      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+    >
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+        <div class="text-body-2 text-medium-emphasis">
+          Mostrando <strong class="text-high-emphasis">{{ filteredPedidos.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> pedidos
         </div>
-      </VCard>
-    </div>
+        <VPagination
+          v-model="currentPage"
+          :length="totalPages"
+          :disabled="loading"
+          rounded="circle"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          density="comfortable"
+          color="primary"
+          class="my-0"
+        />
+      </div>
+    </VCard>
+  </div>
 
     <!-- Dialogo de Detalle de Pedido -->
     <VDialog

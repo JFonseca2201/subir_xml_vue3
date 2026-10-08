@@ -2150,6 +2150,7 @@ onMounted(() => {
             v-if="totalPages > 1"
             v-model="currentPage"
             :length="totalPages"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

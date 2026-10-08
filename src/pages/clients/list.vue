@@ -480,119 +480,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-client-' + n"
-          class="mobile-client-card elevation-0 pa-4"
-        >
-          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 70px; height: 16px;"
-            />
-            <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 42px; height: 42px; border-radius: 10px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-50"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div
-            class="shimmer-line w-100 mb-2"
-            style="height: 14px;"
-          />
-          <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-chip"
-              style="width: 90px; height: 24px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 70px; height: 24px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 70px;"
-              >
-                <div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 160px;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-50" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 110px;"
-              >
-                <div class="shimmer-chip" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 140px;"
-              >
-                <div class="d-flex justify-center gap-2">
-                  <div class="shimmer-button rounded" />
-                  <div class="shimmer-button rounded" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay clientes) -->
     <VCard
-      v-else-if="!clients.length"
+      v-if="!loading && !clients.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -636,15 +526,73 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE CLIENTES (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE CLIENTES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="client in clients"
-          :key="'mob-client-' + client.id"
-          class="mobile-client-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-client-' + n"
+            class="mobile-client-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+              <div
+                class="shimmer-line"
+                style="width: 70px; height: 16px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div
+                class="shimmer-circle"
+                style="width: 42px; height: 42px; border-radius: 10px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-75 mb-2"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-50"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div
+              class="shimmer-line w-100 mb-2"
+              style="height: 14px;"
+            />
+            <div class="d-flex justify-space-between pt-2 border-t">
+              <div
+                class="shimmer-chip"
+                style="width: 90px; height: 24px;"
+              />
+              <div
+                class="shimmer-chip"
+                style="width: 70px; height: 24px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de clientes -->
+        <template v-else>
+          <VCard
+            v-for="client in clients"
+            :key="'mob-client-' + client.id"
+            class="mobile-client-card elevation-0"
+          >
           <!-- Cabecera Móvil: ID + Tipo de Documento / N° Doc + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-2 min-w-0">
@@ -812,6 +760,7 @@ onMounted(() => {
             </div>
           </div>
         </VCard>
+        </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
@@ -867,188 +816,273 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="client in clients"
-              :key="client.id"
-              class="client-table-row"
-            >
-              <td class="font-weight-bold text-disabled">
-                #{{ client.id }}
-              </td>
-
-              <!-- Identificación -->
-              <td>
-                <div class="text-caption text-disabled text-uppercase font-weight-bold">
-                  {{ client.type_document === 2 || client.type_document === '2' ? 'RUC' : (client.type_document === 3 || client.type_document === '3' ? 'Pasaporte' : 'Cédula') }}
-                </div>
-                <div class="font-weight-bold text-high-emphasis font-mono">
-                  {{ client.n_document || 'Sin documento' }}
-                </div>
-              </td>
-
-              <!-- Cliente / Razón Social -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-3">
-                  <VAvatar
-                    size="38"
-                    :color="isCompanyClient(client) ? 'warning' : 'primary'"
-                    variant="tonal"
-                    rounded="lg"
-                    class="font-weight-bold elevation-0"
-                  >
-                    <VIcon
-                      v-if="isCompanyClient(client)"
-                      icon="ri-building-line"
-                      size="20"
-                    />
-                    <span
-                      v-else
-                      class="text-caption font-weight-bold"
-                    >{{ getClientInitials(client) }}</span>
-                  </VAvatar>
-                  <div class="min-w-0">
-                    <div
-                      class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate"
-                      style="max-width: 280px;"
-                      :title="client.full_name || `${client.name} ${client.surname}`"
-                    >
-                      {{ client.full_name || `${client.name} ${client.surname}` }}
-                    </div>
-                    <div
-                      v-if="client.address"
-                      class="text-caption text-disabled text-uppercase text-truncate"
-                      style="max-width: 280px;"
-                    >
-                      {{ client.address }}
-                    </div>
-                  </div>
-                </div>
-              </td>
-
-              <!-- Contacto -->
-              <td class="py-3">
-                <div class="d-flex flex-column">
-                  <div
-                    class="text-body-2 text-medium-emphasis text-truncate"
-                    style="max-width: 220px;"
-                    :title="client.email"
-                  >
-                    <VIcon
-                      icon="ri-mail-line"
-                      size="14"
-                      class="me-1"
-                    />
-                    {{ client.email || '-' }}
-                  </div>
-                  <div class="text-caption text-disabled">
-                    <VIcon
-                      icon="ri-phone-line"
-                      size="14"
-                      class="me-1"
-                    />
-                    {{ client.phone || '-' }}
-                  </div>
-                </div>
-              </td>
-
-              <!-- Tipo -->
-              <td>
-                <div
-                  class="status-pill-clean"
-                  :class="isCompanyClient(client) ? 'status-partial' : 'status-primary'"
-                >
-                  <span class="status-dot" />
-                  <span>{{ isCompanyClient(client) ? 'Jurídico / Empresa' : 'Natural' }}</span>
-                </div>
-              </td>
-
-              <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-client-row-' + n"
+                class="skeleton-row align-middle"
               >
-                <div
-                  class="status-pill-clean"
-                  :class="parseInt(client.state) === 1 ? 'status-paid' : 'status-pending'"
-                >
-                  <span class="status-dot" />
-                  <span>{{ parseInt(client.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </td>
-
-              <!-- Acciones -->
-              <td class="text-center">
-                <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha"
-                    @click="showClient(client)"
+                <td>
+                  <div
+                    class="shimmer-line"
+                    style="width: 35px; height: 16px;"
                   />
-
-                  <VBtn
-                    v-if="can('edit_client')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Cliente"
-                    @click="editClient(client)"
+                </td>
+                <td>
+                  <div
+                    class="shimmer-line mb-1.5"
+                    style="width: 50px; height: 12px;"
                   />
-
-                  <!-- Menú Más Opciones -->
-                  <VBtn
-                    size="small"
-                    color="secondary"
-                    variant="tonal"
-                    icon="ri-more-2-line"
-                    title="Más Opciones"
-                  >
-                    <VIcon
-                      icon="ri-more-2-line"
-                      size="18"
+                  <div
+                    class="shimmer-line"
+                    style="width: 90px; height: 16px;"
+                  />
+                </td>
+                <td class="py-3">
+                  <div class="d-flex align-center gap-3">
+                    <div
+                      class="shimmer-circle"
+                      style="width: 38px; height: 38px; border-radius: 8px;"
                     />
-                    <VMenu
-                      activator="parent"
-                      transition="slide-y-transition"
-                      align="end"
-                      location="bottom end"
+                    <div class="flex-grow-1">
+                      <div
+                        class="shimmer-line mb-1.5"
+                        style="width: 140px; height: 16px;"
+                      />
+                      <div
+                        class="shimmer-line"
+                        style="width: 100px; height: 12px;"
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3">
+                  <div
+                    class="shimmer-line mb-1.5"
+                    style="width: 130px; height: 14px;"
+                  />
+                  <div
+                    class="shimmer-line"
+                    style="width: 90px; height: 12px;"
+                  />
+                </td>
+                <td>
+                  <div
+                    class="shimmer-chip"
+                    style="width: 100px; height: 26px;"
+                  />
+                </td>
+                <td class="text-center py-3">
+                  <div
+                    class="shimmer-chip mx-auto"
+                    style="width: 70px; height: 26px;"
+                  />
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <div
+                      class="shimmer-button rounded"
+                      style="width: 32px; height: 32px;"
+                    />
+                    <div
+                      class="shimmer-button rounded"
+                      style="width: 32px; height: 32px;"
+                    />
+                    <div
+                      class="shimmer-button rounded"
+                      style="width: 32px; height: 32px;"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="client in clients"
+                :key="client.id"
+                class="client-table-row"
+              >
+                <td class="font-weight-bold text-disabled">
+                  #{{ client.id }}
+                </td>
+
+                <!-- Identificación -->
+                <td>
+                  <div class="text-caption text-disabled text-uppercase font-weight-bold">
+                    {{ client.type_document === 2 || client.type_document === '2' ? 'RUC' : (client.type_document === 3 || client.type_document === '3' ? 'Pasaporte' : 'Cédula') }}
+                  </div>
+                  <div class="font-weight-bold text-high-emphasis font-mono">
+                    {{ client.n_document || 'Sin documento' }}
+                  </div>
+                </td>
+
+                <!-- Cliente / Razón Social -->
+                <td class="py-3">
+                  <div class="d-flex align-center gap-3">
+                    <VAvatar
+                      size="38"
+                      :color="isCompanyClient(client) ? 'warning' : 'primary'"
+                      variant="tonal"
+                      rounded="lg"
+                      class="font-weight-bold elevation-0"
                     >
-                      <VList
-                        density="compact"
-                        class="py-1 rounded-lg elevation-3 border"
+                      <VIcon
+                        v-if="isCompanyClient(client)"
+                        icon="ri-building-line"
+                        size="20"
+                      />
+                      <span
+                        v-else
+                        class="text-caption font-weight-bold"
+                      >{{ getClientInitials(client) }}</span>
+                    </VAvatar>
+                    <div class="min-w-0">
+                      <div
+                        class="font-weight-bold text-high-emphasis text-uppercase text-body-1 text-truncate"
+                        style="max-width: 280px;"
+                        :title="client.full_name || `${client.name} ${client.surname}`"
                       >
-                        <VListItem
-                          prepend-icon="ri-history-line"
-                          title="Ver Historial"
-                          class="text-info text-body-2"
-                          @click="showHistory(client)"
-                        />
-                        <VDivider
-                          v-if="can('delete_client')"
-                          class="my-1"
-                        />
-                        <VListItem
-                          v-if="can('delete_client')"
-                          prepend-icon="ri-delete-bin-6-line"
-                          title="Eliminar Cliente"
-                          class="text-error text-body-2"
-                          @click="deleteClient(client)"
-                        />
-                      </VList>
-                    </VMenu>
-                  </VBtn>
-                </div>
-              </td>
-            </tr>
+                        {{ client.full_name || `${client.name} ${client.surname}` }}
+                      </div>
+                      <div
+                        v-if="client.address"
+                        class="text-caption text-disabled text-uppercase text-truncate"
+                        style="max-width: 280px;"
+                      >
+                        {{ client.address }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Contacto -->
+                <td class="py-3">
+                  <div class="d-flex flex-column">
+                    <div
+                      class="text-body-2 text-medium-emphasis text-truncate"
+                      style="max-width: 220px;"
+                      :title="client.email"
+                    >
+                      <VIcon
+                        icon="ri-mail-line"
+                        size="14"
+                        class="me-1"
+                      />
+                      {{ client.email || '-' }}
+                    </div>
+                    <div class="text-caption text-disabled">
+                      <VIcon
+                        icon="ri-phone-line"
+                        size="14"
+                        class="me-1"
+                      />
+                      {{ client.phone || '-' }}
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Tipo -->
+                <td>
+                  <div
+                    class="status-pill-clean"
+                    :class="isCompanyClient(client) ? 'status-partial' : 'status-primary'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ isCompanyClient(client) ? 'Jurídico / Empresa' : 'Natural' }}</span>
+                  </div>
+                </td>
+
+                <!-- Estado (Pill limpia aceituna / pastel con punto) -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
+                >
+                  <div
+                    class="status-pill-clean"
+                    :class="parseInt(client.state) === 1 ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ parseInt(client.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </td>
+
+                <!-- Acciones -->
+                <td class="text-center">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-eye-line"
+                      title="Ver Ficha"
+                      @click="showClient(client)"
+                    />
+
+                    <VBtn
+                      v-if="can('edit_client')"
+                      size="small"
+                      color="warning"
+                      variant="tonal"
+                      icon="ri-pencil-line"
+                      title="Editar Cliente"
+                      @click="editClient(client)"
+                    />
+
+                    <!-- Menú Más Opciones -->
+                    <VBtn
+                      size="small"
+                      color="secondary"
+                      variant="tonal"
+                      icon="ri-more-2-line"
+                      title="Más Opciones"
+                    >
+                      <VIcon
+                        icon="ri-more-2-line"
+                        size="18"
+                      />
+                      <VMenu
+                        activator="parent"
+                        transition="slide-y-transition"
+                        align="end"
+                        location="bottom end"
+                      >
+                        <VList
+                          density="compact"
+                          class="py-1 rounded-lg elevation-3 border"
+                        >
+                          <VListItem
+                            prepend-icon="ri-history-line"
+                            title="Ver Historial"
+                            class="text-info text-body-2"
+                            @click="showHistory(client)"
+                          />
+                          <VDivider
+                            v-if="can('delete_client')"
+                            class="my-1"
+                          />
+                          <VListItem
+                            v-if="can('delete_client')"
+                            prepend-icon="ri-delete-bin-6-line"
+                            title="Eliminar Cliente"
+                            class="text-error text-body-2"
+                            @click="deleteClient(client)"
+                          />
+                        </VList>
+                      </VMenu>
+                    </VBtn>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
 
       <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <VCard
+        v-if="totalPages > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ clients.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> clientes
@@ -1056,6 +1090,7 @@ onMounted(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPages"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

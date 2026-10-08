@@ -825,96 +825,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Móvil (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-quote-' + n"
-          class="mobile-quote-card elevation-0 pa-4"
-        >
-          <div class="d-flex justify-space-between mb-2">
-            <div class="shimmer-line w-40" />
-            <div
-              class="shimmer-button rounded"
-              style="width: 24px; height: 24px;"
-            />
-          </div>
-          <div class="d-flex align-center gap-2 mb-3">
-            <div
-              class="shimmer-button rounded-lg"
-              style="width: 34px; height: 34px;"
-            />
-            <div class="flex-grow-1">
-              <div class="shimmer-line w-60 mb-1" />
-              <div class="shimmer-line w-35" />
-            </div>
-          </div>
-          <div class="d-flex justify-space-between align-center pt-2 border-t">
-            <div class="shimmer-line w-30" />
-            <div
-              class="shimmer-chip"
-              style="width: 70px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio (d-none d-md-block) -->
-      <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
-        <VTable>
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 140px;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-75 mb-2" /><div class="shimmer-line w-40" />
-              </td>
-              <td class="py-4">
-                <div class="shimmer-line w-60" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-60 ms-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
-                <div class="shimmer-chip mx-auto" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 140px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay cotizaciones) -->
     <VCard
-      v-else-if="!quotes || quotes.length === 0"
+      v-if="!loading && (!quotes || quotes.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -957,15 +870,51 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE COTIZACIONES (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE COTIZACIONES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="(item, index) in quotes"
-          :key="'mob-quote-' + (item?.id || index)"
-          class="mobile-quote-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-quote-' + n"
+            class="mobile-quote-card elevation-0 pa-4"
+          >
+            <div class="d-flex justify-space-between mb-2">
+              <div class="shimmer-line w-40" />
+              <div
+                class="shimmer-button rounded"
+                style="width: 24px; height: 24px;"
+              />
+            </div>
+            <div class="d-flex align-center gap-2 mb-3">
+              <div
+                class="shimmer-button rounded-lg"
+                style="width: 34px; height: 34px;"
+              />
+              <div class="flex-grow-1">
+                <div class="shimmer-line w-60 mb-1" />
+                <div class="shimmer-line w-35" />
+              </div>
+            </div>
+            <div class="d-flex justify-space-between align-center pt-2 border-t">
+              <div class="shimmer-line w-30" />
+              <div
+                class="shimmer-chip"
+                style="width: 70px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de cotizaciones -->
+        <template v-else>
+          <VCard
+            v-for="(item, index) in quotes"
+            :key="'mob-quote-' + (item?.id || index)"
+            class="mobile-quote-card elevation-0"
+          >
           <!-- Fila superior: Proforma # + Acciones rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-1 border-b">
             <div class="d-flex align-center gap-1.5 min-w-0">
@@ -1109,18 +1058,25 @@ onMounted(() => {
           <!-- Vehículo -->
           <div
             v-if="item.vehicle"
-            class="d-flex align-center gap-2 mb-2.5 py-1 px-2.5 rounded-lg bg-grey-lighten-5 border"
+            class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0"
           >
             <VIcon
-              icon="ri-car-line"
+              icon="ri-roadster-line"
               size="15"
-              color="secondary"
+              color="primary"
               class="flex-shrink-0"
             />
-            <span class="font-mono font-weight-bold text-caption text-high-emphasis flex-shrink-0">
-              {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
+            <span
+              v-if="item.vehicle.plate || item.vehicle.license_plate"
+              class="font-mono font-weight-bold text-primary flex-shrink-0"
+            >
+              {{ (item.vehicle.plate || item.vehicle.license_plate).toUpperCase() }}
             </span>
-            <span class="text-caption text-medium-emphasis text-truncate">
+            <span
+              v-if="item.vehicle.plate || item.vehicle.license_plate"
+              class="text-disabled"
+            >•</span>
+            <span class="text-medium-emphasis text-truncate font-weight-medium">
               {{ formatVehicleInfo(item.vehicle) }}
             </span>
           </div>
@@ -1157,7 +1113,8 @@ onMounted(() => {
             </div>
           </div>
         </VCard>
-      </div>
+      </template>
+    </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
@@ -1212,11 +1169,63 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="(item, index) in quotes"
-              :key="item?.id || index"
-              class="quote-table-row"
-            >
+            <!-- Skeleton Rows en tabla de escritorio -->
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-row-quote-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td
+                  class="py-4"
+                  style="width: 140px;"
+                >
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 220px;"
+                >
+                  <div class="shimmer-line w-75 mb-2" />
+                  <div class="shimmer-line w-40" />
+                </td>
+                <td class="py-4">
+                  <div class="shimmer-line w-60" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 130px;"
+                >
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 110px;"
+                >
+                  <div class="shimmer-line w-60 ms-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 140px;"
+                >
+                  <div class="shimmer-chip mx-auto" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 90px;"
+                >
+                  <div class="shimmer-button rounded mx-auto" />
+                </td>
+              </tr>
+            </template>
+
+            <!-- Filas reales de cotizaciones -->
+            <template v-else>
+              <tr
+                v-for="(item, index) in quotes"
+                :key="item?.id || index"
+                class="quote-table-row"
+              >
               <!-- N° Documento -->
               <td
                 class="py-3"
@@ -1503,30 +1512,35 @@ onMounted(() => {
                 </div>
               </td>
             </tr>
-          </tbody>
-        </VTable>
-      </VCard>
+          </template>
+        </tbody>
+      </VTable>
+    </VCard>
 
-      <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ quotes.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> cotizaciones
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-            @update:model-value="loadQuotes"
-          />
+    <!-- Paginación -->
+    <VCard
+      v-if="totalPages > 0"
+      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+    >
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+        <div class="text-body-2 text-medium-emphasis">
+          Mostrando <strong class="text-high-emphasis">{{ quotes.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> cotizaciones
         </div>
-      </VCard>
-    </div>
+        <VPagination
+          v-model="currentPage"
+          :length="totalPages"
+          :disabled="loading"
+          rounded="circle"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          density="comfortable"
+          color="primary"
+          class="my-0"
+          @update:model-value="loadQuotes"
+        />
+      </div>
+    </VCard>
+  </div>
 
     <!-- Dialogs -->
     <SaleViewDialog

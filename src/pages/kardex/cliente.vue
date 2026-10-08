@@ -1122,18 +1122,58 @@ onMounted(() => {
         </p>
       </VCard>
 
+      <!-- Skeleton Loading State -->
+      <template v-if="isLoading">
+        <VCard
+          v-for="n in 4"
+          :key="'kardex-skel-' + n"
+          class="kardex-tx-card elevation-0 pa-4"
+        >
+          <div class="d-flex flex-column flex-md-row align-stretch gap-4">
+            <div
+              class="d-flex flex-column justify-center"
+              style="min-width: 170px;"
+            >
+              <div class="shimmer-chip w-50 mb-2" />
+              <div class="shimmer-line w-60 mb-2" />
+              <div class="shimmer-line w-40" />
+            </div>
+            <div class="flex-grow-1 d-flex flex-column justify-center">
+              <div class="d-flex flex-wrap gap-4 mb-3">
+                <div class="shimmer-line w-30" />
+                <div class="shimmer-line w-30" />
+                <div class="shimmer-line w-25" />
+              </div>
+              <div class="shimmer-line w-40" />
+            </div>
+            <div
+              class="d-flex flex-column justify-center align-start align-md-end gap-2"
+              style="min-width: 200px;"
+            >
+              <div class="shimmer-line w-40" />
+              <div class="shimmer-line w-30" />
+              <div class="d-flex gap-2 mt-1">
+                <div class="shimmer-chip w-40" />
+                <div class="shimmer-button w-25" />
+              </div>
+            </div>
+          </div>
+        </VCard>
+      </template>
+
       <!-- Transacciones -->
-      <VCard
-        v-for="tx in transactions"
-        :key="tx.id"
-        class="kardex-tx-card elevation-0"
-      >
-        <div class="d-flex flex-column flex-md-row align-stretch">
-          <!-- Columna Izquierda: Documento y Fecha -->
-          <div
-            class="tx-tag-col pa-4 d-flex flex-column justify-center align-start align-md-center"
-            style="min-width: 170px;"
-          >
+      <template v-else>
+        <VCard
+          v-for="tx in transactions"
+          :key="tx.id"
+          class="kardex-tx-card elevation-0"
+        >
+          <div class="d-flex flex-column flex-md-row align-stretch">
+            <!-- Columna Izquierda: Documento y Fecha -->
+            <div
+              class="tx-tag-col pa-4 d-flex flex-column justify-center align-start align-md-center"
+              style="min-width: 170px;"
+            >
             <div
               class="doc-type-badge-mini mb-1"
               :class="tx.document_type === 'invoice' ? 'doc-factura' : (tx.document_type === 'sale_note' ? 'doc-nota_venta' : 'doc-cotizacion')"
@@ -1358,11 +1398,12 @@ onMounted(() => {
           </div>
         </VExpandTransition>
       </VCard>
+      </template>
     </div>
 
     <!-- Paginación -->
     <VCard
-      v-if="totalPages > 1"
+      v-if="totalPages > 0"
       class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
     >
       <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
@@ -1372,6 +1413,7 @@ onMounted(() => {
         <VPagination
           v-model="currentPage"
           :length="totalPages"
+          :disabled="isLoading"
           rounded="circle"
           active-color="primary"
           density="comfortable"

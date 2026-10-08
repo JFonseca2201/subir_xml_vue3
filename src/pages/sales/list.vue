@@ -1405,110 +1405,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="loading">
-      <!-- Skeleton Móvil (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-' + n"
-          class="mobile-sale-card elevation-0 pa-4"
-        >
-          <div class="d-flex justify-space-between mb-2">
-            <div class="shimmer-line w-40" />
-            <div
-              class="shimmer-button rounded"
-              style="width: 24px; height: 24px;"
-            />
-          </div>
-          <div class="d-flex align-center gap-2 mb-3">
-            <div
-              class="shimmer-button rounded-lg"
-              style="width: 34px; height: 34px;"
-            />
-            <div class="flex-grow-1">
-              <div class="shimmer-line w-60 mb-1" />
-              <div class="shimmer-line w-35" />
-            </div>
-          </div>
-          <div class="d-flex justify-space-between align-center pt-2 border-t">
-            <div class="shimmer-line w-30" />
-            <div
-              class="shimmer-chip"
-              style="width: 70px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio (d-none d-md-block) -->
-      <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
-        <VTable class="sales-modern-table">
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 9%;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 7%;"
-              >
-                <div class="shimmer-line w-60 mx-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 24%;"
-              >
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 20%;"
-              >
-                <div class="shimmer-line w-60 mb-2" />
-                <div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 11%;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4 text-right"
-                style="width: 9%;"
-              >
-                <div class="shimmer-line w-60 ms-auto" />
-              </td>
-              <td
-                class="py-4 text-left"
-                style="width: 13%;"
-              >
-                <div class="shimmer-chip" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 7%;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay ventas) -->
     <VCard
-      v-else-if="!displayedSales || displayedSales.length === 0"
+      v-if="!loading && (!displayedSales || displayedSales.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -1552,16 +1451,52 @@ onMounted(() => {
       </div>
     </VCard>
 
-    <!-- LISTADO DE VENTAS (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE VENTAS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="(item, index) in displayedSales"
-          :key="'mob-sale-' + (item?.id || index)"
-          class="mobile-sale-card elevation-0"
-          :class="{ 'border-error-light': isSaleCanceled(item) }"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="loading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-' + n"
+            class="mobile-sale-card elevation-0 pa-4"
+          >
+            <div class="d-flex justify-space-between mb-2">
+              <div class="shimmer-line w-40" />
+              <div
+                class="shimmer-button rounded"
+                style="width: 24px; height: 24px;"
+              />
+            </div>
+            <div class="d-flex align-center gap-2 mb-3">
+              <div
+                class="shimmer-button rounded-lg"
+                style="width: 34px; height: 34px;"
+              />
+              <div class="flex-grow-1">
+                <div class="shimmer-line w-60 mb-1" />
+                <div class="shimmer-line w-35" />
+              </div>
+            </div>
+            <div class="d-flex justify-space-between align-center pt-2 border-t">
+              <div class="shimmer-line w-30" />
+              <div
+                class="shimmer-chip"
+                style="width: 70px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de ventas -->
+        <template v-else>
+          <VCard
+            v-for="(item, index) in displayedSales"
+            :key="'mob-sale-' + (item?.id || index)"
+            class="mobile-sale-card elevation-0"
+            :class="{ 'border-error-light': isSaleCanceled(item) }"
+          >
           <!-- Fila superior: Tipo Doc + Número + Acciones rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-1 border-b">
             <div class="d-flex align-center gap-1.5 min-w-0 flex-grow-1">
@@ -1731,7 +1666,7 @@ onMounted(() => {
 
           <!-- Cliente y O.T. vinculada -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2">
-            <div class="d-flex align-center gap-2 min-w-0 flex-grow-1">
+            <div class="d-flex align-center gap-2.5 min-w-0 flex-grow-1">
               <VAvatar
                 size="32"
                 color="primary"
@@ -1743,20 +1678,23 @@ onMounted(() => {
               </VAvatar>
               <div class="min-w-0 flex-grow-1">
                 <div
-                  class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                  class="font-weight-bold text-high-emphasis text-body-2"
+                  style="line-height: 1.25; word-break: break-word;"
                   :title="getClientName(item.client)"
                 >
                   {{ getClientName(item.client) }}
                 </div>
                 <div
                   v-if="getClientPhone(item.client)"
-                  class="text-caption text-medium-emphasis font-mono text-truncate"
+                  class="text-caption text-medium-emphasis font-mono"
+                  style="font-size: 0.72rem;"
                 >
                   {{ getClientPhone(item.client) }}
                 </div>
                 <div
                   v-else-if="item.client?.n_document"
-                  class="text-caption text-medium-emphasis font-mono text-truncate"
+                  class="text-caption text-medium-emphasis font-mono"
+                  style="font-size: 0.72rem;"
                 >
                   {{ item.client.n_document }}
                 </div>
@@ -1767,148 +1705,160 @@ onMounted(() => {
             <span
               v-if="item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order?.number || item.workOrder?.number"
               class="font-mono text-caption font-weight-bold text-primary bg-primary-lighten-5 px-2 py-0.5 rounded cursor-pointer hover-underline flex-shrink-0"
+              style="font-size: 0.70rem;"
               :title="`Ver Detalle de Orden #${item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id}`"
               @click="openWorkOrderView(item.work_order_id || item.work_order?.id || item.workOrder?.id || item.work_order_number)"
             >
-              {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}
+              OT: {{ formatWorkOrderNumber(item.work_order?.number || item.workOrder?.number || item.work_order_number || item.work_order_id) }}
             </span>
           </div>
 
           <!-- Vehículo (si existe) -->
           <div
             v-if="item.vehicle"
-            class="d-flex align-center gap-2 mb-2.5 py-1 px-2.5 rounded-lg bg-grey-lighten-5 border"
+            class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0"
           >
             <VIcon
-              icon="ri-car-line"
+              icon="ri-roadster-line"
               size="15"
-              color="secondary"
+              color="primary"
               class="flex-shrink-0"
             />
-            <span class="font-mono font-weight-bold text-caption text-high-emphasis flex-shrink-0">
-              {{ (item.vehicle.plate || item.vehicle.license_plate || '').toUpperCase() || 'SIN PLACA' }}
+            <span
+              v-if="item.vehicle.plate || item.vehicle.license_plate"
+              class="font-mono font-weight-bold text-primary flex-shrink-0"
+            >
+              {{ (item.vehicle.plate || item.vehicle.license_plate).toUpperCase() }}
             </span>
-            <span class="text-caption text-medium-emphasis text-truncate">
+            <span
+              v-if="item.vehicle.plate || item.vehicle.license_plate"
+              class="text-disabled"
+            >•</span>
+            <span class="text-medium-emphasis text-truncate font-weight-medium">
               {{ formatVehicleInfo(item.vehicle) }}
             </span>
           </div>
 
-          <!-- Fila inferior: Fecha/Método (Izquierda) + Total y Estados (Derecha) -->
-          <div class="d-flex align-end justify-space-between gap-2 pt-1 border-t">
-            <!-- Izquierda: Fecha y Método de pago -->
-            <div class="d-flex flex-column gap-0.5">
-              <div class="d-flex align-center text-caption text-medium-emphasis">
-                <VIcon
-                  icon="ri-calendar-line"
-                  size="13"
-                  class="me-1 text-disabled"
-                />
-                <span class="font-weight-medium">{{ formatDate(item.service_date || item.created_at) }}</span>
-                <span
-                  v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
-                  class="ms-1 text-caption text-disabled"
-                  style="font-size: 0.7rem;"
+          <!-- Pie Móvil Responsivo (2 Niveles):
+               Nivel 1: Fecha y Método (Izquierda) + Total en Grande (Derecha)
+               Nivel 2: Badges de Estado (PAGADO, ANULADA, SRI) con flex-wrap a la derecha
+          -->
+          <div class="pt-2 border-t">
+            <!-- Nivel 1: Fecha y Total -->
+            <div class="d-flex align-center justify-space-between gap-2">
+              <div class="d-flex flex-column gap-0.5 min-w-0">
+                <div class="d-flex align-center text-caption text-medium-emphasis">
+                  <VIcon
+                    icon="ri-calendar-line"
+                    size="13"
+                    class="me-1 text-disabled flex-shrink-0"
+                  />
+                  <span class="font-weight-medium text-truncate">{{ formatDate(item.service_date || item.created_at) }}</span>
+                  <span
+                    v-if="(item.work_order?.date || item.workOrder?.date) && formatDate(item.work_order?.date || item.workOrder?.date) !== formatDate(item.service_date || item.created_at)"
+                    class="ms-1 text-caption text-disabled text-truncate"
+                    style="font-size: 0.7rem;"
+                  >
+                    (OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }})
+                  </span>
+                </div>
+                <div
+                  v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
+                  class="d-flex align-center text-medium-emphasis text-truncate"
+                  style="font-size: 0.72rem; line-height: 1.2;"
                 >
-                  (OT: {{ formatDate(item.work_order?.date || item.workOrder?.date) }})
-                </span>
+                  <VIcon
+                    :icon="getPaymentMethodIcon(item)"
+                    size="12"
+                    class="me-1 text-disabled flex-shrink-0"
+                  />
+                  <span class="font-weight-medium text-capitalize text-truncate">
+                    {{ getPaymentMethodText(item) }}
+                  </span>
+                </div>
               </div>
-              <div
-                v-if="!isSaleCanceled(item) && item.document_type !== 'quote'"
-                class="d-flex align-center text-medium-emphasis"
-                style="font-size: 0.72rem; line-height: 1.2;"
-              >
-                <VIcon
-                  :icon="getPaymentMethodIcon(item)"
-                  size="12"
-                  class="me-1 text-disabled flex-shrink-0"
-                />
-                <span class="font-weight-medium text-capitalize">
-                  {{ getPaymentMethodText(item) }}
+
+              <!-- Total Grande y Limpio -->
+              <div class="text-right flex-shrink-0">
+                <span
+                  class="font-mono font-weight-black text-h6 text-high-emphasis"
+                  style="line-height: 1.1;"
+                >
+                  ${{ parseFloat(item.total || 0).toFixed(2) }}
                 </span>
               </div>
             </div>
 
-            <!-- Derecha: Total y Estados -->
-            <div class="d-flex flex-column align-end gap-1">
-              <span
-                class="font-mono font-weight-bold text-h6 text-high-emphasis"
-                style="line-height: 1.1;"
-              >
-                ${{ parseFloat(item.total || 0).toFixed(2) }}
-              </span>
-
+            <!-- Nivel 2: Badges de Estado (Pills con flex-wrap para que nunca desborden) -->
+            <div class="d-flex align-center justify-end gap-1.5 mt-2 flex-wrap">
+              <!-- Factura / Documento Anulado -->
               <div
-                class="d-flex flex-column align-end"
-                style="gap: 3px;"
+                v-if="isSaleCanceled(item)"
+                class="status-pill-clean status-canceled"
               >
-                <!-- Factura / Documento Anulado -->
+                <span class="status-dot" />
+                <span>Anulada</span>
+              </div>
+
+              <template v-else>
+                <!-- Estado de Pago -->
                 <div
-                  v-if="isSaleCanceled(item)"
-                  class="status-pill-clean status-canceled"
+                  class="status-pill-clean"
+                  :class="`status-${item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending')}`"
                 >
                   <span class="status-dot" />
-                  <span>Anulada</span>
+                  <span>{{ getStatusInfo(item)?.text }}</span>
                 </div>
 
-                <template v-else>
-                  <!-- Estado de Pago -->
-                  <div
-                    class="status-pill-clean"
-                    :class="`status-${item.document_type === 'quote' ? 'quote' : (item.payment_status || 'pending')}`"
-                  >
-                    <span class="status-dot" />
-                    <span>{{ getStatusInfo(item)?.text }}</span>
-                  </div>
-
-                  <!-- Estado SRI -->
-                  <div
-                    v-if="item.document_type === 'invoice' && item.sri_status"
-                    class="sri-status-tag"
-                    :class="[
-                      `sri-tag-${(item.sri_status || '').toLowerCase()}`,
-                      {
-                        'is-interactive': item.sri_status !== 'AUTORIZADA',
-                        'is-loading': isSriSyncing(item.id) || isSriResending(item.id)
-                      }
-                    ]"
-                    :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
-                    @click.stop="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))"
-                  >
-                    <VProgressCircular
-                      v-if="isSriSyncing(item.id) || isSriResending(item.id)"
-                      indeterminate
-                      size="11"
-                      width="1.5"
-                      class="me-1 text-primary flex-shrink-0"
-                    />
-                    <VIcon
-                      v-else
-                      :icon="getSriStatusInfo(item.sri_status).icon"
-                      size="12"
-                      class="me-1 flex-shrink-0"
-                    />
-                    <span class="sri-tag-text">
-                      {{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' : getSriStatusInfo(item.sri_status).text) }}
-                    </span>
-                    <VIcon
-                      v-if="!isSriSyncing(item.id) && !isSriResending(item.id) && ['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
-                      icon="ri-arrow-right-s-line"
-                      size="12"
-                      class="ms-0.5 opacity-70 flex-shrink-0"
-                    />
-                    <VIcon
-                      v-else-if="!isSriSyncing(item.id) && !isSriResending(item.id) && item.sri_status !== 'AUTORIZADA'"
-                      icon="ri-refresh-line"
-                      size="10"
-                      class="ms-1 opacity-70 flex-shrink-0 sri-sync-icon"
-                    />
-                  </div>
-                </template>
-              </div>
+                <!-- Estado SRI -->
+                <div
+                  v-if="item.document_type === 'invoice' && item.sri_status"
+                  class="sri-status-tag"
+                  :class="[
+                    `sri-tag-${(item.sri_status || '').toLowerCase()}`,
+                    {
+                      'is-interactive': item.sri_status !== 'AUTORIZADA',
+                      'is-loading': isSriSyncing(item.id) || isSriResending(item.id)
+                    }
+                  ]"
+                  :title="item.sri_status === 'AUTORIZADA' ? 'Factura Autorizada por el SRI' : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? `Error SRI: ${item.sri_error_message || item.sri_error || 'Ver detalle'}` : `Estado SRI: ${item.sri_status} (Clic para sincronizar con SRI)`)"
+                  @click.stop="isSriSyncing(item.id) || isSriResending(item.id) ? null : (['DEVUELTA', 'RECHAZADA'].includes(item.sri_status) ? openSriErrorDialog(item.sri_error_message || item.sri_error, item) : (item.sri_status !== 'AUTORIZADA' ? syncSriStatus(item) : null))"
+                >
+                  <VProgressCircular
+                    v-if="isSriSyncing(item.id) || isSriResending(item.id)"
+                    indeterminate
+                    size="11"
+                    width="1.5"
+                    class="me-1 text-primary flex-shrink-0"
+                  />
+                  <VIcon
+                    v-else
+                    :icon="getSriStatusInfo(item.sri_status).icon"
+                    size="12"
+                    class="me-1 flex-shrink-0"
+                  />
+                  <span class="sri-tag-text">
+                    {{ isSriSyncing(item.id) ? 'Sincronizando...' : (isSriResending(item.id) ? 'Reenviando...' : getSriStatusInfo(item.sri_status).text) }}
+                  </span>
+                  <VIcon
+                    v-if="!isSriSyncing(item.id) && !isSriResending(item.id) && ['DEVUELTA', 'RECHAZADA'].includes(item.sri_status)"
+                    icon="ri-arrow-right-s-line"
+                    size="12"
+                    class="ms-0.5 opacity-70 flex-shrink-0"
+                  />
+                  <VIcon
+                    v-else-if="!isSriSyncing(item.id) && !isSriResending(item.id) && item.sri_status !== 'AUTORIZADA'"
+                    icon="ri-refresh-line"
+                    size="10"
+                    class="ms-1 opacity-70 flex-shrink-0 sri-sync-icon"
+                  />
+                </div>
+              </template>
             </div>
           </div>
         </VCard>
-      </div>
+      </template>
+    </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="rounded-xl border elevation-0 bg-surface table-card-responsive d-none d-md-block">
@@ -1969,11 +1919,73 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="(item, index) in displayedSales"
-              :key="item?.id || index"
-              class="sale-table-row"
-            >
+            <!-- Skeleton Rows en tabla de escritorio -->
+            <template v-if="loading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-row-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td
+                  class="py-4"
+                  style="width: 9%;"
+                >
+                  <div class="shimmer-line w-75" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 7%;"
+                >
+                  <div class="shimmer-line w-60 mx-auto" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 24%;"
+                >
+                  <div class="shimmer-line w-75 mb-2" />
+                  <div class="shimmer-line w-40" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 20%;"
+                >
+                  <div class="shimmer-line w-60 mb-2" />
+                  <div class="shimmer-line w-40" />
+                </td>
+                <td
+                  class="py-4"
+                  style="width: 11%;"
+                >
+                  <div class="shimmer-line w-50" />
+                </td>
+                <td
+                  class="py-4 text-right"
+                  style="width: 9%;"
+                >
+                  <div class="shimmer-line w-60 ms-auto" />
+                </td>
+                <td
+                  class="py-4 text-left"
+                  style="width: 13%;"
+                >
+                  <div class="shimmer-chip" />
+                </td>
+                <td
+                  class="py-4 text-center"
+                  style="width: 7%;"
+                >
+                  <div class="shimmer-button rounded mx-auto" />
+                </td>
+              </tr>
+            </template>
+
+            <!-- Filas reales de ventas -->
+            <template v-else>
+              <tr
+                v-for="(item, index) in displayedSales"
+                :key="item?.id || index"
+                class="sale-table-row"
+              >
               <!-- Documento -->
               <td
                 class="py-3"
@@ -2430,31 +2442,36 @@ onMounted(() => {
                 </div>
               </td>
             </tr>
-          </tbody>
-        </VTable>
-      </VCard>
+          </template>
+        </tbody>
+      </VTable>
+    </VCard>
 
-      <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
-          <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong class="text-high-emphasis">{{
-              totalItems }}</strong> ventas
-          </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-            @update:model-value="loadSales"
-          />
+    <!-- Paginación -->
+    <VCard
+      v-if="totalPages > 0"
+      class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+    >
+      <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+        <div class="text-body-2 text-medium-emphasis">
+          Mostrando <strong class="text-high-emphasis">{{ sales.length }}</strong> de <strong class="text-high-emphasis">{{
+            totalItems }}</strong> ventas
         </div>
-      </VCard>
-    </div>
+        <VPagination
+          v-model="currentPage"
+          :length="totalPages"
+          :disabled="loading"
+          rounded="circle"
+          :total-visible="$vuetify.display.xs ? 4 : 7"
+          :size="$vuetify.display.xs ? 'small' : 'default'"
+          density="comfortable"
+          color="primary"
+          class="my-0"
+          @update:model-value="loadSales"
+        />
+      </div>
+    </VCard>
+  </div>
 
     <!-- Dialogs -->
     <SaleViewDialog

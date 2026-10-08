@@ -426,131 +426,9 @@ definePage({ meta: { permission: "settings" } })
       </VCardText>
     </VCard>
 
-    <!-- ESTADO DE CARGA -->
-    <div v-if="isLoading">
-      <!-- Skeleton Móvil -->
-      <div class="d-md-none d-flex flex-column gap-3">
-        <VCard
-          v-for="n in 4"
-          :key="'mob-skel-prov-' + n"
-          class="mobile-provider-card elevation-0 pa-4"
-        >
-          <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-            <div
-              class="shimmer-line"
-              style="width: 80px; height: 16px;"
-            />
-            <div class="d-flex gap-1">
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-              <div
-                class="shimmer-button rounded"
-                style="width: 28px; height: 28px;"
-              />
-            </div>
-          </div>
-          <div class="d-flex align-center gap-3 mb-3">
-            <div
-              class="shimmer-circle"
-              style="width: 38px; height: 38px; border-radius: 8px;"
-            />
-            <div class="flex-grow-1">
-              <div
-                class="shimmer-line w-75 mb-2"
-                style="height: 16px;"
-              />
-              <div
-                class="shimmer-line w-40"
-                style="height: 12px;"
-              />
-            </div>
-          </div>
-          <div
-            class="shimmer-line w-100 mb-2"
-            style="height: 14px;"
-          />
-          <div class="d-flex justify-space-between pt-2 border-t">
-            <div
-              class="shimmer-line"
-              style="width: 70px; height: 16px;"
-            />
-            <div
-              class="shimmer-chip"
-              style="width: 70px; height: 24px;"
-            />
-          </div>
-        </VCard>
-      </div>
-
-      <!-- Skeleton Escritorio -->
-      <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable class="providers-modern-table overflow-x-auto">
-          <tbody>
-            <tr
-              v-for="n in 5"
-              :key="n"
-              class="skeleton-row align-middle"
-            >
-              <td
-                class="py-4"
-                style="width: 70px;"
-              >
-                <div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="min-width: 240px;"
-              >
-                <div class="shimmer-line w-75 mb-2" />
-                <div class="shimmer-line w-40" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 150px;"
-              >
-                <div class="shimmer-line w-75" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
-                <div class="shimmer-line w-60" />
-              </td>
-              <td
-                class="py-4"
-                style="min-width: 220px;"
-              >
-                <div class="shimmer-line w-70" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 120px;"
-              >
-                <div class="shimmer-line w-50 mx-auto" />
-              </td>
-              <td
-                class="py-4"
-                style="width: 130px;"
-              >
-                <div class="shimmer-line w-50" />
-              </td>
-              <td
-                class="py-4 text-center"
-                style="width: 120px;"
-              >
-                <div class="shimmer-button rounded mx-auto" />
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </VCard>
-    </div>
-
-    <!-- ESTADO VACÍO -->
+    <!-- ESTADO VACÍO (Solo si no está cargando y no hay proveedores) -->
     <VCard
-      v-else-if="!list_providers || list_providers.length === 0"
+      v-if="!isLoading && (!list_providers || list_providers.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -594,15 +472,73 @@ definePage({ meta: { permission: "settings" } })
       </div>
     </VCard>
 
-    <!-- LISTADO DE PROVEEDORES (MÓVIL Y ESCRITORIO) -->
+    <!-- LISTADO DE PROVEEDORES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
-        <VCard
-          v-for="item in list_providers"
-          :key="'mob-prov-' + item.id"
-          class="mobile-provider-card elevation-0"
-        >
+        <!-- Skeleton Móvil mientras carga -->
+        <template v-if="isLoading">
+          <VCard
+            v-for="n in 4"
+            :key="'mob-skel-prov-' + n"
+            class="mobile-provider-card elevation-0 pa-4"
+          >
+            <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
+              <div
+                class="shimmer-line"
+                style="width: 80px; height: 16px;"
+              />
+              <div class="d-flex gap-1">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 28px; height: 28px;"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center gap-3 mb-3">
+              <div
+                class="shimmer-circle"
+                style="width: 38px; height: 38px; border-radius: 8px;"
+              />
+              <div class="flex-grow-1">
+                <div
+                  class="shimmer-line w-75 mb-2"
+                  style="height: 16px;"
+                />
+                <div
+                  class="shimmer-line w-40"
+                  style="height: 12px;"
+                />
+              </div>
+            </div>
+            <div
+              class="shimmer-line w-100 mb-2"
+              style="height: 14px;"
+            />
+            <div class="d-flex justify-space-between pt-2 border-t">
+              <div
+                class="shimmer-line"
+                style="width: 70px; height: 16px;"
+              />
+              <div
+                class="shimmer-chip"
+                style="width: 70px; height: 24px;"
+              />
+            </div>
+          </VCard>
+        </template>
+
+        <!-- Tarjetas reales de proveedores -->
+        <template v-else>
+          <VCard
+            v-for="item in list_providers"
+            :key="'mob-prov-' + item.id"
+            class="mobile-provider-card elevation-0"
+          >
           <!-- Cabecera Móvil: ID + RUC + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
             <div class="d-flex align-center gap-1.5 min-w-0">
@@ -707,6 +643,7 @@ definePage({ meta: { permission: "settings" } })
             </div>
           </div>
         </VCard>
+        </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
@@ -768,133 +705,179 @@ definePage({ meta: { permission: "settings" } })
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="item in list_providers"
-              :key="item.id"
-              class="provider-table-row"
-            >
-              <td class="font-weight-bold text-disabled py-3">
-                #{{ item.id }}
-              </td>
-
-              <!-- Proveedor con Avatar -->
-              <td class="py-3">
-                <div class="d-flex align-center">
-                  <VAvatar
-                    color="primary"
-                    variant="tonal"
-                    size="36"
-                    rounded="lg"
-                    class="elevation-0 flex-shrink-0 me-3"
-                  >
-                    <VIcon
-                      icon="ri-store-2-line"
-                      size="20"
-                    />
-                  </VAvatar>
-                  <div class="min-w-0">
-                    <div
-                      class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate"
-                      style="max-width: 250px;"
-                      :title="item.name"
-                    >
-                      {{ item.name }}
+            <template v-if="isLoading">
+              <tr
+                v-for="n in 5"
+                :key="'skel-prov-row-' + n"
+                class="skeleton-row align-middle"
+              >
+                <td class="py-4" style="width: 70px;">
+                  <div class="shimmer-line" style="width: 35px; height: 16px;" />
+                </td>
+                <td class="py-4" style="min-width: 240px;">
+                  <div class="d-flex align-center">
+                    <div class="shimmer-circle me-3" style="width: 36px; height: 36px; border-radius: 8px;" />
+                    <div class="flex-grow-1">
+                      <div class="shimmer-line mb-1.5" style="width: 150px; height: 16px;" />
                     </div>
                   </div>
-                </div>
-              </td>
-
-              <!-- RUC (Monoespaciado sin chip) -->
-              <td class="py-3">
-                <span class="font-weight-bold text-high-emphasis font-mono text-body-2">
-                  {{ item.ruc || 'Sin RUC' }}
-                </span>
-              </td>
-
-              <!-- Teléfono -->
-              <td class="py-3">
-                <span class="text-body-2 font-weight-medium text-high-emphasis">
-                  {{ item.phone || '-' }}
-                </span>
-              </td>
-
-              <!-- Dirección -->
-              <td class="py-3">
-                <div class="d-flex align-center gap-1.5 text-medium-emphasis text-body-2">
-                  <VIcon
-                    icon="ri-map-pin-line"
-                    size="16"
-                    class="text-disabled flex-shrink-0"
-                  />
-                  <span
-                    class="text-truncate"
-                    style="max-width: 230px;"
-                    :title="item.address"
-                  >
-                    {{ item.address || 'Sin dirección' }}
-                  </span>
-                </div>
-              </td>
-
-              <!-- Estado -->
-              <td
-                class="text-center py-3"
-                style="white-space: nowrap;"
+                </td>
+                <td class="py-4" style="width: 150px;">
+                  <div class="shimmer-line" style="width: 100px; height: 16px;" />
+                </td>
+                <td class="py-4" style="width: 130px;">
+                  <div class="shimmer-line" style="width: 90px; height: 14px;" />
+                </td>
+                <td class="py-4" style="min-width: 220px;">
+                  <div class="shimmer-line" style="width: 140px; height: 14px;" />
+                </td>
+                <td class="text-center py-4" style="width: 120px;">
+                  <div class="shimmer-chip mx-auto" style="width: 70px; height: 24px;" />
+                </td>
+                <td class="py-4" style="width: 130px;">
+                  <div class="shimmer-line" style="width: 80px; height: 14px;" />
+                </td>
+                <td class="text-center py-4" style="width: 120px;">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                    <div class="shimmer-button rounded" style="width: 32px; height: 32px;" />
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="item in list_providers"
+                :key="item.id"
+                class="provider-table-row"
               >
-                <div
-                  class="status-pill-clean"
-                  :class="isProviderActive(item) ? 'status-paid' : 'status-pending'"
+                <td class="font-weight-bold text-disabled py-3">
+                  #{{ item.id }}
+                </td>
+
+                <!-- Proveedor con Avatar -->
+                <td class="py-3">
+                  <div class="d-flex align-center">
+                    <VAvatar
+                      color="primary"
+                      variant="tonal"
+                      size="36"
+                      rounded="lg"
+                      class="elevation-0 flex-shrink-0 me-3"
+                    >
+                      <VIcon
+                        icon="ri-store-2-line"
+                        size="20"
+                      />
+                    </VAvatar>
+                    <div class="min-w-0">
+                      <div
+                        class="font-weight-bold text-high-emphasis text-uppercase text-body-2 text-truncate"
+                        style="max-width: 250px;"
+                        :title="item.name"
+                      >
+                        {{ item.name }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- RUC (Monoespaciado sin chip) -->
+                <td class="py-3">
+                  <span class="font-weight-bold text-high-emphasis font-mono text-body-2">
+                    {{ item.ruc || 'Sin RUC' }}
+                  </span>
+                </td>
+
+                <!-- Teléfono -->
+                <td class="py-3">
+                  <span class="text-body-2 font-weight-medium text-high-emphasis">
+                    {{ item.phone || '-' }}
+                  </span>
+                </td>
+
+                <!-- Dirección -->
+                <td class="py-3">
+                  <div class="d-flex align-center gap-1.5 text-medium-emphasis text-body-2">
+                    <VIcon
+                      icon="ri-map-pin-line"
+                      size="16"
+                      class="text-disabled flex-shrink-0"
+                    />
+                    <span
+                      class="text-truncate"
+                      style="max-width: 230px;"
+                      :title="item.address"
+                    >
+                      {{ item.address || 'Sin dirección' }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Estado -->
+                <td
+                  class="text-center py-3"
+                  style="white-space: nowrap;"
                 >
-                  <span class="status-dot" />
-                  <span>{{ isProviderActive(item) ? 'Activo' : 'Inactivo' }}</span>
-                </div>
-              </td>
+                  <div
+                    class="status-pill-clean"
+                    :class="isProviderActive(item) ? 'status-paid' : 'status-pending'"
+                  >
+                    <span class="status-dot" />
+                    <span>{{ isProviderActive(item) ? 'Activo' : 'Inactivo' }}</span>
+                  </div>
+                </td>
 
-              <!-- Fecha -->
-              <td class="py-3">
-                <span class="text-caption text-medium-emphasis">
-                  {{ formatDate(item.created_at) }}
-                </span>
-              </td>
+                <!-- Fecha -->
+                <td class="py-3">
+                  <span class="text-caption text-medium-emphasis">
+                    {{ formatDate(item.created_at) }}
+                  </span>
+                </td>
 
-              <!-- Acciones -->
-              <td class="text-center py-3">
-                <div class="d-flex justify-center align-center gap-1">
-                  <VBtn
-                    size="small"
-                    color="info"
-                    variant="tonal"
-                    icon="ri-eye-line"
-                    title="Ver Ficha de Proveedor"
-                    @click="viewItem(item)"
-                  />
-                  <VBtn
-                    v-if="can('edit_supplier')"
-                    size="small"
-                    color="warning"
-                    variant="tonal"
-                    icon="ri-pencil-line"
-                    title="Editar Proveedor"
-                    @click="editItem(item)"
-                  />
-                  <VBtn
-                    v-if="can('delete_supplier')"
-                    size="small"
-                    color="error"
-                    variant="tonal"
-                    icon="ri-delete-bin-line"
-                    title="Eliminar Proveedor"
-                    @click="deleteItem(item)"
-                  />
-                </div>
-              </td>
-            </tr>
+                <!-- Acciones -->
+                <td class="text-center py-3">
+                  <div class="d-flex justify-center align-center gap-1">
+                    <VBtn
+                      size="small"
+                      color="info"
+                      variant="tonal"
+                      icon="ri-eye-line"
+                      title="Ver Ficha de Proveedor"
+                      @click="viewItem(item)"
+                    />
+                    <VBtn
+                      v-if="can('edit_supplier')"
+                      size="small"
+                      color="warning"
+                      variant="tonal"
+                      icon="ri-pencil-line"
+                      title="Editar Proveedor"
+                      @click="editItem(item)"
+                    />
+                    <VBtn
+                      v-if="can('delete_supplier')"
+                      size="small"
+                      color="error"
+                      variant="tonal"
+                      icon="ri-delete-bin-line"
+                      title="Eliminar Proveedor"
+                      @click="deleteItem(item)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </VTable>
       </VCard>
 
       <!-- Paginación -->
-      <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+      <VCard
+        v-if="totalPage > 0"
+        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ list_providers.length }}</strong> proveedores registrados
@@ -902,6 +885,7 @@ definePage({ meta: { permission: "settings" } })
           <VPagination
             v-model="currentPage"
             :length="totalPage"
+            :disabled="isLoading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"

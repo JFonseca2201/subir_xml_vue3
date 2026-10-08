@@ -402,46 +402,9 @@ onMounted(() => {
       </VCardText>
     </VCard>
 
-    <!-- Estado de Carga (Skeleton) -->
-    <div
-      v-if="loading"
-      class="d-flex flex-column gap-4"
-    >
-      <VCard
-        v-for="i in 3"
-        :key="'sk-' + i"
-        class="rounded-xl border pa-5 elevation-0 bg-surface"
-      >
-        <div class="d-flex align-center gap-3 mb-4">
-          <div
-            class="shimmer-circle"
-            style="width: 48px; height: 48px; border-radius: 12px;"
-          />
-          <div class="flex-grow-1">
-            <div
-              class="shimmer-line w-40 mb-2"
-              style="height: 18px;"
-            />
-            <div
-              class="shimmer-line w-25"
-              style="height: 12px;"
-            />
-          </div>
-        </div>
-        <div
-          class="shimmer-line w-100 mb-2"
-          style="height: 36px; border-radius: 6px;"
-        />
-        <div
-          class="shimmer-line w-100 mb-2"
-          style="height: 36px; border-radius: 6px;"
-        />
-      </VCard>
-    </div>
-
     <!-- Estado Vacío (Sin Resultados) -->
     <VCard
-      v-else-if="requests.length === 0"
+      v-if="!loading && (!requests || requests.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -490,13 +453,48 @@ onMounted(() => {
       v-else
       class="vehicle-catalog-container d-flex flex-column gap-5"
     >
-      <VCard
-        v-for="item in requests"
-        :key="item.id"
-        class="vehicle-block-card rounded-xl border elevation-0 bg-surface overflow-hidden"
-      >
-        <!-- Cabecera del Vehículo -->
-        <div class="vehicle-block-header pa-4 pa-sm-5 bg-grey-lighten-5 border-b d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
+      <!-- Skeletons durante la carga -->
+      <template v-if="loading">
+        <VCard
+          v-for="i in 3"
+          :key="'sk-' + i"
+          class="vehicle-block-card rounded-xl border elevation-0 bg-surface overflow-hidden pa-5"
+        >
+          <div class="d-flex align-center gap-3 mb-4">
+            <div
+              class="shimmer-circle"
+              style="width: 48px; height: 48px; border-radius: 12px;"
+            />
+            <div class="flex-grow-1">
+              <div
+                class="shimmer-line w-40 mb-2"
+                style="height: 18px;"
+              />
+              <div
+                class="shimmer-line w-25"
+                style="height: 12px;"
+              />
+            </div>
+          </div>
+          <div
+            class="shimmer-line w-100 mb-2"
+            style="height: 36px; border-radius: 6px;"
+          />
+          <div
+            class="shimmer-line w-100 mb-2"
+            style="height: 36px; border-radius: 6px;"
+          />
+        </VCard>
+      </template>
+
+      <template v-else>
+        <VCard
+          v-for="item in requests"
+          :key="item.id"
+          class="vehicle-block-card rounded-xl border elevation-0 bg-surface overflow-hidden"
+        >
+          <!-- Cabecera del Vehículo -->
+          <div class="vehicle-block-header pa-4 pa-sm-5 bg-grey-lighten-5 border-b d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between gap-4">
           <!-- Identificación del Vehículo -->
           <div class="d-flex align-center gap-3">
             <VAvatar
@@ -781,9 +779,13 @@ onMounted(() => {
           </div>
         </div>
       </VCard>
+      </template>
 
       <!-- Paginación -->
-      <VCard class="rounded-xl border elevation-0 pa-4 bg-surface mt-2">
+      <VCard
+        v-if="totalPages > 0"
+        class="rounded-xl border elevation-0 pa-4 bg-surface mt-2"
+      >
         <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
             Mostrando <strong class="text-high-emphasis">{{ requests.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> vehículos registrados
@@ -791,6 +793,7 @@ onMounted(() => {
           <VPagination
             v-model="page"
             :length="totalPages"
+            :disabled="loading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"
