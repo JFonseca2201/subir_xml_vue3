@@ -14,6 +14,8 @@ import SriInvoiceProgressDialog from '@/components/inventory/sales/SriInvoicePro
 import WorkOrderImportDialog from '@/components/inventory/sales/WorkOrderImportDialog.vue'
 import SaleInvoiceConfirmDialog from '@/components/inventory/sales/SaleInvoiceConfirmDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -93,6 +95,15 @@ const sale = ref({
   items: [],
   user_id: userId.value,
 })
+
+// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft(
+  'sale_add',
+  sale,
+  {
+    autoRestore: !route.query.work_order_id && !route.query.quote_id,
+  }
+)
 
 // Regla de campo obligatorio que acepta 0 como valor válido
 const positiveNumberRule = v => v >= 0 || 'El valor no puede ser negativo'
@@ -1123,6 +1134,7 @@ const triggerInvoiceEmission = () => {
 }
 
 const handleSriCompleted = saleData => {
+  clearDraft()
   showNotification('Factura autorizada exitosamente por el SRI', 'success')
 }
 
@@ -1164,6 +1176,7 @@ const executeSaleSubmission = async () => {
     })
 
     if (response.success || response.status === 201 || response.status === 200) {
+      clearDraft()
       isConfirmInvoiceDialogVisible.value = false
       showNotification(
         sale.value.document_type === 'invoice'
@@ -1565,6 +1578,34 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
+    <!-- Alerta de Borrador Recuperado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      @discard="discardDraft(() => {
+        sale = {
+          document_type: 'invoice',
+          document_number: '',
+          client_id: null,
+          vehicle_id: null,
+          quote_id: null,
+          quote_number: null,
+          work_order_id: null,
+          work_order_number: null,
+          work_order_date: null,
+          mileage: null,
+          service_date: getLocalDateString(),
+          payment_status: 'paid',
+          is_credited: false,
+          payment_method: null,
+          observations: '',
+          technicians: [],
+          items: [],
+          user_id: userId,
+        }
+      })"
+    />
+
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">

@@ -4,6 +4,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,6 +43,15 @@ const pedido = ref({
   items: [],
   observations: '',
 })
+
+// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft(
+  'pedido_distribuidor',
+  pedido,
+  {
+    autoRestore: !route.query.id,
+  }
+)
 
 // Reglas de validación
 const requiredRule = v => (
@@ -327,6 +338,7 @@ const submitForm = async () => {
     })
 
     if (response.success || response.status === 200 || response.status === 201) {
+      clearDraft()
       showNotification(pedidoId.value ? 'Pedido a distribuidor actualizado correctamente.' : 'Pedido a distribuidor generado correctamente.', 'success')
       router.push('/sales/pedidos-distribuidor-list')
     } else {
@@ -503,6 +515,20 @@ onMounted(async () => {
       height="3"
       class="position-absolute"
       style="top: 0; left: 0; right: 0; z-index: 10;"
+    />
+
+    <!-- Alerta de Borrador Recuperado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      @discard="discardDraft(() => {
+        pedido = {
+          number: nextPedidoNumber || '',
+          distribuidor_id: null,
+          items: [],
+          observations: '',
+        }
+      })"
     />
 
     <!-- Header Principal Sticky -->

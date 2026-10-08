@@ -2,12 +2,13 @@
 import { ref, computed, watch } from 'vue'
 import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
-import { useRouter } from "vue-router"
+import { useRouter, useRoute } from "vue-router"
 import { useLoaderStore } from '@/stores/loader'
 import MyProfileDialog from './MyProfileDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
+const route = useRoute()
 const loader = useLoaderStore()
 const { can, currentUser, refreshPermissionsUser } = usePermissions()
 
@@ -129,7 +130,13 @@ const logout = async () => {
   setTimeout(() => {
     loader.stop()
   }, 500)
-  await router.push("/login")
+  
+  const currentPath = route.fullPath
+  if (currentPath && currentPath !== '/' && currentPath !== '/login') {
+    await router.push({ name: 'login', query: { to: currentPath } })
+  } else {
+    await router.push("/login")
+  }
 }
 </script>
 

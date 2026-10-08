@@ -5,6 +5,8 @@ import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { XMLParser } from "fast-xml-parser"
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -199,6 +201,43 @@ const tallerMath = computed(() => {
 // Items State
 const items = ref([])
 const searchProduct = ref(null)
+
+const purchaseDraftState = computed({
+  get: () => ({
+    formData: formData.value,
+    items: items.value,
+    isSharedInvoice: isSharedInvoice.value,
+    totalAsumidoTerceros: totalAsumidoTerceros.value,
+  }),
+  set: val => {
+    if (!val) return
+    if (val.formData) Object.assign(formData.value, val.formData)
+    if (Array.isArray(val.items)) items.value = val.items
+    if (val.isSharedInvoice !== undefined) isSharedInvoice.value = val.isSharedInvoice
+    if (val.totalAsumidoTerceros !== undefined) totalAsumidoTerceros.value = val.totalAsumidoTerceros
+  },
+})
+
+const resetPurchaseForm = () => {
+  formData.value = {
+    supplier_id: null,
+    supplier_ruc: '',
+    supplier_name: '',
+    supplier_address: '',
+    invoice_number: '',
+    issue_date: getLocalDateString(),
+    access_key: '',
+    payment_type: null,
+    account_id: null,
+    partner_id: null,
+  }
+  items.value = []
+  isSharedInvoice.value = false
+  totalAsumidoTerceros.value = 0
+  clearXmlData()
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('invoice_manual_purchase', purchaseDraftState)
 
 // Manual Product Entry State
 const isManualProductDialogOpen = ref(false)
@@ -926,6 +965,7 @@ const submitPurchase = async () => {
     })
 
     showNotification('Compra registrada correctamente en inventario y finanzas', 'success')
+    clearDraft()
     router.push('/invoice/list')
   } catch (error) {
     console.error('Error al guardar compra:', error)
@@ -952,6 +992,14 @@ onMounted(() => {
 
 <template>
   <div class="pa-6 position-relative">
+    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      class="mb-4"
+      @discard="discardDraft(resetPurchaseForm)"
+    />
+
     <!-- Hidden XML File Input -->
     <input
       ref="xmlFileInputRef"

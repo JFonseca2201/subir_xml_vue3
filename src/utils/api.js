@@ -55,9 +55,15 @@ export const $api = ofetch.create({
       localStorage.removeItem("token")
       localStorage.removeItem("user")
 
-      console.log("Su sesion a expirado. Inicie sesión nuevamnente.")
+      console.log("Su sesión ha expirado. Inicie sesión nuevamente.")
+      
+      const currentPath = window.location.pathname + window.location.search + window.location.hash
+      const redirectUrl = currentPath && currentPath !== '/' && currentPath !== '/login'
+        ? `/login?to=${encodeURIComponent(currentPath)}`
+        : '/login'
+
       setTimeout(() => {
-        window.location.href = '/login'
+        window.location.href = redirectUrl
       }, 100)
     }
     let options = response.options
@@ -70,6 +76,23 @@ export const $api = ofetch.create({
     }
   },
   async onResponseError({ response }) {
+    // Manejo de token inválido o no autenticado (401)
+    if (response?.status === 401 && response.request !== 'auth/login' && response.request !== 'auth/register') {
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+
+      const currentPath = window.location.pathname + window.location.search + window.location.hash
+      const redirectUrl = currentPath && currentPath !== '/' && currentPath !== '/login'
+        ? `/login?to=${encodeURIComponent(currentPath)}`
+        : '/login'
+
+      setTimeout(() => {
+        window.location.href = redirectUrl
+      }, 100)
+
+      return
+    }
+
     if (response?._data) {
       const data = response._data
       let specificMessage = null

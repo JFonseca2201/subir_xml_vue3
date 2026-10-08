@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -21,6 +23,35 @@ const returnForm = ref({
   refund_amount: 0,
   items: [],
 })
+
+const returnDraftState = computed({
+  get: () => ({
+    sale: sale.value,
+    returnForm: returnForm.value,
+    searchSaleNumber: searchSaleNumber.value,
+  }),
+  set: val => {
+    if (!val) return
+    if (val.sale) sale.value = val.sale
+    if (val.returnForm) returnForm.value = val.returnForm
+    if (val.searchSaleNumber) searchSaleNumber.value = val.searchSaleNumber
+  },
+})
+
+const resetReturnForm = () => {
+  searchSaleNumber.value = ''
+  sale.value = null
+  foundSales.value = []
+  returnForm.value = {
+    sale_id: null,
+    type: 'partial',
+    reason: '',
+    refund_amount: 0,
+    items: [],
+  }
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('returns_add', returnDraftState)
 
 const searchSale = async () => {
   if (!searchSaleNumber.value) {
@@ -154,6 +185,7 @@ const submitReturn = async () => {
 
     if (res?.success) {
       showNotification('Devolución procesada correctamente', 'success')
+      clearDraft()
       router.push('/returns/list')
     }
   } catch (error) {
@@ -174,6 +206,14 @@ const formatCurrency = value => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
+    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      class="mb-4"
+      @discard="discardDraft(resetReturnForm)"
+    />
+
     <VProgressLinear
       v-if="loading"
       v-slot

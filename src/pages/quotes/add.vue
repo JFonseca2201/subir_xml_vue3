@@ -11,6 +11,8 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -52,6 +54,27 @@ const quote = ref({
   technicians: [],
   items: [],
   user_id: userId.value,
+})
+
+const resetQuote = () => {
+  quote.value = {
+    document_number: nextQuoteNumber.value || '',
+    client_id: null,
+    vehicle_id: null,
+    work_order_id: null,
+    mileage: null,
+    service_date: getLocalDateString(),
+    observations: '',
+    technicians: [],
+    items: [],
+    user_id: userId.value,
+  }
+  selectedClient.value = null
+  selectedVehicle.value = null
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('quote_add', quote, {
+  autoRestore: !route.query.work_order_id,
 })
 
 const positiveNumberRule = v => v >= 0 || 'El valor no puede ser negativo'
@@ -354,6 +377,7 @@ const submitForm = async () => {
 
     if (response.success || response.status === 201) {
       showNotification('Cotización registrada exitosamente', 'success')
+      clearDraft()
       router.push('/quotes/list')
     } else {
       showNotification(response.message || 'Error al registrar', 'error')
@@ -376,6 +400,14 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
+    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      class="mb-4"
+      @discard="discardDraft(resetQuote)"
+    />
+
     <VProgressLinear
       v-if="isLoading"
       v-slot

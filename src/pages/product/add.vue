@@ -7,6 +7,8 @@ import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import ProductExistenceCheckDialog from '@/components/inventory/product/ProductExistenceCheckDialog.vue'
 import { compressImage } from '@/utils/imageCompressor'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const dropZoneRef = ref()
 const fileData = ref([])
@@ -239,6 +241,8 @@ const product = ref({
   notes: '',
   state: 1,
 })
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('product_add', product)
 
 const requiredRule = v => !!v || 'Campo obligatorio'
 const minLengthRule = min => v => !v || v.length >= min || `Mínimo ${min} caracteres`
@@ -562,6 +566,7 @@ const onFormReset = () => {
   reset()
   warning.value = null
   error_exist.value = null
+  clearDraft()
 }
 
 const loadInitialData = async () => {
@@ -594,6 +599,14 @@ const loadInitialData = async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
+    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      class="mb-4"
+      @discard="discardDraft(onFormReset)"
+    />
+
     <VProgressLinear
       v-if="isLoading"
       indeterminate

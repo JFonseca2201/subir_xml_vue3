@@ -11,6 +11,8 @@ import ClientCompanyAddDialog from '@/components/inventory/clients/ClientCompany
 import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.vue'
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
+import { useFormDraft } from '@/composables/useFormDraft'
+import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -49,6 +51,27 @@ const workOrder = ref({
   observations: '',
   technicians: [],
   items: [],
+})
+
+const resetWorkOrder = () => {
+  workOrder.value = {
+    number: '',
+    date: new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0],
+    client_id: null,
+    vehicle_id: null,
+    quote_id: null,
+    quote_number: null,
+    user_id: userId.value,
+    mileage: null,
+    fuel_level: '',
+    observations: '',
+    technicians: [],
+    items: [],
+  }
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('work_order_add', workOrder, {
+  autoRestore: !route.query.quote_id,
 })
 
 const fuelLevels = [
@@ -199,6 +222,7 @@ const saveWorkOrder = async () => {
     } else {
       showNotification('Orden de trabajo creada exitosamente', 'success')
     }
+    clearDraft()
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
@@ -249,6 +273,7 @@ const saveDraft = async () => {
     })
 
     showNotification('Borrador de orden guardado exitosamente', 'success')
+    clearDraft()
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al guardar borrador:', error)
@@ -713,6 +738,14 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
+    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
+    <FormDraftAlert
+      :has-draft="hasDraft"
+      :draft-timestamp="draftTimestamp"
+      class="mb-4"
+      @discard="discardDraft(resetWorkOrder)"
+    />
+
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
