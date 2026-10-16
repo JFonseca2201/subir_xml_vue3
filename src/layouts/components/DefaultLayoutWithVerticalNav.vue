@@ -188,10 +188,12 @@ const filteredNavItems = computed(() => {
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component, route }">
-      <Component
-        :is="Component"
-        :key="route.fullPath"
-      />
+      <KeepAlive :max="25">
+        <Component
+          :is="Component"
+          :key="route.fullPath"
+        />
+      </KeepAlive>
     </RouterView>
 
     <!-- 👉 Footer -->

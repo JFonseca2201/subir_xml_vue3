@@ -15,6 +15,21 @@ initCore()
 initConfigStore()
 
 const configStore = useConfigStore()
+
+// Prevenir que el navegador descarte la pestaña o resetee el estado en segundo plano
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    let tabHeartbeat = null
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        tabHeartbeat = setInterval(() => {}, 25000)
+      } else if (tabHeartbeat) {
+        clearInterval(tabHeartbeat)
+        tabHeartbeat = null
+      }
+    })
+  }
+})
 </script>
 
 <template>
