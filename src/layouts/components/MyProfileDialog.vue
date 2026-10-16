@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
-import { $api } from '@/utils/api'
+import { $api, getStorageUrl } from '@/utils/api'
 import avatar1 from "@images/avatars/avatar-1.png"
 import { refreshPermissionsUser } from '@/composables/usePermissions'
 
@@ -185,11 +185,7 @@ const savePassword = async () => {
 const avatarUrl = computed(() => {
   const avatar = props.userData?.avatar
   if (!avatar) return avatar1
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-
-  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
-  
-  return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+  return getStorageUrl(avatar)
 })
 
 const userRoleName = computed(() => {

@@ -377,6 +377,8 @@
     "compressImage": true,
     "extractErrorMessage": true,
     "copyToClipboard": true,
-    "useFormDraft": true
+    "useFormDraft": true,
+    "getBackendBaseUrl": true,
+    "getStorageUrl": true
   }
 }

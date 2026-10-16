@@ -366,7 +366,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 <template>
   <div class="pa-4 pa-sm-6 products-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -388,13 +388,13 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           v-if="can('import_xml') || can('register_product')"
           color="secondary"
           variant="tonal"
           prepend-icon="ri-upload-2-line"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
           @click="importProducts"
         >
           Importar Excel
@@ -413,7 +413,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
               variant="tonal"
               prepend-icon="ri-download-2-line"
               append-icon="ri-arrow-down-s-line"
-              class="font-weight-medium flex-grow-1 flex-md-grow-0"
+              class="font-weight-medium"
             >
               Exportar / Reportes
             </VBtn>
@@ -470,7 +470,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           color="primary"
           prepend-icon="ri-add-line"
           to="/product/add"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
         >
           Agregar Producto
         </VBtn>

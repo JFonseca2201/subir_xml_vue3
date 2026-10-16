@@ -6,7 +6,6 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
 import AporteEditDialog from '@/components/inventory/aportes/AporteEditDialog.vue'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 
@@ -78,11 +77,8 @@ const loadAportes = async () => {
         total_general: 0,
       }
     }
-
-    showNotification('Aportes cargados correctamente', 'success')
   } catch (error) {
     console.error('Error al cargar aportes:', error)
-    showNotification('Error al cargar aportes', 'error')
   } finally {
     loading.value = false
   }
@@ -294,64 +290,61 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 aportes-page"
   >
-    <!-- Encabezado de Navegación de Operaciones -->
-    <OperationsHeaderNav active-tab="socios" />
-
-    <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-group-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                Aportes de Capital
-              </h1>
-              <div class="status-pill-clean status-transfer">
-                <span class="status-dot" />
-                <span>{{ totalAportesCount }} {{ totalAportesCount === 1 ? 'registro' : 'registros' }}</span>
-              </div>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
-              Gestión de aportes de socios y control de capital acumulado
-            </p>
-          </div>
-        </div>
-
-        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
-          <VBtn
-            title="Actualizar datos"
-            variant="tonal"
-            color="secondary"
-            icon="ri-refresh-line"
-            size="small"
-            :loading="loading"
-            @click="loadAportes"
+    <!-- Encabezado Principal (Sin fondo de tarjeta) -->
+    <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
+      <div class="d-flex align-center gap-3">
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          size="42"
+          size-sm="44"
+        >
+          <VIcon
+            icon="ri-group-line"
+            size="24"
           />
-          <VBtn
-            color="primary"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
-            @click="openCreateDialog"
-          >
-            Nuevo Aporte
-          </VBtn>
+        </VAvatar>
+        <div>
+          <div class="d-flex align-center gap-2">
+            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+              Aportes de Capital
+            </h1>
+            <div class="status-pill-clean status-transfer">
+              <span class="status-dot" />
+              <span>{{ totalAportesCount }} {{ totalAportesCount === 1 ? 'registro' : 'registros' }}</span>
+            </div>
+          </div>
+          <p class="text-medium-emphasis mb-0 d-none d-sm-block">
+            Gestión de aportes de socios y control de capital acumulado
+          </p>
         </div>
       </div>
-    </VCard>
+
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center gap-2 w-100 w-sm-auto justify-sm-end ms-auto">
+        <VBtn
+          title="Actualizar datos"
+          variant="tonal"
+          color="secondary"
+          icon="ri-refresh-line"
+          size="small"
+          class="flex-shrink-0"
+          :loading="loading"
+          @click="loadAportes"
+        />
+        <VBtn
+          color="primary"
+          variant="elevated"
+          size="small"
+          prepend-icon="ri-add-circle-line"
+          class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
+          @click="openCreateDialog"
+        >
+          Nuevo Aporte
+        </VBtn>
+      </div>
+    </div>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5 d-none d-sm-flex">
@@ -1287,5 +1280,5 @@ onMounted(() => {
 
 <route lang="yaml">
 meta:
-  navActiveLink: 'operations-index'
+  navActiveLink: 'aportes'
 </route>

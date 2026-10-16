@@ -506,7 +506,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 kardex-client-page">
     <!-- Header Principal -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon
@@ -522,34 +522,37 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
-        <VBtn
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          class="flex-grow-1 flex-md-grow-0"
-          @click="resetFilters"
-        >
-          Limpiar Filtros
-        </VBtn>
-        <VBtn
-          variant="outlined"
-          color="error"
-          prepend-icon="ri-file-pdf-2-line"
-          class="flex-grow-1 flex-md-grow-0"
-          :loading="isLoading"
-          @click="exportKardexPDF"
-        >
-          Exportar Reporte PDF
-        </VBtn>
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"
-          class="flex-grow-1 flex-md-grow-0"
+          class="font-weight-bold"
           :loading="isLoading"
           @click="loadKardex"
         >
           Actualizar
+        </VBtn>
+
+        <VBtn
+          variant="outlined"
+          color="error"
+          prepend-icon="ri-file-pdf-2-line"
+          class="font-weight-medium"
+          :loading="isLoading"
+          @click="exportKardexPDF"
+        >
+          Exportar PDF
+        </VBtn>
+
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          prepend-icon="ri-filter-off-line"
+          class="font-weight-medium"
+          @click="resetFilters"
+        >
+          Limpiar Filtros
         </VBtn>
       </div>
     </div>

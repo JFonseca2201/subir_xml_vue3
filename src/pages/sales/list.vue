@@ -199,7 +199,6 @@ const loadSales = async () => {
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('Error al cargar ventas:', error)
-    showNotification('Error al cargar el historial de ventas', 'error')
   } finally {
     loading.value = false
   }
@@ -1114,7 +1113,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 sales-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -1136,12 +1135,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           variant="tonal"
           color="info"
           prepend-icon="ri-wifi-line"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
           @click="isSriStatusDialogVisible = true"
         >
           Estado SRI
@@ -1151,7 +1150,7 @@ onMounted(() => {
           variant="tonal"
           color="secondary"
           prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
           :loading="pdfLoading"
           @click="generatePDF"
         >
@@ -1163,7 +1162,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-tools-line"
           to="/work-orders/add"
-          class="font-weight-semibold flex-grow-1 flex-md-grow-0"
+          class="font-weight-semibold"
         >
           Nueva O/T
         </VBtn>
@@ -1172,7 +1171,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-add-line"
           to="/sales/add"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
         >
           Nueva Venta
         </VBtn>

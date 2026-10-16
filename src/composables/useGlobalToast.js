@@ -95,7 +95,14 @@ export function useGlobalToast() {
 
     notificationMessage.value = cleanMessage
     notificationType.value = type
-    notificationShow.value = true
+    if (notificationShow.value) {
+      notificationShow.value = false
+      setTimeout(() => {
+        notificationShow.value = true
+      }, 50)
+    } else {
+      notificationShow.value = true
+    }
   }
 
   return {

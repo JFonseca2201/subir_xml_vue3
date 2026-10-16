@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useFormDraft } from '@/composables/useFormDraft'
-import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -206,14 +205,6 @@ const formatCurrency = value => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
-    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
-    <FormDraftAlert
-      :has-draft="hasDraft"
-      :draft-timestamp="draftTimestamp"
-      class="mb-4"
-      @discard="discardDraft(resetReturnForm)"
-    />
-
     <VProgressLinear
       v-if="loading"
       v-slot

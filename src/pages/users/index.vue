@@ -2,7 +2,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
-import { $api } from '@/utils/api'
+import { $api, getStorageUrl } from '@/utils/api'
 import { usePermissions } from '@/composables/usePermissions'
 import UserAddDialog from '@/components/inventory/users/UserAddDialog.vue'
 import UserViewDialog from '@/components/inventory/users/UserViewDialog.vue'
@@ -76,10 +76,7 @@ const formatDate = date => {
 
 const normalizeAvatarUrl = avatar => {
   if (!avatar) return null
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
-  
-  return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+  return getStorageUrl(avatar)
 }
 
 const getUserInitials = (name, surname) => {
@@ -104,10 +101,6 @@ const list = async () => {
     const resp = await $api("users?search=" + (seachQuery.value ? seachQuery.value : ''), {
       method: 'GET',
       signal: usersAbortController.signal,
-      onResponseError({ response }) {
-        console.log(response._data?.error)
-        showNotification('Error al cargar los usuarios', 'error')
-      },
     })
 
     list_users.value = (resp.users || []).map(user => ({
@@ -116,8 +109,7 @@ const list = async () => {
     }))
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
-    console.log(error)
-    showNotification('Error al cargar la lista de usuarios', 'error')
+    console.error('Error al cargar usuarios:', error)
   } finally {
     isLoading.value = false
     isSearching.value = false
@@ -240,7 +232,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 users-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -262,12 +254,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           v-if="can('register_user')"
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
           @click="isUserAddDialogVisible = true"
         >
           Nuevo Usuario

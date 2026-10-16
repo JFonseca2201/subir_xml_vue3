@@ -20,6 +20,12 @@ const isLoading = ref(false)
 const isDocumentNumberLoading = ref(false)
 const showValidationError = ref(false)
 const validationErrorMessage = ref('')
+
+const triggerValidationError = message => {
+  showValidationError.value = true
+  validationErrorMessage.value = message
+  showNotification(message, 'warning')
+}
 const isDispatching = ref(false)
 const isConfirmInvoiceDialogVisible = ref(false)
 const isSriProgressDialogVisible = ref(false)
@@ -857,15 +863,13 @@ const saveDraft = async () => {
   validationErrorMessage.value = ''
 
   if (!sale.value.client_id) {
-    showValidationError.value = true
-    validationErrorMessage.value = 'Debe seleccionar un cliente para guardar el borrador'
+    triggerValidationError('Debe seleccionar un cliente para guardar el borrador')
 
     return
   }
 
   if (sale.value.items.length === 0) {
-    showValidationError.value = true
-    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio para guardar el borrador'
+    triggerValidationError('Debe agregar al menos un producto o servicio para guardar el borrador')
 
     return
   }
@@ -920,18 +924,17 @@ const submitForm = async () => {
   validationErrorMessage.value = ''
 
   if (formRef.value) {
-    const { valid } = await formRef.value.validate()
+    const { valid, errors } = await formRef.value.validate()
     if (!valid) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+      const firstError = errors?.[0]?.errorMessages?.[0] || 'Por favor, complete todos los campos obligatorios marcados con *'
+      triggerValidationError(firstError)
 
       return
     }
   }
 
   if (!sale.value.client_id) {
-    showValidationError.value = true
-    validationErrorMessage.value = 'Debe seleccionar un cliente para continuar'
+    triggerValidationError('Debe seleccionar un cliente para continuar')
 
     return
   }
@@ -940,8 +943,7 @@ const submitForm = async () => {
   if (hasServices.value && !sale.value.vehicle_id) {
     await assignDefaultVehicle()
     if (!sale.value.vehicle_id) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'El comprobante incluye servicios y requiere asociar un vehículo.'
+      triggerValidationError('El comprobante incluye servicios y requiere asociar un vehículo.')
 
       return
     }
@@ -955,8 +957,7 @@ const submitForm = async () => {
 
     // Regla SRI: Límite de $50.00 para Consumidor Final
     if (isFinalConsumer && total.value >= 50.00) {
-      showValidationError.value = true
-      validationErrorMessage.value = 'Por normativa del SRI, no se pueden emitir Facturas a Consumidor Final por montos iguales o superiores a $50.00. Debe registrar o seleccionar un cliente con Cédula o RUC.'
+      triggerValidationError('Por normativa del SRI, no se pueden emitir Facturas a Consumidor Final por montos iguales o superiores a $50.00. Debe registrar o seleccionar un cliente con Cédula o RUC.')
 
       return
     }
@@ -965,8 +966,7 @@ const submitForm = async () => {
     if (!isFinalConsumer) {
       const isNumeric = /^\d+$/.test(docNum)
       if (!isNumeric || (docNum.length !== 10 && docNum.length !== 13)) {
-        showValidationError.value = true
-        validationErrorMessage.value = `La identificación del cliente (${docNum || 'vacía'}) no es válida para Facturación Electrónica SRI. Debe ser una Cédula de 10 dígitos o un RUC de 13 dígitos numéricos.`
+        triggerValidationError(`La identificación del cliente (${docNum || 'vacía'}) no es válida para Facturación Electrónica SRI. Debe ser una Cédula de 10 dígitos o un RUC de 13 dígitos numéricos.`)
 
         return
       }
@@ -975,8 +975,7 @@ const submitForm = async () => {
 
   // Validar que haya al menos un producto/servicio
   if (sale.value.items.length === 0) {
-    showValidationError.value = true
-    validationErrorMessage.value = 'Debe agregar al menos un producto o servicio'
+    triggerValidationError('Debe agregar al menos un producto o servicio')
 
     return
   }
@@ -992,8 +991,7 @@ const submitForm = async () => {
             quantityNeeded -= (item.original_quantity || 0)
           }
           if (quantityNeeded > 0 && product.stock < quantityNeeded) {
-            showValidationError.value = true
-            validationErrorMessage.value = `Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado adicional: ${quantityNeeded}`
+            triggerValidationError(`Stock insuficiente para ${product.description}. Stock disponible: ${product.stock}, Solicitado adicional: ${quantityNeeded}`)
 
             return
           }
@@ -1010,8 +1008,7 @@ const submitForm = async () => {
         const maxDiscountAmount = item.quantity * parseFloat(product.max_discount)
         const itemDiscount = parseFloat(item.discount) || 0
         if (itemDiscount > maxDiscountAmount) {
-          showValidationError.value = true
-          validationErrorMessage.value = `Descuento total excede el máximo permitido para ${product.description}. Máximo total: ${maxDiscountAmount.toFixed(2)}, Ingresado total: ${itemDiscount.toFixed(2)}`
+          triggerValidationError(`Descuento total excede el máximo permitido para ${product.description}. Máximo total: ${maxDiscountAmount.toFixed(2)}, Ingresado total: ${itemDiscount.toFixed(2)}` )
 
           return
         }
@@ -1030,8 +1027,14 @@ const submitForm = async () => {
       const currentTotal = Math.round(total.value * 100) / 100
 
       if (paymentDistributions.value.length === 0 || totalDist <= 0) {
-        showValidationError.value = true
-        validationErrorMessage.value = 'Debe agregar al menos un pago para la venta'
+        if (sale.value.document_type === 'invoice') {
+          showNotification('Revise los datos de la factura y seleccione el tipo de pago', 'info')
+          isConfirmInvoiceDialogVisible.value = true
+
+          return
+        }
+
+        triggerValidationError('Debe agregar al menos un pago para la venta')
 
         return
       }
@@ -1040,14 +1043,26 @@ const submitForm = async () => {
       for (let i = 0; i < paymentDistributions.value.length; i++) {
         const dist = paymentDistributions.value[i]
         if (!dist.payment_method) {
-          showValidationError.value = true
-          validationErrorMessage.value = `⚠️ Debe seleccionar el Tipo de Pago (Efectivo o Transferencia) para el Pago #${i + 1}`
+          if (sale.value.document_type === 'invoice') {
+            showNotification('Revise los datos de la factura y seleccione el tipo de pago', 'info')
+            isConfirmInvoiceDialogVisible.value = true
+
+            return
+          }
+
+          triggerValidationError(`⚠️ Debe seleccionar el Tipo de Pago (Efectivo o Transferencia) para el Pago #${i + 1}`)
 
           return
         }
         if (dist.payment_method === 'Transferencia' && !dist.account_id) {
-          showValidationError.value = true
-          validationErrorMessage.value = `⚠️ Debe seleccionar la Cuenta Bancaria de destino para la Transferencia (Pago #${i + 1})`
+          if (sale.value.document_type === 'invoice') {
+            showNotification('Revise los datos de la factura y seleccione el tipo de pago', 'info')
+            isConfirmInvoiceDialogVisible.value = true
+
+            return
+          }
+
+          triggerValidationError(`⚠️ Debe seleccionar la Cuenta Bancaria de destino para la Transferencia (Pago #${i + 1})`)
 
           return
         }
@@ -1061,8 +1076,7 @@ const submitForm = async () => {
       }
 
       if (totalDist > currentTotal + 0.01) {
-        showValidationError.value = true
-        validationErrorMessage.value = `La suma de los pagos ($${totalDist.toFixed(2)}) no puede ser mayor al total ($${currentTotal.toFixed(2)})`
+        triggerValidationError(`La suma de los pagos ($${totalDist.toFixed(2)}) no puede ser mayor al total ($${currentTotal.toFixed(2)})`)
 
         return
       }
@@ -1147,7 +1161,28 @@ const handleSriError = errorMsg => {
   console.error('Error en emisión SRI:', errorMsg)
 }
 
-const triggerInvoiceEmission = () => {
+const triggerInvoiceEmission = (paymentData = null) => {
+  if (paymentData?.['payment_method']) {
+    sale.value['payment_method'] = paymentData['payment_method']
+    sale.value['payment_status'] = 'paid'
+    sale.value['is_credited'] = false
+    paymentDistributions.value = paymentData['payment_distributions'] || [{
+      amount: total.value,
+      'payment_method': paymentData['payment_method'],
+      'account_id': paymentData['account_id'],
+    }]
+
+    const payload = {
+      ...sale.value,
+      subtotal: subtotal.value,
+      tax_amount: taxAmount.value,
+      total: total.value,
+      items: sale.value.items,
+      'payment_distributions': paymentDistributions.value,
+    }
+
+    sriSalePayload.value = payload
+  }
   isConfirmInvoiceDialogVisible.value = false
   isSriProgressDialogVisible.value = true
 }
@@ -1246,7 +1281,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"
@@ -2727,24 +2762,18 @@ onMounted(() => {
                 <VDivider />
 
                 <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                  <!-- Alerta de Validación encima del botón de guardar -->
+                  <!-- Alerta de Validación Visible -->
                   <VAlert
-                    v-if="showValidationError"
-                    color="error"
+                    v-if="showValidationError && validationErrorMessage"
+                    type="warning"
                     variant="tonal"
-                    class="w-100 mb-1 rounded-lg"
-                    border="start"
+                    density="compact"
                     closable
+                    class="w-100 mb-2 text-caption font-weight-bold"
+                    icon="ri-alert-fill"
                     @click:close="showValidationError = false"
                   >
-                    <div class="d-flex align-center">
-                      <VIcon
-                        icon="ri-error-warning-line"
-                        class="mr-2"
-                        size="20"
-                      />
-                      <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
-                    </div>
+                    {{ validationErrorMessage }}
                   </VAlert>
 
                   <!-- Botón Principal Prominente -->

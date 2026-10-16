@@ -2029,6 +2029,11 @@
   min-height: 100vh;
   position: relative;
   background-color: rgb(var(--v-theme-background));
+  background-image: url('@images/pages/login-workshop-bg.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   overflow-x: hidden;
 }
 
@@ -2191,13 +2196,15 @@
   }
 }
 
-/* RIGHT COLUMN - Vibrant Primary Themed Sidebar */
+/* RIGHT COLUMN - Vibrant Primary Themed Sidebar (Translucent Glassmorphism) */
 .auth-primary-sidebar {
   min-height: 100vh;
-  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%) !important;
+  background: linear-gradient(135deg, rgba(115, 103, 240, 0.78) 0%, rgba(94, 80, 238, 0.72) 50%, rgba(72, 57, 235, 0.78) 100%) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: relative;
   overflow: hidden;
-  box-shadow: -15px 0 45px rgba(115, 103, 240, 0.25);
+  box-shadow: -15px 0 45px rgba(15, 23, 42, 0.35);
 }
 
 .sidebar-glow-orb {
@@ -6581,4 +6588,129 @@
 
 .shimmer-box {
   border-radius: 8px !important;
+}
+
+// ==========================================================================
+// 8. FINANCIAL GROUP HEADERS (MOVEMENTS, TRANSFERS, APORTES)
+// ==========================================================================
+
+// Desktop Table Group Headers
+.transfer-table {
+  tbody {
+    // Fila separadora destacada por día
+    tr.transfer-date-header-row {
+      background: #f1f5f9 !important;
+      position: relative;
+      z-index: 2;
+
+      td {
+        background: linear-gradient(90deg, #f1f5f9 0%, #f8fafc 50%, #ffffff 100%) !important;
+        border-top: 3px solid #cbd5e1 !important;
+        border-bottom: 1.5px solid #cbd5e1 !important;
+        border-left: 5px solid rgb(var(--v-theme-primary)) !important;
+        padding: 10px 18px !important;
+        height: auto !important;
+      }
+
+      &:hover td {
+        background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 50%, #ffffff 100%) !important;
+      }
+
+      .date-header-title {
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em;
+        color: #0f172a !important;
+      }
+    }
+
+    // Filas de datos que pertenecen a ese día
+    tr.transfer-row {
+      background-color: #ffffff;
+      transition: background-color 0.15s ease;
+
+      td {
+        border-bottom: 1px solid #f1f5f9 !important;
+      }
+
+      &:hover td {
+        background-color: rgba(var(--v-theme-primary), 0.035) !important;
+      }
+
+      &:last-child td {
+        border-bottom: 2px solid #e2e8f0 !important;
+      }
+    }
+  }
+}
+
+// Vista Móvil - Tarjeta de Agrupación por Día
+.day-group-mobile {
+  margin-bottom: 22px !important;
+
+  &:last-child {
+    margin-bottom: 8px !important;
+  }
+
+  .day-header-mobile {
+    background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08) 0%, rgba(var(--v-theme-surface), 0.95) 100%) !important;
+    border: 1px solid rgba(var(--v-theme-primary), 0.22) !important;
+    border-left: 5px solid rgb(var(--v-theme-primary)) !important;
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .day-movements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+// Soporte para Modo Oscuro
+.v-theme--dark {
+  .transfer-table {
+    tbody {
+      tr.transfer-date-header-row {
+        background: #1e293b !important;
+
+        td {
+          background: linear-gradient(90deg, #1e293b 0%, #172033 50%, #0f172a 100%) !important;
+          border-top: 3px solid #334155 !important;
+          border-bottom: 1.5px solid #334155 !important;
+          border-left: 5px solid rgb(var(--v-theme-primary)) !important;
+        }
+
+        &:hover td {
+          background: linear-gradient(90deg, #243249 0%, #1e293b 50%, #172033 100%) !important;
+        }
+
+        .date-header-title {
+          color: #f8fafc !important;
+        }
+      }
+
+      tr.transfer-row {
+        background-color: #0f172a;
+
+        td {
+          border-bottom: 1px solid #1e293b !important;
+        }
+
+        &:hover td {
+          background-color: rgba(var(--v-theme-primary), 0.08) !important;
+        }
+      }
+    }
+  }
+
+  .day-group-mobile {
+    .day-header-mobile {
+      background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.16) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+      border: 1px solid rgba(var(--v-theme-primary), 0.35) !important;
+      border-left: 5px solid rgb(var(--v-theme-primary)) !important;
+    }
+  }
 }

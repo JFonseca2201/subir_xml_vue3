@@ -47,6 +47,22 @@ export const getApiBaseUrl = () => {
   return envUrl || 'http://127.0.0.1:8000/api/'
 }
 
+export const getBackendBaseUrl = () => {
+  const apiBase = getApiBaseUrl()
+  return apiBase.replace(/\/api\/?$/, '')
+}
+
+export const getStorageUrl = path => {
+  if (!path) return ''
+  if (typeof path === 'object' && path.url) return path.url
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+    return path
+  }
+  const base = getBackendBaseUrl()
+  const cleanPath = path.replace(/^\/?storage\/?/, '').replace(/^\//, '')
+  return `${base}/storage/${cleanPath}`
+}
+
 export const $api = ofetch.create({
   baseURL: getApiBaseUrl(),
   async onRequest(response) {

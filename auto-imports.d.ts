@@ -59,10 +59,12 @@ declare global {
   const formatEcuadorianPlate: typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']
   const getActivePinia: typeof import('pinia')['getActivePinia']
   const getApiBaseUrl: typeof import('./src/utils/api.js')['getApiBaseUrl']
+  const getBackendBaseUrl: typeof import('./src/utils/api.js')['getBackendBaseUrl']
   const getCurrentInstance: typeof import('vue')['getCurrentInstance']
   const getCurrentScope: typeof import('vue')['getCurrentScope']
   const getPlateInfo: typeof import('./src/utils/ecuadorianPlateValidator.js')['getPlateInfo']
   const getPlateType: typeof import('./src/utils/ecuadorianPlateValidator.js')['getPlateType']
+  const getStorageUrl: typeof import('./src/utils/api.js')['getStorageUrl']
   const h: typeof import('vue')['h']
   const handlePlateInput: typeof import('./src/utils/ecuadorianPlateValidator.js')['handlePlateInput']
   const ignorableWatch: typeof import('@vueuse/core')['ignorableWatch']
@@ -433,8 +435,10 @@ declare module 'vue' {
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getApiBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getApiBaseUrl']>
+    readonly getBackendBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getBackendBaseUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getStorageUrl: UnwrapRef<typeof import('./src/utils/api.js')['getStorageUrl']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
@@ -792,8 +796,10 @@ declare module '@vue/runtime-core' {
     readonly formatEcuadorianPlate: UnwrapRef<typeof import('./src/utils/ecuadorianPlateValidator.js')['formatEcuadorianPlate']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getApiBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getApiBaseUrl']>
+    readonly getBackendBaseUrl: UnwrapRef<typeof import('./src/utils/api.js')['getBackendBaseUrl']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
+    readonly getStorageUrl: UnwrapRef<typeof import('./src/utils/api.js')['getStorageUrl']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>

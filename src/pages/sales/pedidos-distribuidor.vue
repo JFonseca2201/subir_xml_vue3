@@ -5,7 +5,6 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
 import { useFormDraft } from '@/composables/useFormDraft'
-import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -90,7 +89,6 @@ const loadSuppliers = async () => {
     suppliers.value = response.suppliers || response.data || response || []
   } catch (error) {
     console.error('Error al cargar distribuidores:', error)
-    showNotification('Error al cargar la lista de distribuidores', 'error')
   } finally {
     isLoading.value = false
   }
@@ -120,7 +118,6 @@ const loadProductsOfSupplier = async supplierId => {
     }
   } catch (error) {
     console.error('Error al cargar productos:', error)
-    showNotification('Error al cargar los productos del distribuidor', 'error')
   } finally {
     isLoadingProducts.value = false
   }
@@ -517,20 +514,6 @@ onMounted(async () => {
       style="top: 0; left: 0; right: 0; z-index: 10;"
     />
 
-    <!-- Alerta de Borrador Recuperado -->
-    <FormDraftAlert
-      :has-draft="hasDraft"
-      :draft-timestamp="draftTimestamp"
-      @discard="discardDraft(() => {
-        pedido = {
-          number: nextPedidoNumber || '',
-          distribuidor_id: null,
-          items: [],
-          observations: '',
-        }
-      })"
-    />
-
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
@@ -568,7 +551,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"

@@ -120,7 +120,6 @@ const loadCredits = async () => {
     }
   } catch (error) {
     console.error('Error al cargar saldos a favor:', error)
-    showNotification('Error al cargar saldos a favor de proveedores', 'error')
   } finally {
     loading.value = false
   }

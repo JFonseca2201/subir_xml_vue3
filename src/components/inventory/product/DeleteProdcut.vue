@@ -187,11 +187,12 @@ const handleImageError = () => {
 
       <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white">
         <VBtn 
-          variant="tonal" 
+          variant="outlined" 
           color="secondary"
-          class="rounded-lg px-6 font-weight-medium text-capitalize"
-          height="42"
-          :disabled="isLoading"
+          prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium"
+          height="40"
+          :disabled="isLoading || loader.loading"
           @click="closeDialog"
         >
           Cancelar
@@ -200,8 +201,8 @@ const handleImageError = () => {
           color="error" 
           variant="elevated"
           prepend-icon="ri-delete-bin-line"
-          class="rounded-lg px-6 font-weight-bold text-capitalize"
-          height="42"
+          class="rounded-lg px-6 font-weight-bold"
+          height="40"
           :loading="isLoading || loader.loading"
           :disabled="isLoading || loader.loading"
           @click="deleteProduct"

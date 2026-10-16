@@ -28,8 +28,9 @@ const toastIcon = computed(() => {
     :color="toastColor"
     variant="tonal"
     location="top right"
-    :style="{ 'margin-top': '60px' }"
-    timeout="2500"
+    :style="{ 'margin-top': '60px', 'z-index': 99999 }"
+    :timeout="3500"
+    z-index="99999"
     class="custom-global-toast"
   >
     <div class="d-flex align-center justify-space-between w-100 py-0.5">
@@ -50,3 +51,12 @@ const toastIcon = computed(() => {
     </div>
   </VSnackbar>
 </template>
+
+<style scoped>
+.custom-global-toast {
+  z-index: 99999 !important;
+}
+:deep(.v-snackbar__wrapper) {
+  z-index: 99999 !important;
+}
+</style>

@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
-import { $api } from '@/utils/api'
+import { $api, getStorageUrl } from '@/utils/api'
 import { themeConfig, layoutConfig } from '@themeConfig'
 
 const loader = useLoaderStore()
@@ -26,6 +26,7 @@ const sucursal = ref({
   firma_electronica: '',
   password_firma: '',
   logo: '',
+  login_background: '',
   obligado_contabilidad: '',
   contribuyente_especial: '',
   status: '1',
@@ -162,10 +163,6 @@ const loadSucursal = async () => {
   try {
     const resp = await $api('sucursales/1', {
       method: 'GET',
-      onResponseError({ response }) {
-        console.error('Error al cargar sucursal:', response._data.error)
-        showNotification('Error al cargar información de la sucursal', 'error')
-      },
     })
 
     if (resp.sucursal) {
@@ -176,12 +173,15 @@ const loadSucursal = async () => {
       localStorage.setItem('sucursal_name', sName)
       if (themeConfig.app) themeConfig.app.title = sName
       if (layoutConfig?.app) layoutConfig.app.title = sName
-    }
 
-    showNotification('Información cargada correctamente', 'success')
+      if (resp.sucursal.login_background) {
+        localStorage.setItem('login_background', getStorageUrl(resp.sucursal.login_background))
+      } else {
+        localStorage.removeItem('login_background')
+      }
+    }
   } catch (error) {
     console.error('Error al cargar sucursal:', error)
-    showNotification('Error al cargar información de la sucursal', 'error')
   } finally {
     isLoading.value = false
   }
@@ -195,10 +195,43 @@ const enableEditing = () => {
 // Función para cancelar edición
 const cancelEditing = () => {
   isEditing.value = false
+  fileFirma.value = null
+  fileLoginBg.value = null
+  previewLoginBg.value = null
+  shouldRemoveLoginBg.value = false
   loadSucursal() // Recargar datos originales
 }
 
 const fileFirma = ref(null)
+const fileLoginBg = ref(null)
+const previewLoginBg = ref(null)
+const shouldRemoveLoginBg = ref(false)
+
+const onLoginBgSelected = () => {
+  const raw = Array.isArray(fileLoginBg.value) ? fileLoginBg.value[0] : fileLoginBg.value
+  if (raw && (raw instanceof File || raw instanceof Blob)) {
+    previewLoginBg.value = URL.createObjectURL(raw)
+    shouldRemoveLoginBg.value = false
+  } else {
+    previewLoginBg.value = null
+  }
+}
+
+const clearLoginBg = () => {
+  fileLoginBg.value = null
+  previewLoginBg.value = null
+  shouldRemoveLoginBg.value = true
+}
+
+const currentLoginBgUrl = computed(() => {
+  if (previewLoginBg.value) return previewLoginBg.value
+  if (shouldRemoveLoginBg.value) return null
+  if (sucursal.value?.login_background) {
+    return getStorageUrl(sucursal.value.login_background)
+  }
+  
+  return null
+})
 
 // Guardar cambios
 const saveSucursal = async () => {
@@ -208,10 +241,15 @@ const saveSucursal = async () => {
   isLoading.value = true
   try {
     let bodyData
-    const rawFile = Array.isArray(fileFirma.value) ? fileFirma.value[0] : fileFirma.value
-    const hasFile = rawFile && (rawFile instanceof File || rawFile instanceof Blob)
+    const rawFirma = Array.isArray(fileFirma.value) ? fileFirma.value[0] : fileFirma.value
+    const hasFirma = rawFirma && (rawFirma instanceof File || rawFirma instanceof Blob)
 
-    if (hasFile) {
+    const rawBg = Array.isArray(fileLoginBg.value) ? fileLoginBg.value[0] : fileLoginBg.value
+    const hasBg = rawBg && (rawBg instanceof File || rawBg instanceof Blob)
+
+    const needsFormData = hasFirma || hasBg || shouldRemoveLoginBg.value
+
+    if (needsFormData) {
       const formData = new FormData()
 
       formData.append('_method', 'PUT')
@@ -220,14 +258,22 @@ const saveSucursal = async () => {
           formData.append(key, sucursal.value[key])
         }
       })
-      formData.append('firma_file', rawFile)
+      if (hasFirma) {
+        formData.append('firma_file', rawFirma)
+      }
+      if (hasBg) {
+        formData.append('login_background_file', rawBg)
+      }
+      if (shouldRemoveLoginBg.value) {
+        formData.append('remove_login_background', 'true')
+      }
       bodyData = formData
     } else {
       bodyData = sucursal.value
     }
 
     const resp = await $api('sucursales/1', {
-      method: hasFile ? 'POST' : 'PUT',
+      method: needsFormData ? 'POST' : 'PUT',
       body: bodyData,
       onResponseError({ response }) {
         console.error('Error al guardar sucursal:', response._data.error || response._data.message)
@@ -239,18 +285,24 @@ const saveSucursal = async () => {
       sucursal.value = resp.sucursal
       isEditing.value = false
       fileFirma.value = null
-      showNotification('Configuración guardada exitosamente', 'success')
+      fileLoginBg.value = null
+      previewLoginBg.value = null
+      shouldRemoveLoginBg.value = false
+
+      if (resp.sucursal.login_background) {
+        localStorage.setItem('login_background', getStorageUrl(resp.sucursal.login_background))
+      } else {
+        localStorage.removeItem('login_background')
+      }
+
+      const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
+
+      localStorage.setItem('sucursal_name', sName)
+      if (themeConfig.app) themeConfig.app.title = sName
+      if (layoutConfig?.app) layoutConfig.app.title = sName
+
+      showNotification('Información y configuración guardadas correctamente', 'success')
     }
-
-    const sName = sucursal.value.name || sucursal.value.trade_name || 'LUXURY EVYS'
-
-    localStorage.setItem('sucursal_name', sName)
-    if (themeConfig.app) themeConfig.app.title = sName
-    if (layoutConfig?.app) layoutConfig.app.title = sName
-
-    showNotification('Información y firma guardadas correctamente', 'success')
-    fileFirma.value = null
-    isEditing.value = false // Salir del modo edición
   } catch (error) {
     console.error('Error al guardar sucursal:', error)
     showNotification('Error al guardar cambios', 'error')
@@ -570,6 +622,91 @@ onMounted(() => {
             />
           </VCol>
 
+          <!-- Personalización Visual / Fondo del Login -->
+          <VCol cols="12">
+            <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
+              <VIcon
+                icon="ri-image-line"
+                size="20"
+                class="me-2"
+                color="primary"
+              />
+              Fondo de Pantalla del Login
+            </h5>
+          </VCol>
+
+          <VCol
+            cols="12"
+            md="7"
+          >
+            <VFileInput
+              v-model="fileLoginBg"
+              label="Seleccionar Imagen de Fondo (.jpg, .png, .webp)"
+              accept="image/jpeg,image/png,image/webp"
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="ri-image-add-line"
+              hide-details="auto"
+              :disabled="!isEditing"
+              clearable
+              @change="onLoginBgSelected"
+              @click:clear="clearLoginBg"
+            />
+            <div class="text-caption text-medium-emphasis mt-2 d-flex align-center gap-1.5">
+              <VIcon
+                icon="ri-information-line"
+                size="15"
+                color="primary"
+              />
+              <span>Esta imagen se mostrará como fondo en la pantalla de inicio de sesión con efecto translúcido en el formulario azul.</span>
+            </div>
+          </VCol>
+
+          <!-- Previsualización -->
+          <VCol
+            cols="12"
+            md="5"
+          >
+            <div
+              v-if="currentLoginBgUrl"
+              class="login-bg-preview-card rounded-xl border overflow-hidden position-relative"
+            >
+              <img
+                :src="currentLoginBgUrl"
+                alt="Fondo de Login"
+                class="login-bg-img"
+              >
+              <div class="login-bg-overlay-badge d-flex align-center justify-space-between px-3 py-1.5">
+                <span class="text-caption text-white font-weight-bold">
+                  {{ previewLoginBg ? 'Nueva imagen seleccionada' : 'Fondo actual del Login' }}
+                </span>
+                <VBtn
+                  v-if="isEditing"
+                  size="x-small"
+                  color="error"
+                  variant="elevated"
+                  icon="ri-delete-bin-line"
+                  class="rounded-circle"
+                  title="Quitar imagen"
+                  @click="clearLoginBg"
+                />
+              </div>
+            </div>
+            <div
+              v-else
+              class="login-bg-placeholder rounded-xl border border-dashed pa-4 text-center d-flex flex-column align-center justify-center"
+            >
+              <VIcon
+                icon="ri-image-line"
+                size="32"
+                class="text-disabled mb-1"
+              />
+              <span class="text-caption text-disabled font-weight-medium">
+                Sin imagen personalizada (se usará el fondo predeterminado del taller)
+              </span>
+            </div>
+          </VCol>
+
           <!-- Contabilidad -->
           <VCol cols="12">
             <h5 class="text-h5 font-weight-bold mb-4 d-flex align-center">
@@ -732,3 +869,32 @@ onMounted(() => {
     </VCard>
   </div>
 </template>
+
+<style scoped lang="scss">
+.login-bg-preview-card {
+  height: 120px;
+  width: 100%;
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+  position: relative;
+}
+
+.login-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.login-bg-overlay-badge {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.login-bg-placeholder {
+  height: 120px;
+  width: 100%;
+  background-color: rgba(var(--v-theme-on-surface), 0.02);
+}
+</style>

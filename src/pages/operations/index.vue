@@ -6,7 +6,6 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import AporteCreateDialog from '@/components/inventory/aportes/AporteCreateDialog.vue'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 // --- Router y Seguridad ---
@@ -396,7 +395,6 @@ const dashboardOptions = async () => {
 
   } catch (error) {
     console.error('Error al cargar datos del dashboard:', error)
-    showNotification('No se pudieron cargar los datos financieros', 'error')
   } finally {
     loading.value = false
   }
@@ -530,8 +528,29 @@ onMounted(() => {
 
     <!-- Dashboard Principal -->
     <div v-else>
-      <!-- Encabezado y Navegación de Operaciones Compartido -->
-      <OperationsHeaderNav active-tab="dashboard" />
+      <!-- Encabezado Estándar de Operaciones -->
+      <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3">
+        <div>
+          <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center">
+            <VAvatar
+              size="40"
+              color="primary"
+              variant="tonal"
+              rounded="lg"
+              class="me-3"
+            >
+              <VIcon
+                icon="ri-exchange-funds-line"
+                size="24"
+              />
+            </VAvatar>
+            Gestión de Operaciones
+          </h1>
+          <p class="text-medium-emphasis mb-0 text-body-2">
+            Flujo financiero, movimientos diarios y control operativo
+          </p>
+        </div>
+      </div>
 
       <!-- Tarjetas de Métricas Principales (KPI Cards) -->
       <VRow class="mb-5 d-none d-sm-flex">

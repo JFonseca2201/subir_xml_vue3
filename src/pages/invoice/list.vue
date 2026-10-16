@@ -60,9 +60,6 @@ const list = async () => {
       method: "POST",
       body: data,
       signal: invoiceAbortController.signal,
-      onResponseError({ response }) {
-        showNotification('Error al cargar las facturas', 'error')
-      },
     })
 
     console.log('📊 Respuesta del servidor:', resp)
@@ -78,12 +75,9 @@ const list = async () => {
       currentPage.value = 1
       list() // Recargar con la primera página
     }
-
-    showNotification('Facturas cargadas correctamente', 'success')
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
     console.error('❌ Error al cargar facturas:', error)
-    showNotification('Error al cargar las facturas', 'error')
   } finally {
     isLoading.value = false
   }
@@ -239,7 +233,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 invoices-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -261,13 +255,13 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="info"
           variant="tonal"
           prepend-icon="ri-exchange-dollar-line"
           to="/invoice/reconciliation"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
         >
           Conciliación de Pagos
         </VBtn>
@@ -276,7 +270,7 @@ onMounted(() => {
           variant="tonal"
           prepend-icon="ri-hand-coin-line"
           to="/invoice/supplier-credits"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
         >
           Saldos a Favor
         </VBtn>
@@ -284,7 +278,7 @@ onMounted(() => {
           color="primary"
           prepend-icon="ri-add-line"
           to="/invoice/manual-purchase"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
         >
           Nueva Compra
         </VBtn>

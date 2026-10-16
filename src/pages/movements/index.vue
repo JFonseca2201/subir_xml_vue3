@@ -170,13 +170,18 @@ const formatDateHeader = dateStr => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     const todayObj = new Date()
     const today = todayObj.getFullYear() + '-' + String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayObj.getDate()).padStart(2, '0')
-    if (dateStr === today) return 'Hoy'
 
     const [year, month, day] = dateStr.split('-')
     const date = new Date(year, month - 1, day)
 
-    return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const formatted = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       .replace(/^\w/, c => c.toUpperCase())
+
+    if (dateStr === today) {
+      return `Hoy — ${formatted}`
+    }
+
+    return formatted
   }
 
   return formatDate(dateStr)
@@ -611,7 +616,6 @@ const loadMovements = async (showOverlay = true) => {
     }
   } catch (error) {
     console.error('Error al cargar movimientos:', error)
-    showNotification('Error al cargar movimientos', 'error')
     movements.value = []
   } finally {
     loading.value = false
@@ -995,94 +999,76 @@ onMounted(() => {
 
 <template>
   <div class="pa-4 pa-sm-6 movements-page">
-    <!-- Header de la Página -->
-    <div class="d-flex align-center justify-space-between mb-6">
-      <div>
-        <h2 class="text-h4 font-weight-bold text-high-emphasis mb-1 d-flex align-center gap-2">
+    <!-- Encabezado Principal (Sin fondo de tarjeta) -->
+    <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
+      <div class="d-flex align-center gap-3">
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          size="42"
+          size-sm="44"
+        >
           <VIcon
             icon="ri-exchange-dollar-line"
-            color="primary"
-            class="me-1"
+            size="24"
           />
-          Ingresos y Gastos
-        </h2>
-        <p class="text-subtitle-1 text-medium-emphasis mb-0">
-          Control financiero integral de movimientos de caja y cuentas
-        </p>
+        </VAvatar>
+        <div>
+          <div class="d-flex align-center gap-2">
+            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+              Ingresos y Egresos
+            </h1>
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+              class="font-weight-bold"
+            >
+              {{ totalMovementsCount }} {{ totalMovementsCount === 1 ? 'registro' : 'registros' }}
+            </VChip>
+          </div>
+          <p class="text-medium-emphasis mb-0 d-none d-sm-block">
+            Administración financiera y control de movimientos de caja y cuentas
+          </p>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+        <VBtn
+          color="secondary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-file-pdf-line"
+          class="font-weight-semibold"
+          :loading="isGeneratingPDF"
+          @click="generatePDF"
+        >
+          Exportar PDF
+        </VBtn>
+        <VBtn
+          color="primary"
+          variant="elevated"
+          size="small"
+          prepend-icon="ri-add-circle-line"
+          class="font-weight-semibold elevation-2"
+          @click="openIncomeDialog"
+        >
+          Nuevo Ingreso
+        </VBtn>
+        <VBtn
+          color="primary"
+          variant="tonal"
+          size="small"
+          prepend-icon="ri-indeterminate-circle-line"
+          class="font-weight-semibold"
+          @click="openExpenseDialog"
+        >
+          Nuevo Egreso
+        </VBtn>
       </div>
     </div>
-
-    <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-exchange-dollar-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                Ingresos y Egresos
-              </h1>
-              <VChip
-                size="small"
-                color="primary"
-                variant="tonal"
-                class="font-weight-bold"
-              >
-                {{ totalMovementsCount }} {{ totalMovementsCount === 1 ? 'registro' : 'registros' }}
-              </VChip>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
-              Administración financiera y control de movimientos de caja y cuentas
-            </p>
-          </div>
-        </div>
-
-        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
-          <VBtn
-            color="secondary"
-            variant="tonal"
-            size="small"
-            prepend-icon="ri-file-pdf-line"
-            class="font-weight-semibold flex-grow-1 flex-sm-grow-0"
-            :loading="isGeneratingPDF"
-            @click="generatePDF"
-          >
-            Exportar PDF
-          </VBtn>
-          <VBtn
-            color="success"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
-            @click="openIncomeDialog"
-          >
-            Nuevo Ingreso
-          </VBtn>
-          <VBtn
-            color="error"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-indeterminate-circle-line"
-            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
-            @click="openExpenseDialog"
-          >
-            Nuevo Egreso
-          </VBtn>
-        </div>
-      </div>
-    </VCard>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5 d-none d-sm-flex">
@@ -1380,44 +1366,64 @@ onMounted(() => {
             Prueba cambiando el término de búsqueda o limpia el filtro.
           </p>
         </div>
-        <template
+        <div
           v-for="day in groupedMovements"
           v-else
           :key="`mob-day-${day.date}`"
+          class="day-group-mobile"
         >
           <!-- Cabecera de Día Móvil -->
-          <div class="pa-3 rounded-xl bg-slate-50 border d-flex flex-column gap-1.5">
-            <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+          <div class="day-header-mobile">
+            <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-1.5">
               <div class="d-flex align-center gap-2">
-                <VIcon
-                  icon="ri-calendar-event-line"
-                  size="18"
+                <VAvatar
                   color="primary"
-                />
-                <span class="text-body-2 font-weight-bold text-high-emphasis">
+                  variant="elevated"
+                  size="28"
+                  rounded="lg"
+                  class="elevation-1 flex-shrink-0"
+                >
+                  <VIcon
+                    icon="ri-calendar-event-line"
+                    size="15"
+                    color="white"
+                  />
+                </VAvatar>
+                <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
                   {{ formatDateHeader(day.date) }}
                 </span>
               </div>
-              <div class="status-pill-clean status-transfer">
+              <div class="status-pill-clean status-transfer font-weight-bold">
                 <span class="status-dot" />
-                <span>{{ day.movements.length }} mov.</span>
+                <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'mov.' : 'movs.' }}</span>
               </div>
             </div>
-            <div class="d-flex align-center justify-space-between pt-1 border-t text-caption font-weight-bold flex-wrap gap-1">
-              <span class="text-success">+{{ formatCurrency(day.dailyIncome) }}</span>
-              <span class="text-error">-{{ formatCurrency(day.dailyExpenses) }}</span>
-              <span :class="day.dailyBalance >= 0 ? 'text-success' : 'text-error'">
-                Neto: {{ formatCurrency(day.dailyBalance) }}
-              </span>
+            <div class="d-flex align-center justify-space-between pt-1.5 border-t text-caption font-weight-bold flex-wrap gap-1">
+              <div class="status-pill-clean status-paid text-caption">
+                <span class="status-dot" />
+                <span>+{{ formatCurrency(day.dailyIncome) }}</span>
+              </div>
+              <div class="status-pill-clean status-pending text-caption">
+                <span class="status-dot" />
+                <span>-{{ formatCurrency(day.dailyExpenses) }}</span>
+              </div>
+              <div
+                class="status-pill-clean text-caption"
+                :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'"
+              >
+                <span class="status-dot" />
+                <span>Neto: {{ formatCurrency(day.dailyBalance) }}</span>
+              </div>
             </div>
           </div>
 
           <!-- Tarjetas de Movimientos del Día -->
-          <div
-            v-for="movement in day.movements"
-            :key="`mob-mov-${movement.id}`"
-            class="mobile-movement-card"
-          >
+          <div class="day-movements-list">
+            <div
+              v-for="movement in day.movements"
+              :key="`mob-mov-${movement.id}`"
+              class="mobile-movement-card"
+            >
             <!-- Fila Superior: N° Documento, OT, y Tipo -->
             <div class="d-flex align-center justify-space-between pb-2 border-b mb-2 flex-wrap gap-1.5">
               <div class="d-flex align-center gap-1.5 flex-wrap">
@@ -1605,8 +1611,9 @@ onMounted(() => {
               </div>
             </div>
           </div>
-        </template>
+        </div>
       </div>
+    </div>
 
       <!-- Lista de Movimientos Unificada Desktop (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border-light overflow-hidden elevation-1 transfer-table-container position-relative">
@@ -1757,44 +1764,48 @@ onMounted(() => {
               <!-- Fila de Encabezado por Fecha -->
               <tr class="transfer-date-header-row">
                 <td colspan="8">
-                  <div class="d-flex align-center justify-space-between flex-wrap gap-2">
+                  <div class="d-flex align-center justify-space-between flex-wrap gap-2 py-1">
                     <div class="d-flex align-center gap-3">
                       <VAvatar
                         color="primary"
-                        variant="tonal"
-                        size="32"
+                        variant="elevated"
+                        size="34"
                         rounded="lg"
+                        class="elevation-1 flex-shrink-0"
                       >
                         <VIcon
-                          icon="ri-calendar-event-line"
+                          icon="ri-calendar-event-fill"
                           size="18"
-                          color="primary"
+                          color="white"
                         />
                       </VAvatar>
-                      <div class="d-flex align-center gap-2">
-                        <span class="text-subtitle-2 font-weight-bold text-high-emphasis">
+                      <div class="d-flex align-center gap-2 flex-wrap">
+                        <span class="date-header-title text-subtitle-1 font-weight-bold text-high-emphasis">
                           {{ formatDateHeader(day.date) }}
                         </span>
-                        <span class="text-caption text-medium-emphasis">
-                          • {{ day.movements.length }} {{ day.movements.length === 1 ?
-                            'movimiento' : 'movimientos' }}
-                        </span>
+                        <div class="status-pill-clean status-transfer font-weight-bold ms-1">
+                          <span class="status-dot" />
+                          <span>{{ day.movements.length }} {{ day.movements.length === 1 ? 'movimiento' : 'movimientos' }}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="d-flex align-center gap-3 me-2">
-                      <span class="text-caption text-success font-weight-bold">
-                        Ingresos: +{{ formatCurrency(day.dailyIncome) }}
-                      </span>
-                      <span class="text-caption text-error font-weight-bold">
-                        Egresos: -{{ formatCurrency(day.dailyExpenses) }}
-                      </span>
-                      <span
-                        class="text-caption font-weight-bold"
-                        :class="day.dailyBalance >= 0 ? 'text-success' : 'text-error'"
+                    <div class="d-flex align-center gap-2 me-2 flex-wrap">
+                      <div class="status-pill-clean status-paid font-weight-bold">
+                        <span class="status-dot" />
+                        <span>Ingresos: +{{ formatCurrency(day.dailyIncome) }}</span>
+                      </div>
+                      <div class="status-pill-clean status-pending font-weight-bold">
+                        <span class="status-dot" />
+                        <span>Egresos: -{{ formatCurrency(day.dailyExpenses) }}</span>
+                      </div>
+                      <div
+                        class="status-pill-clean font-weight-bold"
+                        :class="day.dailyBalance >= 0 ? 'status-transfer' : 'status-other'"
                       >
-                        Balance: {{ formatCurrency(day.dailyBalance) }}
-                      </span>
+                        <span class="status-dot" />
+                        <span>Neto: {{ formatCurrency(day.dailyBalance) }}</span>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -2389,5 +2400,5 @@ onMounted(() => {
 
 <route lang="yaml">
 meta:
-  navActiveLink: 'operations-index'
+  navActiveLink: 'movements-index'
 </route>

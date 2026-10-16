@@ -813,7 +813,7 @@ const tecnicosOptions = computed(() => {
       </div>
 
       <!-- Quick Search & Action Hub Bar -->
-      <div class="d-flex flex-wrap align-center gap-2.5 w-100 w-lg-auto">
+      <div class="d-flex flex-wrap align-center justify-end gap-2.5 ms-auto">
         <!-- Live Instant Search -->
         <div style="min-width: 220px; flex: 1 1 auto; position: relative;" class="d-none d-sm-block">
           <VTextField

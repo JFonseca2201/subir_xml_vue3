@@ -33,24 +33,57 @@ export default [
 
   {
     heading: 'Finanzas',
-    permissions: ['list_transfer', 'list_transaction', 'list_arqueo', 'register_transfer', 'register_transaction'],
+    permissions: [
+      'list_transfer',
+      'list_transaction',
+      'list_arqueo',
+      'register_transfer',
+      'register_transaction',
+      'list_partner_contribution',
+      'list_partner',
+    ],
   },
   {
-    title: 'Cuentas/Operaciones',
+    title: 'Operaciones',
+    icon: { icon: 'ri-exchange-funds-line' },
+    permissions: ['list_transaction', 'list_partner_contribution', 'list_partner', 'list_transfer'],
+    children: [
+      {
+        title: 'Operaciones',
+        to: { name: 'operations-index' },
+        icon: { icon: 'ri-dashboard-3-line' },
+        permission: 'list_transaction',
+      },
+      {
+        title: 'Socios',
+        to: 'aportes',
+        icon: { icon: 'ri-user-star-line' },
+        permission: 'list_partner_contribution',
+      },
+      {
+        title: 'Nómina',
+        to: 'finanzas-employee-expenses',
+        icon: { icon: 'ri-wallet-3-line' },
+        permission: 'list_transaction',
+      },
+      {
+        title: 'Transferencias',
+        to: 'transfers',
+        icon: { icon: 'ri-arrow-left-right-line' },
+        permission: 'list_transfer',
+      },
+    ],
+  },
+  {
+    title: 'Cuentas y Caja',
     icon: { icon: 'ri-bank-line' },
+    permissions: ['list_transfer', 'list_transaction', 'list_arqueo'],
     children: [
       {
         title: 'Cuentas',
         to: { name: 'accounts-index' },
         icon: { icon: 'ri-bank-card-line' },
         permission: 'list_transfer',
-      },
-      {
-        title: 'Operaciones',
-        to: { name: 'operations-index' },
-        icon: { icon: 'ri-exchange-funds-line' },
-        activeMatch: /operations|transfers|employee-expenses|aportes/,
-        permission: 'list_transaction',
       },
       {
         title: 'Ingresos y Gastos',

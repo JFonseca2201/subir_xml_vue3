@@ -448,9 +448,11 @@ const updateProduct = async () => {
           }
         }
         if (key === 'warehouse_id') {
-          value = value || 1
+          value = value || (warehouses.value && warehouses.value[0] ? warehouses.value[0].id : null)
         }
-        formData.append(key, value)
+        if (value !== null && value !== undefined) {
+          formData.append(key, value)
+        }
       }
     })
     formData.set('is_taxable', product.value.is_taxable === 1 ? 1 : 2)
@@ -588,7 +590,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1732,64 +1734,6 @@ onMounted(() => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                <!-- Alertas -->
-                <VAlert
-                  v-if="success"
-                  color="success"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="success = null"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-checkbox-circle-line"
-                      class="me-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ success }}</span>
-                  </div>
-                </VAlert>
-
-                <VAlert
-                  v-if="warning"
-                  color="warning"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="warning = null"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-alert-line"
-                      class="me-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ warning }}</span>
-                  </div>
-                </VAlert>
-
-                <VAlert
-                  v-if="error_exist"
-                  color="error"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="error_exist = null"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-error-warning-line"
-                      class="me-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ error_exist }}</span>
-                  </div>
-                </VAlert>
-
                 <VBtn
                   block
                   type="submit"

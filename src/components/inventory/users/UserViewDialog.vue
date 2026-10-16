@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { getStorageUrl } from '@/utils/api'
 
 const props = defineProps({
   isDialogVisible: {
@@ -40,11 +41,7 @@ const initials = computed(() => {
 const avatarUrl = computed(() => {
   const avatar = userData.value.avatar
   if (!avatar) return null
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar
-
-  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000'
-
-  return `${base}${avatar.startsWith('/') ? '' : '/'}${avatar.replace(/^\//, '')}`
+  return getStorageUrl(avatar)
 })
 
 const isActive = computed(() => String(userData.value.status) === '1')

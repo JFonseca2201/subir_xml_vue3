@@ -53,6 +53,20 @@ const navItems = [
     icon: 'ri-arrow-left-right-line',
     route: '/transfers',
   },
+  {
+    id: 'cuentas',
+    title: 'Cuentas',
+    description: 'Bancos y efectivo',
+    icon: 'ri-bank-card-line',
+    route: '/accounts',
+  },
+  {
+    id: 'arqueo',
+    title: 'Arqueo',
+    description: 'Caja diaria',
+    icon: 'ri-safe-2-line',
+    route: '/finanzas/arqueo',
+  },
 ]
 
 const isCurrentActive = item => {
@@ -72,7 +86,7 @@ const navigateTo = itemRoute => {
 
 <template>
   <!-- Encabezado Principal de Sistema (Estándar de la aplicación) -->
-  <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-4 mb-md-6 gap-3 gap-md-4 operations-system-header">
+  <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4 operations-system-header">
     <div>
       <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center">
         <VAvatar
@@ -97,7 +111,7 @@ const navigateTo = itemRoute => {
     </div>
 
     <!-- Navegación Escritorio (Browser Tabs) -->
-    <div class="d-none d-md-flex align-self-md-center">
+    <div class="d-none d-md-flex align-self-md-center ms-auto">
       <nav
         class="operations-browser-tabs operations-tabbed-container operations-continuous-menu operations-header-nav-menu operations-segmented-container d-flex align-end flex-nowrap"
         role="tablist"
@@ -132,19 +146,19 @@ const navigateTo = itemRoute => {
       </nav>
     </div>
 
-    <!-- Navegación Móvil (Grid 2x2 elegante y compacto, 100% responsive sin scroll) -->
+    <!-- Navegación Móvil (Grid 3x2 elegante y compacto, 100% responsive sin scroll) -->
     <div class="w-100 d-grid d-md-none operations-mobile-nav-grid">
       <button
         v-for="item in navItems"
         :key="item.id"
         type="button"
-        class="operations-mobile-nav-btn d-flex align-center justify-center gap-2"
+        class="operations-mobile-nav-btn d-flex align-center justify-center gap-1.5"
         :class="{ 'is-active': isCurrentActive(item) }"
         @click="navigateTo(item.route)"
       >
         <VIcon
           :icon="item.icon"
-          size="16"
+          size="15"
         />
         <span>{{ item.title }}</span>
       </button>
@@ -155,22 +169,22 @@ const navigateTo = itemRoute => {
 <style scoped lang="scss">
 .operations-mobile-nav-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
   width: 100%;
   background-color: #eef2f7;
-  padding: 5px;
+  padding: 4px;
   border-radius: 12px;
   border: 1px solid #d5dee9;
 }
 
 .operations-mobile-nav-btn {
-  padding: 8px 10px;
+  padding: 6px 4px;
   border-radius: 8px;
   border: none;
   background: transparent;
   color: #64748b;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;

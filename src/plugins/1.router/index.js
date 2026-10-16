@@ -56,7 +56,6 @@ const router = createRouter({
           path: "/finanzas/aportes",
           name: "aportes-index",
           component: () => import("@/pages/aportes/index.vue"),
-          meta: { navActiveLink: 'operations-index' },
         },
         {
           path: "/finanzas/movimientos",
@@ -74,17 +73,7 @@ const router = createRouter({
           component: () => import("@/pages/configuration/unitconversions.vue"),
         },
       ],
-    ].map(route => {
-      // Forzar navActiveLink para subpáginas y página de operaciones
-      const opsPaths = ['/operations', '/finanzas/operaciones', '/finanzas/employee-expenses', '/finanzas/aportes', '/transfers']
-      const opsNames = ['operations', 'operations-index', 'finanzas-employee-expenses', 'employee-expenses', 'transfers', 'transfers-index', 'aportes-index']
-
-      if (opsNames.includes(route.name) || opsPaths.includes(route.path)) {
-        route.meta = { ...route.meta, navActiveLink: 'operations-index' }
-      }
-      
-      return recursiveLayouts(route)
-    }),
+    ].map(route => recursiveLayouts(route)),
   ],
 })
 

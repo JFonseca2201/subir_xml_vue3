@@ -169,20 +169,6 @@ const cancelDelete = () => {
         <!-- Acciones -->
         <div class="d-flex justify-end align-center gap-3">
           <VBtn
-            color="error"
-            variant="elevated"
-            prepend-icon="ri-delete-bin-line"
-            class="rounded-lg px-6 font-weight-bold"
-            height="40"
-            :loading="loader.loading"
-            :disabled="loader.loading ||
-              props.userSelected.id === 1"
-            @click="confirmDelete"
-          >
-            Eliminar
-          </VBtn>
-
-          <VBtn
             variant="outlined"
             color="secondary"
             prepend-icon="ri-close-line"
@@ -192,6 +178,19 @@ const cancelDelete = () => {
             @click="cancelDelete"
           >
             Cancelar
+          </VBtn>
+
+          <VBtn
+            color="error"
+            variant="elevated"
+            prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold"
+            height="40"
+            :loading="loader.loading"
+            :disabled="loader.loading || props.userSelected?.id === 1"
+            @click="confirmDelete"
+          >
+            Eliminar
           </VBtn>
         </div>
       </VCardText>

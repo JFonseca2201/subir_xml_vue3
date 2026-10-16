@@ -128,8 +128,8 @@ watch(
         min_stock: parseFloat(p.min_stock || 0),
         max_stock: parseFloat(p.max_stock || 0),
         state: p.state !== undefined ? parseInt(p.state) : 1,
-        warehouse_id: p.warehouse_id || p.warehouse?.id || 1,
-        unit_id: p.unit_id || p.unit?.id || 1,
+        warehouse_id: p.warehouse_id || p.warehouse?.id || null,
+        unit_id: p.unit_id || p.unit?.id || null,
         supplier_id: p.supplier_id || p.supplier?.id || null,
         code_aux: p.code_aux || '',
         uses: p.uses || '',
@@ -274,8 +274,8 @@ const saveChanges = async () => {
     if (form.value.code_aux) formData.append('code_aux', form.value.code_aux)
     if (form.value.uses) formData.append('uses', form.value.uses)
     formData.append('product_categorie_id', form.value.product_categorie_id)
-    formData.append('warehouse_id', form.value.warehouse_id || 1)
-    formData.append('unit_id', form.value.unit_id || 1)
+    if (form.value.warehouse_id) formData.append('warehouse_id', form.value.warehouse_id)
+    if (form.value.unit_id) formData.append('unit_id', form.value.unit_id)
     if (form.value.supplier_id) formData.append('supplier_id', form.value.supplier_id)
     formData.append('price', basePrice)
     formData.append('price_sale', basePrice)

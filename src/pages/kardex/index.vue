@@ -147,17 +147,11 @@ const loadKardex = async (action = 'refresh') => {
     const resp = await $api('kardex', {
       method: 'GET',
       params,
-      onResponseError({ response }) {
-        console.log('Error al cargar kardex:', response._data.error)
-        showNotification('Error al cargar el kardex', 'error')
-      },
     })
 
     kardexData.value = resp.data
-    showNotification('Kardex cargado correctamente', 'success')
   } catch (error) {
-    console.log(error)
-    showNotification('Error al cargar el kardex', 'error')
+    console.error('Error al cargar kardex:', error)
   } finally {
     isRefreshing.value = false
     isFiltering.value = false
@@ -438,7 +432,7 @@ definePage({ meta: { permission: 'kardex' } })
 <template>
   <div class="pa-4 pa-sm-6 kardex-page">
     <!-- Encabezado de la página -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VIcon
@@ -453,12 +447,12 @@ definePage({ meta: { permission: 'kardex' } })
           Movimientos financieros consolidados
         </p>
       </div>
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="error"
           variant="tonal"
           prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium flex-grow-1 flex-md-grow-0"
+          class="font-weight-medium"
           @click="exportKardexPDF"
         >
           Exportar PDF
@@ -466,7 +460,6 @@ definePage({ meta: { permission: 'kardex' } })
         <VBtn
           color="primary"
           prepend-icon="ri-refresh-line"
-          class="flex-grow-1 flex-md-grow-0"
           :loading="isRefreshing"
           :disabled="isFiltering || isClearing"
           @click="loadKardex('refresh')"

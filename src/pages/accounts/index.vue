@@ -74,11 +74,9 @@ const loadAccounts = async () => {
     }, 0)
 
     console.log('💰 Saldo total calculado:', totalBalance.value)
-    showNotification('Cuentas cargadas correctamente', 'success')
   } catch (error) {
     console.error('❌ Error al cargar cuentas:', error)
     console.error('❌ Detalles del error:', error.response?.data)
-    showNotification('Error al cargar las cuentas', 'error')
   } finally {
     loading.value = false
   }
@@ -328,61 +326,61 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 account-management-page"
   >
-    <!-- Encabezado Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-bank-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                Gestión de Cuentas y Cajas
-              </h1>
-              <div class="status-pill-clean status-transfer">
-                <span class="status-dot" />
-                <span>{{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}</span>
-              </div>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
-              Administración de cuentas bancarias, cajas chicas y saldos financieros
-            </p>
-          </div>
-        </div>
-
-        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
-          <VBtn
-            title="Actualizar cuentas"
-            variant="tonal"
-            color="secondary"
-            icon="ri-refresh-line"
-            size="small"
-            :loading="loading"
-            @click="loadAccounts"
+    <!-- Encabezado Principal (Sin fondo de tarjeta) -->
+    <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
+      <div class="d-flex align-center gap-3">
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          size="42"
+          size-sm="44"
+        >
+          <VIcon
+            icon="ri-bank-line"
+            size="24"
           />
-          <VBtn
-            color="primary"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
-            @click="openAccountDialog"
-          >
-            Nueva Cuenta
-          </VBtn>
+        </VAvatar>
+        <div>
+          <div class="d-flex align-center gap-2">
+            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+              Gestión de Cuentas y Cajas
+            </h1>
+            <div class="status-pill-clean status-transfer">
+              <span class="status-dot" />
+              <span>{{ accounts.length }} {{ accounts.length === 1 ? 'cuenta' : 'cuentas' }}</span>
+            </div>
+          </div>
+          <p class="text-medium-emphasis mb-0 d-none d-sm-block">
+            Administración de cuentas bancarias, cajas chicas y saldos financieros
+          </p>
         </div>
       </div>
-    </VCard>
+
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+        <VBtn
+          title="Actualizar cuentas"
+          variant="tonal"
+          color="secondary"
+          icon="ri-refresh-line"
+          size="small"
+          class="flex-shrink-0"
+          :loading="loading"
+          @click="loadAccounts"
+        />
+        <VBtn
+          color="primary"
+          variant="elevated"
+          size="small"
+          prepend-icon="ri-add-circle-line"
+          class="font-weight-semibold elevation-2"
+          @click="openAccountDialog"
+        >
+          Nueva Cuenta
+        </VBtn>
+      </div>
+    </div>
 
     <!-- Tarjetas de Resumen KPI con colores tonales -->
     <VRow class="mb-5 d-none d-sm-flex">

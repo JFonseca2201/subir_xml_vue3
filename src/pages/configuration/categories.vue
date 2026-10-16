@@ -174,7 +174,7 @@ definePage({ meta: { permission: "settings" } })
 <template>
   <div class="pa-4 pa-sm-6 categories-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -196,11 +196,12 @@ definePage({ meta: { permission: "settings" } })
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <!-- Botón de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
           @click="isCategorieAddDialogVisible = true"
         >
           Nueva Categoría

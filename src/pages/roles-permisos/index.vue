@@ -52,17 +52,12 @@ const list = async () => {
     const resp = await $api("role?search=" + (seachQuery.value ? seachQuery.value : ''), {
       method: 'GET',
       signal: rolesAbortController.signal,
-      onResponseError({ response }) {
-        console.log(response._data?.error)
-        showNotification('Error al cargar los roles', 'error')
-      },
     })
 
     list_roles.value = (resp.roles || []).filter(role => role.id !== 1)
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
-    console.log(error)
-    showNotification('Error al cargar la lista de roles', 'error')
+    console.error('Error al cargar roles:', error)
   } finally {
     loading.value = false
     isSearching.value = false
@@ -144,7 +139,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 roles-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -166,12 +161,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           v-if="can('register_role')"
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
           @click="isRoleAddDialogVisible = true"
         >
           Nuevo Rol

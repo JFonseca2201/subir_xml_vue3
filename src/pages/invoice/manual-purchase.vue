@@ -6,7 +6,6 @@ import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { XMLParser } from "fast-xml-parser"
 import { useFormDraft } from '@/composables/useFormDraft'
-import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
@@ -992,14 +991,6 @@ onMounted(() => {
 
 <template>
   <div class="pa-6 position-relative">
-    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
-    <FormDraftAlert
-      :has-draft="hasDraft"
-      :draft-timestamp="draftTimestamp"
-      class="mb-4"
-      @discard="discardDraft(resetPurchaseForm)"
-    />
-
     <!-- Hidden XML File Input -->
     <input
       ref="xmlFileInputRef"
@@ -1029,7 +1020,7 @@ onMounted(() => {
       <VCol
         cols="12"
         md="6"
-        class="d-flex justify-start justify-md-end align-center gap-2 flex-wrap"
+        class="d-flex justify-end align-center gap-2 flex-wrap ms-auto"
       >
         <!-- Si no hay XML cargado -->
         <VBtn

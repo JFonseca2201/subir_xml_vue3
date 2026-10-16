@@ -6,7 +6,6 @@ import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
 import TransferDialog from '@/components/inventory/finances-records/TransferDialog.vue'
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
 
 import { usePermissions } from '@/composables/usePermissions'
 
@@ -112,11 +111,8 @@ const loadTransfers = async () => {
       total_mes: totalMes,
       total_general: totalGeneral,
     }
-
-    showNotification('Transferencias cargadas correctamente', 'success')
   } catch (error) {
     console.error('Error al cargar transferencias:', error)
-    showNotification('Error al cargar historial de transferencias', 'error')
   } finally {
     loading.value = false
   }
@@ -385,65 +381,62 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 transfers-page"
   >
-    <!-- Encabezado de Navegación de Operaciones -->
-    <OperationsHeaderNav active-tab="transferencias" />
-
-    <!-- Header Principal Sticky -->
-    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-1"
-          >
-            <VIcon
-              icon="ri-arrow-left-right-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
-                Transferencias
-              </h1>
-              <div class="status-pill-clean status-transfer">
-                <span class="status-dot" />
-                <span>{{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'registro' : 'registros' }}</span>
-              </div>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle d-none d-sm-block">
-              Control y auditoría de transferencias monetarias entre cuentas y cajas
-            </p>
-          </div>
-        </div>
-
-        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
-          <VBtn
-            title="Actualizar datos"
-            variant="tonal"
-            color="secondary"
-            icon="ri-refresh-line"
-            size="small"
-            :loading="loading"
-            @click="loadTransfers"
+    <!-- Encabezado Principal (Sin fondo de tarjeta) -->
+    <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
+      <div class="d-flex align-center gap-3">
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          size="42"
+          size-sm="44"
+        >
+          <VIcon
+            icon="ri-arrow-left-right-line"
+            size="24"
           />
-          <VBtn
-            v-if="can('register_transfer')"
-            color="primary"
-            variant="elevated"
-            size="small"
-            prepend-icon="ri-add-circle-line"
-            class="font-weight-semibold elevation-2 flex-grow-1 flex-sm-grow-0"
-            @click="openTransferDialog"
-          >
-            Nueva Transferencia
-          </VBtn>
+        </VAvatar>
+        <div>
+          <div class="d-flex align-center gap-2">
+            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 operations-page-title d-flex align-center">
+              Transferencias
+            </h1>
+            <div class="status-pill-clean status-transfer">
+              <span class="status-dot" />
+              <span>{{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'registro' : 'registros' }}</span>
+            </div>
+          </div>
+          <p class="text-medium-emphasis mb-0 d-none d-sm-block">
+            Control y auditoría de transferencias monetarias entre cuentas y cajas
+          </p>
         </div>
       </div>
-    </VCard>
+
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+        <VBtn
+          title="Actualizar datos"
+          variant="tonal"
+          color="secondary"
+          icon="ri-refresh-line"
+          size="small"
+          class="flex-shrink-0"
+          :loading="loading"
+          @click="loadTransfers"
+        />
+        <VBtn
+          v-if="can('register_transfer')"
+          color="primary"
+          variant="elevated"
+          size="small"
+          prepend-icon="ri-add-circle-line"
+          class="font-weight-semibold elevation-2"
+          @click="openTransferDialog"
+        >
+          Nueva Transferencia
+        </VBtn>
+      </div>
+    </div>
 
     <!-- Tarjetas de Resumen KPI con colores tonales e impresiones de texto de alto contraste -->
     <VRow class="mb-5 d-none d-sm-flex">
@@ -1368,5 +1361,5 @@ onMounted(() => {
 
 <route lang="yaml">
 meta:
-  navActiveLink: 'operations-index'
+  navActiveLink: 'transfers'
 </route>

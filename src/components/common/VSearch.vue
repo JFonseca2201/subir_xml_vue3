@@ -40,6 +40,14 @@ const props = defineProps({
     type: Number,
     default: 2,
   },
+  preloadRecent: {
+    type: Boolean,
+    default: true,
+  },
+  recentLimit: {
+    type: Number,
+    default: 5,
+  },
   initialItem: {
     type: Object,
     default: null,
@@ -64,15 +72,78 @@ const props = defineProps({
     type: [Boolean, String],
     default: 'auto',
   },
+  rules: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
 const loading = ref(false)
 const items = ref([])
+const recentItems = ref([])
 const search = ref('')
-
+const isMenuOpen = ref(false)
+let isSelecting = false
 let vSearchAbortController = null
+
+const resolveItemTitle = item => {
+  if (!item) return ''
+  if (typeof props.itemTitle === 'function') {
+    return props.itemTitle(item)
+  }
+  if (typeof props.itemTitle === 'string' && item[props.itemTitle] !== undefined && item[props.itemTitle] !== null) {
+    return item[props.itemTitle]
+  }
+  return item.full_name || (item.name ? `${item.name} ${item.surname || ''}`.trim() : '') || item.description || item.license_plate || item.title || item.name || ''
+}
+
+const updateItemsWithRecent = () => {
+  const list = []
+  
+  if (props.initialItem && typeof props.initialItem === 'object') {
+    list.push(props.initialItem)
+  }
+  
+  if (props.modelValue && typeof props.modelValue === 'object') {
+    const key = props.modelValue[props.itemValue]
+    if (!list.some(it => String(it[props.itemValue]) === String(key))) {
+      list.push(props.modelValue)
+    }
+  }
+
+  recentItems.value.forEach(item => {
+    if (!item) return
+    const key = item[props.itemValue]
+    if (!list.some(it => String(it[props.itemValue]) === String(key))) {
+      list.push(item)
+    }
+  })
+
+  items.value = list
+}
+
+const fetchRecentItems = async () => {
+  if (!props.preloadRecent || !props.endpoint) return
+
+  try {
+    const params = {
+      limit: props.recentLimit || 5,
+      ...props.extraParams,
+    }
+
+    const response = await $api(props.endpoint, { params })
+    const data = response?.data || response || []
+    recentItems.value = Array.isArray(data) ? data : []
+
+    if (!search.value || search.value.length < props.minChars) {
+      updateItemsWithRecent()
+    }
+  } catch (error) {
+    console.error('Error in VSearch fetchRecentItems:', error)
+  }
+}
 
 const fetchItems = async query => {
   if (vSearchAbortController) {
@@ -81,12 +152,7 @@ const fetchItems = async query => {
   vSearchAbortController = new AbortController()
 
   if (!query || query.length < props.minChars) {
-    if (props.modelValue && props.initialItem) {
-      items.value = [props.initialItem]
-    } else {
-      items.value = []
-    }
-    
+    updateItemsWithRecent()
     return
   }
 
@@ -94,6 +160,7 @@ const fetchItems = async query => {
   try {
     const params = {
       q: query,
+      search: query,
       ...props.extraParams,
     }
 
@@ -102,10 +169,22 @@ const fetchItems = async query => {
       signal: vSearchAbortController.signal,
     })
 
-    items.value = response?.data || response || []
+    const data = response?.data || response || []
+    const results = Array.isArray(data) ? data : []
+    
+    // Mantener elemento seleccionado o inicial para no perder reactividad
+    const list = [...results]
+    if (props.modelValue && typeof props.modelValue === 'object') {
+      const key = props.modelValue[props.itemValue]
+      if (!list.some(it => String(it[props.itemValue]) === String(key))) {
+        list.unshift(props.modelValue)
+      }
+    }
+    
+    items.value = list
   } catch (error) {
     if (error?.name === 'AbortError' || error?.message?.includes('aborted')) return
-    console.error('Error in VSearch:', error)
+    console.error('Error in VSearch fetchItems:', error)
     items.value = []
   } finally {
     loading.value = false
@@ -117,59 +196,91 @@ const debouncedFetch = useDebounceFn(val => {
 }, 300)
 
 const onSearchInput = val => {
+  if (isSelecting) return
   search.value = val || ''
-  debouncedFetch(search.value)
+  if (!search.value || search.value.length < props.minChars) {
+    updateItemsWithRecent()
+  } else {
+    debouncedFetch(search.value)
+  }
 }
 
-const hideNoData = computed(() => {
-  return (search.value || '').length < props.minChars
-})
-
-onMounted(() => {
-  if (props.initialItem) {
-    items.value = [props.initialItem]
+const onFocus = () => {
+  if (recentItems.value.length === 0) {
+    fetchRecentItems()
+  } else if (!search.value || search.value.length < props.minChars) {
+    updateItemsWithRecent()
   }
-})
+  isMenuOpen.value = true
+}
+
+const onMenuUpdate = val => {
+  isMenuOpen.value = val
+  if (val) {
+    if (recentItems.value.length === 0) {
+      fetchRecentItems()
+    } else if (!search.value || search.value.length < props.minChars) {
+      updateItemsWithRecent()
+    }
+  }
+}
 
 const onModelValueUpdate = val => {
+  isSelecting = true
   emit('update:modelValue', val)
   if (val) {
     if (props.returnObject) {
       emit('change', val)
     } else {
       const selectedItem = items.value.find(item => item[props.itemValue] === val)
-
       emit('change', selectedItem || val)
     }
   } else {
     emit('change', null)
+    search.value = ''
+    updateItemsWithRecent()
   }
+  setTimeout(() => {
+    isSelecting = false
+  }, 100)
 }
+
+onMounted(() => {
+  if (props.initialItem) {
+    items.value = [props.initialItem]
+  }
+  fetchRecentItems()
+})
 
 watch(() => props.modelValue, newVal => {
   if (!newVal) {
     search.value = ''
-    if (props.initialItem) {
-      items.value = [props.initialItem]
-    } else {
-      items.value = []
-    }
+    updateItemsWithRecent()
   }
 }, { immediate: true })
 
 watch(() => props.initialItem, newVal => {
   if (newVal) {
-    items.value = [newVal]
+    updateItemsWithRecent()
   }
 }, { deep: true })
+
+watch(() => props.extraParams, () => {
+  fetchRecentItems()
+}, { deep: true })
+
+watch(() => props.endpoint, () => {
+  fetchRecentItems()
+})
 </script>
 
 <template>
   <VAutocomplete
     :model-value="modelValue"
     v-model:search="search"
+    v-model:menu="isMenuOpen"
     :items="items"
-    :item-title="itemTitle"
+    :item-title="resolveItemTitle"
     :item-value="itemValue"
     :label="label"
     :placeholder="placeholder"
@@ -179,10 +290,15 @@ watch(() => props.initialItem, newVal => {
     :density="density"
     :loading="loading"
     :hide-details="hideDetails"
-    :hide-no-data="hideNoData"
-    :no-filter="true"
+    :rules="rules"
+    :custom-filter="() => true"
+    :open-on-focus="true"
+    :open-on-clear="true"
     @update:model-value="onModelValueUpdate"
     @update:search="onSearchInput"
+    @update:menu="onMenuUpdate"
+    @focus="onFocus"
+    @click:control="onFocus"
   >
     <template #prepend-inner>
       <VProgressCircular
@@ -197,6 +313,7 @@ watch(() => props.initialItem, newVal => {
         :icon="icon"
       />
     </template>
+
     <template #item="data">
       <slot
         name="item"
@@ -214,12 +331,14 @@ watch(() => props.initialItem, newVal => {
     </template>
     
     <template #no-data>
-      <div class="px-4 py-2 text-medium-emphasis text-body-2">
-        <span v-if="search.length < minChars">
+      <div class="px-4 py-3 text-medium-emphasis text-body-2 text-center">
+        <span v-if="!search || search.length < minChars">
+          <VIcon icon="ri-search-line" size="18" class="me-1 mb-1 text-disabled" />
           Escriba al menos {{ minChars }} caracteres para buscar
         </span>
         <span v-else>
-          No se encontraron resultados
+          <VIcon icon="ri-information-line" size="18" class="me-1 mb-1 text-disabled" />
+          No se encontraron resultados para "<strong>{{ search }}</strong>"
         </span>
       </div>
     </template>

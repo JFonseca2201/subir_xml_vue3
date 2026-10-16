@@ -8,7 +8,7 @@ import DeleteEmployeeAdvanceDialog from '@/components/inventory/employee-expense
 import AddEmployeePaymentDialog from '@/components/inventory/employee-expenses/AddEmployeePaymentDialog.vue'
 import EditEmployeePaymentDialog from '@/components/inventory/employee-expenses/EditEmployeePaymentDialog.vue'
 import DeleteEmployeePaymentDialog from '@/components/inventory/employee-expenses/DeleteEmployeePaymentDialog.vue'
-import OperationsHeaderNav from '@/components/operations/OperationsHeaderNav.vue'
+
 import MovementReceiptNoteDialog from '@/components/inventory/finances-records/MovementReceiptNoteDialog.vue'
 import AttachReceiptsDialog from '@/components/common/AttachReceiptsDialog.vue'
 import { $api } from '@/utils/api'
@@ -154,7 +154,6 @@ const loadExpenses = async () => {
 
   } catch (error) {
     console.error('Error al cargar gastos:', error)
-    showNotification('Error al cargar los gastos de empleados.', 'error')
   } finally {
     loading.value = false
   }
@@ -418,80 +417,79 @@ onMounted(() => {
     v-else
     class="pa-4 pa-sm-6 employee-expenses-page"
   >
-    <!-- Encabezado de Navegación de Operaciones -->
-    <OperationsHeaderNav active-tab="nomina" />
-
-    <!-- Header Principal -->
-    <VCard class="mb-5 rounded-xl border elevation-0 pa-4 bg-surface">
-      <div class="d-flex align-center justify-space-between flex-wrap gap-4">
-        <div class="d-flex align-center gap-3">
-          <VAvatar
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            size="44"
-            class="elevation-0 flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-wallet-3-line"
-              size="24"
-            />
-          </VAvatar>
-          <div>
-            <div class="d-flex align-center gap-2">
-              <h1 class="text-h5 font-weight-bold text-high-emphasis mb-0">
-                Pagos de Nómina
-              </h1>
-              <VChip
-                size="small"
-                color="primary"
-                variant="tonal"
-                class="font-weight-bold"
-              >
-                {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'registro' : 'registros' }}
-              </VChip>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 mt-0.5 d-none d-sm-block">
-              Gestiona los roles de pago y adelantos concedidos a los empleados
-            </p>
+    <!-- Encabezado Principal (Sin fondo de tarjeta) -->
+    <div class="d-flex align-center justify-space-between flex-wrap mb-4 mb-md-6 gap-3 gap-md-4">
+      <div class="d-flex align-center gap-3">
+        <VAvatar
+          color="primary"
+          variant="tonal"
+          rounded="lg"
+          size="42"
+          size-sm="44"
+          class="elevation-0 flex-shrink-0"
+        >
+          <VIcon
+            icon="ri-wallet-3-line"
+            size="24"
+          />
+        </VAvatar>
+        <div>
+          <div class="d-flex align-center gap-2">
+            <h1 class="text-h5 text-sm-h4 font-weight-bold text-high-emphasis mb-0 d-flex align-center">
+              Pagos de Nómina
+            </h1>
+            <VChip
+              size="small"
+              color="primary"
+              variant="tonal"
+              class="font-weight-bold"
+            >
+              {{ filteredExpenses.length }} {{ filteredExpenses.length === 1 ? 'registro' : 'registros' }}
+            </VChip>
           </div>
-        </div>
-
-        <div class="d-flex align-center gap-2 flex-wrap w-100 w-sm-auto">
-          <VBtn
-            variant="outlined"
-            color="secondary"
-            prepend-icon="ri-refresh-line"
-            size="default"
-            class="font-weight-medium flex-grow-1 flex-sm-grow-0"
-            :loading="loading"
-            @click="loadExpenses"
-          >
-            Actualizar
-          </VBtn>
-          <VBtn
-            color="info"
-            variant="tonal"
-            size="default"
-            prepend-icon="ri-hand-coin-line"
-            class="font-weight-semibold flex-grow-1 flex-sm-grow-0"
-            @click="openAddAdvanceDialog"
-          >
-            Nuevo Adelanto
-          </VBtn>
-          <VBtn
-            color="primary"
-            variant="elevated"
-            size="default"
-            prepend-icon="ri-money-dollar-circle-line"
-            class="font-weight-bold elevation-1 flex-grow-1 flex-sm-grow-0"
-            @click="openAddPaymentDialog"
-          >
-            Nuevo Pago
-          </VBtn>
+          <p class="text-medium-emphasis mb-0 d-none d-sm-block">
+            Gestiona los roles de pago y adelantos concedidos a los empleados
+          </p>
         </div>
       </div>
-    </VCard>
+
+      <!-- Botones de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+        <VBtn
+          color="primary"
+          variant="elevated"
+          size="default"
+          prepend-icon="ri-money-dollar-circle-line"
+          class="font-weight-bold elevation-1"
+          @click="openAddPaymentDialog"
+        >
+          Nuevo Pago
+        </VBtn>
+
+        <VBtn
+          color="info"
+          variant="tonal"
+          size="default"
+          prepend-icon="ri-hand-coin-line"
+          class="font-weight-semibold"
+          @click="openAddAdvanceDialog"
+        >
+          Nuevo Adelanto
+        </VBtn>
+
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-refresh-line"
+          size="default"
+          class="font-weight-medium"
+          :loading="loading"
+          @click="loadExpenses"
+        >
+          Actualizar
+        </VBtn>
+      </div>
+    </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
     <VRow
@@ -1388,6 +1386,6 @@ onMounted(() => {
 
 <route lang="yaml">
 meta:
-  navActiveLink: 'operations-index'
+  navActiveLink: 'finanzas-employee-expenses'
 </route>
 

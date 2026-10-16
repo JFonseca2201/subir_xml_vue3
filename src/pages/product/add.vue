@@ -8,7 +8,6 @@ import { useRouter } from 'vue-router'
 import ProductExistenceCheckDialog from '@/components/inventory/product/ProductExistenceCheckDialog.vue'
 import { compressImage } from '@/utils/imageCompressor'
 import { useFormDraft } from '@/composables/useFormDraft'
-import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const dropZoneRef = ref()
 const fileData = ref([])
@@ -467,9 +466,9 @@ const store = async () => {
     code_aux: product.value.code_aux.toUpperCase().trim(),
     uses: product.value.uses,
     product_categorie_id: product.value.product_categorie_id || null,
-    warehouse_id: product.value.warehouse_id || 1,
-    unit_id: product.value.unit_id || 1,
-    supplier_id: product.value.supplier_id || 1,
+    warehouse_id: product.value.warehouse_id || (warehouses.value && warehouses.value[0] ? warehouses.value[0].id : null),
+    unit_id: product.value.unit_id || (units.value && units.value[0] ? units.value[0].id : null),
+    supplier_id: product.value.supplier_id || (suppliers.value && suppliers.value[0] ? suppliers.value[0].id : null),
     price: parseFloat(product.value.price_sale) || 0,
     price_sale: parseFloat(product.value.price_sale) || 0,
     purchase_price: isService ? 0 : (parseFloat(product.value.purchase_price) || 0),
@@ -599,14 +598,6 @@ const loadInitialData = async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 position-relative">
-    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
-    <FormDraftAlert
-      :has-draft="hasDraft"
-      :draft-timestamp="draftTimestamp"
-      class="mb-4"
-      @discard="discardDraft(onFormReset)"
-    />
-
     <VProgressLinear
       v-if="isLoading"
       indeterminate
@@ -653,7 +644,7 @@ const loadInitialData = async () => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1817,45 +1808,6 @@ const loadInitialData = async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                <!-- Alertas -->
-                <VAlert
-                  v-if="warning"
-                  color="warning"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="warning = null"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-alert-line"
-                      class="me-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ warning }}</span>
-                  </div>
-                </VAlert>
-
-                <VAlert
-                  v-if="error_exist"
-                  color="error"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="error_exist = null"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-error-warning-line"
-                      class="me-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ error_exist }}</span>
-                  </div>
-                </VAlert>
-
                 <VBtn
                   block
                   type="submit"

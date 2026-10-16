@@ -5,6 +5,7 @@ import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { usePermissions } from '@/composables/usePermissions'
 import DistributorCatalogImportDialog from '@/components/distribuidor-catalogo/DistributorCatalogImportDialog.vue'
+import DistributorCatalogDetailDialog from '@/components/distribuidor-catalogo/DistributorCatalogDetailDialog.vue'
 
 const { xs: isMobileScreen } = useDisplay()
 const { showNotification } = useGlobalToast()
@@ -39,8 +40,15 @@ const stats = ref({
   total_transit: 0,
 })
 
-// Dialog
+// Dialogs
 const isImportDialogVisible = ref(false)
+const isDetailDialogVisible = ref(false)
+const selectedCatalogItem = ref(null)
+
+const openItemDetail = item => {
+  selectedCatalogItem.value = item
+  isDetailDialogVisible.value = true
+}
 
 const stockOptions = [
   { title: 'Todos los estados', value: 'ALL' },
@@ -152,7 +160,6 @@ const loadCatalog = async () => {
     }
   } catch (err) {
     console.error('Error al cargar catálogo:', err)
-    showNotification('Error al cargar catálogo de distribuidor', 'error')
   } finally {
     isLoading.value = false
   }
@@ -255,7 +262,7 @@ onMounted(async () => {
 <template>
   <div class="pa-3 pa-sm-6 distributor-catalog-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-5 gap-3 gap-sm-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div class="min-w-0">
         <h1 class="text-h5 text-sm-h4 font-weight-bold mb-1 d-flex align-center flex-wrap gap-2">
           <VAvatar
@@ -277,11 +284,11 @@ onMounted(async () => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-sm-auto mt-2 mt-sm-0">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="primary"
           prepend-icon="ri-upload-cloud-2-line"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-sm-grow-0"
+          class="elevation-2 font-weight-bold"
           @click="isImportDialogVisible = true"
         >
           Subir / Importar Lista
@@ -671,9 +678,13 @@ onMounted(async () => {
               </div>
             </div>
 
-            <!-- Fila 2: Avatar + Nombre de Repuesto / Descripción + Ref -->
+            <!-- Fila 2: Avatar + Nombre de Repuesto / Categoría + Ref -->
             <div class="d-flex align-center justify-space-between gap-2 mb-2">
-              <div class="d-flex align-center gap-2.5 min-w-0 flex-grow-1">
+              <div
+                class="d-flex align-center gap-2.5 min-w-0 flex-grow-1 cursor-pointer"
+                title="Toca para ver detalle"
+                @click="openItemDetail(item)"
+              >
                 <VAvatar
                   size="32"
                   color="primary"
@@ -716,7 +727,9 @@ onMounted(async () => {
             <!-- Fila 3: Vehículo / Aplicación Vehicular -->
             <div
               v-if="item.description && (item.category_name || item.category_code) && item.description.trim().toLowerCase() !== (item.category_name || '').trim().toLowerCase()"
-              class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0"
+              class="d-flex align-center gap-1.5 mb-2.5 text-caption min-w-0 cursor-pointer"
+              title="Toca para ver detalle"
+              @click="openItemDetail(item)"
             >
               <VIcon
                 icon="ri-roadster-line"
@@ -875,13 +888,21 @@ onMounted(async () => {
                   </div>
                 </td>
 
-                <!-- Descripción -->
-                <td class="py-3">
-                  <div
-                    class="font-weight-semibold text-high-emphasis text-body-2 text-wrap-break"
-                    :title="item.description"
-                  >
-                    {{ item.description }}
+                <!-- Descripción (Clic para ver detalle y precios) -->
+                <td
+                  class="py-3 cursor-pointer"
+                  title="Clic para ver detalle completo y precios con IVA"
+                  @click="openItemDetail(item)"
+                >
+                  <div class="d-flex align-center justify-space-between gap-2">
+                    <div class="font-weight-semibold text-high-emphasis text-body-2 text-wrap-break hover-text-primary">
+                      {{ item.description }}
+                    </div>
+                    <VIcon
+                      icon="ri-information-line"
+                      size="16"
+                      class="text-disabled opacity-40 hover-opacity-100 flex-shrink-0"
+                    />
                   </div>
                 </td>
 
@@ -968,6 +989,12 @@ onMounted(async () => {
       :suppliers="suppliers"
       :selected-supplier-id="selectedSupplierId"
       @imported="handleImported"
+    />
+
+    <!-- Modal de Detalle de Repuesto (Nombre completo, códigos y precios con IVA) -->
+    <DistributorCatalogDetailDialog
+      v-model:is-dialog-visible="isDetailDialogVisible"
+      :item="selectedCatalogItem"
     />
   </div>
 </template>
@@ -1167,5 +1194,33 @@ onMounted(async () => {
 .text-wrap-break {
   word-break: break-word;
   overflow-wrap: break-word;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.tap-active-item {
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.item-title-clickable {
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+}
+
+.hover-text-primary {
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
 }
 </style>

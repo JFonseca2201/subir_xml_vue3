@@ -186,6 +186,7 @@ const validateForm = async () => {
   if (!workOrder.value.number) {
     validationErrorMessage.value = 'El número de orden es requerido'
     showValidationError.value = true
+    showNotification('El número de orden es requerido', 'warning')
 
     return false
   }
@@ -211,6 +212,7 @@ const validateForm = async () => {
     if (!workOrder.value.vehicle_id) {
       validationErrorMessage.value = 'La orden contiene servicios y requiere asociar un vehículo.'
       showValidationError.value = true
+      showNotification('La orden contiene servicios y requiere asociar un vehículo.', 'warning')
 
       return false
     }
@@ -232,6 +234,7 @@ const saveWorkOrder = async () => {
         if (additionalQty > 0 && product.stock < additionalQty) {
           showValidationError.value = true
           validationErrorMessage.value = `Stock insuficiente para ${product.description || product.name || 'el producto'}. Stock disponible: ${product.stock}, Requerido adicional: ${additionalQty}`
+          showNotification(validationErrorMessage.value, 'warning')
 
           return
         }
@@ -710,7 +713,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1777,26 +1780,6 @@ onMounted(() => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert
-                  v-if="showValidationError"
-                  color="error"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="showValidationError = false"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-error-warning-line"
-                      class="mr-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
-                  </div>
-                </VAlert>
-
                 <VBtn
                   block
                   color="primary"

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGenerateImageVariant } from "@/@core/composable/useGenerateImageVariant"
 import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png"
@@ -13,7 +13,7 @@ import { VNodeRenderer } from "@layouts/components/VNodeRenderer"
 import { themeConfig } from "@themeConfig"
 import { useLoaderStore } from '@/stores/loader'
 import { refreshPermissionsUser } from '@/composables/usePermissions'
-import { $api } from '@/utils/api'
+import { $api, getStorageUrl } from '@/utils/api'
 
 definePage({ meta: { layout: "blank", unauthenticatedOnly: true } })
 
@@ -32,6 +32,56 @@ const warning_login = ref(null)
 const error_login = ref(null)
 
 const isPasswordVisible = ref(false)
+
+const loginBgUrl = ref(localStorage.getItem('login_background') || '')
+
+const loadPublicSucursal = async () => {
+  try {
+    const resp = await $api('public/sucursal')
+    if (resp?.sucursal?.login_background) {
+      const fullUrl = getStorageUrl(resp.sucursal.login_background)
+
+      loginBgUrl.value = fullUrl
+      localStorage.setItem('login_background', fullUrl)
+    } else if (resp?.sucursal) {
+      loginBgUrl.value = ''
+      localStorage.removeItem('login_background')
+    }
+  } catch (e) {
+    console.warn('No se pudo cargar fondo de login de sucursal:', e)
+  }
+}
+
+onMounted(() => {
+  loadPublicSucursal()
+})
+
+const loginBgRootStyle = computed(() => {
+  if (loginBgUrl.value) {
+    return {
+      backgroundImage: `url(${loginBgUrl.value})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
+    }
+  }
+
+  return {}
+})
+
+const showcaseCardStyle = computed(() => {
+  if (loginBgUrl.value) {
+    return {
+      backgroundImage: `url(${loginBgUrl.value})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
+    }
+  }
+
+  return {}
+})
 
 const login = async () => {
   loader.start()
@@ -93,7 +143,10 @@ const appBrandName = computed(() => {
 </script>
 
 <template>
-  <div class="auth-page-root">
+  <div
+    class="auth-page-root"
+    :style="loginBgRootStyle"
+  >
     <!-- Desktop Top Left Brand Badge -->
     <RouterLink
       to="/"
@@ -121,7 +174,10 @@ const appBrandName = computed(() => {
         lg="8"
         class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column"
       >
-        <div class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative">
+        <div
+          class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative"
+          :style="showcaseCardStyle"
+        >
           <!-- Glassmorphism Dark/Purple Overlay -->
           <div class="auth-showcase-overlay" />
 

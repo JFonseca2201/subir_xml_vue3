@@ -340,6 +340,7 @@ const submitForm = async () => {
     if (!valid) {
       showValidationError.value = true
       validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+      showNotification('Por favor, complete todos los campos obligatorios marcados con *', 'warning')
       
       return
     }
@@ -348,6 +349,7 @@ const submitForm = async () => {
   if (quote.value.items.length === 0) {
     showValidationError.value = true
     validationErrorMessage.value = 'Debe agregar al menos un producto o servicio'
+    showNotification('Debe agregar al menos un producto o servicio', 'warning')
     
     return
   }
@@ -401,7 +403,7 @@ onMounted(async () => {
       style="top: 0; left: 0; right: 0; z-index: 10;"
     />
 
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 gap-4 border-b pb-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-6 border-b pb-4">
       <div>
         <div class="d-flex align-center">
           <VAvatar
@@ -424,15 +426,17 @@ onMounted(async () => {
           Modifica los detalles del presupuesto #{{ quote.document_number }}
         </p>
       </div>
-      <VBtn
-        color="secondary"
-        variant="outlined"
-        prepend-icon="ri-arrow-left-line"
-        to="/quotes/list"
-        class="align-self-md-center align-self-end bg-white"
-      >
-        Volver al Listado
-      </VBtn>
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          prepend-icon="ri-arrow-left-line"
+          to="/quotes/list"
+          class="bg-white"
+        >
+          Volver al Listado
+        </VBtn>
+      </div>
     </div>
 
     <!-- Form Skeleton loader -->
@@ -1035,16 +1039,6 @@ onMounted(async () => {
                 <span class="text-h6 font-weight-bold text-grey-darken-4">TOTAL:</span>
                 <span class="text-h5 font-weight-black text-primary">${{ total.toFixed(2) }}</span>
               </div>
-
-              <VAlert
-                v-if="showValidationError"
-                type="error"
-                variant="tonal"
-                density="compact"
-                class="mb-4"
-              >
-                {{ validationErrorMessage }}
-              </VAlert>
 
               <VBtn
                 type="submit"

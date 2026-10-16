@@ -96,7 +96,6 @@ const loadTransactions = async () => {
     transactions.value = resp || []
   } catch (err) {
     console.error('Error al cargar transacciones:', err)
-    showNotification('Error al cargar transacciones desde la base de datos', 'error')
   } finally {
     loading.value = false
   }

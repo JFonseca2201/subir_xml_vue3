@@ -6,6 +6,7 @@ import { initConfigStore, useConfigStore } from "@core/stores/config"
 import { hexToRgb } from "@layouts/utils"
 import GlobalLoader from '@/components/loaders/GlobalLoader.vue'
 import OfflineOverlay from '@/components/OfflineOverlay.vue'
+import GlobalToast from '@/components/common/GlobalToast.vue'
 
 const { global } = useTheme()
 
@@ -30,6 +31,9 @@ const configStore = useConfigStore()
       
       <!-- Indicador y Overlay Global de Conexión -->
       <OfflineOverlay />
+
+      <!-- Notificaciones Toast Globales -->
+      <GlobalToast />
     </VApp>
   </VLocaleProvider>
 </template>

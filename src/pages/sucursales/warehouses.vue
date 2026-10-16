@@ -61,7 +61,6 @@ const list = async () => {
     list_warehouses.value = resp.warehouses || []
   } catch (error) {
     console.error(error)
-    showNotification('Error al cargar la lista de almacenes', 'error')
   } finally {
     isLoading.value = false
   }
@@ -128,7 +127,7 @@ onMounted(() => {
 <template>
   <div class="pa-4 pa-sm-6 warehouses-management-page">
     <!-- Encabezado Principal y Acciones -->
-    <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-5 gap-4">
+    <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
           <VAvatar
@@ -150,11 +149,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap w-100 w-md-auto align-center">
+      <!-- Botón de Acción -->
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
           color="primary"
           prepend-icon="ri-add-line"
-          class="elevation-2 font-weight-bold flex-grow-1 flex-md-grow-0"
+          class="elevation-2 font-weight-bold"
           @click="isWarehouseAddDialogVisible = true"
         >
           Nuevo Almacén

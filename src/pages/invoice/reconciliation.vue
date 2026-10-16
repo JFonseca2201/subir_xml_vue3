@@ -90,7 +90,6 @@ const loadInitialData = async () => {
     }
   } catch (error) {
     console.error('Error al cargar datos iniciales:', error)
-    showNotification('Error al cargar proveedores y cuentas', 'error')
   } finally {
     loading.value = false
   }
@@ -128,7 +127,6 @@ const onSupplierChange = async newSupplierId => {
     }
   } catch (error) {
     console.error('Error al cargar facturas y créditos del proveedor:', error)
-    showNotification('Error al consultar facturas pendientes del proveedor', 'error')
   } finally {
     loadingInvoices.value = false
     loadingCredits.value = false

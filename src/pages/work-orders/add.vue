@@ -12,7 +12,6 @@ import VehicleAddDialog from '@/components/inventory/vehicles/VehicleAddDialog.v
 import AddServiceDialog from '@/components/inventory/product/AddServiceDialog.vue'
 import VSearch from '@/components/common/VSearch.vue'
 import { useFormDraft } from '@/composables/useFormDraft'
-import FormDraftAlert from '@/components/common/FormDraftAlert.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -147,6 +146,7 @@ const validateForm = async () => {
     if (!valid) {
       validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
       showValidationError.value = true
+      showNotification('Por favor, complete todos los campos obligatorios marcados con *', 'warning')
 
       return false
     }
@@ -174,6 +174,7 @@ const validateForm = async () => {
     if (!workOrder.value.vehicle_id) {
       validationErrorMessage.value = 'La orden contiene servicios y requiere asociar un vehículo.'
       showValidationError.value = true
+      showNotification('La orden contiene servicios y requiere asociar un vehículo.', 'warning')
 
       return false
     }
@@ -738,14 +739,6 @@ onMounted(async () => {
 
 <template>
   <div class="pa-4 pa-sm-6 work-orders-create-page position-relative">
-    <!-- Alerta de Borrador Recuperado / Auto-guardado -->
-    <FormDraftAlert
-      :has-draft="hasDraft"
-      :draft-timestamp="draftTimestamp"
-      class="mb-4"
-      @discard="discardDraft(resetWorkOrder)"
-    />
-
     <!-- Header Principal Sticky -->
     <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
       <div class="d-flex align-center justify-space-between flex-wrap gap-4">
@@ -772,7 +765,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="d-flex align-center gap-2 flex-wrap">
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
           <VBtn
             variant="outlined"
             color="secondary"
@@ -1878,26 +1871,6 @@ onMounted(async () => {
               <VDivider />
 
               <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
-                <!-- Alerta de Validación encima del botón de guardar -->
-                <VAlert
-                  v-if="showValidationError"
-                  color="error"
-                  variant="tonal"
-                  class="w-100 mb-1 rounded-lg"
-                  border="start"
-                  closable
-                  @click:close="showValidationError = false"
-                >
-                  <div class="d-flex align-center">
-                    <VIcon
-                      icon="ri-error-warning-line"
-                      class="mr-2"
-                      size="20"
-                    />
-                    <span class="text-caption font-weight-bold">{{ validationErrorMessage }}</span>
-                  </div>
-                </VAlert>
-
                 <VBtn
                   block
                   color="primary"
