@@ -715,6 +715,29 @@ export const vehicleBrands = {
   659: "LIFAN",
   660: "SHINERAY",
   661: "DFSK",
+  662: "FOTON",
+  663: "JETOUR",
+  664: "MAXUS",
+  665: "SOUEAST",
+  666: "KARRY",
+  667: "ZX AUTO",
+  668: "GOLDEN DRAGON",
+  669: "HIGER",
+  670: "YUTONG",
+  671: "KING LONG",
+  672: "SINOTRUK",
+  673: "SHACMAN",
+  674: "SANY",
+  675: "GEELY AUTO",
+  676: "FORTHING",
+  677: "KYC",
+  678: "BAW",
+  679: "KAYO",
+  680: "DAYUN",
+  681: "MG",
+  682: "CUPRA",
+  683: "OMODA",
+  684: "JAECOO",
 }
 
 // Función para obtener el nombre de la marca por ID
@@ -728,7 +751,7 @@ export const getBrandNameById = id => {
     return str.toUpperCase()
   }
   const numericId = Number(str)
-  
+
   return vehicleBrands[numericId] || vehicleBrands[str] || str
 }
 
@@ -740,7 +763,7 @@ export const getBrandIdByName = name => {
       return parseInt(id)
     }
   }
-  
+
   return null
 }
 
@@ -759,7 +782,7 @@ export const searchBrands = searchText => {
   }
 
   const upperSearch = searchText.toUpperCase().trim()
-  
+
   return Object.entries(vehicleBrands)
     .filter(([id, name]) => name.includes(upperSearch))
     .map(([id, name]) => ({
@@ -791,7 +814,7 @@ export const filterBrands = (items, searchQuery) => {
   }
 
   const upperQuery = searchQuery.toUpperCase().trim()
-  
+
   return items.filter(item =>
     item.title.toUpperCase().includes(upperQuery),
   ).slice(0, 50)
@@ -822,7 +845,7 @@ export const getBrandsByCountry = country => {
   }
 
   const brandIds = countryBrands[country.toUpperCase()] || []
-  
+
   return brandIds.map(id => ({
     id: id,
     name: vehicleBrands[id],
@@ -832,7 +855,7 @@ export const getBrandsByCountry = country => {
 // Función para obtener marcas populares (top 50)
 export const getPopularBrands = () => {
   const popularIds = [46, 21, 22, 4, 48, 50, 64, 65, 53, 54, 72, 73, 74, 82, 121, 101, 102, 37, 38, 155, 156, 157, 199, 200, 227, 228, 229, 1, 2, 3, 5, 106, 107, 108, 122, 85, 86, 87, 123, 41, 42, 43, 61, 62, 63, 89, 91, 92, 93, 94]
-  
+
   return popularIds.map(id => ({
     id: id,
     name: vehicleBrands[id],
