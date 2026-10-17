@@ -16,9 +16,20 @@ initConfigStore()
 
 const configStore = useConfigStore()
 
+// Sincronizar data-theme en html y body para selector global de temas glassmorphism
+watch(() => global.name.value, (newTheme) => {
+  console.log('Theme changed to:', newTheme, 'current theme object:', global.current.value)
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', newTheme)
+    document.body.setAttribute('data-theme', newTheme)
+  }
+}, { immediate: true })
+
 // Prevenir que el navegador descarte la pestaña o resetee el estado en segundo plano
 onMounted(() => {
   if (typeof window !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', global.name.value)
+    document.body.setAttribute('data-theme', global.name.value)
     let tabHeartbeat = null
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -36,8 +47,10 @@ onMounted(() => {
   <VLocaleProvider :rtl="configStore.isAppRTL">
     <!-- ℹ️ This is required to set the background color of active nav link based on currently active global theme's primary -->
     <VApp
+      :data-theme="global.name.value"
+      :class="`theme-${global.name.value}`"
       :style="`--v-global-theme-primary: ${hexToRgb(
-        global.current.value.colors.primary
+        global.current.value?.colors?.primary || '#7367F0'
       )}`"
     >
       <RouterView />

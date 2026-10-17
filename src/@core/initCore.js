@@ -64,8 +64,11 @@ const _syncInitialLoaderTheme = () => {
 
   watch(() => useConfigStore().theme, () => {
     // ℹ️ We are not using theme.current.colors.surface because watcher is independent and when this watcher is ran `theme` computed is not updated
-    useStorage(namespaceConfig('initial-loader-bg'), null).value = vuetifyTheme.current.value.colors.surface
-    useStorage(namespaceConfig('initial-loader-color'), null).value = vuetifyTheme.current.value.colors.primary
+    const currentTheme = vuetifyTheme.current.value || vuetifyTheme.themes.value?.[vuetifyTheme.name?.value] || vuetifyTheme.themes.value?.light
+    if (currentTheme?.colors) {
+      useStorage(namespaceConfig('initial-loader-bg'), null).value = currentTheme.colors.surface
+      useStorage(namespaceConfig('initial-loader-color'), null).value = currentTheme.colors.primary
+    }
   }, { immediate: true })
 }
 

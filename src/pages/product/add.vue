@@ -1906,21 +1906,6 @@ const loadInitialData = async () => {
   border: 1.5px solid rgba(16, 185, 129, 0.4);
 }
 
-.bg-slate-50 {
-  background-color: #f8fafc !important;
-}
-
-.text-slate-700 {
-  color: #334155 !important;
-}
-
-.text-slate-800 {
-  color: #1e293b !important;
-}
-
-.text-slate-900 {
-  color: #0f172a !important;
-}
 
 .shimmer-line {
   height: 12px;

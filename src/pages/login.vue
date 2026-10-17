@@ -70,18 +70,6 @@ const loginBgRootStyle = computed(() => {
   return {}
 })
 
-const showcaseCardStyle = computed(() => {
-  if (loginBgUrl.value) {
-    return {
-      backgroundImage: `url(${loginBgUrl.value})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center center',
-      backgroundRepeat: 'no-repeat',
-    }
-  }
-
-  return {}
-})
 
 const login = async () => {
   loader.start()
@@ -169,76 +157,18 @@ const appBrandName = computed(() => {
       no-gutters
       class="auth-wrapper"
     >
-      <!-- LEFT COLUMN: Showcase Visual with Workshop Background -->
+      <!-- LEFT COLUMN: Open space allowing full-screen background image to be visible -->
       <VCol
-        lg="8"
-        class="d-none d-lg-flex position-relative align-center justify-center auth-showcase-column"
-      >
-        <div
-          class="auth-showcase-card w-100 ma-8 me-0 d-flex flex-column align-center justify-center position-relative"
-          :style="showcaseCardStyle"
-        >
-          <!-- Glassmorphism Dark/Purple Overlay -->
-          <div class="auth-showcase-overlay" />
+        lg="7"
+        xl="8"
+        class="d-none d-lg-flex position-relative align-center justify-center"
+      />
 
-          <!-- Floating Feature Badges -->
-          <div class="showcase-floating-badge badge-top-right elevation-6">
-            <div class="badge-icon-box bg-success-subtle text-success">
-              <VIcon
-                icon="ri-shield-check-line"
-                size="22"
-              />
-            </div>
-            <div>
-              <div class="badge-caption">
-                FACTURACIÓN SRI
-              </div>
-              <div class="badge-title">
-                XML Homologado 100%
-              </div>
-            </div>
-          </div>
-
-          <div class="showcase-floating-badge badge-bottom-left elevation-6">
-            <div class="badge-icon-box bg-primary-subtle text-primary">
-              <VIcon
-                icon="ri-tools-line"
-                size="22"
-              />
-            </div>
-            <div>
-              <div class="badge-caption">
-                CONTROL EN VIVO
-              </div>
-              <div class="badge-title">
-                Taller, OTs & Kardex
-              </div>
-            </div>
-          </div>
-
-          <!-- Center Showcase Glass Card -->
-          <div class="showcase-center-card z-index-2 pa-6 rounded-2xl elevation-8 text-center mx-6">
-            <div class="d-flex align-center justify-center gap-2 mb-2">
-              <VIcon
-                icon="ri-tools-fill"
-                size="28"
-                color="primary"
-              />
-              <h3 class="text-h5 font-weight-black text-high-emphasis mb-0">
-                Gestión Integral de Taller
-              </h3>
-            </div>
-            <p class="text-body-2 text-medium-emphasis mb-0">
-              Control de Órdenes de Trabajo, Mantenimientos Preventivos, Kardex de Repuestos y Facturación SRI
-            </p>
-          </div>
-        </div>
-      </VCol>
-
-      <!-- RIGHT COLUMN: Colorido con Fondo Color Primary -->
+      <!-- RIGHT COLUMN: Glassmorphic Translucent Container for Icons & Text Fields -->
       <VCol
         cols="12"
-        lg="4"
+        lg="5"
+        xl="4"
         class="auth-primary-sidebar d-flex align-center justify-center pa-4 pa-sm-8"
       >
         <!-- Ambient Glow Orbs en el Sidebar -->

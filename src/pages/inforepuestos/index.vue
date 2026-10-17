@@ -606,7 +606,11 @@ onMounted(() => {
 }
 
 [data-theme="dark"] .vehicle-block-header,
-.v-theme--dark .vehicle-block-header {
+[data-theme="dark-glass"] .vehicle-block-header,
+[data-theme="semi-dark-glass"] .vehicle-block-header,
+.v-theme--dark .vehicle-block-header,
+.v-theme--dark-glass .vehicle-block-header,
+.v-theme--semi-dark-glass .vehicle-block-header {
   background-color: rgba(var(--v-theme-surface), 0.95) !important;
   border-bottom: 1.5px solid rgba(var(--v-border-color), 0.25) !important;
 }

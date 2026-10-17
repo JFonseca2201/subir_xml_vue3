@@ -1,0 +1,1836 @@
+/* ==========================================================================
+   SISTEMA DE TEMAS GLASSMORPHISM / TRASLÚCIDOS PARA LUXURY EVYS
+   Temas:
+     1. Oscuro Transparente Espectacular (dark-glass)
+     2. Medio Transparente Oscuro (semi-dark-glass)
+     3. Transparente Claro (light-glass)
+   ========================================================================== */
+
+// --------------------------------------------------------------------------
+// 1. MAPA Y VARIABLES SCSS DE TEMAS
+// --------------------------------------------------------------------------
+$glass-themes: (
+  'dark-glass': (
+    'name': 'dark-glass',
+    'is-dark': true,
+    'bg-app': "radial-gradient(ellipse at 25% 15%, rgba(99, 102, 241, 0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 85%, rgba(168, 85, 247, 0.14) 0%, transparent 60%), #090a10",
+    'bg-surface': rgba(255, 255, 255, 0.04),
+    'bg-sidebar': rgba(10, 12, 22, 0.8),
+    'bg-header': rgba(12, 14, 25, 0.8),
+    'bg-dialog': rgba(16, 20, 36, 0.90),
+    'bg-active-item': rgba(115, 103, 240, 0.28),
+    'bg-hover-item': rgba(255, 255, 255, 0.08),
+    'border-active': rgba(115, 103, 240, 0.55),
+    'text-active': #ffffff,
+    'text-primary': #ffffff,
+    'text-secondary': rgba(255, 255, 255, 0.80),
+    'text-muted': rgba(255, 255, 255, 0.50),
+    'icon-color': #ffffff,
+    'border-glass': rgba(255, 255, 255, 0.08),
+    'input-bg': rgba(255, 255, 255, 0.05),
+    'input-border': rgba(255, 255, 255, 0.12),
+    'table-header-bg': rgba(255, 255, 255, 0.07),
+    'table-row-even-bg': rgba(255, 255, 255, 0.02),
+    'table-row-hover-bg': rgba(115, 103, 240, 0.14),
+    'blur-glass': "blur(20px)",
+    'shadow-glass': "0 12px 36px rgba(0, 0, 0, 0.5)",
+    'shadow-glow': "0 0 25px rgba(115, 103, 240, 0.3)",
+  ),
+  'semi-dark-glass': (
+    'name': 'semi-dark-glass',
+    'is-dark': true,
+    'bg-app': "radial-gradient(ellipse at 50% 10%, rgba(67, 56, 202, 0.25) 0%, transparent 65%), radial-gradient(ellipse at 90% 90%, rgba(14, 165, 233, 0.16) 0%, transparent 60%), #0f172a",
+    'bg-surface': rgba(255, 255, 255, 0.06),
+    'bg-sidebar': rgba(20, 27, 47, 0.75),
+    'bg-header': rgba(22, 30, 52, 0.75),
+    'bg-dialog': rgba(22, 31, 52, 0.88),
+    'bg-active-item': rgba(99, 102, 241, 0.28),
+    'bg-hover-item': rgba(255, 255, 255, 0.08),
+    'border-active': rgba(129, 140, 248, 0.5),
+    'text-active': #ffffff,
+    'text-primary': #f8fafc,
+    'text-secondary': rgba(241, 245, 249, 0.80),
+    'text-muted': rgba(203, 213, 225, 0.55),
+    'icon-color': #ffffff,
+    'border-glass': rgba(255, 255, 255, 0.10),
+    'input-bg': rgba(255, 255, 255, 0.06),
+    'input-border': rgba(255, 255, 255, 0.14),
+    'table-header-bg': rgba(255, 255, 255, 0.09),
+    'table-row-even-bg': rgba(255, 255, 255, 0.02),
+    'table-row-hover-bg': rgba(99, 102, 241, 0.14),
+    'blur-glass': "blur(18px)",
+    'shadow-glass': "0 10px 32px rgba(0, 0, 0, 0.4)",
+    'shadow-glow': "0 0 25px rgba(99, 102, 241, 0.25)",
+  ),
+  'light-glass': (
+    'name': 'light-glass',
+    'is-dark': false,
+    'bg-app': "radial-gradient(circle at 10% 20%, rgba(199, 210, 254, 0.75) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(243, 232, 255, 0.75) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(224, 231, 255, 0.5) 0%, transparent 60%), #e2e8f0",
+    'bg-surface': rgba(255, 255, 255, 0.65),
+    'bg-sidebar': rgba(255, 255, 255, 0.70),
+    'bg-header': rgba(255, 255, 255, 0.70),
+    'bg-dialog': rgba(255, 255, 255, 0.88),
+    'bg-active-item': rgba(115, 103, 240, 0.15),
+    'bg-hover-item': rgba(15, 23, 42, 0.05),
+    'border-active': rgba(115, 103, 240, 0.45),
+    'text-active': #4f46e5,
+    'text-primary': #0f172a,
+    'text-secondary': #334155,
+    'text-muted': #64748b,
+    'icon-color': #1e293b,
+    'border-glass': rgba(255, 255, 255, 0.70),
+    'input-bg': rgba(255, 255, 255, 0.65),
+    'input-border': rgba(203, 213, 225, 0.75),
+    'table-header-bg': rgba(241, 245, 249, 0.75),
+    'table-row-even-bg': rgba(255, 255, 255, 0.35),
+    'table-row-hover-bg': rgba(115, 103, 240, 0.10),
+    'blur-glass': "blur(16px)",
+    'shadow-glass': "0 8px 30px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)",
+    'shadow-glow': "0 0 20px rgba(115, 103, 240, 0.15)",
+  ),
+);
+
+// --------------------------------------------------------------------------
+// 2. MIXIN DE VARIABLES CSS POR TEMA
+// --------------------------------------------------------------------------
+@mixin define-glass-variables($theme) {
+  --bg-app: #{map-get($theme, 'bg-app')};
+  --bg-surface: #{map-get($theme, 'bg-surface')};
+  --bg-sidebar: #{map-get($theme, 'bg-sidebar')};
+  --bg-header: #{map-get($theme, 'bg-header')};
+  --bg-dialog: #{map-get($theme, 'bg-dialog')};
+  --bg-active-item: #{map-get($theme, 'bg-active-item')};
+  --bg-hover-item: #{map-get($theme, 'bg-hover-item')};
+  --border-active: #{map-get($theme, 'border-active')};
+  --text-active: #{map-get($theme, 'text-active')};
+  --text-primary: #{map-get($theme, 'text-primary')};
+  --text-secondary: #{map-get($theme, 'text-secondary')};
+  --text-muted: #{map-get($theme, 'text-muted')};
+  --icon-color: #{map-get($theme, 'icon-color')};
+  --border-glass: #{map-get($theme, 'border-glass')};
+  --input-bg: #{map-get($theme, 'input-bg')};
+  --input-border: #{map-get($theme, 'input-border')};
+  --table-header-bg: #{map-get($theme, 'table-header-bg')};
+  --table-row-even-bg: #{map-get($theme, 'table-row-even-bg')};
+  --table-row-hover-bg: #{map-get($theme, 'table-row-hover-bg')};
+  --blur-glass: #{map-get($theme, 'blur-glass')};
+  --shadow-glass: #{map-get($theme, 'shadow-glass')};
+  --shadow-glow: #{map-get($theme, 'shadow-glow')};
+}
+
+// --------------------------------------------------------------------------
+// 3. INYECCIÓN DE VARIABLES EN SELECTORES RAÍZ Y ATRIBUTOS
+// --------------------------------------------------------------------------
+@each $theme-name, $theme in $glass-themes {
+  [data-theme="#{$theme-name}"],
+  html[data-theme="#{$theme-name}"],
+  body[data-theme="#{$theme-name}"],
+  .v-theme--#{$theme-name},
+  .theme-#{$theme-name} {
+    @include define-glass-variables($theme);
+  }
+}
+
+// --------------------------------------------------------------------------
+// 4. MIXIN GLOBAL DE COBERTURA TOTAL GLASSMORPHISM
+// --------------------------------------------------------------------------
+@mixin apply-glass-theme-rules($theme) {
+  $is-dark: map-get($theme, 'is-dark');
+
+  // A. FONDO GENERAL DE LA APLICACIÓN
+  html,
+  body,
+  .v-application {
+    background: var(--bg-app) !important;
+    color: var(--text-primary) !important;
+  }
+
+  body {
+    background-attachment: fixed !important;
+  }
+
+  .layout-wrapper,
+  .layout-content-wrapper {
+    background: transparent !important;
+  }
+
+  // B. NAVEGACIÓN GENERAL: SIDEBAR Y HEADER
+  // Respetar estrictamente maquetación original: top: 0, height: 100vh / 100%, position: fixed
+  .layout-vertical-nav,
+  .v-navigation-drawer,
+  .sidebar,
+  .layout-nav-type-vertical .layout-vertical-nav {
+    background: var(--bg-sidebar) !important;
+    background-color: var(--bg-sidebar) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border-right: 1px solid var(--border-glass) !important;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.08) !important;
+
+    .v-navigation-drawer__content,
+    .nav-items {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
+    .nav-header {
+      background: transparent !important;
+      border-bottom: 1px solid var(--border-glass) !important;
+
+      .app-logo-title {
+        color: var(--text-primary) !important;
+      }
+    }
+
+    .nav-section-title {
+      .title-text {
+        color: var(--text-muted) !important;
+        text-shadow: none !important;
+
+        &::before,
+        &::after {
+          border-color: var(--border-glass) !important;
+        }
+      }
+    }
+
+    .nav-link a,
+    .nav-group-label {
+      color: var(--text-secondary) !important;
+      background: transparent !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      .nav-item-icon,
+      .nav-item-title,
+      .nav-group-arrow {
+        color: var(--text-secondary) !important;
+      }
+
+      // Hover no seleccionado
+      &:not(.router-link-active):not(.router-link-exact-active):hover {
+        background: var(--bg-hover-item) !important;
+        color: var(--text-primary) !important;
+        transform: translateX(3px);
+
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow {
+          color: var(--text-primary) !important;
+        }
+      }
+    }
+
+    // REGLA CRÍTICA: PESTAÑAS Y OPCIONES ACTIVAS TRASLÚCIDAS (SIN FONDOS SÓLIDOS NI RECUADROS BLANCOS)
+    // El contenedor de grupo nunca debe tener borde ni fondo activo envolvente
+    .nav-group {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+
+      &.active,
+      &.open {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+
+        > .nav-group-label {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          transform: none !important;
+
+          &::before {
+            display: none !important;
+            opacity: 0 !important;
+            background: transparent !important;
+          }
+        }
+      }
+
+      > .nav-group-label {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+
+        &::before {
+          display: none !important;
+          opacity: 0 !important;
+          background: transparent !important;
+        }
+
+        &:hover {
+          background: var(--bg-hover-item) !important;
+        }
+      }
+    }
+
+    // ÚNICAMENTE el enlace individual de la viñeta / opción activa lleva la pastilla destacada
+    .nav-link > a.router-link-active,
+    .nav-link > a.router-link-exact-active,
+    .nav-link.router-link-active > a,
+    .nav-link.router-link-exact-active > a,
+    .v-list-item--active {
+      background: var(--bg-active-item) !important;
+      border: 1px solid var(--border-active) !important;
+      border-radius: 8px !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      color: var(--text-active) !important;
+      box-shadow: var(--shadow-glow) !important;
+      transform: translateX(3px);
+
+      * {
+        color: var(--text-active) !important;
+      }
+
+      .nav-item-icon {
+        color: var(--text-active) !important;
+        filter: drop-shadow(0 0 6px var(--border-active));
+      }
+
+      .nav-item-title {
+        color: var(--text-active) !important;
+        font-weight: 700 !important;
+      }
+
+      .nav-item-badge {
+        background-color: var(--border-active) !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .nav-group-children {
+      border-left: 1.5px solid var(--border-glass) !important;
+      background: transparent !important;
+      border-top: none !important;
+      border-right: none !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  // CABECERA / HEADER
+  // Respetar posición fija en la parte superior compartiendo fondo traslúcido y difuminado con el sidebar
+  .layout-navbar,
+  .v-app-bar,
+  .header,
+  .layout-wrapper.layout-nav-type-vertical .layout-navbar {
+    background: var(--bg-header) !important;
+    background-color: var(--bg-header) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border-bottom: 1px solid var(--border-glass) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+
+    .navbar-content-container {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    // Botones e iconos en la cabecera siempre visibles y con color dinámico de alto contraste
+    .v-icon,
+    .v-btn,
+    .v-btn__content,
+    .icon-btn,
+    .IconBtn,
+    button {
+      color: var(--icon-color) !important;
+
+      i,
+      svg,
+      .v-icon {
+        color: var(--icon-color) !important;
+        fill: currentColor !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+    }
+
+    .v-btn {
+      background: transparent !important;
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+      }
+    }
+
+    .theme-switcher-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--icon-color) !important;
+      border: 1px solid var(--border-glass) !important;
+      border-radius: 50% !important;
+      transition: all 0.2s ease !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: var(--icon-color) !important;
+        fill: currentColor !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+        transform: scale(1.08);
+      }
+    }
+  }
+
+  // C. CONTENEDORES, TARJETAS (.card, .v-card) Y PANELES (ESTÁNDAR CONCILIACIÓN)
+  .v-card,
+  .card {
+    background: var(--bg-surface) !important;
+    background-color: var(--bg-surface) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-glass) !important;
+    color: var(--text-primary) !important;
+
+    .v-card-item,
+    .v-card-text,
+    .v-card-actions {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .v-card-title,
+  .card-title,
+  h1, h2, h3, h4, h5, h6,
+  .text-h4, .text-h5, .text-h6 {
+    color: var(--text-primary) !important;
+  }
+
+  p,
+  .text-body-1,
+  .text-body-2,
+  .text-caption {
+    color: var(--text-secondary);
+  }
+
+  // Spans generales de texto (excluyendo badges, chips, botones y estados para evitar colisión de contraste)
+  span:not([class*="status"]):not([class*="badge"]):not([class*="chip"]):not(.v-chip *):not(.status-pill-clean *):not(.v-btn *):not(.kardex-plate-badge *):not(.doc-type-badge-mini *) {
+    color: var(--text-secondary);
+  }
+
+  .text-medium-emphasis {
+    color: var(--text-muted) !important;
+  }
+
+  // D. LISTADOS Y TABLAS DE DATOS (INGRESOS, VENTAS, KARDEX)
+  .v-data-table,
+  .v-table,
+  .table {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-primary) !important;
+
+    .v-table__wrapper {
+      background: transparent !important;
+    }
+
+    thead, thead tr, thead th,
+    .v-data-table__th {
+      background: var(--table-header-bg) !important;
+      color: var(--text-primary) !important;
+      font-weight: 700 !important;
+      border-bottom: 1px solid var(--border-glass) !important;
+
+      .v-data-table-header__content {
+        color: var(--text-primary) !important;
+      }
+    }
+
+    tbody tr {
+      background: transparent;
+      transition: background 0.2s ease;
+
+      td, .v-data-table__td {
+        border-bottom: 1px solid var(--border-glass) !important;
+        color: var(--text-primary) !important;
+      }
+
+      &:nth-child(even) {
+        background: var(--table-row-even-bg) !important;
+      }
+
+      &:hover,
+      &.v-data-table__tr--hover {
+        background: var(--table-row-hover-bg) !important;
+      }
+    }
+
+    .v-data-table-footer {
+      background: var(--table-header-bg) !important;
+      border-top: 1px solid var(--border-glass) !important;
+      color: var(--text-secondary) !important;
+    }
+  }
+
+  // Paginadores
+  .v-pagination {
+    .v-pagination__item,
+    .v-pagination__prev,
+    .v-pagination__next {
+      background: var(--input-bg) !important;
+      color: var(--text-secondary) !important;
+      border: 1px solid var(--border-glass) !important;
+      backdrop-filter: blur(8px) !important;
+
+      &.v-pagination__item--is-active {
+        background: var(--bg-active-item) !important;
+        border: 1px solid var(--border-active) !important;
+        color: var(--text-active) !important;
+        box-shadow: var(--shadow-glow) !important;
+
+        * {
+          color: var(--text-active) !important;
+        }
+      }
+    }
+  }
+
+  // E. FORMULARIOS E INPUTS (ESTÁNDAR CONCILIACIÓN)
+  .v-field,
+  .v-field--variant-outlined,
+  .v-field--variant-filled {
+    background-color: var(--input-bg) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid var(--input-border) !important;
+    border-radius: 8px !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+    .v-field__outline {
+      border: none !important;
+      --v-field-border-width: 0 !important;
+    }
+
+    &:hover {
+      border-color: var(--border-active) !important;
+      background-color: var(--bg-hover-item) !important;
+    }
+
+    &.v-field--focused {
+      border-color: var(--border-active) !important;
+      box-shadow: 0 0 0 3px var(--bg-active-item) !important;
+    }
+
+    .v-field__input {
+      color: var(--text-primary) !important;
+      font-size: 0.88rem !important;
+
+      &::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.85 !important;
+      }
+    }
+
+    .v-field__prepend-inner .v-icon,
+    .v-field__append-inner .v-icon {
+      color: var(--icon-color) !important;
+      opacity: 0.85 !important;
+    }
+
+    .v-label {
+      color: var(--text-secondary) !important;
+      opacity: 0.95 !important;
+    }
+  }
+
+  // Labels y etiquetas de formularios en alto contraste (Estándar Conciliación)
+  label,
+  .v-label,
+  .text-label,
+  .field-label {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    opacity: 0.95 !important;
+
+    .text-error,
+    .required {
+      color: #ea5455 !important;
+    }
+  }
+
+  .v-messages,
+  .v-input__details,
+  .text-caption.text-medium-emphasis {
+    color: var(--text-muted) !important;
+    opacity: 0.9 !important;
+  }
+
+  // BOTONES (ESTÁNDAR CONCILIACIÓN)
+  .v-btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    transition: all 0.2s ease !important;
+
+    // Botones primarios (violeta / morado destacado con glow sutil)
+    &.bg-primary,
+    &.v-btn--variant-elevated.v-btn--color-primary,
+    &[class*="primary"]:not(.v-btn--variant-tonal):not(.v-btn--variant-outlined):not(.v-btn--variant-text) {
+      background: linear-gradient(135deg, #7367F0 0%, #5E50EE 100%) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 4px 16px rgba(115, 103, 240, 0.4) !important;
+
+      * {
+        color: #ffffff !important;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, #8176f2 0%, #685cf0 100%) !important;
+        box-shadow: 0 6px 20px rgba(115, 103, 240, 0.55) !important;
+        transform: translateY(-1px);
+      }
+    }
+
+    // Botones secundarios / suavizados (tonal y outlined sin parches blancos)
+    &.v-btn--variant-tonal {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border-glass) !important;
+
+      * {
+        color: var(--text-primary) !important;
+      }
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+      }
+    }
+
+    &.v-btn--variant-outlined {
+      background: transparent !important;
+      border: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      * {
+        color: var(--text-primary) !important;
+      }
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+      }
+    }
+  }
+
+  .v-checkbox,
+  .v-switch,
+  .v-radio {
+    .v-label {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // F. PESTAÑAS (TABS), EXPANSION PANELS Y CHIPS
+  .v-tabs {
+    background: transparent !important;
+    border-bottom: 1px solid var(--border-glass) !important;
+
+    .v-tab {
+      color: var(--text-secondary) !important;
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+      }
+
+      &.v-tab--selected {
+        background: var(--bg-active-item) !important;
+        border-bottom: 2px solid var(--border-active) !important;
+        color: var(--text-active) !important;
+
+        * {
+          color: var(--text-active) !important;
+        }
+      }
+    }
+  }
+
+  .v-expansion-panel {
+    background: var(--bg-surface) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+
+    .v-expansion-panel-title {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // ETIQUETAS, BADGES, STATUS PILLS Y V-CHIP CON CONTRASTE 100% GARANTIZADO
+  .v-chip {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    font-weight: 700 !important;
+
+    .v-chip__underlay {
+      opacity: 0.10 !important;
+    }
+
+    // Variantes por defecto / neutras
+    &:not([class*="text-"]):not([class*="bg-"]):not([class*="success"]):not([class*="error"]):not([class*="warning"]):not([class*="info"]):not([class*="primary"]) {
+      background: var(--input-bg) !important;
+      border: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: var(--text-primary) !important;
+        font-weight: 700 !important;
+      }
+    }
+  }
+
+  // Status pills generales con punto indicador (Vehículos, Usuarios, Kardex, Pedidos, Ventas, Cotizaciones)
+  .status-pill-clean,
+  .status-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+
+    .status-dot {
+      width: 6px !important;
+      height: 6px !important;
+      border-radius: 50% !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  @if $is-dark {
+    // ====================================================================
+    // TEMAS OSCUROS TRASLÚCIDOS (dark-glass / semi-dark-glass) - REGLA A:
+    // Fondo semitransparente oscuro + texto brillante de alta visibilidad
+    // ====================================================================
+
+    // Éxito / Activo / Pagado (verde brillante)
+    .status-paid,
+    .status-success,
+    .v-chip.text-success,
+    .v-chip.bg-success,
+    .v-chip[class*="success"] {
+      background: rgba(34, 197, 94, 0.16) !important;
+      border: 1px solid rgba(34, 197, 94, 0.40) !important;
+      color: #22c55e !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #22c55e !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #22c55e !important;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.6) !important;
+      }
+    }
+
+    // Error / Anulado / Cancelado / Inactivo / Pendiente de Pago (rojo coral brillante)
+    .status-pending,
+    .status-error,
+    .status-canceled,
+    .v-chip.text-error,
+    .v-chip.bg-error,
+    .v-chip[class*="error"] {
+      background: rgba(239, 68, 68, 0.16) !important;
+      border: 1px solid rgba(239, 68, 68, 0.40) !important;
+      color: #f87171 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #f87171 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #ef4444 !important;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.6) !important;
+      }
+    }
+
+    // Alerta / Pendiente / En Proceso / Parcial (ámbar brillante)
+    .status-partial,
+    .status-warning,
+    .v-chip.text-warning,
+    .v-chip.bg-warning,
+    .v-chip[class*="warning"] {
+      background: rgba(245, 158, 11, 0.16) !important;
+      border: 1px solid rgba(245, 158, 11, 0.40) !important;
+      color: #fbbf24 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #fbbf24 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #f59e0b !important;
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.6) !important;
+      }
+    }
+
+    // Info / Transferencia / Despacho / Azul (azul cielo brillante)
+    .status-transfer,
+    .status-info,
+    .v-chip.text-info,
+    .v-chip.bg-info,
+    .v-chip[class*="info"] {
+      background: rgba(59, 130, 246, 0.16) !important;
+      border: 1px solid rgba(59, 130, 246, 0.40) !important;
+      color: #38bdf8 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #38bdf8 !important;
+        box-shadow: 0 0 8px rgba(59, 130, 246, 0.6) !important;
+      }
+    }
+
+    // Primary / Primario (violeta traslúcido con texto violeta brillante)
+    .status-primary,
+    .v-chip.text-primary,
+    .v-chip.bg-primary,
+    .v-chip[class*="primary"] {
+      background: rgba(115, 103, 240, 0.20) !important;
+      border: 1px solid rgba(115, 103, 240, 0.45) !important;
+      color: #a78bfa !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #a78bfa !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #7367f0 !important;
+        box-shadow: 0 0 8px rgba(115, 103, 240, 0.6) !important;
+      }
+    }
+
+    // Secondary (gris traslúcido)
+    .status-secondary,
+    .v-chip.text-secondary,
+    .v-chip.bg-secondary,
+    .v-chip[class*="secondary"] {
+      background: rgba(148, 163, 184, 0.16) !important;
+      border: 1px solid rgba(148, 163, 184, 0.35) !important;
+      color: #cbd5e1 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #cbd5e1 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #94a3b8 !important;
+      }
+    }
+
+    // ====================================================================
+    // FORMULARIOS, EDICIONES (add.vue, edit/[id].vue) Y FONDOS BLANCOS
+    // SUPRESIÓN TOTAL DE ESPACIOS Y RECUADROS BLANCOS EN MODO OSCURO
+    // ====================================================================
+
+    // 1. Tarjetas internas y secciones de v-card
+    .v-card {
+      .v-card-item,
+      .v-card-text,
+      .v-card-actions {
+        &.bg-white,
+        &.bg-slate-50,
+        &.bg-slate-100,
+        &.bg-grey-lighten-5,
+        &.bg-grey-lighten-4,
+        &.bg-grey-lighten-3,
+        &.bg-surface {
+          background: transparent !important;
+          background-color: transparent !important;
+          color: var(--text-primary) !important;
+        }
+      }
+    }
+
+    // 2. Supresión universal de clases de utilidad claras en todo el sistema oscuro
+    .bg-white:not(.v-btn):not(.v-chip.bg-white):not(.status-pill-clean.bg-white):not(.status-pill.bg-white):not(.badge.bg-white):not(.kardex-plate-badge):not(.doc-type-badge-mini),
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-slate-200,
+    .bg-grey-lighten-5,
+    .bg-grey-lighten-4,
+    .bg-grey-lighten-3,
+    .bg-grey-lighten-2,
+    .bg-grey-lighten-1 {
+      background: var(--bg-surface) !important;
+      background-color: var(--bg-surface) !important;
+      color: var(--text-primary) !important;
+      border-color: var(--border-glass) !important;
+    }
+
+    // 3. Contenedores anidados, cajas de resumen, totales y paneles de datos
+    .v-card .v-card,
+    .total-cash-panel,
+    .quick-edit-section,
+    .quick-stock-stepper-box,
+    .category-section,
+    .ot-import-card,
+    .product-lookup-card,
+    .doc-type-card {
+      background: rgba(255, 255, 255, 0.04) !important;
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+    }
+
+    // 4. Estados vacíos y zonas de carga / dropzone de imágenes (border-dashed)
+    .border-dashed,
+    .border-2.border-dashed,
+    div[class*="border-dashed"] {
+      background: rgba(255, 255, 255, 0.02) !important;
+      background-color: rgba(255, 255, 255, 0.02) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      color: var(--text-secondary) !important;
+
+      .v-icon,
+      i {
+        color: var(--text-secondary) !important;
+        opacity: 0.8;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--border-active) !important;
+      }
+    }
+
+    // 5. Selector de tipo de documento (Factura SRI / Nota de Venta / Cotización)
+    .doc-type-card {
+      background: rgba(255, 255, 255, 0.04) !important;
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      background-image: none !important;
+      border: 1.5px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      .doc-type-title {
+        color: #ffffff !important;
+      }
+
+      .doc-type-desc {
+        color: var(--text-secondary) !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        background-image: none !important;
+        border-color: var(--border-active) !important;
+        transform: translateY(-2px);
+      }
+
+      &.active-invoice {
+        background: rgba(99, 102, 241, 0.22) !important;
+        background-color: rgba(99, 102, 241, 0.22) !important;
+        background-image: none !important;
+        border-color: #818cf8 !important;
+        box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.35) !important;
+
+        .invoice-icon {
+          background-color: #6366f1 !important;
+          color: #ffffff !important;
+        }
+
+        .doc-type-title {
+          color: #ffffff !important;
+        }
+
+        .radio-active-invoice {
+          color: #818cf8 !important;
+        }
+
+        .doc-type-badge.badge-sri {
+          background-color: rgba(99, 102, 241, 0.3) !important;
+          color: #c7d2fe !important;
+          border: 1px solid rgba(99, 102, 241, 0.5) !important;
+        }
+      }
+
+      &.active-sale-note {
+        background: rgba(16, 185, 129, 0.22) !important;
+        background-color: rgba(16, 185, 129, 0.22) !important;
+        background-image: none !important;
+        border-color: #34d399 !important;
+        box-shadow: 0 4px 16px -2px rgba(16, 185, 129, 0.35) !important;
+
+        .note-icon {
+          background-color: #10b981 !important;
+          color: #ffffff !important;
+        }
+
+        .doc-type-title {
+          color: #ffffff !important;
+        }
+
+        .radio-active-note {
+          color: #34d399 !important;
+        }
+
+        .doc-type-badge.badge-internal {
+          background-color: rgba(16, 185, 129, 0.3) !important;
+          color: #a7f3d0 !important;
+          border: 1px solid rgba(16, 185, 129, 0.5) !important;
+        }
+      }
+
+      &.active-quote {
+        background: rgba(2, 132, 199, 0.22) !important;
+        background-color: rgba(2, 132, 199, 0.22) !important;
+        background-image: none !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 4px 16px -2px rgba(2, 132, 199, 0.35) !important;
+
+        .quote-icon {
+          background-color: #0284c7 !important;
+          color: #ffffff !important;
+        }
+
+        .doc-type-title {
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // 5.1. Selector de Modalidad de Pago (Al Contado vs A Crédito)
+    .payment-mode-card {
+      background: rgba(255, 255, 255, 0.04) !important;
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      background-image: none !important;
+      border: 1.5px solid var(--border-glass) !important;
+      color: #ffffff !important;
+
+      .mode-title {
+        color: #ffffff !important;
+      }
+
+      .mode-subtitle {
+        color: var(--text-secondary) !important;
+      }
+
+      .mode-icon-circle {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--border-active) !important;
+      }
+
+      &.active-contado {
+        background: rgba(115, 103, 240, 0.24) !important;
+        border-color: #7367f0 !important;
+
+        .mode-title {
+          color: #ffffff !important;
+        }
+
+        .mode-icon-circle {
+          background: #7367f0 !important;
+          color: #ffffff !important;
+        }
+      }
+
+      &.active-credito {
+        background: rgba(245, 158, 11, 0.24) !important;
+        border-color: #f59e0b !important;
+
+        .mode-title {
+          color: #ffffff !important;
+        }
+
+        .mode-icon-circle {
+          background: #f59e0b !important;
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // 5.2. Pastillas de método de pago (Efectivo / Transferencia / Otros)
+    .payment-dist-card {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid var(--border-glass) !important;
+      color: #ffffff !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: var(--border-active) !important;
+      }
+    }
+
+    .payment-method-pill {
+      background: rgba(255, 255, 255, 0.06) !important;
+      border: 1.5px solid var(--border-glass) !important;
+      color: var(--text-secondary) !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: #ffffff !important;
+      }
+
+      &.active-cash {
+        background: #10b981 !important;
+        border-color: #10b981 !important;
+        color: #ffffff !important;
+      }
+
+      &.active-transfer {
+        background: #0ea5e9 !important;
+        border-color: #0ea5e9 !important;
+        color: #ffffff !important;
+      }
+
+      &.active-other {
+        background: #7367f0 !important;
+        border-color: #7367f0 !important;
+        color: #ffffff !important;
+      }
+    }
+
+    // 5.3. Paneles unificados de resumen (Cliente, Vehículo, Distribuidor, Totales)
+    .rounded-xl.border.bg-slate-50,
+    .border.rounded-xl.bg-slate-50,
+    div[class*="bg-slate-50"] {
+      background: rgba(255, 255, 255, 0.04) !important;
+      background-color: rgba(255, 255, 255, 0.04) !important;
+      border-color: var(--border-glass) !important;
+      color: #ffffff !important;
+
+      span, div, p, strong {
+        color: #ffffff;
+      }
+    }
+
+    // 6. Selector de Tipo de Ítem (Producto / Servicio / Herramienta en product/add y edit)
+    .border-light.bg-white.text-slate-700 {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border-color: var(--border-glass) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .border-primary.bg-slate-50.text-primary {
+      background: rgba(115, 103, 240, 0.18) !important;
+      border-color: #8176f2 !important;
+      color: #c4b5fd !important;
+    }
+
+    .border-success.bg-slate-50.text-success {
+      background: rgba(34, 197, 94, 0.18) !important;
+      border-color: #34d399 !important;
+      color: #86efac !important;
+    }
+
+    .border-warning.bg-slate-50.text-warning {
+      background: rgba(245, 158, 11, 0.18) !important;
+      border-color: #fbbf24 !important;
+      color: #fde68a !important;
+    }
+
+    // 7. Tabla compacta de items en ventas
+    .custom-sales-items-table {
+      background-color: transparent !important;
+      background: transparent !important;
+      color: var(--text-primary) !important;
+
+      thead tr th {
+        background: var(--table-header-bg) !important;
+        color: var(--text-primary) !important;
+        border-bottom: 1px solid var(--border-glass) !important;
+      }
+
+      tbody tr td {
+        border-bottom: 1px solid var(--border-glass) !important;
+        color: var(--text-primary) !important;
+      }
+
+      .qty-mini-val {
+        color: var(--text-primary) !important;
+      }
+
+      .cell-input-wrapper {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--text-primary) !important;
+
+        &:focus-within {
+          border-color: var(--border-active) !important;
+          background-color: var(--bg-hover-item) !important;
+        }
+
+        input {
+          color: var(--text-primary) !important;
+        }
+      }
+
+      .qty-mini-btn:hover:not(:disabled) {
+        background-color: var(--bg-hover-item) !important;
+      }
+    }
+
+    // 8. Corrección de Imagen 1: Gestión de Repuestos (inforepuestos)
+    .vehicle-block-card {
+      background: var(--bg-surface) !important;
+      border: 1px solid var(--border-glass) !important;
+    }
+
+    .vehicle-block-header {
+      background-color: var(--table-header-bg) !important;
+      border-bottom: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      .brand-badge {
+        background-color: rgba(115, 103, 240, 0.2) !important;
+        border-color: rgba(115, 103, 240, 0.4) !important;
+        color: #a78bfa !important;
+      }
+
+      .vehicle-title,
+      span,
+      div {
+        color: var(--text-primary) !important;
+      }
+    }
+
+    // 9. Corrección de Imagen 2: Gestión de Operaciones
+    .operations-date-header {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      .date-title-text {
+        color: var(--text-primary) !important;
+      }
+    }
+
+    .operations-movement-item {
+      background: var(--bg-surface) !important;
+      background-color: var(--bg-surface) !important;
+      border: 1px solid var(--border-glass) !important;
+      color: var(--text-primary) !important;
+
+      h1, h2, h3, h4, h5, h6,
+      .font-weight-bold,
+      .text-slate-900,
+      .text-slate-800 {
+        color: var(--text-primary) !important;
+      }
+
+      p,
+      .text-slate-600,
+      .text-slate-500 {
+        color: var(--text-secondary) !important;
+      }
+    }
+
+    .movements-scroll-container {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    // 10. Corrección de Imágenes 3 y 4: Aportes de Capital y Transferencias
+    .transfer-table,
+    table {
+      tbody {
+        tr.transfer-date-header-row {
+          background: var(--table-header-bg) !important;
+
+          td {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.01) 100%) !important;
+            border-top: 1px solid var(--border-glass) !important;
+            border-bottom: 1px solid var(--border-glass) !important;
+            border-left: 4px solid rgb(var(--v-theme-primary)) !important;
+            color: var(--text-primary) !important;
+          }
+
+          &:hover td {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%) !important;
+          }
+
+          .date-header-title,
+          .text-slate-900 {
+            color: var(--text-primary) !important;
+          }
+        }
+
+        tr.transfer-row {
+          background-color: transparent !important;
+
+          td {
+            border-bottom: 1px solid var(--border-glass) !important;
+            color: var(--text-primary) !important;
+          }
+
+          &:hover td {
+            background-color: var(--table-row-hover-bg) !important;
+          }
+
+          .text-slate-900,
+          .text-slate-800 {
+            color: var(--text-primary) !important;
+          }
+
+          .text-slate-600,
+          .text-slate-500 {
+            color: var(--text-secondary) !important;
+          }
+        }
+      }
+    }
+
+    // 11. Corrección de Imagen 5: Arqueo de Caja (finanzas/arqueo)
+    .cash-stepper {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1.5px solid var(--border-glass) !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--border-active) !important;
+      }
+
+      &:focus-within {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: var(--border-active) !important;
+      }
+
+      &.has-qty {
+        background: rgba(115, 103, 240, 0.15) !important;
+        border-color: rgba(115, 103, 240, 0.5) !important;
+      }
+
+      &.coin-stepper.has-qty {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border-color: #f59e0b !important;
+      }
+
+      .stepper-btn {
+        color: var(--text-secondary) !important;
+
+        &:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.1) !important;
+          color: #ffffff !important;
+        }
+      }
+
+      .stepper-input {
+        color: #ffffff !important;
+      }
+    }
+
+    .bill-badge {
+      background: linear-gradient(135deg, rgba(115, 103, 240, 0.25) 0%, rgba(115, 103, 240, 0.1) 100%) !important;
+      color: #c4b5fd !important;
+      border: 1px solid rgba(115, 103, 240, 0.4) !important;
+    }
+
+    .coin-badge {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+      color: #fde68a !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+
+    .cash-row {
+      border-bottom: 1px solid var(--border-glass) !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+      }
+
+      &.row-active {
+        background-color: rgba(115, 103, 240, 0.08) !important;
+      }
+    }
+
+    .table-cash {
+      thead th {
+        color: var(--text-muted) !important;
+        border-bottom: 1px solid var(--border-glass) !important;
+      }
+    }
+
+    // 12. Animación de Carga Shimmer en Modo Oscuro (Sin parches blancos/grises)
+    .shimmer-line,
+    .shimmer-circle,
+    .shimmer-chip,
+    .shimmer-button,
+    .shimmer-box {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.04) 75%) !important;
+      background-size: 200% 100% !important;
+      border-color: transparent !important;
+    }
+
+    // 13. Texto de Alto Contraste en todo Modo Oscuro
+    .text-slate-900,
+    .text-slate-800,
+    .text-slate-700,
+    .text-grey-darken-4,
+    .text-grey-darken-3,
+    .text-grey-darken-2,
+    .text-high-emphasis {
+      color: var(--text-primary) !important;
+    }
+
+    .text-slate-600,
+    .text-slate-500,
+    .text-grey-darken-1 {
+      color: var(--text-secondary) !important;
+    }
+  } @else {
+    // ====================================================================
+    // TEMA CLARO TRASLÚCIDO (light-glass):
+    // Fondo pastel suave con texto oscuro/fuerte de alto contraste
+    // ====================================================================
+
+    // Éxito / Activo / Pagado (verde esmeralda oscuro)
+    .status-paid,
+    .status-success,
+    .v-chip.text-success,
+    .v-chip.bg-success,
+    .v-chip[class*="success"] {
+      background-color: #ecfdf5 !important;
+      border: 1px solid #a7f3d0 !important;
+      color: #065f46 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #065f46 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #10b981 !important;
+      }
+    }
+
+    // Error / Anulado / Cancelado / Inactivo (rojo carmesí oscuro)
+    .status-pending,
+    .status-error,
+    .status-canceled,
+    .v-chip.text-error,
+    .v-chip.bg-error,
+    .v-chip[class*="error"] {
+      background-color: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      color: #991b1b !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #991b1b !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #ef4444 !important;
+      }
+    }
+
+    // Alerta / Pendiente / Parcial (ámbar tostado)
+    .status-partial,
+    .status-warning,
+    .v-chip.text-warning,
+    .v-chip.bg-warning,
+    .v-chip[class*="warning"] {
+      background-color: #fffbeb !important;
+      border: 1px solid #fde68a !important;
+      color: #92400e !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #92400e !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #f59e0b !important;
+      }
+    }
+
+    // Info / Transferencia / Azul (azul zafiro profundo)
+    .status-transfer,
+    .status-info,
+    .v-chip.text-info,
+    .v-chip.bg-info,
+    .v-chip[class*="info"] {
+      background-color: #eff6ff !important;
+      border: 1px solid #bfdbfe !important;
+      color: #1e40af !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #1e40af !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #3b82f6 !important;
+      }
+    }
+
+    // Primary (morado/violeta profundo)
+    .status-primary,
+    .v-chip.text-primary,
+    .v-chip.bg-primary,
+    .v-chip[class*="primary"] {
+      background-color: #f5f3ff !important;
+      border: 1px solid #ddd6fe !important;
+      color: #5e50ee !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #5e50ee !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #7367f0 !important;
+      }
+    }
+
+    // Secondary (gris carbón)
+    .status-secondary,
+    .v-chip.text-secondary,
+    .v-chip.bg-secondary,
+    .v-chip[class*="secondary"] {
+      background-color: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #334155 !important;
+        font-weight: 700 !important;
+      }
+
+      .status-dot {
+        background-color: #64748b !important;
+      }
+    }
+  }
+
+  // ====================================================================
+  // REGLA B UNIVERSAL (APLICA A TODOS LOS TEMAS):
+  // Si cualquier chip, badge o celda conserva un fondo claro o pastel
+  // (verde claro, amarillo claro, blanco, gris claro), FORZAR el color
+  // del texto a oscuro (#0f172a !important) para garantizar legibilidad del 100%.
+  // NUNCA permitir texto blanco sobre fondos claros o blancos.
+  // ====================================================================
+  .v-chip,
+  .status-pill-clean,
+  .status-pill,
+  .badge,
+  .kardex-plate-badge,
+  .doc-type-badge-mini {
+    &.bg-white,
+    &.bg-grey-lighten-4,
+    &.bg-grey-lighten-3,
+    &.bg-grey-lighten-5,
+    &[class*="lighten-3"],
+    &[class*="lighten-4"],
+    &[class*="lighten-5"],
+    &[style*="background-color: #ffffff"],
+    &[style*="background-color: #fff"],
+    &[style*="background-color:#ffffff"],
+    &[style*="background-color:#fff"],
+    &[style*="background: #ffffff"],
+    &[style*="background: #fff"],
+    &[style*="background:#ffffff"],
+    &[style*="background:#fff"],
+    &[style*="background-color: rgb(2"],
+    &[style*="background: rgb(2"],
+    &[style*="background-color: rgb(24"],
+    &[style*="background-color: rgb(25"] {
+      color: #0f172a !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #0f172a !important;
+        font-weight: 800 !important;
+      }
+    }
+  }
+
+  // Placas de vehículos en listados
+  .kardex-plate-badge {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+
+    &, span, * {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+  }
+
+  // En todas las tablas y listados (Clientes, Proveedores, Kardex, Ingresos, Saldos, Vehículos)
+  .v-data-table,
+  .v-table,
+  .table {
+    .v-chip,
+    .status-pill-clean,
+    .status-pill,
+    .badge {
+      &.bg-white,
+      &[style*="#fff"],
+      &[style*="#FFF"] {
+        color: #0f172a !important;
+
+        &, span, .v-chip__content, .v-icon, * {
+          color: #0f172a !important;
+          font-weight: 800 !important;
+        }
+      }
+    }
+  }
+
+  // Corrección estricta para modales/diálogos con estilos inline fijos de color blanco en tema claro
+  @if not $is-dark {
+    .v-chip[style*="color: #ffffff"],
+    .v-chip[style*="color:#ffffff"],
+    .v-chip[style*="color: #fff"],
+    .v-chip[style*="color:#fff"],
+    .v-chip[style*="rgba(255, 255, 255"],
+    [style*="color: #ffffff"]:not(.v-btn):not(.bg-primary *):not([class*="v-btn"]) {
+      color: #0f172a !important;
+
+      &, span, .v-chip__content, .v-icon, * {
+        color: #0f172a !important;
+      }
+    }
+  }
+
+  // G. VISTA DE LOGIN / AUTENTICACIÓN
+  .auth-page-root {
+    background-color: var(--bg-app) !important;
+
+    .auth-form-container {
+      background: var(--bg-surface) !important;
+      backdrop-filter: var(--blur-glass) !important;
+      -webkit-backdrop-filter: var(--blur-glass) !important;
+      border: 1px solid var(--border-glass) !important;
+      box-shadow: var(--shadow-glass) !important;
+    }
+
+    .auth-input-white .v-field {
+      background-color: var(--input-bg) !important;
+      border: 1px solid var(--input-border) !important;
+      color: var(--text-primary) !important;
+
+      .v-field__input {
+        color: var(--text-primary) !important;
+      }
+    }
+  }
+}
+
+// --------------------------------------------------------------------------
+// 5. REGLAS GLOBALES PARA DIÁLOGOS, POPUPS, MENÚS Y TELEPORTED OVERLAYS
+// --------------------------------------------------------------------------
+@mixin apply-glass-dialog-rules($theme) {
+  $is-dark: map-get($theme, 'is-dark');
+  // Asegurar que overlays INACTIVOS sean 100% transparentes sin filtros ni cajas que tapen la pantalla
+  .v-overlay:not(.v-overlay--active) {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    .v-overlay__content {
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  // Diálogos y modales ACTIVOS
+  .v-overlay--active.v-dialog > .v-overlay__content,
+  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
+  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active .v-card.modal-glass,
+  .v-dialog.v-overlay--active .v-card {
+    background: var(--bg-dialog) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
+    color: var(--text-primary) !important;
+
+    .v-card-title,
+    .v-card-text,
+    .v-card-actions,
+    .v-card-item {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: var(--border-glass) !important;
+      box-shadow: none !important;
+      color: var(--text-primary) !important;
+
+      &.bg-white,
+      &.bg-slate-50,
+      &.bg-slate-100,
+      &.bg-grey-lighten-5,
+      &.bg-grey-lighten-4,
+      &.bg-grey-lighten-3 {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+    }
+
+    @if $is-dark {
+      .bg-white:not(.v-btn):not(.v-chip.bg-white):not(.status-pill-clean.bg-white):not(.status-pill.bg-white):not(.badge.bg-white),
+      .bg-slate-50,
+      .bg-slate-100,
+      .bg-grey-lighten-5,
+      .bg-grey-lighten-4,
+      .bg-grey-lighten-3 {
+        background: rgba(255, 255, 255, 0.05) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--border-glass) !important;
+        color: var(--text-primary) !important;
+      }
+
+      .text-slate-900,
+      .text-slate-800,
+      .text-slate-700,
+      .text-grey-darken-4,
+      .text-grey-darken-3 {
+        color: var(--text-primary) !important;
+      }
+
+      .text-slate-600,
+      .text-slate-500 {
+        color: var(--text-secondary) !important;
+      }
+
+      .v-card {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid var(--border-glass) !important;
+      }
+    }
+  }
+
+  // Telón de fondo (scrim) de modales activos
+  .v-overlay--active > .v-overlay__scrim {
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  // Videodiálogos y reproductores multimedia
+  .v-dialog video,
+  .v-dialog iframe,
+  .video-dialog,
+  .media-dialog {
+    border-radius: 16px;
+    border: 1px solid var(--border-glass);
+    background: rgba(0, 0, 0, 0.45) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  // Menús desplegables y dropdowns (solo cuando el menú está activo)
+  .v-overlay--active.v-menu > .v-overlay__content,
+  .v-overlay--active .v-list,
+  .v-menu > .v-overlay__content > .v-list,
+  .v-select__content,
+  .v-autocomplete__content {
+    background: var(--bg-dialog) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    box-shadow: var(--shadow-glass) !important;
+    color: var(--text-primary) !important;
+
+    .v-list-item {
+      color: var(--text-primary) !important;
+
+      &:hover {
+        background: var(--bg-hover-item) !important;
+      }
+
+      &.v-list-item--active {
+        background: var(--bg-active-item) !important;
+        border: 1px solid var(--border-active) !important;
+        color: var(--text-active) !important;
+
+        * {
+          color: var(--text-active) !important;
+        }
+      }
+    }
+  }
+
+  // Popups SweetAlert2
+  .swal2-popup {
+    background: var(--bg-dialog) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
+    color: var(--text-primary) !important;
+
+    .swal2-title,
+    .swal2-html-container {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  // Tooltips
+  .v-tooltip .v-overlay__content {
+    background: var(--bg-dialog) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
+// --------------------------------------------------------------------------
+// 6. APLICACIÓN DE REGLAS GLOBALES PARA CADA TEMA GLASSMORPHISM
+// --------------------------------------------------------------------------
+@each $theme-name, $theme in $glass-themes {
+  // Aplicar dentro del contexto del tema
+  [data-theme="#{$theme-name}"],
+  html[data-theme="#{$theme-name}"],
+  body[data-theme="#{$theme-name}"],
+  .v-theme--#{$theme-name},
+  .theme-#{$theme-name} {
+    @include apply-glass-theme-rules($theme);
+  }
+
+  // Aplicar a diálogos y overlays (teleportados fuera de #app directamente en body)
+  body[data-theme="#{$theme-name}"] {
+    @include apply-glass-dialog-rules($theme);
+  }
+
+  .v-theme--#{$theme-name}.v-overlay {
+    @include apply-glass-dialog-rules($theme);
+  }
+}
+

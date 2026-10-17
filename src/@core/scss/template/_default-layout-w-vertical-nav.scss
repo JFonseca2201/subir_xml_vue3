@@ -20,9 +20,9 @@ $header: ".layout-navbar";
     margin: 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
-    background: linear-gradient(135deg, #6368FF 0%, #4F54E5 60%, #4347D4 100%) !important;
+    background: var(--bg-header, linear-gradient(135deg, #6368FF 0%, #4F54E5 60%, #4347D4 100%)) !important;
     box-shadow: 0 4px 20px rgba(79, 84, 229, 0.25) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-bottom: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
     border-top: none !important;
     border-left: none !important;
     border-right: none !important;
@@ -43,11 +43,26 @@ $header: ".layout-navbar";
     .v-btn__content,
     .icon-btn,
     .IconBtn {
-      color: #ffffff !important;
+      color: var(--icon-color, #ffffff) !important;
+
+      svg {
+        fill: currentColor;
+      }
+    }
+
+    .theme-switcher-btn {
+      color: var(--icon-color, var(--v-theme-on-surface, #ffffff)) !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: var(--icon-color, var(--v-theme-on-surface, #ffffff)) !important;
+        fill: currentColor !important;
+      }
     }
 
     .v-btn:hover {
-      background: rgba(255, 255, 255, 0.15) !important;
+      background: var(--bg-hover-item, rgba(255, 255, 255, 0.15)) !important;
     }
 
     // Avatar bordes suaves
