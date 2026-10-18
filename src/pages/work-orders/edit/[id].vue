@@ -255,6 +255,9 @@ const saveWorkOrder = async () => {
       body: payload,
     })
 
+    try {
+      localStorage.removeItem('ot_draft_work_order_add')
+    } catch (e) {}
     showNotification('Orden de trabajo finalizada exitosamente', 'success')
     router.push({ name: 'work-orders-list' })
   } catch (error) {
@@ -293,6 +296,9 @@ const saveDraft = async () => {
       body: payload,
     })
 
+    try {
+      localStorage.removeItem('ot_draft_work_order_add')
+    } catch (e) {}
     showNotification('Borrador de orden actualizado exitosamente', 'success')
     router.push({ name: 'work-orders-list' })
   } catch (error) {

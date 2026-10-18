@@ -896,6 +896,9 @@ const saveDraft = async () => {
     })
 
     if (response?.success || response?.status === 200) {
+      try {
+        localStorage.removeItem('ot_draft_sale_add')
+      } catch (e) {}
       showNotification('Borrador actualizado correctamente', 'success')
       router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
     } else {
@@ -1136,6 +1139,9 @@ const submitForm = async () => {
     })
 
     if (response?.success || response?.status === 200) {
+      try {
+        localStorage.removeItem('ot_draft_sale_add')
+      } catch (e) {}
       showNotification('Venta actualizada correctamente', 'success')
       router.push(sale.value.document_type === 'quote' ? '/quotes/list' : '/sales/list')
     } else {

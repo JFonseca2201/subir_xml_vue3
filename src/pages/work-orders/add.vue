@@ -69,8 +69,19 @@ const resetWorkOrder = () => {
   }
 }
 
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('work_order_add', workOrder, {
-  autoRestore: !route.query.quote_id,
+const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft('work_order_add', workOrder, {
+  autoRestore: false,
+  excludeFields: ['number'],
+  validateDraft: draftData => {
+    if (draftData?.number && workOrder.value.number) {
+      const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
+      const currentNextNum = parseInt(String(workOrder.value.number).replace(/\D/g, '')) || 0
+      if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+        return false
+      }
+    }
+    return true
+  },
 })
 
 const fuelLevels = [
@@ -129,6 +140,29 @@ const loadInitialData = async () => {
       workOrder.value.number = nextSeq.trim()
     } else {
       workOrder.value.number = '000000001'
+    }
+
+    // Validar si el borrador pertenece a una orden ya guardada en el sistema
+    if (!route.query.quote_id) {
+      const isValid = checkHasDraft(draftData => {
+        if (!draftData) return false
+        if (draftData.number) {
+          const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
+          const currentNextNum = parseInt(String(workOrder.value.number).replace(/\D/g, '')) || 0
+          if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+            console.log(`[work-orders/add] Borrador descartado: La orden #${draftData.number} ya fue guardada en el sistema.`)
+            return false
+          }
+        }
+        return true
+      })
+
+      if (isValid) {
+        const freshNumber = workOrder.value.number
+        restoreDraft()
+        // Aseguramos que el número de la nueva OT sea siempre el fresco
+        workOrder.value.number = freshNumber
+      }
     }
 
     console.log('Employees loaded:', employees.value.length, 'Next OT Number:', workOrder.value.number)

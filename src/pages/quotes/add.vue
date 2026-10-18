@@ -72,8 +72,19 @@ const resetQuote = () => {
   selectedVehicle.value = null
 }
 
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('quote_add', quote, {
-  autoRestore: !route.query.work_order_id,
+const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft('quote_add', quote, {
+  autoRestore: false,
+  excludeFields: ['document_number'],
+  validateDraft: draftData => {
+    if (draftData?.document_number && nextQuoteNumber.value) {
+      const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
+      const currentNextNum = parseInt(String(nextQuoteNumber.value).replace(/\D/g, '')) || 0
+      if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+        return false
+      }
+    }
+    return true
+  },
 })
 
 const positiveNumberRule = v => v >= 0 || 'El valor no puede ser negativo'
@@ -320,6 +331,28 @@ const loadInitialData = async () => {
     employees.value = extractArray(employeesRes, 'employees')
     nextQuoteNumber.value = nextNumberRes?.data || '000000000'
     quote.value.document_number = generateDocumentNumber()
+
+    // Validar si el borrador guardado pertenece a una cotización que ya fue salvada
+    if (!route.query.work_order_id) {
+      const isValid = checkHasDraft(draftData => {
+        if (!draftData) return false
+        if (draftData.document_number && nextQuoteNumber.value) {
+          const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
+          const currentNextNum = parseInt(String(nextQuoteNumber.value).replace(/\D/g, '')) || 0
+          if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+            console.log(`[quotes/add] Borrador descartado: La cotización #${draftData.document_number} ya fue guardada en el sistema.`)
+            return false
+          }
+        }
+        return true
+      })
+
+      if (isValid) {
+        const freshDocNumber = quote.value.document_number
+        restoreDraft()
+        quote.value.document_number = freshDocNumber
+      }
+    }
 
   } catch (error) {
     console.error('Error al cargar datos:', error)

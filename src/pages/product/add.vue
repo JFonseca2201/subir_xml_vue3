@@ -519,6 +519,7 @@ const store = async () => {
     })
 
     if (resp?.status === 200 || resp?.product) {
+      clearDraft()
       showNotification('Producto creado exitosamente', 'success')
       setTimeout(() => {
         onFormReset()
@@ -543,6 +544,7 @@ const store = async () => {
 }
 
 const onFormReset = () => {
+  clearDraft()
   product.value = {
     id: null, description: '', sku: '', imagen: null, code_aux: '', uses: '',
     product_categorie_id: null, warehouse_id: null, unit_id: null, supplier_id: null,

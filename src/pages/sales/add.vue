@@ -109,11 +109,22 @@ const sale = ref({
 })
 
 // Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft(
+const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft(
   'sale_add',
   sale,
   {
-    autoRestore: !route.query.work_order_id && !route.query.quote_id,
+    autoRestore: false,
+    excludeFields: ['document_number'],
+    validateDraft: draftData => {
+      if (draftData?.document_number && nextGlobalNumber.value) {
+        const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
+        const currentNextNum = parseInt(String(nextGlobalNumber.value).replace(/\D/g, '')) || 0
+        if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+          return false
+        }
+      }
+      return true
+    },
   }
 )
 
@@ -631,6 +642,28 @@ const loadInitialData = async () => {
     nextGlobalNumber.value = nextNumberRes?.data || '000000000'
 
     sale.value.document_number = generateDocumentNumber(sale.value.document_type)
+
+    // Validar si el borrador guardado pertenece a una venta que ya fue salvada
+    if (!route.query.work_order_id && !route.query.quote_id) {
+      const isValid = checkHasDraft(draftData => {
+        if (!draftData) return false
+        if (draftData.document_number) {
+          const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
+          const currentNextNum = parseInt(String(nextGlobalNumber.value).replace(/\D/g, '')) || 0
+          if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+            console.log(`[sales/add] Borrador descartado: La venta #${draftData.document_number} ya fue guardada en el sistema.`)
+            return false
+          }
+        }
+        return true
+      })
+
+      if (isValid) {
+        const freshDocNumber = sale.value.document_number
+        restoreDraft()
+        sale.value.document_number = freshDocNumber
+      }
+    }
 
   } catch (error) {
     console.error('Error al cargar datos:', error)
@@ -1295,6 +1328,7 @@ const saveDraft = async () => {
     })
 
     if (response.success || response.status === 201 || response.status === 200) {
+      clearDraft()
       showNotification('Borrador guardado exitosamente', 'success')
       router.push('/sales/list')
     } else {
@@ -1421,6 +1455,7 @@ const dispatchSale = async () => {
     })
 
     if (response.success || response.status === 201 || response.status === 200) {
+      clearDraft()
       showNotification('Venta despachada correctamente con pago pendiente', 'success')
       router.push('/sales/list')
     } else {

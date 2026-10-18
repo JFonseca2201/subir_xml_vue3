@@ -44,11 +44,22 @@ const pedido = ref({
 })
 
 // Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft(
+const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft(
   'pedido_distribuidor',
   pedido,
   {
-    autoRestore: !route.query.id,
+    autoRestore: false,
+    excludeFields: ['number'],
+    validateDraft: draftData => {
+      if (draftData?.number && nextPedidoNumber.value) {
+        const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
+        const currentNextNum = parseInt(String(nextPedidoNumber.value).replace(/\D/g, '')) || 0
+        if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+          return false
+        }
+      }
+      return true
+    },
   }
 )
 
@@ -395,6 +406,7 @@ const saveDraft = async () => {
     })
 
     if (response.success || response.status === 200 || response.status === 201) {
+      clearDraft()
       showNotification('Borrador guardado exitosamente.', 'success')
       router.push('/sales/pedidos-distribuidor-list')
     } else {
@@ -499,6 +511,26 @@ onMounted(async () => {
   if (id) {
     pedidoId.value = id
     await loadPedidoDetails(id)
+  } else {
+    // Validar si el borrador guardado pertenece a un pedido que ya fue salvado
+    const isValid = checkHasDraft(draftData => {
+      if (!draftData) return false
+      if (draftData.number && nextPedidoNumber.value) {
+        const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
+        const currentNextNum = parseInt(String(nextPedidoNumber.value).replace(/\D/g, '')) || 0
+        if (draftNum > 0 && currentNextNum > 0 && draftNum < currentNextNum) {
+          console.log(`[pedidos-distribuidor] Borrador descartado: El pedido #${draftData.number} ya fue guardado en el sistema.`)
+          return false
+        }
+      }
+      return true
+    })
+
+    if (isValid) {
+      const freshNum = pedido.value.number
+      restoreDraft()
+      if (freshNum) pedido.value.number = freshNum
+    }
   }
 })
 </script>
