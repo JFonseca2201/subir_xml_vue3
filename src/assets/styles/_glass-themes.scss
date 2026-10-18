@@ -35,6 +35,7 @@ $glass-themes: (
     'blur-glass': "blur(20px)",
     'shadow-glass': "0 12px 36px rgba(0, 0, 0, 0.5)",
     'shadow-glow': "0 0 25px rgba(115, 103, 240, 0.3)",
+    'skeleton-gradient': "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)",
   ),
   'semi-dark-glass': (
     'name': 'semi-dark-glass',
@@ -61,6 +62,7 @@ $glass-themes: (
     'blur-glass': "blur(18px)",
     'shadow-glass': "0 10px 32px rgba(0, 0, 0, 0.4)",
     'shadow-glow': "0 0 25px rgba(99, 102, 241, 0.25)",
+    'skeleton-gradient': "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)",
   ),
   'light-glass': (
     'name': 'light-glass',
@@ -87,6 +89,7 @@ $glass-themes: (
     'blur-glass': "blur(16px)",
     'shadow-glass': "0 8px 30px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)",
     'shadow-glow': "0 0 20px rgba(115, 103, 240, 0.15)",
+    'skeleton-gradient': "linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%)",
   ),
 );
 
@@ -116,6 +119,7 @@ $glass-themes: (
   --blur-glass: #{map-get($theme, 'blur-glass')};
   --shadow-glass: #{map-get($theme, 'shadow-glass')};
   --shadow-glow: #{map-get($theme, 'shadow-glow')};
+  --skeleton-gradient: #{map-get($theme, 'skeleton-gradient')};
 }
 
 // --------------------------------------------------------------------------
@@ -944,6 +948,20 @@ $glass-themes: (
         color: var(--text-secondary) !important;
       }
 
+      .doc-type-badge {
+        &.badge-sri {
+          background-color: rgba(99, 102, 241, 0.25) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(129, 140, 248, 0.45) !important;
+        }
+
+        &.badge-internal {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        }
+      }
+
       &:hover {
         background: rgba(255, 255, 255, 0.08) !important;
         background-image: none !important;
@@ -972,9 +990,9 @@ $glass-themes: (
         }
 
         .doc-type-badge.badge-sri {
-          background-color: rgba(99, 102, 241, 0.3) !important;
-          color: #c7d2fe !important;
-          border: 1px solid rgba(99, 102, 241, 0.5) !important;
+          background-color: rgba(99, 102, 241, 0.35) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(129, 140, 248, 0.6) !important;
         }
       }
 
@@ -999,9 +1017,9 @@ $glass-themes: (
         }
 
         .doc-type-badge.badge-internal {
-          background-color: rgba(16, 185, 129, 0.3) !important;
-          color: #a7f3d0 !important;
-          border: 1px solid rgba(16, 185, 129, 0.5) !important;
+          background-color: rgba(16, 185, 129, 0.35) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(16, 185, 129, 0.6) !important;
         }
       }
 
@@ -1158,44 +1176,187 @@ $glass-themes: (
       color: #fde68a !important;
     }
 
-    // 7. Tabla compacta de items en ventas
-    .custom-sales-items-table {
+    // 7. Tablas compactas de items en Órdenes de Trabajo y Ventas
+    .custom-sales-items-table,
+    .custom-items-table {
       background-color: transparent !important;
       background: transparent !important;
       color: var(--text-primary) !important;
 
+      thead,
+      thead tr,
       thead tr th {
         background: var(--table-header-bg) !important;
+        background-color: var(--table-header-bg) !important;
         color: var(--text-primary) !important;
         border-bottom: 1px solid var(--border-glass) !important;
       }
 
-      tbody tr td {
+      tbody tr {
         border-bottom: 1px solid var(--border-glass) !important;
-        color: var(--text-primary) !important;
-      }
 
-      .qty-mini-val {
-        color: var(--text-primary) !important;
-      }
-
-      .cell-input-wrapper {
-        background-color: var(--input-bg) !important;
-        border-color: var(--input-border) !important;
-        color: var(--text-primary) !important;
-
-        &:focus-within {
-          border-color: var(--border-active) !important;
-          background-color: var(--bg-hover-item) !important;
+        &:hover {
+          background-color: var(--table-row-hover-bg) !important;
         }
 
-        input {
+        td {
+          border-bottom: 1px solid var(--border-glass) !important;
           color: var(--text-primary) !important;
         }
       }
 
-      .qty-mini-btn:hover:not(:disabled) {
-        background-color: var(--bg-hover-item) !important;
+      .qty-mini-val,
+      .wo-qty-val {
+        color: #ffffff !important;
+      }
+
+      .qty-stepper-mini,
+      .wo-qty-box {
+        background: rgba(255, 255, 255, 0.08) !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+
+        .qty-mini-btn,
+        .wo-qty-btn {
+          color: rgba(255, 255, 255, 0.85) !important;
+
+          &:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+          }
+
+          &:disabled {
+            opacity: 0.3 !important;
+          }
+        }
+      }
+
+      .cell-input-wrapper,
+      .wo-compact-input-wrap {
+        background: rgba(255, 255, 255, 0.08) !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+
+        &:focus-within {
+          border-color: var(--border-active) !important;
+          background-color: rgba(255, 255, 255, 0.14) !important;
+          box-shadow: 0 0 0 1px var(--border-active) !important;
+        }
+
+        .cell-prefix,
+        .wo-currency {
+          color: rgba(255, 255, 255, 0.65) !important;
+        }
+
+        input,
+        .cell-number-input,
+        .wo-compact-input {
+          color: #ffffff !important;
+
+          &.text-slate-800,
+          &.text-slate-900 {
+            color: #ffffff !important;
+          }
+        }
+      }
+
+      .item-title-input,
+      .wo-item-desc-input {
+        color: #ffffff !important;
+
+        &:focus {
+          background-color: rgba(255, 255, 255, 0.08) !important;
+          color: #ffffff !important;
+        }
+      }
+
+      .meta-stock,
+      .stock-tag {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+
+      .meta-sku {
+        color: rgba(255, 255, 255, 0.6) !important;
+      }
+
+      span.bg-slate-100 {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+
+        * {
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // Reglas independientes fuera de tablas para inputs y steppers
+    .qty-stepper-mini,
+    .wo-qty-box {
+      background: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+
+      .qty-mini-btn,
+      .wo-qty-btn {
+        color: rgba(255, 255, 255, 0.85) !important;
+
+        &:hover:not(:disabled) {
+          background-color: rgba(255, 255, 255, 0.18) !important;
+          color: #ffffff !important;
+        }
+
+        &:disabled {
+          opacity: 0.3 !important;
+        }
+      }
+
+      .qty-mini-val,
+      .wo-qty-val {
+        color: #ffffff !important;
+      }
+    }
+
+    .cell-input-wrapper,
+    .wo-compact-input-wrap {
+      background: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: #ffffff !important;
+
+      &:focus-within {
+        border-color: var(--border-active) !important;
+        background-color: rgba(255, 255, 255, 0.14) !important;
+        box-shadow: 0 0 0 1px var(--border-active) !important;
+      }
+
+      .cell-prefix,
+      .wo-currency {
+        color: rgba(255, 255, 255, 0.65) !important;
+      }
+
+      input,
+      .cell-number-input,
+      .wo-compact-input {
+        color: #ffffff !important;
+
+        &.text-slate-800,
+        &.text-slate-900 {
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    .item-title-input,
+    .wo-item-desc-input {
+      color: #ffffff !important;
+
+      &:focus {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
       }
     }
 
@@ -1253,11 +1414,189 @@ $glass-themes: (
       .text-slate-500 {
         color: var(--text-secondary) !important;
       }
+
+      .movement-client-row {
+        color: var(--text-secondary) !important;
+
+        span {
+          color: var(--text-secondary) !important;
+        }
+
+        .v-icon {
+          color: var(--text-muted) !important;
+        }
+      }
     }
 
     .movements-scroll-container {
       background: transparent !important;
       background-color: transparent !important;
+    }
+
+    // Filtros de Movimientos (Pills)
+    .movement-filter-pills {
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+      .filter-pill-btn {
+        color: rgba(255, 255, 255, 0.7) !important;
+
+        &:hover:not(.active) {
+          color: #ffffff !important;
+          background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        &.active {
+          background-color: rgba(255, 255, 255, 0.16) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.28) !important;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+        }
+      }
+    }
+
+    // Badges en Movimientos de Operaciones
+    .ot-chip-badge {
+      background: rgba(139, 92, 246, 0.22) !important;
+      background-color: rgba(139, 92, 246, 0.22) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(167, 139, 250, 0.45) !important;
+
+      &, span, .v-icon, * {
+        color: #ffffff !important;
+      }
+    }
+
+    .license-plate-badge,
+    .kardex-plate-badge {
+      background: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+
+      &, span, * {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+      }
+    }
+
+    .payment-method-chip {
+      color: #ffffff !important;
+
+      &.method-badge-cash {
+        background: rgba(16, 185, 129, 0.2) !important;
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+      }
+
+      &.method-badge-pichincha {
+        background: rgba(234, 179, 8, 0.2) !important;
+        background-color: rgba(234, 179, 8, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(250, 204, 21, 0.45) !important;
+      }
+
+      &.method-badge-guayaquil {
+        background: rgba(236, 72, 153, 0.2) !important;
+        background-color: rgba(236, 72, 153, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(244, 114, 182, 0.45) !important;
+      }
+
+      &.method-badge-transfer {
+        background: rgba(59, 130, 246, 0.2) !important;
+        background-color: rgba(59, 130, 246, 0.2) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(96, 165, 250, 0.45) !important;
+      }
+
+      &, span, .v-icon, * {
+        color: #ffffff !important;
+      }
+    }
+
+    // Avatares de dirección de movimiento (Ingreso, Egreso, Transferencia)
+    .movement-direction-avatar {
+      &.avatar-income {
+        background-color: rgba(34, 197, 94, 0.18) !important;
+        color: #4ade80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.35) !important;
+
+        .v-icon {
+          color: #4ade80 !important;
+        }
+      }
+
+      &.avatar-expense {
+        background-color: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+
+        .v-icon {
+          color: #f87171 !important;
+        }
+      }
+
+      &.avatar-transfer {
+        background-color: rgba(56, 189, 248, 0.18) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
+
+        .v-icon {
+          color: #38bdf8 !important;
+        }
+      }
+    }
+
+    // KPI Badges y Widgets en Operaciones
+    .kpi-icon-badge {
+      &.kpi-icon-income {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      }
+      &.kpi-icon-expense {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      }
+      &.kpi-icon-balance {
+        background-color: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+        border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      }
+      &.kpi-icon-ot {
+        background-color: rgba(139, 92, 246, 0.2) !important;
+        color: #a78bfa !important;
+        border: 1px solid rgba(139, 92, 246, 0.4) !important;
+      }
+    }
+
+    .ot-badge-mini {
+      &.ot-badge-progress {
+        background-color: rgba(245, 158, 11, 0.2) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      }
+      &.ot-badge-ready {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #a7f3d0 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      }
+    }
+
+    .section-icon-box,
+    .ot-widget-icon,
+    .account-widget-icon {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+    }
+
+    .badge-count {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
     }
 
     // 10. Corrección de Imágenes 3 y 4: Aportes de Capital y Transferencias
@@ -1380,15 +1719,31 @@ $glass-themes: (
       }
     }
 
-    // 12. Animación de Carga Shimmer en Modo Oscuro (Sin parches blancos/grises)
+    // 12. Animación de Carga Shimmer Unificada (Sin parches ni colores desiguales)
     .shimmer-line,
     .shimmer-circle,
+    .shimmer-avatar,
     .shimmer-chip,
     .shimmer-button,
-    .shimmer-box {
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.04) 75%) !important;
+    .shimmer-card,
+    .shimmer-box,
+    .shimmer-item,
+    .skeleton-box,
+    .skeleton-loader {
+      background: var(--skeleton-gradient) !important;
       background-size: 200% 100% !important;
+      animation: loading-shimmer 1.5s infinite ease-in-out !important;
       border-color: transparent !important;
+    }
+
+    .shimmer-row,
+    .skeleton-row {
+      background: transparent !important;
+      background-color: transparent !important;
+
+      td {
+        border-bottom: 1px solid var(--border-glass) !important;
+      }
     }
 
     // 13. Texto de Alto Contraste en todo Modo Oscuro
@@ -1534,6 +1889,37 @@ $glass-themes: (
   }
 
   // ====================================================================
+  // REGLA UNIVERSAL SKELETON LOADERS:
+  // Garantiza que TODOS los skeletons del sistema tengan exactamente
+  // el mismo color y brillo según el tema seleccionado (Claro u Oscuro).
+  // ====================================================================
+  .shimmer-line,
+  .shimmer-circle,
+  .shimmer-avatar,
+  .shimmer-chip,
+  .shimmer-button,
+  .shimmer-card,
+  .shimmer-box,
+  .shimmer-item,
+  .skeleton-box,
+  .skeleton-loader {
+    background: var(--skeleton-gradient) !important;
+    background-size: 200% 100% !important;
+    animation: loading-shimmer 1.5s infinite ease-in-out !important;
+    border-color: transparent !important;
+  }
+
+  .shimmer-row,
+  .skeleton-row {
+    background: transparent !important;
+    background-color: transparent !important;
+
+    td {
+      border-bottom: 1px solid var(--border-glass, rgba(148, 163, 184, 0.12)) !important;
+    }
+  }
+
+  // ====================================================================
   // REGLA B UNIVERSAL (APLICA A TODOS LOS TEMAS):
   // Si cualquier chip, badge o celda conserva un fondo claro o pastel
   // (verde claro, amarillo claro, blanco, gris claro), FORZAR el color
@@ -1574,41 +1960,20 @@ $glass-themes: (
     }
   }
 
-  // Placas de vehículos en listados
-  .kardex-plate-badge {
-    background-color: #f8fafc !important;
-    color: #0f172a !important;
-    border: 1.5px solid #cbd5e1 !important;
-
-    &, span, * {
-      color: #0f172a !important;
-      font-weight: 800 !important;
-    }
-  }
-
-  // En todas las tablas y listados (Clientes, Proveedores, Kardex, Ingresos, Saldos, Vehículos)
-  .v-data-table,
-  .v-table,
-  .table {
-    .v-chip,
-    .status-pill-clean,
-    .status-pill,
-    .badge {
-      &.bg-white,
-      &[style*="#fff"],
-      &[style*="#FFF"] {
-        color: #0f172a !important;
-
-        &, span, .v-chip__content, .v-icon, * {
-          color: #0f172a !important;
-          font-weight: 800 !important;
-        }
-      }
-    }
-  }
-
   // Corrección estricta para modales/diálogos con estilos inline fijos de color blanco en tema claro
   @if not $is-dark {
+    // Placas de vehículos en listados (tema claro)
+    .kardex-plate-badge {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1.5px solid #cbd5e1 !important;
+
+      &, span, * {
+        color: #0f172a !important;
+        font-weight: 800 !important;
+      }
+    }
+
     .v-chip[style*="color: #ffffff"],
     .v-chip[style*="color:#ffffff"],
     .v-chip[style*="color: #fff"],

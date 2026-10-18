@@ -9,7 +9,28 @@
 // 1. CORE UTILITIES, HELPERS & ANIMATIONS
 // ==========================================================================
 
-// Shimmer Skeleton Loader Animations
+// ==========================================================================
+// Sistema Unificado de Skeletons y Shimmer Loading
+// ==========================================================================
+:root,
+.v-theme--light,
+[data-theme="light"],
+[data-theme="light-glass"],
+.v-theme--light-glass {
+  --skeleton-gradient: linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%);
+  --skeleton-row-bg: transparent;
+}
+
+.v-theme--dark,
+[data-theme="dark"],
+.v-theme--dark-glass,
+[data-theme="dark-glass"],
+.v-theme--semi-dark-glass,
+[data-theme="semi-dark-glass"] {
+  --skeleton-gradient: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%);
+  --skeleton-row-bg: transparent;
+}
+
 @keyframes loading-shimmer {
   0% {
     background-position: 200% 0;
@@ -20,46 +41,87 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes shimmerAnim {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.shimmer-circle,
+.shimmer-line,
+.shimmer-avatar,
+.shimmer-chip,
+.shimmer-button,
+.shimmer-card,
+.shimmer-box,
+.shimmer-item,
+.skeleton-box,
+.skeleton-loader {
+  background: var(--skeleton-gradient) !important;
+  background-size: 200% 100% !important;
+  animation: loading-shimmer 1.5s infinite ease-in-out !important;
+  border-color: transparent !important;
+}
+
 .shimmer-circle {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+}
+
+.shimmer-avatar {
+  border-radius: 8px !important;
+  flex-shrink: 0;
 }
 
 .shimmer-line {
   height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
+  border-radius: 4px !important;
 }
 
 .shimmer-chip {
   width: 60px;
   height: 20px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
+  border-radius: 12px !important;
 }
 
 .shimmer-button {
   width: 28px;
   height: 28px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.05) 25%, rgba(var(--v-theme-on-surface), 0.12) 50%, rgba(var(--v-theme-on-surface), 0.05) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
+  border-radius: 6px !important;
 }
 
 .shimmer-card {
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.03) 25%, rgba(var(--v-theme-on-surface), 0.08) 50%, rgba(var(--v-theme-on-surface), 0.03) 75%);
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite ease-in-out;
+  border-radius: 12px !important;
+}
+
+.shimmer-box {
+  border-radius: 8px !important;
+}
+
+.shimmer-row,
+.skeleton-row {
+  background: var(--skeleton-row-bg) !important;
+  background-color: var(--skeleton-row-bg) !important;
+
+  td {
+    border-bottom: 1px solid var(--border-glass, rgba(148, 163, 184, 0.12)) !important;
+  }
 }
 
 // Global General Helpers
@@ -5065,22 +5127,21 @@
   }
 }
 
-// Shimmer Loader
+// Shimmer Loader (Unificado con variables del sistema)
 .shimmer-row {
-  background: #f8fafc;
+  background: var(--skeleton-row-bg) !important;
+  background-color: var(--skeleton-row-bg) !important;
 }
 
 .shimmer-circle {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: #e2e8f0;
+  border-radius: 10px !important;
 }
 
 .shimmer-line {
   height: 12px;
-  background: #e2e8f0;
-  border-radius: 4px;
+  border-radius: 4px !important;
 }
 
 // =======================================================
@@ -5231,8 +5292,7 @@
 .shimmer-button {
   width: 32px;
   height: 32px;
-  background: #f0f0f0;
-  border-radius: 8px;
+  border-radius: 8px !important;
 }
 
 @keyframes shimmer {
@@ -6470,9 +6530,9 @@
 .shimmer-chip,
 .shimmer-button,
 .shimmer-box {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  animation: shimmerAnim 1.5s infinite ease-in-out;
+  background: var(--skeleton-gradient) !important;
+  background-size: 200% 100% !important;
+  animation: loading-shimmer 1.5s infinite ease-in-out !important;
   border-radius: 6px;
 }
 
@@ -6587,6 +6647,7 @@
 
 // Soporte para Modo Oscuro y Temas Glassmorphism Oscuros
 .v-theme--dark,
+[data-theme="dark"],
 .v-theme--dark-glass,
 [data-theme="dark-glass"],
 .v-theme--semi-dark-glass,
@@ -6631,6 +6692,313 @@
       background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.16) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
       border: 1px solid rgba(var(--v-theme-primary), 0.35) !important;
       border-left: 5px solid rgb(var(--v-theme-primary)) !important;
+    }
+  }
+
+  // Badges y Filtros de Operaciones
+  .movement-filter-pills {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+    .filter-pill-btn {
+      color: rgba(255, 255, 255, 0.7) !important;
+
+      &:hover:not(.active) {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+      }
+
+      &.active {
+        background-color: rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.28) !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+      }
+    }
+  }
+
+  .ot-chip-badge {
+    background: rgba(139, 92, 246, 0.22) !important;
+    background-color: rgba(139, 92, 246, 0.22) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(167, 139, 250, 0.45) !important;
+
+    &, span, .v-icon, * {
+      color: #ffffff !important;
+    }
+  }
+
+  .license-plate-badge,
+  .kardex-plate-badge {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+
+    &, span, * {
+      color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  .payment-method-chip {
+    color: #ffffff !important;
+
+    &.method-badge-cash {
+      background: rgba(16, 185, 129, 0.2) !important;
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(52, 211, 153, 0.45) !important;
+    }
+
+    &.method-badge-pichincha {
+      background: rgba(234, 179, 8, 0.2) !important;
+      background-color: rgba(234, 179, 8, 0.2) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(250, 204, 21, 0.45) !important;
+    }
+
+    &.method-badge-guayaquil {
+      background: rgba(236, 72, 153, 0.2) !important;
+      background-color: rgba(236, 72, 153, 0.2) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(244, 114, 182, 0.45) !important;
+    }
+
+    &.method-badge-transfer {
+      background: rgba(59, 130, 246, 0.2) !important;
+      background-color: rgba(59, 130, 246, 0.2) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(96, 165, 250, 0.45) !important;
+    }
+
+    &, span, .v-icon, * {
+      color: #ffffff !important;
+    }
+  }
+
+  .movement-direction-avatar {
+    &.avatar-income {
+      background-color: rgba(34, 197, 94, 0.18) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(34, 197, 94, 0.35) !important;
+
+      .v-icon {
+        color: #4ade80 !important;
+      }
+    }
+
+    &.avatar-expense {
+      background-color: rgba(239, 68, 68, 0.18) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.35) !important;
+
+      .v-icon {
+        color: #f87171 !important;
+      }
+    }
+
+    &.avatar-transfer {
+      background-color: rgba(56, 189, 248, 0.18) !important;
+      color: #38bdf8 !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+
+      .v-icon {
+        color: #38bdf8 !important;
+      }
+    }
+  }
+
+  .kpi-icon-badge {
+    &.kpi-icon-income {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    }
+    &.kpi-icon-expense {
+      background-color: rgba(239, 68, 68, 0.2) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    }
+    &.kpi-icon-balance {
+      background-color: rgba(59, 130, 246, 0.2) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+    }
+    &.kpi-icon-ot {
+      background-color: rgba(139, 92, 246, 0.2) !important;
+      color: #a78bfa !important;
+      border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    }
+  }
+
+  .ot-badge-mini {
+    &.ot-badge-progress {
+      background-color: rgba(245, 158, 11, 0.2) !important;
+      color: #fde68a !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+    &.ot-badge-ready {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      color: #a7f3d0 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    }
+  }
+
+  // Tablas e inputs de items en Órdenes de Trabajo y Ventas
+  .custom-items-table,
+  .custom-sales-items-table {
+    background-color: transparent !important;
+    background: transparent !important;
+
+    thead,
+    thead tr,
+    thead tr th {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      color: rgba(255, 255, 255, 0.8) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+      }
+
+      td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .qty-stepper-mini,
+  .wo-qty-box {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+
+    .qty-mini-btn,
+    .wo-qty-btn {
+      color: rgba(255, 255, 255, 0.85) !important;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(255, 255, 255, 0.18) !important;
+        color: #ffffff !important;
+      }
+
+      &:disabled {
+        opacity: 0.3 !important;
+      }
+    }
+
+    .qty-mini-val,
+    .wo-qty-val {
+      color: #ffffff !important;
+    }
+  }
+
+  .cell-input-wrapper,
+  .wo-compact-input-wrap {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+
+    &:focus-within {
+      border-color: rgb(var(--v-theme-primary)) !important;
+      background-color: rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 0 0 1px rgb(var(--v-theme-primary)) !important;
+    }
+
+    .cell-prefix,
+    .wo-currency {
+      color: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    input,
+    .cell-number-input,
+    .wo-compact-input {
+      color: #ffffff !important;
+
+      &.text-slate-800,
+      &.text-slate-900 {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .item-title-input,
+  .wo-item-desc-input {
+    color: #ffffff !important;
+
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .meta-stock,
+  .stock-tag {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .meta-sku {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  span.bg-slate-100 {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+
+    * {
+      color: #ffffff !important;
+    }
+  }
+
+  .doc-type-badge {
+    &.badge-sri {
+      background-color: rgba(99, 102, 241, 0.25) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(129, 140, 248, 0.45) !important;
+    }
+
+    &.badge-internal {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    }
+  }
+
+  // Skeletons unificados en temas oscuros
+  .shimmer-line,
+  .shimmer-circle,
+  .shimmer-avatar,
+  .shimmer-chip,
+  .shimmer-button,
+  .shimmer-card,
+  .shimmer-box,
+  .shimmer-item,
+  .skeleton-box,
+  .skeleton-loader {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%) !important;
+    background-size: 200% 100% !important;
+    animation: loading-shimmer 1.5s infinite ease-in-out !important;
+    border-color: transparent !important;
+  }
+
+  .shimmer-row,
+  .skeleton-row {
+    background: transparent !important;
+    background-color: transparent !important;
+
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
   }
 }
