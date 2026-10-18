@@ -136,7 +136,6 @@ const saveStock = async () => {
       <!-- Header con degradado primario / teal -->
       <div
         class="product-quick-header"
-        style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 60%, #0369a1 100%) !important;"
       >
         <VBtn
           icon="ri-close-line"

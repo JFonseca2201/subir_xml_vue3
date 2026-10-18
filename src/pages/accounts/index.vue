@@ -1011,7 +1011,7 @@ onMounted(() => {
               <!-- Detalles en Card Plana -->
               <div
                 class="pa-3 rounded-xl border d-flex flex-column gap-2 text-start info-card-flat"
-                style="background-color: #f8fafc;"
+
               >
                 <div
                   v-if="accountToDelete?.bank_name"
@@ -1050,7 +1050,7 @@ onMounted(() => {
         <VDivider />
 
         <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn

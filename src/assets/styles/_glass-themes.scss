@@ -36,6 +36,12 @@ $glass-themes: (
     'shadow-glass': "0 12px 36px rgba(0, 0, 0, 0.5)",
     'shadow-glow': "0 0 25px rgba(115, 103, 240, 0.3)",
     'skeleton-gradient': "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)",
+    'bg-dialog-header': "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(12, 14, 25, 0.94)",
+    'border-dialog-header': rgba(255, 255, 255, 0.08),
+    'dialog-header-glow': "radial-gradient(circle, rgba(115, 103, 240, 0.20) 0%, transparent 70%)",
+    'dialog-avatar-bg': rgba(115, 103, 240, 0.18),
+    'dialog-avatar-border': rgba(115, 103, 240, 0.35),
+    'dialog-avatar-shadow': "0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
   ),
   'semi-dark-glass': (
     'name': 'semi-dark-glass',
@@ -63,6 +69,12 @@ $glass-themes: (
     'shadow-glass': "0 10px 32px rgba(0, 0, 0, 0.4)",
     'shadow-glow': "0 0 25px rgba(99, 102, 241, 0.25)",
     'skeleton-gradient': "linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%)",
+    'bg-dialog-header': "linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(20, 27, 47, 0.94)",
+    'border-dialog-header': rgba(255, 255, 255, 0.10),
+    'dialog-header-glow': "radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, transparent 70%)",
+    'dialog-avatar-bg': rgba(99, 102, 241, 0.20),
+    'dialog-avatar-border': rgba(129, 140, 248, 0.35),
+    'dialog-avatar-shadow': "0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
   ),
   'light-glass': (
     'name': 'light-glass',
@@ -76,10 +88,10 @@ $glass-themes: (
     'bg-hover-item': rgba(15, 23, 42, 0.05),
     'border-active': rgba(115, 103, 240, 0.45),
     'text-active': #4f46e5,
-    'text-primary': #0f172a,
-    'text-secondary': #334155,
-    'text-muted': #64748b,
-    'icon-color': #1e293b,
+    'text-primary': #000000,
+    'text-secondary': #000000,
+    'text-muted': #0f172a,
+    'icon-color': #000000,
     'border-glass': rgba(255, 255, 255, 0.70),
     'input-bg': rgba(255, 255, 255, 0.65),
     'input-border': rgba(203, 213, 225, 0.75),
@@ -90,6 +102,12 @@ $glass-themes: (
     'shadow-glass': "0 8px 30px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)",
     'shadow-glow': "0 0 20px rgba(115, 103, 240, 0.15)",
     'skeleton-gradient': "linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%)",
+    'bg-dialog-header': "linear-gradient(135deg, #7367F0 0%, #5e50ee 50%, #4839eb 100%)",
+    'border-dialog-header': rgba(255, 255, 255, 0.15),
+    'dialog-header-glow': "radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%)",
+    'dialog-avatar-bg': rgba(255, 255, 255, 0.2),
+    'dialog-avatar-border': rgba(255, 255, 255, 0.35),
+    'dialog-avatar-shadow': "0 8px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
   ),
 );
 
@@ -102,6 +120,12 @@ $glass-themes: (
   --bg-sidebar: #{map-get($theme, 'bg-sidebar')};
   --bg-header: #{map-get($theme, 'bg-header')};
   --bg-dialog: #{map-get($theme, 'bg-dialog')};
+  --bg-dialog-header: #{map-get($theme, 'bg-dialog-header')};
+  --border-dialog-header: #{map-get($theme, 'border-dialog-header')};
+  --dialog-header-glow: #{map-get($theme, 'dialog-header-glow')};
+  --dialog-avatar-bg: #{map-get($theme, 'dialog-avatar-bg')};
+  --dialog-avatar-border: #{map-get($theme, 'dialog-avatar-border')};
+  --dialog-avatar-shadow: #{map-get($theme, 'dialog-avatar-shadow')};
   --bg-active-item: #{map-get($theme, 'bg-active-item')};
   --bg-hover-item: #{map-get($theme, 'bg-hover-item')};
   --border-active: #{map-get($theme, 'border-active')};
@@ -247,11 +271,33 @@ $glass-themes: (
           border: none !important;
           box-shadow: none !important;
           transform: none !important;
+          color: var(--text-primary) !important;
+
+          &,
+          .nav-item-icon,
+          .nav-item-title,
+          .nav-group-arrow {
+            color: var(--text-primary) !important;
+            fill: var(--text-primary) !important;
+            font-weight: 700 !important;
+          }
 
           &::before {
             display: none !important;
             opacity: 0 !important;
             background: transparent !important;
+          }
+
+          &:hover {
+            background: var(--bg-hover-item) !important;
+
+            &,
+            .nav-item-icon,
+            .nav-item-title,
+            .nav-group-arrow {
+              color: var(--text-primary) !important;
+              fill: var(--text-primary) !important;
+            }
           }
         }
       }
@@ -1886,6 +1932,433 @@ $glass-themes: (
         background-color: #64748b !important;
       }
     }
+
+    // ====================================================================
+    // REGLA MAESTRA TEMA TRANSPARENTE CLARO (light-glass):
+    // "no se ven iconos, las letras e iconos en este tema deben ser de color negro"
+    // ====================================================================
+
+    // 1. Textos Generales, Títulos, Subtítulos y Contenidos
+    h1, h2, h3, h4, h5, h6,
+    .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
+    .text-subtitle-1, .text-subtitle-2, .text-title,
+    .v-card-title, .card-title,
+    .v-card-subtitle, .card-subtitle {
+      color: #000000 !important;
+    }
+
+    p,
+    .text-body-1,
+    .text-body-2,
+    .text-caption,
+    .text-medium-emphasis,
+    .text-high-emphasis,
+    .text-disabled,
+    label,
+    .v-label {
+      color: #000000 !important;
+    }
+
+    // Clases utilitarias de texto que suelen ser grises
+    .text-slate-900,
+    .text-slate-800,
+    .text-slate-700,
+    .text-slate-600,
+    .text-slate-500,
+    .text-slate-400,
+    .text-grey-darken-1,
+    .text-grey-darken-2,
+    .text-grey-darken-3,
+    .text-grey-darken-4,
+    .text-grey-600,
+    .text-grey-700,
+    .text-grey-800,
+    .text-grey-900 {
+      color: #000000 !important;
+    }
+
+    // 2. Iconos Globales en Tema Transparente Claro (100% color negro y visibles)
+    .v-icon,
+    i.v-icon,
+    svg.v-icon,
+    .v-icon__svg,
+    .v-icon__component {
+      color: #000000 !important;
+      fill: #000000 !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    // Excepciones de iconos: Botones con fondo sólido / gradiente oscuro
+    .v-btn.bg-primary .v-icon,
+    .v-btn--variant-elevated.bg-primary .v-icon,
+    .v-btn[style*="linear-gradient"] .v-icon,
+    .v-btn[style*="background: linear-gradient"] .v-icon,
+    .v-btn.bg-error .v-icon,
+    .v-btn.bg-success .v-icon,
+    .v-btn.bg-info .v-icon,
+    .v-btn.bg-warning .v-icon {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+    }
+
+    // 3. Tarjetas KPI de Dashboard (.pepa-kpi-card)
+    .pepa-kpi-card {
+      background: rgba(255, 255, 255, 0.78) !important;
+      background-color: rgba(255, 255, 255, 0.78) !important;
+      border: 1px solid rgba(0, 0, 0, 0.12) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+      color: #000000 !important;
+
+      // Desactivar overlays oscuros de Vuetify en tarjetas interactivas con click
+      .v-card__overlay,
+      .v-card__underlay {
+        display: none !important;
+        opacity: 0 !important;
+        background: transparent !important;
+      }
+
+      &::before,
+      &::after {
+        opacity: 0.12;
+      }
+
+      // Obligar a que todos los textos blancos sean negros
+      .text-white,
+      [class*="text-white"],
+      .text-caption,
+      .text-h4,
+      p,
+      div:not(.v-card__overlay):not(.v-card__underlay),
+      span:not(.v-card__overlay):not(.v-card__underlay) {
+        color: #000000 !important;
+      }
+
+      // Iconos en las tarjetas KPI (los que estaban invisibles con color="white")
+      .v-icon,
+      .v-icon[style*="white"],
+      .v-icon[style*="#fff"],
+      .v-icon[style*="#FFF"],
+      .v-icon.text-white {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      .kpi-icon-bubble {
+        background: rgba(0, 0, 0, 0.06) !important;
+        background-color: rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+
+        .v-icon, i, svg {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+      }
+
+      .kpi-badge-pill {
+        background: rgba(0, 0, 0, 0.06) !important;
+        background-color: rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+        color: #000000 !important;
+
+        .v-icon, i, svg, * {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+        }
+      }
+
+      .border-t {
+        border-color: rgba(0, 0, 0, 0.1) !important;
+      }
+    }
+
+    // 4. Tarjetas de Gráficos y Avatares de Cabecera (.mock-card)
+    .mock-card {
+      background: rgba(255, 255, 255, 0.78) !important;
+      background-color: rgba(255, 255, 255, 0.78) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      color: #000000 !important;
+
+      h3, p, span, div {
+        color: #000000 !important;
+      }
+
+      .v-avatar {
+        background-color: rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+        .v-icon, i, svg {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+        }
+      }
+    }
+
+    // Apexcharts en gráficos de Dashboard
+    .apexcharts-text,
+    .apexcharts-legend-text,
+    .apexcharts-yaxis-label,
+    .apexcharts-xaxis-label {
+      fill: #000000 !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+    }
+
+    // 5. Barra Segmentada de Módulos (Pestañas / Luxury Tabs)
+    .luxury-tabs-nav {
+      background-color: rgba(255, 255, 255, 0.8) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+      .luxury-tab-btn {
+        color: #000000 !important;
+
+        .tab-title {
+          color: #000000 !important;
+          font-weight: 700 !important;
+        }
+
+        .tab-icon-wrap .v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+        }
+
+        &.active,
+        &.active-tab {
+          color: #ffffff !important;
+
+          .tab-title {
+            color: #ffffff !important;
+          }
+
+          .tab-icon-wrap .v-icon {
+            color: #ffffff !important;
+            fill: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    // 6. Barra Lateral de Navegación (Sidebar / Navigation Drawer)
+    .layout-vertical-nav,
+    .v-navigation-drawer,
+    .sidebar {
+      background: var(--bg-sidebar) !important;
+      border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+      .nav-header .app-logo-title {
+        color: #000000 !important;
+        font-weight: 800 !important;
+      }
+
+      .nav-section-title .title-text {
+        color: #000000 !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px;
+      }
+
+      .nav-link a,
+      .nav-group-label {
+        color: #000000 !important;
+
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow,
+        .v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+        }
+
+        &:hover {
+          color: #000000 !important;
+
+          .nav-item-icon,
+          .nav-item-title,
+          .nav-group-arrow,
+          .v-icon {
+            color: #000000 !important;
+            fill: #000000 !important;
+          }
+        }
+      }
+
+      // GRUPOS ACTIVOS Y ABIERTOS (Viñetas seleccionadas / desplegadas como Ordenes de trabajo, Operaciones, etc.)
+      .nav-group.active > .nav-group-label,
+      .nav-group.open > .nav-group-label,
+      .nav-group.active.open > .nav-group-label,
+      .nav-group > .nav-group-label {
+        color: #000000 !important;
+
+        &,
+        .nav-item-icon,
+        .nav-item-title,
+        .nav-group-arrow,
+        .v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+          font-weight: 700 !important;
+        }
+
+        &:hover {
+          color: #000000 !important;
+
+          &,
+          .nav-item-icon,
+          .nav-item-title,
+          .nav-group-arrow,
+          .v-icon {
+            color: #000000 !important;
+            fill: #000000 !important;
+          }
+        }
+      }
+
+      // Hijos dentro de grupos desplegados (.nav-group-children)
+      .nav-group-children {
+        border-left: 1.5px solid rgba(0, 0, 0, 0.15) !important;
+
+        .nav-link a {
+          color: #000000 !important;
+
+          .nav-item-icon,
+          .nav-item-title {
+            color: #000000 !important;
+            fill: #000000 !important;
+          }
+        }
+      }
+
+      // Enlace activo
+      .nav-link > a.router-link-active,
+      .nav-link > a.router-link-exact-active,
+      .nav-link.router-link-active > a,
+      .nav-link.router-link-exact-active > a,
+      .v-list-item--active {
+        color: var(--text-active) !important;
+
+        .nav-item-icon,
+        .nav-item-title {
+          color: var(--text-active) !important;
+          fill: var(--text-active) !important;
+        }
+      }
+    }
+
+    // 7. Cabecera / Header Superior y Theme Switcher
+    .layout-navbar,
+    .v-app-bar {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+      .v-icon,
+      .v-btn,
+      i, svg {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 1 !important;
+      }
+
+      .theme-switcher-btn {
+        background: rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+        .v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+          opacity: 1 !important;
+        }
+      }
+    }
+
+    // 8. Buscador y Campos de Texto
+    .search-field,
+    .v-text-field,
+    .v-input {
+      input,
+      .v-field__input {
+        color: #000000 !important;
+
+        &::placeholder {
+          color: rgba(0, 0, 0, 0.65) !important;
+          opacity: 1 !important;
+        }
+      }
+
+      .v-field__prepend-inner .v-icon,
+      .v-field__append-inner .v-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 0.85 !important;
+      }
+    }
+
+    // 9. Tablas, Diálogos y Menús Flotantes
+    .v-table,
+    .v-data-table,
+    table {
+      color: #000000 !important;
+
+      thead th,
+      .v-data-table__th {
+        color: #000000 !important;
+        font-weight: 700 !important;
+      }
+
+      tbody td,
+      .v-data-table__td {
+        color: #000000 !important;
+
+        span, div, a {
+          color: #000000;
+        }
+
+        .v-icon {
+          color: #000000 !important;
+          fill: #000000 !important;
+        }
+      }
+    }
+
+    .v-overlay,
+    .v-menu,
+    .v-list {
+      .v-list-item-title,
+      .v-list-item-subtitle,
+      .v-list-item,
+      .v-list-item__prepend .v-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+      }
+    }
+
+    // 10. Cajas de Iconos en Operaciones, Taller y Finanzas
+    .section-icon-box,
+    .ot-widget-icon,
+    .account-widget-icon,
+    .kpi-icon-badge {
+      background-color: rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+      .v-icon, i, svg {
+        color: #000000 !important;
+        fill: #000000 !important;
+      }
+    }
+
+    .badge-count {
+      background-color: rgba(0, 0, 0, 0.06) !important;
+      color: #000000 !important;
+      border: 1px solid rgba(0, 0, 0, 0.14) !important;
+      font-weight: 700 !important;
+    }
   }
 
   // ====================================================================
@@ -2039,7 +2512,11 @@ $glass-themes: (
   .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
   .v-overlay--active .v-dialog > .v-card,
   .v-overlay--active .v-card.modal-glass,
-  .v-dialog.v-overlay--active .v-card {
+  .v-overlay--active.v-dialog .v-card,
+  .v-dialog.v-overlay--active .v-card,
+  .v-dialog .v-card,
+  .v-dialog .custom-dialog-card,
+  .custom-dialog-card {
     background: var(--bg-dialog) !important;
     backdrop-filter: var(--blur-glass) !important;
     -webkit-backdrop-filter: var(--blur-glass) !important;
@@ -2047,9 +2524,15 @@ $glass-themes: (
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), var(--shadow-glow) !important;
     color: var(--text-primary) !important;
 
+    &.bg-white,
+    &.bg-slate-50,
+    &.bg-slate-100 {
+      background: var(--bg-dialog) !important;
+      background-color: var(--bg-dialog) !important;
+    }
+
     .v-card-title,
     .v-card-text,
-    .v-card-actions,
     .v-card-item {
       background: transparent !important;
       background-color: transparent !important;
@@ -2068,35 +2551,321 @@ $glass-themes: (
       }
     }
 
+    .v-card-actions,
+    .sticky-dialog-footer {
+      background: var(--bg-dialog) !important;
+      background-color: var(--bg-dialog) !important;
+      border-top: 1px solid var(--border-glass) !important;
+      box-shadow: none !important;
+      color: var(--text-primary) !important;
+
+      &.bg-white,
+      &[class*="bg-white"],
+      &[class*="bg-grey-lighten"],
+      &[class*="bg-slate-"],
+      &.bg-surface {
+        background: var(--bg-dialog) !important;
+        background-color: var(--bg-dialog) !important;
+      }
+    }
+
     @if $is-dark {
-      .bg-white:not(.v-btn):not(.v-chip.bg-white):not(.status-pill-clean.bg-white):not(.status-pill.bg-white):not(.badge.bg-white),
+      .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge),
       .bg-slate-50,
       .bg-slate-100,
+      .bg-slate-200,
       .bg-grey-lighten-5,
       .bg-grey-lighten-4,
-      .bg-grey-lighten-3 {
+      .bg-grey-lighten-3,
+      .bg-grey-100,
+      .bg-gray-50,
+      .bg-gray-100,
+      .bg-gray-200,
+      .bg-purple-lighten-5,
+      [class*="bg-purple-lighten"],
+      [class*="bg-indigo-lighten"],
+      [class*="bg-teal-lighten"],
+      [class*="bg-blue-lighten"],
+      .bg-blue-50,
+      .info-card-flat,
+      .stat-glass-card,
+      .modern-section-panel,
+      .totals-summary-card,
+      .spec-badge-card,
+      .spec-item,
+      .dialog-body-content,
+      .movements-scroll-container,
+      .operations-date-header,
+      .operations-movement-item {
         background: rgba(255, 255, 255, 0.05) !important;
         background-color: rgba(255, 255, 255, 0.05) !important;
         border-color: var(--border-glass) !important;
         color: var(--text-primary) !important;
       }
 
+      [style*="background-color: #ffffff"],
+      [style*="background-color: #fff"],
+      [style*="background: white"],
+      [style*="background-color: white"],
+      [style*="background-color: #f8fafc"],
+      [style*="background-color: #fafafa"],
+      [style*="background-color: #fbfbfb"],
+      [style*="background-color: #f1f5f9"],
+      [style*="background-color: #f0fdf4"],
+      [style*="background-color: #f0f1ff"],
+      [style*="linear-gradient(135deg, #f8fafc"],
+      [style*="linear-gradient(135deg, #f0fdf4"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--border-glass) !important;
+        color: var(--text-primary) !important;
+      }
+
+      table, .v-table {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+
+        thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
+          background: rgba(255, 255, 255, 0.06) !important;
+          background-color: rgba(255, 255, 255, 0.06) !important;
+          color: var(--text-primary) !important;
+          border-color: var(--border-glass) !important;
+        }
+
+        tbody tr, tbody td {
+          background: transparent !important;
+          color: var(--text-primary) !important;
+          border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        tbody tr:hover td {
+          background: rgba(255, 255, 255, 0.04) !important;
+        }
+      }
+
+      .v-field.bg-white,
+      .v-field--variant-outlined.bg-white,
+      .v-input.bg-white,
+      .v-field[class*="bg-"] {
+        background: rgba(255, 255, 255, 0.06) !important;
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: var(--border-glass) !important;
+        color: var(--text-primary) !important;
+      }
+
+      .bg-emerald-50, [class*="bg-emerald-50"] {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        color: #34d399 !important;
+      }
+
+      .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+        color: #fbbf24 !important;
+      }
+
+      .bg-red-50, [class*="bg-red-50"] {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        color: #f87171 !important;
+      }
+
+      [class*="border-purple-lighten"],
+      [class*="border-indigo-lighten"],
+      [class*="border-teal-lighten"],
+      [class*="border-slate-"],
+      [class*="border-grey-"] {
+        border-color: var(--border-glass) !important;
+      }
+
+      [class*="text-indigo-darken"],
+      [class*="text-purple-darken"],
+      [class*="text-blue-darken"],
       .text-slate-900,
       .text-slate-800,
       .text-slate-700,
       .text-grey-darken-4,
-      .text-grey-darken-3 {
+      .text-grey-darken-3,
+      .module-name,
+      .detail-value {
         color: var(--text-primary) !important;
       }
 
       .text-slate-600,
-      .text-slate-500 {
+      .text-slate-500,
+      .text-grey-darken-2,
+      .text-grey-darken-1,
+      .module-subtitle,
+      .detail-label {
         color: var(--text-secondary) !important;
+      }
+
+      .sku-badge,
+      .quantity-circle {
+        background: rgba(255, 255, 255, 0.10) !important;
+        color: var(--text-primary) !important;
+      }
+
+      .sri-security-ribbon {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
+        border: 1.5px solid rgba(14, 165, 233, 0.3) !important;
+
+        .sri-shield-avatar {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
       }
 
       .v-card {
         background: rgba(255, 255, 255, 0.04) !important;
         border: 1px solid var(--border-glass) !important;
+      }
+
+      // ==================================================================
+      // UNIFICACIÓN DE CABECERAS DE VDIALOGS EN TEMAS OSCUROS GLASS
+      // ==================================================================
+      .custom-dialog-header-primary,
+      .custom-dialog-header,
+      .custom-dialog-header-danger,
+      .custom-dialog-header-error,
+      .custom-dialog-header-warning,
+      .custom-dialog-header-info,
+      .custom-dialog-header-success,
+      .custom-dialog-header-secondary,
+      .dialog-header-banner,
+      .sale-dialog-header-banner,
+      .product-quick-header,
+      .sri-progress-header,
+      .v-card-title.bg-primary,
+      .v-card-item.bg-primary,
+      & > .bg-primary:first-child,
+      & > div:first-child[class*="custom-dialog-header"],
+      & > div:first-child[class*="dialog-header"] {
+        background: var(--bg-dialog-header) !important;
+        border-bottom: 1px solid var(--border-dialog-header, var(--border-glass)) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        color: #ffffff !important;
+
+        &::before {
+          background: var(--dialog-header-glow) !important;
+        }
+
+        .custom-dialog-avatar,
+        .header-avatar-badge,
+        .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
+          background: var(--dialog-avatar-bg) !important;
+          border: 1.5px solid var(--dialog-avatar-border) !important;
+          box-shadow: var(--dialog-avatar-shadow) !important;
+
+          .v-icon {
+            color: #ffffff !important;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
+          }
+        }
+
+        .custom-dialog-title,
+        .dialog-title,
+        h3, h2, h4,
+        .v-card-title {
+          color: #ffffff !important;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .custom-dialog-subtitle,
+        .dialog-subtitle,
+        p,
+        .text-caption {
+          color: var(--text-secondary) !important;
+          opacity: 0.9 !important;
+        }
+
+        .custom-dialog-close-btn,
+        .v-dialog-close-btn {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border: 1px solid rgba(255, 255, 255, 0.16) !important;
+          color: #ffffff !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.20) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            color: #ffffff !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Reglas globales para cabeceras de diálogos y overlays activos (para dialogs con selectores anidados o directos)
+  @if $is-dark {
+    .custom-dialog-header-primary,
+    .custom-dialog-header,
+    .custom-dialog-header-danger,
+    .custom-dialog-header-error,
+    .custom-dialog-header-warning,
+    .custom-dialog-header-info,
+    .custom-dialog-header-success,
+    .custom-dialog-header-secondary,
+    .dialog-header-banner,
+    .sale-dialog-header-banner,
+    .product-quick-header,
+    .sri-progress-header,
+    .v-dialog .v-card-title.bg-primary,
+    .v-dialog .v-card-item.bg-primary,
+    .custom-dialog-card .v-card-title.bg-primary,
+    .custom-dialog-card .v-card-item.bg-primary,
+    .v-dialog .v-card > .bg-primary:first-child,
+    .custom-dialog-card > .bg-primary:first-child {
+      background: var(--bg-dialog-header) !important;
+      border-bottom: 1px solid var(--border-dialog-header, var(--border-glass)) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+      color: #ffffff !important;
+
+      &::before {
+        background: var(--dialog-header-glow) !important;
+      }
+
+      .custom-dialog-avatar,
+      .header-avatar-badge,
+      .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
+        background: var(--dialog-avatar-bg) !important;
+        border: 1.5px solid var(--dialog-avatar-border) !important;
+        box-shadow: var(--dialog-avatar-shadow) !important;
+
+        .v-icon {
+          color: #ffffff !important;
+          filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
+        }
+      }
+
+      .custom-dialog-title,
+      .dialog-title,
+      h3, h2, h4,
+      .v-card-title {
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+      }
+
+      .custom-dialog-subtitle,
+      .dialog-subtitle,
+      p,
+      .text-caption {
+        color: var(--text-secondary) !important;
+        opacity: 0.9 !important;
+      }
+
+      .custom-dialog-close-btn,
+      .v-dialog-close-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.20) !important;
+          border-color: rgba(255, 255, 255, 0.35) !important;
+          color: #ffffff !important;
+        }
       }
     }
   }
@@ -2198,4 +2967,536 @@ $glass-themes: (
     @include apply-glass-dialog-rules($theme);
   }
 }
+
+// --------------------------------------------------------------------------
+// 7. CABECERAS DE DIÁLOGOS PARA EL TEMA OSCURO ESTÁNDAR (dark)
+// --------------------------------------------------------------------------
+[data-theme="dark"],
+body[data-theme="dark"],
+.v-theme--dark {
+  --bg-dialog: #2F3349;
+  --bg-surface: #2F3349;
+  --border-glass: rgba(234, 234, 255, 0.12);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(234, 234, 255, 0.72);
+  --bg-dialog-header: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349;
+  --border-dialog-header: rgba(234, 234, 255, 0.12);
+
+  .v-overlay--active.v-dialog > .v-overlay__content,
+  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
+  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active .v-card.modal-glass,
+  .v-overlay--active.v-dialog .v-card,
+  .v-dialog.v-overlay--active .v-card,
+  .v-dialog .v-card,
+  .v-dialog .custom-dialog-card,
+  .custom-dialog-card {
+    background: #2F3349 !important;
+    background-color: #2F3349 !important;
+    border: 1px solid rgba(234, 234, 255, 0.12) !important;
+    color: #ffffff !important;
+
+    &.bg-white,
+    &.bg-slate-50,
+    &.bg-slate-100 {
+      background: #2F3349 !important;
+      background-color: #2F3349 !important;
+    }
+
+    .v-card-title,
+    .v-card-text,
+    .v-card-item {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: rgba(234, 234, 255, 0.12) !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+
+      &.bg-white,
+      &.bg-slate-50,
+      &.bg-slate-100,
+      &.bg-grey-lighten-5,
+      &.bg-grey-lighten-4,
+      &.bg-grey-lighten-3 {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+    }
+
+    .v-card-actions,
+    .sticky-dialog-footer {
+      background: #2F3349 !important;
+      background-color: #2F3349 !important;
+      border-top: 1px solid rgba(234, 234, 255, 0.12) !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+
+      &.bg-white,
+      &[class*="bg-white"],
+      &[class*="bg-grey-lighten"],
+      &[class*="bg-slate-"],
+      &.bg-surface {
+        background: #2F3349 !important;
+        background-color: #2F3349 !important;
+      }
+    }
+
+    .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge),
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-slate-200,
+    .bg-grey-lighten-5,
+    .bg-grey-lighten-4,
+    .bg-grey-lighten-3,
+    .bg-grey-100,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-gray-200,
+    .bg-purple-lighten-5,
+    .bg-blue-50,
+    .info-card-flat,
+    .stat-glass-card,
+    .modern-section-panel,
+    .totals-summary-card,
+    .spec-badge-card,
+    .spec-item,
+    .dialog-body-content,
+    .movements-scroll-container,
+    .operations-date-header,
+    .operations-movement-item {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(234, 234, 255, 0.12) !important;
+      color: #ffffff !important;
+    }
+
+    [style*="background-color: #ffffff"],
+    [style*="background-color: #fff"],
+    [style*="background: white"],
+    [style*="background-color: white"],
+    [style*="background-color: #f8fafc"],
+    [style*="background-color: #fafafa"],
+    [style*="background-color: #fbfbfb"],
+    [style*="background-color: #f1f5f9"],
+    [style*="background-color: #f0fdf4"],
+    [style*="background-color: #f0f1ff"],
+    [style*="linear-gradient(135deg, #f8fafc"],
+    [style*="linear-gradient(135deg, #f0fdf4"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(234, 234, 255, 0.12) !important;
+      color: #ffffff !important;
+    }
+
+    table, .v-table {
+      background: transparent !important;
+      background-color: transparent !important;
+      color: #ffffff !important;
+
+      thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
+        background: rgba(255, 255, 255, 0.06) !important;
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #ffffff !important;
+        border-color: rgba(234, 234, 255, 0.12) !important;
+      }
+
+      tbody tr, tbody td {
+        background: transparent !important;
+        color: #ffffff !important;
+        border-color: rgba(234, 234, 255, 0.08) !important;
+      }
+
+      tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.04) !important;
+      }
+    }
+
+    .v-field.bg-white,
+    .v-field--variant-outlined.bg-white,
+    .v-input.bg-white,
+    .v-field[class*="bg-"] {
+      background: rgba(255, 255, 255, 0.06) !important;
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      border-color: rgba(234, 234, 255, 0.14) !important;
+      color: #ffffff !important;
+    }
+
+    .bg-emerald-50, [class*="bg-emerald-50"] {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: rgba(16, 185, 129, 0.3) !important;
+      color: #34d399 !important;
+    }
+
+    .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
+      background: rgba(245, 158, 11, 0.15) !important;
+      border-color: rgba(245, 158, 11, 0.3) !important;
+      color: #fbbf24 !important;
+    }
+
+    .bg-red-50, [class*="bg-red-50"] {
+      background: rgba(239, 68, 68, 0.15) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      color: #f87171 !important;
+    }
+
+    [class*="border-purple-lighten"],
+    [class*="border-indigo-lighten"],
+    [class*="border-teal-lighten"],
+    [class*="border-slate-"],
+    [class*="border-grey-"] {
+      border-color: rgba(234, 234, 255, 0.12) !important;
+    }
+
+    [class*="text-indigo-darken"],
+    [class*="text-purple-darken"],
+    [class*="text-blue-darken"],
+    .text-slate-900,
+    .text-slate-800,
+    .text-slate-700,
+    .text-grey-darken-4,
+    .text-grey-darken-3,
+    .module-name,
+    .detail-value {
+      color: #ffffff !important;
+    }
+
+    .text-slate-600,
+    .text-slate-500,
+    .text-grey-darken-2,
+    .text-grey-darken-1,
+    .module-subtitle,
+    .detail-label {
+      color: rgba(234, 234, 255, 0.72) !important;
+    }
+
+    .sku-badge,
+    .quantity-circle {
+      background: rgba(255, 255, 255, 0.10) !important;
+      color: #ffffff !important;
+    }
+
+    .sri-security-ribbon {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
+      border: 1.5px solid rgba(14, 165, 233, 0.3) !important;
+
+      .sri-shield-avatar {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+
+    .v-card {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid rgba(234, 234, 255, 0.12) !important;
+      color: #ffffff !important;
+    }
+  }
+  .custom-dialog-header-primary,
+  .custom-dialog-header,
+  .custom-dialog-header-danger,
+  .custom-dialog-header-error,
+  .custom-dialog-header-warning,
+  .custom-dialog-header-info,
+  .custom-dialog-header-success,
+  .custom-dialog-header-secondary,
+  .dialog-header-banner,
+  .sale-dialog-header-banner,
+  .product-quick-header,
+  .sri-progress-header,
+  .v-dialog .v-card-title.bg-primary,
+  .v-dialog .v-card-item.bg-primary,
+  .custom-dialog-card .v-card-title.bg-primary,
+  .custom-dialog-card .v-card-item.bg-primary,
+  .v-dialog .v-card > .bg-primary:first-child,
+  .custom-dialog-card > .bg-primary:first-child,
+  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card > div:first-child[class*="dialog-header"] {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349 !important;
+    border-bottom: 1px solid rgba(234, 234, 255, 0.12) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    color: #ffffff !important;
+
+    &::before {
+      background: radial-gradient(circle, rgba(102, 108, 255, 0.16) 0%, transparent 70%) !important;
+    }
+
+    .custom-dialog-avatar,
+    .header-avatar-badge,
+    .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
+      background: rgba(102, 108, 255, 0.16) !important;
+      border: 1.5px solid rgba(102, 108, 255, 0.35) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
+      }
+    }
+
+    .custom-dialog-title,
+    .dialog-title,
+    h3, h2, h4,
+    .v-card-title {
+      color: #ffffff !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .custom-dialog-subtitle,
+    .dialog-subtitle,
+    p,
+    .text-caption {
+      color: rgba(234, 234, 255, 0.72) !important;
+      opacity: 0.9 !important;
+    }
+
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.16) !important;
+      color: #ffffff !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.20) !important;
+        border-color: rgba(255, 255, 255, 0.35) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+// --------------------------------------------------------------------------
+// 8. AJUSTES PARA TEMAS OSCUROS (EDICIÓN RÁPIDA, ESTADOS SRI, ETC.)
+// --------------------------------------------------------------------------
+.v-theme--dark,
+[data-theme="dark"],
+.v-theme--dark-glass,
+[data-theme="dark-glass"],
+.v-theme--semi-dark-glass,
+[data-theme="semi-dark-glass"],
+body[data-theme="dark"],
+body[data-theme="dark-glass"],
+body[data-theme="semi-dark-glass"],
+.v-overlay.v-theme--dark,
+.v-overlay.v-theme--dark-glass,
+.v-overlay.v-theme--semi-dark-glass,
+.v-overlay[class*="v-theme--dark"],
+.v-overlay[class*="semi-dark-glass"] {
+
+  // --- A. SRI STATUS TAGS (Listado de Ventas) ---
+  .sri-status-tag {
+    &.sri-tag-creada {
+      background-color: rgba(59, 130, 246, 0.18) !important;
+      color: #93c5fd !important;
+      border-color: rgba(59, 130, 246, 0.35) !important;
+
+      .sri-tag-text {
+        color: #93c5fd !important;
+      }
+
+      .v-icon {
+        color: #60a5fa !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(59, 130, 246, 0.28) !important;
+        border-color: rgba(59, 130, 246, 0.55) !important;
+      }
+    }
+
+    &.sri-tag-autorizada {
+      background-color: rgba(16, 185, 129, 0.18) !important;
+      color: #6ee7b7 !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+
+      .sri-tag-text {
+        color: #6ee7b7 !important;
+      }
+
+      .v-icon {
+        color: #34d399 !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(16, 185, 129, 0.28) !important;
+        border-color: rgba(16, 185, 129, 0.55) !important;
+      }
+    }
+
+    &.sri-tag-enviada {
+      background-color: rgba(14, 165, 233, 0.18) !important;
+      color: #7dd3fc !important;
+      border-color: rgba(14, 165, 233, 0.35) !important;
+
+      .sri-tag-text {
+        color: #7dd3fc !important;
+      }
+
+      .v-icon {
+        color: #38bdf8 !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(14, 165, 233, 0.28) !important;
+        border-color: rgba(14, 165, 233, 0.55) !important;
+      }
+    }
+
+    &.sri-tag-firmada {
+      background-color: rgba(124, 58, 237, 0.18) !important;
+      color: #c4b5fd !important;
+      border-color: rgba(124, 58, 237, 0.35) !important;
+
+      .sri-tag-text {
+        color: #c4b5fd !important;
+      }
+
+      .v-icon {
+        color: #a78bfa !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(124, 58, 237, 0.28) !important;
+        border-color: rgba(124, 58, 237, 0.55) !important;
+      }
+    }
+
+    &.sri-tag-devuelta {
+      background-color: rgba(245, 158, 11, 0.18) !important;
+      color: #fde047 !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
+
+      .sri-tag-text {
+        color: #fde047 !important;
+      }
+
+      .v-icon {
+        color: #fbbf24 !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(245, 158, 11, 0.28) !important;
+        border-color: rgba(245, 158, 11, 0.55) !important;
+      }
+    }
+
+    &.sri-tag-rechazada {
+      background-color: rgba(239, 68, 68, 0.18) !important;
+      color: #fca5a5 !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
+
+      .sri-tag-text {
+        color: #fca5a5 !important;
+      }
+
+      .v-icon {
+        color: #f87171 !important;
+      }
+
+      &.is-interactive:hover {
+        background-color: rgba(239, 68, 68, 0.28) !important;
+        border-color: rgba(239, 68, 68, 0.55) !important;
+      }
+    }
+  }
+
+  // --- B. EDICIÓN RÁPIDA DE PRODUCTO (ProductQuickEditDialog) ---
+  .quick-edit-nav-pills {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+    .nav-pill-item {
+      color: rgba(255, 255, 255, 0.70) !important;
+
+      &:hover {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.10) !important;
+      }
+
+      &.active {
+        background-color: var(--v-theme-primary, #7367f0) !important;
+        background: var(--v-theme-primary, #7367f0) !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+
+        .v-icon,
+        span {
+          color: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  .quick-edit-section {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.16) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .section-header {
+      .section-title-text {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .quick-stock-stepper-box {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+  }
+
+  .quick-adjustment-chips {
+    .adj-chip.adj-minus {
+      background-color: rgba(239, 68, 68, 0.18) !important;
+      color: #fca5a5 !important;
+      border-color: rgba(239, 68, 68, 0.35) !important;
+
+      &:hover {
+        background-color: rgba(239, 68, 68, 0.28) !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .adj-chip.adj-plus {
+      background-color: rgba(16, 185, 129, 0.18) !important;
+      color: #6ee7b7 !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+
+      &:hover {
+        background-color: rgba(16, 185, 129, 0.28) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  .price-calc-summary-box {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+    .calc-row {
+      color: rgba(255, 255, 255, 0.72) !important;
+
+      strong {
+        color: #ffffff !important;
+      }
+
+      &.calc-highlight {
+        border-top: 1px dashed rgba(255, 255, 255, 0.15) !important;
+        color: #ffffff !important;
+
+        .calc-final-price {
+          color: #4ade80 !important;
+        }
+      }
+    }
+  }
+}
+
 

@@ -1180,7 +1180,7 @@ const tecnicosOptions = computed(() => {
                   color="white"
                 />
               </div>
-              <span class="kpi-badge-pill" style="background: rgba(0,0,0,0.18);">
+              <span class="kpi-badge-pill">
                 <VIcon icon="ri-error-warning-line" size="12" />
                 Reponer Stock
               </span>
@@ -2065,8 +2065,7 @@ const tecnicosOptions = computed(() => {
         class="rounded-xl overflow-hidden"
       >
         <div
-          class="pa-4 d-flex justify-space-between align-center text-white"
-          style="background: linear-gradient(135deg, #7367F0 0%, #4834D4 100%);"
+          class="custom-dialog-header-primary pa-4 d-flex justify-space-between align-center text-white"
         >
           <div class="d-flex align-center gap-3">
             <VAvatar

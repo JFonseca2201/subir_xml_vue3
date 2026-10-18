@@ -2304,7 +2304,7 @@ onMounted(() => {
               :src="getAttachmentUrl(currentActivePhoto)"
               :alt="currentActivePhoto?.file_name || 'Comprobante'"
               class="img-fluid rounded-xl elevation-4 border"
-              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: white;"
+              style="max-width: 100%; max-height: 68vh; object-fit: contain; background: transparent;"
             >
           </div>
 
@@ -2365,7 +2365,7 @@ onMounted(() => {
         </VCardText>
 
         <!-- Footer del Visor -->
-        <VCardActions class="pa-4 bg-white border-t d-flex justify-space-between align-center flex-none">
+        <VCardActions class="pa-4 bg-surface border-t d-flex justify-space-between align-center flex-none">
           <div class="text-caption text-medium-emphasis font-weight-medium">
             <span v-if="currentActivePhoto?.file_size">
               Tamaño: {{ (currentActivePhoto.file_size / 1024).toFixed(1) }} KB

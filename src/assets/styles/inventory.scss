@@ -6652,6 +6652,318 @@
 [data-theme="dark-glass"],
 .v-theme--semi-dark-glass,
 [data-theme="semi-dark-glass"] {
+  // Clases específicas de modales y tarjetas planas en temas oscuros
+  .info-card-flat,
+  .stat-glass-card,
+  .modern-section-panel,
+  .totals-summary-card,
+  .spec-badge-card,
+  .spec-item,
+  .dialog-body-content,
+  .movements-scroll-container,
+  .operations-date-header,
+  .operations-movement-item,
+  .sticky-dialog-footer {
+    background: var(--bg-surface, rgba(255, 255, 255, 0.05)) !important;
+    background-color: var(--bg-surface, rgba(255, 255, 255, 0.05)) !important;
+    border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+    color: #ffffff !important;
+  }
+
+  // Tarjetas de diálogo completas
+  .v-overlay--active.v-dialog > .v-overlay__content,
+  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
+  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active .v-card.modal-glass,
+  .v-overlay--active.v-dialog .v-card,
+  .v-dialog.v-overlay--active .v-card,
+  .v-dialog .v-card,
+  .v-dialog .custom-dialog-card,
+  .custom-dialog-card {
+    background: var(--bg-dialog, #2F3349) !important;
+    background-color: var(--bg-dialog, #2F3349) !important;
+    border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+    color: #ffffff !important;
+
+    &.bg-white,
+    &.bg-slate-50,
+    &.bg-slate-100 {
+      background: var(--bg-dialog, #2F3349) !important;
+      background-color: var(--bg-dialog, #2F3349) !important;
+    }
+
+    .v-card-title,
+    .v-card-text,
+    .v-card-item {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+
+      &.bg-white,
+      &.bg-slate-50,
+      &.bg-slate-100,
+      &.bg-grey-lighten-5,
+      &.bg-grey-lighten-4,
+      &.bg-grey-lighten-3 {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+    }
+
+    .v-card-actions,
+    .sticky-dialog-footer {
+      background: var(--bg-dialog, #2F3349) !important;
+      background-color: var(--bg-dialog, #2F3349) !important;
+      border-top: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      box-shadow: none !important;
+      color: #ffffff !important;
+
+      &.bg-white,
+      &[class*="bg-white"],
+      &[class*="bg-grey-lighten"],
+      &[class*="bg-slate-"],
+      &.bg-surface {
+        background: var(--bg-dialog, #2F3349) !important;
+        background-color: var(--bg-dialog, #2F3349) !important;
+      }
+    }
+
+    .bg-white:not(.v-btn--elevated):not(.v-btn--flat):not(.v-chip--color):not(.status-pill):not(.badge),
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-slate-200,
+    .bg-grey-lighten-5,
+    .bg-grey-lighten-4,
+    .bg-grey-lighten-3,
+    .bg-grey-100,
+    .bg-gray-50,
+    .bg-gray-100,
+    .bg-gray-200,
+    .bg-purple-lighten-5,
+    .bg-blue-50,
+    .info-card-flat,
+    .stat-glass-card,
+    .modern-section-panel,
+    .totals-summary-card,
+    .spec-badge-card,
+    .spec-item,
+    .dialog-body-content,
+    .movements-scroll-container,
+    .operations-date-header,
+    .operations-movement-item {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      color: #ffffff !important;
+    }
+
+    [style*="background-color: #ffffff"],
+    [style*="background-color: #fff"],
+    [style*="background: white"],
+    [style*="background-color: white"],
+    [style*="background-color: #f8fafc"],
+    [style*="background-color: #fafafa"],
+    [style*="background-color: #fbfbfb"],
+    [style*="background-color: #f1f5f9"],
+    [style*="background-color: #f0fdf4"],
+    [style*="background-color: #f0f1ff"],
+    [style*="linear-gradient(135deg, #f8fafc"],
+    [style*="linear-gradient(135deg, #f0fdf4"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      color: #ffffff !important;
+    }
+
+    table, .v-table {
+      background: transparent !important;
+      background-color: transparent !important;
+      color: #ffffff !important;
+
+      thead, thead tr, thead th, thead[class*="bg-"], tr[class*="bg-"], tr[class*="bg-slate"], tr[class*="bg-grey"] {
+        background: rgba(255, 255, 255, 0.06) !important;
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #ffffff !important;
+        border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      }
+
+      tbody tr, tbody td {
+        background: transparent !important;
+        color: #ffffff !important;
+        border-color: rgba(234, 234, 255, 0.08) !important;
+      }
+
+      tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.04) !important;
+      }
+    }
+
+    .v-field.bg-white,
+    .v-field--variant-outlined.bg-white,
+    .v-input.bg-white,
+    .v-field[class*="bg-"] {
+      background: rgba(255, 255, 255, 0.06) !important;
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      border-color: var(--border-glass, rgba(234, 234, 255, 0.14)) !important;
+      color: #ffffff !important;
+    }
+
+    .bg-emerald-50, [class*="bg-emerald-50"] {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: rgba(16, 185, 129, 0.3) !important;
+      color: #34d399 !important;
+    }
+
+    .bg-amber-50, [class*="bg-amber-50"], .bg-yellow-50, [class*="bg-yellow-50"] {
+      background: rgba(245, 158, 11, 0.15) !important;
+      border-color: rgba(245, 158, 11, 0.3) !important;
+      color: #fbbf24 !important;
+    }
+
+    .bg-red-50, [class*="bg-red-50"] {
+      background: rgba(239, 68, 68, 0.15) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      color: #f87171 !important;
+    }
+
+    [class*="border-purple-lighten"],
+    [class*="border-indigo-lighten"],
+    [class*="border-teal-lighten"],
+    [class*="border-slate-"],
+    [class*="border-grey-"] {
+      border-color: var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+    }
+
+    [class*="text-indigo-darken"],
+    [class*="text-purple-darken"],
+    [class*="text-blue-darken"],
+    .text-slate-900,
+    .text-slate-800,
+    .text-slate-700,
+    .text-grey-darken-4,
+    .text-grey-darken-3,
+    .module-name,
+    .detail-value {
+      color: #ffffff !important;
+    }
+
+    .text-slate-600,
+    .text-slate-500,
+    .text-grey-darken-2,
+    .text-grey-darken-1,
+    .module-subtitle,
+    .detail-label {
+      color: rgba(234, 234, 255, 0.72) !important;
+    }
+
+    .sku-badge,
+    .quantity-circle {
+      background: rgba(255, 255, 255, 0.10) !important;
+      color: #ffffff !important;
+    }
+
+    .sri-security-ribbon {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
+      border: 1.5px solid rgba(14, 165, 233, 0.3) !important;
+
+      .sri-shield-avatar {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      }
+    }
+
+    .v-card {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid var(--border-glass, rgba(234, 234, 255, 0.12)) !important;
+      color: #ffffff !important;
+    }
+  }
+  // Unificación de cabeceras de diálogos en temas oscuros
+  .custom-dialog-header-primary,
+  .custom-dialog-header,
+  .custom-dialog-header-danger,
+  .custom-dialog-header-error,
+  .custom-dialog-header-warning,
+  .custom-dialog-header-info,
+  .custom-dialog-header-success,
+  .custom-dialog-header-secondary,
+  .dialog-header-banner,
+  .sale-dialog-header-banner,
+  .product-quick-header,
+  .sri-progress-header,
+  .v-dialog .v-card-title.bg-primary,
+  .v-dialog .v-card-item.bg-primary,
+  .custom-dialog-card .v-card-title.bg-primary,
+  .custom-dialog-card .v-card-item.bg-primary,
+  .v-dialog .v-card > .bg-primary:first-child,
+  .custom-dialog-card > .bg-primary:first-child,
+  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card > div:first-child[class*="dialog-header"] {
+    background: var(--bg-dialog-header, linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%), #2F3349) !important;
+    border-bottom: 1px solid var(--border-dialog-header, rgba(255, 255, 255, 0.12)) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    color: #ffffff !important;
+
+    &::before {
+      background: var(--dialog-header-glow, radial-gradient(circle, rgba(102, 108, 255, 0.16) 0%, transparent 70%)) !important;
+    }
+
+    .custom-dialog-avatar,
+    .header-avatar-badge,
+    .v-avatar:not(.v-avatar--image):not([class*="bg-white"]) {
+      background: var(--dialog-avatar-bg, rgba(102, 108, 255, 0.16)) !important;
+      border: 1.5px solid var(--dialog-avatar-border, rgba(102, 108, 255, 0.35)) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+
+      .v-icon {
+        color: #ffffff !important;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) !important;
+      }
+    }
+
+    .custom-dialog-title,
+    .dialog-title,
+    h3, h2, h4,
+    .v-card-title {
+      color: #ffffff !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .custom-dialog-subtitle,
+    .dialog-subtitle,
+    p,
+    .text-caption {
+      color: var(--text-secondary, rgba(234, 234, 255, 0.72)) !important;
+      opacity: 0.9 !important;
+    }
+
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.16) !important;
+      color: #ffffff !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.20) !important;
+        border-color: rgba(255, 255, 255, 0.35) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  // Corregir modal de progreso SRI en modo oscuro
+  .sri-progress-card {
+    background: var(--bg-dialog, #30334E) !important;
+    border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.12)) !important;
+
+    .sri-progress-bar-container {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.10)) !important;
+    }
+  }
+
   .transfer-table {
     tbody {
       tr.transfer-date-header-row {
@@ -6999,6 +7311,193 @@
 
     td {
       border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+}
+
+// ====================================================================
+// SOPORTE PARA TEMA TRANSPARENTE CLARO (light-glass)
+// "no se ven iconos, las letras e iconos en este tema deben ser de color negro"
+// ====================================================================
+.v-theme--light-glass,
+[data-theme="light-glass"] {
+  // Letras y Textos en color negro
+  h1, h2, h3, h4, h5, h6,
+  p, span, label,
+  .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
+  .text-body-1, .text-body-2, .text-caption,
+  .text-medium-emphasis, .text-high-emphasis,
+  .text-slate-900, .text-slate-800, .text-slate-700,
+  .text-grey-darken-1, .text-grey-darken-2, .text-grey-darken-3 {
+    color: #000000 !important;
+  }
+
+  // Iconos en color negro y 100% visibles
+  .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon) {
+    color: #000000 !important;
+    fill: #000000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  // Tarjetas KPI de Dashboard
+  .pepa-kpi-card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: #000000 !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+    // Desactivar overlays oscuros de Vuetify en tarjetas interactivas con click
+    .v-card__overlay,
+    .v-card__underlay {
+      display: none !important;
+      opacity: 0 !important;
+      background: transparent !important;
+    }
+
+    .text-white,
+    [class*="text-white"],
+    .text-caption,
+    .text-h4,
+    p,
+    div:not(.v-card__overlay):not(.v-card__underlay),
+    span:not(.v-card__overlay):not(.v-card__underlay) {
+      color: #000000 !important;
+    }
+
+    .kpi-icon-bubble {
+      background: rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+      .v-icon, i, svg {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+    }
+
+    .kpi-badge-pill {
+      background: rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.12) !important;
+      color: #000000 !important;
+
+      .v-icon, i, svg, * {
+        color: #000000 !important;
+        fill: #000000 !important;
+      }
+    }
+
+    .border-t {
+      border-color: rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  // Tarjetas de Gráficos y Avatares de Cabecera
+  .mock-card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #000000 !important;
+
+    h1, h2, h3, h4, h5, h6, p, span, div {
+      color: #000000 !important;
+    }
+
+    .v-avatar {
+      background-color: rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+      .v-icon, i, svg {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 1 !important;
+      }
+    }
+  }
+
+  // Pestañas / Luxury Tabs Nav
+  .luxury-tabs-nav {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+    .luxury-tab-btn {
+      color: #000000 !important;
+
+      .tab-title {
+        color: #000000 !important;
+        font-weight: 700 !important;
+      }
+
+      .tab-icon-wrap .v-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+        opacity: 1 !important;
+      }
+
+      &.active,
+      &.active-tab {
+        color: #ffffff !important;
+
+        .tab-title {
+          color: #ffffff !important;
+        }
+
+        .tab-icon-wrap .v-icon {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  // Cajas de Iconos en Operaciones, Taller y Finanzas
+  .section-icon-box,
+  .ot-widget-icon,
+  .account-widget-icon,
+  .kpi-icon-badge {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+    .v-icon, i, svg {
+      color: #000000 !important;
+      fill: #000000 !important;
+    }
+  }
+
+  .badge-count {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+    color: #000000 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  }
+
+  // Sidebar: Viñetas, cabeceras de grupos activos y abiertos en negro
+  .layout-vertical-nav,
+  .v-navigation-drawer {
+    .nav-group.active > .nav-group-label,
+    .nav-group.open > .nav-group-label,
+    .nav-group.active.open > .nav-group-label,
+    .nav-group > .nav-group-label {
+      color: #000000 !important;
+
+      &,
+      .nav-item-title,
+      .nav-item-icon,
+      .nav-group-arrow,
+      .v-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+        font-weight: 700 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    .nav-group-children .nav-link a {
+      color: #000000 !important;
+
+      .nav-item-title,
+      .nav-item-icon {
+        color: #000000 !important;
+        fill: #000000 !important;
+      }
     }
   }
 }

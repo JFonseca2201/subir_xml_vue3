@@ -148,7 +148,7 @@ watch(activeFilter, () => {
     scrollable
     transition="dialog-bottom-transition"
   >
-    <VCard class="product-lookup-card rounded-xl elevation-24 bg-white">
+    <VCard class="product-lookup-card rounded-xl elevation-24">
       <!-- Encabezado Limpio -->
       <VCardTitle class="bg-primary text-white py-3 px-5 d-flex align-center justify-space-between flex-none">
         <div class="d-flex align-center gap-3">
@@ -179,8 +179,8 @@ watch(activeFilter, () => {
       </VCardTitle>
 
       <VCardText
-        class="pa-4 bg-white overflow-y-auto"
-        style="background-color: #ffffff !important;"
+        class="pa-4 overflow-y-auto"
+
       >
         <!-- Barra de Búsqueda y Pestañas Simplificadas -->
         <div class="mb-4">
@@ -193,7 +193,7 @@ watch(activeFilter, () => {
             clearable
             autofocus
             hide-details
-            class="bg-white rounded-lg mb-2"
+            class="rounded-lg mb-2"
             :loading="loading"
             @keydown.enter.prevent="performSearch"
             @click:clear="results = []; searched = false"
@@ -276,8 +276,8 @@ watch(activeFilter, () => {
           <!-- Si NO existen coincidencias -->
           <div
             v-if="results.length === 0"
-            class="text-center py-6 px-4 bg-light-success rounded-lg border border-success"
-            style="background-color: #f0fdf4 !important;"
+            class="text-center py-6 px-4 rounded-lg border border-success"
+
           >
             <VIcon
               icon="ri-checkbox-circle-line"

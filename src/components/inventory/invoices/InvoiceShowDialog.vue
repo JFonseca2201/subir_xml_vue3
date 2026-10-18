@@ -340,7 +340,7 @@ onMounted(() => {
         <div class="px-md-4 px-2 pt-2">
           <div
             class="rounded-xl pa-3 shadow-md border"
-            style="background-color: #ffffff !important; color: #1e1b4b !important; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);"
+
           >
             <VRow
               align="center"
@@ -361,7 +361,7 @@ onMounted(() => {
                   prepend-inner-icon="ri-search-line"
                   color="primary"
                   :loading="isLoading"
-                  style="background-color: #f8fafc;"
+
                   class="rounded-lg text-body-2"
                 />
               </VCol>
@@ -769,7 +769,7 @@ onMounted(() => {
 
                 <div
                   v-else
-                  class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-white"
+                  class="text-caption text-medium-emphasis pa-4 text-center border rounded-lg bg-surface"
                 >
                   No hay registros de pago asociados a esta factura.
                 </div>
@@ -782,7 +782,7 @@ onMounted(() => {
               cols="12"
               md="7"
             >
-              <div class="pe-md-4 h-100 d-flex align-center justify-center bg-white rounded-lg border pa-6 text-center">
+              <div class="pe-md-4 h-100 d-flex align-center justify-center bg-surface rounded-lg border pa-6 text-center">
                 <div>
                   <VIcon
                     size="36"
@@ -865,7 +865,7 @@ onMounted(() => {
 
       <!-- 🔘 FOOTER -->
       <VCardActions
-        class="d-flex justify-end align-center gap-3 pa-4 bg-white"
+        class="d-flex justify-end align-center gap-3 pa-4 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

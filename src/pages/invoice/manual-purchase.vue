@@ -2427,8 +2427,7 @@ onMounted(() => {
         class="custom-dialog-card rounded-xl"
       >
         <div
-          class="pa-5 text-white"
-          style="background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-info)));"
+          class="custom-dialog-header-primary pa-5 text-white"
         >
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex align-center gap-3">

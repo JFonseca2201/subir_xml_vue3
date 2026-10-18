@@ -407,7 +407,7 @@ const saveChanges = async () => {
       </div>
 
       <!-- Contenido del diálogo con scroll suave -->
-      <VCardText class="pa-4 bg-grey-lighten-5">
+      <VCardText class="pa-4 bg-surface">
         <!-- Alerta de error si existe -->
         <VAlert
           v-if="errorMessage"
@@ -446,7 +446,7 @@ const saveChanges = async () => {
 
           <div
             v-if="form.item_type == 2"
-            class="text-center pa-4 bg-grey-lighten-4 rounded-lg"
+            class="text-center pa-4 bg-surface border rounded-lg"
           >
             <VIcon
               icon="ri-information-line"

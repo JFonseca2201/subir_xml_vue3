@@ -1818,8 +1818,7 @@ watch(() => route.query.search, newSearch => {
 
           <!-- Total de la Orden -->
           <div
-            class="pa-4 rounded-xl border d-flex justify-space-between align-center"
-            style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);"
+            class="pa-4 rounded-xl border d-flex justify-space-between align-center bg-surface"
           >
             <div class="d-flex align-center gap-2.5">
               <VAvatar
@@ -1852,7 +1851,7 @@ watch(() => route.query.search, newSearch => {
         <VDivider />
 
         <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn
@@ -2025,7 +2024,7 @@ watch(() => route.query.search, newSearch => {
         <VDivider />
 
         <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn
@@ -2108,7 +2107,7 @@ watch(() => route.query.search, newSearch => {
         </VCardText>
         <VDivider />
         <VCardActions
-          class="pa-3 px-5 d-flex justify-end align-center bg-white"
+          class="pa-3 px-5 d-flex justify-end align-center bg-surface"
           style="position: sticky; bottom: 0; z-index: 2;"
         >
           <VBtn
