@@ -77,23 +77,11 @@ watch([
 const configStore = useConfigStore()
 const layoutConfigStore = useLayoutConfigStore()
 
-const isMobileDrawerOpen = ref(false)
-
-// Computed para saber si el menú lateral está visible en pantalla (desktop o móvil)
-const isSidebarVisible = computed(() => {
+// Manejador inteligente del toggle de navegación: abre/cierra drawer en móvil y colapsa/expande en desktop
+const handleNavToggle = (toggleVerticalOverlayNavActive, isOverlayNavActive) => {
   if (layoutConfigStore.isLessThanOverlayNavBreakpoint) {
-    return isMobileDrawerOpen.value
-  }
-  return !layoutConfigStore.isVerticalNavCollapsed
-})
-
-// Manejador inteligente del toggle de navegación: cuando está abierto y se aplasta la X, DESAPARECE!
-const handleNavToggle = toggleVerticalOverlayNavActive => {
-  if (layoutConfigStore.isLessThanOverlayNavBreakpoint) {
-    isMobileDrawerOpen.value = !isMobileDrawerOpen.value
-    toggleVerticalOverlayNavActive(isMobileDrawerOpen.value)
+    toggleVerticalOverlayNavActive(!isOverlayNavActive)
   } else {
-    // En desktop: alterna entre visible y completamente desaparecido
     layoutConfigStore.isVerticalNavCollapsed = !layoutConfigStore.isVerticalNavCollapsed
   }
 }
@@ -164,66 +152,62 @@ const filteredNavItems = computed(() => {
 
 <template>
   <VerticalNavLayout :nav-items="filteredNavItems">
-    <!-- 👉 navbar: Full-Width Top Bar con Identidad Oficial Luxury Evys -->
+    <!-- 👉 navbar: Full-Width Top Bar con Identidad Oficial Luxury Evys Centrada -->
     <template #navbar="{ toggleVerticalOverlayNavActive, isOverlayNavActive }">
-      <div class="d-flex h-100 align-center w-100 px-1">
-        <!-- 1. Botón Menú Hamburguesa / X al principio a la izquierda -->
-        <button
-          id="vertical-nav-toggle-btn"
-          type="button"
-          class="navbar-hamburger-btn d-flex align-center justify-center me-3"
-          :title="isSidebarVisible ? 'Ocultar menú lateral (cerrar con X)' : 'Mostrar menú lateral (abrir)'"
-          :aria-label="isSidebarVisible ? 'Cerrar Menú Lateral' : 'Abrir Menú Lateral'"
-          @click="handleNavToggle(toggleVerticalOverlayNavActive)"
-        >
-          <!-- Si el menú lateral está visible: se muestra la X [ri-close-line]. Al aplastarla, DESAPARECE el menú lateral! -->
-          <!-- Si el menú lateral está desaparecido: se muestra [ri-menu-2-line]. Al aplastarla, APARECE el menú lateral! -->
-          <VIcon
-            :icon="isSidebarVisible ? 'ri-close-line' : 'ri-menu-2-line'"
-            size="22"
-          />
-        </button>
+      <div class="navbar-header-wrapper d-flex h-100 align-center w-100 px-1">
+        <!-- 1. Columna Izquierda: Botón Menú Hamburguesa -->
+        <div class="navbar-left-section">
+          <button
+            id="vertical-nav-toggle-btn"
+            type="button"
+            class="navbar-hamburger-btn d-flex align-center justify-center"
+            :title="layoutConfigStore.isLessThanOverlayNavBreakpoint
+              ? (isOverlayNavActive ? 'Cerrar menú' : 'Abrir menú')
+              : (layoutConfigStore.isVerticalNavCollapsed ? 'Expandir menú lateral' : 'Colapsar menú lateral')"
+            :aria-label="isOverlayNavActive ? 'Cerrar Menú' : 'Alternar Menú'"
+            @click="handleNavToggle(toggleVerticalOverlayNavActive, isOverlayNavActive)"
+          >
+            <!-- En responsive móvil: 'ri-close-line' [X] cuando está abierto, 'ri-menu-2-line' [☰] cuando está cerrado -->
+            <!-- En desktop: 'ri-menu-unfold-line' si está colapsado, 'ri-menu-2-line' si está expandido -->
+            <VIcon
+              :icon="layoutConfigStore.isLessThanOverlayNavBreakpoint
+                ? (isOverlayNavActive ? 'ri-close-line' : 'ri-menu-2-line')
+                : (layoutConfigStore.isVerticalNavCollapsed ? 'ri-menu-unfold-line' : 'ri-menu-2-line')"
+              size="22"
+            />
+          </button>
+        </div>
 
-        <!-- 2. Identidad y Marca Prominente "LUXURY EVYS" (Desaparece en móvil, visible en escritorio) -->
-        <RouterLink
-          to="/"
-          class="d-none d-md-flex align-center gap-x-3 text-decoration-none navbar-brand-link me-4"
-        >
-          <!-- Logotipo / Sello Oficial de la Empresa -->
-          <div class="navbar-brand-seal-badge">
-            <img
-              :src="logoPng"
-              alt="Luxury Evys Sello Oficial"
-              class="navbar-brand-logo-img"
-            >
-          </div>
+        <!-- 2. Columna Central: Marca Centrada Horizontalmente (Logo + LUXURY EVYS + Subtítulo) -->
+        <div class="navbar-center-section">
+          <RouterLink
+            to="/"
+            class="d-flex align-center gap-x-3 text-decoration-none navbar-brand-link"
+          >
+            <!-- Logotipo / Sello Oficial de la Empresa -->
+            <div class="navbar-brand-seal-badge">
+              <img
+                :src="logoPng"
+                alt="Luxury Evys Sello Oficial"
+                class="navbar-brand-logo-img"
+              >
+            </div>
 
-          <!-- Nombre de la Empresa y Sello de Calidad -->
-          <div class="d-flex flex-column justify-center brand-text-container">
-            <div class="d-flex align-center gap-2">
+            <!-- Nombre de la Empresa y Sello de Calidad (Sin insignia OFICIAL) -->
+            <div class="d-flex flex-column justify-center brand-text-container">
               <span class="navbar-brand-title font-weight-black tracking-wider text-uppercase">
                 LUXURY EVYS
               </span>
-              <span class="navbar-brand-pill d-none d-lg-inline-flex">
-                OFICIAL
-              </span>
+              <div class="navbar-brand-subtitle d-flex align-center gap-1">
+                <span class="brand-status-dot" />
+                <span class="font-weight-medium">{{ sucursalName }}</span>
+              </div>
             </div>
-            <div class="navbar-brand-subtitle d-none d-lg-flex align-center gap-1">
-              <span class="brand-status-dot" />
-              <span class="font-weight-medium">{{ sucursalName }}</span>
-            </div>
-          </div>
-        </RouterLink>
+          </RouterLink>
+        </div>
 
-        <!-- En responsive móvil: título de texto limpio y compacto sin el sello para evitar sobrecarga -->
-        <span class="d-md-none text-subtitle-1 font-weight-black text-white tracking-wider">
-          LUXURY EVYS
-        </span>
-
-        <VSpacer />
-
-        <!-- Herramientas y Perfil en Navbar -->
-        <div class="d-flex align-center gap-2">
+        <!-- 3. Columna Derecha: Herramientas, Idioma, Tema y Perfil de Usuario -->
+        <div class="navbar-right-section d-flex align-center justify-end gap-2">
           <NavBarI18n
             v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
             :languages="themeConfig.app.i18n.langConfig"
@@ -231,6 +215,24 @@ const filteredNavItems = computed(() => {
           <NavbarThemeSwitcher class="me-1" />
           <UserProfile />
         </div>
+      </div>
+    </template>
+
+    <!-- 👉 after-nav-items: Botón discreto inferior para colapsar/expandir en desktop sin estorbar arriba -->
+    <template #after-nav-items>
+      <div class="sidebar-collapse-footer d-none d-lg-flex align-center justify-end px-3 py-2">
+        <IconBtn
+          size="small"
+          class="sidebar-footer-toggle-btn"
+          :title="layoutConfigStore.isVerticalNavCollapsed ? 'Expandir menú lateral' : 'Colapsar menú lateral'"
+          aria-label="Colapsar Menú Lateral"
+          @click="layoutConfigStore.isVerticalNavCollapsed = !layoutConfigStore.isVerticalNavCollapsed"
+        >
+          <VIcon
+            :icon="layoutConfigStore.isVerticalNavCollapsed ? 'ri-arrow-right-s-line' : 'ri-arrow-left-s-line'"
+            size="18"
+          />
+        </IconBtn>
       </div>
     </template>
 
@@ -325,6 +327,36 @@ const filteredNavItems = computed(() => {
   display: block;
 }
 
+.navbar-header-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.navbar-left-section {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.navbar-center-section {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.navbar-right-section {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .navbar-brand-title {
   font-size: 1.22rem;
   line-height: 1.15;
@@ -332,18 +364,6 @@ const filteredNavItems = computed(() => {
   color: #ffffff;
   letter-spacing: 0.08em;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-}
-
-.navbar-brand-pill {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.95), #7367f0);
-  color: #ffffff;
-  font-size: 0.62rem;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 5px;
-  letter-spacing: 0.08em;
-  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .navbar-brand-subtitle {
@@ -361,5 +381,54 @@ const filteredNavItems = computed(() => {
   box-shadow: 0 0 8px #10b981;
   display: inline-block;
   flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .navbar-center-section {
+    padding: 0 4px;
+  }
+
+  .navbar-brand-seal-badge {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 9px !important;
+  }
+
+  .navbar-brand-title {
+    font-size: 1rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .navbar-brand-subtitle {
+    font-size: 0.65rem !important;
+  }
+}
+
+// Desactivar completamente la sombra/degradado azul flotante sobre los items del menú lateral
+.layout-vertical-nav {
+  .vertical-nav-items-shadow {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+  }
+}
+
+.sidebar-collapse-footer {
+  border-top: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  margin-top: auto;
+  min-height: 40px;
+}
+
+.sidebar-footer-toggle-btn {
+  color: rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
 }
 </style>

@@ -50,9 +50,13 @@
       }
     }
 
-    // Shadow on scroll
+    // Shadow on scroll - Desactivar el degradado/scrim flotante sobre los items
     .vertical-nav-items-shadow {
-      background: linear-gradient(rgba(99, 104, 255, 1) 10%, rgba(99, 104, 255, 0.7) 50%, transparent) !important;
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      height: 0 !important;
     }
 
     // Títulos de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO) - Más grandes y notorios

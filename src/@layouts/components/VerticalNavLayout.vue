@@ -129,15 +129,36 @@ export default defineComponent({
 
   // 2. Sidebar starts directly BELOW the navbar
   .layout-vertical-nav {
-    position: fixed;
     top: variables.$layout-vertical-nav-navbar-height !important;
     inset-block-start: variables.$layout-vertical-nav-navbar-height !important;
     height: calc(100vh - #{variables.$layout-vertical-nav-navbar-height}) !important;
     height: calc(100dvh - #{variables.$layout-vertical-nav-navbar-height}) !important;
     block-size: calc(100vh - #{variables.$layout-vertical-nav-navbar-height}) !important;
     z-index: 1040 !important;
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out !important;
-    will-change: transform;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+    // Eliminar cabecera vacía en el sidebar ya que la marca está en el Navbar superior
+    .nav-header {
+      display: none !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+    }
+
+    // Desactivar completamente la sombra/degradado flotante sobre los ítems
+    .vertical-nav-items-shadow {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      height: 0 !important;
+    }
+
+    // Efecto de sombra delimitado estrictamente al borde superior de la cabecera del menú al desplazarse
+    &.scrolled {
+      box-shadow: 4px 0 28px rgba(79, 84, 229, 0.28), inset 0 4px 6px -4px rgba(0, 0, 0, 0.45) !important;
+    }
 
     &.overlay-nav {
       top: variables.$layout-vertical-nav-navbar-height !important;
@@ -178,7 +199,7 @@ export default defineComponent({
     min-block-size: calc(100dvh - #{variables.$layout-vertical-nav-navbar-height});
     padding-top: variables.$layout-vertical-nav-navbar-height !important;
     padding-block-start: variables.$layout-vertical-nav-navbar-height !important;
-    transition: padding-inline-start 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: padding-inline-start 0.2s ease-in-out;
     will-change: padding-inline-start;
 
     @media screen and (min-width: 1280px) {
@@ -186,22 +207,9 @@ export default defineComponent({
     }
   }
 
-  // 5. When collapsed (cerrado/oculto con la X): EL MENÚ LATERAL DESAPARECE POR COMPLETO!
-  &.layout-vertical-nav-collapsed {
-    .layout-vertical-nav {
-      transform: translateX(-100%) !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-      visibility: hidden !important;
-
-      @include mixins.rtl {
-        transform: translateX(100%) !important;
-      }
-    }
-
-    .layout-content-wrapper {
-      padding-inline-start: 0 !important;
-    }
+  // Adjust right column pl when vertical nav is collapsed
+  &.layout-vertical-nav-collapsed .layout-content-wrapper {
+    padding-inline-start: variables.$layout-vertical-nav-collapsed-width !important;
   }
 
   // 👉 Footer
