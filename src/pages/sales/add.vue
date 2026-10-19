@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onActivated, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -29,7 +29,7 @@ const getUserId = () => {
 }
 
 const formRef = ref(null)
-const isLoading = ref(false)
+const isLoading = ref(true)
 const isSavingDraft = ref(false)
 const isDispatching = ref(false)
 const isSubmitting = ref(false)
@@ -108,13 +108,59 @@ const sale = ref({
   user_id: userId.value,
 })
 
-// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
+const resetSaleForm = () => {
+  sale.value = {
+    document_type: 'invoice',
+    document_number: '',
+    client_id: null,
+    vehicle_id: null,
+    quote_id: null,
+    quote_number: null,
+    work_order_id: null,
+    work_order_number: null,
+    work_order_date: null,
+    mileage: null,
+    service_date: getLocalDateString(),
+    payment_status: 'paid',
+    is_credited: false,
+    payment_method: null,
+    observations: '',
+    technicians: [],
+    items: [],
+    user_id: userId.value,
+  }
+  selectedClient.value = null
+  selectedVehicle.value = null
+  importedWorkOrderAdvances.value = []
+  paymentDistributions.value = []
+  initializePaymentDistribution()
+}
+
+const cancelAndReturn = () => {
+  clearDraft()
+  resetSaleForm()
+  router.push('/sales/list')
+}
+
+// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión por imprevisto
 const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft(
   'sale_add',
   sale,
   {
     autoRestore: false,
     excludeFields: ['document_number'],
+    clearOnRouteLeave: true,
+    resetForm: resetSaleForm,
+    isMeaningful: data => {
+      return !!(
+        data.client_id ||
+        (data.items && data.items.length > 0) ||
+        (data.observations && data.observations.trim()) ||
+        data.vehicle_id ||
+        data.work_order_id ||
+        data.quote_id
+      )
+    },
     validateDraft: draftData => {
       if (draftData?.document_number && nextGlobalNumber.value) {
         const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
@@ -476,12 +522,17 @@ const applyWorkOrderTechnicians = workOrder => {
   sale.value.technicians = (workOrder.technicians || []).map(t => t.id)
 }
 
-const selectWorkOrder = async workOrder => {
+const applyWorkOrderToSale = async workOrder => {
   sale.value.work_order_id = workOrder.id
   sale.value.work_order_number = workOrder.number
+  sale.value.work_order_date = workOrder.date ? workOrder.date.split(' ')[0] : ''
   sale.value.client_id = workOrder.client_id
   sale.value.vehicle_id = workOrder.vehicle_id
   sale.value.mileage = workOrder.mileage
+  sale.value.service_date = getLocalDateString()
+  if (workOrder.observations) {
+    sale.value.observations = workOrder.observations
+  }
   applyWorkOrderTechnicians(workOrder)
 
   if (workOrder.client) {
@@ -541,12 +592,16 @@ const selectWorkOrder = async workOrder => {
 
   initializePaymentDistribution()
 
-  isWorkOrderImportDialogVisible.value = false
   if (importedWorkOrderTotalAdvances.value > 0) {
     showNotification(`OT importada con anticipo previo de $${importedWorkOrderTotalAdvances.value.toFixed(2)}. Saldo a cobrar hoy: $${balanceToCollectToday.value.toFixed(2)}`, 'success')
   } else {
     showNotification('Orden de trabajo importada exitosamente', 'success')
   }
+}
+
+const selectWorkOrder = async workOrder => {
+  await applyWorkOrderToSale(workOrder)
+  isWorkOrderImportDialogVisible.value = false
 }
 
 // Abrir diálogo de importación de órdenes de trabajo
@@ -577,7 +632,7 @@ const loadInitialData = async () => {
       Promise.resolve([]),
       Promise.resolve([]),
       $api('employees', { params: { per_page: 1000 } }),
-      $api('sales/next-number?document_type=' + (route.query.type || 'sale_note')),
+      $api('sales/next-number?document_type=' + (route.query.doc_type || route.query.type || sale.value.document_type || 'invoice')),
       $api('sucursales/1').catch(() => null),
     ])
 
@@ -599,7 +654,6 @@ const loadInitialData = async () => {
 
     const rawVehicles = extractArray(vehiclesRes, 'vehicles')
 
-
     // Agregar campo de búsqueda combinado para vehículos
     vehicles.value = rawVehicles.map(v => {
       const brandId = typeof v.brand === 'object' ? v.brand.id : v.brand
@@ -616,7 +670,6 @@ const loadInitialData = async () => {
 
     const rawProducts = extractArray(productsRes, 'products')
 
-
     // Agregar campo de búsqueda combinado para productos
     products.value = rawProducts.map(p => ({
       ...p,
@@ -629,7 +682,6 @@ const loadInitialData = async () => {
         .replace(/\(TRANSFERENCIA\)/gi, '')
         .replace(/\(EFECTIVO\s*\/\s*CAJA\)/gi, '')
         .trim()
-
 
       return {
         ...acc,
@@ -668,8 +720,6 @@ const loadInitialData = async () => {
   } catch (error) {
     console.error('Error al cargar datos:', error)
     showNotification('Error al cargar datos iniciales', 'error')
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -1261,6 +1311,8 @@ const executeSaleSubmission = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
+      resetSaleForm()
+      showValidationError.value = false
       isConfirmInvoiceDialogVisible.value = false
       showNotification(
         sale.value.document_type === 'invoice'
@@ -1329,6 +1381,8 @@ const saveDraft = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
+      resetSaleForm()
+      showValidationError.value = false
       showNotification('Borrador guardado exitosamente', 'success')
       router.push('/sales/list')
     } else {
@@ -1456,6 +1510,8 @@ const dispatchSale = async () => {
 
     if (response.success || response.status === 201 || response.status === 200) {
       clearDraft()
+      resetSaleForm()
+      showValidationError.value = false
       showNotification('Venta despachada correctamente con pago pendiente', 'success')
       router.push('/sales/list')
     } else {
@@ -1472,184 +1528,170 @@ const dispatchSale = async () => {
   }
 }
 
-onMounted(async () => {
-  await loadInitialData()
-  initializePaymentDistribution()
+// Cargar cotización cuando se pasa quote_id por query parameter
+const loadQuoteData = async quoteId => {
+  try {
+    const quoteRes = await $api(`quotes/${quoteId}`)
+    const quote = quoteRes.data || quoteRes
 
-  // Verificar si hay un work_order_id en el query parameter
+    if (quote) {
+      sale.value.quote_id = quote.id
+      sale.value.quote_number = quote.document_number
+      sale.value.client_id = quote.client_id
+      sale.value.vehicle_id = quote.vehicle_id
+      sale.value.mileage = quote.mileage
+      sale.value.service_date = quote.date ? quote.date.split(' ')[0] : sale.value.service_date
+      sale.value.observations = quote.observations || ''
+
+      if (route.query.doc_type) {
+        sale.value.document_type = route.query.doc_type
+      }
+
+      if (quote.technicians && Array.isArray(quote.technicians)) {
+        sale.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
+      }
+
+      if (quote.client) {
+        selectedClient.value = quote.client
+      } else if (quote.client_id) {
+        try {
+          const clientRes = await $api(`clients/${quote.client_id}`)
+
+          selectedClient.value = clientRes.client || clientRes.data || clientRes
+        } catch (e) {
+          console.error('Error al cargar cliente de la cotización:', e)
+        }
+      }
+
+      if (quote.vehicle) {
+        selectedVehicle.value = quote.vehicle
+      } else if (quote.vehicle_id) {
+        try {
+          const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
+
+          selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+        } catch (e) {
+          console.error('Error al cargar vehículo de la cotización:', e)
+        }
+      }
+
+      // Importar items de la cotización
+      if (quote.details && quote.details.length > 0) {
+        sale.value.items = quote.details.map(item => {
+          if (item.product) {
+            const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+            if (existingIdx >= 0) {
+              products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+            } else {
+              products.value.push(item.product)
+            }
+          }
+
+          const isService = item.type === 'service' ||
+            item.item_type === 2 ||
+            item.product?.item_type === 2 ||
+            (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
+            (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
+            (!item.product_id && !item.sku)
+
+          return {
+            product_id: item.product_id,
+            description: item.description,
+            quantity: item.quantity,
+            price: item.price || item.unit_price || 0,
+            discount: item.discount || 0,
+            subtotal: item.subtotal,
+            type: isService ? 'service' : 'product',
+            sku: item.product?.sku || item.product?.code || item.sku || '',
+            stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
+            product: item.product || null,
+            unit_id: item.unit_id || item.product?.unit_id || null,
+            unit: item.unit || item.product?.unit || null,
+          }
+        })
+        initializePaymentDistribution()
+      }
+
+      showNotification(`Cotización #${quote.document_number} cargada para facturar`, 'success')
+    }
+  } catch (e) {
+    console.error('Error al cargar cotización para venta:', e)
+    showNotification('Error al cargar la cotización seleccionada', 'error')
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true
+  try {
+    if (route.query.doc_type) {
+      sale.value.document_type = route.query.doc_type
+    } else if (route.query.type && route.query.type !== 'quote') {
+      sale.value.document_type = route.query.type
+    }
+
+    await loadInitialData()
+
+    // Si se intenta acceder con ?type=quote, redirigir al módulo de cotizaciones
+    const typeParam = route.query.type
+    const workOrderId = route.query.work_order_id
+    const quoteId = route.query.quote_id
+
+    if (typeParam === 'quote' && !workOrderId && !quoteId) {
+      router.replace('/quotes/add')
+      
+      return
+    }
+
+    // Verificar si hay un work_order_id en el query parameter
+    if (workOrderId) {
+      try {
+        const workOrderRes = await $api(`work-orders/${workOrderId}`)
+        const workOrder = workOrderRes.data || workOrderRes
+
+        if (workOrder) {
+          await applyWorkOrderToSale(workOrder)
+        }
+      } catch (error) {
+        console.error('Error al importar orden de trabajo:', error)
+        showNotification('Error al importar la orden de trabajo', 'error')
+      }
+    } else if (quoteId) {
+      await loadQuoteData(quoteId)
+    } else {
+      initializePaymentDistribution()
+    }
+
+    await onDocumentTypeChange()
+  } catch (err) {
+    console.error('Error al inicializar formulario de venta:', err)
+  } finally {
+    isLoading.value = false
+  }
+})
+
+onActivated(async () => {
+  getUserId()
+  sale.value.user_id = userId.value
+
   const workOrderId = route.query.work_order_id
-  if (workOrderId) {
+  const quoteId = route.query.quote_id
+
+  if (workOrderId && (!sale.value.work_order_id || String(sale.value.work_order_id) !== String(workOrderId))) {
     try {
       const workOrderRes = await $api(`work-orders/${workOrderId}`)
       const workOrder = workOrderRes.data || workOrderRes
-
       if (workOrder) {
-        sale.value.work_order_id = workOrder.id
-        sale.value.work_order_number = workOrder.number
-        sale.value.work_order_date = workOrder.date ? workOrder.date.split(' ')[0] : ''
-        sale.value.client_id = workOrder.client_id
-        sale.value.vehicle_id = workOrder.vehicle_id
-        sale.value.mileage = workOrder.mileage
-        sale.value.service_date = getLocalDateString()
-        sale.value.observations = workOrder.observations || ''
-        applyWorkOrderTechnicians(workOrder)
-
-        if (workOrder.client) {
-          selectedClient.value = workOrder.client
-        } else if (workOrder.client_id) {
-          try {
-            const clientRes = await $api(`clients/${workOrder.client_id}`)
-
-            selectedClient.value = clientRes.client || clientRes.data || clientRes
-          } catch (e) {
-            console.error('Error al cargar cliente de la OT:', e)
-          }
-        }
-
-        if (workOrder.vehicle) {
-          selectedVehicle.value = workOrder.vehicle
-        } else if (workOrder.vehicle_id) {
-          try {
-            const vehicleRes = await $api(`vehicles/${workOrder.vehicle_id}`)
-
-            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
-          } catch (e) {
-            console.error('Error al cargar vehículo de la OT:', e)
-          }
-        }
-
-        // Importar items de la orden de trabajo
-        if (workOrder.items && workOrder.items.length > 0) {
-          sale.value.items = workOrder.items.map(item => {
-            if (item.product && !products.value.find(p => p.id === item.product.id)) {
-              products.value.push(item.product)
-            }
-
-            return {
-              product_id: item.product_id,
-              description: item.description,
-              quantity: item.quantity,
-              price: item.unit_price || item.price || 0,
-              discount: item.discount || 0,
-              subtotal: item.subtotal,
-              type: item.type || (item.product_id ? 'product' : 'service'),
-              sku: item.product?.sku || item.product?.code || item.sku || '',
-            }
-          })
-          initializePaymentDistribution()
-        }
-
-        showNotification('Orden de trabajo importada exitosamente', 'success')
+        await applyWorkOrderToSale(workOrder)
       }
     } catch (error) {
       console.error('Error al importar orden de trabajo:', error)
-      showNotification('Error al importar la orden de trabajo', 'error')
     }
+  } else if (quoteId && (!sale.value.quote_id || String(sale.value.quote_id) !== String(quoteId))) {
+    await loadQuoteData(quoteId)
+  } else if (!sale.value.work_order_id && !sale.value.quote_id) {
+    // Si no está convirtiendo OT ni Cotización, asegurar número fresco del documento
+    await onDocumentTypeChange()
   }
-
-  // Verificar si hay un quote_id en el query parameter
-  const quoteId = route.query.quote_id
-  if (quoteId && !workOrderId) {
-    try {
-      const quoteRes = await $api(`quotes/${quoteId}`)
-      const quote = quoteRes.data || quoteRes
-
-      if (quote) {
-        sale.value.quote_id = quote.id
-        sale.value.quote_number = quote.document_number
-        sale.value.client_id = quote.client_id
-        sale.value.vehicle_id = quote.vehicle_id
-        sale.value.mileage = quote.mileage
-        sale.value.service_date = quote.date ? quote.date.split(' ')[0] : sale.value.service_date
-        sale.value.observations = quote.observations || ''
-
-        if (route.query.doc_type) {
-          sale.value.document_type = route.query.doc_type
-          await onDocumentTypeChange()
-        }
-
-        if (quote.technicians && Array.isArray(quote.technicians)) {
-          sale.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
-        }
-
-        if (quote.client) {
-          selectedClient.value = quote.client
-        } else if (quote.client_id) {
-          try {
-            const clientRes = await $api(`clients/${quote.client_id}`)
-
-            selectedClient.value = clientRes.client || clientRes.data || clientRes
-          } catch (e) {
-            console.error('Error al cargar cliente de la cotización:', e)
-          }
-        }
-
-        if (quote.vehicle) {
-          selectedVehicle.value = quote.vehicle
-        } else if (quote.vehicle_id) {
-          try {
-            const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
-
-            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
-          } catch (e) {
-            console.error('Error al cargar vehículo de la cotización:', e)
-          }
-        }
-
-        // Importar items de la cotización
-        if (quote.details && quote.details.length > 0) {
-          sale.value.items = quote.details.map(item => {
-            if (item.product) {
-              const existingIdx = products.value.findIndex(p => p.id === item.product.id)
-              if (existingIdx >= 0) {
-                products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
-              } else {
-                products.value.push(item.product)
-              }
-            }
-
-            const isService = item.type === 'service' ||
-              item.item_type === 2 ||
-              item.product?.item_type === 2 ||
-              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
-              (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
-              (!item.product_id && !item.sku)
-
-            return {
-              product_id: item.product_id,
-              description: item.description,
-              quantity: item.quantity,
-              price: item.price || item.unit_price || 0,
-              discount: item.discount || 0,
-              subtotal: item.subtotal,
-              type: isService ? 'service' : 'product',
-              sku: item.product?.sku || item.product?.code || item.sku || '',
-              stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
-              product: item.product || null,
-              unit_id: item.unit_id || item.product?.unit_id || null,
-              unit: item.unit || item.product?.unit || null,
-            }
-          })
-          initializePaymentDistribution()
-        }
-
-        showNotification(`Cotización #${quote.document_number} cargada para facturar`, 'success')
-      }
-    } catch (e) {
-      console.error('Error al cargar cotización para venta:', e)
-      showNotification('Error al cargar la cotización seleccionada', 'error')
-    }
-  }
-
-  // Si se intenta acceder con ?type=quote, redirigir al módulo de cotizaciones
-  const typeParam = route.query.type
-  if (typeParam === 'quote' && !workOrderId && !quoteId) {
-    router.replace('/quotes/add')
-    
-    return
-  }
-
-  await onDocumentTypeChange()
 })
 </script>
 
@@ -1711,7 +1753,7 @@ onMounted(async () => {
             prepend-icon="ri-arrow-left-line"
             class="font-weight-medium"
             :disabled="isProcessing"
-            @click="router.push('/sales/list')"
+            @click="cancelAndReturn"
           >
             Volver al Listado
           </VBtn>
@@ -2000,6 +2042,10 @@ onMounted(async () => {
                     color="primary"
                     :readonly="isLinkedToWorkOrder"
                     :loading="isLoading"
+                    :error="showValidationError && (!sale.document_number || !String(sale.document_number).trim())"
+                    :error-messages="showValidationError && (!sale.document_number || !String(sale.document_number).trim()) ? ['Número de documento es requerido'] : []"
+                    append-inner-icon="ri-refresh-line"
+                    @click:append-inner="onDocumentTypeChange"
                     :hint="isLinkedToWorkOrder ? `Vinculado a OT: ${sale.work_order_number || ''}` : undefined"
                     persistent-hint
                   />
@@ -2019,6 +2065,8 @@ onMounted(async () => {
                     hide-details="auto"
                     required
                     color="primary"
+                    :error="showValidationError && !sale.service_date"
+                    :error-messages="showValidationError && !sale.service_date ? ['Fecha es requerida'] : []"
                   />
                 </VCol>
                 <VCol
@@ -2056,7 +2104,9 @@ onMounted(async () => {
                       label="Cliente *"
                       icon="ri-user-line"
                       :initial-item="selectedClient"
-                      :rules="[(v) => !!sale.client_id || 'Cliente es requerido']"
+                      :rules="[(v) => !!v || !!sale.client_id || 'Cliente es requerido']"
+                      :error="showValidationError && (!selectedClient || !sale.client_id)"
+                      :error-messages="showValidationError && (!selectedClient || !sale.client_id) ? ['Cliente es requerido'] : []"
                     >
                       <template #item="{ props, item }">
                         <VListItem
@@ -2113,9 +2163,12 @@ onMounted(async () => {
                       :return-object="true"
                       endpoint="vehicles/search"
                       item-title="license_plate"
-                      label="Vehículo (Opcional)"
+                      :label="hasServices ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
                       icon="ri-car-line"
                       :initial-item="selectedVehicle"
+                      :rules="[v => (!hasServices || !!v || !!sale.vehicle_id) || 'Debe asociar un vehículo obligatorio para servicios']"
+                      :error="showValidationError && hasServices && (!selectedVehicle || !sale.vehicle_id)"
+                      :error-messages="showValidationError && hasServices && (!selectedVehicle || !sale.vehicle_id) ? ['Debe asociar un vehículo obligatorio para servicios'] : []"
                     >
                       <template #item="{ props, item }">
                         <VListItem
@@ -3169,7 +3222,7 @@ onMounted(async () => {
                     class="rounded-lg font-weight-medium text-none"
                     style="flex: 1;"
                     :disabled="isProcessing"
-                    @click="router.push('/sales/list')"
+                    @click="cancelAndReturn"
                   >
                     Cancelar
                   </VBtn>

@@ -64,6 +64,7 @@ const router = createRouter({
         },
         {
           path: "/work-orders",
+          alias: "/work-orders/list",
           name: "work-orders-list",
           component: () => import("@/pages/work-orders/list.vue"),
         },

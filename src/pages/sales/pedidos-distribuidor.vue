@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onActivated, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -43,13 +43,37 @@ const pedido = ref({
   observations: '',
 })
 
-// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión
+const resetPedidoForm = () => {
+  pedido.value = {
+    number: '',
+    distribuidor_id: null,
+    items: [],
+    observations: '',
+  }
+}
+
+const cancelAndReturn = () => {
+  clearDraft()
+  resetPedidoForm()
+  router.push('/sales/pedidos-distribuidor-list')
+}
+
+// Autoguardado inteligente de borrador para evitar pérdida de datos si se cierra la sesión por imprevisto
 const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft(
   'pedido_distribuidor',
   pedido,
   {
     autoRestore: false,
     excludeFields: ['number'],
+    clearOnRouteLeave: true,
+    resetForm: resetPedidoForm,
+    isMeaningful: data => {
+      return !!(
+        data.distribuidor_id ||
+        (data.items && data.items.length > 0) ||
+        (data.observations && data.observations.trim())
+      )
+    },
     validateDraft: draftData => {
       if (draftData?.number && nextPedidoNumber.value) {
         const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
@@ -533,6 +557,19 @@ onMounted(async () => {
     }
   }
 })
+
+onActivated(async () => {
+  getUserId()
+  const id = route.query.id
+  if (id) {
+    if (pedidoId.value !== id) {
+      pedidoId.value = id
+      await loadPedidoDetails(id)
+    }
+  } else {
+    await loadNextNumber()
+  }
+})
 </script>
 
 <template>
@@ -589,7 +626,7 @@ onMounted(async () => {
             color="secondary"
             prepend-icon="ri-arrow-left-line"
             class="font-weight-medium"
-            to="/sales/pedidos-distribuidor-list"
+            @click="cancelAndReturn"
           >
             Volver al Listado
           </VBtn>
@@ -1282,7 +1319,7 @@ onMounted(async () => {
                     prepend-icon="ri-close-line"
                     class="rounded-lg font-weight-medium text-none"
                     style="flex: 1;"
-                    to="/sales/pedidos-distribuidor-list"
+                    @click="cancelAndReturn"
                   >
                     Cancelar
                   </VBtn>

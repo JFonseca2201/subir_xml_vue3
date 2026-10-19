@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onActivated, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -72,9 +72,26 @@ const resetQuote = () => {
   selectedVehicle.value = null
 }
 
+const cancelAndReturn = () => {
+  clearDraft()
+  resetQuote()
+  router.push('/quotes/list')
+}
+
 const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft('quote_add', quote, {
   autoRestore: false,
   excludeFields: ['document_number'],
+  clearOnRouteLeave: true,
+  resetForm: resetQuote,
+  isMeaningful: data => {
+    return !!(
+      data.client_id ||
+      (data.items && data.items.length > 0) ||
+      (data.observations && data.observations.trim()) ||
+      data.vehicle_id ||
+      data.work_order_id
+    )
+  },
   validateDraft: draftData => {
     if (draftData?.document_number && nextQuoteNumber.value) {
       const draftNum = parseInt(String(draftData.document_number).replace(/\D/g, '')) || 0
@@ -311,12 +328,31 @@ const taxAmount = computed(() => {
   return total.value - displaySubtotalNeto.value
 })
 
+const isNextNumberLoading = ref(false)
+
+const fetchNextQuoteNumber = async (force = false) => {
+  if (!force && quote.value.work_order_id && quote.value.document_number) return
+
+  isNextNumberLoading.value = true
+  try {
+    const nextNumberRes = await $api('quotes/next-number')
+    if (nextNumberRes?.data) {
+      nextQuoteNumber.value = nextNumberRes.data
+      quote.value.document_number = nextNumberRes.data
+    }
+  } catch (err) {
+    console.warn('Error loading next quote number:', err)
+  } finally {
+    isNextNumberLoading.value = false
+  }
+}
+
 const loadInitialData = async () => {
   isLoading.value = true
   try {
-    const [employeesRes, nextNumberRes] = await Promise.all([
+    const [employeesRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }),
-      $api('quotes/next-number'),
+      fetchNextQuoteNumber(),
     ])
 
     const extractArray = (res, key) => {
@@ -329,8 +365,6 @@ const loadInitialData = async () => {
     }
 
     employees.value = extractArray(employeesRes, 'employees')
-    nextQuoteNumber.value = nextNumberRes?.data || '000000000'
-    quote.value.document_number = generateDocumentNumber()
 
     // Validar si el borrador guardado pertenece a una cotización que ya fue salvada
     if (!route.query.work_order_id) {
@@ -413,6 +447,8 @@ const submitForm = async () => {
     if (response.success || response.status === 201) {
       showNotification('Cotización registrada exitosamente', 'success')
       clearDraft()
+      resetQuote()
+      showValidationError.value = false
       router.push('/quotes/list')
     } else {
       showNotification(response.message || 'Error al registrar', 'error')
@@ -430,6 +466,15 @@ const submitForm = async () => {
 
 onMounted(async () => {
   await loadInitialData()
+})
+
+onActivated(async () => {
+  getUserId()
+  quote.value.user_id = userId.value
+
+  if (!quote.value.work_order_id) {
+    await fetchNextQuoteNumber()
+  }
 })
 </script>
 
@@ -473,8 +518,8 @@ onMounted(async () => {
           color="secondary"
           variant="outlined"
           prepend-icon="ri-arrow-left-line"
-          to="/quotes/list"
           class="bg-white"
+          @click="cancelAndReturn"
         >
           Volver al Listado
         </VBtn>
@@ -588,6 +633,11 @@ onMounted(async () => {
                     readonly
                     bg-color="grey-lighten-4"
                     prepend-inner-icon="ri-hashtag"
+                    :loading="isLoading || isNextNumberLoading"
+                    :error="showValidationError && (!quote.document_number || !String(quote.document_number).trim())"
+                    :error-messages="showValidationError && (!quote.document_number || !String(quote.document_number).trim()) ? ['Número de cotización es requerido'] : []"
+                    append-inner-icon="ri-refresh-line"
+                    @click:append-inner="fetchNextQuoteNumber(true)"
                   />
                 </VCol>
                 <VCol
@@ -602,6 +652,8 @@ onMounted(async () => {
                     density="comfortable"
                     :rules="[requiredRule]"
                     prepend-inner-icon="ri-calendar-line"
+                    :error="showValidationError && !quote.service_date"
+                    :error-messages="showValidationError && !quote.service_date ? ['Fecha es requerida'] : []"
                   />
                 </VCol>
               </VRow>
@@ -637,7 +689,9 @@ onMounted(async () => {
                       label="Cliente *"
                       icon="ri-user-line"
                       :initial-item="selectedClient"
-                      :rules="[(v) => !!quote.client_id || 'Cliente es requerido']"
+                      :rules="[(v) => !!v || !!quote.client_id || 'Cliente es requerido']"
+                      :error="showValidationError && (!selectedClient || !quote.client_id)"
+                      :error-messages="showValidationError && (!selectedClient || !quote.client_id) ? ['Cliente es requerido'] : []"
                     >
                       <template #item="{ props, item }">
                         <VListItem
@@ -1095,6 +1149,18 @@ onMounted(async () => {
                 class="text-none font-weight-bold mb-3 elevation-2"
               >
                 Guardar Cotización
+              </VBtn>
+
+              <VBtn
+                color="secondary"
+                variant="outlined"
+                prepend-icon="ri-close-line"
+                size="large"
+                block
+                class="text-none font-weight-medium"
+                @click="cancelAndReturn"
+              >
+                Cancelar
               </VBtn>
             </VCardText>
           </VCard>

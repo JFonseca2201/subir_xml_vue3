@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -14,7 +14,8 @@ const { showNotification } = useGlobalToast()
 const { can } = usePermissions()
 
 // Estado
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const employees = ref([])
 const searchFormRef = ref(null)
 
@@ -164,6 +165,7 @@ const searchEmployees = async () => {
     console.error('Error al buscar empleados:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -180,7 +182,18 @@ watch(currentPage, () => {
   searchEmployees()
 })
 
+let isFirstActivation = true
+
 onMounted(() => {
+  searchEmployees()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   searchEmployees()
 })
 </script>
@@ -385,7 +398,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay empleados) -->
     <VCard
-      v-if="!loading && (!employees || employees.length === 0)"
+      v-if="!loading && isInitialLoadDone && (!employees || employees.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

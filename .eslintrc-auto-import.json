@@ -379,6 +379,9 @@
     "copyToClipboard": true,
     "useFormDraft": true,
     "getBackendBaseUrl": true,
-    "getStorageUrl": true
+    "getStorageUrl": true,
+    "DEFAULT_TAX_PERCENT": true,
+    "DEFAULT_TAX_RATE": true,
+    "useTaxConfig": true
   }
 }

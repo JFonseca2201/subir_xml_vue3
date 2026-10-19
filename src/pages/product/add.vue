@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onActivated, watch } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -241,7 +241,74 @@ const product = ref({
   state: 1,
 })
 
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('product_add', product)
+const backRoute = ref('/product/list')
+const purchasePriceWithIva = ref(0)
+const priceSaleWithIva = ref(0)
+
+const onFormReset = () => {
+  product.value = {
+    id: null,
+    description: '',
+    sku: '',
+    code_aux: '',
+    uses: '',
+    imagen: null,
+    product_categorie_id: null,
+    warehouse_id: null,
+    unit_id: null,
+    supplier_id: null,
+    categorie: null,
+    warehouse: null,
+    unit: null,
+    supplier: null,
+    price: 0,
+    price_sale: 0,
+    purchase_price: 0,
+    tax_rate: IVA_RATE,
+    max_discount: 0,
+    discount_percentage: 0,
+    discount: 0.00,
+    brand: '',
+    stock: 0,
+    item_type: null,
+    min_stock: 0,
+    max_stock: 0,
+    is_taxable: true,
+    is_gift: false,
+    notes: '',
+    state: 1,
+  }
+  priceSaleWithIva.value = 0
+  purchasePriceWithIva.value = 0
+  if (fileData.value && fileData.value.length > 0) {
+    fileData.value.forEach(item => {
+      if (item.url && item.url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(item.url)
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    })
+    fileData.value = []
+  }
+  if (typeof reset === 'function') reset()
+  warning.value = null
+  error_exist.value = null
+  skuExistsAlert.value = null
+}
+
+const cancelAndReturn = () => {
+  clearDraft()
+  onFormReset()
+  router.push(backRoute.value)
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('product_add', product, {
+  clearOnRouteLeave: true,
+  resetForm: onFormReset,
+  isMeaningful: data => !!(data.description || data.sku || data.price > 0 || data.price_sale > 0 || data.product_categorie_id),
+})
 
 const requiredRule = v => !!v || 'Campo obligatorio'
 const minLengthRule = min => v => !v || v.length >= min || `Mínimo ${min} caracteres`
@@ -259,7 +326,6 @@ const priceRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const discountRules = [minValueRule(0), maxDecimalRule(2)]
 const stockRules = [requiredRule, minValueRule(0), maxDecimalRule(2)]
 const percentageRules = [minValueRule(0), maxPercentageRule]
-const backRoute = ref('/product/list')
 
 const calculateMaxDiscount = () => {
   const salePrice = parseFloat(product.value.price_sale) || 0
@@ -301,9 +367,6 @@ const calculatePriceByUnit = () => {
     }
   }
 }
-
-const purchasePriceWithIva = ref(0)
-const priceSaleWithIva = ref(0)
 
 // Sincronización bidireccional para Precio de Compra (Costo con y sin IVA)
 watch(() => product.value.purchase_price, newVal => {
@@ -384,6 +447,10 @@ watch(() => product.value.item_type, newVal => {
 
 onMounted(() => {
   loadInitialData()
+})
+
+onActivated(() => {
+  product.value.user = JSON.parse(localStorage.getItem('user')) || null
 })
 
 const categories = ref([])
@@ -543,33 +610,6 @@ const store = async () => {
   }
 }
 
-const onFormReset = () => {
-  clearDraft()
-  product.value = {
-    id: null, description: '', sku: '', imagen: null, code_aux: '', uses: '',
-    product_categorie_id: null, warehouse_id: null, unit_id: null, supplier_id: null,
-    categorie: null, warehouse: null, unit: null, supplier: null,
-    price: 0, price_sale: 0, purchase_price: 0, tax_rate: IVA_RATE, max_discount: 0,
-    discount_percentage: 0, discount: 0, brand: '', stock: 0, item_type: null, min_stock: 0, max_stock: 0,
-    is_taxable: true, is_gift: false, notes: '', state: 1, user_id: null,
-  }
-  priceSaleWithIva.value = 0
-  fileData.value.forEach(item => {
-    if (item.url && item.url.startsWith('blob:')) {
-      try {
-        URL.revokeObjectURL(item.url)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  })
-  fileData.value = []
-  reset()
-  warning.value = null
-  error_exist.value = null
-  clearDraft()
-}
-
 const loadInitialData = async () => {
   product.value.user = JSON.parse(localStorage.getItem('user')) || null
   isLoading.value = true
@@ -653,7 +693,7 @@ const loadInitialData = async () => {
             prepend-icon="ri-arrow-left-line"
             class="font-weight-medium"
             :disabled="isLoading || loader.loading"
-            @click="router.push(backRoute)"
+            @click="cancelAndReturn"
           >
             Volver al Listado
           </VBtn>
@@ -1833,7 +1873,7 @@ const loadInitialData = async () => {
                   prepend-icon="ri-close-line"
                   class="rounded-lg font-weight-medium text-none"
                   :disabled="isLoading || loader.loading"
-                  @click="router.push(backRoute)"
+                  @click="cancelAndReturn"
                 >
                   Cancelar
                 </VBtn>

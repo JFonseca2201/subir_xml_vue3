@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -16,7 +16,8 @@ const totalPage = ref(0)
 
 const list_partners = ref([])
 const search = ref(null)
-const isLoading = ref(false)
+const isLoading = ref(true)
+const isInitialLoadDone = ref(false)
 
 const isPartnerAddDialogVisible = ref(false)
 const isPartnerShowDialogVisible = ref(false)
@@ -90,6 +91,7 @@ const list = async () => {
     console.error(error)
   } finally {
     isLoading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -163,7 +165,18 @@ const getPartnerInitials = name => {
   return name.slice(0, 2).toUpperCase()
 }
 
+let isFirstActivation = true
+
 onMounted(() => {
+  list()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   list()
 })
 </script>
@@ -345,7 +358,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay socios) -->
     <VCard
-      v-if="!isLoading && (!list_partners || list_partners.length === 0)"
+      v-if="!isLoading && isInitialLoadDone && (!list_partners || list_partners.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

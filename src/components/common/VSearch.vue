@@ -76,6 +76,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  error: {
+    type: Boolean,
+    default: false,
+  },
+  errorMessages: {
+    type: [String, Array],
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -291,6 +299,8 @@ watch(() => props.endpoint, () => {
     :loading="loading"
     :hide-details="hideDetails"
     :rules="rules"
+    :error="error"
+    :error-messages="errorMessages"
     :custom-filter="() => true"
     :open-on-focus="true"
     :open-on-clear="true"

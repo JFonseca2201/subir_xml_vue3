@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onActivated, computed, watch } from 'vue'
 import { useLoaderStore } from '@/stores/loader'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { $api } from '@/utils/api'
@@ -20,6 +20,18 @@ const showDeleteDialog = ref(false)
 const accountToDelete = ref(null)
 const accounts = ref([])
 const totalBalance = ref(0)
+// Por defecto siempre inicia con saldos ocultos por seguridad y privacidad
+const showBalances = ref(false)
+
+const toggleShowBalances = () => {
+  showBalances.value = !showBalances.value
+}
+
+onActivated(() => {
+  if (canAccessTreasury.value) {
+    loadAccounts()
+  }
+})
 
 const headers = [
   { title: 'ID', key: 'id', sortable: true },
@@ -360,6 +372,17 @@ onMounted(() => {
       <!-- Botones de Acción -->
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
         <VBtn
+          :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'"
+          variant="tonal"
+          :color="showBalances ? 'primary' : 'secondary'"
+          :prepend-icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
+          size="small"
+          class="flex-shrink-0 font-weight-medium"
+          @click="toggleShowBalances"
+        >
+          <span class="d-none d-sm-inline">{{ showBalances ? 'Ocultar saldos' : 'Mostrar saldos' }}</span>
+        </VBtn>
+        <VBtn
           title="Actualizar cuentas"
           variant="tonal"
           color="secondary"
@@ -396,11 +419,28 @@ onMounted(() => {
         >
           <div class="d-flex align-center justify-space-between">
             <div>
-              <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
-                Saldo Total Acumulado
-              </span>
-              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount">
-                {{ formatCurrency(totalBalance) }}
+              <div class="d-flex align-center gap-1">
+                <span class="text-overline font-weight-bold text-primary text-uppercase tracking-wider">
+                  Saldo Total Acumulado
+                </span>
+                <VBtn
+                  icon
+                  variant="text"
+                  size="x-small"
+                  density="compact"
+                  color="primary"
+                  :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'"
+                  class="ms-0.5"
+                  @click.stop="toggleShowBalances"
+                >
+                  <VIcon
+                    :icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
+                    size="15"
+                  />
+                </VBtn>
+              </div>
+              <div class="text-h5 font-weight-extrabold text-high-emphasis mt-1 kpi-amount font-mono">
+                {{ showBalances ? formatCurrency(totalBalance) : '$ ••••••' }}
               </div>
               <span class="text-caption text-medium-emphasis font-weight-medium">
                 Suma consolidada de todas las cuentas
@@ -591,11 +631,10 @@ onMounted(() => {
               {{ account.name }}
             </div>
             <div
-              v-if="account.bank_name"
               class="d-flex align-center gap-1.5 mt-0.5"
             >
               <span class="text-caption text-medium-emphasis font-weight-medium">
-                {{ account.bank_name }}
+                {{ account.bank_name || (isCashAccount(account) ? 'Caja Física / Efectivo' : 'No especificado') }}
               </span>
               <div
                 v-if="isBankGuayaquil(account)"
@@ -612,22 +651,19 @@ onMounted(() => {
         <!-- Fila Inferior: Saldo Disponible y Acciones -->
         <div class="d-flex align-center justify-space-between pt-2 border-t mt-2 flex-wrap gap-2">
           <div
-            class="balance-card-pill"
-            :class="`balance-${getAccountVariant(account)}`"
+            class="account-balance-pill"
+            :class="parseFloat(account.saldo_actual || 0) < 0 ? 'is-negative' : 'is-positive'"
           >
-            <div class="balance-tag">
-              <VIcon
-                :icon="getAccountBalanceIcon(account)"
-                size="13"
-                class="me-1"
-              />
-              <span>{{ getAccountBalanceTag(account) }}</span>
-            </div>
+            <VIcon
+              :icon="parseFloat(account.saldo_actual || 0) < 0 ? 'ri-error-warning-line' : (showBalances ? 'ri-money-dollar-circle-line' : 'ri-eye-off-line')"
+              size="15"
+              class="me-1 flex-shrink-0"
+            />
             <span
-              class="balance-number"
+              class="balance-number font-mono"
               style="font-size: 0.95rem;"
             >
-              {{ formatCurrency(account.saldo_actual || 0) }}
+              {{ showBalances ? formatCurrency(account.saldo_actual || 0) : '$ ••••••' }}
             </span>
           </div>
 
@@ -858,6 +894,12 @@ onMounted(() => {
                 v-if="account.bank_name"
                 class="d-flex align-center gap-2"
               >
+                <VIcon
+                  icon="ri-bank-line"
+                  size="18"
+                  color="primary"
+                  class="shrink-0"
+                />
                 <span class="text-body-2 font-weight-bold text-slate-900">
                   {{ account.bank_name }}
                 </span>
@@ -869,29 +911,40 @@ onMounted(() => {
                   <span>Principal</span>
                 </div>
               </div>
+              <div
+                v-else-if="isCashAccount(account)"
+                class="d-flex align-center gap-2"
+              >
+                <VIcon
+                  icon="ri-hand-coin-line"
+                  size="18"
+                  color="success"
+                  class="shrink-0"
+                />
+                <span class="text-body-2 font-weight-semibold text-slate-800">
+                  Caja Física / Efectivo
+                </span>
+              </div>
               <span
                 v-else
                 class="text-caption text-medium-emphasis"
               >No especificado</span>
             </td>
 
-            <!-- Saldo Actual con Distintivo Efectivo / Pichincha / Guayaquil / Transferencia -->
+            <!-- Saldo Disponible -->
             <td class="py-3 text-right">
-              <div class="d-inline-flex flex-column align-end">
+              <div class="d-inline-flex align-center justify-end">
                 <div
-                  class="balance-card-pill"
-                  :class="`balance-${getAccountVariant(account)}`"
+                  class="account-balance-pill"
+                  :class="parseFloat(account.saldo_actual || 0) < 0 ? 'is-negative' : 'is-positive'"
                 >
-                  <div class="balance-tag">
-                    <VIcon
-                      :icon="getAccountBalanceIcon(account)"
-                      size="14"
-                      class="me-1"
-                    />
-                    <span>{{ getAccountBalanceTag(account) }}</span>
-                  </div>
-                  <span class="balance-number">
-                    {{ formatCurrency(account.saldo_actual || 0) }}
+                  <VIcon
+                    :icon="parseFloat(account.saldo_actual || 0) < 0 ? 'ri-error-warning-line' : (showBalances ? 'ri-money-dollar-circle-line' : 'ri-eye-off-line')"
+                    size="16"
+                    class="me-1.5 flex-shrink-0"
+                  />
+                  <span class="balance-number font-mono">
+                    {{ showBalances ? formatCurrency(account.saldo_actual || 0) : '$ ••••••' }}
                   </span>
                 </div>
               </div>
@@ -1031,8 +1084,7 @@ onMounted(() => {
 
                 <div class="d-flex justify-space-between align-center">
                   <span class="text-caption text-medium-emphasis">Saldo Actual:</span>
-                  <span class="text-caption font-weight-bold text-primary font-mono">${{
-                    parseFloat(accountToDelete?.current_balance || 0).toFixed(2) }}</span>
+                  <span class="text-caption font-weight-bold text-primary font-mono">{{ showBalances ? formatCurrency(accountToDelete?.current_balance || 0) : '$ ••••••' }}</span>
                 </div>
               </div>
 
@@ -1081,3 +1133,63 @@ onMounted(() => {
   </div>
 </template>
 
+<style scoped lang="scss">
+.account-balance-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 14px;
+  border-radius: 10px;
+  min-width: 120px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.01em;
+
+  .balance-number {
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  &.is-positive {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    color: #10b981;
+
+    .v-icon {
+      color: #10b981;
+    }
+  }
+
+  &.is-negative {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #ef4444;
+
+    .v-icon {
+      color: #ef4444;
+    }
+  }
+}
+
+:not(.v-theme--dark) .account-balance-pill {
+  &.is-positive {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+
+    .v-icon {
+      color: #059669;
+    }
+  }
+
+  &.is-negative {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+
+    .v-icon {
+      color: #dc2626;
+    }
+  }
+}
+</style>

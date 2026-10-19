@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useTaxConfig } from '@/composables/useTaxConfig'
 
 const props = defineProps({
   isDialogVisible: {
@@ -29,6 +30,7 @@ const props = defineProps({
 const emit = defineEmits(['update:isDialogVisible', 'updated'])
 
 const { showNotification } = useGlobalToast()
+const { taxPercent } = useTaxConfig()
 
 const activeTab = ref('all')
 const isSubmitting = ref(false)
@@ -45,7 +47,7 @@ const form = ref({
   final_price: 0,
   product_categorie_id: null,
   brand: '',
-  tax_rate: 15,
+  tax_rate: taxPercent.value,
   purchase_price: 0,
   item_type: 1,
   is_taxable: 1,
@@ -101,7 +103,7 @@ watch(
       activeTab.value = props.initialTab || 'all'
 
       const p = props.product
-      const taxRate = parseFloat(p.tax_rate !== undefined && p.tax_rate !== null ? p.tax_rate : 15)
+      const taxRate = parseFloat(p.tax_rate !== undefined && p.tax_rate !== null ? p.tax_rate : taxPercent.value)
       const basePrice = parseFloat(p.price_sale || 0)
       const finalPrice = parseFloat((basePrice * (1 + taxRate / 100)).toFixed(2))
       const currentStock = parseFloat(p.stock || 0)
@@ -280,7 +282,7 @@ const saveChanges = async () => {
     formData.append('price', basePrice)
     formData.append('price_sale', basePrice)
     formData.append('purchase_price', isService ? 0 : purchasePrice)
-    formData.append('tax_rate', form.value.tax_rate ?? 15)
+    formData.append('tax_rate', form.value.tax_rate ?? taxPercent.value)
     formData.append('max_discount', maxDiscount)
     formData.append('discount_percentage', discPercentage)
     formData.append('brand', form.value.brand ? form.value.brand.trim() : '')

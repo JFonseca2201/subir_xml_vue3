@@ -228,7 +228,7 @@ const handleSelectOrder = order => {
         </p>
       </div>
 
-      <VCardText class="pa-4 pa-sm-5 bg-grey-lighten-5">
+      <VCardText class="pa-4 pa-sm-5">
         <!-- Buscador y Contador -->
         <div class="mb-4 d-flex align-center justify-space-between flex-wrap gap-3">
           <VTextField
@@ -237,7 +237,7 @@ const handleSelectOrder = order => {
             prepend-inner-icon="ri-search-line"
             variant="outlined"
             density="compact"
-            bg-color="white"
+            bg-color="surface"
             class="rounded-lg flex-grow-1"
             hide-details
             clearable
@@ -263,7 +263,7 @@ const handleSelectOrder = order => {
         <!-- Estado de Carga -->
         <div
           v-if="isLoadingWorkOrders"
-          class="text-center py-12 bg-white rounded-xl border-light"
+          class="text-center py-12 rounded-xl border-light ot-empty-state-box"
         >
           <VProgressCircular
             indeterminate
@@ -282,7 +282,7 @@ const handleSelectOrder = order => {
         <!-- Sin Órdenes Disponibles -->
         <div
           v-else-if="readyWorkOrders.length === 0"
-          class="text-center py-12 px-4 bg-white rounded-xl border-light"
+          class="text-center py-12 px-4 rounded-xl border-light ot-empty-state-box"
         >
           <VAvatar
             size="64"
@@ -307,7 +307,7 @@ const handleSelectOrder = order => {
         <!-- Sin Resultados en Búsqueda -->
         <div
           v-else-if="filteredWorkOrders.length === 0"
-          class="text-center py-10 px-4 bg-white rounded-xl border-light"
+          class="text-center py-10 px-4 rounded-xl border-light ot-empty-state-box"
         >
           <VIcon
             icon="ri-search-eye-line"
@@ -340,7 +340,7 @@ const handleSelectOrder = order => {
           <div
             v-for="order in filteredWorkOrders"
             :key="order.id"
-            class="ot-import-card bg-white rounded-xl pa-4 border-light"
+            class="ot-import-card rounded-xl pa-4 border-light"
             @click="handleSelectOrder(order)"
           >
             <div class="d-flex flex-column flex-md-row justify-space-between align-md-center gap-3">
@@ -452,7 +452,7 @@ const handleSelectOrder = order => {
                 <!-- Fila Inferior: Lista Limpia y Estructurada de Ítems / Servicios -->
                 <div
                   v-if="order.items && order.items.length > 0"
-                  class="ot-items-box rounded-lg pa-2 mt-1"
+                  class="ot-items-box rounded-lg pa-2.5 mt-2"
                 >
                   <div class="d-flex align-center gap-1 mb-1">
                     <VIcon
@@ -460,7 +460,7 @@ const handleSelectOrder = order => {
                       size="13"
                       color="primary"
                     />
-                    <span class="text-caption font-weight-bold text-slate-700">
+                    <span class="text-caption font-weight-bold ot-items-title">
                       {{ order.items.length }} {{ order.items.length === 1 ? 'producto / servicio incluido' : 'productos / servicios incluidos' }}:
                     </span>
                   </div>
@@ -508,11 +508,11 @@ const handleSelectOrder = order => {
                     v-if="calculateOrderAdvances(order) > 0"
                     class="d-flex flex-column align-end mt-0.5"
                   >
-                    <span class="text-caption font-weight-bold text-emerald-700">
+                    <span class="text-caption font-weight-bold text-success">
                       Abono: -{{ formatCurrency(calculateOrderAdvances(order)) }}
                     </span>
-                    <span class="text-caption font-weight-bold text-amber-900 mt-0.5">
-                      Saldo: <strong class="text-h6 font-weight-black text-amber-900 font-mono">{{ formatCurrency(calculateOrderBalance(order)) }}</strong>
+                    <span class="text-caption font-weight-bold text-warning mt-0.5">
+                      Saldo: <strong class="text-h6 font-weight-black text-warning font-mono">{{ formatCurrency(calculateOrderBalance(order)) }}</strong>
                     </span>
                   </div>
                   <div v-else>
@@ -542,7 +542,7 @@ const handleSelectOrder = order => {
 
       <!-- Pie de Página Fijo -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
@@ -562,23 +562,29 @@ const handleSelectOrder = order => {
 
 <style scoped lang="scss">
 .ot-import-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-surface), 0.7);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: #3b82f6;
+    border-color: rgb(var(--v-theme-primary));
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12);
+    box-shadow: 0 6px 16px rgba(var(--v-theme-primary), 0.15);
   }
+}
+
+.ot-empty-state-box {
+  background: rgba(var(--v-theme-surface), 0.6);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
 .ot-number-badge {
   display: inline-flex;
   align-items: center;
-  background: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+  border: 1px solid rgba(var(--v-theme-primary), 0.28);
   font-weight: 800;
   font-size: 0.76rem;
   padding: 2px 8px;
@@ -607,9 +613,9 @@ const handleSelectOrder = order => {
   }
 
   &.status-ready {
-    background-color: #ecfdf5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
+    background-color: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 
     .status-dot {
       background-color: #10b981;
@@ -617,9 +623,9 @@ const handleSelectOrder = order => {
   }
 
   &.status-delivered {
-    background-color: #f0fdfa;
-    color: #0f766e;
-    border: 1px solid #99f6e4;
+    background-color: rgba(20, 184, 166, 0.14);
+    color: #14b8a6;
+    border: 1px solid rgba(20, 184, 166, 0.3);
 
     .status-dot {
       background-color: #14b8a6;
@@ -627,14 +633,14 @@ const handleSelectOrder = order => {
   }
 }
 
-// Placa estilo vehículo ecuatoriano
+// Placa estilo vehículo
 .plate-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  color: #0f172a;
-  border: 1.5px solid #334155;
+  background: rgba(var(--v-theme-surface), 0.9);
+  color: rgba(var(--v-theme-on-surface), 0.95);
+  border: 1.5px solid rgba(var(--v-theme-on-surface), 0.35);
   border-radius: 4px;
   font-family: monospace;
   font-weight: 800;
@@ -642,13 +648,17 @@ const handleSelectOrder = order => {
   padding: 1px 7px;
   letter-spacing: 0.08em;
   line-height: 1.2;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-// Caja contenedora limpia para ítems de la orden
+// Caja contenedora limpia para ítems de la orden (Theme Aware & Glass Friendly)
 .ot-items-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.09);
+  transition: all 0.2s ease;
+}
+
+.ot-items-title {
+  color: rgba(var(--v-theme-on-surface), 0.85);
 }
 
 .ot-item-row {
@@ -660,22 +670,23 @@ const handleSelectOrder = order => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #e2e8f0;
-  color: #334155;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  color: rgba(var(--v-theme-on-surface), 0.95);
   font-weight: 700;
   font-size: 0.68rem;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 4px;
-  line-height: 1;
+  line-height: 1.2;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .ot-item-name {
-  color: #334155;
+  color: rgba(var(--v-theme-on-surface), 0.9);
   font-weight: 500;
 }
 
 .ot-item-price {
-  color: #0f172a;
+  color: rgba(var(--v-theme-on-surface), 0.95);
   font-weight: 700;
   font-size: 0.75rem;
 }

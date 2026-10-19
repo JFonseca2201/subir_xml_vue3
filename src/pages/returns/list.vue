@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -9,7 +9,8 @@ const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const returns = ref([])
 
 const selectedReturn = ref(null)
@@ -74,6 +75,7 @@ const loadReturns = async () => {
     console.error('Error al cargar devoluciones:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -215,7 +217,18 @@ watch(() => searchForm.value.search, () => {
   }, 400)
 })
 
+let isFirstActivation = true
+
 onMounted(() => {
+  loadReturns()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   loadReturns()
 })
 </script>
@@ -452,7 +465,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay devoluciones) -->
     <VCard
-      v-if="!loading && (!returns || returns.length === 0)"
+      v-if="!loading && isInitialLoadDone && (!returns || returns.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

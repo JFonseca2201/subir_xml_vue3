@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
@@ -22,7 +22,8 @@ const loader = useLoaderStore()
 const { can } = usePermissions()
 
 // Estado
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const vehicles = ref([])
 const isVehicleShowDialogVisible = ref(false)
 const vehicleToShow = ref(null)
@@ -187,6 +188,7 @@ const loadVehicles = async () => {
     totalItems.value = 0
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -250,8 +252,19 @@ const handleVehicleDeleted = deletedVehicle => {
 
 const getVehicleTypeLabel = getVehicleTypeNameById
 
+let isFirstActivation = true
+
 onMounted(() => {
   generateYearOptions()
+  loadVehicles()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   loadVehicles()
 })
 </script>
@@ -611,7 +624,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO -->
     <VCard
-      v-else-if="!vehicles || !vehicles.length"
+      v-else-if="isInitialLoadDone && (!vehicles || !vehicles.length)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

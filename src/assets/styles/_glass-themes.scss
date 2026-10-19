@@ -949,12 +949,64 @@ $glass-themes: (
     .quick-stock-stepper-box,
     .category-section,
     .ot-import-card,
+    .ot-empty-state-box,
     .product-lookup-card,
     .doc-type-card {
       background: rgba(255, 255, 255, 0.04) !important;
       background-color: rgba(255, 255, 255, 0.04) !important;
       border: 1px solid var(--border-glass) !important;
       color: var(--text-primary) !important;
+    }
+
+    .ot-items-box {
+      background: rgba(0, 0, 0, 0.28) !important;
+      background-color: rgba(0, 0, 0, 0.28) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: var(--text-primary) !important;
+
+      .ot-items-title {
+        color: rgba(255, 255, 255, 0.85) !important;
+      }
+
+      .ot-item-qty {
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      }
+
+      .ot-item-name {
+        color: rgba(255, 255, 255, 0.92) !important;
+      }
+
+      .ot-item-price {
+        color: #ffffff !important;
+      }
+    }
+
+    .account-balance-pill {
+      &.is-positive {
+        background: rgba(16, 185, 129, 0.14) !important;
+        background-color: rgba(16, 185, 129, 0.14) !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        color: #34d399 !important;
+
+        .balance-number,
+        .v-icon {
+          color: #34d399 !important;
+        }
+      }
+
+      &.is-negative {
+        background: rgba(239, 68, 68, 0.14) !important;
+        background-color: rgba(239, 68, 68, 0.14) !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+        color: #f87171 !important;
+
+        .balance-number,
+        .v-icon {
+          color: #f87171 !important;
+        }
+      }
     }
 
     // 4. Estados vacíos y zonas de carga / dropzone de imágenes (border-dashed)
@@ -2594,6 +2646,7 @@ $glass-themes: (
       .spec-badge-card,
       .spec-item,
       .dialog-body-content,
+      .ot-empty-state-box,
       .movements-scroll-container,
       .operations-date-header,
       .operations-movement-item {
@@ -2601,6 +2654,37 @@ $glass-themes: (
         background-color: rgba(255, 255, 255, 0.05) !important;
         border-color: var(--border-glass) !important;
         color: var(--text-primary) !important;
+      }
+
+      .ot-items-box {
+        background: rgba(0, 0, 0, 0.32) !important;
+        background-color: rgba(0, 0, 0, 0.32) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-primary) !important;
+
+        .ot-items-title {
+          color: rgba(255, 255, 255, 0.85) !important;
+        }
+
+        .ot-item-qty {
+          background: rgba(255, 255, 255, 0.12) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        }
+
+        .ot-item-name {
+          color: rgba(255, 255, 255, 0.92) !important;
+        }
+
+        .ot-item-price {
+          color: #ffffff !important;
+        }
+      }
+
+      .plate-chip {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
       }
 
       [style*="background-color: #ffffff"],

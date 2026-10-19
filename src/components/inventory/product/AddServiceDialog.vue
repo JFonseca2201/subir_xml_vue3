@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
+import { useTaxConfig } from '@/composables/useTaxConfig'
+
+const { taxPercent, calculateTax, calculateTotalWithTax } = useTaxConfig()
 
 const props = defineProps({
   isDialogVisible: {
@@ -116,7 +119,7 @@ const saveService = async () => {
     price: finalPrice,
     price_sale: finalPrice,
     purchase_price: 0.00,
-    tax_rate: 15.00, // Impuesto general de taller (15% IVA)
+    tax_rate: taxPercent.value,
     max_discount: 0.00,
     discount_percentage: 0.00,
     stock: 0.00,
@@ -262,15 +265,15 @@ onMounted(() => {
                   </span>
                 </div>
                 <div class="d-flex flex-column text-center">
-                  <span class="text-caption text-medium-emphasis">IVA ({{ serviceForm.is_taxable ? '15%' : '0%' }}):</span>
+                  <span class="text-caption text-medium-emphasis">IVA ({{ serviceForm.is_taxable ? `${taxPercent}%` : '0%' }}):</span>
                   <span class="text-body-2 font-weight-bold text-primary">
-                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) * 0.15) : 0).toFixed(2) }}
+                    ${{ calculateTax(serviceForm.price_sale, serviceForm.is_taxable).toFixed(2) }}
                   </span>
                 </div>
                 <div class="d-flex flex-column text-right">
                   <span class="text-caption text-medium-emphasis">Total con IVA:</span>
                   <span class="text-body-2 font-weight-bold text-success">
-                    ${{ (serviceForm.is_taxable ? (parseFloat(serviceForm.price_sale) * 1.15) : parseFloat(serviceForm.price_sale)).toFixed(2) }}
+                    ${{ calculateTotalWithTax(serviceForm.price_sale, serviceForm.is_taxable).toFixed(2) }}
                   </span>
                 </div>
               </div>

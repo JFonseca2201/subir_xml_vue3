@@ -50,7 +50,17 @@ const resetReturnForm = () => {
   }
 }
 
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('returns_add', returnDraftState)
+const cancelAndReturn = () => {
+  clearDraft()
+  resetForm()
+  router.push('/returns/list')
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('returns_add', returnDraftState, {
+  clearOnRouteLeave: true,
+  resetForm,
+  isMeaningful: data => !!(data.sale_id || (data.items && data.items.length > 0) || (data.reason && data.reason.trim())),
+})
 
 const searchSale = async () => {
   if (!searchSaleNumber.value) {
@@ -222,7 +232,7 @@ const formatCurrency = value => {
         variant="tonal"
         color="primary"
         class="rounded-lg elevation-2"
-        @click="router.push('/returns/list')"
+        @click="cancelAndReturn"
       />
       <div>
         <h1 class="text-h3 font-weight-bold text-primary mb-1 d-flex align-center gap-2">

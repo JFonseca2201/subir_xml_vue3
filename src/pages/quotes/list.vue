@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
@@ -15,7 +15,8 @@ const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 
 // Estado general
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const quotes = ref([])
 const pdfLoading = ref(false)
 
@@ -121,6 +122,7 @@ const loadQuotes = async () => {
     console.error('Error al cargar cotizaciones:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -610,9 +612,20 @@ watch(currentPage, () => {
 })
 
 // Montaje
+let isFirstActivation = true
+
 onMounted(() => {
   loadQuotes()
   loadAccounts()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
+  loadQuotes()
 })
 </script>
 
@@ -826,7 +839,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay cotizaciones) -->
     <VCard
-      v-if="!loading && (!quotes || quotes.length === 0)"
+      v-if="!loading && isInitialLoadDone && (!quotes || quotes.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

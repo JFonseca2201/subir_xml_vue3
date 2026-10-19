@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import Swal from 'sweetalert2'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
@@ -26,7 +26,8 @@ import { usePermissions } from '@/composables/usePermissions'
 const { can } = usePermissions()
 
 // Estado general
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const sales = ref([])
 const pdfLoading = ref(false)
 
@@ -201,6 +202,7 @@ const loadSales = async () => {
     console.error('Error al cargar ventas:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -1105,7 +1107,18 @@ watch(currentPage, () => {
 })
 
 // Montaje
+let isFirstActivation = true
+
 onMounted(() => {
+  loadSales()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   loadSales()
 })
 </script>
@@ -1406,7 +1419,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay ventas) -->
     <VCard
-      v-if="!loading && (!displayedSales || displayedSales.length === 0)"
+      v-if="!loading && isInitialLoadDone && (!displayedSales || displayedSales.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

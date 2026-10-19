@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -10,7 +10,8 @@ const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
 
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const pedidos = ref([])
 const search = ref('')
 
@@ -118,6 +119,7 @@ const loadPedidos = async () => {
     console.error('Error al cargar pedidos:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -493,9 +495,20 @@ const getSuggestionColor = category => {
   return colors[category] || 'primary'
 }
 
+let isFirstActivation = true
+
 onMounted(() => {
   loadPedidos()
   loadCategories()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
+  loadPedidos()
 })
 </script>
 
@@ -740,7 +753,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay pedidos) -->
     <VCard
-      v-if="!loading && !filteredPedidos.length"
+      v-if="!loading && isInitialLoadDone && !filteredPedidos.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

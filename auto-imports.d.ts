@@ -7,6 +7,8 @@ export {}
 declare global {
   const $api: typeof import('./src/utils/api.js')['$api']
   const COOKIE_MAX_AGE_1_YEAR: typeof import('./src/utils/constants.js')['COOKIE_MAX_AGE_1_YEAR']
+  const DEFAULT_TAX_PERCENT: typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_PERCENT']
+  const DEFAULT_TAX_RATE: typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_RATE']
   const EffectScope: typeof import('vue')['EffectScope']
   const PERMISOS: typeof import('./src/utils/constants.js')['PERMISOS']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
@@ -321,6 +323,7 @@ declare global {
   const useSum: typeof import('@vueuse/math')['useSum']
   const useSupported: typeof import('@vueuse/core')['useSupported']
   const useSwipe: typeof import('@vueuse/core')['useSwipe']
+  const useTaxConfig: typeof import('./src/composables/useTaxConfig.js')['useTaxConfig']
   const useTemplateRef: typeof import('vue')['useTemplateRef']
   const useTemplateRefsList: typeof import('@vueuse/core')['useTemplateRefsList']
   const useTextDirection: typeof import('@vueuse/core')['useTextDirection']
@@ -385,6 +388,8 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly $api: UnwrapRef<typeof import('./src/utils/api.js')['$api']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./src/utils/constants.js')['COOKIE_MAX_AGE_1_YEAR']>
+    readonly DEFAULT_TAX_PERCENT: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_PERCENT']>
+    readonly DEFAULT_TAX_RATE: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_RATE']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly PERMISOS: UnwrapRef<typeof import('./src/utils/constants.js')['PERMISOS']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -690,6 +695,7 @@ declare module 'vue' {
     readonly useSum: UnwrapRef<typeof import('@vueuse/math')['useSum']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
+    readonly useTaxConfig: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['useTaxConfig']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
     readonly useTextDirection: UnwrapRef<typeof import('@vueuse/core')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('@vueuse/core')['useTextSelection']>
@@ -746,6 +752,8 @@ declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     readonly $api: UnwrapRef<typeof import('./src/utils/api.js')['$api']>
     readonly COOKIE_MAX_AGE_1_YEAR: UnwrapRef<typeof import('./src/utils/constants.js')['COOKIE_MAX_AGE_1_YEAR']>
+    readonly DEFAULT_TAX_PERCENT: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_PERCENT']>
+    readonly DEFAULT_TAX_RATE: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['DEFAULT_TAX_RATE']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly PERMISOS: UnwrapRef<typeof import('./src/utils/constants.js')['PERMISOS']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -1051,6 +1059,7 @@ declare module '@vue/runtime-core' {
     readonly useSum: UnwrapRef<typeof import('@vueuse/math')['useSum']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
+    readonly useTaxConfig: UnwrapRef<typeof import('./src/composables/useTaxConfig.js')['useTaxConfig']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
     readonly useTextDirection: UnwrapRef<typeof import('@vueuse/core')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('@vueuse/core')['useTextSelection']>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onActivated, watch, nextTick, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -72,6 +72,21 @@ const resetWorkOrder = () => {
 const { hasDraft, draftTimestamp, clearDraft, discardDraft, restoreDraft, checkHasDraft } = useFormDraft('work_order_add', workOrder, {
   autoRestore: false,
   excludeFields: ['number'],
+  clearOnRouteLeave: true,
+  resetForm: () => {
+    resetWorkOrder()
+    selectedClient.value = null
+    selectedVehicle.value = null
+  },
+  isMeaningful: data => {
+    return !!(
+      data.client_id ||
+      (data.items && data.items.length > 0) ||
+      (data.observations && data.observations.trim()) ||
+      data.vehicle_id ||
+      data.quote_id
+    )
+  },
   validateDraft: draftData => {
     if (draftData?.number && workOrder.value.number) {
       const draftNum = parseInt(String(draftData.number).replace(/\D/g, '')) || 0
@@ -98,13 +113,37 @@ const showVehicleDialog = ref(false)
 const showAddServiceDialog = ref(false)
 const productSearch = ref(null)
 
+const isNextNumberLoading = ref(false)
+
+const fetchNextWorkOrderNumber = async (force = false) => {
+  if (!force && route.query.quote_id && workOrder.value.number) return
+
+  isNextNumberLoading.value = true
+  try {
+    const nextNumberRes = await $api('work-orders/next-number')
+    const nextSeq = nextNumberRes?.data || nextNumberRes?.number || nextNumberRes
+    if (typeof nextSeq === 'string' && nextSeq.trim()) {
+      workOrder.value.number = nextSeq.trim()
+    } else if (typeof nextSeq === 'number') {
+      workOrder.value.number = String(nextSeq).padStart(9, '0')
+    } else if (!workOrder.value.number) {
+      workOrder.value.number = '000000001'
+    }
+    console.log('[work-orders/add] Número de OT asignado automáticamente:', workOrder.value.number)
+  } catch (err) {
+    console.warn('Error loading next work order number:', err)
+  } finally {
+    isNextNumberLoading.value = false
+  }
+}
+
 const loadInitialData = async () => {
   isLoading.value = true
   try {
     getUserId()
     workOrder.value.user_id = userId.value
 
-    const [employeesRes, productsRes, nextNumberRes] = await Promise.all([
+    const [employeesRes, productsRes] = await Promise.all([
       $api('employees', { params: { per_page: 1000 } }).catch(err => {
         console.warn('Error loading employees:', err)
         
@@ -115,11 +154,7 @@ const loadInitialData = async () => {
         
         return { data: [] }
       }),
-      $api('work-orders/next-number').catch(err => {
-        console.warn('Error loading next work order number:', err)
-        
-        return null
-      }),
+      fetchNextWorkOrderNumber(),
     ])
 
     employees.value = Array.isArray(employeesRes?.employees) ? employeesRes.employees :
@@ -133,14 +168,6 @@ const loadInitialData = async () => {
       searchText: `${p.sku || ''} ${p.code || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase(),
       displayTitle: p.description || p.name || '',
     }))
-
-    // Usamos el número que entrega el backend directamente
-    const nextSeq = nextNumberRes?.data || nextNumberRes?.number || nextNumberRes
-    if (typeof nextSeq === 'string' && nextSeq.trim()) {
-      workOrder.value.number = nextSeq.trim()
-    } else {
-      workOrder.value.number = '000000001'
-    }
 
     // Validar si el borrador pertenece a una orden ya guardada en el sistema
     if (!route.query.quote_id) {
@@ -175,43 +202,69 @@ const loadInitialData = async () => {
 }
 
 const validateForm = async () => {
+  showValidationError.value = true
+
+  let isFormRefValid = true
   if (formRef.value) {
     const { valid } = await formRef.value.validate()
     if (!valid) {
-      validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
-      showValidationError.value = true
-      showNotification('Por favor, complete todos los campos obligatorios marcados con *', 'warning')
-
-      return false
+      isFormRefValid = false
     }
   }
 
-  if (!workOrder.value.client_id) {
-    validationErrorMessage.value = 'Debe seleccionar un cliente'
-    showValidationError.value = true
-    showNotification('Debe seleccionar un cliente', 'warning')
+  if (!workOrder.value.number || !String(workOrder.value.number).trim()) {
+    validationErrorMessage.value = 'El número de orden es requerido'
+    showNotification('El número de orden es requerido', 'warning')
+    return false
+  }
 
+  if (!workOrder.value.date) {
+    validationErrorMessage.value = 'La fecha de la orden es requerida'
+    showNotification('La fecha de la orden es requerida', 'warning')
+    return false
+  }
+
+  if (!workOrder.value.client_id || !selectedClient.value) {
+    validationErrorMessage.value = 'Debe seleccionar un cliente obligatorio'
+    showNotification('Debe seleccionar un cliente obligatorio', 'warning')
     return false
   }
 
   // Validar que haya al menos un producto o servicio
   if (!workOrder.value.items || workOrder.value.items.length === 0) {
     validationErrorMessage.value = 'Debe agregar al menos un producto o servicio a la orden de trabajo.'
-    showValidationError.value = true
     showNotification('Debe agregar al menos un producto o servicio a la orden de trabajo', 'warning')
-
     return false
   }
 
-  if (hasServices.value && !workOrder.value.vehicle_id) {
-    await assignDefaultVehicle()
-    if (!workOrder.value.vehicle_id) {
-      validationErrorMessage.value = 'La orden contiene servicios y requiere asociar un vehículo.'
-      showValidationError.value = true
-      showNotification('La orden contiene servicios y requiere asociar un vehículo.', 'warning')
-
+  // Validar cantidades y precios en items
+  for (let i = 0; i < workOrder.value.items.length; i++) {
+    const item = workOrder.value.items[i]
+    if (!item.quantity || item.quantity <= 0) {
+      validationErrorMessage.value = `La cantidad del ítem #${i + 1} debe ser mayor a 0`
+      showNotification(`La cantidad del ítem #${i + 1} debe ser mayor a 0`, 'warning')
       return false
     }
+    if (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) {
+      validationErrorMessage.value = `El precio del ítem #${i + 1} no puede ser negativo`
+      showNotification(`El precio del ítem #${i + 1} no puede ser negativo`, 'warning')
+      return false
+    }
+  }
+
+  if (hasServices.value && (!workOrder.value.vehicle_id || !selectedVehicle.value)) {
+    await assignDefaultVehicle()
+    if (!workOrder.value.vehicle_id || !selectedVehicle.value) {
+      validationErrorMessage.value = 'La orden contiene servicios y requiere asociar un vehículo.'
+      showNotification('La orden contiene servicios y requiere asociar un vehículo.', 'warning')
+      return false
+    }
+  }
+
+  if (!isFormRefValid) {
+    validationErrorMessage.value = 'Por favor, complete todos los campos obligatorios marcados con *'
+    showNotification('Por favor, complete todos los campos obligatorios marcados con *', 'warning')
+    return false
   }
 
   return true
@@ -258,6 +311,10 @@ const saveWorkOrder = async () => {
       showNotification('Orden de trabajo creada exitosamente', 'success')
     }
     clearDraft()
+    resetWorkOrder()
+    selectedClient.value = null
+    selectedVehicle.value = null
+    showValidationError.value = false
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al crear orden de trabajo:', error)
@@ -309,6 +366,10 @@ const saveDraft = async () => {
 
     showNotification('Borrador de orden guardado exitosamente', 'success')
     clearDraft()
+    resetWorkOrder()
+    selectedClient.value = null
+    selectedVehicle.value = null
+    showValidationError.value = false
     router.push('/work-orders')
   } catch (error) {
     console.error('Error al guardar borrador:', error)
@@ -325,6 +386,11 @@ const saveDraft = async () => {
 }
 
 const cancel = () => {
+  clearDraft()
+  resetWorkOrder()
+  selectedClient.value = null
+  selectedVehicle.value = null
+  showValidationError.value = false
   router.push('/work-orders')
 }
 
@@ -676,97 +742,116 @@ watch(() => workOrder.value.vehicle_id, newVal => {
   }
 })
 
+const loadQuoteForOrder = async quoteId => {
+  if (!quoteId) return
+  try {
+    isLoading.value = true
+
+    const quoteRes = await $api(`quotes/${quoteId}`)
+    const quote = quoteRes.data || quoteRes
+
+    if (quote) {
+      workOrder.value.quote_id = quote.id
+      workOrder.value.quote_number = quote.document_number
+      workOrder.value.client_id = quote.client_id
+      workOrder.value.vehicle_id = quote.vehicle_id
+      workOrder.value.user_id = quote.user_id || userId.value
+      workOrder.value.mileage = quote.mileage
+      workOrder.value.fuel_level = quote.fuel_level || '1/2'
+      workOrder.value.observations = quote.observations || ''
+      workOrder.value.date = quote.date ? quote.date.split(' ')[0] : workOrder.value.date
+
+      if (quote.technicians && Array.isArray(quote.technicians)) {
+        workOrder.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
+      }
+
+      if (quote.client) {
+        selectedClient.value = quote.client
+      } else if (quote.client_id) {
+        try {
+          const clientRes = await $api(`clients/${quote.client_id}`)
+
+          selectedClient.value = clientRes.client || clientRes.data || clientRes
+        } catch (e) {
+          console.error('Error al cargar cliente:', e)
+        }
+      }
+
+      if (quote.vehicle) {
+        selectedVehicle.value = quote.vehicle
+      } else if (quote.vehicle_id) {
+        try {
+          const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
+
+          selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
+        } catch (e) {
+          console.error('Error al cargar vehículo:', e)
+        }
+      }
+
+      if (quote.details && quote.details.length > 0) {
+        workOrder.value.items = quote.details.map(item => {
+          if (item.product) {
+            const existingIdx = products.value.findIndex(p => p.id === item.product.id)
+            if (existingIdx >= 0) {
+              products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
+            } else {
+              products.value.push(item.product)
+            }
+          }
+
+          const isService = item.type === 'service' ||
+            item.item_type === 2 ||
+            item.product?.item_type === 2 ||
+            (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
+            (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
+            (!item.product_id && !item.sku)
+
+          return {
+            product_id: item.product_id,
+            description: item.description,
+            quantity: item.quantity,
+            unit_price: item.price || item.unit_price || 0,
+            discount: item.discount || 0,
+            subtotal: item.subtotal,
+            type: isService ? 'service' : 'product',
+            sku: item.product?.sku || item.product?.code || item.sku || '',
+            stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
+            product: item.product || null,
+          }
+        })
+      }
+
+      showNotification(`Cotización #${quote.document_number} cargada para crear Orden de Trabajo`, 'success')
+    }
+  } catch (e) {
+    console.error('Error al cargar cotización para OT:', e)
+    showNotification('Error al cargar la cotización seleccionada', 'error')
+  } finally {
+    isLoading.value = false
+  }
+}
+
 onMounted(async () => {
   await loadInitialData()
 
+  if (route.query.quote_id) {
+    await loadQuoteForOrder(route.query.quote_id)
+  }
+})
+
+onActivated(async () => {
+  getUserId()
+  workOrder.value.user_id = userId.value
+
   const quoteId = route.query.quote_id
   if (quoteId) {
-    try {
-      isLoading.value = true
-
-      const quoteRes = await $api(`quotes/${quoteId}`)
-      const quote = quoteRes.data || quoteRes
-
-      if (quote) {
-        workOrder.value.quote_id = quote.id
-        workOrder.value.quote_number = quote.document_number
-        workOrder.value.client_id = quote.client_id
-        workOrder.value.vehicle_id = quote.vehicle_id
-        workOrder.value.user_id = quote.user_id || userId.value
-        workOrder.value.mileage = quote.mileage
-        workOrder.value.fuel_level = quote.fuel_level || '1/2'
-        workOrder.value.observations = quote.observations || ''
-        workOrder.value.date = quote.date ? quote.date.split(' ')[0] : workOrder.value.date
-
-        if (quote.technicians && Array.isArray(quote.technicians)) {
-          workOrder.value.technicians = quote.technicians.map(t => typeof t === 'object' ? t.id : t)
-        }
-
-        if (quote.client) {
-          selectedClient.value = quote.client
-        } else if (quote.client_id) {
-          try {
-            const clientRes = await $api(`clients/${quote.client_id}`)
-
-            selectedClient.value = clientRes.client || clientRes.data || clientRes
-          } catch (e) {
-            console.error('Error al cargar cliente:', e)
-          }
-        }
-
-        if (quote.vehicle) {
-          selectedVehicle.value = quote.vehicle
-        } else if (quote.vehicle_id) {
-          try {
-            const vehicleRes = await $api(`vehicles/${quote.vehicle_id}`)
-
-            selectedVehicle.value = vehicleRes.vehicle || vehicleRes.data || vehicleRes
-          } catch (e) {
-            console.error('Error al cargar vehículo:', e)
-          }
-        }
-
-        if (quote.details && quote.details.length > 0) {
-          workOrder.value.items = quote.details.map(item => {
-            if (item.product) {
-              const existingIdx = products.value.findIndex(p => p.id === item.product.id)
-              if (existingIdx >= 0) {
-                products.value[existingIdx] = { ...products.value[existingIdx], ...item.product }
-              } else {
-                products.value.push(item.product)
-              }
-            }
-
-            const isService = item.type === 'service' ||
-              item.item_type === 2 ||
-              item.product?.item_type === 2 ||
-              (item.sku && String(item.sku).toUpperCase().startsWith('SRV-')) ||
-              (item.product?.sku && String(item.product.sku).toUpperCase().startsWith('SRV-')) ||
-              (!item.product_id && !item.sku)
-
-            return {
-              product_id: item.product_id,
-              description: item.description,
-              quantity: item.quantity,
-              unit_price: item.price || item.unit_price || 0,
-              discount: item.discount || 0,
-              subtotal: item.subtotal,
-              type: isService ? 'service' : 'product',
-              sku: item.product?.sku || item.product?.code || item.sku || '',
-              stock: item.product?.stock !== undefined ? item.product.stock : item.stock,
-              product: item.product || null,
-            }
-          })
-        }
-
-        showNotification(`Cotización #${quote.document_number} cargada para crear Orden de Trabajo`, 'success')
-      }
-    } catch (e) {
-      console.error('Error al cargar cotización para OT:', e)
-      showNotification('Error al cargar la cotización seleccionada', 'error')
-    } finally {
-      isLoading.value = false
+    if (workOrder.value.quote_id !== Number(quoteId) && workOrder.value.quote_id !== String(quoteId)) {
+      await loadQuoteForOrder(quoteId)
     }
+  } else {
+    // Si no es conversión de cotización, refrescar siempre el número consecutivo de la orden
+    await fetchNextWorkOrderNumber()
   }
 })
 </script>
@@ -988,7 +1073,11 @@ onMounted(async () => {
                     hide-details="auto"
                     color="primary"
                     :rules="[(v) => !!v || 'Número de orden es requerido']"
-                    :loading="isLoading"
+                    :loading="isLoading || isNextNumberLoading"
+                    :error="showValidationError && (!workOrder.number || !String(workOrder.number).trim())"
+                    :error-messages="showValidationError && (!workOrder.number || !String(workOrder.number).trim()) ? ['Número de orden es requerido'] : []"
+                    append-inner-icon="ri-refresh-line"
+                    @click:append-inner="fetchNextWorkOrderNumber(true)"
                   />
                 </VCol>
 
@@ -1007,6 +1096,8 @@ onMounted(async () => {
                     hide-details="auto"
                     color="primary"
                     :rules="[(v) => !!v || 'Fecha es requerida']"
+                    :error="showValidationError && !workOrder.date"
+                    :error-messages="showValidationError && !workOrder.date ? ['Fecha es requerida'] : []"
                   />
                 </VCol>
 
@@ -1023,7 +1114,9 @@ onMounted(async () => {
                     label="Cliente *"
                     icon="ri-user-line"
                     :initial-item="selectedClient"
-                    :rules="[(v) => !!workOrder.client_id || 'Cliente es requerido']"
+                    :rules="[(v) => !!v || !!workOrder.client_id || 'Cliente es requerido']"
+                    :error="showValidationError && (!selectedClient || !workOrder.client_id)"
+                    :error-messages="showValidationError && (!selectedClient || !workOrder.client_id) ? ['Cliente es requerido'] : []"
                   >
                     <template #item="{ props, item }">
                       <VListItem
@@ -1080,9 +1173,12 @@ onMounted(async () => {
                       :return-object="true"
                       endpoint="vehicles/search"
                       item-title="license_plate"
-                      label="Vehículo (Opcional)"
+                      :label="hasServices ? 'Vehículo * (Obligatorio para servicios)' : 'Vehículo (Opcional)'"
                       icon="ri-car-line"
                       :initial-item="selectedVehicle"
+                      :rules="[v => (!hasServices || !!v || !!workOrder.vehicle_id) || 'Debe asociar un vehículo obligatorio para servicios']"
+                      :error="showValidationError && hasServices && (!selectedVehicle || !workOrder.vehicle_id)"
+                      :error-messages="showValidationError && hasServices && (!selectedVehicle || !workOrder.vehicle_id) ? ['Debe asociar un vehículo obligatorio para servicios'] : []"
                     >
                       <template #item="{ props, item }">
                         <VListItem
@@ -1701,6 +1797,7 @@ onMounted(async () => {
                             min="1"
                             max="999"
                             class="wo-qty-val font-mono"
+                            :class="{ 'input-invalid-red': showValidationError && (!item.quantity || item.quantity <= 0) }"
                             @input="item.quantity > 999 ? item.quantity = 999 : null"
                             @blur="(!item.quantity || item.quantity < 1) ? item.quantity = 1 : null"
                           >
@@ -1718,7 +1815,10 @@ onMounted(async () => {
                         </div>
                       </td>
                       <td class="text-center py-2">
-                        <div class="wo-compact-input-wrap">
+                        <div
+                          class="wo-compact-input-wrap"
+                          :class="{ 'wrap-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }"
+                        >
                           <span class="wo-currency">$</span>
                           <input
                             v-model.number="item.unit_price"
@@ -1726,6 +1826,7 @@ onMounted(async () => {
                             step="0.01"
                             min="0"
                             class="wo-compact-input font-mono font-weight-bold text-slate-800"
+                            :class="{ 'input-invalid-red': showValidationError && (item.unit_price === null || item.unit_price === undefined || item.unit_price < 0) }"
                           >
                         </div>
                       </td>
@@ -1764,8 +1865,9 @@ onMounted(async () => {
               <!-- Estado Vacío -->
               <div
                 v-else
-                class="text-center pa-10 rounded-xl bg-slate-50 border border-dashed transition-all"
-                :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-error bg-red-50' : ''"
+                class="text-center pa-10 rounded-xl transition-all"
+                :class="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-2 border-dashed bg-red-50' : 'bg-slate-50 border border-dashed'"
+                :style="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'border-color: rgb(var(--v-theme-error)) !important;' : ''"
               >
                 <VAvatar
                   :color="showValidationError && (!workOrder.items || workOrder.items.length === 0) ? 'error' : 'primary'"
@@ -2126,4 +2228,19 @@ onMounted(async () => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.input-invalid-red {
+  border: 1.5px solid rgb(var(--v-theme-error)) !important;
+  background-color: rgba(var(--v-theme-error), 0.08) !important;
+  color: rgb(var(--v-theme-error)) !important;
+  border-radius: 4px;
+}
+
+.wrap-invalid-red {
+  border: 1.5px solid rgb(var(--v-theme-error)) !important;
+  border-radius: 6px;
+  background-color: rgba(var(--v-theme-error), 0.08) !important;
+}
+</style>
 

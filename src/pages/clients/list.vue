@@ -1,6 +1,6 @@
 <script setup>
 /* eslint-disable camelcase */
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
@@ -21,7 +21,8 @@ const loader = useLoaderStore()
 const { can } = usePermissions()
 
 // Estado
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const clients = ref([])
 const clientDialog = ref(false)
 const selectedClient = ref(null)
@@ -153,6 +154,7 @@ const loadClients = async () => {
     console.error('❌ Error al cargar clientes:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -230,7 +232,18 @@ const handleClientCompanyUpdated = clientData => {
   loadClients()
 }
 
+let isFirstActivation = true
+
 onMounted(() => {
+  loadClients()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   loadClients()
 })
 </script>
@@ -482,7 +495,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay clientes) -->
     <VCard
-      v-if="!loading && !clients.length"
+      v-if="!loading && isInitialLoadDone && !clients.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

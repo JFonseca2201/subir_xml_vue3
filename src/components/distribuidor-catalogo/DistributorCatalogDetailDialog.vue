@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
+import { useTaxConfig } from '@/composables/useTaxConfig'
 
 const props = defineProps({
   isDialogVisible: {
@@ -16,9 +17,8 @@ const props = defineProps({
 const emit = defineEmits(['update:isDialogVisible'])
 
 const { showNotification } = useGlobalToast()
+const { taxPercent, calculateTax, calculateTotalWithTax } = useTaxConfig()
 const copiedField = ref(null)
-
-const TAX_RATE = 0.15 // IVA Ecuador 15%
 
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
@@ -39,11 +39,11 @@ const normalPrice = computed(() => {
 })
 
 const ivaAmount = computed(() => {
-  return normalPrice.value * TAX_RATE
+  return calculateTax(normalPrice.value, true)
 })
 
 const priceWithIva = computed(() => {
-  return normalPrice.value + ivaAmount.value
+  return calculateTotalWithTax(normalPrice.value, true)
 })
 
 // Código auxiliar / secundario
@@ -292,7 +292,7 @@ const copyText = async (text, label = 'Texto') => {
               </span>
             </div>
             <span class="text-caption text-medium-emphasis font-weight-medium">
-              IVA 15%
+              IVA {{ taxPercent }}%
             </span>
           </div>
 
@@ -308,10 +308,10 @@ const copyText = async (text, label = 'Texto') => {
               </div>
             </div>
 
-            <!-- IVA 15% -->
+            <!-- IVA -->
             <div class="price-stat-item flex-grow-1 pa-2.5 rounded-lg bg-surface border text-center">
               <div class="text-caption text-medium-emphasis font-weight-medium mb-0.5">
-                + IVA (15%)
+                + IVA ({{ taxPercent }}%)
               </div>
               <div class="font-mono font-weight-bold text-body-1 text-medium-emphasis">
                 {{ formatCurrency(ivaAmount) }}

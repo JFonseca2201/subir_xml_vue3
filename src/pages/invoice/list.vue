@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import Swal from 'sweetalert2'
 import { useDebounceFn } from '@vueuse/core'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -26,7 +26,8 @@ const range_date = ref(null)
 const search = ref(null)
 const type = ref(1)
 
-const isLoading = ref(false)
+const isLoading = ref(true)
+const isInitialLoadDone = ref(false)
 const isSearching = ref(false)
 
 const isInvoiceShowDialogVisible = ref(false)
@@ -80,6 +81,7 @@ const list = async () => {
     console.error('❌ Error al cargar facturas:', error)
   } finally {
     isLoading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -224,8 +226,19 @@ const formatDate = dateString => {
   return dateString
 }
 
+let isFirstActivation = true
+
 onMounted(() => {
   config()
+  list()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   list()
 })
 </script>
@@ -465,7 +478,7 @@ onMounted(() => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay facturas) -->
     <VCard
-      v-if="!loading && (!list_invoices || list_invoices.length === 0)"
+      v-if="!isLoading && isInitialLoadDone && (!list_invoices || list_invoices.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar
@@ -513,7 +526,7 @@ onMounted(() => {
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
         <!-- Skeleton Móvil mientras carga -->
-        <template v-if="loading">
+        <template v-if="isLoading">
           <VCard
             v-for="n in 4"
             :key="'mob-skel-inv-' + n"
@@ -767,7 +780,7 @@ onMounted(() => {
             </tr>
           </thead>
           <tbody>
-            <template v-if="loading">
+            <template v-if="isLoading">
               <tr
                 v-for="n in 5"
                 :key="'skel-inv-row-' + n"

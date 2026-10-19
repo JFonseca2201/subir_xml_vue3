@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onActivated, computed, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter, useRoute } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
@@ -59,7 +59,8 @@ const getWorkOrderAdvances = item => {
   return 0
 }
 
-const isLoading = ref(false)
+const isLoading = ref(true)
+const isInitialLoadDone = ref(false)
 const workOrders = ref([])
 const searchQuery = ref('')
 const debouncedSearchQuery = ref('')
@@ -242,6 +243,7 @@ const loadWorkOrders = async () => {
     console.error('Error al cargar órdenes de trabajo:', error)
   } finally {
     isLoading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -552,7 +554,22 @@ const formatWorkOrderNumber = (num, fallbackId = null) => {
   return '-'
 }
 
+let isFirstActivation = true
+
 onMounted(() => {
+  if (route.query.search) {
+    searchQuery.value = String(route.query.search)
+    debouncedSearchQuery.value = String(route.query.search)
+  }
+  loadWorkOrders()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   if (route.query.search) {
     searchQuery.value = String(route.query.search)
     debouncedSearchQuery.value = String(route.query.search)
@@ -846,7 +863,7 @@ watch(() => route.query.search, newSearch => {
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay órdenes) -->
     <VCard
-      v-if="!isLoading && !filteredWorkOrders.length"
+      v-if="!isLoading && isInitialLoadDone && !filteredWorkOrders.length"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

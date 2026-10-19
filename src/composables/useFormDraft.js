@@ -1,10 +1,16 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, isRef } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 
 /**
  * Composable universal para autoguardado y recuperación de formularios (textos, selects, arrays, imágenes).
  * Protegido contra re-guardado accidental de formularios ya guardados o finalizados.
  * 
- * @param {string} draftKey - Clave única para identificar el formulario (ej: 'pedido_distribuidor', 'product_add', 'work_order_add')
+ * Regla de negocio:
+ * - Los borradores SÓLO se conservan si ocurre un imprevisto del sistema (cierre de pestaña, recarga accidental F5, caída).
+ * - Si el usuario interactúa con botones de acción (Cancelar, Volver al Listado, Guardar) o navega deliberadamente,
+ *   el borrador se elimina y el formulario de entrada se limpia.
+ * 
+ * @param {string} draftKey - Clave única para identificar el formulario (ej: 'sale_add', 'product_add', 'work_order_add')
  * @param {Ref|Object} formData - Objeto reactivo con los campos del formulario
  * @param {Object} options - Opciones de configuración
  * @param {number} [options.debounce=400] - Tiempo en ms para guardar tras la última edición
@@ -12,6 +18,9 @@ import { ref, watch, onMounted, onUnmounted, nextTick, isRef } from 'vue'
  * @param {Array<string>} [options.excludeFields=[]] - Campos a ignorar en el guardado
  * @param {Function} [options.validateDraft=null] - Función validadora (data) => boolean para verificar si el borrador es válido
  * @param {Function} [options.onRestored=null] - Callback ejecutado tras restaurar
+ * @param {boolean} [options.clearOnRouteLeave=true] - Si elimina el borrador al navegar por rutas internas
+ * @param {Function} [options.resetForm=null] - Callback para limpiar el formulario cuando se usa una acción o navegación
+ * @param {Function} [options.isMeaningful=null] - Función para comprobar si hay datos reales del usuario
  */
 export function useFormDraft(draftKey, formData, options = {}) {
   const {
@@ -20,6 +29,9 @@ export function useFormDraft(draftKey, formData, options = {}) {
     excludeFields = [],
     validateDraft = null,
     onRestored = null,
+    clearOnRouteLeave = true,
+    resetForm = null,
+    isMeaningful = null,
   } = options
 
   const storageKey = `ot_draft_${draftKey}`
@@ -30,11 +42,36 @@ export function useFormDraft(draftKey, formData, options = {}) {
   let debounceTimeout = null
   let stopWatchFn = null
 
+  // Claves que son configuración o valores por defecto del sistema (no representan datos reales del usuario)
+  const defaultIgnoredKeys = [
+    'user_id',
+    'usuario_id',
+    'date',
+    'created_at',
+    'service_date',
+    'number',
+    'document_number',
+    'status',
+    'document_type',
+    'payment_status',
+    'is_credited',
+    'ambiente',
+    'state',
+    'tax_rate',
+  ]
+
   // Función segura para serializar objetos (excluyendo File/Blob y detectando contenido significativo)
   const serializeForm = obj => {
     try {
       const source = isRef(obj) ? obj.value : obj
       if (!source || typeof source !== 'object') return null
+
+      // Si se definió un comprobador personalizado de datos significativos
+      if (typeof isMeaningful === 'function') {
+        if (!isMeaningful(source)) {
+          return null
+        }
+      }
 
       const cleaned = {}
       let hasMeaningfulData = false
@@ -49,17 +86,14 @@ export function useFormDraft(draftKey, formData, options = {}) {
         if (value instanceof File) continue
 
         // Detectar si el formulario contiene datos reales ingresados por el usuario
-        if (
-          key !== 'user_id' &&
-          key !== 'date' &&
-          key !== 'service_date' &&
-          key !== 'number' &&
-          key !== 'document_number' &&
-          key !== 'status'
-        ) {
+        if (!defaultIgnoredKeys.includes(key)) {
           if (Array.isArray(value) && value.length > 0) {
             hasMeaningfulData = true
-          } else if (value !== null && value !== undefined && value !== '' && value !== false) {
+          } else if (typeof value === 'object' && value !== null) {
+            if (Object.keys(value).length > 0) {
+              hasMeaningfulData = true
+            }
+          } else if (value !== null && value !== undefined && value !== '' && value !== false && value !== 0) {
             hasMeaningfulData = true
           }
         }
@@ -68,7 +102,7 @@ export function useFormDraft(draftKey, formData, options = {}) {
       }
 
       // Si no hay datos ingresados por el usuario (está vacío o en estado inicial por defecto), no guardar borrador
-      if (!hasMeaningfulData) {
+      if (!hasMeaningfulData && typeof isMeaningful !== 'function') {
         return null
       }
 
@@ -156,8 +190,7 @@ export function useFormDraft(draftKey, formData, options = {}) {
     }
   }
 
-  // Limpiar borrador tras guardar con éxito en backend
-  // Cancela debounces pendientes, apaga el observador y previene que el registro salvado se vuelva a autoguardar
+  // Limpiar borrador tras guardar con éxito en backend o al accionar cancelar/volver
   const clearDraft = () => {
     isSavingDisabled = true
     if (debounceTimeout) {
@@ -180,8 +213,9 @@ export function useFormDraft(draftKey, formData, options = {}) {
   // Descartar borrador y reiniciar
   const discardDraft = (resetCallback = null) => {
     clearDraft()
-    if (typeof resetCallback === 'function') {
-      resetCallback()
+    const fn = resetCallback || resetForm
+    if (typeof fn === 'function') {
+      fn()
     }
   }
 
@@ -230,6 +264,31 @@ export function useFormDraft(draftKey, formData, options = {}) {
 
   initWatcher()
 
+  // Manejo de salida inesperada del sistema (cierre de pestaña, recarga por error o corte de conexión)
+  const handleBeforeUnload = () => {
+    saveDraft()
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pagehide', handleBeforeUnload)
+  }
+
+  // Si se navega internamente mediante Vue Router (botones de acción, menús, etc.),
+  // se limpia el borrador y se resetea el formulario según la regla de negocio
+  try {
+    onBeforeRouteLeave(() => {
+      if (clearOnRouteLeave) {
+        clearDraft()
+        if (typeof resetForm === 'function') {
+          resetForm()
+        }
+      }
+    })
+  } catch (e) {
+    // onBeforeRouteLeave solo opera si se invoca dentro de un componente de ruta
+  }
+
   onMounted(() => {
     const hasValid = checkHasDraft()
     if (autoRestore && hasValid) {
@@ -238,6 +297,10 @@ export function useFormDraft(draftKey, formData, options = {}) {
   })
 
   onUnmounted(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('pagehide', handleBeforeUnload)
+    }
     if (debounceTimeout) clearTimeout(debounceTimeout)
     if (typeof stopWatchFn === 'function') stopWatchFn()
   })

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onActivated, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api, getApiBaseUrl } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
@@ -17,7 +17,8 @@ import { usePermissions } from '@/composables/usePermissions'
 const { can } = usePermissions()
 
 // Estado
-const loading = ref(false)
+const loading = ref(true)
+const isInitialLoadDone = ref(false)
 const products = ref([])
 const searchFormRef = ref(null)
 const productDialog = ref(false)
@@ -143,6 +144,7 @@ const searchProducts = async () => {
     console.error('Error al buscar productos:', error)
   } finally {
     loading.value = false
+    isInitialLoadDone.value = true
   }
 }
 
@@ -339,8 +341,19 @@ const downloadPdf = () => {
 
 
 // Montar componente
+let isFirstActivation = true
+
 onMounted(() => {
   loadInitialData()
+  searchProducts()
+})
+
+onActivated(() => {
+  if (isFirstActivation) {
+    isFirstActivation = false
+    
+    return
+  }
   searchProducts()
 })
 
@@ -682,7 +695,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay productos) -->
     <VCard
-      v-if="!loading && (!products || products.length === 0)"
+      v-if="!loading && isInitialLoadDone && (!products || products.length === 0)"
       class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
     >
       <VAvatar

@@ -6,10 +6,12 @@ import { $api } from '@/utils/api'
 import { useLoaderStore } from '@/stores/loader'
 import { XMLParser } from "fast-xml-parser"
 import { useFormDraft } from '@/composables/useFormDraft'
+import { useTaxConfig } from '@/composables/useTaxConfig'
 
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+const { taxPercent, calculateTax } = useTaxConfig()
 
 const isSubmitting = ref(false)
 const isLoadingConfig = ref(false)
@@ -236,7 +238,17 @@ const resetPurchaseForm = () => {
   clearXmlData()
 }
 
-const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('invoice_manual_purchase', purchaseDraftState)
+const cancelAndReturn = () => {
+  clearDraft()
+  resetPurchaseForm()
+  router.push('/invoice/list')
+}
+
+const { hasDraft, draftTimestamp, clearDraft, discardDraft } = useFormDraft('invoice_manual_purchase', purchaseDraftState, {
+  clearOnRouteLeave: true,
+  resetForm: resetPurchaseForm,
+  isMeaningful: data => !!(data.supplier_id || (data.items && data.items.length > 0) || (data.invoice_number && data.invoice_number.trim())),
+})
 
 // Manual Product Entry State
 const isManualProductDialogOpen = ref(false)
@@ -333,7 +345,7 @@ const addManualProduct = () => {
   const disc = Number(manualItem.value.discount) || 0
   const sub = qty * price
   const isTaxable = manualItem.value.is_taxable ? 1 : 0
-  const taxVal = isTaxable === 1 ? (sub - disc) * 0.15 : 0
+  const taxVal = calculateTax(sub - disc, isTaxable === 1)
 
   items.value.push({
     id: Date.now(),
@@ -844,7 +856,7 @@ const addProductToItems = product => {
   const unitPrice = Number(product.purchase_price) || 0
   const discount = Number(product.discount) || 0
   const sub = Number(((qty * unitPrice) - discount).toFixed(2))
-  const tax = isTaxable === 1 ? Number((sub * 0.15).toFixed(2)) : 0
+  const tax = calculateTax(sub, isTaxable === 1)
   const total = Number((sub + tax).toFixed(2))
 
   items.value.push({
@@ -877,7 +889,7 @@ const updateItemTotals = item => {
   const isTaxable = (item.is_taxable === 0 || item.is_taxable === '0' || item.is_taxable === false) ? 0 : 1
 
   item.is_taxable = isTaxable
-  item.tax = isTaxable === 1 ? Number((item.subtotal * 0.15).toFixed(2)) : 0
+  item.tax = calculateTax(item.subtotal, isTaxable === 1)
   item.total = Number((item.subtotal + item.tax).toFixed(2))
 
   if (isSharedInvoice.value) {
@@ -1022,6 +1034,16 @@ onMounted(() => {
         md="6"
         class="d-flex justify-end align-center gap-2 flex-wrap ms-auto"
       >
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-arrow-left-line"
+          class="rounded-lg font-weight-medium"
+          @click="cancelAndReturn"
+        >
+          Volver al Listado
+        </VBtn>
+
         <!-- Si no hay XML cargado -->
         <VBtn
           v-if="!xmlLoadedInfo"
@@ -1969,17 +1991,17 @@ onMounted(() => {
                         :variant="item.is_taxable == 1 ? 'tonal' : 'outlined'"
                         class="font-weight-bold cursor-pointer px-1"
                         style="height: 22px; font-size: 0.72rem;"
-                        :title="item.is_taxable == 1 ? 'Grava IVA 15% (Clic para cambiar a 0%)' : 'No grava IVA (Clic para cambiar a 15%)'"
+                        :title="item.is_taxable == 1 ? `Grava IVA ${taxPercent}% (Clic para cambiar a 0%)` : `No grava IVA (Clic para cambiar a ${taxPercent}%)`"
                         @click="toggleItemTax(item)"
                       >
-                        {{ item.is_taxable == 1 ? '15%' : '0%' }}
+                        {{ item.is_taxable == 1 ? `${taxPercent}%` : '0%' }}
                       </VChip>
                       <span
                         v-else
                         class="text-caption font-weight-medium"
                         style="font-size: 0.72rem;"
                       >
-                        {{ item.is_taxable == 1 ? '15%' : '0%' }}
+                        {{ item.is_taxable == 1 ? `${taxPercent}%` : '0%' }}
                       </span>
                     </td>
 
@@ -2148,7 +2170,7 @@ onMounted(() => {
                 <span class="font-weight-bold">${{ subtotal.toFixed(2) }}</span>
               </div>
               <div class="d-flex justify-space-between mb-4">
-                <span class="text-medium-emphasis">Impuestos (IVA 15%)</span>
+                <span class="text-medium-emphasis">Impuestos (IVA {{ taxPercent }}%)</span>
                 <span class="font-weight-bold">${{ totalTax.toFixed(2) }}</span>
               </div>
               <div class="d-flex justify-space-between mb-3 align-center">
@@ -2204,6 +2226,18 @@ onMounted(() => {
                 @click="submitPurchase"
               >
                 {{ isDuplicateInvoice ? 'Factura Ya Registrada' : 'Registrar Compra' }}
+              </VBtn>
+
+              <VBtn
+                block
+                variant="outlined"
+                color="secondary"
+                size="large"
+                prepend-icon="ri-close-line"
+                class="font-weight-medium mt-2"
+                @click="cancelAndReturn"
+              >
+                Cancelar
               </VBtn>
             </VCardText>
           </VCard>
