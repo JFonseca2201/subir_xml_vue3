@@ -2,15 +2,23 @@ import { ref, computed } from 'vue'
 
 // Estado reactivo global del usuario autenticado
 const userState = ref(null)
+let lastRawUser = null
 
-function initUser() {
+function initUser(force = false) {
   try {
-    const userStr = localStorage.getItem('user')
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null
 
+    // Si el contenido en localStorage no cambió y ya tenemos estado, evitar reasignar para no romper reactividad
+    if (!force && userStr === lastRawUser && userState.value !== null) {
+      return
+    }
+
+    lastRawUser = userStr
     userState.value = userStr ? JSON.parse(userStr) : null
   } catch (e) {
     console.error('Error parsing user from localStorage:', e)
     userState.value = null
+    lastRawUser = null
   }
 }
 
@@ -20,14 +28,24 @@ initUser()
 // Escuchar cambios de localStorage entre ventanas o eventos del navegador
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', () => {
-    initUser()
+    initUser(true)
   })
 }
 
 export function refreshPermissionsUser(userObj = null) {
   if (userObj) {
-    userState.value = userObj
-    localStorage.setItem('user', JSON.stringify(userObj))
+    try {
+      const userStr = JSON.stringify(userObj)
+      if (userStr !== lastRawUser) {
+        lastRawUser = userStr
+        userState.value = userObj
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', userStr)
+        }
+      }
+    } catch (e) {
+      userState.value = userObj
+    }
   } else {
     initUser()
   }

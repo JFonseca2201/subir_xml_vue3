@@ -174,29 +174,15 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
   z-index: variables.$layout-vertical-nav-z-index;
   display: flex;
   flex-direction: column;
-  block-size: 100%;
+  block-size: calc(100% - #{variables.$layout-vertical-nav-navbar-height});
   inline-size: variables.$layout-vertical-nav-width;
-  inset-block-start: 0;
+  inset-block-start: variables.$layout-vertical-nav-navbar-height;
   inset-inline-start: 0;
   transition: inline-size 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
   will-change: transform, inline-size;
 
   .nav-header {
-    display: flex;
-    align-items: center;
-
-    .header-action {
-      cursor: pointer;
-
-      @at-root {
-        #{variables.$selector-vertical-nav-mini} .nav-header .header-action {
-          &.nav-pin,
-          &.nav-unpin {
-            display: none !important;
-          }
-        }
-      }
-    }
+    display: none !important;
   }
 
   .app-title-wrapper {
@@ -205,6 +191,7 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
 
   .nav-items {
     block-size: 100%;
+    padding-top: 0.75rem;
 
     // ℹ️ We no loner needs this overflow styles as perfect scrollbar applies it
     // overflow-x: hidden;
@@ -223,7 +210,13 @@ const hideTitleAndIcon = configStore.isVerticalNavMini(isHovered)
   // 👉 Collapsed
   .layout-vertical-nav-collapsed & {
     &:not(.hovered) {
-      inline-size: variables.$layout-vertical-nav-collapsed-width;
+      inline-size: variables.$layout-vertical-nav-collapsed-width !important;
+      width: variables.$layout-vertical-nav-collapsed-width !important;
+
+      .nav-header {
+        justify-content: center;
+        padding-inline: 0;
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter, useRoute } from "vue-router"
@@ -10,7 +10,7 @@ import { usePermissions } from '@/composables/usePermissions'
 const router = useRouter()
 const route = useRoute()
 const loader = useLoaderStore()
-const { can, currentUser, refreshPermissionsUser } = usePermissions()
+const { can, currentUser } = usePermissions()
 
 const user = computed(() => currentUser.value)
 
@@ -20,12 +20,6 @@ const isShortcutsDialogVisible = ref(false)
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '593999179988'
 const supportWhatsappUrl = computed(() => `https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}`)
-
-watch(isMenuOpen, val => {
-  if (val) {
-    refreshPermissionsUser()
-  }
-})
 
 const userProfileList = [
   {

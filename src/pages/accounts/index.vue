@@ -212,14 +212,22 @@ const getRowClass = account => {
   return isBankGuayaquil(account) ? 'bg-blue-lighten-4' : ''
 }
 
+let lastLoadedUserId = null
+
 // Watch para redirigir cuando el usuario esté disponible (después de definir loadAccounts)
 watch(() => currentUser.value, user => {
-  console.log('👀 Watch - Usuario cambió:', user)
-  if (user && !canAccessTreasury.value) {
+  if (!user) return
+
+  if (!canAccessTreasury.value) {
     console.log('🚫 Redirigiendo - No tiene permisos')
     showNotification('No tienes permisos para acceder al dashboard de tesorería', 'error')
     router.push('/dashboard')
-  } else if (user && canAccessTreasury.value) {
+    return
+  }
+
+  // Solo cargar cuentas si no se han cargado previamente o si cambió el usuario autenticado
+  if (lastLoadedUserId !== user.id || accounts.value.length === 0) {
+    lastLoadedUserId = user.id
     console.log('✅ Usuario con permisos - Cargando cuentas')
     loadAccounts()
   }
