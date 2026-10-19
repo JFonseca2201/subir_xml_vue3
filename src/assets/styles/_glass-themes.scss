@@ -478,6 +478,54 @@ $glass-themes: (
     color: var(--text-muted) !important;
   }
 
+  // C.1 TARJETAS MÓVILES RESPONSIVE (PRODUCTOS Y REGISTROS)
+  .mobile-product-card,
+  [class*="mobile-"][class*="-card"] {
+    background: var(--bg-surface) !important;
+    background-color: var(--bg-surface) !important;
+    backdrop-filter: var(--blur-glass) !important;
+    -webkit-backdrop-filter: var(--blur-glass) !important;
+    border: 1px solid var(--border-glass) !important;
+    color: var(--text-primary) !important;
+
+    .mobile-card-title,
+    .card-title,
+    .title-text {
+      color: var(--text-primary) !important;
+    }
+
+    .mobile-card-meta {
+      color: var(--text-secondary) !important;
+    }
+
+    .mobile-card-stats-grid,
+    .stats-box,
+    .info-box {
+      background: var(--bg-hover-item) !important;
+      background-color: var(--bg-hover-item) !important;
+      border: 1px solid var(--border-glass) !important;
+
+      .stat-label,
+      .label-text {
+        color: var(--text-muted) !important;
+      }
+
+      .stat-val,
+      .value-text {
+        color: var(--text-primary) !important;
+      }
+    }
+
+    .mobile-card-thumb {
+      border-color: var(--border-glass) !important;
+      background: var(--bg-hover-item) !important;
+
+      .mobile-card-thumb-placeholder {
+        background: var(--bg-hover-item) !important;
+      }
+    }
+  }
+
   // D. LISTADOS Y TABLAS DE DATOS (INGRESOS, VENTAS, KARDEX)
   .v-data-table,
   .v-table,

@@ -178,14 +178,14 @@ const filteredNavItems = computed(() => {
           </button>
         </div>
 
-        <!-- 2. Columna Central: Marca Centrada Horizontalmente (Logo + LUXURY EVYS + Subtítulo) -->
+        <!-- 2. Columna Central: Marca Centrada Horizontalmente (Logo en Tablet/Desktop + LUXURY EVYS + Subtítulo) -->
         <div class="navbar-center-section">
           <RouterLink
             to="/"
             class="d-flex align-center gap-x-3 text-decoration-none navbar-brand-link"
           >
-            <!-- Logotipo / Sello Oficial de la Empresa -->
-            <div class="navbar-brand-seal-badge">
+            <!-- Logotipo / Sello Oficial: Visible a partir de Tablet (>= 600px), Oculto en Celulares (iPhone 13 Pro Max, etc.) -->
+            <div class="navbar-brand-seal-badge d-none d-sm-flex">
               <img
                 :src="logoPng"
                 alt="Luxury Evys Sello Oficial"
@@ -193,8 +193,8 @@ const filteredNavItems = computed(() => {
               >
             </div>
 
-            <!-- Nombre de la Empresa y Sello de Calidad (Sin insignia OFICIAL) -->
-            <div class="d-flex flex-column justify-center brand-text-container">
+            <!-- Nombre de la Empresa y Sucursal -->
+            <div class="d-flex flex-column justify-center align-center align-sm-start brand-text-container">
               <span class="navbar-brand-title font-weight-black tracking-wider text-uppercase">
                 LUXURY EVYS
               </span>
@@ -383,25 +383,62 @@ const filteredNavItems = computed(() => {
   flex-shrink: 0;
 }
 
-@media (max-width: 600px) {
-  .navbar-center-section {
-    padding: 0 4px;
+@media (max-width: 768px) {
+  .navbar-left-section {
+    flex: 0 0 auto !important;
   }
 
+  .navbar-right-section {
+    flex: 0 0 auto !important;
+  }
+
+  .navbar-center-section {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 0 6px !important;
+    overflow: hidden !important;
+  }
+
+  .brand-text-container {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+}
+
+// Celulares (como iPhone 13 Pro Max a 428px de ancho): Ocultar el logo por completo
+@media (max-width: 600px) {
   .navbar-brand-seal-badge {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    border-radius: 9px !important;
+    display: none !important;
   }
 
   .navbar-brand-title {
-    font-size: 1rem !important;
-    letter-spacing: 0.05em !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.06em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .navbar-brand-subtitle {
-    font-size: 0.65rem !important;
+    font-size: 0.68rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 200px !important;
+  }
+}
+
+// Tablets (pantallas entre 601px y 960px): Mostrar el icono con dimensiones adecuadas
+@media (min-width: 601px) and (max-width: 960px) {
+  .navbar-brand-seal-badge {
+    display: flex !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  .navbar-brand-title {
+    font-size: 1.1rem !important;
   }
 }
 

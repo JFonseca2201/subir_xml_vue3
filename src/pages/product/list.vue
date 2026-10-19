@@ -181,7 +181,23 @@ const hasActiveFilters = computed(() => {
 })
 
 const resetFilters = () => {
-  clearSearch()
+}
+
+// Decodificar entidades HTML (&eacute;, &#XE9;, &#233;, etc.) para mostrar texto limpio
+const decodeProductDescription = desc => {
+  if (!desc) return ''
+  return desc
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#([0-9]+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+    .replace(/&([a-z]+);/gi, match => {
+      const entities = {
+        amp: '&', lt: '<', gt: '>', quot: '"', apos: "'",
+        eacute: 'é', Eacute: 'É', aacute: 'á', Aacute: 'Á',
+        iacute: 'í', Iacute: 'Í', oacute: 'ó', Oacute: 'Ó',
+        uacute: 'ú', Uacute: 'Ú', ntilde: 'ñ', Ntilde: 'Ñ',
+      }
+      return entities[match.slice(1, -1)] || match
+    })
 }
 
 const getStockColor = (stock, minStock) => {
@@ -790,7 +806,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 >
                 <div
                   v-else
-                  class="w-100 h-100 d-flex align-center justify-center bg-grey-lighten-4"
+                  class="w-100 h-100 d-flex align-center justify-center mobile-card-thumb-placeholder"
                 >
                   <VIcon
                     icon="ri-box-3-line"
@@ -816,10 +832,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                 <div
                   class="mobile-card-title cursor-pointer text-truncate"
-                  :title="item.description"
+                  :title="decodeProductDescription(item.description)"
                   @click="viewProduct(item)"
                 >
-                  {{ item.description }}
+                  {{ decodeProductDescription(item.description) }}
                 </div>
 
                 <div class="mobile-card-meta">
@@ -984,7 +1000,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           class="products-modern-table overflow-x-auto"
         >
           <thead>
-            <tr class="bg-grey-lighten-5">
+            <tr>
               <th
                 class="text-center font-weight-bold text-uppercase py-3"
                 style="width: 70px;"
@@ -1118,10 +1134,10 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                     <div
                       class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer hover-underline text-truncate"
                       style="max-width: 300px;"
-                      :title="item.description"
+                      :title="decodeProductDescription(item.description)"
                       @click="viewProduct(item)"
                     >
-                      {{ item.description }}
+                      {{ decodeProductDescription(item.description) }}
                     </div>
                     <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
                       <span v-if="item.sku">Cód. P.: {{ item.sku }}</span>

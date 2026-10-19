@@ -248,7 +248,7 @@ const logout = async () => {
             <VRow dense>
               <VCol cols="12" sm="6">
                 <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
+                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Nueva Venta / Factura</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     F2
@@ -257,7 +257,7 @@ const logout = async () => {
               </VCol>
               <VCol cols="12" sm="6">
                 <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
+                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Buscador de Productos</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     F4
@@ -266,7 +266,7 @@ const logout = async () => {
               </VCol>
               <VCol cols="12" sm="6">
                 <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
+                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Imprimir Documento</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     Ctrl + P
@@ -275,7 +275,7 @@ const logout = async () => {
               </VCol>
               <VCol cols="12" sm="6">
                 <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-grey-lighten-4 rounded-lg border mb-2">
+                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Cerrar Ventanas</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     ESC
