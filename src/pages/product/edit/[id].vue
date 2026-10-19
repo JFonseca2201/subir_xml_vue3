@@ -339,7 +339,9 @@ watch(() => product.value.item_type, newVal => {
       product.value.product_categorie_id = categories.value[0].id
     }
 
-    product.value.warehouse_id = 1
+    if (!product.value.warehouse_id && warehouses.value.length > 0) {
+      product.value.warehouse_id = warehouses.value[0].id
+    }
 
     if (!product.value.unit_id && units.value.length > 0) {
       product.value.unit_id = units.value[0].id
