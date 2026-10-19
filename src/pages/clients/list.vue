@@ -275,14 +275,14 @@ onActivated(() => {
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
-          v-if="can('import_xml') || can('register_client')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-upload-cloud-2-line"
-          class="font-weight-medium"
-          @click="isImportDialogVisible = true"
+          v-if="can('register_client')"
+          color="primary"
+          prepend-icon="ri-building-line"
+          class="elevation-2 font-weight-bold order-1 order-sm-3"
+          size="default"
+          @click="addClient"
         >
-          Importar
+          Cliente Empresa
         </VBtn>
 
         <VBtn
@@ -290,20 +290,23 @@ onActivated(() => {
           color="primary"
           variant="outlined"
           prepend-icon="ri-user-add-line"
-          class="font-weight-medium"
+          class="font-weight-medium order-2 order-sm-2"
+          size="default"
           @click="addNewClientFinal"
         >
           Cliente Final
         </VBtn>
 
         <VBtn
-          v-if="can('register_client')"
-          color="primary"
-          prepend-icon="ri-building-line"
-          class="elevation-2 font-weight-bold"
-          @click="addClient"
+          v-if="can('import_xml') || can('register_client')"
+          color="secondary"
+          variant="tonal"
+          prepend-icon="ri-upload-cloud-2-line"
+          class="font-weight-medium order-3 order-sm-1"
+          size="default"
+          @click="isImportDialogVisible = true"
         >
-          Cliente Empresa
+          Importar
         </VBtn>
       </div>
     </div>
@@ -542,7 +545,7 @@ onActivated(() => {
     <!-- LISTADO DE CLIENTES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="loading">
           <VCard
@@ -555,14 +558,14 @@ onActivated(() => {
                 class="shimmer-line"
                 style="width: 70px; height: 16px;"
               />
-              <div class="d-flex gap-1">
+              <div class="d-flex gap-1 listing-item-actions">
                 <div
                   class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
+                  style="width: 34px; height: 34px; border-radius: 8px;"
                 />
                 <div
                   class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
+                  style="width: 34px; height: 34px; border-radius: 8px;"
                 />
               </div>
             </div>
@@ -621,9 +624,9 @@ onActivated(() => {
             </div>
 
             <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
               <VBtn
-                size="x-small"
+                size="small"
                 color="info"
                 variant="tonal"
                 icon="ri-eye-line"
@@ -632,7 +635,7 @@ onActivated(() => {
               />
               <VBtn
                 v-if="can('edit_client')"
-                size="x-small"
+                size="small"
                 color="warning"
                 variant="tonal"
                 icon="ri-pencil-line"
@@ -640,7 +643,7 @@ onActivated(() => {
                 @click="editClient(client)"
               />
               <VBtn
-                size="x-small"
+                size="small"
                 color="secondary"
                 variant="tonal"
                 icon="ri-more-2-line"

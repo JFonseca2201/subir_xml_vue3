@@ -210,12 +210,13 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           v-if="can('register_product')"
           color="primary"
           prepend-icon="ri-add-line"
           class="elevation-2 font-weight-bold"
+          size="default"
           @click="openCreate"
         >
           Registrar Búsqueda
@@ -300,7 +301,7 @@ onMounted(() => {
     </VCard>
 
     <!-- LISTADO DE VEHÍCULOS Y REPUESTOS (DISEÑO CLARO Y ORDENADO) -->
-    <div v-else class="vehicle-catalog-container d-flex flex-column gap-5">
+    <div v-else class="vehicle-catalog-container d-flex flex-column gap-5 mobile-card-list-container">
       <!-- Skeletons durante la carga -->
       <template v-if="loading">
         <VCard v-for="i in 3" :key="'sk-' + i"
