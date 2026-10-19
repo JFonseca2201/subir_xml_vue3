@@ -284,11 +284,12 @@ onMounted(async () => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           prepend-icon="ri-upload-cloud-2-line"
-          class="elevation-2 font-weight-bold"
+          size="default"
+          class="elevation-1 font-weight-bold"
           @click="isImportDialogVisible = true"
         >
           Subir / Importar Lista
@@ -612,7 +613,7 @@ onMounted(async () => {
     <!-- LISTADO PRINCIPAL DE PRODUCTOS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4 pb-12">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container pb-12">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="isLoading">
           <VCard

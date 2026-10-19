@@ -378,37 +378,39 @@ onMounted(() => {
       </div>
 
       <!-- Botones de Acción -->
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'"
-          variant="tonal"
-          :color="showBalances ? 'primary' : 'secondary'"
-          :prepend-icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
-          size="small"
-          class="flex-shrink-0 font-weight-medium"
-          @click="toggleShowBalances"
-        >
-          <span class="d-none d-sm-inline">{{ showBalances ? 'Ocultar saldos' : 'Mostrar saldos' }}</span>
-        </VBtn>
-        <VBtn
-          title="Actualizar cuentas"
-          variant="tonal"
-          color="secondary"
-          icon="ri-refresh-line"
-          size="small"
-          class="flex-shrink-0"
-          :loading="loading"
-          @click="loadAccounts"
-        />
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           variant="elevated"
-          size="small"
+          size="default"
           prepend-icon="ri-add-circle-line"
-          class="font-weight-semibold elevation-2"
+          class="font-weight-bold elevation-1"
           @click="openAccountDialog"
         >
           Nueva Cuenta
+        </VBtn>
+        <VBtn
+          :title="showBalances ? 'Ocultar saldos' : 'Mostrar saldos'"
+          variant="tonal"
+          :color="showBalances ? 'info' : 'secondary'"
+          :prepend-icon="showBalances ? 'ri-eye-off-line' : 'ri-eye-line'"
+          size="default"
+          class="font-weight-medium"
+          @click="toggleShowBalances"
+        >
+          <span>{{ showBalances ? 'Ocultar saldos' : 'Mostrar saldos' }}</span>
+        </VBtn>
+        <VBtn
+          title="Actualizar cuentas"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-refresh-line"
+          size="default"
+          class="font-weight-medium"
+          :loading="loading"
+          @click="loadAccounts"
+        >
+          Actualizar
         </VBtn>
       </div>
     </div>
@@ -548,7 +550,7 @@ onMounted(() => {
     </VRow>
 
     <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-    <div class="d-md-none d-flex flex-column gap-3 mb-4">
+    <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
       <div
         v-if="loading"
         class="d-flex flex-column gap-3"
@@ -675,7 +677,7 @@ onMounted(() => {
             </span>
           </div>
 
-          <div class="d-flex align-center gap-1.5 ms-auto">
+          <div class="d-flex align-center gap-1.5 ms-auto listing-item-actions">
             <template v-if="!account.is_system">
               <VBtn
                 icon="ri-pencil-line"

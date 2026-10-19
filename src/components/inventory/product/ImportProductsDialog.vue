@@ -96,6 +96,7 @@ const closeDialog = () => {
     scrollable
     :model-value="props.isDialogVisible"
     max-width="600"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"

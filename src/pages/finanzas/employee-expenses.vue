@@ -454,7 +454,7 @@ onMounted(() => {
       </div>
 
       <!-- Botones de Acción -->
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           variant="elevated"
@@ -619,39 +619,41 @@ onMounted(() => {
         <VCol
           cols="12"
           md="6"
-          class="d-flex justify-md-end align-center gap-2.5 flex-wrap"
+          class="d-flex flex-column flex-sm-row justify-md-end align-start align-sm-center gap-2"
         >
-          <span class="text-body-2 font-weight-medium text-medium-emphasis me-1">Filtrar:</span>
-          <VBtn
-            size="small"
-            :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'all' ? 'primary' : 'secondary'"
-            prepend-icon="ri-apps-2-line"
-            class="font-weight-semibold px-3"
-            @click="selectedType = 'all'"
-          >
-            Todos
-          </VBtn>
-          <VBtn
-            size="small"
-            :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'payments' ? 'primary' : 'secondary'"
-            prepend-icon="ri-file-user-line"
-            class="font-weight-semibold px-3"
-            @click="selectedType = 'payments'"
-          >
-            Pagos
-          </VBtn>
-          <VBtn
-            size="small"
-            :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
-            :color="selectedType === 'advances' ? 'primary' : 'secondary'"
-            prepend-icon="ri-hand-coin-line"
-            class="font-weight-semibold px-3"
-            @click="selectedType = 'advances'"
-          >
-            Adelantos
-          </VBtn>
+          <span class="text-caption text-sm-body-2 font-weight-medium text-medium-emphasis me-1">Filtrar:</span>
+          <div class="d-flex align-center gap-2 w-100 w-sm-auto employee-filter-btn-group">
+            <VBtn
+              size="small"
+              :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
+              :color="selectedType === 'all' ? 'primary' : 'secondary'"
+              prepend-icon="ri-apps-2-line"
+              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
+              @click="selectedType = 'all'"
+            >
+              Todos
+            </VBtn>
+            <VBtn
+              size="small"
+              :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
+              :color="selectedType === 'payments' ? 'primary' : 'secondary'"
+              prepend-icon="ri-file-user-line"
+              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
+              @click="selectedType = 'payments'"
+            >
+              Pagos
+            </VBtn>
+            <VBtn
+              size="small"
+              :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
+              :color="selectedType === 'advances' ? 'primary' : 'secondary'"
+              prepend-icon="ri-hand-coin-line"
+              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
+              @click="selectedType = 'advances'"
+            >
+              Adelantos
+            </VBtn>
+          </div>
         </VCol>
       </VRow>
     </VCard>
@@ -704,7 +706,7 @@ onMounted(() => {
     <!-- TABLA MODERNA DE NÓMINA -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <template v-if="loading">
           <VCard
             v-for="n in 4"
@@ -823,7 +825,7 @@ onMounted(() => {
                 </span>
               </div>
 
-              <div class="d-flex align-center gap-1 ms-auto">
+              <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
                 <VBtn
                   size="small"
                   variant="tonal"

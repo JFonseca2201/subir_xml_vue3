@@ -3,6 +3,7 @@
     scrollable
     :model-value="dialog"
     max-width="900px"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
   >
     <VCard class="custom-dialog-card product-view-card">
@@ -29,10 +30,10 @@
       <VCardText
         v-if="product"
         class="pa-6"
-        style="background-color: #fbfbfb;"
+        style="background-color: transparent;"
       >
         <!-- CABECERA: Imagen y Título -->
-        <div class="d-flex flex-column flex-sm-row align-center align-sm-start gap-6 mb-6 bg-white pa-4 rounded-lg elevation-1">
+        <div class="d-flex flex-column flex-sm-row align-center align-sm-start gap-6 mb-6 bg-surface pa-4 rounded-lg elevation-1 border">
           <div
             class="cursor-pointer image-container position-relative rounded-lg overflow-hidden border" 
             style="width: 140px; height: 140px; flex-shrink: 0;"
@@ -403,7 +404,7 @@
       <VDivider />
 
       <VCardActions
-        class="pa-4 bg-grey-lighten-4 border-t d-flex justify-end align-center gap-3"
+        class="pa-4 bg-surface border-t d-flex justify-end align-center gap-3"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

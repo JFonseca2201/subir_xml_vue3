@@ -610,12 +610,13 @@ watch(() => route.query.search, newSearch => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           v-if="can('register_sale')"
           color="primary"
           prepend-icon="ri-add-line"
           to="/work-orders/add"
+          size="default"
           class="elevation-2 font-weight-bold"
         >
           Nueva Orden
@@ -910,7 +911,7 @@ watch(() => route.query.search, newSearch => {
     <!-- LISTADO DE ÓRDENES DE TRABAJO (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="isLoading">
           <VCard
@@ -976,7 +977,7 @@ watch(() => route.query.search, newSearch => {
             </div>
 
             <!-- Acciones rápidas de cabecera -->
-            <div class="d-flex align-center gap-1">
+            <div class="d-flex align-center gap-1 listing-item-actions">
               <VBtn
                 v-if="item.status !== 'draft'"
                 size="x-small"
@@ -1654,6 +1655,7 @@ watch(() => route.query.search, newSearch => {
       v-model="showDetailsDialog"
       scrollable
       max-width="820"
+      :fullscreen="$vuetify.display.smAndDown"
       persistent
       transition="dialog-bottom-transition"
     >

@@ -205,6 +205,7 @@ const handleSelectOrder = order => {
     :model-value="isDialogVisible"
     scrollable
     max-width="650px"
+    :fullscreen="$vuetify.display.smAndDown"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
     <VCard class="custom-dialog-card rounded-xl elevation-12">

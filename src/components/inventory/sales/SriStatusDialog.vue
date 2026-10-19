@@ -143,6 +143,7 @@ watch(
     scrollable
     :model-value="props.isDialogVisible"
     max-width="580"
+    :fullscreen="$vuetify.display.smAndDown"
     transition="dialog-bottom-transition"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >

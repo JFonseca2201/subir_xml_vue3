@@ -609,6 +609,7 @@ onMounted(() => {
   <VDialog
     scrollable
     max-width="640"
+    :fullscreen="$vuetify.display.smAndDown"
     :model-value="props.isDialogVisible"
     persistent
     @update:model-value="closeDialog"

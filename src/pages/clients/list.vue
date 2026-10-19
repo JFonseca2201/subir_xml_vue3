@@ -273,7 +273,7 @@ onActivated(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           v-if="can('import_xml') || can('register_client')"
           color="secondary"

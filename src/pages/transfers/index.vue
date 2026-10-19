@@ -413,27 +413,29 @@ onMounted(() => {
       </div>
 
       <!-- Botones de Acción -->
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          title="Actualizar datos"
-          variant="tonal"
-          color="secondary"
-          icon="ri-refresh-line"
-          size="small"
-          class="flex-shrink-0"
-          :loading="loading"
-          @click="loadTransfers"
-        />
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           v-if="can('register_transfer')"
           color="primary"
           variant="elevated"
-          size="small"
+          size="default"
           prepend-icon="ri-add-circle-line"
-          class="font-weight-semibold elevation-2"
+          class="font-weight-bold elevation-1"
           @click="openTransferDialog"
         >
           Nueva Transferencia
+        </VBtn>
+        <VBtn
+          title="Actualizar datos"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-refresh-line"
+          size="default"
+          class="font-weight-medium"
+          :loading="loading"
+          @click="loadTransfers"
+        >
+          Actualizar
         </VBtn>
       </div>
     </div>
@@ -583,34 +585,36 @@ onMounted(() => {
           md="6"
           class="d-flex justify-md-end align-center gap-2 flex-wrap"
         >
-          <span class="text-body-2 font-weight-medium text-medium-emphasis me-2">Filtrar:</span>
-          <VBtn
-            size="small"
-            :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
-            :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
-            class="font-weight-semibold"
-            @click="selectedFilter = 'all'"
-          >
-            Todos
-          </VBtn>
-          <VBtn
-            size="small"
-            :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
-            :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
-            class="font-weight-semibold"
-            @click="selectedFilter = 'today'"
-          >
-            Hoy
-          </VBtn>
-          <VBtn
-            size="small"
-            :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
-            :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
-            class="font-weight-semibold"
-            @click="selectedFilter = 'month'"
-          >
-            Este Mes
-          </VBtn>
+          <span class="text-body-2 font-weight-medium text-medium-emphasis me-2 d-none d-sm-inline">Filtrar:</span>
+          <div class="finance-filter-btn-group w-100 w-md-auto d-flex align-center gap-2">
+            <VBtn
+              size="small"
+              :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
+              :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
+              class="font-weight-semibold"
+              @click="selectedFilter = 'all'"
+            >
+              Todos
+            </VBtn>
+            <VBtn
+              size="small"
+              :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
+              :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
+              class="font-weight-semibold"
+              @click="selectedFilter = 'today'"
+            >
+              Hoy
+            </VBtn>
+            <VBtn
+              size="small"
+              :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
+              :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
+              class="font-weight-semibold"
+              @click="selectedFilter = 'month'"
+            >
+              Este Mes
+            </VBtn>
+          </div>
         </VCol>
       </VRow>
     </VCard>
@@ -652,7 +656,7 @@ onMounted(() => {
     <!-- Contenedor v-else para transferencias existentes (Móvil + Desktop + Paginación) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-4 mb-4">
+      <div class="d-md-none d-flex flex-column gap-4 mb-4 mobile-card-list-container">
         <div
           v-if="loading"
           class="d-flex flex-column gap-3"
@@ -803,7 +807,7 @@ onMounted(() => {
                 </span>
               </div>
 
-              <div class="d-flex align-center gap-1 ms-auto">
+              <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
                 <VBtn
                   size="small"
                   variant="tonal"

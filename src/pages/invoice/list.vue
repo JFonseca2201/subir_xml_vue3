@@ -268,13 +268,23 @@ onActivated(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
+        <VBtn
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/invoice/manual-purchase"
+          size="default"
+          class="elevation-2 font-weight-bold order-1 order-sm-3"
+        >
+          Nueva Compra
+        </VBtn>
         <VBtn
           color="info"
           variant="tonal"
           prepend-icon="ri-exchange-dollar-line"
           to="/invoice/reconciliation"
-          class="font-weight-medium"
+          size="default"
+          class="font-weight-medium order-2 order-sm-1"
         >
           Conciliación de Pagos
         </VBtn>
@@ -283,17 +293,10 @@ onActivated(() => {
           variant="tonal"
           prepend-icon="ri-hand-coin-line"
           to="/invoice/supplier-credits"
-          class="font-weight-medium"
+          size="default"
+          class="font-weight-medium order-3 order-sm-2"
         >
           Saldos a Favor
-        </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/invoice/manual-purchase"
-          class="elevation-2 font-weight-bold"
-        >
-          Nueva Compra
         </VBtn>
       </div>
     </div>
@@ -524,7 +527,7 @@ onActivated(() => {
     <!-- LISTADO DE COMPRAS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="isLoading">
           <VCard
@@ -537,14 +540,14 @@ onActivated(() => {
                 class="shimmer-line"
                 style="width: 100px; height: 16px;"
               />
-              <div class="d-flex gap-1">
+              <div class="d-flex gap-1 listing-item-actions">
                 <div
                   class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
+                  style="width: 34px; height: 34px; border-radius: 8px;"
                 />
                 <div
                   class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
+                  style="width: 34px; height: 34px; border-radius: 8px;"
                 />
               </div>
             </div>
@@ -604,10 +607,10 @@ onActivated(() => {
             </div>
 
             <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
               <VBtn
                 v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                size="x-small"
+                size="small"
                 color="success"
                 variant="tonal"
                 icon="ri-check-line"
@@ -615,7 +618,7 @@ onActivated(() => {
                 @click="processInvoice(invoice)"
               />
               <VBtn
-                size="x-small"
+                size="small"
                 color="info"
                 variant="tonal"
                 icon="ri-eye-line"
@@ -623,7 +626,7 @@ onActivated(() => {
                 @click="showItem(invoice)"
               />
               <VBtn
-                size="x-small"
+                size="small"
                 color="error"
                 variant="tonal"
                 icon="ri-delete-bin-line"

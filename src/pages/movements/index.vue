@@ -1035,37 +1035,37 @@ onMounted(() => {
       </div>
 
       <!-- Botones de Acción -->
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
-        <VBtn
-          color="secondary"
-          variant="tonal"
-          size="small"
-          prepend-icon="ri-file-pdf-line"
-          class="font-weight-semibold"
-          :loading="isGeneratingPDF"
-          @click="generatePDF"
-        >
-          Exportar PDF
-        </VBtn>
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           variant="elevated"
-          size="small"
+          size="default"
           prepend-icon="ri-add-circle-line"
-          class="font-weight-semibold elevation-2"
+          class="font-weight-bold elevation-1"
           @click="openIncomeDialog"
         >
           Nuevo Ingreso
         </VBtn>
         <VBtn
-          color="primary"
+          color="info"
           variant="tonal"
-          size="small"
+          size="default"
           prepend-icon="ri-indeterminate-circle-line"
           class="font-weight-semibold"
           @click="openExpenseDialog"
         >
           Nuevo Egreso
+        </VBtn>
+        <VBtn
+          color="secondary"
+          variant="outlined"
+          size="default"
+          prepend-icon="ri-file-pdf-line"
+          class="font-weight-medium"
+          :loading="isGeneratingPDF"
+          @click="generatePDF"
+        >
+          Exportar PDF
         </VBtn>
       </div>
     </div>
@@ -1329,7 +1329,7 @@ onMounted(() => {
     <!-- Contenedor v-else para movimientos existentes (Móvil + Desktop + Paginación) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-4 mb-4">
+      <div class="d-md-none d-flex flex-column gap-4 mb-4 mobile-card-list-container">
         <div
           v-if="loading"
           class="d-flex flex-column gap-3"
@@ -1564,7 +1564,7 @@ onMounted(() => {
                 </span>
               </div>
 
-              <div class="d-flex align-center gap-1 ms-auto">
+              <div class="d-flex align-center gap-1 ms-auto listing-item-actions">
                 <!-- Ver Nota de Movimiento -->
                 <VBtn
                   icon="ri-file-text-line"

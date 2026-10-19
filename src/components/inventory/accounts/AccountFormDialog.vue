@@ -180,6 +180,7 @@ const dialogTitle = computed(() => {
     scrollable
     :model-value="modelValue"
     max-width="600"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
     @update:model-value="closeDialog"
   >
@@ -357,7 +358,7 @@ const dialogTitle = computed(() => {
 
       <!-- Acciones -->
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

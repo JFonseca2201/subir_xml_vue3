@@ -258,12 +258,13 @@ onActivated(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           prepend-icon="ri-add-line"
           to="/returns/add"
-          class="elevation-2 font-weight-bold"
+          size="default"
+          class="elevation-1 font-weight-bold"
         >
           Nueva Devolución
         </VBtn>
@@ -511,7 +512,7 @@ onActivated(() => {
     <!-- LISTADO DE DEVOLUCIONES (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="loading">
           <VCard
@@ -579,7 +580,7 @@ onActivated(() => {
             </div>
 
             <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
               <VBtn
                 size="x-small"
                 color="info"

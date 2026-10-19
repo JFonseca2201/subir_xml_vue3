@@ -198,6 +198,7 @@ const openAttachment = att => {
   <VDialog
     :model-value="props.isDialogVisible"
     max-width="580"
+    :fullscreen="$vuetify.display.smAndDown"
     scrollable
     persistent
     @update:model-value="closeDialog"

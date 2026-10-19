@@ -129,6 +129,7 @@ const submitCreditNote = async () => {
   <VDialog
     :model-value="props.isDialogVisible"
     max-width="620px"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
     @update:model-value="closeDialog"
   >

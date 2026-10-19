@@ -181,6 +181,7 @@ const timelineSteps = computed(() => {
   <VDialog
     v-model="dialog"
     max-width="640"
+    :fullscreen="$vuetify.display.smAndDown"
     scrollable
     transition="dialog-bottom-transition"
   >

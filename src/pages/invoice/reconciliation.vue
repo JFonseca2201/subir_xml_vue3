@@ -323,12 +323,13 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center gap-3">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           variant="tonal"
           color="primary"
           prepend-icon="ri-hand-coin-line"
           to="/invoice/supplier-credits"
+          size="default"
           class="text-none font-weight-medium"
         >
           Ver Saldos a Favor y NC

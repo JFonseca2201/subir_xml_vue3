@@ -128,6 +128,7 @@ const saveStock = async () => {
   <VDialog
     :model-value="isDialogVisible"
     max-width="440px"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
     class="v-dialog-quick-stock"
     @update:model-value="val => !val && closeDialog()"

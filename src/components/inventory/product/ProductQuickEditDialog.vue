@@ -329,6 +329,7 @@ const saveChanges = async () => {
   <VDialog
     :model-value="isDialogVisible"
     max-width="580px"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
     scrollable
     class="v-dialog-quick-edit"

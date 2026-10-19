@@ -1032,25 +1032,16 @@ onMounted(() => {
       <VCol
         cols="12"
         md="6"
-        class="d-flex justify-end align-center gap-2 flex-wrap ms-auto"
+        class="d-flex justify-end align-center gap-2 flex-wrap ms-auto crud-header-actions"
       >
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-arrow-left-line"
-          class="rounded-lg font-weight-medium"
-          @click="cancelAndReturn"
-        >
-          Volver al Listado
-        </VBtn>
-
         <!-- Si no hay XML cargado -->
         <VBtn
           v-if="!xmlLoadedInfo"
           color="primary"
           variant="elevated"
           prepend-icon="ri-upload-cloud-2-line"
-          class="rounded-lg px-5 font-weight-bold"
+          class="rounded-lg px-5 font-weight-bold order-1 order-sm-2"
+          size="default"
           :loading="isParsingXml"
           @click="triggerXmlFileInput"
         >
@@ -1060,7 +1051,7 @@ onMounted(() => {
         <!-- Si ya hay XML cargado (Resumen y acciones en cabecera) -->
         <div
           v-else
-          class="d-flex align-center gap-2 flex-wrap bg-success-lighten-5 border border-success border-opacity-50 pa-2 rounded-xl"
+          class="d-flex align-center gap-2 flex-wrap bg-success-lighten-5 border border-success border-opacity-50 pa-2 rounded-xl order-1 order-sm-2"
         >
           <VChip
             size="small"
@@ -1095,6 +1086,17 @@ onMounted(() => {
             @click="clearXmlImport"
           />
         </div>
+
+        <VBtn
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-arrow-left-line"
+          class="rounded-lg font-weight-medium order-2 order-sm-1"
+          size="default"
+          @click="cancelAndReturn"
+        >
+          Volver al Listado
+        </VBtn>
       </VCol>
     </VRow>
 

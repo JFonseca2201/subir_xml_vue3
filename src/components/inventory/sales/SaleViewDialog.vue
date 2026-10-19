@@ -569,6 +569,7 @@ const convertToSale = () => {
   <VDialog
     :model-value="props.isDialogVisible"
     max-width="1140"
+    :fullscreen="$vuetify.display.smAndDown"
     scrollable
     transition="dialog-bottom-transition"
     @update:model-value="closeDialog"

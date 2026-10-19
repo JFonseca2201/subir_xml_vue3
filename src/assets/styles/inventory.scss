@@ -7527,3 +7527,143 @@
     }
   }
 }
+
+// ==========================================================================
+// UNIFIED RESPONSIVE CRUD SYSTEM (Mobile sm/xs <= 960px & <= 600px)
+// RULE: ZERO alterations to Desktop (lg/xl > 960px).
+// ==========================================================================
+
+// 1. HEADER CRUD ACTIONS (Stacking on mobile <= 600px, inline on desktop)
+@media (max-width: 600px) {
+  .crud-header-actions,
+  .crud-actions-wrapper {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    margin-top: 0.75rem !important;
+    gap: 0.6rem !important;
+
+    > .v-btn,
+    .v-btn {
+      width: 100% !important;
+      min-height: 42px !important;
+      justify-content: center !important;
+    }
+
+    .custom-date-input-wrap,
+    .custom-date-container {
+      width: 100% !important;
+      justify-content: center !important;
+      min-height: 42px !important;
+    }
+  }
+
+  .employee-filter-btn-group,
+  .finance-filter-btn-group {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.4rem !important;
+
+    > .v-btn,
+    .v-btn {
+      width: 100% !important;
+      min-width: 0 !important;
+      padding: 0 4px !important;
+      font-size: 0.76rem !important;
+      letter-spacing: -0.01em !important;
+      justify-content: center !important;
+
+      .v-icon,
+      .v-btn__prepend {
+        display: none !important;
+      }
+    }
+  }
+}
+
+// 1.1 STANDARDIZED LISTING ITEM ACTIONS (Mobile Cards in Finanzas & CRUDs)
+.listing-item-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+
+  .v-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease !important;
+
+    .v-icon {
+      font-size: 16px !important;
+    }
+
+    &:active {
+      transform: scale(0.9) !important;
+    }
+  }
+}
+
+// Extra bottom clearance for mobile lists to avoid floating scroll-to-top button overlap
+@media (max-width: 960px) {
+  .mobile-card-list-container {
+    padding-bottom: 4.5rem !important;
+  }
+}
+
+// 2. DIALOGS & MODALS (Mobile Fullscreen & Sticky Bottom Thumb Footer <= 960px)
+@media (max-width: 960px) {
+  // Sticky Bottom Footer en Modales / Diálogos para facilitar toque con el pulgar
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
+  .custom-dialog-card .v-card-actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 50 !important;
+    background: var(--bg-surface, rgb(var(--v-theme-surface))) !important;
+    border-top: 1px solid var(--border-glass, rgba(var(--v-border-color), 0.12)) !important;
+    padding: 0.75rem 1rem !important;
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+
+    > .v-btn,
+    .v-btn {
+      flex: 1 1 0 !important;
+      min-width: 120px !important;
+      min-height: 44px !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  // Encabezados de diálogo responsivos en móvil
+  .custom-dialog-header-primary,
+  .product-quick-header,
+  .sale-dialog-header-banner {
+    border-radius: 0 !important;
+    padding: 1rem !important;
+  }
+}
+
+// 3. TABLAS RESPONSIVAS CON SCROLL SUAVE
+@media (max-width: 960px) {
+  .v-table__wrapper,
+  .responsive-table-wrapper,
+  .products-modern-table,
+  .v-table {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin;
+  }
+}

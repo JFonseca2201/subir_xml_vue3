@@ -257,11 +257,12 @@ onMounted(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center gap-3">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
           color="primary"
           prepend-icon="ri-exchange-dollar-line"
           to="/invoice/reconciliation"
+          size="default"
           class="text-none font-weight-medium"
         >
           Nueva Conciliación de Pago
@@ -408,7 +409,7 @@ onMounted(() => {
 
       <div v-else>
         <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-        <div class="d-md-none d-flex flex-column gap-3 pa-3">
+        <div class="d-md-none d-flex flex-column gap-3 pa-3 mobile-card-list-container">
           <!-- Skeleton Móvil mientras carga -->
           <template v-if="loading">
             <div
@@ -418,9 +419,9 @@ onMounted(() => {
             >
               <div class="d-flex align-center justify-space-between pb-2 border-b mb-2">
                 <div class="shimmer-chip" style="width: 100px; height: 22px;" />
-                <div class="d-flex gap-1">
-                  <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
-                  <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
+                <div class="d-flex gap-1 listing-item-actions">
+                  <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
+                  <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
                 </div>
               </div>
               <div class="d-flex align-start gap-3 mb-3">
@@ -462,7 +463,7 @@ onMounted(() => {
                   {{ item.reference_number || 'Sin ref.' }}
                 </span>
               </div>
-              <div class="d-flex align-center gap-1">
+              <div class="d-flex align-center gap-1 listing-item-actions">
                 <!-- Ver Usos -->
                 <VBtn
                   variant="tonal"

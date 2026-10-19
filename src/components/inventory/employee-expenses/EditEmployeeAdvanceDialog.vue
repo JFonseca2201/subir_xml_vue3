@@ -386,6 +386,7 @@ onMounted(async () => {
     v-model="show"
     scrollable
     max-width="560"
+    :fullscreen="$vuetify.display.smAndDown"
     persistent
   >
     <VCard class="custom-dialog-card">

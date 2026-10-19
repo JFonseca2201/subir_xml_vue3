@@ -104,6 +104,7 @@ const closeDialog = () => {
   <VDialog
     scrollable
     max-width="720"
+    :fullscreen="$vuetify.display.smAndDown"
     :model-value="props.isDialogVisible"
     persistent
     transition="dialog-bottom-transition"

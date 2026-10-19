@@ -741,7 +741,7 @@ onMounted(() => {
       </div>
 
       <!-- Acciones de Fecha e Historial -->
-      <div class="d-flex align-center gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center gap-2 flex-wrap ms-auto crud-header-actions">
         <!-- Botón Buscar / Historial -->
         <VBtn variant="tonal" color="primary" size="small" class="rounded-lg text-none font-weight-bold"
           prepend-icon="ri-history-line" @click="openHistoryDialog">
@@ -757,7 +757,7 @@ onMounted(() => {
         </VBtn>
 
         <!-- Selector de Fecha de Corte -->
-        <div class="d-flex align-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border">
+        <div class="d-flex align-center gap-1.5 bg-surface px-2.5 py-1 rounded-lg border custom-date-container">
           <VIcon icon="ri-calendar-event-line" color="primary" size="16" />
           <input v-model="payload.count_date" type="date"
             class="custom-date-input border-0 pa-0 font-weight-bold text-caption" :disabled="saving || loading">
@@ -1571,7 +1571,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Diálogo de Desglose Día Anterior -->
-    <VDialog v-model="prevCountDetailsDialog" scrollable max-width="600">
+    <VDialog v-model="prevCountDetailsDialog" scrollable max-width="600" :fullscreen="$vuetify.display.smAndDown">
       <VCard class="custom-dialog-card elevation-24">
         <div class="custom-dialog-header-primary">
           <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
@@ -1699,7 +1699,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Modal de Búsqueda e Historial de Cuadres -->
-    <VDialog v-model="historyDialog" max-width="1200" scrollable>
+    <VDialog v-model="historyDialog" max-width="1200" :fullscreen="$vuetify.display.smAndDown" scrollable>
       <VCard class="rounded-xl overflow-hidden">
         <!-- Header del Modal -->
         <VCardItem class="bg-primary text-white py-4 px-6">
@@ -2018,7 +2018,7 @@ onMounted(() => {
     </VDialog>
 
     <!-- Modal de Detalle Completo de Billetes y Monedas del Cuadre Seleccionado -->
-    <VDialog v-model="historyItemDetailDialog" max-width="650" scrollable>
+    <VDialog v-model="historyItemDetailDialog" max-width="650" :fullscreen="$vuetify.display.smAndDown" scrollable>
       <VCard v-if="selectedHistoryItem" class="rounded-xl overflow-hidden">
         <VCardItem class="bg-primary text-white py-4 px-6">
           <template #prepend>

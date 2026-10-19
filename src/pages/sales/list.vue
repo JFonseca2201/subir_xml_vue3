@@ -1148,26 +1148,16 @@ onActivated(() => {
         </p>
       </div>
 
-      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto">
+      <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
         <VBtn
-          variant="tonal"
-          color="info"
-          prepend-icon="ri-wifi-line"
-          class="font-weight-medium"
-          @click="isSriStatusDialogVisible = true"
+          v-if="can('register_sale')"
+          color="primary"
+          prepend-icon="ri-add-line"
+          to="/sales/add"
+          size="default"
+          class="elevation-1 font-weight-bold"
         >
-          Estado SRI
-        </VBtn>
-        <VBtn
-          v-if="can('export_data') || can('list_sale')"
-          variant="tonal"
-          color="secondary"
-          prepend-icon="ri-file-pdf-line"
-          class="font-weight-medium"
-          :loading="pdfLoading"
-          @click="generatePDF"
-        >
-          Exportar PDF
+          Nueva Venta
         </VBtn>
         <VBtn
           v-if="can('register_sale')"
@@ -1175,18 +1165,32 @@ onActivated(() => {
           color="primary"
           prepend-icon="ri-tools-line"
           to="/work-orders/add"
+          size="default"
           class="font-weight-semibold"
         >
           Nueva O/T
         </VBtn>
         <VBtn
-          v-if="can('register_sale')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/sales/add"
-          class="elevation-2 font-weight-bold"
+          variant="tonal"
+          color="info"
+          prepend-icon="ri-wifi-line"
+          size="default"
+          class="font-weight-medium"
+          @click="isSriStatusDialogVisible = true"
         >
-          Nueva Venta
+          Estado SRI
+        </VBtn>
+        <VBtn
+          v-if="can('export_data') || can('list_sale')"
+          variant="outlined"
+          color="secondary"
+          prepend-icon="ri-file-pdf-line"
+          size="default"
+          class="font-weight-medium"
+          :loading="pdfLoading"
+          @click="generatePDF"
+        >
+          Exportar PDF
         </VBtn>
       </div>
     </div>
@@ -1466,7 +1470,7 @@ onActivated(() => {
     <!-- LISTADO DE VENTAS (MÓVIL Y ESCRITORIO CON SKELETON INTEGRADO) -->
     <div v-else>
       <!-- VISTA MÓVIL: TARJETAS TOUCH-FRIENDLY (d-md-none) -->
-      <div class="d-md-none d-flex flex-column gap-3 mb-4">
+      <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="loading">
           <VCard
@@ -1540,7 +1544,7 @@ onActivated(() => {
             </div>
 
             <!-- Botones de Acción en Cabecera Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
               <VBtn
                 v-if="!isSaleCanceled(item)"
                 size="x-small"

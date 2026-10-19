@@ -89,6 +89,7 @@ const registerPayment = async () => {
     :model-value="isDialogVisible"
     scrollable
     max-width="450"
+    :fullscreen="$vuetify.display.smAndDown"
     @update:model-value="val => emit('update:isDialogVisible', val)"
   >
     <VCard class="custom-dialog-card">
