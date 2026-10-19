@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import { useGlobalToast } from '@/composables/useGlobalToast'
@@ -7,6 +7,8 @@ import { useLoaderStore } from '@/stores/loader'
 const router = useRouter()
 const { showNotification } = useGlobalToast()
 const loader = useLoaderStore()
+
+const accountsList = ref([])
 
 // List of denominations
 const billsList = [100, 50, 20, 10, 5, 1]
@@ -320,7 +322,10 @@ const fetchStatus = async date => {
   loading.value = true
   try {
     const response = await $api('daily-cash-counts/status', {
-      params: { date },
+      params: { 
+        date,
+        _t: Date.now(),
+      },
     })
 
     console.log('Daily cash count status response:', response)
@@ -329,6 +334,10 @@ const fetchStatus = async date => {
       dateFormatted.value = formatSpanishDate(date) || response.date_formatted || ''
       alreadyCounted.value = response.already_counted || false
       isSealed.value = response.is_sealed || false
+
+      if (response.accounts) {
+        accountsList.value = response.accounts
+      }
 
       if (response.initial_balances) {
         initialBalances.value = {
@@ -390,9 +399,9 @@ const fetchStatus = async date => {
           }
         }
       } else {
-        // Reset inputs to 0
-        payload.value.pichincha_total = 0
-        payload.value.guayaquil_total = 0
+        // En un día nuevo pendiente de conteo, sincronizar automáticamente los saldos reales de sistema para los bancos
+        payload.value.pichincha_total = parseFloat(response.system_balances?.pichincha) || 0
+        payload.value.guayaquil_total = parseFloat(response.system_balances?.guayaquil) || 0
         payload.value.observations = ''
         billsList.forEach(b => {
           payload.value.cash_details.bills[b] = 0
@@ -537,8 +546,14 @@ const getPrevCoinQty = denom => {
   return initialBalances.value.cash_details?.coins?.[denom] ?? 0
 }
 
-// Initialize
+// Initialize & Auto-refresh on navigation
 onMounted(() => {
+  if (canAccessArqueo.value) {
+    fetchStatus(payload.value.count_date)
+  }
+})
+
+onActivated(() => {
   if (canAccessArqueo.value) {
     fetchStatus(payload.value.count_date)
   }
@@ -742,6 +757,20 @@ onMounted(() => {
 
       <!-- Acciones de Fecha e Historial -->
       <div class="d-flex align-center gap-2 flex-wrap ms-auto crud-header-actions">
+        <!-- Botón Refrescar Saldos en Vivo -->
+        <VBtn
+          variant="tonal"
+          color="secondary"
+          size="small"
+          class="rounded-lg text-none font-weight-bold"
+          prepend-icon="ri-refresh-line"
+          :loading="loading"
+          title="Actualizar saldos de cuentas en tiempo real"
+          @click="fetchStatus(payload.count_date)"
+        >
+          Refrescar
+        </VBtn>
+
         <!-- Botón Buscar / Historial -->
         <VBtn variant="tonal" color="primary" size="small" class="rounded-lg text-none font-weight-bold"
           prepend-icon="ri-history-line" @click="openHistoryDialog">
@@ -1444,12 +1473,25 @@ onMounted(() => {
             <VCardText class="pa-4 bg-white d-flex flex-column gap-4">
               <!-- Pichincha -->
               <div>
-                <div class="d-flex justify-space-between align-center mb-1">
+                <div class="d-flex justify-space-between align-center mb-1 flex-wrap gap-1">
                   <label class="text-caption font-weight-bold text-slate-800">Banco Pichincha ($)</label>
-                  <span class="text-caption font-weight-medium text-slate-500">
-                    Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha)
-                    }}</strong>
-                  </span>
+                  <div class="d-flex align-center gap-1">
+                    <span class="text-caption font-weight-medium text-slate-500">
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.pichincha) }}</strong>
+                    </span>
+                    <VBtn
+                      v-if="!isSealed"
+                      variant="text"
+                      color="primary"
+                      size="x-small"
+                      density="compact"
+                      class="px-1 text-none font-weight-bold"
+                      title="Copiar saldo de sistema al conteo de hoy"
+                      @click="pichinchaVal = systemBalances.pichincha"
+                    >
+                      Copiar
+                    </VBtn>
+                  </div>
                 </div>
                 <VTextField v-model.number="pichinchaVal" type="number" min="0" step="0.01" placeholder="0.00"
                   prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
@@ -1463,12 +1505,25 @@ onMounted(() => {
 
               <!-- Guayaquil -->
               <div>
-                <div class="d-flex justify-space-between align-center mb-1">
+                <div class="d-flex justify-space-between align-center mb-1 flex-wrap gap-1">
                   <label class="text-caption font-weight-bold text-slate-800">Banco Guayaquil ($)</label>
-                  <span class="text-caption font-weight-medium text-slate-500">
-                    Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil)
-                    }}</strong>
-                  </span>
+                  <div class="d-flex align-center gap-1">
+                    <span class="text-caption font-weight-medium text-slate-500">
+                      Sistema: <strong class="font-mono text-slate-900">{{ formatCurrency(systemBalances.guayaquil) }}</strong>
+                    </span>
+                    <VBtn
+                      v-if="!isSealed"
+                      variant="text"
+                      color="primary"
+                      size="x-small"
+                      density="compact"
+                      class="px-1 text-none font-weight-bold"
+                      title="Copiar saldo de sistema al conteo de hoy"
+                      @click="guayaquilVal = systemBalances.guayaquil"
+                    >
+                      Copiar
+                    </VBtn>
+                  </div>
                 </div>
                 <VTextField v-model.number="guayaquilVal" type="number" min="0" step="0.01" placeholder="0.00"
                   prepend-inner-icon="ri-bank-card-line" variant="outlined" density="comfortable" hide-details="auto"
