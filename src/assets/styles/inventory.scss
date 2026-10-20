@@ -7243,8 +7243,8 @@
 
 :root {
   // 1. Laptops y Monitores Grandes (14" a 17" / 1366px - 1920px+):
-  // Padding top uniforme de 16px para inicio visual estandarizado
-  --app-content-padding-top: 16px;
+  // Padding top uniforme de 20px (+4px) para inicio visual estandarizado
+  --app-content-padding-top: 20px;
   --app-header-margin-bottom: 1.25rem;
   --app-header-action-gap: 0.5rem;
 
@@ -7258,7 +7258,7 @@
 // 2. Tablets y laptops medianas (601px a 1279px)
 @media (min-width: 601px) and (max-width: 1279px) {
   :root {
-    --app-content-padding-top: 14px;
+    --app-content-padding-top: 18px;
     --app-header-margin-bottom: 1rem;
     --app-header-action-gap: 0.5rem;
 
@@ -7273,7 +7273,7 @@
 // 3. Teléfonos Móviles y Tablets Compactas ($vuetify.display.smAndDown <= 960px):
 @media (max-width: 960px) {
   :root {
-    --app-content-padding-top: 12px;
+    --app-content-padding-top: 16px;
     --app-header-margin-bottom: 0.75rem;
     --app-header-action-gap: 0.45rem;
 
@@ -7288,7 +7288,7 @@
 // 4. Pantallas Ultra Pequeñas (iPhone SE / 320px a 375px):
 @media (max-width: 375px) {
   :root {
-    --app-content-padding-top: 8px;
+    --app-content-padding-top: 12px;
     --app-header-margin-bottom: 0.5rem;
     --app-header-action-gap: 0.35rem;
 
