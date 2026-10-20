@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter, useRoute } from "vue-router"
 import { useLoaderStore } from '@/stores/loader'
@@ -18,95 +19,60 @@ const user = computed(() => currentUser.value)
 const isMenuOpen = ref(false)
 const isProfileDialogVisible = ref(false)
 const isShortcutsDialogVisible = ref(false)
-const currentProfileTab = ref('menu')
+const isThemeExpanded = ref(false)
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '593999179988'
 const supportWhatsappUrl = computed(() => `https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}`)
 
-const themes = [
-  {
-    name: 'system',
-    label: 'Sistema',
-    icon: 'ri-macbook-line',
-    desc: 'Sincronizar con S.O.',
-  },
+const solidThemes = [
   {
     name: 'light',
     label: 'Claro',
     icon: 'ri-sun-line',
-    desc: 'Luminoso clásico',
   },
   {
     name: 'dark',
     label: 'Oscuro',
     icon: 'ri-moon-clear-line',
-    desc: 'Modo noche estándar',
   },
+]
+
+const glassThemes = [
   {
     name: 'dark-glass',
     label: 'Oscuro Transparente',
     icon: 'ri-moon-cloudy-line',
-    desc: 'Glassmorphism nocturno',
   },
   {
     name: 'semi-dark-glass',
     label: 'Medio Transparente',
     icon: 'ri-contrast-line',
-    desc: 'Glass translúcido medio',
   },
   {
     name: 'light-glass',
     label: 'Transparente Claro',
     icon: 'ri-sun-cloudy-line',
-    desc: 'Glassmorphism claro',
   },
 ]
 
-const userProfileList = [
-  {
-    type: "navItem",
-    icon: "ri-user-settings-line",
-    title: "Mi Perfil & Seguridad",
-    subtitle: "Mis datos y contraseña",
-    action: "open_profile",
-    color: "primary",
-  },
-  {
-    type: "navItem",
-    icon: "ri-store-2-line",
-    title: "Mi Establecimiento",
-    subtitle: "Razón social y sucursal",
-    to: "/sucursales",
-    color: "info",
-    permission: "settings",
-  },
-  { type: "divider" },
-  {
-    type: "navItem",
-    icon: "ri-keyboard-line",
-    title: "Atajos de Teclado & Soporte",
-    subtitle: "Guía rápida y ayuda",
-    action: "open_shortcuts",
-    color: "cyan",
-  },
-]
+const currentThemeIcon = computed(() => {
+  if (configStore.theme === 'system') return 'ri-macbook-line'
+  if (configStore.theme === 'light') return 'ri-sun-line'
+  if (configStore.theme === 'dark') return 'ri-moon-clear-line'
+  if (configStore.theme === 'dark-glass') return 'ri-moon-cloudy-line'
+  if (configStore.theme === 'semi-dark-glass') return 'ri-contrast-line'
+  if (configStore.theme === 'light-glass') return 'ri-sun-cloudy-line'
+  return 'ri-palette-line'
+})
 
-const filteredUserProfileList = computed(() => {
-  const clean = userProfileList.filter(item => {
-    if (item.type === 'divider') return true
-    if (!item.permission) return true
-
-    return can(item.permission)
-  })
-
-  return clean.filter((item, index, arr) => {
-    if (item.type === 'divider') {
-      if (index === 0 || index === arr.length - 1) return false
-      if (arr[index - 1]?.type === 'divider') return false
-    }
-
-    return true
-  })
+const currentThemeLabel = computed(() => {
+  if (configStore.theme === 'system') return 'Sistema'
+  if (configStore.theme === 'light') return 'Claro'
+  if (configStore.theme === 'dark') return 'Oscuro'
+  if (configStore.theme === 'dark-glass') return 'Oscuro Glass'
+  if (configStore.theme === 'semi-dark-glass') return 'Medio Glass'
+  if (configStore.theme === 'light-glass') return 'Claro Glass'
+  return 'Tema'
 })
 
 const handleItemClick = item => {
@@ -167,7 +133,7 @@ const logout = async () => {
         <VMenu
           v-model="isMenuOpen"
           activator="parent"
-          min-width="300"
+          min-width="320"
           max-width="calc(100vw - 24px)"
           location="bottom end"
           offset="14px"
@@ -176,179 +142,310 @@ const logout = async () => {
         >
           <VList
             class="pa-0 rounded-2xl overflow-hidden elevation-12 border user-profile-menu-list"
-            style="max-width: 320px; width: 100%;"
+            style="max-width: 340px; width: 100%;"
           >
-            <!-- Modern Profile Header (Compact & High Contrast) -->
-            <div class="user-profile-header pa-4 pb-3 d-flex flex-column align-center text-center position-relative">
+            <!-- Modern Profile Header (Tamaño Cómodo Original) -->
+            <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
               <VAvatar
-                size="56"
-                class="elevation-3 mb-2 border-avatar"
+                size="68"
+                class="elevation-4 mb-3 border-avatar"
               >
                 <VImg :src="user && user.avatar ? user.avatar : avatar1" />
               </VAvatar>
               <div v-if="user" class="w-100">
-                <div class="text-subtitle-1 font-weight-bold text-high-emphasis text-truncate mb-0.5">
+                <div class="text-h6 font-weight-bold text-high-emphasis text-truncate mb-1">
                   {{ user.full_name || `${user.name} ${user.surname || ''}` || 'Usuario' }}
                 </div>
                 <div class="text-caption text-medium-emphasis mb-2 font-mono text-truncate">
                   {{ user.email }}
                 </div>
                 <VChip
-                  size="x-small"
+                  size="small"
                   color="primary"
                   variant="tonal"
-                  class="font-weight-bold px-2.5 text-uppercase"
+                  class="font-weight-bold px-3 text-uppercase"
                 >
                   <VIcon
                     start
                     icon="ri-shield-star-line"
-                    size="13"
+                    size="14"
                   />
                   {{ typeof user.role === 'object' ? user.role?.name : (user.role || 'Usuario') }}
                 </VChip>
               </div>
               <div v-else>
-                <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">
+                <div class="text-h6 font-weight-bold text-high-emphasis mb-1">
                   Usuario Invitado
                 </div>
               </div>
             </div>
 
-            <!-- Subpestañas del perfil: Menú y Temas -->
-            <div class="px-3 pb-2">
-              <VTabs
-                v-model="currentProfileTab"
-                density="compact"
-                grow
-                color="primary"
-                class="profile-tabs-pill border rounded-lg"
-              >
-                <VTab
-                  value="menu"
-                  class="text-caption font-weight-bold text-none py-1"
-                >
-                  <VIcon
-                    start
-                    icon="ri-menu-line"
-                    size="16"
-                  />
-                  Menú
-                </VTab>
-                <VTab
-                  value="themes"
-                  class="text-caption font-weight-bold text-none py-1"
-                >
-                  <VIcon
-                    start
-                    icon="ri-palette-line"
-                    size="16"
-                  />
-                  Temas
-                </VTab>
-              </VTabs>
-            </div>
+            <VDivider />
 
-            <VDivider class="border-opacity-50" />
-
-            <!-- Tab Content (Bounded Height) -->
-            <div class="px-2 py-1.5" style="max-height: 250px; overflow-y: auto;">
-              <!-- SUBPESTAÑA 1: Menú General -->
+            <!-- Nav Items (Viñetas y Subviñetas de Temas) -->
+            <PerfectScrollbar
+              :options="{ wheelPropagation: false }"
+              class="px-3 py-2"
+              style="max-height: 380px;"
+            >
               <VList
-                v-if="currentProfileTab === 'menu'"
                 nav
                 density="compact"
                 class="pa-0"
               >
-                <template
-                  v-for="item in filteredUserProfileList"
-                  :key="item.title"
-                >
-                  <VListItem
-                    v-if="item.type === 'navItem'"
-                    color="primary"
-                    class="rounded-xl mb-1 nav-item-hover cursor-pointer py-1.5"
-                    @click="handleItemClick(item)"
-                  >
-                    <template #prepend>
-                      <VAvatar
-                        :color="item.color || 'primary'"
-                        variant="tonal"
-                        size="32"
-                        class="me-2.5 rounded-lg"
-                      >
-                        <VIcon
-                          :icon="item.icon"
-                          size="17"
-                        />
-                      </VAvatar>
-                    </template>
-
-                    <VListItemTitle class="font-weight-bold text-body-2">
-                      {{ item.title }}
-                    </VListItemTitle>
-                    <VListItemSubtitle
-                      v-if="item.subtitle"
-                      class="text-caption text-medium-emphasis mt-0.5"
-                    >
-                      {{ item.subtitle }}
-                    </VListItemSubtitle>
-                  </VListItem>
-
-                  <VDivider
-                    v-else
-                    class="my-1.5 border-opacity-50"
-                  />
-                </template>
-              </VList>
-
-              <!-- SUBPESTAÑA 2: Temas del Sistema -->
-              <VList
-                v-else-if="currentProfileTab === 'themes'"
-                nav
-                density="compact"
-                class="pa-0"
-              >
+                <!-- Viñeta 1: Mi Perfil & Seguridad -->
                 <VListItem
-                  v-for="thm in themes"
-                  :key="thm.name"
-                  :active="configStore.theme === thm.name"
                   color="primary"
-                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-1.5"
-                  @click="selectTheme(thm.name)"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="handleItemClick({ action: 'open_profile' })"
                 >
                   <template #prepend>
                     <VAvatar
-                      :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
-                      :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
-                      size="32"
-                      class="me-2.5 rounded-lg"
+                      color="primary"
+                      variant="tonal"
+                      size="34"
+                      class="me-3 rounded-lg"
                     >
                       <VIcon
-                        :icon="thm.icon"
-                        size="17"
+                        icon="ri-user-settings-line"
+                        size="18"
+                      />
+                    </VAvatar>
+                  </template>
+
+                  <VListItemTitle class="font-weight-bold text-body-2">
+                    Mi Perfil & Seguridad
+                  </VListItemTitle>
+                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                    Mis datos y contraseña
+                  </VListItemSubtitle>
+                </VListItem>
+
+                <!-- Viñeta 2: Mi Establecimiento (con permiso) -->
+                <VListItem
+                  v-if="can('settings')"
+                  color="primary"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="handleItemClick({ to: '/sucursales' })"
+                >
+                  <template #prepend>
+                    <VAvatar
+                      color="info"
+                      variant="tonal"
+                      size="34"
+                      class="me-3 rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-store-2-line"
+                        size="18"
+                      />
+                    </VAvatar>
+                  </template>
+
+                  <VListItemTitle class="font-weight-bold text-body-2">
+                    Mi Establecimiento
+                  </VListItemTitle>
+                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                    Razón social y sucursal
+                  </VListItemSubtitle>
+                </VListItem>
+
+                <VDivider class="my-2 border-opacity-50" />
+
+                <!-- Viñeta 3: Tema del Sistema (Desplegable con Subviñetas) -->
+                <VListItem
+                  color="primary"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  :class="{ 'theme-active-item': isThemeExpanded }"
+                  @click="isThemeExpanded = !isThemeExpanded"
+                >
+                  <template #prepend>
+                    <VAvatar
+                      color="warning"
+                      variant="tonal"
+                      size="34"
+                      class="me-3 rounded-lg"
+                    >
+                      <VIcon
+                        :icon="currentThemeIcon"
+                        size="18"
                       />
                     </VAvatar>
                   </template>
 
                   <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
-                    <span>{{ thm.label }}</span>
-                    <VIcon
-                      v-if="configStore.theme === thm.name"
-                      icon="ri-checkbox-circle-fill"
-                      color="primary"
-                      size="18"
-                    />
+                    <span>Tema / Apariencia</span>
+                    <VChip
+                      size="x-small"
+                      color="warning"
+                      variant="tonal"
+                      class="font-weight-semibold text-caption px-2"
+                    >
+                      {{ currentThemeLabel }}
+                    </VChip>
                   </VListItemTitle>
                   <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
-                    {{ thm.desc }}
+                    Personalizar interfaz
+                  </VListItemSubtitle>
+
+                  <template #append>
+                    <VIcon
+                      :icon="isThemeExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+                      size="20"
+                      class="text-medium-emphasis ms-1"
+                    />
+                  </template>
+                </VListItem>
+
+                <!-- Subviñetas Desplegables de Temas -->
+                <VExpandTransition>
+                  <div
+                    v-if="isThemeExpanded"
+                    class="theme-subitems-wrapper pa-2 mb-2 rounded-xl border"
+                  >
+                    <!-- Subviñeta 1: Sistema -->
+                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-1 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                      <VIcon icon="ri-computer-line" size="13" color="primary" />
+                      Sistema
+                    </div>
+                    <VListItem
+                      :active="configStore.theme === 'system'"
+                      color="primary"
+                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme('system')"
+                    >
+                      <template #prepend>
+                        <VAvatar
+                          :color="configStore.theme === 'system' ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'"
+                          size="26"
+                          class="me-2 rounded-md"
+                        >
+                          <VIcon icon="ri-macbook-line" size="15" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle class="text-body-2 font-weight-medium">
+                        Predeterminado S.O.
+                      </VListItemTitle>
+                      <template #append>
+                        <VIcon
+                          v-if="configStore.theme === 'system'"
+                          icon="ri-checkbox-circle-fill"
+                          color="primary"
+                          size="18"
+                        />
+                      </template>
+                    </VListItem>
+
+                    <!-- Subviñeta 2: Claro u Oscuro -->
+                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                      <VIcon icon="ri-contrast-drop-line" size="13" color="primary" />
+                      Claro u Oscuro
+                    </div>
+                    <VListItem
+                      v-for="thm in solidThemes"
+                      :key="thm.name"
+                      :active="configStore.theme === thm.name"
+                      color="primary"
+                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme(thm.name)"
+                    >
+                      <template #prepend>
+                        <VAvatar
+                          :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
+                          size="26"
+                          class="me-2 rounded-md"
+                        >
+                          <VIcon :icon="thm.icon" size="15" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle class="text-body-2 font-weight-medium">
+                        {{ thm.label }}
+                      </VListItemTitle>
+                      <template #append>
+                        <VIcon
+                          v-if="configStore.theme === thm.name"
+                          icon="ri-checkbox-circle-fill"
+                          color="primary"
+                          size="18"
+                        />
+                      </template>
+                    </VListItem>
+
+                    <!-- Subviñeta 3: Transparentes (Glass) -->
+                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                      <VIcon icon="ri-sparkling-line" size="13" color="primary" />
+                      Transparentes (Glass)
+                    </div>
+                    <VListItem
+                      v-for="thm in glassThemes"
+                      :key="thm.name"
+                      :active="configStore.theme === thm.name"
+                      color="primary"
+                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme(thm.name)"
+                    >
+                      <template #prepend>
+                        <VAvatar
+                          :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
+                          size="26"
+                          class="me-2 rounded-md"
+                        >
+                          <VIcon :icon="thm.icon" size="15" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle class="text-body-2 font-weight-medium">
+                        {{ thm.label }}
+                      </VListItemTitle>
+                      <template #append>
+                        <VIcon
+                          v-if="configStore.theme === thm.name"
+                          icon="ri-checkbox-circle-fill"
+                          color="primary"
+                          size="18"
+                        />
+                      </template>
+                    </VListItem>
+                  </div>
+                </VExpandTransition>
+
+                <VDivider class="my-2 border-opacity-50" />
+
+                <!-- Viñeta 4: Atajos de Teclado & Soporte -->
+                <VListItem
+                  color="primary"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="handleItemClick({ action: 'open_shortcuts' })"
+                >
+                  <template #prepend>
+                    <VAvatar
+                      color="cyan"
+                      variant="tonal"
+                      size="34"
+                      class="me-3 rounded-lg"
+                    >
+                      <VIcon
+                        icon="ri-keyboard-line"
+                        size="18"
+                      />
+                    </VAvatar>
+                  </template>
+
+                  <VListItemTitle class="font-weight-bold text-body-2">
+                    Atajos de Teclado & Soporte
+                  </VListItemTitle>
+                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                    Guía rápida y ayuda
                   </VListItemSubtitle>
                 </VListItem>
               </VList>
-            </div>
+            </PerfectScrollbar>
 
-            <!-- Botón Cerrar Sesión (Siempre Visible y Destacado en el fondo) -->
+            <!-- Logout Button (Siempre Visible en la base) -->
             <VDivider class="border-opacity-50" />
-            <div class="pa-2.5 bg-surface">
+            <div class="pa-3 bg-surface">
               <VBtn
                 block
                 color="error"
@@ -356,12 +453,12 @@ const logout = async () => {
                 prepend-icon="ri-logout-box-r-line"
                 class="rounded-xl font-weight-bold logout-action-btn"
                 size="large"
-                height="42"
+                height="44"
                 :loading="loader.loading"
                 :disabled="loader.loading"
                 @click="logout"
               >
-                <span class="text-body-2 font-weight-bold text-uppercase">Cerrar Sesión</span>
+                <span class="text-body-2 font-weight-bold text-uppercase letter-spacing-1">Cerrar Sesión</span>
               </VBtn>
             </div>
           </VList>
@@ -518,16 +615,33 @@ const logout = async () => {
   background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.06) 0%, transparent 100%);
 }
 
-.profile-tabs-pill {
-  background: rgba(var(--v-theme-on-surface), 0.03);
-  border-color: rgba(var(--v-border-color), 0.12) !important;
-}
-
 .nav-item-hover {
   transition: all 0.15s ease-in-out;
 }
 
 .nav-item-hover:hover {
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  transform: translateX(2px);
+}
+
+.theme-active-item {
+  background: rgba(var(--v-theme-primary), 0.06);
+}
+
+.theme-subitems-wrapper {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.theme-group-label {
+  letter-spacing: 0.5px;
+}
+
+.subitem-hover {
+  transition: all 0.15s ease-in-out;
+}
+
+.subitem-hover:hover {
   background: rgba(var(--v-theme-primary), 0.08) !important;
   transform: translateX(2px);
 }
