@@ -7536,38 +7536,60 @@
 
 :root {
   // 1. Laptops y Monitores Grandes (14" a 17" / 1366px - 1920px+):
-  // Padding top uniforme de 16px a 24px máximo para que todas las vistas inicien al mismo nivel visual
+  // Padding top uniforme de 16px para inicio visual estandarizado
   --app-content-padding-top: 16px;
   --app-header-margin-bottom: 1.25rem;
   --app-header-action-gap: 0.5rem;
+
+  // Escala Tipográfica de Títulos de Página (Rango 24px - 26px):
+  --app-page-title-font-size: 1.5625rem; // 25px
+  --app-page-title-line-height: 1.25;
+  --app-page-title-avatar-size: 40px;
+  --app-page-title-icon-size: 24px;
 }
 
-// 2. Tablets y laptops medianas (601px a 960px)
-@media (min-width: 601px) and (max-width: 960px) {
+// 2. Tablets y laptops medianas (601px a 1279px)
+@media (min-width: 601px) and (max-width: 1279px) {
   :root {
     --app-content-padding-top: 14px;
     --app-header-margin-bottom: 1rem;
     --app-header-action-gap: 0.5rem;
+
+    // Escala Tipográfica en Tablets/Laptops Medianas (Rango 20px - 22px):
+    --app-page-title-font-size: 1.3125rem; // 21px
+    --app-page-title-line-height: 1.25;
+    --app-page-title-avatar-size: 36px;
+    --app-page-title-icon-size: 22px;
   }
 }
 
 // 3. Pantallas Móviles Pro / Estándar (iPhone Pro, Samsung / 376px a 600px):
-// Padding top de 12px a 16px máximo
 @media (max-width: 600px) {
   :root {
     --app-content-padding-top: 12px;
-    --app-header-margin-bottom: 0.75rem;
+    --app-header-margin-bottom: 0.65rem;
     --app-header-action-gap: 0.35rem;
+
+    // Escala Tipográfica en Smartphones: 18px (1.125rem) que garantiza CERO salto de línea
+    --app-page-title-font-size: 1.125rem; // 18px
+    --app-page-title-line-height: 1.2;
+    --app-page-title-avatar-size: 32px;
+    --app-page-title-icon-size: 19px;
   }
 }
 
 // 4. Pantallas Ultra Pequeñas (iPhone SE / 320px a 375px):
-// Paddings compactos (8px a 12px) para no desperdiciar espacio vertical
 @media (max-width: 375px) {
   :root {
     --app-content-padding-top: 8px;
     --app-header-margin-bottom: 0.5rem;
     --app-header-action-gap: 0.25rem;
+
+    // Escala Tipográfica en Pantallas Ultra Pequeñas: ~16.8px
+    --app-page-title-font-size: 1.05rem; // ~16.8px
+    --app-page-title-line-height: 1.2;
+    --app-page-title-avatar-size: 28px;
+    --app-page-title-icon-size: 17px;
   }
 }
 
@@ -7615,9 +7637,14 @@
   }
 }
 
-// Estandarización de Cabeceras de Página y Títulos
-.page-content-container {
-  // Elimina paddings y margins superiores innecesarios (my-*, py-*, mt-*, pt-*) en las cabeceras de página
+// ==========================================================================
+// 1. JERARQUÍA TIPOGRÁFICA GLOBAL UNIFICADA PARA TÍTULOS DE VISTA/LISTADO
+// Aplica a TODOS los módulos: Clientes, Vehículos, Repuestos, Ventas, Órdenes, etc.
+// ==========================================================================
+.page-content-container,
+.layout-content-wrapper,
+.layout-page-content {
+  // Elimina paddings y margins superiores en cabeceras de página
   > * > .d-flex.justify-space-between,
   > * > .d-flex.align-center,
   > * > div > .d-flex.justify-space-between,
@@ -7628,13 +7655,69 @@
     margin-top: 0 !important;
   }
 
-  // Títulos H1/H2 de las vistas ("Órdenes de Trabajo", "Ingresos y Egresos", etc.)
-  h1, h2,
-  .text-h4, .text-h5,
-  .operations-page-title {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    line-height: 1.2 !important;
+  // Títulos H1 y títulos de vistas estandarizados con la escala tipográfica
+  h1,
+  .page-title,
+  .view-title,
+  .page-header-title,
+  .operations-page-title,
+  .crud-page-title,
+  .text-h3,
+  .text-h4,
+  .text-h5,
+  .text-h6 {
+    &.font-weight-bold,
+    &.font-weight-black,
+    &.operations-page-title,
+    &.page-title {
+      font-size: var(--app-page-title-font-size) !important;
+      line-height: var(--app-page-title-line-height) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.02em !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      max-width: 100% !important;
+
+      // Icono / Avatar integrado dentro del H1
+      .v-avatar {
+        width: var(--app-page-title-avatar-size) !important;
+        height: var(--app-page-title-avatar-size) !important;
+        min-width: var(--app-page-title-avatar-size) !important;
+        min-height: var(--app-page-title-avatar-size) !important;
+        border-radius: 8px !important;
+        margin-right: 8px !important;
+        flex-shrink: 0 !important;
+
+        .v-icon {
+          font-size: var(--app-page-title-icon-size) !important;
+        }
+      }
+    }
+  }
+
+  // Avatares e iconos que acompañan al título como hermanos
+  .page-header-avatar,
+  .page-title-avatar,
+  > * > .d-flex > div > .v-avatar,
+  > * > .d-flex > .v-avatar,
+  > * > div > .d-flex > .v-avatar {
+    width: var(--app-page-title-avatar-size) !important;
+    height: var(--app-page-title-avatar-size) !important;
+    min-width: var(--app-page-title-avatar-size) !important;
+    min-height: var(--app-page-title-avatar-size) !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
+
+    .v-icon {
+      font-size: var(--app-page-title-icon-size) !important;
+    }
   }
 }
 
@@ -7644,48 +7727,160 @@
 }
 
 // ==========================================================================
-// UNIFIED RESPONSIVE CRUD SYSTEM (Mobile sm/xs <= 960px & <= 600px)
-// RULE: ZERO alterations to Desktop (lg/xl > 960px).
+// 2. DIAGRAMACIÓN ESTÁNDAR DE CABECERA (LÍNEA PRINCIPAL + LÍNEA SECUNDARIA)
 // ==========================================================================
 
-// 1. HEADER CRUD ACTIONS (Stacking on mobile <= 600px, inline on desktop)
-@media (max-width: 600px) {
-  // Compacta el margen inferior de la cabecera (distancia hacia la primera tarjeta/filtro)
+// A. PANTALLAS GRANDES Y MEDIANAS (> 600px - Tablets y Laptops):
+@media (min-width: 601px) {
   .page-content-container {
     > * > .d-flex.justify-space-between,
     > * > div > .d-flex.justify-space-between,
     > div > .d-flex.justify-space-between,
-    .dashboard-container > .d-flex.justify-space-between {
+    .page-header-wrapper,
+    .crud-header-wrapper {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      flex-wrap: wrap !important;
+      gap: 0.75rem 1rem !important;
+
+      .crud-header-actions,
+      .crud-actions-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+      }
+    }
+  }
+}
+
+// B. TELÉFONOS MÓVILES (<= 600px):
+// 1. Fila Principal: TÍTULO a la izquierda + BOTÓN DE ACCIÓN RÁPIDA alineado ÚNICAMENTE a la derecha.
+// 2. Fila Inferior: Cualquier botón secundario, filtro o selector adicional sin romper la fila principal.
+@media (max-width: 600px) {
+  .page-content-container {
+    // Contenedor principal de la cabecera
+    > * > .d-flex.justify-space-between,
+    > * > div > .d-flex.justify-space-between,
+    > div > .d-flex.justify-space-between,
+    .page-header-wrapper,
+    .crud-header-wrapper {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: space-between !important;
       margin-bottom: var(--app-header-margin-bottom) !important;
-      row-gap: 0.35rem !important;
+      row-gap: 0.4rem !important;
+      column-gap: 0.5rem !important;
+
+      // 1. BLOQUE DE TÍTULO PRINCIPAL (Ocupa la izquierda de la fila 1)
+      > div:first-child,
+      > .page-title-block,
+      > .page-header-title-wrapper {
+        display: flex !important;
+        align-items: center !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 135px) !important; // Reserva espacio para la acción rápida a la derecha
+
+        &:only-child {
+          max-width: 100% !important;
+        }
+
+        h1, .page-title, .operations-page-title {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          font-size: var(--app-page-title-font-size) !important;
+          line-height: var(--app-page-title-line-height) !important;
+        }
+
+        // Subtítulos ocultos en móvil para mantener la cabecera en un renglón limpio
+        p {
+          display: none !important;
+        }
+
+        // Contador / Badge compacto adjunto al título
+        .status-pill-clean,
+        .status-transfer,
+        .v-badge {
+          font-size: 0.72rem !important;
+          padding: 2px 6px !important;
+          margin-left: 6px !important;
+          flex-shrink: 0 !important;
+          white-space: nowrap !important;
+        }
+      }
+
+      // 2. CONTENEDOR DE ACCIONES (Desempaquetado para compartir cuadrícula del padre)
+      .crud-header-actions,
+      .crud-actions-wrapper {
+        display: contents !important;
+      }
+
+      // ACCIÓN RÁPIDA PRINCIPAL (Primer botón): Alineado ÚNICAMENTE a la derecha del título en la fila 1
+      .crud-header-actions > .v-btn:first-child,
+      .crud-actions-wrapper > .v-btn:first-child {
+        order: 1 !important;
+        margin-left: auto !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: 130px !important;
+        min-height: 36px !important;
+        height: 36px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.25) !important;
+
+        .v-btn__content {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .v-icon,
+        .v-btn__prepend {
+          font-size: 16px !important;
+          margin-inline-end: 4px !important;
+        }
+      }
+
+      // BOTONES SECUNDARIOS O CONTROLES ADICIONALES (2do botón en adelante): Ubicados en la LÍNEA INFERIOR
+      .crud-header-actions > .v-btn:nth-child(n+2),
+      .crud-actions-wrapper > .v-btn:nth-child(n+2),
+      .crud-header-actions > *:not(.v-btn):not(:first-child),
+      .crud-actions-wrapper > *:not(.v-btn):not(:first-child),
+      .crud-header-actions > .custom-date-container,
+      .crud-header-actions > .custom-date-input-wrap {
+        order: 2 !important;
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-height: 38px !important;
+        margin-top: 0.25rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        justify-content: center !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+      }
+
+      // Si hay exactamente 2 botones secundarios (hijo 2 y 3), se organizan en 2 columnas en la línea inferior
+      .crud-header-actions > .v-btn:nth-child(2):not(:last-child),
+      .crud-header-actions > .v-btn:nth-child(3):last-child {
+        width: calc(50% - 4px) !important;
+        flex: 1 1 calc(50% - 4px) !important;
+      }
     }
   }
 
-  .crud-header-actions,
-  .crud-actions-wrapper {
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    margin-top: var(--app-header-action-gap) !important;
-    gap: 0.45rem !important;
-
-    > .v-btn,
-    .v-btn {
-      width: 100% !important;
-      min-height: 42px !important;
-      justify-content: center !important;
-    }
-
-    .custom-date-input-wrap,
-    .custom-date-container {
-      width: 100% !important;
-      justify-content: center !important;
-      min-height: 42px !important;
-    }
-  }
-
+  // Grupos de botones de filtro en móvil
   .employee-filter-btn-group,
   .finance-filter-btn-group {
     width: 100% !important;
@@ -7710,7 +7905,7 @@
   }
 }
 
-// 1.0.1 PANTALLAS ULTRA PEQUEÑAS (<= 375px / iPhone SE)
+// C. PANTALLAS ULTRA PEQUEÑAS (<= 375px / iPhone SE)
 @media (max-width: 375px) {
   .page-content-container {
     > * > .d-flex.justify-space-between,
@@ -7719,17 +7914,22 @@
     .dashboard-container > .d-flex.justify-space-between {
       margin-bottom: var(--app-header-margin-bottom) !important;
       row-gap: 0.25rem !important;
-    }
-  }
 
-  .crud-header-actions,
-  .crud-actions-wrapper {
-    margin-top: var(--app-header-action-gap) !important;
-    gap: 0.35rem !important;
+      > div:first-child,
+      > .page-title-block,
+      > .page-header-title-wrapper {
+        max-width: calc(100% - 115px) !important;
+      }
 
-    > .v-btn,
-    .v-btn {
-      min-height: 38px !important;
+      .crud-header-actions > .v-btn:first-child,
+      .crud-actions-wrapper > .v-btn:first-child {
+        max-width: 110px !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        font-size: 0.74rem !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+      }
     }
   }
 }
