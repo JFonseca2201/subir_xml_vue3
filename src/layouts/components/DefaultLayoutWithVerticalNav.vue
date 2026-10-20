@@ -10,7 +10,6 @@ import logoPng from '@images/logo/logo_e.png'
 
 // Components
 import Footer from '@/layouts/components/Footer.vue'
-import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 
@@ -206,13 +205,12 @@ const filteredNavItems = computed(() => {
           </RouterLink>
         </div>
 
-        <!-- 3. Columna Derecha: Herramientas, Idioma, Tema y Perfil de Usuario -->
+        <!-- 3. Columna Derecha: Herramientas, Idioma y Perfil de Usuario -->
         <div class="navbar-right-section d-flex align-center justify-end gap-2">
           <NavBarI18n
             v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
             :languages="themeConfig.app.i18n.langConfig"
           />
-          <NavbarThemeSwitcher class="me-1" />
           <UserProfile />
         </div>
       </div>

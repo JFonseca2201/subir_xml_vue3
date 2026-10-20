@@ -2,9 +2,51 @@
 import { ref, watch, computed } from 'vue'
 import { useGlobalToast } from '@/composables/useGlobalToast'
 import { useLoaderStore } from '@/stores/loader'
+import { useConfigStore } from '@core/stores/config'
 import { $api, getStorageUrl } from '@/utils/api'
 import avatar1 from "@images/avatars/avatar-1.png"
 import { refreshPermissionsUser } from '@/composables/usePermissions'
+
+const configStore = useConfigStore()
+
+const themes = [
+  {
+    name: 'system',
+    label: 'Sistema',
+    icon: 'ri-macbook-line',
+    desc: 'Sincronizar con el sistema operativo',
+  },
+  {
+    name: 'light',
+    label: 'Claro',
+    icon: 'ri-sun-line',
+    desc: 'Tema claro estándar de alta luminosidad',
+  },
+  {
+    name: 'dark',
+    label: 'Oscuro',
+    icon: 'ri-moon-clear-line',
+    desc: 'Tema oscuro elegante para baja luz',
+  },
+  {
+    name: 'dark-glass',
+    label: 'Oscuro Transparente',
+    icon: 'ri-moon-cloudy-line',
+    desc: 'Glassmorphism translúcido nocturno',
+  },
+  {
+    name: 'semi-dark-glass',
+    label: 'Medio Transparente',
+    icon: 'ri-contrast-line',
+    desc: 'Glassmorphism semioscuro equilibrado',
+  },
+  {
+    name: 'light-glass',
+    label: 'Transparente Claro',
+    icon: 'ri-sun-cloudy-line',
+    desc: 'Glassmorphism luminoso y translúcido',
+  },
+]
 
 const props = defineProps({
   isDialogVisible: {
@@ -298,6 +340,13 @@ const showConfirmPassword = ref(false)
           />
           Seguridad & Contraseña
         </VTab>
+        <VTab value="theme" class="font-weight-semibold">
+          <VIcon
+            start
+            icon="ri-palette-line"
+          />
+          Apariencia & Temas
+        </VTab>
       </VTabs>
 
       <VCardText class="pa-5 pa-sm-6">
@@ -506,6 +555,68 @@ const showConfirmPassword = ref(false)
               </VRow>
             </VForm>
           </VWindowItem>
+          <!-- TAB 3: Apariencia & Temas -->
+          <VWindowItem value="theme">
+            <div class="mb-4">
+              <h4 class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">
+                Selecciona tu Tema de Interfaz
+              </h4>
+              <p class="text-caption text-medium-emphasis mb-4">
+                Personaliza la apariencia visual del sistema según tus preferencias. Los cambios se aplican de forma inmediata.
+              </p>
+
+              <VRow dense>
+                <VCol
+                  v-for="thm in themes"
+                  :key="thm.name"
+                  cols="12"
+                  sm="6"
+                >
+                  <VCard
+                    variant="outlined"
+                    class="pa-3 rounded-xl cursor-pointer transition-swing theme-choice-card mb-2"
+                    :class="{ 'theme-choice-card--active': configStore.theme === thm.name }"
+                    @click="configStore.theme = thm.name"
+                  >
+                    <div class="d-flex align-center justify-space-between">
+                      <div class="d-flex align-center gap-3">
+                        <VAvatar
+                          :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
+                          size="38"
+                          class="rounded-lg"
+                        >
+                          <VIcon :icon="thm.icon" size="20" />
+                        </VAvatar>
+                        <div>
+                          <div class="text-body-2 font-weight-bold">
+                            {{ thm.label }}
+                          </div>
+                          <div class="text-caption text-medium-emphasis">
+                            {{ thm.desc }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <VIcon
+                        v-if="configStore.theme === thm.name"
+                        icon="ri-checkbox-circle-fill"
+                        color="primary"
+                        size="22"
+                      />
+                      <VIcon
+                        v-else
+                        icon="ri-checkbox-blank-circle-line"
+                        color="secondary"
+                        size="20"
+                        class="opacity-40"
+                      />
+                    </div>
+                  </VCard>
+                </VCol>
+              </VRow>
+            </div>
+          </VWindowItem>
         </VWindow>
       </VCardText>
 
@@ -577,5 +688,23 @@ const showConfirmPassword = ref(false)
 
 .email-readonly-field :deep(.v-field) {
   background-color: rgba(var(--v-theme-on-surface), 0.03) !important;
+}
+
+.theme-choice-card {
+  border-color: rgba(var(--v-border-color), 0.15) !important;
+  background-color: rgba(var(--v-theme-surface), 0.7);
+  transition: all 0.2s ease-in-out;
+}
+
+.theme-choice-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(var(--v-theme-primary), 0.12);
+}
+
+.theme-choice-card--active {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  border-width: 2px !important;
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
 }
 </style>

@@ -1,15 +1,16 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter, useRoute } from "vue-router"
 import { useLoaderStore } from '@/stores/loader'
+import { useConfigStore } from '@core/stores/config'
 import MyProfileDialog from './MyProfileDialog.vue'
 import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
 const route = useRoute()
 const loader = useLoaderStore()
+const configStore = useConfigStore()
 const { can, currentUser } = usePermissions()
 
 const user = computed(() => currentUser.value)
@@ -17,9 +18,49 @@ const user = computed(() => currentUser.value)
 const isMenuOpen = ref(false)
 const isProfileDialogVisible = ref(false)
 const isShortcutsDialogVisible = ref(false)
+const currentProfileTab = ref('menu')
 
 const supportPhone = import.meta.env.VITE_SUPPORT_PHONE || '593999179988'
 const supportWhatsappUrl = computed(() => `https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}`)
+
+const themes = [
+  {
+    name: 'system',
+    label: 'Sistema',
+    icon: 'ri-macbook-line',
+    desc: 'Sincronizar con S.O.',
+  },
+  {
+    name: 'light',
+    label: 'Claro',
+    icon: 'ri-sun-line',
+    desc: 'Luminoso clásico',
+  },
+  {
+    name: 'dark',
+    label: 'Oscuro',
+    icon: 'ri-moon-clear-line',
+    desc: 'Modo noche estándar',
+  },
+  {
+    name: 'dark-glass',
+    label: 'Oscuro Transparente',
+    icon: 'ri-moon-cloudy-line',
+    desc: 'Glassmorphism nocturno',
+  },
+  {
+    name: 'semi-dark-glass',
+    label: 'Medio Transparente',
+    icon: 'ri-contrast-line',
+    desc: 'Glass translúcido medio',
+  },
+  {
+    name: 'light-glass',
+    label: 'Transparente Claro',
+    icon: 'ri-sun-cloudy-line',
+    desc: 'Glassmorphism claro',
+  },
+]
 
 const userProfileList = [
   {
@@ -38,43 +79,6 @@ const userProfileList = [
     to: "/sucursales",
     color: "info",
     permission: "settings",
-  },
-  {
-    type: "navItem",
-    icon: "ri-safe-2-line",
-    title: "Caja y Arqueo Diario",
-    subtitle: "Cuadre y cierre de caja",
-    to: "/finanzas/arqueo",
-    color: "success",
-    permission: "list_arqueo",
-  },
-  { type: "divider" },
-  {
-    type: "navItem",
-    icon: "ri-receipt-line",
-    title: "Historial de Ventas",
-    subtitle: "Facturas y documentos",
-    to: "/sales/list",
-    color: "warning",
-    permission: "list_sale",
-  },
-  {
-    type: "navItem",
-    icon: "ri-tools-line",
-    title: "Órdenes de Trabajo",
-    subtitle: "Taller automotriz",
-    to: "/work-orders/list",
-    color: "purple",
-    permission: "list_work_order",
-  },
-  {
-    type: "navItem",
-    icon: "ri-shield-user-line",
-    title: "Roles y Permisos",
-    subtitle: "Accesos del sistema",
-    to: "/roles-permisos",
-    color: "indigo",
-    permission: "list_role",
   },
   { type: "divider" },
   {
@@ -120,7 +124,12 @@ const handleProfileUpdate = updatedUser => {
   user.value = updatedUser
 }
 
+const selectTheme = themeName => {
+  configStore.theme = themeName
+}
+
 const logout = async () => {
+  isMenuOpen.value = false
   loader.start()
   localStorage.removeItem("user")
   localStorage.removeItem("token")
@@ -139,74 +148,222 @@ const logout = async () => {
 
 <template>
   <div>
-    <VBadge dot bordered location="bottom right" offset-x="3" offset-y="3" color="success" class="user-profile-badge">
-      <VAvatar class="cursor-pointer elevation-2 transition-swing hover-scale" size="42">
+    <VBadge
+      dot
+      bordered
+      location="bottom right"
+      offset-x="3"
+      offset-y="3"
+      color="success"
+      class="user-profile-badge"
+    >
+      <VAvatar
+        class="cursor-pointer elevation-2 transition-swing hover-scale"
+        size="42"
+      >
         <VImg :src="user && user.avatar ? user.avatar : avatar1" />
 
         <!-- SECTION Menu -->
-        <VMenu v-model="isMenuOpen" activator="parent" min-width="280" max-width="calc(100vw - 24px)"
-          location="bottom end" offset="14px" transition="scale-transition" close-on-content-click>
-          <VList class="pa-0 rounded-2xl overflow-hidden elevation-8 border user-profile-menu-list"
-            style="max-width: 320px; width: 100%;">
-            <!-- Modern Profile Header -->
-            <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
-              <VAvatar size="68" class="elevation-4 mb-3 border-avatar">
+        <VMenu
+          v-model="isMenuOpen"
+          activator="parent"
+          min-width="300"
+          max-width="calc(100vw - 24px)"
+          location="bottom end"
+          offset="14px"
+          transition="scale-transition"
+          :close-on-content-click="false"
+        >
+          <VList
+            class="pa-0 rounded-2xl overflow-hidden elevation-12 border user-profile-menu-list"
+            style="max-width: 320px; width: 100%;"
+          >
+            <!-- Modern Profile Header (Compact & High Contrast) -->
+            <div class="user-profile-header pa-4 pb-3 d-flex flex-column align-center text-center position-relative">
+              <VAvatar
+                size="56"
+                class="elevation-3 mb-2 border-avatar"
+              >
                 <VImg :src="user && user.avatar ? user.avatar : avatar1" />
               </VAvatar>
-              <div v-if="user">
-                <div class="text-h6 font-weight-bold text-high-emphasis mb-1">
+              <div v-if="user" class="w-100">
+                <div class="text-subtitle-1 font-weight-bold text-high-emphasis text-truncate mb-0.5">
                   {{ user.full_name || `${user.name} ${user.surname || ''}` || 'Usuario' }}
                 </div>
-                <div class="text-caption text-medium-emphasis mb-2 font-mono">
+                <div class="text-caption text-medium-emphasis mb-2 font-mono text-truncate">
                   {{ user.email }}
                 </div>
-                <VChip size="small" color="primary" variant="tonal" class="font-weight-bold px-3 text-uppercase">
-                  <VIcon start icon="ri-shield-star-line" size="14" />
+                <VChip
+                  size="x-small"
+                  color="primary"
+                  variant="tonal"
+                  class="font-weight-bold px-2.5 text-uppercase"
+                >
+                  <VIcon
+                    start
+                    icon="ri-shield-star-line"
+                    size="13"
+                  />
                   {{ typeof user.role === 'object' ? user.role?.name : (user.role || 'Usuario') }}
                 </VChip>
               </div>
               <div v-else>
-                <div class="text-h6 font-weight-bold text-high-emphasis mb-1">
+                <div class="text-subtitle-1 font-weight-bold text-high-emphasis mb-1">
                   Usuario Invitado
                 </div>
               </div>
             </div>
 
-            <VDivider />
+            <!-- Subpestañas del perfil: Menú y Temas -->
+            <div class="px-3 pb-2">
+              <VTabs
+                v-model="currentProfileTab"
+                density="compact"
+                grow
+                color="primary"
+                class="profile-tabs-pill border rounded-lg"
+              >
+                <VTab
+                  value="menu"
+                  class="text-caption font-weight-bold text-none py-1"
+                >
+                  <VIcon
+                    start
+                    icon="ri-menu-line"
+                    size="16"
+                  />
+                  Menú
+                </VTab>
+                <VTab
+                  value="themes"
+                  class="text-caption font-weight-bold text-none py-1"
+                >
+                  <VIcon
+                    start
+                    icon="ri-palette-line"
+                    size="16"
+                  />
+                  Temas
+                </VTab>
+              </VTabs>
+            </div>
 
-            <!-- Nav Items -->
-            <PerfectScrollbar :options="{ wheelPropagation: false }" class="px-3 py-2" style="max-height: 360px;">
-              <VList nav density="compact" class="pa-0">
-                <template v-for="item in filteredUserProfileList" :key="item.title">
-                  <VListItem v-if="item.type === 'navItem'" color="primary"
-                    class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2" @click="handleItemClick(item)">
+            <VDivider class="border-opacity-50" />
+
+            <!-- Tab Content (Bounded Height) -->
+            <div class="px-2 py-1.5" style="max-height: 250px; overflow-y: auto;">
+              <!-- SUBPESTAÑA 1: Menú General -->
+              <VList
+                v-if="currentProfileTab === 'menu'"
+                nav
+                density="compact"
+                class="pa-0"
+              >
+                <template
+                  v-for="item in filteredUserProfileList"
+                  :key="item.title"
+                >
+                  <VListItem
+                    v-if="item.type === 'navItem'"
+                    color="primary"
+                    class="rounded-xl mb-1 nav-item-hover cursor-pointer py-1.5"
+                    @click="handleItemClick(item)"
+                  >
                     <template #prepend>
-                      <VAvatar :color="item.color || 'primary'" variant="tonal" size="34" class="me-3 rounded-lg">
-                        <VIcon :icon="item.icon" size="18" />
+                      <VAvatar
+                        :color="item.color || 'primary'"
+                        variant="tonal"
+                        size="32"
+                        class="me-2.5 rounded-lg"
+                      >
+                        <VIcon
+                          :icon="item.icon"
+                          size="17"
+                        />
                       </VAvatar>
                     </template>
 
                     <VListItemTitle class="font-weight-bold text-body-2">
                       {{ item.title }}
                     </VListItemTitle>
-                    <VListItemSubtitle v-if="item.subtitle" class="text-caption text-medium-emphasis mt-0.5">
+                    <VListItemSubtitle
+                      v-if="item.subtitle"
+                      class="text-caption text-medium-emphasis mt-0.5"
+                    >
                       {{ item.subtitle }}
                     </VListItemSubtitle>
                   </VListItem>
 
-                  <VDivider v-else class="my-2 border-opacity-50" />
+                  <VDivider
+                    v-else
+                    class="my-1.5 border-opacity-50"
+                  />
                 </template>
               </VList>
 
-              <!-- Logout Button -->
-              <div class="mt-3 mb-2 px-1">
-                <VBtn block color="error" variant="tonal" prepend-icon="ri-logout-box-r-line"
-                  class="rounded-xl font-weight-bold" size="large" height="44" :loading="loader.loading"
-                  :disabled="loader.loading" @click="logout">
-                  Cerrar Sesión
-                </VBtn>
-              </div>
-            </PerfectScrollbar>
+              <!-- SUBPESTAÑA 2: Temas del Sistema -->
+              <VList
+                v-else-if="currentProfileTab === 'themes'"
+                nav
+                density="compact"
+                class="pa-0"
+              >
+                <VListItem
+                  v-for="thm in themes"
+                  :key="thm.name"
+                  :active="configStore.theme === thm.name"
+                  color="primary"
+                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-1.5"
+                  @click="selectTheme(thm.name)"
+                >
+                  <template #prepend>
+                    <VAvatar
+                      :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                      :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
+                      size="32"
+                      class="me-2.5 rounded-lg"
+                    >
+                      <VIcon
+                        :icon="thm.icon"
+                        size="17"
+                      />
+                    </VAvatar>
+                  </template>
+
+                  <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
+                    <span>{{ thm.label }}</span>
+                    <VIcon
+                      v-if="configStore.theme === thm.name"
+                      icon="ri-checkbox-circle-fill"
+                      color="primary"
+                      size="18"
+                    />
+                  </VListItemTitle>
+                  <VListItemSubtitle class="text-caption text-medium-emphasis mt-0.5">
+                    {{ thm.desc }}
+                  </VListItemSubtitle>
+                </VListItem>
+              </VList>
+            </div>
+
+            <!-- Botón Cerrar Sesión (Siempre Visible y Destacado en el fondo) -->
+            <VDivider class="border-opacity-50" />
+            <div class="pa-2.5 bg-surface">
+              <VBtn
+                block
+                color="error"
+                variant="tonal"
+                prepend-icon="ri-logout-box-r-line"
+                class="rounded-xl font-weight-bold logout-action-btn"
+                size="large"
+                height="42"
+                :loading="loader.loading"
+                :disabled="loader.loading"
+                @click="logout"
+              >
+                <span class="text-body-2 font-weight-bold text-uppercase">Cerrar Sesión</span>
+              </VBtn>
+            </div>
           </VList>
         </VMenu>
         <!-- !SECTION -->
@@ -350,3 +507,33 @@ const logout = async () => {
     </VDialog>
   </div>
 </template>
+
+<style scoped>
+.border-avatar {
+  border: 2px solid rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2);
+}
+
+.user-profile-header {
+  background: linear-gradient(180deg, rgba(var(--v-theme-primary), 0.06) 0%, transparent 100%);
+}
+
+.profile-tabs-pill {
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  border-color: rgba(var(--v-border-color), 0.12) !important;
+}
+
+.nav-item-hover {
+  transition: all 0.15s ease-in-out;
+}
+
+.nav-item-hover:hover {
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  transform: translateX(2px);
+}
+
+.logout-action-btn {
+  letter-spacing: 0.5px;
+}
+</style>
+
