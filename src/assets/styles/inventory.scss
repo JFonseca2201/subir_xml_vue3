@@ -7930,4 +7930,45 @@
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: thin;
   }
+}
+
+// ==========================================================================
+// BOTONES DE ACCIÓN DE ARQUEO DE CAJA RESPONSIVOS
+// ==========================================================================
+.arqueo-action-buttons {
+  width: 100% !important;
+
+  .v-btn ~ .v-btn,
+  > .v-btn + .v-btn {
+    margin-inline-start: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  > .v-btn,
+  .v-btn,
+  .arqueo-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 960px) {
+  .arqueo-action-buttons {
+    flex-direction: row !important;
+
+    > .v-btn,
+    .v-btn,
+    .arqueo-btn {
+      flex: 1 1 0 !important;
+      width: 100% !important;
+    }
+  }
 }

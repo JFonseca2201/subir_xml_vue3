@@ -1557,12 +1557,14 @@ onActivated(() => {
           </VCard>
 
           <!-- Botones de Acción -->
-          <div class="d-flex align-center gap-3 flex-wrap flex-sm-nowrap">
+          <div class="arqueo-action-buttons d-flex flex-column flex-sm-row flex-md-column gap-2.5 w-100">
             <VBtn
+              block
               variant="elevated"
               color="primary"
-              size="large"
-              class="flex-1 font-weight-bold elevation-2 text-none"
+              height="44"
+              class="arqueo-btn font-weight-bold elevation-1 text-none"
+              style="font-size: 0.95rem; letter-spacing: 0.2px;"
               :loading="saving"
               :disabled="saving || sealing || loading || isSealed"
               prepend-icon="ri-save-3-line"
@@ -1571,10 +1573,12 @@ onActivated(() => {
               Guardar Arqueo Diario
             </VBtn>
             <VBtn
+              block
               variant="tonal"
               color="primary"
-              size="large"
-              class="flex-1 font-weight-bold text-none"
+              height="44"
+              class="arqueo-btn font-weight-bold text-none"
+              style="font-size: 0.95rem; letter-spacing: 0.2px;"
               :loading="sealing"
               :disabled="sealing || saving || loading || isSealed"
               prepend-icon="ri-lock-password-line"
