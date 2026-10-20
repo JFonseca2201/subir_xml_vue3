@@ -1002,7 +1002,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pa-6 position-relative">
+  <div class="pa-4 pa-sm-6 position-relative">
     <!-- Hidden XML File Input -->
     <input
       ref="xmlFileInputRef"
@@ -1012,93 +1012,110 @@ onMounted(() => {
       @change="handleXmlFileSelect"
     >
 
-    <!-- Header de la Página (50% Título / 50% Acción Agregar XML) -->
-    <VRow class="align-center mb-4">
-      <VCol
-        cols="12"
-        md="6"
-      >
-        <div>
-          <h2 class="text-h4 font-weight-bold d-flex align-center gap-3">
+    <!-- Header Principal Sticky Estandarizado -->
+    <VCard class="mb-6 rounded-xl border-light pa-3 pa-sm-4 elevation-1 sticky-header">
+      <div class="d-flex align-center justify-space-between flex-wrap gap-4 page-header-wrapper">
+        <div class="d-flex align-center gap-3 page-title-block">
+          <VAvatar
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            size="44"
+            class="elevation-1"
+          >
             <VIcon
               icon="ri-shopping-cart-2-line"
-              color="primary"
+              size="24"
             />
-            Ingreso de Compra
-          </h2>
-          <span class="text-medium-emphasis">Registra tu compra cargando la factura XML del SRI o de forma manual</span>
+          </VAvatar>
+          <div>
+            <div class="d-flex align-center gap-2 flex-wrap">
+              <h1 class="text-h6 font-weight-bold text-high-emphasis mb-0 operations-page-title">
+                Ingreso de Compra
+              </h1>
+              <VChip
+                color="primary"
+                size="small"
+                variant="tonal"
+                class="font-weight-bold d-none d-sm-inline-flex"
+                prepend-icon="ri-file-code-line"
+              >
+                Factura SRI & Manual
+              </VChip>
+            </div>
+            <p class="text-body-2 text-medium-emphasis mb-0 mt-0 operations-page-subtitle">
+              Registra tu compra cargando la factura XML del SRI o de forma manual
+            </p>
+          </div>
         </div>
-      </VCol>
-      <VCol
-        cols="12"
-        md="6"
-        class="d-flex justify-end align-center gap-2 flex-wrap ms-auto crud-header-actions"
-      >
-        <!-- Si no hay XML cargado -->
-        <VBtn
-          v-if="!xmlLoadedInfo"
-          color="primary"
-          variant="elevated"
-          prepend-icon="ri-upload-cloud-2-line"
-          class="rounded-lg px-5 font-weight-bold order-1 order-sm-2"
-          size="default"
-          :loading="isParsingXml"
-          @click="triggerXmlFileInput"
-        >
-          Agregar un XML
-        </VBtn>
 
-        <!-- Si ya hay XML cargado (Resumen y acciones en cabecera) -->
-        <div
-          v-else
-          class="d-flex align-center gap-2 flex-wrap bg-success-lighten-5 border border-success border-opacity-50 pa-2 rounded-xl order-1 order-sm-2"
-        >
-          <VChip
-            size="small"
-            color="success"
-            variant="flat"
-            class="font-weight-bold"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-fill"
-              size="14"
-              class="me-1"
-            />
-            XML: {{ xmlLoadedInfo.invoiceNumber }} ({{ xmlLoadedInfo.itemsCount }} ítems)
-          </VChip>
+        <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
+          <!-- Si no hay XML cargado -->
           <VBtn
-            size="small"
-            variant="outlined"
+            v-if="!xmlLoadedInfo"
             color="primary"
-            prepend-icon="ri-refresh-line"
-            class="rounded-lg text-none"
+            variant="elevated"
+            prepend-icon="ri-upload-cloud-2-line"
+            class="rounded-lg px-4 font-weight-bold"
+            height="40"
+            :loading="isParsingXml"
             @click="triggerXmlFileInput"
           >
-            Reemplazar XML
+            Agregar un XML
           </VBtn>
-          <VBtn
-            size="small"
-            variant="tonal"
-            color="error"
-            icon="ri-close-line"
-            class="rounded-lg"
-            title="Quitar XML"
-            @click="clearXmlImport"
-          />
-        </div>
 
-        <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-arrow-left-line"
-          class="rounded-lg font-weight-medium order-2 order-sm-1"
-          size="default"
-          @click="cancelAndReturn"
-        >
-          Volver al Listado
-        </VBtn>
-      </VCol>
-    </VRow>
+          <!-- Si ya hay XML cargado (Resumen y acciones en cabecera) -->
+          <div
+            v-else
+            class="d-flex align-center gap-2 flex-wrap bg-success-lighten-5 border border-success border-opacity-50 pa-1.5 rounded-xl"
+          >
+            <VChip
+              size="small"
+              color="success"
+              variant="flat"
+              class="font-weight-bold"
+            >
+              <VIcon
+                icon="ri-checkbox-circle-fill"
+                size="14"
+                class="me-1"
+              />
+              XML: {{ xmlLoadedInfo.invoiceNumber }} ({{ xmlLoadedInfo.itemsCount }} ítems)
+            </VChip>
+            <VBtn
+              size="small"
+              variant="outlined"
+              color="primary"
+              prepend-icon="ri-refresh-line"
+              class="rounded-lg text-none"
+              @click="triggerXmlFileInput"
+            >
+              Reemplazar XML
+            </VBtn>
+            <VBtn
+              size="small"
+              variant="tonal"
+              color="error"
+              icon="ri-close-line"
+              class="rounded-lg"
+              title="Quitar XML"
+              @click="clearXmlImport"
+            />
+          </div>
+
+          <VBtn
+            variant="outlined"
+            color="secondary"
+            prepend-icon="ri-arrow-left-line"
+            class="rounded-lg font-weight-medium"
+            height="40"
+            @click="cancelAndReturn"
+          >
+            Volver al Listado
+          </VBtn>
+        </div>
+      </div>
+    </VCard>
 
     <!-- 1. Form Skeleton loader inicial al cargar configuraciones -->
     <div
@@ -2218,13 +2235,14 @@ onMounted(() => {
               <VBtn
                 block
                 :color="isDuplicateInvoice ? 'secondary' : 'primary'"
-                size="x-large"
-                :elevation="isDuplicateInvoice ? 0 : 3"
+                height="42"
+                :elevation="isDuplicateInvoice ? 0 : 2"
                 :loading="isSubmitting"
                 :disabled="isDuplicateInvoice"
                 :prepend-icon="isDuplicateInvoice ? 'ri-lock-2-line' : 'ri-save-3-line'"
                 :variant="isDuplicateInvoice ? 'tonal' : 'elevated'"
-                class="font-weight-bold mt-2"
+                class="rounded-lg font-weight-bold text-none mt-2"
+                style="font-size: 0.92rem; letter-spacing: 0.2px;"
                 @click="submitPurchase"
               >
                 {{ isDuplicateInvoice ? 'Factura Ya Registrada' : 'Registrar Compra' }}
@@ -2234,9 +2252,9 @@ onMounted(() => {
                 block
                 variant="outlined"
                 color="secondary"
-                size="large"
+                height="42"
                 prepend-icon="ri-close-line"
-                class="font-weight-medium mt-2"
+                class="rounded-lg font-weight-medium text-none mt-2"
                 @click="cancelAndReturn"
               >
                 Cancelar
