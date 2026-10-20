@@ -71,10 +71,11 @@ $header: ".layout-navbar";
     }
   }
 
-  // Quitar margen superior del contenido que dejaba el modo flotante
+  // Quitar margen y padding superior del contenido para estandarización global
   .layout-page-content {
     margin-block-start: 0 !important;
-    padding-top: 1.25rem;
+    padding-top: 0 !important;
+    padding-block-start: 0 !important;
   }
 
   // 👉 Layout footer

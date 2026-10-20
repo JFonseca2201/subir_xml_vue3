@@ -14,8 +14,10 @@ body {
 
   flex-grow: 1;
 
-  // TODO: Use grid gutter variable here
-  padding-block: 1.5rem;
+  // Zero top padding to allow global responsive vertical spacing
+  padding-block-start: 0 !important;
+  padding-top: 0 !important;
+  padding-block-end: 1.5rem;
 }
 
 .layout-footer {

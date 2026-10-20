@@ -197,8 +197,8 @@ export default defineComponent({
     flex-direction: column;
     flex-grow: 1;
     min-block-size: calc(100dvh - #{variables.$layout-vertical-nav-navbar-height});
-    padding-top: variables.$layout-vertical-nav-navbar-height !important;
-    padding-block-start: variables.$layout-vertical-nav-navbar-height !important;
+    padding-top: 0 !important;
+    padding-block-start: 0 !important;
     transition: padding-inline-start 0.2s ease-in-out;
     will-change: padding-inline-start;
 

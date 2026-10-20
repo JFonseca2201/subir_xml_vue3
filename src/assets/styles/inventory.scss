@@ -7530,12 +7530,137 @@
 }
 
 // ==========================================================================
+// SISTEMA GLOBAL DE ESPACIADO VERTICAL UNIFICADO (PAGES, HEADERS & CRUDs)
+// Estandariza la distancia entre el Navbar superior, encabezados y contenido
+// ==========================================================================
+
+:root {
+  // 1. Laptops y Monitores Grandes (14" a 17" / 1366px - 1920px+):
+  // Padding top uniforme de 16px a 24px máximo para que todas las vistas inicien al mismo nivel visual
+  --app-content-padding-top: 16px;
+  --app-header-margin-bottom: 1.25rem;
+  --app-header-action-gap: 0.5rem;
+}
+
+// 2. Tablets y laptops medianas (601px a 960px)
+@media (min-width: 601px) and (max-width: 960px) {
+  :root {
+    --app-content-padding-top: 14px;
+    --app-header-margin-bottom: 1rem;
+    --app-header-action-gap: 0.5rem;
+  }
+}
+
+// 3. Pantallas Móviles Pro / Estándar (iPhone Pro, Samsung / 376px a 600px):
+// Padding top de 12px a 16px máximo
+@media (max-width: 600px) {
+  :root {
+    --app-content-padding-top: 12px;
+    --app-header-margin-bottom: 0.75rem;
+    --app-header-action-gap: 0.35rem;
+  }
+}
+
+// 4. Pantallas Ultra Pequeñas (iPhone SE / 320px a 375px):
+// Paddings compactos (8px a 12px) para no desperdiciar espacio vertical
+@media (max-width: 375px) {
+  :root {
+    --app-content-padding-top: 8px;
+    --app-header-margin-bottom: 0.5rem;
+    --app-header-action-gap: 0.25rem;
+  }
+}
+
+// Aplicación Global sobre Contenedores de Layout Base (<v-main>, .v-container, .app-layout-content, layout-page-content)
+.layout-wrapper.layout-nav-type-vertical,
+.layout-wrapper.layout-nav-type-horizontal,
+.layout-wrapper {
+  // Desactiva el padding top estático del wrapper y layout-page-content para evitar espacios dobles con el navbar sticky
+  .layout-content-wrapper {
+    padding-top: 0 !important;
+    padding-block-start: 0 !important;
+  }
+
+  .layout-page-content {
+    padding-top: 0 !important;
+    padding-block-start: 0 !important;
+    margin-top: 0 !important;
+    margin-block-start: 0 !important;
+    padding-bottom: 1.5rem !important;
+    padding-block-end: 1.5rem !important;
+  }
+
+  .page-content-container {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+
+    // Sobrescribe pa-4 / pa-sm-6 / pa-3 / pa-6 superior en el contenedor raíz de CADA página del sistema
+    > *,
+    > .pa-4,
+    > .pa-sm-6,
+    > .pa-3,
+    > .pa-6,
+    > [class*="-page"],
+    > [class*="-container"] {
+      padding-top: var(--app-content-padding-top) !important;
+      margin-top: 0 !important;
+    }
+  }
+
+  // Contenedores Vuetify globales si se utilizan
+  .v-main,
+  .v-container,
+  .app-layout-content {
+    padding-top: var(--app-content-padding-top) !important;
+  }
+}
+
+// Estandarización de Cabeceras de Página y Títulos
+.page-content-container {
+  // Elimina paddings y margins superiores innecesarios (my-*, py-*, mt-*, pt-*) en las cabeceras de página
+  > * > .d-flex.justify-space-between,
+  > * > .d-flex.align-center,
+  > * > div > .d-flex.justify-space-between,
+  > div > .d-flex.justify-space-between,
+  .page-header-wrapper,
+  .crud-header-wrapper {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  // Títulos H1/H2 de las vistas ("Órdenes de Trabajo", "Ingresos y Egresos", etc.)
+  h1, h2,
+  .text-h4, .text-h5,
+  .operations-page-title {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    line-height: 1.2 !important;
+  }
+}
+
+// Soporte específico para Dashboard
+.dashboard-container {
+  padding-top: var(--app-content-padding-top) !important;
+}
+
+// ==========================================================================
 // UNIFIED RESPONSIVE CRUD SYSTEM (Mobile sm/xs <= 960px & <= 600px)
 // RULE: ZERO alterations to Desktop (lg/xl > 960px).
 // ==========================================================================
 
 // 1. HEADER CRUD ACTIONS (Stacking on mobile <= 600px, inline on desktop)
 @media (max-width: 600px) {
+  // Compacta el margen inferior de la cabecera (distancia hacia la primera tarjeta/filtro)
+  .page-content-container {
+    > * > .d-flex.justify-space-between,
+    > * > div > .d-flex.justify-space-between,
+    > div > .d-flex.justify-space-between,
+    .dashboard-container > .d-flex.justify-space-between {
+      margin-bottom: var(--app-header-margin-bottom) !important;
+      row-gap: 0.35rem !important;
+    }
+  }
+
   .crud-header-actions,
   .crud-actions-wrapper {
     width: 100% !important;
@@ -7543,8 +7668,8 @@
     margin-right: 0 !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    margin-top: 0.75rem !important;
-    gap: 0.6rem !important;
+    margin-top: var(--app-header-action-gap) !important;
+    gap: 0.45rem !important;
 
     > .v-btn,
     .v-btn {
@@ -7581,6 +7706,30 @@
       .v-btn__prepend {
         display: none !important;
       }
+    }
+  }
+}
+
+// 1.0.1 PANTALLAS ULTRA PEQUEÑAS (<= 375px / iPhone SE)
+@media (max-width: 375px) {
+  .page-content-container {
+    > * > .d-flex.justify-space-between,
+    > * > div > .d-flex.justify-space-between,
+    > div > .d-flex.justify-space-between,
+    .dashboard-container > .d-flex.justify-space-between {
+      margin-bottom: var(--app-header-margin-bottom) !important;
+      row-gap: 0.25rem !important;
+    }
+  }
+
+  .crud-header-actions,
+  .crud-actions-wrapper {
+    margin-top: var(--app-header-action-gap) !important;
+    gap: 0.35rem !important;
+
+    > .v-btn,
+    .v-btn {
+      min-height: 38px !important;
     }
   }
 }
