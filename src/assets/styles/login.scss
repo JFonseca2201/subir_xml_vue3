@@ -752,7 +752,7 @@ body[data-theme="dark"],
 
 
 /* ----------------------------------------------------
-   4. TEMA: LIGHT (Claro Estándar)
+   4. TEMA: LIGHT (Claro Estándar / Sistema)
    ---------------------------------------------------- */
 [data-theme="light"],
 html[data-theme="light"],
@@ -760,33 +760,43 @@ body[data-theme="light"],
 .v-theme--light,
 .theme-light {
   .auth-page-root {
-    background-color: #f7f7f9;
+    background-color: #0b0f19;
+    background-image: url('@images/pages/login-workshop-bg.png');
+    background-size: cover;
+    background-position: center center;
+
     &::before {
-      background: linear-gradient(135deg, rgba(247, 247, 249, 0.90) 0%, rgba(240, 242, 245, 0.85) 100%);
+      background: radial-gradient(circle at 20% 20%, rgba(115, 103, 240, 0.12) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.10) 0%, transparent 60%),
+                  rgba(15, 23, 42, 0.22); /* Transparente para que la imagen de fondo se vea claramente nítida sin velo blanco */
     }
   }
 
   .auth-brand-floating {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     .brand-name-text { color: #0f172a !important; }
     .auth-brand-subtitle { color: #64748b !important; }
     &:hover {
-      box-shadow: 0 8px 25px rgba(115, 103, 240, 0.15);
-      border-color: rgba(115, 103, 240, 0.4);
+      box-shadow: 0 10px 28px rgba(115, 103, 240, 0.25);
+      border-color: rgba(115, 103, 240, 0.5);
     }
   }
 
   .auth-theme-switcher-floating {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     color: #0f172a;
     .theme-switcher-btn { color: #0f172a !important; }
     &:hover {
-      border-color: rgba(115, 103, 240, 0.4);
-      box-shadow: 0 8px 24px rgba(115, 103, 240, 0.15);
+      border-color: rgba(115, 103, 240, 0.5);
+      box-shadow: 0 10px 26px rgba(115, 103, 240, 0.25);
     }
   }
 
@@ -797,64 +807,104 @@ body[data-theme="light"],
   }
 
   .sidebar-glow-orb {
-    opacity: 0.12;
+    opacity: 0.25;
   }
 
   .auth-form-container {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+    background: linear-gradient(145deg, rgba(115, 103, 240, 0.94) 0%, rgba(94, 80, 238, 0.98) 100%) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35), 0 0 50px rgba(115, 103, 240, 0.45) !important;
   }
 
-  .auth-title { color: #0f172a !important; }
-  .auth-subtitle { color: #64748b !important; }
-  .auth-field-label { color: #334155 !important; }
+  .auth-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+  .auth-subtitle {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  .auth-field-label {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+  }
   .auth-forgot-link {
-    color: #7367F0 !important;
-    &:hover { color: #5e50ee !important; text-decoration: underline; }
+    color: #ffffff !important;
+    text-decoration: underline;
+    opacity: 0.92;
+    &:hover {
+      opacity: 1;
+      color: #ffffff !important;
+    }
   }
-  .auth-checkbox .v-label {
-    color: #334155 !important;
+  .auth-checkbox {
+    .v-label {
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+    .v-selection-control__input .v-icon,
+    .v-selection-control--dirty .v-icon {
+      color: #ffffff !important;
+    }
   }
-  .auth-checkbox .v-selection-control__input .v-icon {
-    color: #7367F0 !important;
+  .auth-footer-text {
+    color: rgba(255, 255, 255, 0.88) !important;
   }
-  .auth-footer-text { color: #64748b !important; }
 
   .auth-input {
     .v-field {
-      background-color: #f8fafc !important;
-      border: 1px solid #cbd5e1 !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-      color: #0f172a !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+      color: #ffffff !important;
 
       &:hover {
-        background-color: #ffffff !important;
-        border-color: #94a3b8 !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.65) !important;
       }
     }
 
     .v-field--focused {
-      background-color: #ffffff !important;
-      border-color: #7367F0 !important;
-      box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.2), 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+      background-color: rgba(255, 255, 255, 0.30) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
     }
 
     .v-field__input {
-      color: #0f172a !important;
-      &::placeholder { color: #94a3b8 !important; }
+      color: #ffffff !important;
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.70) !important;
+      }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #7367F0 !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-submit-btn {
-    background: linear-gradient(135deg, #7367F0 0%, #5e50ee 100%) !important;
-    box-shadow: 0 10px 25px rgba(115, 103, 240, 0.3) !important;
-    .v-btn__content { color: #ffffff !important; }
+    background: #ffffff !important;
+    color: #5044e4 !important;
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+
+    .v-btn__content,
+    .v-icon,
+    span {
+      color: #5044e4 !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    &:hover {
+      background: #f4f3ff !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px);
+    }
   }
 }
 
@@ -868,35 +918,43 @@ body[data-theme="light-glass"],
 .v-theme--light-glass,
 .theme-light-glass {
   .auth-page-root {
-    background-color: #e2e8f0;
+    background-color: #0b0f19;
+    background-image: url('@images/pages/login-workshop-bg.png');
+    background-size: cover;
+    background-position: center center;
+
     &::before {
-      background: radial-gradient(circle at 10% 20%, rgba(199, 210, 254, 0.70) 0%, transparent 50%),
-                  radial-gradient(circle at 90% 80%, rgba(243, 232, 255, 0.70) 0%, transparent 50%),
-                  rgba(226, 232, 240, 0.65);
+      background: radial-gradient(circle at 10% 20%, rgba(199, 210, 254, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 90% 80%, rgba(243, 232, 255, 0.15) 0%, transparent 50%),
+                  rgba(15, 23, 42, 0.22);
     }
   }
 
   .auth-brand-floating {
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+    background-color: rgba(255, 255, 255, 0.90);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.10);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     .brand-name-text { color: #0f172a !important; }
     .auth-brand-subtitle { color: #475569 !important; }
     &:hover {
-      box-shadow: 0 10px 30px rgba(115, 103, 240, 0.2);
-      border-color: rgba(115, 103, 240, 0.4);
+      box-shadow: 0 10px 30px rgba(115, 103, 240, 0.25);
+      border-color: rgba(115, 103, 240, 0.5);
     }
   }
 
   .auth-theme-switcher-floating {
-    background-color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    background-color: rgba(255, 255, 255, 0.90);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     color: #0f172a;
     .theme-switcher-btn { color: #0f172a !important; }
     &:hover {
-      border-color: rgba(115, 103, 240, 0.4);
-      box-shadow: 0 10px 28px rgba(115, 103, 240, 0.2);
+      border-color: rgba(115, 103, 240, 0.5);
+      box-shadow: 0 10px 28px rgba(115, 103, 240, 0.25);
     }
   }
 
@@ -907,71 +965,107 @@ body[data-theme="light-glass"],
   }
 
   .sidebar-glow-orb.orb-1 {
-    background: radial-gradient(circle, rgba(115, 103, 240, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(115, 103, 240, 0.25) 0%, transparent 70%);
   }
 
   .sidebar-glow-orb.orb-2 {
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.20) 0%, transparent 70%);
   }
 
   .auth-form-container {
-    background: rgba(255, 255, 255, 0.78) !important;
+    background: linear-gradient(145deg, rgba(115, 103, 240, 0.94) 0%, rgba(94, 80, 238, 0.98) 100%) !important;
     backdrop-filter: blur(24px) !important;
     -webkit-backdrop-filter: blur(24px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
-    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.10), 0 0 35px rgba(115, 103, 240, 0.10) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.35), 0 0 50px rgba(115, 103, 240, 0.45) !important;
   }
 
-  .auth-title { color: #0f172a !important; }
-  .auth-subtitle { color: #475569 !important; }
-  .auth-field-label { color: #1e293b !important; }
+  .auth-title {
+    color: #ffffff !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+  .auth-subtitle {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  .auth-field-label {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+  }
   .auth-forgot-link {
-    color: #4f46e5 !important;
-    &:hover { color: #3730a3 !important; text-decoration: underline; }
+    color: #ffffff !important;
+    text-decoration: underline;
+    opacity: 0.92;
+    &:hover {
+      opacity: 1;
+      color: #ffffff !important;
+    }
   }
-  .auth-checkbox .v-label {
-    color: #1e293b !important;
+  .auth-checkbox {
+    .v-label {
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+    .v-selection-control__input .v-icon,
+    .v-selection-control--dirty .v-icon {
+      color: #ffffff !important;
+    }
   }
-  .auth-checkbox .v-selection-control__input .v-icon {
-    color: #4f46e5 !important;
+  .auth-footer-text {
+    color: rgba(255, 255, 255, 0.88) !important;
   }
-  .auth-footer-text { color: #475569 !important; }
 
   .auth-input {
     .v-field {
-      background-color: rgba(255, 255, 255, 0.80) !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
-      border: 1px solid rgba(203, 213, 225, 0.75) !important;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
-      color: #0f172a !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12) !important;
+      color: #ffffff !important;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        border-color: rgba(148, 163, 184, 0.9) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.65) !important;
       }
     }
 
     .v-field--focused {
-      background-color: #ffffff !important;
-      border-color: #7367F0 !important;
-      box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.25), 0 8px 24px rgba(15, 23, 42, 0.10) !important;
+      background-color: rgba(255, 255, 255, 0.30) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(15, 23, 42, 0.20) !important;
     }
 
     .v-field__input {
-      color: #0f172a !important;
-      &::placeholder { color: #64748b !important; }
+      color: #ffffff !important;
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.70) !important;
+      }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #7367F0 !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-submit-btn {
-    background: linear-gradient(135deg, #7367F0 0%, #5e50ee 100%) !important;
-    box-shadow: 0 10px 25px rgba(115, 103, 240, 0.3) !important;
-    .v-btn__content { color: #ffffff !important; }
+    background: #ffffff !important;
+    color: #5044e4 !important;
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+
+    .v-btn__content,
+    .v-icon,
+    span {
+      color: #5044e4 !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    &:hover {
+      background: #f4f3ff !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px);
+    }
   }
 }
