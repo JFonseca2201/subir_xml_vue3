@@ -235,7 +235,14 @@ const resetPurchaseForm = () => {
   items.value = []
   isSharedInvoice.value = false
   totalAsumidoTerceros.value = 0
-  clearXmlData()
+  xmlLoadedInfo.value = null
+  isDuplicateInvoice.value = false
+  duplicateInvoiceInfo.value = null
+  isBulkCategoryEnabled.value = false
+  bulkCategory.value = null
+  if (xmlFileInputRef.value) {
+    xmlFileInputRef.value.value = ''
+  }
 }
 
 const cancelAndReturn = () => {
