@@ -225,16 +225,16 @@
 }
 
 /* ----------------------------------------------------
-   B. DEFAULT FALLBACK THEME (Dark-Glass Atmosphere)
+   B. DEFAULT FALLBACK THEME (Dark-Glass Atmosphere / Sistema)
    ---------------------------------------------------- */
 .auth-page-root {
   background-color: #090a10;
   background-image: url('@images/pages/login-workshop-bg.png');
 
   &::before {
-    background: radial-gradient(circle at 20% 20%, rgba(115, 103, 240, 0.25) 0%, transparent 60%),
-                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.18) 0%, transparent 60%),
-                rgba(9, 10, 16, 0.65);
+    background: radial-gradient(circle at 20% 20%, rgba(115, 103, 240, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+                rgba(9, 10, 16, 0.28); /* Mucho más transparente para que la imagen de fondo sea claramente visible */
   }
 }
 
@@ -269,71 +269,91 @@
 }
 
 .auth-form-container {
-  background: rgba(14, 17, 28, 0.75) !important;
+  background: linear-gradient(145deg, rgba(115, 103, 240, 0.88) 0%, rgba(94, 80, 238, 0.94) 100%) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(115, 103, 240, 0.18) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.38) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 50px rgba(115, 103, 240, 0.45) !important;
 }
 
-.auth-title { color: #ffffff !important; }
-.auth-subtitle { color: rgba(255, 255, 255, 0.75) !important; }
-.auth-field-label { color: rgba(255, 255, 255, 0.90) !important; }
+.auth-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.90) !important;
+}
+.auth-field-label {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
 .auth-forgot-link {
-  color: #9E95F5 !important;
-  &:hover { color: #ffffff !important; text-decoration: underline; }
+  color: #ffffff !important;
+  text-decoration: underline;
+  opacity: 0.92;
+  &:hover {
+    opacity: 1;
+    color: #ffffff !important;
+  }
 }
 .auth-checkbox .v-label {
   color: #ffffff !important;
 }
 .auth-checkbox .v-selection-control__input .v-icon {
-  color: #9E95F5 !important;
+  color: #ffffff !important;
 }
-.auth-footer-text { color: rgba(255, 255, 255, 0.7) !important; }
+.auth-footer-text {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
 
 .auth-input {
   .v-field {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.18) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
     color: #ffffff !important;
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.12) !important;
-      border-color: rgba(255, 255, 255, 0.28) !important;
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.6) !important;
     }
   }
 
   .v-field--focused {
-    background-color: rgba(255, 255, 255, 0.14) !important;
-    border-color: #7367F0 !important;
-    box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
   }
 
   .v-field__input {
     color: #ffffff !important;
-    &::placeholder { color: rgba(255, 255, 255, 0.45) !important; }
+    &::placeholder { color: rgba(255, 255, 255, 0.70) !important; }
   }
 
   .v-field__prepend-inner .v-icon,
   .v-field__append-inner .v-icon {
-    color: #9E95F5 !important;
+    color: #ffffff !important;
   }
 }
 
 .auth-submit-btn {
-  background: linear-gradient(135deg, #7367F0 0%, #5e50ee 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 10px 28px rgba(115, 103, 240, 0.35) !important;
+  background: #ffffff !important;
+  color: #5044e4 !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
 
   .v-btn__content {
-    color: #ffffff !important;
+    color: #5044e4 !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.05em !important;
   }
 
   &:hover {
-    box-shadow: 0 14px 34px rgba(115, 103, 240, 0.45) !important;
+    background: #f4f3ff !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-2px);
   }
 }
 
@@ -349,9 +369,9 @@ body[data-theme="dark-glass"],
   .auth-page-root {
     background-color: #090a10;
     &::before {
-      background: radial-gradient(circle at 20% 20%, rgba(115, 103, 240, 0.25) 0%, transparent 60%),
-                  radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.18) 0%, transparent 60%),
-                  rgba(9, 10, 16, 0.65);
+      background: radial-gradient(circle at 20% 20%, rgba(115, 103, 240, 0.15) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+                  rgba(9, 10, 16, 0.28);
     }
   }
 
@@ -394,64 +414,79 @@ body[data-theme="dark-glass"],
   }
 
   .auth-form-container {
-    background: rgba(14, 17, 28, 0.75) !important;
+    background: linear-gradient(145deg, rgba(115, 103, 240, 0.88) 0%, rgba(94, 80, 238, 0.94) 100%) !important;
     backdrop-filter: blur(24px) !important;
     -webkit-backdrop-filter: blur(24px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 40px rgba(115, 103, 240, 0.18) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.38) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 50px rgba(115, 103, 240, 0.45) !important;
   }
 
-  .auth-title { color: #ffffff !important; }
-  .auth-subtitle { color: rgba(255, 255, 255, 0.75) !important; }
-  .auth-field-label { color: rgba(255, 255, 255, 0.90) !important; }
+  .auth-title { color: #ffffff !important; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+  .auth-subtitle { color: rgba(255, 255, 255, 0.90) !important; }
+  .auth-field-label { color: #ffffff !important; font-weight: 800 !important; }
   .auth-forgot-link {
-    color: #9E95F5 !important;
-    &:hover { color: #ffffff !important; text-decoration: underline; }
+    color: #ffffff !important;
+    text-decoration: underline;
+    opacity: 0.92;
+    &:hover { opacity: 1; color: #ffffff !important; }
   }
   .auth-checkbox .v-label {
     color: #ffffff !important;
   }
   .auth-checkbox .v-selection-control__input .v-icon {
-    color: #9E95F5 !important;
+    color: #ffffff !important;
   }
-  .auth-footer-text { color: rgba(255, 255, 255, 0.7) !important; }
+  .auth-footer-text { color: rgba(255, 255, 255, 0.88) !important; }
 
   .auth-input {
     .v-field {
-      background-color: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
       color: #ffffff !important;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.12) !important;
-        border-color: rgba(255, 255, 255, 0.28) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
       }
     }
 
     .v-field--focused {
-      background-color: rgba(255, 255, 255, 0.14) !important;
-      border-color: #7367F0 !important;
-      box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+      background-color: rgba(255, 255, 255, 0.3) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
     }
 
     .v-field__input {
       color: #ffffff !important;
-      &::placeholder { color: rgba(255, 255, 255, 0.45) !important; }
+      &::placeholder { color: rgba(255, 255, 255, 0.70) !important; }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #9E95F5 !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-submit-btn {
-    background: linear-gradient(135deg, #7367F0 0%, #5e50ee 100%) !important;
-    box-shadow: 0 10px 28px rgba(115, 103, 240, 0.35) !important;
-    .v-btn__content { color: #ffffff !important; }
+    background: #ffffff !important;
+    color: #5044e4 !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+
+    .v-btn__content {
+      color: #5044e4 !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    &:hover {
+      background: #f4f3ff !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px);
+    }
   }
 }
 
@@ -467,9 +502,9 @@ body[data-theme="semi-dark-glass"],
   .auth-page-root {
     background-color: #0f172a;
     &::before {
-      background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.25) 0%, transparent 60%),
-                  radial-gradient(circle at 75% 85%, rgba(14, 165, 233, 0.18) 0%, transparent 60%),
-                  rgba(15, 23, 42, 0.68);
+      background: radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+                  radial-gradient(circle at 75% 85%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+                  rgba(15, 23, 42, 0.28);
     }
   }
 
@@ -512,64 +547,79 @@ body[data-theme="semi-dark-glass"],
   }
 
   .auth-form-container {
-    background: rgba(20, 27, 47, 0.78) !important;
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.88) 0%, rgba(79, 70, 229, 0.94) 100%) !important;
     backdrop-filter: blur(24px) !important;
     -webkit-backdrop-filter: blur(24px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 35px rgba(99, 102, 241, 0.18) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.38) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 50px rgba(99, 102, 241, 0.45) !important;
   }
 
-  .auth-title { color: #f8fafc !important; }
-  .auth-subtitle { color: rgba(241, 245, 249, 0.75) !important; }
-  .auth-field-label { color: rgba(241, 245, 249, 0.90) !important; }
+  .auth-title { color: #ffffff !important; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+  .auth-subtitle { color: rgba(255, 255, 255, 0.90) !important; }
+  .auth-field-label { color: #ffffff !important; font-weight: 800 !important; }
   .auth-forgot-link {
-    color: #818cf8 !important;
-    &:hover { color: #ffffff !important; text-decoration: underline; }
+    color: #ffffff !important;
+    text-decoration: underline;
+    opacity: 0.92;
+    &:hover { opacity: 1; color: #ffffff !important; }
   }
   .auth-checkbox .v-label {
-    color: #f8fafc !important;
+    color: #ffffff !important;
   }
   .auth-checkbox .v-selection-control__input .v-icon {
-    color: #818cf8 !important;
+    color: #ffffff !important;
   }
-  .auth-footer-text { color: rgba(203, 213, 225, 0.7) !important; }
+  .auth-footer-text { color: rgba(255, 255, 255, 0.88) !important; }
 
   .auth-input {
     .v-field {
-      background-color: rgba(255, 255, 255, 0.08) !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
       color: #ffffff !important;
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.12) !important;
-        border-color: rgba(255, 255, 255, 0.28) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
       }
     }
 
     .v-field--focused {
-      background-color: rgba(255, 255, 255, 0.14) !important;
-      border-color: #6366f1 !important;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+      background-color: rgba(255, 255, 255, 0.3) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
     }
 
     .v-field__input {
       color: #ffffff !important;
-      &::placeholder { color: rgba(255, 255, 255, 0.45) !important; }
+      &::placeholder { color: rgba(255, 255, 255, 0.70) !important; }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #818cf8 !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-submit-btn {
-    background: linear-gradient(135deg, #6366F1 0%, #4f46e5 100%) !important;
-    box-shadow: 0 10px 28px rgba(99, 102, 241, 0.35) !important;
-    .v-btn__content { color: #ffffff !important; }
+    background: #ffffff !important;
+    color: #4338ca !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+
+    .v-btn__content {
+      color: #4338ca !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    &:hover {
+      background: #f4f3ff !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px);
+    }
   }
 }
 
@@ -583,9 +633,9 @@ body[data-theme="dark"],
 .v-theme--dark,
 .theme-dark {
   .auth-page-root {
-    background-color: #282a42;
+    background-color: #1a1c2e;
     &::before {
-      background: linear-gradient(135deg, rgba(40, 42, 66, 0.88) 0%, rgba(32, 34, 53, 0.82) 100%);
+      background: linear-gradient(135deg, rgba(30, 32, 50, 0.32) 0%, rgba(24, 26, 42, 0.42) 100%);
     }
   }
 
@@ -624,58 +674,79 @@ body[data-theme="dark"],
   }
 
   .auth-form-container {
-    background: #30334E !important;
-    border: 1px solid rgba(234, 234, 255, 0.12) !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45) !important;
+    background: linear-gradient(145deg, rgba(102, 108, 255, 0.88) 0%, rgba(85, 90, 240, 0.94) 100%) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.38) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 50px rgba(102, 108, 255, 0.45) !important;
   }
 
-  .auth-title { color: #ffffff !important; }
-  .auth-subtitle { color: rgba(234, 234, 255, 0.75) !important; }
-  .auth-field-label { color: rgba(234, 234, 255, 0.90) !important; }
+  .auth-title { color: #ffffff !important; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+  .auth-subtitle { color: rgba(255, 255, 255, 0.90) !important; }
+  .auth-field-label { color: #ffffff !important; font-weight: 800 !important; }
   .auth-forgot-link {
-    color: #7367F0 !important;
-    &:hover { color: #9E95F5 !important; text-decoration: underline; }
+    color: #ffffff !important;
+    text-decoration: underline;
+    opacity: 0.92;
+    &:hover { opacity: 1; color: #ffffff !important; }
   }
   .auth-checkbox .v-label {
-    color: rgba(234, 234, 255, 0.95) !important;
+    color: #ffffff !important;
   }
   .auth-checkbox .v-selection-control__input .v-icon {
-    color: #7367F0 !important;
+    color: #ffffff !important;
   }
-  .auth-footer-text { color: rgba(234, 234, 255, 0.7) !important; }
+  .auth-footer-text { color: rgba(255, 255, 255, 0.88) !important; }
 
   .auth-input {
     .v-field {
-      background-color: #282A42 !important;
-      border: 1px solid rgba(234, 234, 255, 0.16) !important;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
       color: #ffffff !important;
 
       &:hover {
-        border-color: rgba(234, 234, 255, 0.3) !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
       }
     }
 
     .v-field--focused {
-      border-color: #7367F0 !important;
-      box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+      background-color: rgba(255, 255, 255, 0.3) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2) !important;
     }
 
     .v-field__input {
       color: #ffffff !important;
-      &::placeholder { color: rgba(234, 234, 255, 0.45) !important; }
+      &::placeholder { color: rgba(255, 255, 255, 0.70) !important; }
     }
 
     .v-field__prepend-inner .v-icon,
     .v-field__append-inner .v-icon {
-      color: #7367F0 !important;
+      color: #ffffff !important;
     }
   }
 
   .auth-submit-btn {
-    background: linear-gradient(135deg, #7367F0 0%, #5e50ee 100%) !important;
-    box-shadow: 0 10px 28px rgba(115, 103, 240, 0.35) !important;
-    .v-btn__content { color: #ffffff !important; }
+    background: #ffffff !important;
+    color: #5044e4 !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+
+    .v-btn__content {
+      color: #5044e4 !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    &:hover {
+      background: #f4f3ff !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 255, 255, 0.6) !important;
+      transform: translateY(-2px);
+    }
   }
 }
 

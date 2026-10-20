@@ -195,7 +195,7 @@ const appBrandName = computed(() => {
           <!-- Welcome Titles -->
           <div class="mb-6 text-center text-sm-start">
             <h1 class="text-h4 font-weight-black auth-title mb-1">
-              Iniciar Sesión
+              Ingreso al Sistema
             </h1>
             <p class="text-body-2 auth-subtitle mb-0">
               Ingresa tus credenciales para acceder al sistema
