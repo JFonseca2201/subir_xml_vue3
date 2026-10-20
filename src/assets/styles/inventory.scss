@@ -7479,6 +7479,59 @@
   }
 }
 
+// ESTANDARIZACIÓN GLOBAL DE FILTROS RÁPIDOS (Socios, Transferencias, Nómina)
+.finance-filter-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.5rem !important;
+  width: auto !important;
+  flex-wrap: nowrap !important;
+}
+
+.finance-filter-label {
+  white-space: nowrap !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity, 0.7)) !important;
+  margin-right: 0.25rem !important;
+  flex-shrink: 0 !important;
+}
+
+.finance-filter-btn-group,
+.employee-filter-btn-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  width: auto !important;
+  flex-shrink: 0 !important;
+
+  > .v-btn,
+  .v-btn {
+    width: auto !important;
+    min-width: unset !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+  }
+}
+
+@media (min-width: 961px) {
+  .finance-filter-container {
+    justify-content: flex-end !important;
+    width: auto !important;
+    margin-left: auto !important;
+  }
+
+  .finance-filter-btn-group,
+  .employee-filter-btn-group {
+    width: auto !important;
+    display: inline-flex !important;
+    justify-content: flex-end !important;
+  }
+}
+
 // REGLA DE MÓVIL ($vuetify.display.smAndDown <= 960px):
 // 1. FILA SUPERIOR: Ícono + Título a Ancho Completo (100% / flex-grow-1, sin cortarse)
 // 2. FILA INFERIOR: Botón de Acción Principal y secundarios a Ancho Completo (block / w-100)
@@ -7604,6 +7657,18 @@
   }
 
   // Grupos de botones de filtro en móvil
+  .finance-filter-container {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.4rem !important;
+  }
+
+  .finance-filter-label {
+    display: none !important;
+  }
+
   .employee-filter-btn-group,
   .finance-filter-btn-group {
     width: 100% !important;

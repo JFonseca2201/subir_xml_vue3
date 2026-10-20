@@ -565,7 +565,7 @@ onMounted(() => {
     <VCard class="pa-4 mb-6 rounded-xl border-light elevation-1">
       <VRow
         align="center"
-        density="comfortable"
+        justify="space-between"
       >
         <VCol
           cols="12"
@@ -587,37 +587,39 @@ onMounted(() => {
         <VCol
           cols="12"
           md="6"
-          class="d-flex justify-md-end align-center gap-2 flex-wrap"
+          class="d-flex justify-end align-center"
         >
-          <span class="text-body-2 font-weight-medium text-medium-emphasis me-2 d-none d-sm-inline">Filtrar:</span>
-          <div class="finance-filter-btn-group w-100 w-md-auto d-flex align-center gap-2">
-            <VBtn
-              size="small"
-              :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
-              :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
-              class="font-weight-semibold"
-              @click="selectedFilter = 'all'"
-            >
-              Todos
-            </VBtn>
-            <VBtn
-              size="small"
-              :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
-              :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
-              class="font-weight-semibold"
-              @click="selectedFilter = 'today'"
-            >
-              Hoy
-            </VBtn>
-            <VBtn
-              size="small"
-              :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
-              :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
-              class="font-weight-semibold"
-              @click="selectedFilter = 'month'"
-            >
-              Este Mes
-            </VBtn>
+          <div class="finance-filter-container d-flex align-center justify-end gap-2">
+            <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
+            <div class="finance-filter-btn-group">
+              <VBtn
+                size="small"
+                :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
+                class="font-weight-semibold"
+                @click="selectedFilter = 'all'"
+              >
+                Todos
+              </VBtn>
+              <VBtn
+                size="small"
+                :variant="selectedFilter === 'today' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'today' ? 'primary' : 'secondary'"
+                class="font-weight-semibold"
+                @click="selectedFilter = 'today'"
+              >
+                Hoy
+              </VBtn>
+              <VBtn
+                size="small"
+                :variant="selectedFilter === 'month' ? 'elevated' : 'tonal'"
+                :color="selectedFilter === 'month' ? 'primary' : 'secondary'"
+                class="font-weight-semibold"
+                @click="selectedFilter = 'month'"
+              >
+                Este Mes
+              </VBtn>
+            </div>
           </div>
         </VCol>
       </VRow>

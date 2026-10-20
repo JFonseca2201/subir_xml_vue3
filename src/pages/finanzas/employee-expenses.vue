@@ -597,8 +597,7 @@ onMounted(() => {
     <VCard class="pa-4 mb-5 rounded-xl border elevation-0 bg-surface">
       <VRow
         align="center"
-        dense
-        class="gap-y-3"
+        justify="space-between"
       >
         <VCol
           cols="12"
@@ -619,40 +618,42 @@ onMounted(() => {
         <VCol
           cols="12"
           md="6"
-          class="d-flex flex-column flex-sm-row justify-md-end align-start align-sm-center gap-2"
+          class="d-flex justify-end align-center"
         >
-          <span class="text-caption text-sm-body-2 font-weight-medium text-medium-emphasis me-1">Filtrar:</span>
-          <div class="d-flex align-center gap-2 w-100 w-sm-auto employee-filter-btn-group">
-            <VBtn
-              size="small"
-              :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
-              :color="selectedType === 'all' ? 'primary' : 'secondary'"
-              prepend-icon="ri-apps-2-line"
-              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
-              @click="selectedType = 'all'"
-            >
-              Todos
-            </VBtn>
-            <VBtn
-              size="small"
-              :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
-              :color="selectedType === 'payments' ? 'primary' : 'secondary'"
-              prepend-icon="ri-file-user-line"
-              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
-              @click="selectedType = 'payments'"
-            >
-              Pagos
-            </VBtn>
-            <VBtn
-              size="small"
-              :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
-              :color="selectedType === 'advances' ? 'primary' : 'secondary'"
-              prepend-icon="ri-hand-coin-line"
-              class="font-weight-semibold px-3 flex-grow-1 flex-sm-grow-0"
-              @click="selectedType = 'advances'"
-            >
-              Adelantos
-            </VBtn>
+          <div class="finance-filter-container d-flex align-center justify-end gap-2">
+            <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
+            <div class="employee-filter-btn-group">
+              <VBtn
+                size="small"
+                :variant="selectedType === 'all' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'all' ? 'primary' : 'secondary'"
+                prepend-icon="ri-apps-2-line"
+                class="font-weight-semibold px-3"
+                @click="selectedType = 'all'"
+              >
+                Todos
+              </VBtn>
+              <VBtn
+                size="small"
+                :variant="selectedType === 'payments' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'payments' ? 'primary' : 'secondary'"
+                prepend-icon="ri-file-user-line"
+                class="font-weight-semibold px-3"
+                @click="selectedType = 'payments'"
+              >
+                Pagos
+              </VBtn>
+              <VBtn
+                size="small"
+                :variant="selectedType === 'advances' ? 'elevated' : 'tonal'"
+                :color="selectedType === 'advances' ? 'primary' : 'secondary'"
+                prepend-icon="ri-hand-coin-line"
+                class="font-weight-semibold px-3"
+                @click="selectedType = 'advances'"
+              >
+                Adelantos
+              </VBtn>
+            </div>
           </div>
         </VCol>
       </VRow>
