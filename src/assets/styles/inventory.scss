@@ -7761,9 +7761,64 @@
   }
 }
 
-// 2. DIALOGS & MODALS (Mobile Sticky Bottom Thumb Footer <= 960px)
+// ==========================================================================
+// ESTANDARIZACIÓN GLOBAL DE BOTONES DE ACCIÓN EN FORMULARIOS Y DIÁLOGOS
+// ==========================================================================
+
+// 1. Reset Global del margen de Vuetify para que NINGÚN botón quede descuadrado (sin offset de 8px)
+.v-card-actions,
+.custom-dialog-card .v-card-actions,
+.dialog-actions-responsive,
+.form-actions-responsive {
+  .v-btn ~ .v-btn,
+  > .v-btn + .v-btn {
+    margin-inline-start: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
+// 2. PANTALLAS GRANDES Y ESCRITORIO (> 640px)
+// Botones alineados a la derecha, con misma altura, espaciado uniforme y SIN quebrar líneas
+@media (min-width: 641px) {
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
+  .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
+  .custom-dialog-card .v-card-actions,
+  .dialog-actions-responsive,
+  .form-actions-responsive {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 0.75rem !important;
+    flex-wrap: nowrap !important;
+    padding: 0.85rem 1.25rem !important;
+
+    > .v-btn,
+    .v-btn {
+      min-height: 40px !important;
+      height: 40px !important;
+      width: auto !important;
+      min-width: 105px !important;
+      padding: 0 1.25rem !important;
+      font-weight: 700 !important;
+      font-size: 0.875rem !important;
+      border-radius: 8px !important;
+      margin: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-shrink: 0 !important;
+    }
+
+    > .v-spacer,
+    .v-spacer {
+      flex-grow: 1 !important;
+    }
+  }
+}
+
+// 3. DIÁLOGOS & MODALES: Sticky Bottom Footer en Móvil/Tablet (<= 960px)
 @media (max-width: 960px) {
-  // Sticky Bottom Footer en Modales / Diálogos para facilitar toque con el pulgar
   .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
   .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
   .custom-dialog-card .v-card-actions {
@@ -7772,11 +7827,9 @@
     z-index: 50 !important;
     background: var(--bg-surface, rgb(var(--v-theme-surface))) !important;
     border-top: 1px solid var(--border-glass, rgba(var(--v-border-color), 0.12)) !important;
-    padding: 0.75rem 1rem !important;
     box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12) !important;
   }
 
-  // Encabezados de diálogo responsivos en móvil
   .custom-dialog-header-primary,
   .product-quick-header,
   .sale-dialog-header-banner {
@@ -7785,39 +7838,72 @@
   }
 }
 
-// 2.1 DIALOG ACTIONS RESPONSIVAS EN SMARTPHONES (<= 600px)
-// Apila los botones verticalmente al 100% de ancho con orden ergonómico (Acción Principal arriba, Cancelar abajo),
-// garantizando que ningún botón ("Actualizar Registro", "Guardar") se desborde fuera de su contenedor.
-@media (max-width: 600px) {
+// 4. MÓVIL Y DISPOSITIVOS TOUCH (<= 640px)
+// Par de botones perfectamente simétricos (50% / 50% cada uno), misma altura, mismo radio y totalmente alineados.
+@media (max-width: 640px) {
   .v-dialog .v-card > .v-card-actions,
   .v-dialog .v-card-actions,
   .custom-dialog-card .v-card-actions,
-  .dialog-actions-responsive {
+  .dialog-actions-responsive,
+  .form-actions-responsive {
     display: flex !important;
-    flex-direction: column-reverse !important;
-    align-items: stretch !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     width: 100% !important;
     gap: 0.5rem !important;
     padding: 0.75rem 1rem !important;
+    box-sizing: border-box !important;
 
+    // Par de botones ocupan exactamente 50% cada uno sin descuadre
     > .v-btn,
     .v-btn {
+      flex: 1 1 0 !important;
       width: 100% !important;
-      min-width: 100% !important;
+      min-width: 0 !important;
       max-width: 100% !important;
-      flex: none !important;
       min-height: 42px !important;
+      height: 42px !important;
       margin: 0 !important;
+      padding: 0 0.5rem !important;
       justify-content: center !important;
-      padding-left: 0.75rem !important;
-      padding-right: 0.75rem !important;
+      align-items: center !important;
       font-weight: 700 !important;
+      font-size: 0.84rem !important;
+      border-radius: 8px !important;
+      box-sizing: border-box !important;
 
       .v-btn__content {
         max-width: 100% !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
+        justify-content: center !important;
+      }
+
+      .v-icon {
+        font-size: 16px !important;
+        margin-inline-end: 4px !important;
+      }
+    }
+
+    // Si solo hay 1 botón (ej: Cerrar / Entendido), toma el 100%
+    > .v-btn:only-child,
+    .v-btn:only-child {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+    }
+
+    // Si hay 3 o más botones, se apilan verticalmente al 100% de ancho
+    &:has(> .v-btn:nth-child(3)),
+    &.has-many-buttons {
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+
+      > .v-btn,
+      .v-btn {
+        width: 100% !important;
+        flex: 1 1 auto !important;
       }
     }
 
@@ -7827,30 +7913,9 @@
     }
   }
 
-  // Padding equilibrado en cuerpo de modales para smartphones
   .custom-dialog-card {
     .v-card-text {
       padding: 1rem !important;
-    }
-  }
-}
-
-// 2.2 TABLETS (601px a 960px) - Botones alineados a la derecha sin forzar compresión
-@media (min-width: 601px) and (max-width: 960px) {
-  .v-dialog:not(.v-dialog--no-fullscreen) .v-card > .v-card-actions,
-  .v-dialog:not(.v-dialog--no-fullscreen) .v-card-actions,
-  .custom-dialog-card .v-card-actions {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 0.75rem !important;
-    flex-wrap: wrap !important;
-
-    > .v-btn,
-    .v-btn {
-      min-height: 40px !important;
-      width: auto !important;
-      font-weight: 600 !important;
     }
   }
 }

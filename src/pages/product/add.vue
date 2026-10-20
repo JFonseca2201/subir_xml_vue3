@@ -1851,16 +1851,16 @@ const loadInitialData = async () => {
 
               <VDivider />
 
-              <VCardActions class="pa-4 bg-white d-flex flex-column gap-2">
+              <VCardActions class="pa-4 bg-white d-flex flex-column gap-2.5">
                 <VBtn
                   block
                   type="submit"
                   color="primary"
                   variant="elevated"
-                  height="44"
+                  height="42"
                   prepend-icon="ri-save-3-line"
-                  class="rounded-lg font-weight-bold elevation-2 text-none"
-                  style="font-size: 0.95rem; letter-spacing: 0.3px;"
+                  class="rounded-lg font-weight-bold elevation-1 text-none"
+                  style="font-size: 0.92rem; letter-spacing: 0.2px;"
                   :loading="loader.loading"
                   :disabled="loader.loading || isLoading"
                 >
@@ -1871,9 +1871,10 @@ const loadInitialData = async () => {
                   block
                   color="secondary"
                   variant="outlined"
-                  height="38"
+                  height="42"
                   prepend-icon="ri-close-line"
-                  class="rounded-lg font-weight-medium text-none"
+                  class="rounded-lg font-weight-semibold text-none"
+                  style="font-size: 0.92rem; letter-spacing: 0.2px;"
                   :disabled="isLoading || loader.loading"
                   @click="cancelAndReturn"
                 >

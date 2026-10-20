@@ -46,12 +46,27 @@ const partnersWithPhoneCount = computed(() => {
   return list_partners.value.filter(p => !!p.phone).length
 })
 
+const selectedFilter = ref('all')
+
+const filteredPartners = computed(() => {
+  if (!list_partners.value || !list_partners.value.length) return []
+  if (selectedFilter.value === 'active') {
+    return list_partners.value.filter(p => isPartnerActive(p))
+  }
+  if (selectedFilter.value === 'inactive') {
+    return list_partners.value.filter(p => !isPartnerActive(p))
+  }
+  
+  return list_partners.value
+})
+
 const hasActiveFilters = computed(() => {
-  return !!(search.value && search.value.trim())
+  return !!((search.value && search.value.trim()) || selectedFilter.value !== 'all')
 })
 
 const resetFilters = () => {
   search.value = null
+  selectedFilter.value = 'all'
   currentPage.value = 1
   list()
 }
@@ -335,22 +350,65 @@ onActivated(() => {
         </div>
 
         <VRow
+          align="center"
+          justify="space-between"
           dense
           class="gap-y-3"
         >
-          <VCol cols="12">
+          <VCol
+            cols="12"
+            md="6"
+          >
             <VTextField
               v-model="search"
-              label="Buscar socio"
-              placeholder="Nombre, cédula, email o teléfono..."
+              placeholder="Buscar por nombre, cédula, email o teléfono..."
               clearable
               hide-details
               variant="outlined"
-              density="comfortable"
+              density="compact"
               color="primary"
               :loading="isLoading"
               prepend-inner-icon="ri-search-2-line"
             />
+          </VCol>
+
+          <VCol
+            cols="12"
+            md="6"
+            class="d-flex justify-end align-center"
+          >
+            <div class="finance-filter-container d-flex align-center justify-end gap-2">
+              <span class="text-body-2 font-weight-medium text-medium-emphasis finance-filter-label">Filtrar:</span>
+              <div class="finance-filter-btn-group">
+                <VBtn
+                  size="small"
+                  :variant="selectedFilter === 'all' ? 'elevated' : 'tonal'"
+                  :color="selectedFilter === 'all' ? 'primary' : 'secondary'"
+                  class="font-weight-semibold"
+                  @click="selectedFilter = 'all'"
+                >
+                  Todos
+                </VBtn>
+                <VBtn
+                  size="small"
+                  :variant="selectedFilter === 'active' ? 'elevated' : 'tonal'"
+                  :color="selectedFilter === 'active' ? 'primary' : 'secondary'"
+                  class="font-weight-semibold"
+                  @click="selectedFilter = 'active'"
+                >
+                  Activos
+                </VBtn>
+                <VBtn
+                  size="small"
+                  :variant="selectedFilter === 'inactive' ? 'elevated' : 'tonal'"
+                  :color="selectedFilter === 'inactive' ? 'primary' : 'secondary'"
+                  class="font-weight-semibold"
+                  @click="selectedFilter = 'inactive'"
+                >
+                  Inactivos
+                </VBtn>
+              </div>
+            </div>
           </VCol>
         </VRow>
       </VCardText>
@@ -460,7 +518,7 @@ onActivated(() => {
         <!-- Tarjetas reales de socios -->
         <template v-else>
           <VCard
-            v-for="partner in list_partners"
+            v-for="partner in filteredPartners"
             :key="'mob-partner-' + partner.id"
             class="mobile-partner-card elevation-0"
           >
@@ -664,7 +722,7 @@ onActivated(() => {
             </template>
             <template v-else>
               <tr
-                v-for="partner in list_partners"
+                v-for="partner in filteredPartners"
                 :key="partner.id"
                 class="partner-table-row"
               >
