@@ -1003,7 +1003,7 @@ onActivated(() => {
           <VPagination
             v-model="currentPage"
             :length="totalPage"
-            :disabled="loading"
+            :disabled="isLoading"
             rounded="circle"
             :total-visible="$vuetify.display.xs ? 4 : 7"
             :size="$vuetify.display.xs ? 'small' : 'default'"
