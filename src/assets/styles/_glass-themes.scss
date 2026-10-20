@@ -2561,28 +2561,7 @@ $glass-themes: (
     }
   }
 
-  // G. VISTA DE LOGIN / AUTENTICACIÓN
-  .auth-page-root {
-    background-color: var(--bg-app) !important;
 
-    .auth-form-container {
-      background: var(--bg-surface) !important;
-      backdrop-filter: var(--blur-glass) !important;
-      -webkit-backdrop-filter: var(--blur-glass) !important;
-      border: 1px solid var(--border-glass) !important;
-      box-shadow: var(--shadow-glass) !important;
-    }
-
-    .auth-input-white .v-field {
-      background-color: var(--input-bg) !important;
-      border: 1px solid var(--input-border) !important;
-      color: var(--text-primary) !important;
-
-      .v-field__input {
-        color: var(--text-primary) !important;
-      }
-    }
-  }
 }
 
 // --------------------------------------------------------------------------
