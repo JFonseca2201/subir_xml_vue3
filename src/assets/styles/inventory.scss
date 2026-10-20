@@ -7563,18 +7563,18 @@
   }
 }
 
-// 3. Pantallas Móviles Pro / Estándar (iPhone Pro, Samsung / 376px a 600px):
-@media (max-width: 600px) {
+// 3. Teléfonos Móviles y Tablets Compactas ($vuetify.display.smAndDown <= 960px):
+@media (max-width: 960px) {
   :root {
     --app-content-padding-top: 12px;
-    --app-header-margin-bottom: 0.65rem;
-    --app-header-action-gap: 0.35rem;
+    --app-header-margin-bottom: 0.75rem;
+    --app-header-action-gap: 0.45rem;
 
-    // Escala Tipográfica en Smartphones: 18px (1.125rem) que garantiza CERO salto de línea
-    --app-page-title-font-size: 1.125rem; // 18px
-    --app-page-title-line-height: 1.2;
-    --app-page-title-avatar-size: 32px;
-    --app-page-title-icon-size: 19px;
+    // Escala Tipográfica Móvil: 18px (1.125rem) para que cualquier título ("Gestión de Vehículos", etc.) quepa completo
+    --app-page-title-font-size: 1.15rem; // ~18.4px
+    --app-page-title-line-height: 1.25;
+    --app-page-title-avatar-size: 34px; // size="28" a max-width: 36px
+    --app-page-title-icon-size: 20px;
   }
 }
 
@@ -7583,13 +7583,12 @@
   :root {
     --app-content-padding-top: 8px;
     --app-header-margin-bottom: 0.5rem;
-    --app-header-action-gap: 0.25rem;
+    --app-header-action-gap: 0.35rem;
 
-    // Escala Tipográfica en Pantallas Ultra Pequeñas: ~16.8px
     --app-page-title-font-size: 1.05rem; // ~16.8px
-    --app-page-title-line-height: 1.2;
-    --app-page-title-avatar-size: 28px;
-    --app-page-title-icon-size: 17px;
+    --app-page-title-line-height: 1.25;
+    --app-page-title-avatar-size: 30px;
+    --app-page-title-icon-size: 18px;
   }
 }
 
@@ -7673,24 +7672,22 @@
       font-size: var(--app-page-title-font-size) !important;
       line-height: var(--app-page-title-line-height) !important;
       font-weight: 800 !important;
-      letter-spacing: -0.02em !important;
+      letter-spacing: -0.015em !important;
       margin-top: 0 !important;
       margin-bottom: 0 !important;
       padding-top: 0 !important;
       padding-bottom: 0 !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
       display: inline-flex !important;
       align-items: center !important;
       max-width: 100% !important;
 
-      // Icono / Avatar integrado dentro del H1
+      // Icono / Avatar integrado dentro del H1 al lado izquierdo
       .v-avatar {
         width: var(--app-page-title-avatar-size) !important;
         height: var(--app-page-title-avatar-size) !important;
         min-width: var(--app-page-title-avatar-size) !important;
         min-height: var(--app-page-title-avatar-size) !important;
+        max-width: 36px !important;
         border-radius: 8px !important;
         margin-right: 8px !important;
         flex-shrink: 0 !important;
@@ -7712,7 +7709,9 @@
     height: var(--app-page-title-avatar-size) !important;
     min-width: var(--app-page-title-avatar-size) !important;
     min-height: var(--app-page-title-avatar-size) !important;
+    max-width: 36px !important;
     border-radius: 8px !important;
+    margin-right: 8px !important;
     flex-shrink: 0 !important;
 
     .v-icon {
@@ -7727,11 +7726,12 @@
 }
 
 // ==========================================================================
-// 2. DIAGRAMACIÓN ESTÁNDAR DE CABECERA (LÍNEA PRINCIPAL + LÍNEA SECUNDARIA)
+// 2. DIAGRAMACIÓN ESTÁNDAR DE CABECERA (TÍTULO ARRIBA 100% / BOTONES ABAJO 100%)
 // ==========================================================================
 
-// A. PANTALLAS GRANDES Y MEDIANAS (> 600px - Tablets y Laptops):
-@media (min-width: 601px) {
+// REGLA DE ESCRITORIO (md/lg/xl > 960px):
+// Mantén los estilos de escritorio tal como estaban antes (distribución condicional de Vuetify)
+@media (min-width: 961px) {
   .page-content-container {
     > * > .d-flex.justify-space-between,
     > * > div > .d-flex.justify-space-between,
@@ -7739,27 +7739,43 @@
     .page-header-wrapper,
     .crud-header-wrapper {
       display: flex !important;
+      flex-direction: row !important;
       align-items: center !important;
       justify-content: space-between !important;
       flex-wrap: wrap !important;
       gap: 0.75rem 1rem !important;
 
+      > div:first-child,
+      > .page-title-block,
+      > .page-header-title-wrapper {
+        width: auto !important;
+        flex: 0 1 auto !important;
+      }
+
       .crud-header-actions,
       .crud-actions-wrapper {
         display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
         justify-content: flex-end !important;
+        width: auto !important;
         gap: 0.5rem !important;
         flex-wrap: wrap !important;
+
+        > .v-btn,
+        .v-btn {
+          width: auto !important;
+          min-width: unset !important;
+        }
       }
     }
   }
 }
 
-// B. TELÉFONOS MÓVILES (<= 600px):
-// 1. Fila Principal: TÍTULO a la izquierda + BOTÓN DE ACCIÓN RÁPIDA alineado ÚNICAMENTE a la derecha.
-// 2. Fila Inferior: Cualquier botón secundario, filtro o selector adicional sin romper la fila principal.
-@media (max-width: 600px) {
+// REGLA DE MÓVIL ($vuetify.display.smAndDown <= 960px):
+// 1. FILA SUPERIOR: Ícono + Título a Ancho Completo (100% / flex-grow-1, sin cortarse)
+// 2. FILA INFERIOR: Botón de Acción Principal y secundarios a Ancho Completo (block / w-100)
+@media (max-width: 960px) {
   .page-content-container {
     // Contenedor principal de la cabecera
     > * > .d-flex.justify-space-between,
@@ -7768,41 +7784,50 @@
     .page-header-wrapper,
     .crud-header-wrapper {
       display: flex !important;
-      flex-wrap: wrap !important;
-      align-items: center !important;
-      justify-content: space-between !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      width: 100% !important;
       margin-bottom: var(--app-header-margin-bottom) !important;
-      row-gap: 0.4rem !important;
-      column-gap: 0.5rem !important;
+      gap: 0.55rem !important;
 
-      // 1. BLOQUE DE TÍTULO PRINCIPAL (Ocupa la izquierda de la fila 1)
+      // 1. FILA SUPERIOR (Ícono + Título a Ancho Completo)
       > div:first-child,
       > .page-title-block,
       > .page-header-title-wrapper {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        flex-grow: 1 !important;
         display: flex !important;
         align-items: center !important;
-        flex: 1 1 auto !important;
+        justify-content: flex-start !important;
         min-width: 0 !important;
-        max-width: calc(100% - 135px) !important; // Reserva espacio para la acción rápida a la derecha
-
-        &:only-child {
-          max-width: 100% !important;
-        }
+        max-width: 100% !important;
+        gap: 8px !important;
+        margin: 0 !important;
+        padding: 0 !important;
 
         h1, .page-title, .operations-page-title {
-          white-space: nowrap !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          flex: 1 1 auto !important;
+          display: flex !important;
+          align-items: center !important;
           font-size: var(--app-page-title-font-size) !important;
           line-height: var(--app-page-title-line-height) !important;
+          white-space: normal !important;
+          word-break: normal !important;
+          overflow: visible !important;
+          text-overflow: clip !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
 
-        // Subtítulos ocultos en móvil para mantener la cabecera en un renglón limpio
+        // Subtítulos ocultos en móvil para mantener la fila superior limpia
         p {
           display: none !important;
         }
 
-        // Contador / Badge compacto adjunto al título
+        // Insignias o pills pequeñas permitidas al lado del título
         .status-pill-clean,
         .status-transfer,
         .v-badge {
@@ -7814,68 +7839,59 @@
         }
       }
 
-      // 2. CONTENEDOR DE ACCIONES (Desempaquetado para compartir cuadrícula del padre)
+      // 2. FILA INFERIOR (Botón de Acción Principal y Controles a Ancho Completo)
       .crud-header-actions,
       .crud-actions-wrapper {
-        display: contents !important;
-      }
-
-      // ACCIÓN RÁPIDA PRINCIPAL (Primer botón): Alineado ÚNICAMENTE a la derecha del título en la fila 1
-      .crud-header-actions > .v-btn:first-child,
-      .crud-actions-wrapper > .v-btn:first-child {
-        order: 1 !important;
-        margin-left: auto !important;
-        flex: 0 0 auto !important;
-        width: auto !important;
-        min-width: unset !important;
-        max-width: 130px !important;
-        min-height: 36px !important;
-        height: 36px !important;
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-        font-size: 0.78rem !important;
-        font-weight: 700 !important;
-        border-radius: 8px !important;
-        white-space: nowrap !important;
-        box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.25) !important;
-
-        .v-btn__content {
-          white-space: nowrap !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
-        }
-
-        .v-icon,
-        .v-btn__prepend {
-          font-size: 16px !important;
-          margin-inline-end: 4px !important;
-        }
-      }
-
-      // BOTONES SECUNDARIOS O CONTROLES ADICIONALES (2do botón en adelante): Ubicados en la LÍNEA INFERIOR
-      .crud-header-actions > .v-btn:nth-child(n+2),
-      .crud-actions-wrapper > .v-btn:nth-child(n+2),
-      .crud-header-actions > *:not(.v-btn):not(:first-child),
-      .crud-actions-wrapper > *:not(.v-btn):not(:first-child),
-      .crud-header-actions > .custom-date-container,
-      .crud-header-actions > .custom-date-input-wrap {
-        order: 2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
         width: 100% !important;
         flex: 1 1 100% !important;
-        min-height: 38px !important;
-        margin-top: 0.25rem !important;
+        gap: 0.45rem !important;
+        margin-top: 0.15rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        justify-content: center !important;
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-      }
 
-      // Si hay exactamente 2 botones secundarios (hijo 2 y 3), se organizan en 2 columnas en la línea inferior
-      .crud-header-actions > .v-btn:nth-child(2):not(:last-child),
-      .crud-header-actions > .v-btn:nth-child(3):last-child {
-        width: calc(50% - 4px) !important;
-        flex: 1 1 calc(50% - 4px) !important;
+        // Botón principal y secundarios a 100% de ancho (block / w-100)
+        > .v-btn,
+        .v-btn {
+          width: 100% !important;
+          min-width: 100% !important;
+          max-width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          min-height: 42px !important;
+          height: 42px !important;
+          font-size: 0.85rem !important;
+          font-weight: 700 !important;
+          border-radius: 8px !important;
+          padding-left: 12px !important;
+          padding-right: 12px !important;
+          margin: 0 !important;
+          box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.25) !important;
+
+          .v-btn__content {
+            width: 100% !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+          }
+
+          .v-icon,
+          .v-btn__prepend {
+            font-size: 18px !important;
+            margin-inline-end: 6px !important;
+          }
+        }
+
+        .custom-date-input-wrap,
+        .custom-date-container {
+          width: 100% !important;
+          justify-content: center !important;
+          min-height: 42px !important;
+        }
       }
     }
   }
@@ -7913,22 +7929,18 @@
     > div > .d-flex.justify-space-between,
     .dashboard-container > .d-flex.justify-space-between {
       margin-bottom: var(--app-header-margin-bottom) !important;
-      row-gap: 0.25rem !important;
+      gap: 0.35rem !important;
 
-      > div:first-child,
-      > .page-title-block,
-      > .page-header-title-wrapper {
-        max-width: calc(100% - 115px) !important;
-      }
+      .crud-header-actions,
+      .crud-actions-wrapper {
+        gap: 0.35rem !important;
 
-      .crud-header-actions > .v-btn:first-child,
-      .crud-actions-wrapper > .v-btn:first-child {
-        max-width: 110px !important;
-        min-height: 34px !important;
-        height: 34px !important;
-        font-size: 0.74rem !important;
-        padding-left: 6px !important;
-        padding-right: 6px !important;
+        > .v-btn,
+        .v-btn {
+          min-height: 40px !important;
+          height: 40px !important;
+          font-size: 0.8rem !important;
+        }
       }
     }
   }
