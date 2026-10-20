@@ -570,43 +570,44 @@ watch(
       style="max-height: 90vh;"
     >
       <!-- Header Banner Primary -->
-      <VCardTitle class="pa-4 bg-primary text-white d-flex align-center justify-space-between flex-none">
-        <div class="d-flex align-center gap-3">
+      <VCardTitle class="pa-3 pa-sm-4 bg-primary text-white d-flex align-center justify-space-between flex-none gap-2">
+        <div class="d-flex align-center gap-2 gap-sm-3 overflow-hidden me-1" style="min-width: 0; flex: 1 1 auto;">
           <VAvatar
             color="white"
             variant="tonal"
-            size="40"
+            size="38"
             rounded="lg"
+            class="flex-shrink-0"
           >
             <VIcon
               :icon="typeIcon"
               color="white"
-              size="24"
+              size="22"
             />
           </VAvatar>
-          <div>
-            <div class="text-subtitle-1 font-weight-bold text-white leading-tight">
+          <div style="min-width: 0;" class="overflow-hidden">
+            <div class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate">
               {{ typeTitle }}
             </div>
             <div
-              class="text-caption text-white opacity-80"
+              class="text-caption text-white opacity-80 text-truncate"
               style="font-size: 11px;"
             >
               {{ docNumber }} • {{ formattedDate }}
             </div>
           </div>
         </div>
-        <div class="d-flex align-center gap-1">
+        <div class="d-flex align-center gap-1 flex-shrink-0">
           <VBtn
             color="white"
             variant="tonal"
             size="small"
-            prepend-icon="ri-printer-line"
             class="font-weight-medium text-none me-1"
             :loading="isDownloadingPdf"
             @click="downloadMovementPdf"
           >
-            Imprimir PDF
+            <VIcon icon="ri-printer-line" class="me-sm-1" />
+            <span class="d-none d-sm-inline">Imprimir PDF</span>
           </VBtn>
           <VBtn
             icon="ri-close-line"
@@ -919,14 +920,14 @@ watch(
       <VDivider />
 
       <!-- Footer Fijo de Acciones -->
-      <VCardActions class="pa-4 d-flex justify-space-between align-center bg-grey-lighten-5 flex-none">
-        <div class="d-flex gap-2">
+      <VCardActions class="pa-3 pa-sm-4 d-flex flex-column flex-sm-row justify-space-between align-stretch align-sm-center border-t flex-none gap-2">
+        <div class="d-flex gap-2 w-100 w-sm-auto">
           <VBtn
             variant="tonal"
             color="primary"
             prepend-icon="ri-file-pdf-2-line"
             size="small"
-            class="font-weight-bold rounded-lg"
+            class="font-weight-bold rounded-lg flex-grow-1 flex-sm-grow-0"
             :loading="isDownloadingPdf"
             @click="downloadMovementPdf"
           >
@@ -937,7 +938,7 @@ watch(
         <VBtn
           variant="outlined"
           color="secondary"
-          class="rounded-lg px-6 font-weight-medium"
+          class="rounded-lg px-6 font-weight-medium w-100 w-sm-auto"
           @click="closeDialog"
         >
           Cerrar
@@ -948,47 +949,48 @@ watch(
     <!-- Lightbox / Modal de Foto en Pantalla Completa -->
     <VDialog
       v-model="isLightboxOpen"
-      max-width="600"
+      max-width="720"
       scrollable
+      class="photo-viewer-dialog"
     >
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <!-- Header Banner Fijo Primary -->
-        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4 flex-none">
-          <div class="d-flex align-center gap-3">
+        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-3 pa-sm-4 flex-none gap-2">
+          <div class="d-flex align-center gap-2 gap-sm-3 overflow-hidden me-1" style="min-width: 0; flex: 1 1 auto;">
             <VAvatar
               color="white"
               variant="tonal"
-              size="38"
+              size="36"
               rounded="lg"
+              class="flex-shrink-0"
             >
               <VIcon
                 icon="ri-image-line"
                 color="white"
-                size="22"
+                size="20"
               />
             </VAvatar>
-            <div>
+            <div style="min-width: 0;" class="overflow-hidden">
               <div
                 class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate"
-                style="max-width: 450px;"
               >
                 {{ attachments[activePhotoIndex]?.file_name || 'Comprobante' }}
               </div>
-              <div class="text-caption text-white opacity-80">
+              <div class="text-caption text-white opacity-80 text-truncate">
                 Archivo {{ activePhotoIndex + 1 }} de {{ attachments.length }}
               </div>
             </div>
           </div>
-          <div class="d-flex align-center gap-2">
+          <div class="d-flex align-center gap-1 gap-sm-2 flex-shrink-0">
             <VBtn
               color="white"
               variant="tonal"
-              prepend-icon="ri-download-2-line"
               size="small"
               class="font-weight-medium text-white me-1"
               @click="downloadSingleAttachment(attachments[activePhotoIndex])"
             >
-              Descargar
+              <VIcon icon="ri-download-2-line" class="me-sm-1" />
+              <span class="d-none d-sm-inline">Descargar</span>
             </VBtn>
             <VBtn
               icon="ri-close-line"
@@ -1001,8 +1003,8 @@ watch(
         </VCardTitle>
 
         <VCardText
-          class="pa-4 bg-grey-lighten-4 d-flex align-center justify-center position-relative"
-          style="min-height: 440px; max-height: 75vh; overflow: auto;"
+          class="pa-2 pa-sm-4 d-flex align-center justify-center position-relative"
+          style="min-height: 380px; max-height: 75vh; overflow: auto; background: rgba(var(--v-theme-on-surface), 0.04);"
         >
           <!-- Flecha Anterior -->
           <VBtn
@@ -1011,7 +1013,7 @@ watch(
             variant="elevated"
             color="primary"
             class="position-absolute elevation-4"
-            style="left: 16px; z-index: 10;"
+            style="left: 12px; z-index: 10;"
             :disabled="activePhotoIndex === 0"
             @click="activePhotoIndex--"
           />
@@ -1032,31 +1034,32 @@ watch(
           <!-- Visualizador para PDF -->
           <div
             v-else-if="attachments[activePhotoIndex]"
-            class="d-flex flex-column align-center justify-center pa-8 text-center"
+            class="d-flex flex-column align-center justify-center pa-4 pa-sm-8 text-center"
           >
             <VAvatar
               color="error"
-              size="72"
+              size="64"
               variant="tonal"
-              class="mb-4"
+              class="mb-3"
             >
               <VIcon
                 icon="ri-file-pdf-2-line"
-                size="40"
+                size="36"
               />
             </VAvatar>
-            <div class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+            <div class="text-subtitle-1 font-weight-bold mb-1 text-high-emphasis text-truncate" style="max-width: 280px;">
               Documento PDF
             </div>
-            <div class="text-body-2 text-medium-emphasis mb-4">
+            <div class="text-caption text-medium-emphasis mb-4 text-truncate" style="max-width: 280px;">
               {{ attachments[activePhotoIndex].file_name }}
             </div>
-            <div class="d-flex gap-3">
+            <div class="d-flex flex-column flex-sm-row gap-2 w-100 justify-center" style="max-width: 320px;">
               <VBtn
                 color="primary"
                 variant="elevated"
                 prepend-icon="ri-external-link-line"
                 target="_blank"
+                size="small"
                 :href="getFullUrl(attachments[activePhotoIndex].file_path || attachments[activePhotoIndex].url)"
               >
                 Abrir PDF en pestaña
@@ -1065,6 +1068,7 @@ watch(
                 color="success"
                 variant="tonal"
                 prepend-icon="ri-download-2-line"
+                size="small"
                 @click="downloadSingleAttachment(attachments[activePhotoIndex])"
               >
                 Descargar PDF
@@ -1079,20 +1083,20 @@ watch(
             variant="elevated"
             color="primary"
             class="position-absolute elevation-4"
-            style="right: 16px; z-index: 10;"
+            style="right: 12px; z-index: 10;"
             :disabled="activePhotoIndex === attachments.length - 1"
             @click="activePhotoIndex++"
           />
         </VCardText>
 
-        <VCardActions class="pa-4 bg-white border-t d-flex justify-space-between align-center flex-none">
-          <span class="text-caption text-medium-emphasis font-weight-medium">
+        <VCardActions class="pa-3 pa-sm-4 bg-surface border-t d-flex flex-column flex-sm-row justify-space-between align-stretch align-sm-center flex-none gap-2">
+          <span class="text-caption text-medium-emphasis font-weight-medium text-center text-sm-start order-1 order-sm-0">
             Comprobante {{ activePhotoIndex + 1 }} de {{ attachments.length }}
           </span>
           <VBtn
             variant="tonal"
             color="secondary"
-            class="font-weight-medium px-6"
+            class="font-weight-medium px-6 w-100 w-sm-auto order-0 order-sm-1"
             @click="isLightboxOpen = false"
           >
             Cerrar

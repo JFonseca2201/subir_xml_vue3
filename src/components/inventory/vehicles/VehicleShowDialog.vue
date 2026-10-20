@@ -270,21 +270,21 @@ const closeDialog = () => {
               <div class="d-flex flex-column gap-2 text-body-2">
                 <div class="d-flex justify-space-between py-1 border-b">
                   <span class="text-medium-emphasis">ID de Registro:</span>
-                  <span class="font-weight-bold font-mono">#{{ vehicleData.id }}</span>
+                  <span class="font-weight-bold font-mono text-high-emphasis">#{{ vehicleData.id }}</span>
                 </div>
                 <div class="d-flex justify-space-between py-1 border-b">
                   <span class="text-medium-emphasis">Modelo:</span>
-                  <span class="font-weight-semibold text-uppercase">{{ vehicleData.model || 'No especificado' }}</span>
+                  <span class="font-weight-semibold text-uppercase text-high-emphasis">{{ vehicleData.model || 'No especificado' }}</span>
                 </div>
                 <div class="d-flex justify-space-between py-1 border-b">
                   <span class="text-medium-emphasis">Fecha Registro:</span>
-                  <span class="font-weight-medium">
+                  <span class="font-weight-medium text-high-emphasis">
                     {{ vehicleData.created_at ? new Date(vehicleData.created_at).toLocaleDateString() : 'N/A' }}
                   </span>
                 </div>
                 <div class="d-flex justify-space-between py-1">
                   <span class="text-medium-emphasis">Última Modificación:</span>
-                  <span class="font-weight-medium">
+                  <span class="font-weight-medium text-high-emphasis">
                     {{ vehicleData.updated_at ? new Date(vehicleData.updated_at).toLocaleDateString() : 'N/A' }}
                   </span>
                 </div>
@@ -310,7 +310,7 @@ const closeDialog = () => {
                 Observaciones y Notas
               </div>
               <div
-                class="pa-3 rounded-lg text-body-2"
+                class="pa-3 rounded-lg text-body-2 text-high-emphasis"
                 style="background: rgba(var(--v-theme-on-surface), 0.03); min-height: 110px; line-height: 1.5; white-space: pre-wrap;"
               >
                 {{ vehicleData.description || 'Sin observaciones adicionales registradas para este vehículo.' }}
@@ -444,7 +444,7 @@ const closeDialog = () => {
       <!-- Footer con botones -->
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

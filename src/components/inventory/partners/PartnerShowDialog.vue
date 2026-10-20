@@ -218,7 +218,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Nombre Completo / Razón Social
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-bold text-high-emphasis text-uppercase mt-0.5">
                     {{ partner.name || 'No especificado' }}
                   </div>
                 </VCol>
@@ -243,7 +243,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Fecha de Registro
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
+                  <div class="text-body-2 font-weight-semibold text-high-emphasis mt-0.5">
                     {{ formatDate(partner.created_at) }}
                   </div>
                 </VCol>
@@ -288,7 +288,7 @@ const closeDialog = () => {
                       size="18"
                       class="me-2 mt-0.5 flex-shrink-0"
                     />
-                    <span class="text-body-2 font-weight-medium text-grey-darken-3 text-uppercase">
+                    <span class="text-body-2 font-weight-medium text-high-emphasis text-uppercase">
                       {{ partner.address }}
                     </span>
                   </div>
@@ -479,13 +479,13 @@ const closeDialog = () => {
 
 <style scoped lang="scss">
 .address-box {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .empty-address-box {
-  background-color: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  background-color: rgba(var(--v-theme-on-surface), 0.03);
+  border: 1px dashed rgba(var(--v-border-color), 0.3);
 }
 
 .contact-link {

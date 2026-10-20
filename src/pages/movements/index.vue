@@ -2225,48 +2225,49 @@ onMounted(() => {
       v-model="isPhotoViewerVisible"
       max-width="920"
       scrollable
+      class="photo-viewer-dialog"
     >
       <VCard class="rounded-xl overflow-hidden elevation-10">
         <!-- Header del Visor Primary -->
-        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-4 flex-none">
-          <div class="d-flex align-center gap-3">
+        <VCardTitle class="d-flex align-center justify-space-between bg-primary text-white pa-3 pa-sm-4 flex-none gap-2">
+          <div class="d-flex align-center gap-2 gap-sm-3 overflow-hidden me-1" style="min-width: 0; flex: 1 1 auto;">
             <VAvatar
               color="white"
               variant="tonal"
-              size="38"
+              size="36"
               rounded="lg"
+              class="flex-shrink-0"
             >
               <VIcon
                 icon="ri-image-line"
                 color="white"
-                size="22"
+                size="20"
               />
             </VAvatar>
-            <div>
+            <div style="min-width: 0;" class="overflow-hidden">
               <div
                 class="text-subtitle-1 font-weight-bold text-white leading-tight text-truncate"
-                style="max-width: 450px;"
               >
                 {{ currentActivePhoto?.file_name || 'Comprobante de Pago' }}
               </div>
-              <div class="text-caption text-white opacity-80">
+              <div class="text-caption text-white opacity-80 text-truncate">
                 Archivo {{ currentPhotoIndex + 1 }} de {{ currentPhotoList.length }}
                 <span v-if="currentPhotoMovement"> • {{ getMovementDocNumber(currentPhotoMovement) }}</span>
               </div>
             </div>
           </div>
-          <div class="d-flex align-center gap-2">
+          <div class="d-flex align-center gap-1 gap-sm-2 flex-shrink-0">
             <!-- Botón de Descarga Principal -->
             <VBtn
               color="white"
               variant="tonal"
-              prepend-icon="ri-download-2-line"
               size="small"
               class="font-weight-medium text-white me-1"
               :loading="isDownloading"
               @click="downloadAttachment(currentActivePhoto)"
             >
-              Descargar
+              <VIcon icon="ri-download-2-line" :class="{ 'me-sm-1': true }" />
+              <span class="d-none d-sm-inline">Descargar</span>
             </VBtn>
             <VBtn
               icon="ri-close-line"
@@ -2280,8 +2281,8 @@ onMounted(() => {
 
         <!-- Cuerpo del Visor -->
         <VCardText
-          class="pa-4 bg-grey-lighten-4 d-flex align-center justify-center position-relative"
-          style="min-height: 440px; max-height: 75vh; overflow: auto;"
+          class="pa-2 pa-sm-4 d-flex align-center justify-center position-relative"
+          style="min-height: 380px; max-height: 75vh; overflow: auto; background: rgba(var(--v-theme-on-surface), 0.04);"
         >
           <!-- Navegación Anterior -->
           <VBtn
@@ -2290,7 +2291,7 @@ onMounted(() => {
             variant="elevated"
             color="primary"
             class="position-absolute elevation-4"
-            style="left: 16px; z-index: 10;"
+            style="left: 12px; z-index: 10;"
             :disabled="currentPhotoIndex === 0"
             @click="currentPhotoIndex--"
           />
@@ -2311,32 +2312,33 @@ onMounted(() => {
           <!-- Visualización si es PDF -->
           <div
             v-else
-            class="d-flex flex-column align-center justify-center pa-8 text-center"
+            class="d-flex flex-column align-center justify-center pa-4 pa-sm-8 text-center"
           >
             <VAvatar
               color="error"
-              size="72"
+              size="64"
               variant="tonal"
-              class="mb-4"
+              class="mb-3"
             >
               <VIcon
                 icon="ri-file-pdf-2-line"
-                size="40"
+                size="36"
               />
             </VAvatar>
-            <div class="text-h6 font-weight-bold mb-1 text-high-emphasis">
+            <div class="text-subtitle-1 font-weight-bold mb-1 text-high-emphasis text-truncate" style="max-width: 280px;">
               Documento PDF
             </div>
-            <div class="text-body-2 text-medium-emphasis mb-4">
+            <div class="text-caption text-medium-emphasis mb-4 text-truncate" style="max-width: 280px;">
               {{ currentActivePhoto?.file_name }}
             </div>
-            <div class="d-flex gap-3">
+            <div class="d-flex flex-column flex-sm-row gap-2 w-100 justify-center" style="max-width: 320px;">
               <VBtn
                 color="primary"
                 variant="elevated"
                 prepend-icon="ri-external-link-line"
                 target="_blank"
                 :href="getAttachmentUrl(currentActivePhoto)"
+                size="small"
               >
                 Abrir PDF en pestaña
               </VBtn>
@@ -2344,6 +2346,7 @@ onMounted(() => {
                 color="success"
                 variant="tonal"
                 prepend-icon="ri-download-2-line"
+                size="small"
                 @click="downloadAttachment(currentActivePhoto)"
               >
                 Descargar PDF
@@ -2358,20 +2361,20 @@ onMounted(() => {
             variant="elevated"
             color="primary"
             class="position-absolute elevation-4"
-            style="right: 16px; z-index: 10;"
+            style="right: 12px; z-index: 10;"
             :disabled="currentPhotoIndex === currentPhotoList.length - 1"
             @click="currentPhotoIndex++"
           />
         </VCardText>
 
         <!-- Footer del Visor -->
-        <VCardActions class="pa-4 bg-surface border-t d-flex justify-space-between align-center flex-none">
-          <div class="text-caption text-medium-emphasis font-weight-medium">
+        <VCardActions class="pa-3 pa-sm-4 bg-surface border-t d-flex flex-column flex-sm-row justify-space-between align-stretch align-sm-center flex-none gap-2">
+          <div class="text-caption text-medium-emphasis font-weight-medium text-center text-sm-start order-1 order-sm-0">
             <span v-if="currentActivePhoto?.file_size">
               Tamaño: {{ (currentActivePhoto.file_size / 1024).toFixed(1) }} KB
             </span>
           </div>
-          <div class="d-flex gap-2">
+          <div class="photo-viewer-buttons d-flex flex-column flex-sm-row gap-2 order-0 order-sm-1">
             <VBtn
               variant="tonal"
               color="primary"

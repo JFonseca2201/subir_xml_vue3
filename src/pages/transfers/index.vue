@@ -61,6 +61,10 @@ const openNoteDialog = transfer => {
   showNoteDialog.value = true
 }
 
+const openAttachDialog = transfer => {
+  openNoteDialog(transfer)
+}
+
 // Filtros y búsqueda
 const searchQuery = ref('')
 const selectedFilter = ref('all') // 'all', 'today', 'month'
@@ -812,40 +816,44 @@ onMounted(() => {
                   size="small"
                   variant="tonal"
                   color="primary"
-                  icon="ri-eye-line"
                   class="rounded-lg"
                   title="Ver Nota"
                   @click="openNoteDialog(transfer)"
-                />
+                >
+                  <VIcon icon="ri-eye-line" size="18" />
+                </VBtn>
                 <VBtn
                   size="small"
                   variant="tonal"
                   color="secondary"
-                  icon="ri-attachment-line"
                   class="rounded-lg"
                   title="Adjuntos"
                   @click="openAttachDialog(transfer)"
-                />
+                >
+                  <VIcon icon="ri-attachment-line" size="18" />
+                </VBtn>
                 <VBtn
                   v-if="can('edit_transfer')"
                   size="small"
                   variant="tonal"
                   color="warning"
-                  icon="ri-pencil-line"
                   class="rounded-lg"
                   title="Editar"
                   @click="openEditDialog(transfer)"
-                />
+                >
+                  <VIcon icon="ri-pencil-line" size="18" />
+                </VBtn>
                 <VBtn
                   v-if="can('delete_transfer')"
                   size="small"
                   variant="tonal"
                   color="error"
-                  icon="ri-delete-bin-line"
                   class="rounded-lg"
                   title="Eliminar"
                   @click="deleteTransfer(transfer)"
-                />
+                >
+                  <VIcon icon="ri-delete-bin-line" size="18" />
+                </VBtn>
               </div>
             </div>
           </div>

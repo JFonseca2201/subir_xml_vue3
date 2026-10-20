@@ -757,7 +757,7 @@ onMounted(() => {
       <VDivider />
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

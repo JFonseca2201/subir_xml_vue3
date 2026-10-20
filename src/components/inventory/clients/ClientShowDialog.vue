@@ -171,7 +171,7 @@ const closeDialog = () => {
       </div>
 
       <!-- Contenido principal -->
-      <VCardText class="pa-6">
+      <VCardText class="pa-4 pa-sm-6">
         <!-- Grid de Especificaciones (Brochure Style) -->
         <div class="specs-container mb-6">
           <div class="spec-badge-card">
@@ -220,7 +220,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     {{ isCompanyClient ? 'Razón Social' : 'Nombre Completo' }}
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-bold text-high-emphasis text-uppercase mt-0.5">
                     {{ fullName || 'No especificado' }}
                   </div>
                 </VCol>
@@ -247,7 +247,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       Género
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
+                    <div class="text-body-2 font-weight-semibold text-high-emphasis mt-0.5">
                       {{ getGenderLabel }}
                     </div>
                   </VCol>
@@ -256,7 +256,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       F. Nacimiento
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
+                    <div class="text-body-2 font-weight-semibold text-high-emphasis mt-0.5">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
@@ -268,7 +268,7 @@ const closeDialog = () => {
                     <div class="text-caption text-medium-emphasis">
                       Fecha Constitución
                     </div>
-                    <div class="text-body-2 font-weight-semibold text-grey-darken-3 mt-0.5">
+                    <div class="text-body-2 font-weight-semibold text-high-emphasis mt-0.5">
                       {{ clientData.birth_date || 'No especificado' }}
                     </div>
                   </VCol>
@@ -304,7 +304,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Dirección Principal
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-semibold text-high-emphasis text-uppercase mt-0.5">
                     {{ clientData.address || 'No especificada' }}
                   </div>
                 </VCol>
@@ -313,7 +313,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Región
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-semibold text-high-emphasis text-uppercase mt-0.5">
                     {{ clientData.region || '-' }}
                   </div>
                 </VCol>
@@ -322,7 +322,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Provincia
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-semibold text-high-emphasis text-uppercase mt-0.5">
                     {{ clientData.provincia || '-' }}
                   </div>
                 </VCol>
@@ -331,7 +331,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Distrito
                   </div>
-                  <div class="text-body-2 font-weight-semibold text-grey-darken-3 text-uppercase mt-0.5">
+                  <div class="text-body-2 font-weight-semibold text-high-emphasis text-uppercase mt-0.5">
                     {{ clientData.distrito || '-' }}
                   </div>
                 </VCol>
@@ -369,7 +369,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Teléfono Móvil / WhatsApp
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 mt-0.5">
+                  <div class="text-body-2 font-weight-bold text-high-emphasis mt-0.5">
                     <VIcon
                       icon="ri-phone-line"
                       size="15"
@@ -386,7 +386,7 @@ const closeDialog = () => {
                   <div class="text-caption text-medium-emphasis">
                     Correo Electrónico
                   </div>
-                  <div class="text-body-2 font-weight-bold text-grey-darken-3 text-lowercase mt-0.5">
+                  <div class="text-body-2 font-weight-bold text-high-emphasis text-lowercase mt-0.5">
                     <VIcon
                       icon="ri-mail-line"
                       size="15"
@@ -404,7 +404,7 @@ const closeDialog = () => {
       <!-- Footer con botones -->
       <VDivider />
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

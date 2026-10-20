@@ -554,11 +554,21 @@ onActivated(() => {
             class="mobile-client-card elevation-0 pa-4"
           >
             <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-              <div
-                class="shimmer-line"
-                style="width: 70px; height: 16px;"
-              />
-              <div class="d-flex gap-1 listing-item-actions">
+              <div class="d-flex flex-column gap-1">
+                <div
+                  class="shimmer-line"
+                  style="width: 60px; height: 12px;"
+                />
+                <div
+                  class="shimmer-line"
+                  style="width: 90px; height: 16px;"
+                />
+              </div>
+              <div class="d-flex gap-1 listing-item-actions ms-auto">
+                <div
+                  class="shimmer-button rounded"
+                  style="width: 34px; height: 34px; border-radius: 8px;"
+                />
                 <div
                   class="shimmer-button rounded"
                   style="width: 34px; height: 34px; border-radius: 8px;"
@@ -611,47 +621,58 @@ onActivated(() => {
           >
           <!-- Cabecera Móvil: ID + Tipo de Documento / N° Doc + Acciones Rápidas -->
           <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
-            <div class="d-flex align-center gap-2 min-w-0">
-              <span class="text-caption font-weight-bold text-disabled">#{{ client.id }}</span>
-              <div class="d-flex align-center gap-1">
-                <span class="text-caption text-disabled text-uppercase font-weight-bold">
-                  {{ client.type_document === 2 || client.type_document === '2' ? 'RUC' : (client.type_document === 3 || client.type_document === '3' ? 'Pasaporte' : 'Cédula') }}:
+            <!-- Bloque Identificador y Documento Compacto (Vertical) -->
+            <div class="d-flex flex-column min-w-0 flex-grow-1" style="line-height: 1.15;">
+              <div class="d-flex align-center gap-1.5 min-w-0">
+                <span class="text-caption font-weight-bold text-disabled flex-shrink-0">#{{ client.id }}</span>
+                <span
+                  class="font-weight-bold text-uppercase px-1.5 py-0.5 rounded text-medium-emphasis"
+                  style="font-size: 0.65rem; letter-spacing: 0.5px; background: rgba(var(--v-theme-on-surface), 0.05);"
+                >
+                  {{ client.type_document === 2 || client.type_document === '2' ? 'RUC' : (client.type_document === 3 || client.type_document === '3' ? 'Pasaporte' : 'Cédula') }}
                 </span>
-                <span class="font-mono font-weight-bold text-high-emphasis text-body-2">
-                  {{ client.n_document || 'S/D' }}
-                </span>
+              </div>
+              <div class="font-mono font-weight-bold text-high-emphasis text-body-2 text-truncate mt-0.5">
+                {{ client.n_document || 'S/D' }}
               </div>
             </div>
 
             <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions ms-auto">
               <VBtn
                 size="small"
                 color="info"
                 variant="tonal"
-                icon="ri-eye-line"
                 title="Ver Ficha"
                 @click="showClient(client)"
-              />
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+              </VBtn>
               <VBtn
                 v-if="can('edit_client')"
                 size="small"
                 color="warning"
                 variant="tonal"
-                icon="ri-pencil-line"
                 title="Editar Cliente"
                 @click="editClient(client)"
-              />
+              >
+                <VIcon
+                  icon="ri-pencil-line"
+                  size="18"
+                />
+              </VBtn>
               <VBtn
                 size="small"
                 color="secondary"
                 variant="tonal"
-                icon="ri-more-2-line"
                 title="Más Opciones"
               >
                 <VIcon
                   icon="ri-more-2-line"
-                  size="16"
+                  size="18"
                 />
                 <VMenu
                   activator="parent"
@@ -730,7 +751,8 @@ onActivated(() => {
           <!-- Contacto Móvil (Teléfono y Email) -->
           <div
             v-if="client.phone || client.email"
-            class="d-flex flex-wrap gap-x-4 gap-y-1 mb-2.5 px-2.5 py-1.5 bg-grey-lighten-4 rounded-lg text-caption"
+            class="d-flex flex-wrap gap-x-4 gap-y-1 mb-2.5 px-2.5 py-1.5 rounded-lg text-caption border"
+            style="background: rgba(var(--v-theme-on-surface), 0.04); border-color: rgba(var(--v-border-color), var(--v-border-opacity)) !important;"
           >
             <div
               v-if="client.phone"

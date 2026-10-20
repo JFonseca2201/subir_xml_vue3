@@ -688,7 +688,8 @@ onActivated(() => {
                 <div class="shimmer-line" style="width: 40px; height: 16px;" />
                 <div class="shimmer-chip" style="width: 80px; height: 24px;" />
               </div>
-              <div class="d-flex gap-1 listing-item-actions">
+              <div class="d-flex gap-1 listing-item-actions ms-auto">
+                <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
                 <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
                 <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
               </div>
@@ -724,8 +725,8 @@ onActivated(() => {
               <span class="text-caption font-weight-bold text-disabled">#{{ vehicle.id }}</span>
               <div
                 v-if="vehicle.license_plate"
-                class="px-2.5 py-0.5 rounded font-weight-bold font-mono text-body-2 bg-grey-lighten-4 border text-high-emphasis"
-                style="letter-spacing: 0.5px;"
+                class="px-2.5 py-0.5 rounded font-weight-bold font-mono text-body-2 border text-high-emphasis"
+                style="letter-spacing: 0.5px; background: rgba(var(--v-theme-on-surface), 0.05);"
               >
                 {{ vehicle.license_plate.toUpperCase() }}
               </div>
@@ -741,34 +742,41 @@ onActivated(() => {
             </div>
 
             <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
+            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions ms-auto">
               <VBtn
                 size="small"
                 color="info"
                 variant="tonal"
-                icon="ri-eye-line"
                 title="Ver Ficha"
                 @click="showVehicle(vehicle)"
-              />
+              >
+                <VIcon
+                  icon="ri-eye-line"
+                  size="18"
+                />
+              </VBtn>
               <VBtn
                 v-if="can('edit_car')"
                 size="small"
                 color="warning"
                 variant="tonal"
-                icon="ri-pencil-line"
                 title="Editar Vehículo"
                 @click="editVehicle(vehicle)"
-              />
+              >
+                <VIcon
+                  icon="ri-pencil-line"
+                  size="18"
+                />
+              </VBtn>
               <VBtn
                 size="small"
                 color="secondary"
                 variant="tonal"
-                icon="ri-more-2-line"
                 title="Más Opciones"
               >
                 <VIcon
                   icon="ri-more-2-line"
-                  size="16"
+                  size="18"
                 />
                 <VMenu
                   activator="parent"
@@ -828,22 +836,22 @@ onActivated(() => {
               <div class="d-flex align-center gap-1.5 text-caption text-medium-emphasis mt-1.5 flex-wrap">
                 <span
                   v-if="vehicle.vehicle_type"
-                  class="font-weight-medium bg-grey-lighten-4 px-2 py-0.5 rounded border"
-                  style="font-size: 0.72rem;"
+                  class="font-weight-medium px-2 py-0.5 rounded border"
+                  style="font-size: 0.72rem; background: rgba(var(--v-theme-on-surface), 0.05);"
                 >
                   {{ getVehicleTypeLabel(vehicle.vehicle_type) }}
                 </span>
                 <span
                   v-if="vehicle.year"
-                  class="font-weight-medium text-high-emphasis bg-grey-lighten-4 px-2 py-0.5 rounded border"
-                  style="font-size: 0.72rem;"
+                  class="font-weight-medium text-high-emphasis px-2 py-0.5 rounded border"
+                  style="font-size: 0.72rem; background: rgba(var(--v-theme-on-surface), 0.05);"
                 >
                   Año {{ vehicle.year }}
                 </span>
                 <span
                   v-if="vehicle.color"
-                  class="text-uppercase text-medium-emphasis font-weight-medium bg-grey-lighten-4 px-2 py-0.5 rounded border"
-                  style="font-size: 0.72rem;"
+                  class="text-uppercase text-medium-emphasis font-weight-medium px-2 py-0.5 rounded border"
+                  style="font-size: 0.72rem; background: rgba(var(--v-theme-on-surface), 0.05);"
                 >
                   {{ vehicle.color }}
                 </span>

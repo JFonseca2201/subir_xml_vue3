@@ -237,7 +237,7 @@ const save = async () => {
       </div>
 
       <VCardText
-        class="pa-6"
+        class="pa-4 pa-sm-6"
         style="max-height: 70vh;"
       >
         <!-- Vista previa del encabezado generado -->
@@ -513,7 +513,7 @@ const save = async () => {
       <!-- Bottom Sticky Actions -->
       <VDivider />
       <VCardActions
-        class="pa-4 justify-end bg-white"
+        class="pa-4 justify-end bg-surface dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

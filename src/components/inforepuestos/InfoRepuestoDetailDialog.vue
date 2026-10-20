@@ -239,7 +239,7 @@ const vehicleHeader = computed(() => {
                 </div>
                 <div
                   class="text-body-2 text-high-emphasis pa-3 rounded-lg text-pre-wrap"
-                  style="background-color: #f8fafc; border: 1px solid #f1f5f9; line-height: 1.5;"
+                  style="background: rgba(var(--v-theme-on-surface), 0.04); border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)); line-height: 1.5;"
                 >
                   {{ item.spare_parts_detail || 'Sin descripción adicional' }}
                 </div>
@@ -297,7 +297,7 @@ const vehicleHeader = computed(() => {
       <!-- Sticky Close Button -->
       <VDivider />
       <VCardActions
-        class="pa-4 justify-end bg-white"
+        class="pa-4 justify-end bg-surface dialog-actions-responsive"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn
@@ -338,32 +338,32 @@ const vehicleHeader = computed(() => {
 }
 
 .status-paid {
-  background-color: #ecfdf5 !important;
-  color: #065f46 !important;
-  border: 1px solid #a7f3d0 !important;
+  background-color: rgba(var(--v-theme-success), 0.12) !important;
+  color: rgb(var(--v-theme-success)) !important;
+  border: 1px solid rgba(var(--v-theme-success), 0.25) !important;
 
   .status-dot {
-    background-color: #10b981 !important;
+    background-color: rgb(var(--v-theme-success)) !important;
   }
 }
 
 .status-secondary {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: rgba(var(--v-theme-on-surface), 0.08) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
 
   .status-dot {
-    background-color: #94a3b8 !important;
+    background-color: rgba(var(--v-theme-on-surface), 0.6) !important;
   }
 }
 
 .status-primary {
-  background-color: #eef2ff !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
+  background-color: rgba(var(--v-theme-primary), 0.12) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.25) !important;
 
   .status-dot {
-    background-color: #6366f1 !important;
+    background-color: rgb(var(--v-theme-primary)) !important;
   }
 }
 </style>

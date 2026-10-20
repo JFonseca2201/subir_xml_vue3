@@ -752,12 +752,12 @@ onMounted(() => {
 }
 
 .status-secondary {
-  background-color: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #e2e8f0 !important;
+  background-color: rgba(var(--v-theme-on-surface), 0.08) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
 
   .status-dot {
-    background-color: #94a3b8 !important;
+    background-color: rgba(var(--v-theme-on-surface), 0.6) !important;
   }
 }
 
