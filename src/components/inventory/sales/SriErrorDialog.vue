@@ -104,7 +104,7 @@ const onResend = () => {
         <p class="text-body-2 text-medium-emphasis mb-3">
           El Servicio de Rentas Internas (SRI) retornó la siguiente observación al procesar este comprobante:
         </p>
-        <div class="bg-grey-lighten-4 pa-4 rounded-lg text-body-2 font-weight-medium text-grey-darken-3 text-wrap font-monospace border mb-4">
+        <div class="bg-surface pa-4 rounded-lg text-body-2 font-weight-medium text-high-emphasis text-wrap font-monospace border mb-4">
           {{ errorMsg || 'Sin detalle de error registrado por el SRI.' }}
         </div>
 
@@ -130,7 +130,7 @@ const onResend = () => {
 
       <VDivider />
 
-      <VCardActions class="pa-4 d-flex justify-space-between flex-wrap gap-2 bg-white">
+      <VCardActions class="pa-4 d-flex justify-space-between flex-wrap gap-2 bg-surface">
         <VBtn
           color="info"
           variant="tonal"

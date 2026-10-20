@@ -913,6 +913,77 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+.sri-progress-dialog-card {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(var(--v-border-color), var(--v-border-opacity, 0.12)) !important;
+}
+
+.sri-progress-bar-container {
+  background: rgb(var(--v-theme-surface)) !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.14)) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+
+  .progress-track-wrapper {
+    position: relative !important;
+    height: 10px !important;
+    border-radius: 9999px !important;
+    background: rgba(var(--v-theme-on-surface), 0.08) !important;
+    overflow: hidden !important;
+    margin: 8px 0 !important;
+  }
+}
+
+.sri-step-item {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity, 0.12)) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+  color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity, 0.9)) !important;
+
+  .sri-step-title {
+    color: rgba(var(--v-theme-on-surface), var(--v-high-emphasis-opacity, 0.9)) !important;
+  }
+
+  .sri-step-desc {
+    color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity, 0.7)) !important;
+  }
+
+  &.sri-step-pending {
+    background: rgba(var(--v-theme-on-surface), 0.03) !important;
+    border-color: rgba(var(--v-border-color), 0.08) !important;
+
+    .sri-step-icon-badge {
+      background: rgba(var(--v-theme-on-surface), 0.08) !important;
+      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity, 0.6)) !important;
+    }
+  }
+
+  &.sri-step-active {
+    background: rgb(var(--v-theme-surface)) !important;
+    border-color: rgb(var(--v-theme-primary)) !important;
+    box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.16), 0 0 0 1px rgb(var(--v-theme-primary)) !important;
+
+    .sri-step-title {
+      color: rgb(var(--v-theme-primary)) !important;
+    }
+  }
+
+  &.sri-step-completed {
+    background: rgba(var(--v-theme-success), 0.14) !important;
+    border-color: rgba(var(--v-theme-success), 0.35) !important;
+
+    .sri-step-title {
+      color: rgb(var(--v-theme-success)) !important;
+    }
+
+    .sri-step-desc {
+      color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity, 0.75)) !important;
+    }
+  }
+}
+
 .progress-track-fill.is-sri-error {
   background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.45) !important;

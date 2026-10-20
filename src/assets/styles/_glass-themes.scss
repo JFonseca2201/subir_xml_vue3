@@ -3608,6 +3608,103 @@ body[data-theme="semi-dark-glass"],
       }
     }
   }
+
+  // --- C. FACTURACIÓN ELECTRÓNICA & DIÁLOGOS DE EMISIÓN SRI ---
+  .sri-progress-dialog-card {
+    background: rgb(var(--v-theme-surface)) !important;
+  }
+
+  .sri-progress-bar-container {
+    background: rgba(var(--v-theme-surface), 0.95) !important;
+    border-color: rgba(var(--v-border-color), 0.18) !important;
+
+    .progress-track-wrapper {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+  }
+
+  .sri-step-item {
+    background: rgba(var(--v-theme-surface), 0.85) !important;
+    border-color: rgba(var(--v-border-color), 0.15) !important;
+
+    &.sri-step-pending {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border-color: rgba(255, 255, 255, 0.06) !important;
+
+      .sri-step-icon-badge {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+      }
+    }
+
+    &.sri-step-active {
+      background: rgba(var(--v-theme-surface), 1) !important;
+      border-color: rgb(var(--v-theme-primary)) !important;
+
+      .sri-step-title {
+        color: rgb(var(--v-theme-primary)) !important;
+      }
+    }
+
+    &.sri-step-completed {
+      background: rgba(var(--v-theme-success), 0.14) !important;
+      border-color: rgba(var(--v-theme-success), 0.4) !important;
+
+      .sri-step-title {
+        color: rgb(var(--v-theme-success)) !important;
+      }
+
+      .sri-step-desc {
+        color: rgba(var(--v-theme-on-surface), 0.75) !important;
+      }
+    }
+
+    .sri-step-title {
+      color: rgba(var(--v-theme-on-surface), 0.95) !important;
+    }
+
+    .sri-step-desc {
+      color: rgba(var(--v-theme-on-surface), 0.65) !important;
+    }
+  }
+
+  .doc-type-card {
+    background-color: rgba(var(--v-theme-surface), 0.7) !important;
+    border-color: rgba(var(--v-border-color), 0.15) !important;
+    color: rgba(var(--v-theme-on-surface), 0.9) !important;
+
+    &:hover {
+      background-color: rgba(var(--v-theme-surface), 0.9) !important;
+      border-color: rgba(var(--v-border-color), 0.3) !important;
+    }
+
+    &.active-invoice {
+      background: rgba(var(--v-theme-primary), 0.14) !important;
+      border-color: rgb(var(--v-theme-primary)) !important;
+
+      .doc-type-title {
+        color: rgb(var(--v-theme-primary)) !important;
+      }
+    }
+
+    &.active-sale-note {
+      background: rgba(var(--v-theme-success), 0.14) !important;
+      border-color: rgb(var(--v-theme-success)) !important;
+
+      .doc-type-title {
+        color: rgb(var(--v-theme-success)) !important;
+      }
+    }
+
+    &.active-quote {
+      background: rgba(var(--v-theme-warning), 0.14) !important;
+      border-color: rgb(var(--v-theme-warning)) !important;
+
+      .doc-type-title {
+        color: rgb(var(--v-theme-warning)) !important;
+      }
+    }
+  }
 }
 
 

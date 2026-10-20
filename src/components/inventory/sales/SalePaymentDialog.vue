@@ -153,7 +153,7 @@ const registerPayment = async () => {
       </VCardText>
 
       <VCardActions
-        class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+        class="pa-4 d-flex justify-end align-center gap-3 bg-surface"
         style="position: sticky; bottom: 0; z-index: 2;"
       >
         <VBtn

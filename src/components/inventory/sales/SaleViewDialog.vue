@@ -1316,7 +1316,7 @@ const convertToSale = () => {
       <VDivider />
 
       <!-- Footer Actions Flotante y Moderno -->
-      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-white flex-wrap sticky-dialog-footer">
+      <VCardActions class="pa-4 px-6 d-flex justify-end align-center gap-3 bg-surface flex-wrap sticky-dialog-footer">
         <!-- Conversión Directa de Cotizaciones Activas -->
         <VBtn
           v-if="canConvertQuote"

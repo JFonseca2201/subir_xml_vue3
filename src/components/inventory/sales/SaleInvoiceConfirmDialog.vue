@@ -322,12 +322,12 @@ const onConfirm = () => {
         </p>
       </div>
 
-      <VCardText class="pa-5 bg-grey-lighten-5 d-flex flex-column gap-4">
+      <VCardText class="pa-5 bg-background d-flex flex-column gap-4">
         <!-- 2. Resumen de la Factura (Cliente, RUC, Ambiente SRI, Total) -->
-        <VCard class="pa-4 rounded-lg border border-light elevation-0 bg-white">
+        <VCard class="pa-4 rounded-lg border elevation-0 bg-surface">
           <div class="d-flex justify-space-between align-center pb-2 border-b mb-2.5">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">CLIENTE</span>
-            <span class="text-body-2 font-weight-bold text-grey-darken-4 text-right text-truncate ms-2"
+            <span class="text-body-2 font-weight-bold text-high-emphasis text-right text-truncate ms-2"
               style="max-width: 330px;">
               {{ clientDisplayName }}
             </span>
@@ -342,7 +342,7 @@ const onConfirm = () => {
 
           <div v-if="vehicle" class="d-flex justify-space-between align-center pb-2 border-b mb-2.5">
             <span class="text-caption text-medium-emphasis font-weight-bold text-uppercase">VEHÍCULO</span>
-            <span class="text-body-2 font-weight-semibold text-grey-darken-3">
+            <span class="text-body-2 font-weight-semibold text-high-emphasis">
               {{ vehicle.license_plate }} ({{ getBrandNameById(vehicle.brand) }} {{ vehicle.model }})
             </span>
           </div>
@@ -357,7 +357,7 @@ const onConfirm = () => {
           </div>
 
           <div class="d-flex justify-space-between align-center pt-1">
-            <span class="text-subtitle-1 font-weight-bold text-grey-darken-3">TOTAL A FACTURAR</span>
+            <span class="text-subtitle-1 font-weight-bold text-high-emphasis">TOTAL A FACTURAR</span>
             <span class="text-h5 font-weight-black text-primary font-mono">
               ${{ Number(total || 0).toFixed(2) }}
             </span>
@@ -365,12 +365,12 @@ const onConfirm = () => {
         </VCard>
 
         <!-- 3. Sección Forma de Pago -->
-        <VCard class="pa-4 rounded-lg border border-light elevation-0 bg-white">
+        <VCard class="pa-4 rounded-lg border elevation-0 bg-surface">
           <!-- Cabecera con solo el signo de MÁS en la esquina superior derecha -->
           <div class="d-flex justify-space-between align-center mb-3">
             <div class="d-flex align-center gap-2">
               <VIcon icon="ri-wallet-3-line" size="20" color="primary" />
-              <span class="text-subtitle-1 font-weight-bold text-grey-darken-4">
+              <span class="text-subtitle-1 font-weight-bold text-high-emphasis">
                 Forma de Pago
               </span>
             </div>
@@ -397,7 +397,6 @@ const onConfirm = () => {
                   <VBtn height="36" class="font-weight-semibold text-caption text-none px-3"
                     :variant="row.payment_method === 'Efectivo' ? 'elevated' : 'outlined'"
                     :color="row.payment_method === 'Efectivo' ? 'success' : 'secondary'"
-                    :style="row.payment_method !== 'Efectivo' ? 'color: #334155 !important; border-color: #cbd5e1 !important;' : ''"
                     prepend-icon="ri-money-dollar-circle-line" @click="setRowMethod(row, 'Efectivo')">
                     Efectivo
                   </VBtn>
@@ -405,7 +404,6 @@ const onConfirm = () => {
                   <VBtn height="36" class="font-weight-semibold text-caption text-none px-3"
                     :variant="row.payment_method === 'Transferencia' ? 'elevated' : 'outlined'"
                     :color="row.payment_method === 'Transferencia' ? 'primary' : 'secondary'"
-                    :style="row.payment_method !== 'Transferencia' ? 'color: #334155 !important; border-color: #cbd5e1 !important;' : ''"
                     prepend-icon="ri-bank-line" @click="setRowMethod(row, 'Transferencia')">
                     Transferencia
                   </VBtn>
@@ -473,7 +471,7 @@ const onConfirm = () => {
       <VDivider />
 
       <!-- 5. Acciones del Footer del Sistema -->
-      <VCardActions class="pa-4 d-flex justify-end gap-3 bg-white">
+      <VCardActions class="pa-4 d-flex justify-end gap-3 bg-surface">
         <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
           class="rounded-lg px-6 font-weight-medium" height="42" :disabled="isSubmitting" @click="closeDialog">
           Cancelar
