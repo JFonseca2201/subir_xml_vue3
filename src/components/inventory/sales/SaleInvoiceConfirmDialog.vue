@@ -95,11 +95,17 @@ const initPaymentState = () => {
 
   // 1. Si ya venían pagos distribuidos del formulario principal
   if (props.paymentDistributions && props.paymentDistributions.length > 0) {
-    paymentList.value = props.paymentDistributions.map(d => ({
-      'payment_method': d['payment_method'] || 'Efectivo',
-      'account_id': d['account_id'] || (d['payment_method'] === 'Transferencia' ? getDefaultBankId() : getDefaultCashId()),
-      'amount': Number(d['amount']) || 0,
-    }))
+    paymentList.value = props.paymentDistributions.map(d => {
+      const method = (d['payment_method'] === 'Efectivo' || d['payment_method'] === 'Transferencia')
+        ? d['payment_method']
+        : null
+
+      return {
+        'payment_method': method,
+        'account_id': d['account_id'] || (method === 'Transferencia' ? getDefaultBankId() : (method === 'Efectivo' ? getDefaultCashId() : null)),
+        'amount': Number(d['amount'] !== undefined && d['amount'] !== null && d['amount'] !== '' ? d['amount'] : (props.total || 0)).toFixed(2),
+      }
+    })
 
     return
   }
@@ -110,17 +116,27 @@ const initPaymentState = () => {
     paymentList.value = [{
       'payment_method': 'Transferencia',
       'account_id': props.sale?.['account_id'] || getDefaultBankId(),
-      'amount': Number(props.total || 0),
+      'amount': Number(props.total || 0).toFixed(2),
     }]
 
     return
   }
 
-  // 3. Por defecto Efectivo por el total completo
+  if (existingMethod === 'Efectivo') {
+    paymentList.value = [{
+      'payment_method': 'Efectivo',
+      'account_id': props.sale?.['account_id'] || getDefaultCashId(),
+      'amount': Number(props.total || 0).toFixed(2),
+    }]
+
+    return
+  }
+
+  // 3. Si NO está establecida la forma de pago, NO preseleccionar Efectivo por defecto
   paymentList.value = [{
-    'payment_method': 'Efectivo',
-    'account_id': getDefaultCashId(),
-    'amount': Number(props.total || 0),
+    'payment_method': null,
+    'account_id': null,
+    'amount': Number(props.total || 0).toFixed(2),
   }]
 }
 
@@ -141,10 +157,11 @@ const setRowMethod = (row, method) => {
   } else if (method === 'Transferencia' && (!row['account_id'] || row['account_id'] === getDefaultCashId())) {
     row['account_id'] = getDefaultBankId()
   }
+  validationError.value = ''
 }
 
 const totalDistributed = computed(() => {
-  return paymentList.value.reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  return paymentList.value.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
 })
 
 const balanceDifference = computed(() => {
@@ -157,6 +174,14 @@ const isBalanced = computed(() => {
   return Math.abs(balanceDifference.value) < 0.01
 })
 
+const formatRowAmountOnBlur = row => {
+  const sanitized = String(row.amount || '').replace(',', '.')
+  const num = parseFloat(sanitized)
+
+  row.amount = isNaN(num) ? '0.00' : num.toFixed(2)
+  validationError.value = ''
+}
+
 const addPaymentRow = () => {
   validationError.value = ''
 
@@ -165,17 +190,18 @@ const addPaymentRow = () => {
   const remaining = Math.max(0, Number((tot - sumCurrent).toFixed(2)))
 
   // Si solo hay 1 fila y aún tiene el 100% del total, dividimos de forma equilibrada
-  if (paymentList.value.length === 1 && Math.abs(Number(paymentList.value[0].amount) - tot) < 0.01) {
+  if (paymentList.value.length === 1 && Math.abs(Number(parseFloat(paymentList.value[0].amount) || 0) - tot) < 0.01) {
     const half = Number((tot / 2).toFixed(2))
 
-    paymentList.value[0].amount = half
+    paymentList.value[0].amount = half.toFixed(2)
 
-    const altMethod = paymentList.value[0]['payment_method'] === 'Efectivo' ? 'Transferencia' : 'Efectivo'
+    const currentMethod = paymentList.value[0]['payment_method']
+    const altMethod = currentMethod === 'Efectivo' ? 'Transferencia' : (currentMethod === 'Transferencia' ? 'Efectivo' : null)
 
     paymentList.value.push({
       'payment_method': altMethod,
-      'account_id': altMethod === 'Transferencia' ? getDefaultBankId() : getDefaultCashId(),
-      'amount': Number((tot - half).toFixed(2)),
+      'account_id': altMethod === 'Transferencia' ? getDefaultBankId() : (altMethod === 'Efectivo' ? getDefaultCashId() : null),
+      'amount': Number((tot - half).toFixed(2)).toFixed(2),
     })
 
     return
@@ -187,7 +213,7 @@ const addPaymentRow = () => {
   paymentList.value.push({
     'payment_method': altMethod,
     'account_id': altMethod === 'Transferencia' ? getDefaultBankId() : getDefaultCashId(),
-    'amount': remaining,
+    'amount': remaining.toFixed(2),
   })
 }
 
@@ -198,16 +224,16 @@ const removePaymentRow = index => {
 
   // Si queda 1 sola fila, aseguramos que cubra el total
   if (paymentList.value.length === 1) {
-    paymentList.value[0].amount = Number(props.total || 0)
+    paymentList.value[0].amount = Number(props.total || 0).toFixed(2)
   }
 }
 
 const autoBalance = () => {
   if (paymentList.value.length === 0) return
   const lastIndex = paymentList.value.length - 1
-  const sumOthers = paymentList.value.slice(0, lastIndex).reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const sumOthers = paymentList.value.slice(0, lastIndex).reduce((s, r) => s + (parseFloat(r.amount) || 0), 0)
 
-  paymentList.value[lastIndex].amount = Math.max(0, Number((Number(props.total || 0) - sumOthers).toFixed(2)))
+  paymentList.value[lastIndex].amount = Math.max(0, Number((Number(props.total || 0) - sumOthers).toFixed(2))).toFixed(2)
   validationError.value = ''
 }
 
@@ -230,18 +256,19 @@ const onConfirm = () => {
     const label = paymentList.value.length > 1 ? `el Pago #${i + 1}` : 'el pago'
 
     if (!row['payment_method']) {
-      validationError.value = `Seleccione el método de pago para ${label}`
+      validationError.value = `Debe seleccionar una forma de pago (Efectivo o Transferencia) para ${label}`
 
       return
     }
 
     if (row['payment_method'] === 'Transferencia' && !row['account_id']) {
-      validationError.value = `Seleccione la cuenta bancaria para ${label}`
+      validationError.value = `Seleccione la cuenta bancaria de destino para ${label}`
 
       return
     }
 
-    if (Number(row['amount']) <= 0) {
+    const rowAmount = parseFloat(row['amount']) || 0
+    if (rowAmount <= 0) {
       validationError.value = `El monto de ${label} debe ser mayor a $0.00`
 
       return
@@ -250,7 +277,7 @@ const onConfirm = () => {
 
   // Si solo hay 1 fila, sincronizar su monto con el total
   if (paymentList.value.length === 1) {
-    paymentList.value[0].amount = Number(props.total || 0)
+    paymentList.value[0].amount = Number(props.total || 0).toFixed(2)
   } else if (!isBalanced.value) {
     if (balanceDifference.value > 0) {
       validationError.value = `Falta distribuir $${balanceDifference.value.toFixed(2)} del total de la factura ($${Number(props.total).toFixed(2)})`
@@ -268,7 +295,7 @@ const onConfirm = () => {
     'account_id': paymentList.value[0]?.['account_id'],
     'payment_distributions': paymentList.value.map(d => ({
       'account_id': d['account_id'],
-      'amount': Number(d['amount']),
+      'amount': Number(parseFloat(d['amount']) || 0),
       'payment_method': d['payment_method'],
     })),
   })
@@ -384,16 +411,22 @@ const onConfirm = () => {
                   </VBtn>
                 </div>
 
-                <!-- Input Monto alineado a la derecha -->
-                <div class="ms-auto flex-shrink-0" style="width: 120px;">
-                  <VTextField v-model.number="row.amount" type="number" min="0.01" step="0.01" prefix="$"
+                <!-- Input Monto alineado a la derecha con formato decimal -->
+                <div class="ms-auto flex-shrink-0" style="width: 130px;">
+                  <VTextField v-model="row.amount" type="text" inputmode="decimal" prefix="$"
                     placeholder="0.00" variant="outlined" density="compact" hide-details color="primary"
-                    class="font-mono font-weight-bold" />
+                    class="font-mono font-weight-bold" @blur="formatRowAmountOnBlur(row)" />
                 </div>
 
                 <!-- Botón Eliminar Pago inline -->
                 <VBtn v-if="paymentList.length > 1" icon="ri-delete-bin-line" variant="text" size="small" color="error"
                   title="Eliminar este pago" class="flex-shrink-0" @click="removePaymentRow(idx)" />
+              </div>
+
+              <!-- Indicador de aviso cuando aún no se ha seleccionado la forma de pago -->
+              <div v-if="!row.payment_method" class="mt-2 text-caption d-flex align-center gap-1.5" style="color: #d97706;">
+                <VIcon icon="ri-error-warning-line" size="14" color="warning" />
+                <span>Seleccione si el pago es en Efectivo o Transferencia</span>
               </div>
 
               <!-- Selector de Banco si es Transferencia con espacio amplio para la etiqueta -->
