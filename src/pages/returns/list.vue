@@ -154,7 +154,7 @@ const formatDate = dateString => {
     const parts = cleanDate.split('-')
     if (parts.length === 3) {
       const [year, month, day] = parts
-      
+
       return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`
     }
 
@@ -163,13 +163,13 @@ const formatDate = dateString => {
       const day = String(d.getDate()).padStart(2, '0')
       const month = String(d.getMonth() + 1).padStart(2, '0')
       const year = d.getFullYear()
-      
+
       return `${year}/${month}/${day}`
     }
   } catch (e) {
     console.error('Error formatting date:', e)
   }
-  
+
   return dateString
 }
 
@@ -226,7 +226,7 @@ onMounted(() => {
 onActivated(() => {
   if (isFirstActivation) {
     isFirstActivation = false
-    
+
     return
   }
   loadReturns()
@@ -239,17 +239,8 @@ onActivated(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar
-            size="42"
-            color="error"
-            variant="tonal"
-            rounded="lg"
-            class="me-3"
-          >
-            <VIcon
-              icon="ri-arrow-go-back-line"
-              size="26"
-            />
+          <VAvatar size="42" color="error" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-arrow-go-back-line" size="26" />
           </VAvatar>
           Devoluciones y Reembolsos
         </h1>
@@ -259,65 +250,35 @@ onActivated(() => {
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/returns/add"
-          size="default"
-          class="elevation-1 font-weight-bold"
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/returns/add" size="default"
+          class="elevation-1 font-weight-bold">
           Nueva Devolución
         </VBtn>
       </div>
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow
-      class="mb-4 d-none d-sm-flex"
-      dense
-    >
-      <VCol
-        cols="12"
-        sm="4"
-      >
+    <VRow class="mb-4 d-none d-sm-flex" dense>
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-file-list-3-line"
-              size="24"
-            />
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+            <VIcon icon="ri-file-list-3-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
               Total Devoluciones
             </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
-              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en historial</span>
+              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en historial</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="error"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-money-dollar-circle-line"
-              size="24"
-            />
+          <VAvatar size="46" color="error" variant="tonal" rounded="lg">
+            <VIcon icon="ri-money-dollar-circle-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
@@ -330,28 +291,18 @@ onActivated(() => {
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="warning"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-restart-line"
-              size="24"
-            />
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+            <VIcon icon="ri-restart-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
               Devoluciones Totales
             </div>
             <div class="text-h6 font-weight-bold text-warning">
-              {{ totalReturnsTypeCount }} <span class="text-caption text-disabled font-weight-regular">anulación total</span>
+              {{ totalReturnsTypeCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp; anulación
+                total</span>
             </div>
           </div>
         </VCard>
@@ -363,147 +314,61 @@ onActivated(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon
-              icon="ri-filter-3-line"
-              size="18"
-              color="primary"
-            />
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
             <span>Filtros de Devoluciones</span>
           </div>
 
-          <VBtn
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn variant="text" color="error" size="small" prepend-icon="ri-filter-off-line" class="font-weight-semibold"
+            @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
-        <VRow
-          dense
-          class="gap-y-3"
-        >
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="searchForm.search"
-              label="Buscar devolución"
-              placeholder="Número de devolución, venta original o motivo..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="loading"
-              @click:clear="clearSearch"
-            />
+        <VRow dense class="gap-y-3">
+          <VCol cols="12" md="6">
+            <VTextField v-model="searchForm.search" label="Buscar devolución"
+              placeholder="Número de devolución, venta original o motivo..." prepend-inner-icon="ri-search-2-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" :loading="loading"
+              @click:clear="clearSearch" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="2"
-          >
-            <VSelect
-              v-model="searchForm.type"
-              :items="typeOptions"
-              item-title="title"
-              item-value="value"
-              label="Tipo de Devolución"
-              placeholder="Todos los tipos"
-              prepend-inner-icon="ri-toggle-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="6" md="2">
+            <VSelect v-model="searchForm.type" :items="typeOptions" item-title="title" item-value="value"
+              label="Tipo de Devolución" placeholder="Todos los tipos" prepend-inner-icon="ri-toggle-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="2"
-          >
-            <VTextField
-              v-model="searchForm.start_date"
-              type="date"
-              label="Desde"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="6" md="2">
+            <VTextField v-model="searchForm.start_date" type="date" label="Desde" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="2"
-          >
-            <VTextField
-              v-model="searchForm.end_date"
-              type="date"
-              label="Hasta"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="6" md="2">
+            <VTextField v-model="searchForm.end_date" type="date" label="Hasta" variant="outlined" density="comfortable"
+              hide-details="auto" clearable color="primary" />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay devoluciones) -->
-    <VCard
-      v-if="!loading && isInitialLoadDone && (!returns || returns.length === 0)"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
-      <VAvatar
-        size="76"
-        color="primary"
-        variant="tonal"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-arrow-go-back-line"
-        />
+    <VCard v-if="!loading && isInitialLoadDone && (!returns || returns.length === 0)"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-arrow-go-back-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron devoluciones
       </h3>
-      <p
-        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
-        style="max-width: 480px;"
-      >
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
         Intenta ajustar los criterios de búsqueda o emite una nueva devolución para reintegrar productos.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn
-          v-if="hasActiveFilters"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          @click="resetFilters"
-        >
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/returns/add"
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/returns/add">
           Nueva Devolución
         </VBtn>
       </div>
@@ -515,185 +380,114 @@ onActivated(() => {
       <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="loading">
-          <VCard
-            v-for="n in 4"
-            :key="'mob-skel-ret-' + n"
-            class="mobile-return-card elevation-0 pa-4"
-          >
+          <VCard v-for="n in 4" :key="'mob-skel-ret-' + n" class="mobile-return-card elevation-0 pa-4">
             <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-              <div
-                class="shimmer-line"
-                style="width: 90px; height: 16px;"
-              />
+              <div class="shimmer-line" style="width: 90px; height: 16px;" />
               <div class="d-flex gap-1">
-                <div
-                  class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
-                />
-                <div
-                  class="shimmer-button rounded"
-                  style="width: 28px; height: 28px;"
-                />
+                <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
+                <div class="shimmer-button rounded" style="width: 28px; height: 28px;" />
               </div>
             </div>
-            <div
-              class="shimmer-line w-50 mb-2"
-              style="height: 14px;"
-            />
-            <div
-              class="shimmer-line w-100 mb-2"
-              style="height: 18px;"
-            />
+            <div class="shimmer-line w-50 mb-2" style="height: 14px;" />
+            <div class="shimmer-line w-100 mb-2" style="height: 18px;" />
             <div class="d-flex justify-space-between pt-2 border-t">
-              <div
-                class="shimmer-line"
-                style="width: 80px; height: 16px;"
-              />
-              <div
-                class="shimmer-chip"
-                style="width: 60px; height: 24px;"
-              />
+              <div class="shimmer-line" style="width: 80px; height: 16px;" />
+              <div class="shimmer-chip" style="width: 60px; height: 24px;" />
             </div>
           </VCard>
         </template>
 
         <!-- Tarjetas reales de devoluciones -->
         <template v-else>
-          <VCard
-            v-for="(item, index) in returns"
-            :key="'mob-ret-' + (item?.id || index)"
-            class="mobile-return-card elevation-0"
-          >
-          <!-- Cabecera Móvil: N° Devolución + Fecha + Acciones Rápidas -->
-          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
-            <div class="d-flex align-center gap-2 min-w-0">
-              <span
-                class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
-                @click="viewReturn(item)"
-              >
-                {{ item.return_number }}
-              </span>
-              <span class="text-caption text-disabled">•</span>
-              <span class="text-caption text-medium-emphasis text-no-wrap">
-                {{ formatDate(item.created_at || item.date) }}
-              </span>
+          <VCard v-for="(item, index) in returns" :key="'mob-ret-' + (item?.id || index)"
+            class="mobile-return-card elevation-0">
+            <!-- Cabecera Móvil: N° Devolución + Fecha + Acciones Rápidas -->
+            <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
+              <div class="d-flex align-center gap-2 min-w-0">
+                <span class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
+                  @click="viewReturn(item)">
+                  {{ item.return_number }}
+                </span>
+                <span class="text-caption text-disabled">•</span>
+                <span class="text-caption text-medium-emphasis text-no-wrap">
+                  {{ formatDate(item.created_at || item.date) }}
+                </span>
+              </div>
+
+              <!-- Botones de Acción Móvil -->
+              <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
+                <VBtn size="x-small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
+                  @click="viewReturn(item)" />
+                <VBtn size="x-small" color="error" variant="tonal" icon="ri-delete-bin-line" title="Eliminar Devolución"
+                  @click="deleteReturn(item)" />
+              </div>
             </div>
 
-            <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
-              <VBtn
-                size="x-small"
-                color="info"
-                variant="tonal"
-                icon="ri-eye-line"
-                title="Ver Detalle"
-                @click="viewReturn(item)"
-              />
-              <VBtn
-                size="x-small"
-                color="error"
-                variant="tonal"
-                icon="ri-delete-bin-line"
-                title="Eliminar Devolución"
-                @click="deleteReturn(item)"
-              />
-            </div>
-          </div>
-
-          <!-- Venta Origen y Motivo -->
-          <div class="mb-2">
-            <div
-              v-if="item.sale?.document_number"
-              class="text-caption text-medium-emphasis mb-1"
-            >
-              Venta Origen: <strong class="font-mono text-high-emphasis">{{ item.sale.document_number }}</strong>
-            </div>
-            <div class="text-body-2 text-high-emphasis">
-              {{ item.reason || 'Sin motivo especificado' }}
-            </div>
-          </div>
-
-          <!-- Pie Móvil: Total Reembolsado y Tipo -->
-          <div class="d-flex align-center justify-space-between pt-1.5 border-t">
-            <div>
-              <span class="text-caption text-disabled me-1">Reembolso:</span>
-              <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
-                {{ formatCurrency(item.refund_amount) }}
-              </span>
+            <!-- Venta Origen y Motivo -->
+            <div class="mb-2">
+              <div v-if="item.sale?.document_number" class="text-caption text-medium-emphasis mb-1">
+                Venta Origen: <strong class="font-mono text-high-emphasis">{{ item.sale.document_number }}</strong>
+              </div>
+              <div class="text-body-2 text-high-emphasis">
+                {{ item.reason || 'Sin motivo especificado' }}
+              </div>
             </div>
 
-            <VChip
-              :color="item.type === 'total' ? 'error' : 'warning'"
-              variant="tonal"
-              size="small"
-              class="font-weight-semibold text-uppercase"
-            >
-              {{ item.type === 'total' ? 'Total' : 'Parcial' }}
-            </VChip>
-          </div>
-        </VCard>
+            <!-- Pie Móvil: Total Reembolsado y Tipo -->
+            <div class="d-flex align-center justify-space-between pt-1.5 border-t">
+              <div>
+                <span class="text-caption text-disabled me-1">Reembolso:</span>
+                <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
+                  {{ formatCurrency(item.refund_amount) }}
+                </span>
+              </div>
+
+              <VChip :color="item.type === 'total' ? 'error' : 'warning'" variant="tonal" size="small"
+                class="font-weight-semibold text-uppercase">
+                {{ item.type === 'total' ? 'Total' : 'Parcial' }}
+              </VChip>
+            </div>
+          </VCard>
         </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable
-          hover
-          class="returns-modern-table overflow-x-auto"
-        >
+        <VTable hover class="returns-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 150px; min-width: 140px; white-space: nowrap;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Devolución
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 150px; min-width: 140px; white-space: nowrap;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 150px; min-width: 140px; white-space: nowrap;">
                 Venta Orig.
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 145px; min-width: 140px; white-space: nowrap;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 260px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 260px;">
                 Motivo / Causa
               </th>
-              <th
-                class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 110px; min-width: 100px; white-space: nowrap;"
-              >
+              <th class="text-right font-weight-bold text-uppercase py-3"
+                style="width: 110px; min-width: 100px; white-space: nowrap;">
                 Reembolso
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 130px; min-width: 120px; white-space: nowrap;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Tipo
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 130px; min-width: 120px; white-space: nowrap;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3"
+                style="width: 130px; min-width: 120px; white-space: nowrap;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
             <template v-if="loading">
-              <tr
-                v-for="n in 5"
-                :key="'skel-ret-row-' + n"
-                class="skeleton-row align-middle"
-              >
+              <tr v-for="n in 5" :key="'skel-ret-row-' + n" class="skeleton-row align-middle">
                 <td class="py-4" style="width: 150px;">
                   <div class="shimmer-line" style="width: 90px; height: 16px;" />
                 </td>
@@ -721,95 +515,53 @@ onActivated(() => {
               </tr>
             </template>
             <template v-else>
-              <tr
-                v-for="(item, index) in returns"
-                :key="item?.id || index"
-                class="return-table-row"
-              >
+              <tr v-for="(item, index) in returns" :key="item?.id || index" class="return-table-row">
                 <!-- N° Devolución -->
-                <td
-                  class="py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
-                    @click="viewReturn(item)"
-                  >
+                <td class="py-3" style="white-space: nowrap;">
+                  <div class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1"
+                    @click="viewReturn(item)">
                     {{ item.return_number }}
                   </div>
                 </td>
 
                 <!-- Venta Origen -->
-                <td
-                  class="py-3"
-                  style="white-space: nowrap;"
-                >
-                  <span
-                    v-if="item.sale?.document_number"
-                    class="font-mono font-weight-semibold text-high-emphasis text-body-2"
-                  >
+                <td class="py-3" style="white-space: nowrap;">
+                  <span v-if="item.sale?.document_number"
+                    class="font-mono font-weight-semibold text-high-emphasis text-body-2">
                     {{ item.sale.document_number }}
                   </span>
-                  <span
-                    v-else
-                    class="text-disabled"
-                  >—</span>
+                  <span v-else class="text-disabled">—</span>
                 </td>
 
                 <!-- Fecha -->
-                <td
-                  class="py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
-                    style="white-space: nowrap;"
-                  >
-                    <VIcon
-                      icon="ri-calendar-line"
-                      size="16"
-                      color="medium-emphasis"
-                      class="me-1 flex-shrink-0"
-                    />
-                    <span
-                      class="text-no-wrap font-weight-medium"
-                      style="white-space: nowrap;"
-                    >{{ formatDate(item.created_at || item.date) }}</span>
+                <td class="py-3" style="white-space: nowrap;">
+                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                    style="white-space: nowrap;">
+                    <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                    <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
+                      formatDate(item.created_at || item.date) }}</span>
                   </div>
                 </td>
 
                 <!-- Motivo -->
                 <td class="py-3">
-                  <div
-                    class="text-body-2 text-high-emphasis text-truncate"
-                    style="max-width: 280px;"
-                    :title="item.reason"
-                  >
+                  <div class="text-body-2 text-high-emphasis text-truncate" style="max-width: 280px;"
+                    :title="item.reason">
                     {{ item.reason || 'Sin motivo especificado' }}
                   </div>
                 </td>
 
                 <!-- Reembolso -->
-                <td
-                  class="text-right py-3"
-                  style="white-space: nowrap;"
-                >
+                <td class="text-right py-3" style="white-space: nowrap;">
                   <span class="font-mono font-weight-bold text-body-1 text-high-emphasis">
                     {{ formatCurrency(item.refund_amount) }}
                   </span>
                 </td>
 
                 <!-- Tipo -->
-                <td
-                  class="text-center py-3"
-                  style="white-space: nowrap;"
-                >
-                  <VChip
-                    :color="item.type === 'total' ? 'error' : 'warning'"
-                    variant="tonal"
-                    size="small"
-                    class="font-weight-semibold text-uppercase"
-                  >
+                <td class="text-center py-3" style="white-space: nowrap;">
+                  <VChip :color="item.type === 'total' ? 'error' : 'warning'" variant="tonal" size="small"
+                    class="font-weight-semibold text-uppercase">
                     {{ item.type === 'total' ? 'Total' : 'Parcial' }}
                   </VChip>
                 </td>
@@ -818,24 +570,12 @@ onActivated(() => {
                 <td class="text-center py-3">
                   <div class="d-flex justify-center align-center gap-1">
                     <!-- Ver detalle -->
-                    <VBtn
-                      size="small"
-                      color="info"
-                      variant="tonal"
-                      icon="ri-eye-line"
-                      title="Ver Detalle"
-                      @click="viewReturn(item)"
-                    />
+                    <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Detalle"
+                      @click="viewReturn(item)" />
 
                     <!-- Eliminar -->
-                    <VBtn
-                      size="small"
-                      color="error"
-                      variant="tonal"
-                      icon="ri-delete-bin-line"
-                      title="Eliminar Devolución"
-                      @click="deleteReturn(item)"
-                    />
+                    <VBtn size="small" color="error" variant="tonal" icon="ri-delete-bin-line"
+                      title="Eliminar Devolución" @click="deleteReturn(item)" />
                   </div>
                 </td>
               </tr>
@@ -845,45 +585,27 @@ onActivated(() => {
       </VCard>
 
       <!-- Paginación -->
-      <VCard
-        v-if="totalPages > 0"
-        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
-      >
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+      <VCard v-if="totalPages > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div
+          class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ returns.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> devoluciones
+            Mostrando <strong class="text-high-emphasis">{{ returns.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> devoluciones
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            :disabled="loading"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" :disabled="loading" rounded="circle"
+            :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable" color="primary" class="my-0" />
         </div>
       </VCard>
     </div>
 
     <!-- Dialog de Detalles de Devolución -->
-    <VDialog
-      v-model="isViewDialogVisible"
-      scrollable
-      max-width="700"
-    >
+    <VDialog v-model="isViewDialogVisible" scrollable max-width="700">
       <VCard class="custom-dialog-card">
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn"
-            @click="isViewDialogVisible = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            @click="isViewDialogVisible = false" />
           <div class="custom-dialog-avatar">
             <VIcon icon="ri-loop-right-line" />
           </div>
@@ -894,43 +616,26 @@ onActivated(() => {
             Información de la devolución e ítems reintegrados al inventario
           </p>
         </div>
-        
+
         <VCardText class="pa-4">
-          <div
-            v-if="viewLoading"
-            class="text-center py-6"
-          >
-            <VProgressCircular
-              indeterminate
-              color="primary"
-              size="40"
-            />
+          <div v-if="viewLoading" class="text-center py-6">
+            <VProgressCircular indeterminate color="primary" size="40" />
             <div class="mt-2 text-medium-emphasis">
               Cargando detalles...
             </div>
           </div>
           <div v-else-if="selectedReturn">
             <VRow class="mb-4">
-              <VCol
-                cols="12"
-                sm="6"
-              >
+              <VCol cols="12" sm="6">
                 <div class="text-caption text-grey mb-1">
                   Fecha de Registro
                 </div>
                 <div class="text-body-1 font-weight-medium d-flex align-center">
-                  <VIcon
-                    icon="ri-calendar-line"
-                    size="16"
-                    class="me-1 text-grey"
-                  />
+                  <VIcon icon="ri-calendar-line" size="16" class="me-1 text-grey" />
                   {{ formatDate(selectedReturn.created_at) }}
                 </div>
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
+              <VCol cols="12" sm="6">
                 <div class="text-caption text-grey mb-1">
                   Venta Asociada
                 </div>
@@ -938,37 +643,23 @@ onActivated(() => {
                   {{ selectedReturn.sale?.document_number || 'N/A' }}
                 </div>
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
+              <VCol cols="12" sm="6">
                 <div class="text-caption text-grey mb-1">
                   Tipo de Devolución
                 </div>
                 <div>
-                  <VChip
-                    :color="selectedReturn.type === 'total' ? 'primary' : 'warning'"
-                    size="small"
-                    label
-                    class="font-weight-bold"
-                  >
+                  <VChip :color="selectedReturn.type === 'total' ? 'primary' : 'warning'" size="small" label
+                    class="font-weight-bold">
                     {{ selectedReturn.type === 'total' ? 'Total' : 'Parcial' }}
                   </VChip>
                 </div>
               </VCol>
-              <VCol
-                cols="12"
-                sm="6"
-              >
+              <VCol cols="12" sm="6">
                 <div class="text-caption text-grey mb-1">
                   Registrado por
                 </div>
                 <div class="text-body-1 font-weight-medium d-flex align-center">
-                  <VIcon
-                    icon="ri-user-line"
-                    size="16"
-                    class="me-1 text-grey"
-                  />
+                  <VIcon icon="ri-user-line" size="16" class="me-1 text-grey" />
                   {{ selectedReturn.user?.name || 'N/A' }}
                 </div>
               </VCol>
@@ -976,10 +667,8 @@ onActivated(() => {
                 <div class="text-caption text-grey mb-1">
                   Motivo de la Devolución
                 </div>
-                <div
-                  class="text-body-1 font-weight-medium bg-grey-lighten-4 pa-3 rounded-lg text-uppercase"
-                  style="border: 1px dashed #cbd5e1;"
-                >
+                <div class="text-body-1 font-weight-medium bg-grey-lighten-4 pa-3 rounded-lg text-uppercase"
+                  style="border: 1px dashed #cbd5e1;">
                   {{ selectedReturn.reason }}
                 </div>
               </VCol>
@@ -988,48 +677,30 @@ onActivated(() => {
             <VDivider class="my-4" />
 
             <div class="text-subtitle-1 font-weight-bold mb-3 d-flex align-center gap-2">
-              <VIcon
-                icon="ri-list-check"
-                color="primary"
-              />
+              <VIcon icon="ri-list-check" color="primary" />
               <span>Productos Devueltos</span>
             </div>
-            
-            <div
-              v-if="selectedReturn.details && selectedReturn.details.length > 0"
-              class="return-items-table-wrap"
-            >
+
+            <div v-if="selectedReturn.details && selectedReturn.details.length > 0" class="return-items-table-wrap">
               <VTable class="return-items-table">
                 <thead>
                   <tr>
                     <th class="text-uppercase text-caption font-weight-bold">
                       Descripción
                     </th>
-                    <th
-                      class="text-center text-uppercase text-caption font-weight-bold"
-                      style="width: 100px;"
-                    >
+                    <th class="text-center text-uppercase text-caption font-weight-bold" style="width: 100px;">
                       Cant.
                     </th>
-                    <th
-                      class="text-right text-uppercase text-caption font-weight-bold"
-                      style="width: 120px;"
-                    >
+                    <th class="text-right text-uppercase text-caption font-weight-bold" style="width: 120px;">
                       Precio Unit.
                     </th>
-                    <th
-                      class="text-right text-uppercase text-caption font-weight-bold"
-                      style="width: 120px;"
-                    >
+                    <th class="text-right text-uppercase text-caption font-weight-bold" style="width: 120px;">
                       Total
                     </th>
                   </tr>
                 </thead>
                 <tbody style="text-transform: uppercase;">
-                  <tr
-                    v-for="item in selectedReturn.details"
-                    :key="item.id"
-                  >
+                  <tr v-for="item in selectedReturn.details" :key="item.id">
                     <td>{{ item.description }}</td>
                     <td class="text-center font-weight-semibold">
                       {{ item.quantity }}
@@ -1044,10 +715,7 @@ onActivated(() => {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td
-                      colspan="3"
-                      class="text-right font-weight-bold text-subtitle-1"
-                    >
+                    <td colspan="3" class="text-right font-weight-bold text-subtitle-1">
                       Monto de Reembolso:
                     </td>
                     <td class="text-right font-weight-bold text-subtitle-1 text-error">
@@ -1057,27 +725,16 @@ onActivated(() => {
                 </tfoot>
               </VTable>
             </div>
-            <p
-              v-else
-              class="text-body-2 text-grey text-center py-4"
-            >
+            <p v-else class="text-body-2 text-grey text-center py-4">
               No hay ítems registrados en esta devolución.
             </p>
           </div>
         </VCardText>
         <VDivider />
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            @click="isViewDialogVisible = false"
-          >
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium" height="40" @click="isViewDialogVisible = false">
             Cerrar
           </VBtn>
         </VCardActions>
@@ -1085,22 +742,12 @@ onActivated(() => {
     </VDialog>
 
     <!-- Dialog de Confirmación de Eliminación -->
-    <VDialog
-      v-model="showDeleteDialog"
-      scrollable
-      max-width="500"
-    >
+    <VDialog v-model="showDeleteDialog" scrollable max-width="500">
       <VCard class="custom-dialog-card">
         <!-- Header Banner Primary -->
         <div class="custom-dialog-header-primary">
-          <VBtn
-            icon="ri-close-line"
-            variant="text"
-            size="small"
-            class="custom-dialog-close-btn"
-            :disabled="deleteLoading"
-            @click="showDeleteDialog = false"
-          />
+          <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn"
+            :disabled="deleteLoading" @click="showDeleteDialog = false" />
           <div class="custom-dialog-avatar">
             <VIcon icon="ri-delete-bin-line" />
           </div>
@@ -1120,30 +767,15 @@ onActivated(() => {
           </p>
         </VCardText>
         <VDivider />
-        <VCardActions
-          class="pa-4 d-flex justify-end align-center gap-3 bg-white"
-          style="position: sticky; bottom: 0; z-index: 2;"
-        >
-          <VBtn
-            color="secondary"
-            variant="outlined"
-            prepend-icon="ri-close-line"
-            class="rounded-lg px-6 font-weight-medium"
-            height="40"
-            :disabled="deleteLoading"
-            @click="showDeleteDialog = false"
-          >
+        <VCardActions class="pa-4 d-flex justify-end align-center gap-3 bg-white"
+          style="position: sticky; bottom: 0; z-index: 2;">
+          <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+            class="rounded-lg px-6 font-weight-medium" height="40" :disabled="deleteLoading"
+            @click="showDeleteDialog = false">
             Cancelar
           </VBtn>
-          <VBtn
-            color="error"
-            variant="elevated"
-            prepend-icon="ri-delete-bin-line"
-            class="rounded-lg px-6 font-weight-bold"
-            height="40"
-            :loading="deleteLoading"
-            @click="confirmDeleteReturn"
-          >
+          <VBtn color="error" variant="elevated" prepend-icon="ri-delete-bin-line"
+            class="rounded-lg px-6 font-weight-bold" height="40" :loading="deleteLoading" @click="confirmDeleteReturn">
             Eliminar
           </VBtn>
         </VCardActions>
@@ -1165,6 +797,7 @@ onActivated(() => {
 
 .return-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }
@@ -1217,6 +850,7 @@ onActivated(() => {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

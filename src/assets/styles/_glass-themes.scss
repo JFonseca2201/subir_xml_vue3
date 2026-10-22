@@ -109,6 +109,39 @@ $glass-themes: (
     'dialog-avatar-border': rgba(255, 255, 255, 0.35),
     'dialog-avatar-shadow': "0 8px 20px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
   ),
+  'taller': (
+    'name': 'taller',
+    'is-dark': false,
+    'bg-app': #f4f6f9,
+    'bg-surface': #ffffff,
+    'bg-sidebar': "linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
+    'bg-header': "linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
+    'bg-dialog': #ffffff,
+    'bg-active-item': #ffffff,
+    'bg-hover-item': rgba(255, 255, 255, 0.16),
+    'border-active': rgba(255, 255, 255, 0.90),
+    'text-active': #7A102B,
+    'text-primary': #0f172a,
+    'text-secondary': #334155,
+    'text-muted': #64748b,
+    'icon-color': #ffffff,
+    'border-glass': rgba(226, 232, 240, 0.90),
+    'input-bg': #ffffff,
+    'input-border': #cbd5e1,
+    'table-header-bg': #f8fafc,
+    'table-row-even-bg': #ffffff,
+    'table-row-hover-bg': rgba(138, 21, 56, 0.04),
+    'blur-glass': "none",
+    'shadow-glass': "0 2px 8px rgba(15, 23, 42, 0.05)",
+    'shadow-glow': "0 0 20px rgba(138, 21, 56, 0.20)",
+    'skeleton-gradient': "linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%)",
+    'bg-dialog-header': "linear-gradient(135deg, #8A1538 0%, #600A1F 100%)",
+    'border-dialog-header': rgba(255, 255, 255, 0.20),
+    'dialog-header-glow': "radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%)",
+    'dialog-avatar-bg': rgba(255, 255, 255, 0.20),
+    'dialog-avatar-border': rgba(255, 255, 255, 0.40),
+    'dialog-avatar-shadow': "0 8px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
+  ),
 );
 
 // --------------------------------------------------------------------------
@@ -164,6 +197,7 @@ $glass-themes: (
 // --------------------------------------------------------------------------
 @mixin apply-glass-theme-rules($theme) {
   $is-dark: map-get($theme, 'is-dark');
+  $theme-name: map-get($theme, 'name');
 
   // A. FONDO GENERAL DE LA APLICACIÓN
   html,
@@ -225,14 +259,15 @@ $glass-themes: (
 
     .nav-link a,
     .nav-group-label {
-      color: var(--text-secondary) !important;
+      color: if($theme-name == 'taller', #ffffff, var(--text-secondary)) !important;
       background: transparent !important;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       .nav-item-icon,
       .nav-item-title,
       .nav-group-arrow {
-        color: var(--text-secondary) !important;
+        color: if($theme-name == 'taller', #ffffff, var(--text-secondary)) !important;
+        fill: if($theme-name == 'taller', #ffffff, currentColor) !important;
       }
 
       // Hover no seleccionado
@@ -679,22 +714,28 @@ $glass-themes: (
     letter-spacing: 0.3px !important;
     transition: all 0.2s ease !important;
 
-    // Botones primarios (violeta / morado destacado con glow sutil)
+    // Botones primarios
+    $btn-primary-bg: if(map-get($theme, 'name') == 'taller', linear-gradient(135deg, #8A1538 0%, #600A1F 100%), linear-gradient(135deg, #7367F0 0%, #5E50EE 100%));
+    $btn-primary-shadow: if(map-get($theme, 'name') == 'taller', 0 4px 16px rgba(138, 21, 56, 0.45), 0 4px 16px rgba(115, 103, 240, 0.4));
+    $btn-primary-hover-bg: if(map-get($theme, 'name') == 'taller', linear-gradient(135deg, #A31842 0%, #720C25 100%), linear-gradient(135deg, #8176f2 0%, #685cf0 100%));
+    $btn-primary-hover-shadow: if(map-get($theme, 'name') == 'taller', 0 6px 20px rgba(138, 21, 56, 0.6), 0 6px 20px rgba(115, 103, 240, 0.55));
+
     &.bg-primary,
     &.v-btn--variant-elevated.v-btn--color-primary,
+    &.v-btn--variant-flat.v-btn--color-primary,
     &[class*="primary"]:not(.v-btn--variant-tonal):not(.v-btn--variant-outlined):not(.v-btn--variant-text) {
-      background: linear-gradient(135deg, #7367F0 0%, #5E50EE 100%) !important;
+      background: $btn-primary-bg !important;
       color: #ffffff !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      box-shadow: 0 4px 16px rgba(115, 103, 240, 0.4) !important;
+      box-shadow: $btn-primary-shadow !important;
 
       * {
         color: #ffffff !important;
       }
 
       &:hover {
-        background: linear-gradient(135deg, #8176f2 0%, #685cf0 100%) !important;
-        box-shadow: 0 6px 20px rgba(115, 103, 240, 0.55) !important;
+        background: $btn-primary-hover-bg !important;
+        box-shadow: $btn-primary-hover-shadow !important;
         transform: translateY(-1px);
       }
     }
@@ -1908,7 +1949,7 @@ $glass-themes: (
     .text-grey-darken-1 {
       color: var(--text-secondary) !important;
     }
-  } @else {
+  } @else if ($theme-name == 'light-glass') {
     // ====================================================================
     // TEMA CLARO TRASLÚCIDO (light-glass):
     // Fondo pastel suave con texto oscuro/fuerte de alto contraste
@@ -3706,5 +3747,806 @@ body[data-theme="semi-dark-glass"],
     }
   }
 }
+
+// --------------------------------------------------------------------------
+// 9. TEMA OFICIAL DEL TALLER (taller) - LUXURY EVYS
+// Colores del taller: Rojo Vino (#8A1538), Blanco (#FFFFFF) y Gris Medio Azulado (#475569 / #E2E8F0)
+// Arquitectura gemela al tema por defecto del sistema (Light), cambiando el azul por Rojo Vino:
+//   - Barra superior (Navbar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
+//   - Barra lateral (Sidebar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
+//   - Ítem de navegación activo: Píldora blanca pura (#FFFFFF) con letras e icono rojo vino (#7A102B)
+//   - Fondo del área de trabajo: Claro y luminoso (#F4F6F9)
+//   - Tarjetas, paneles, tablas y modales: Blanco puro (#FFFFFF) con bordes suaves (#E2E8F0)
+//   - Textos en tarjetas y tablas: Negro / Slate carbón (#0F172A) con contraste absoluto y nitidez total
+//   - Botones primarios: Rojo vino con texto blanco
+//   - Botones secundarios / outlined: Contorno rojo vino con texto rojo vino
+// Optimizado para 3 escalas: Laptops, Tablets y Celulares pequeños
+// --------------------------------------------------------------------------
+.v-theme--taller,
+[data-theme="taller"],
+body[data-theme="taller"],
+.theme-taller {
+  // Variables maestras del tema Taller
+  --theme-wine: #8A1538;
+  --theme-wine-dark: #58081C;
+  --theme-wine-glow: rgba(138, 21, 56, 0.35);
+  --theme-slate-border: #E2E8F0;
+  --theme-white: #FFFFFF;
+  --theme-black: #0F172A;
+
+  // ⚡ TOKENS DE COLOR VUETIFY - Sobrescritura del color primario a rojo vino
+  // Esto hace que TODOS los componentes Vuetify con color="primary" usen el rojo vino
+  --v-theme-primary: 138, 21, 56;
+  --v-theme-on-primary: 255, 255, 255;
+  --v-theme-primary-darken-1: 107, 14, 39;
+
+  // Fondo luminoso y claro del área de trabajo (no oscuro)
+  background: #f4f6f9 !important;
+  color: #0f172a !important;
+
+  // 1. TOP NAVBAR SUPERIOR: ROJO VINO SÓLIDO (Idéntico a la barra azul del tema predeterminado)
+  .layout-navbar,
+  .v-app-bar {
+    background: linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 20px rgba(138, 21, 56, 0.28) !important;
+
+    .navbar-brand-title {
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      letter-spacing: 0.05em !important;
+    }
+
+    .navbar-brand-subtitle {
+      color: rgba(255, 255, 255, 0.90) !important;
+    }
+
+    .navbar-hamburger-btn {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+
+      .v-icon {
+        color: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+      }
+    }
+
+    .v-icon,
+    .v-btn,
+    .v-btn__content,
+    .icon-btn,
+    .IconBtn,
+    button {
+      color: #ffffff !important;
+
+      i, svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+    }
+
+    .theme-switcher-btn {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border: 1px solid rgba(255, 255, 255, 0.22) !important;
+      color: #ffffff !important;
+
+      .v-icon, i, svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.22) !important;
+      }
+    }
+  }
+
+  // 2. BARRA LATERAL (SIDEBAR): ROJO VINO SÓLIDO (Idéntica a la barra azul del tema predeterminado)
+  .layout-vertical-nav,
+  .v-navigation-drawer,
+  .sidebar {
+    background: linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 4px 0 28px rgba(138, 21, 56, 0.25) !important;
+
+    // Encabezados de sección (COMERCIAL, FINANZAS, SERVICIOS, INVENTARIO, ADMINISTRACIÓN)
+    .nav-section-title {
+      .title-text {
+        color: #ffffff !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.5px !important;
+        text-transform: uppercase !important;
+        font-size: 0.92rem !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        opacity: 1 !important;
+
+        &::before,
+        &::after {
+          border-block-end: 2px solid rgba(255, 255, 255, 0.55) !important;
+          content: "";
+        }
+      }
+    }
+
+    // Enlaces normales y grupos en el sidebar (blanco puro de alta visibilidad)
+    .nav-items .nav-link a,
+    .nav-items .nav-link > a,
+    .nav-items .nav-link .nav-item-icon,
+    .nav-items .nav-link .nav-item-title,
+    .nav-link a,
+    .nav-link > a,
+    .nav-group-label,
+    .nav-group > .nav-group-label,
+    .nav-group.active > .nav-group-label,
+    .nav-group.open > .nav-group-label,
+    .nav-group.active.open > .nav-group-label,
+    .nav-group-children .nav-link a {
+      color: #ffffff !important;
+      opacity: 1 !important;
+
+      &,
+      .nav-item-icon,
+      .nav-item-title,
+      .nav-group-arrow,
+      .v-icon,
+      i,
+      svg,
+      span {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.18) !important;
+        color: #ffffff !important;
+        transform: translateX(3px);
+
+        * {
+          color: #ffffff !important;
+          fill: #ffffff !important;
+        }
+      }
+    }
+
+    // Submenús desplegados
+    .nav-group-children {
+      border-left: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+
+      .nav-link a {
+        color: #ffffff !important;
+
+        .nav-item-icon,
+        .nav-item-title {
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    // 🌟 ÍTEM SELECCIONADO / ACTIVO: PÍLDORA BLANCA NÍTIDA CON TEXTO E ÍCONO ROJO VINO
+    .nav-link > a.router-link-active,
+    .nav-link > a.router-link-exact-active,
+    .nav-link.router-link-active > a,
+    .nav-link.router-link-exact-active > a {
+      background: #ffffff !important;
+      color: #7A102B !important;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+      border-radius: 8px !important;
+      transform: translateX(3px);
+
+      &,
+      * {
+        color: #7A102B !important;
+      }
+
+      .nav-item-icon,
+      .v-icon,
+      i,
+      svg {
+        color: #7A102B !important;
+        fill: #7A102B !important;
+        font-size: 1.35rem;
+      }
+
+      .nav-item-title {
+        color: #7A102B !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem;
+        letter-spacing: 0.15px;
+      }
+
+      .nav-item-badge {
+        background-color: #7A102B !important;
+        color: #ffffff !important;
+      }
+    }
+
+    // Pie de barra lateral (botón colapsar)
+    .sidebar-collapse-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+      .sidebar-footer-toggle-btn {
+        color: rgba(255, 255, 255, 0.70) !important;
+
+        &:hover {
+          color: #ffffff !important;
+          background: rgba(255, 255, 255, 0.15) !important;
+        }
+      }
+    }
+  }
+
+  // 3. TARJETAS, PANELES Y CONTENEDORES: BLANCO PURO (#FFFFFF) Y TEXTO NEGRO (#0F172A)
+  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav),
+  .card,
+  .bg-surface,
+  .white-card,
+  .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav) {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+    color: #0f172a !important;
+
+    h1, h2, h3, h4, h5, h6,
+    p, span, label, div:not([class*="bg-primary"]):not(.v-btn *):not(.v-chip *),
+    strong, b,
+    .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
+    .text-body-1, .text-body-2, .text-caption, .text-subtitle-1, .text-subtitle-2,
+    .text-high-emphasis,
+    .text-slate-900, .text-slate-800, .text-slate-700 {
+      color: #0f172a !important;
+    }
+
+    .text-medium-emphasis,
+    .text-slate-600, .text-slate-500 {
+      color: #334155 !important;
+    }
+
+    .text-disabled,
+    .text-slate-400 {
+      color: #64748b !important;
+    }
+
+    // Iconos en contenedores blancos
+    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info) {
+      color: #0f172a !important;
+      fill: #0f172a !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // 4. TARJETAS KPI Y ESTADÍSTICAS DEL WORKSPACE
+  .kpi-stat-card,
+  .pepa-kpi-card,
+  .stat-glass-card,
+  .info-card-flat {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+    color: #0f172a !important;
+
+    .v-card__overlay,
+    .v-card__underlay {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    .text-h4,
+    .text-h5,
+    .text-h6,
+    h2, h3, h4 {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+    }
+
+    .text-caption,
+    .text-body-2 {
+      color: #475569 !important;
+    }
+
+    .kpi-icon-bubble,
+    .kpi-icon-badge,
+    .section-icon-box {
+      background: rgba(138, 21, 56, 0.08) !important;
+      border: 1px solid rgba(138, 21, 56, 0.18) !important;
+
+      .v-icon, i, svg {
+        color: #8A1538 !important;
+        fill: #8A1538 !important;
+      }
+    }
+
+    &:hover {
+      border-color: rgba(138, 21, 56, 0.40) !important;
+      box-shadow: 0 6px 18px rgba(138, 21, 56, 0.12) !important;
+    }
+  }
+
+  // 5. INPUTS, SELECTORES Y BUSCADOR
+  .v-field {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    color: #0f172a !important;
+
+    input, textarea {
+      color: #0f172a !important;
+      font-weight: 500 !important;
+      &::placeholder {
+        color: #64748b !important;
+      }
+    }
+
+    .v-field__prepend-inner .v-icon,
+    .v-field__append-inner .v-icon {
+      color: #64748b !important;
+    }
+
+    &.v-field--focused {
+      border-color: #8A1538 !important;
+      box-shadow: 0 0 0 3px rgba(138, 21, 56, 0.15) !important;
+
+      .v-field__prepend-inner .v-icon,
+      .v-field__append-inner .v-icon {
+        color: #8A1538 !important;
+      }
+    }
+  }
+
+  // 6. BOTONES PRIMARIOS Y SECUNDARIOS
+  // Botones primarios (Rojo vino sólido con gradiente de taller)
+  .v-btn.bg-primary,
+  .v-btn.v-btn--color-primary:not(.v-btn--variant-outlined),
+  .v-btn--variant-elevated.v-btn--color-primary,
+  .v-btn--variant-flat.v-btn--color-primary,
+  .v-btn--variant-elevated.bg-primary,
+  .v-btn--variant-flat.bg-primary,
+  .btn-primary-workshop {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 14px rgba(138, 21, 56, 0.35) !important;
+    font-weight: 600 !important;
+
+    * {
+      color: #ffffff !important;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
+      box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
+      transform: translateY(-1px);
+    }
+  }
+
+  // Botón Outlined primario (Contorno rojo vino y texto rojo vino sobre fondo blanco)
+  .v-btn.v-btn--variant-outlined.v-btn--color-primary,
+  .v-btn.v-btn--variant-outlined[class*="primary"] {
+    border: 1.5px solid #8A1538 !important;
+    color: #8A1538 !important;
+    background: transparent !important;
+
+    * {
+      color: #8A1538 !important;
+    }
+
+    &:hover {
+      background: rgba(138, 21, 56, 0.08) !important;
+      border-color: #A31842 !important;
+      color: #8A1538 !important;
+    }
+  }
+
+  // 7. TABLAS DE DATOS
+  .v-table,
+  .v-data-table {
+    background: #ffffff !important;
+    color: #0f172a !important;
+
+    thead tr th {
+      background: #f8fafc !important;
+      color: #334155 !important;
+      font-weight: 700 !important;
+      border-bottom: 2px solid #8A1538 !important;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+
+      span, div, .v-data-table-header__content {
+        color: #334155 !important;
+        font-weight: 700 !important;
+      }
+    }
+
+    tbody tr {
+      &:hover {
+        background: rgba(138, 21, 56, 0.04) !important;
+      }
+
+      td {
+        color: #0f172a !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+
+        .v-icon {
+          color: #475569 !important;
+        }
+      }
+    }
+  }
+
+  // 8. CABECERAS DE PÁGINAS (Encabezado principal con título + avatar icono + botones de acción)
+  // Aplica a todas las páginas: clientes, vehículos, ventas, kardex, etc.
+  .client-management-page,
+  .page-header-section,
+  [class*="-management-page"],
+  [class*="-list-page"],
+  [class*="-page"] {
+    // Bloque de encabezado: d-flex align-center justify-space-between
+    > .d-flex.align-center.justify-space-between,
+    > .pa-4 > .d-flex.align-center.justify-space-between,
+    > .pa-sm-6 > .d-flex.align-center.justify-space-between {
+      // No estilizar el bloque de encabezado en sí, sólo los elementos internos
+    }
+  }
+
+  // Encabezado principal de página: barra lateral vino tinto translúcida
+  .page-title-bar,
+  .crud-page-header {
+    background: linear-gradient(135deg, rgba(138, 21, 56, 0.06) 0%, rgba(138, 21, 56, 0.02) 100%) !important;
+    border-left: 4px solid #8A1538 !important;
+    border-radius: 0 12px 12px 0 !important;
+    padding: 12px 18px !important;
+  }
+
+  // Avatar/icono principal del encabezado de página (color primario → rojo vino)
+  // El VAvatar con color="primary" variant="tonal" en el h1 de las páginas
+  // Vuetify usa ::before para el fondo tonal y rgb(var(--v-theme-primary)) para iconos
+  h1 .v-avatar,
+  h2 .v-avatar,
+  .v-avatar.v-avatar--variant-tonal.v-avatar--color-primary,
+  .v-avatar.v-avatar--variant-tonal[class*="primary"],
+  .page-icon-avatar {
+    // Vuetify tonal usa un pseudo-elemento ::before para el fondo
+    &::before {
+      background: rgba(138, 21, 56, 0.12) !important;
+    }
+
+    // También sobrescribir el underlay que algunos temas de Vuetify usan
+    .v-avatar__underlay {
+      background: rgba(138, 21, 56, 0.12) !important;
+    }
+
+    // Icono dentro del avatar
+    .v-icon,
+    i,
+    svg {
+      color: #8A1538 !important;
+      fill: #8A1538 !important;
+    }
+  }
+
+  // KPI Stat cards: avatares con color="primary", "info", "warning" en modo tonal
+  // (los que aparecen debajo del título principal: Total, Naturales, Empresas)
+  .kpi-stat-card .v-avatar.v-avatar--variant-tonal,
+  .kpi-stat-card .v-avatar.v-avatar--variant-tonal.v-avatar--color-primary {
+    &::before {
+      background: rgba(138, 21, 56, 0.10) !important;
+    }
+
+    .v-icon {
+      color: #8A1538 !important;
+    }
+  }
+
+  // Texto del título h1 en encabezados de página
+  h1.text-h4,
+  h1.text-h5,
+  h2.text-h4,
+  h2.text-h5,
+  .page-main-title {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+  }
+
+  // Breadcrumbs y subtítulos de encabezado de página
+  .page-subtitle,
+  .text-medium-emphasis.mb-0,
+  .v-breadcrumbs,
+  .v-breadcrumbs-item {
+    color: #475569 !important;
+
+    .v-breadcrumbs-item--disabled {
+      color: #8A1538 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  // Botones de acción en el encabezado de página (área CRUD superior)
+  .crud-header-actions {
+    .v-btn.bg-primary,
+    .v-btn--variant-elevated.v-btn--color-primary,
+    .v-btn--variant-flat.v-btn--color-primary {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(138, 21, 56, 0.32) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      font-weight: 700 !important;
+
+      * { color: #ffffff !important; }
+
+      &:hover {
+        background: linear-gradient(135deg, #A31842 0%, #720C25 100%) !important;
+        box-shadow: 0 6px 20px rgba(138, 21, 56, 0.45) !important;
+        transform: translateY(-1px);
+      }
+    }
+
+    .v-btn--variant-outlined.v-btn--color-primary,
+    .v-btn--variant-outlined[class*="primary"] {
+      border: 1.5px solid #8A1538 !important;
+      color: #8A1538 !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+
+      * { color: #8A1538 !important; }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.08) !important;
+        border-color: #A31842 !important;
+      }
+    }
+
+    .v-btn--variant-tonal.v-btn--color-secondary,
+    .v-btn--variant-tonal[class*="secondary"] {
+      background: rgba(138, 21, 56, 0.08) !important;
+      color: #8A1538 !important;
+      border: 1px solid rgba(138, 21, 56, 0.18) !important;
+      font-weight: 600 !important;
+
+      * { color: #8A1538 !important; }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.14) !important;
+      }
+    }
+  }
+
+  // Sección de filtros de búsqueda: borde izquierdo vino y fondo muy sutil
+  .v-card.rounded-xl.bg-surface {
+    > .v-card-text {
+      // Etiqueta "Filtros de Búsqueda" dentro de las tarjetas de filtro
+      .text-subtitle-2.font-weight-bold {
+        color: #0f172a !important;
+
+        .v-icon[color="primary"] {
+          color: #8A1538 !important;
+          fill: #8A1538 !important;
+        }
+      }
+    }
+  }
+
+  // 9. OVERLAY / SCRIM - Fondo semitransparente al abrir diálogos
+  // Evita que la página "desaparezca" completamente al abrir un VDialog
+  .v-overlay__scrim {
+    background: rgba(74, 14, 28, 0.30) !important;
+    opacity: 1 !important;
+  }
+
+  // 10. CABECERAS DE DIÁLOGOS Y MODALES (todas las variantes del sistema)
+  // Selectores específicos para VDialog - NO afecta menús, tooltips ni dropdowns
+  .custom-dialog-header,
+  .dialog-header-workshop,
+  // VCard con bg-primary explícito en el título (patrón común del sistema)
+  .v-card-title.bg-primary,
+  .v-card-item.bg-primary,
+  // bg-dialog-header generado por los temas glass (patrón custom-dialog-header)
+  [class*="bg-dialog-header"],
+  // Cabeceras estándar dentro de VDialog (el wrapper tiene role=dialog)
+  [role="dialog"] .v-card > .v-card-title:first-child,
+  [role="dialog"] .v-card > .v-card-item:first-child,
+  // Selectores directos de VDialog de Vuetify
+  .v-dialog .v-card-title,
+  .v-dialog .v-card > .v-card-item:first-child {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+
+    h1, h2, h3, h4, h5, h6,
+    .text-h5, .text-h6, .custom-dialog-title,
+    p, span, div, .custom-dialog-subtitle,
+    .v-card-title,
+    .v-card-subtitle {
+      color: #ffffff !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: rgba(255, 255, 255, 0.90) !important;
+      fill: rgba(255, 255, 255, 0.90) !important;
+    }
+
+    .custom-dialog-close-btn,
+    .v-btn {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+
+      * { color: #ffffff !important; }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.28) !important;
+      }
+    }
+  }
+
+  // Cuerpo de diálogos: fondo blanco puro y letras negras
+  .v-dialog .v-card,
+  [role="dialog"] .v-card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  // 11. PESTAÑAS (TABS)
+  .v-tab.v-tab--selected,
+  .v-tab--active,
+  .luxury-tab-btn.active,
+  .luxury-tab-btn.active-tab {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(138, 21, 56, 0.35) !important;
+
+    * {
+      color: #ffffff !important;
+    }
+  }
+
+  // 12. PAGINACIÓN - Ítem activo con fondo rojo vino y TEXTO BLANCO
+  .v-pagination {
+    // Ítem de página ACTIVO (el número seleccionado)
+    .v-pagination__item--is-active,
+    .v-btn.v-pagination__item--is-active,
+    .v-pagination__item.v-pagination__item--is-active {
+      background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+      background-color: #8A1538 !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.20) !important;
+      box-shadow: 0 4px 12px rgba(138, 21, 56, 0.40) !important;
+      font-weight: 700 !important;
+
+      // FORZAR texto blanco en TODOS los elementos hijos
+      *,
+      span,
+      .v-btn__content,
+      .v-pagination__item-content {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+      }
+
+      // El botón Vuetify envuelto
+      .v-btn__overlay,
+      .v-btn__ripple {
+        opacity: 0 !important;
+      }
+    }
+
+    // Ítems de página normales (no activos)
+    .v-pagination__item:not(.v-pagination__item--is-active),
+    .v-btn.v-pagination__item:not(.v-pagination__item--is-active) {
+      background: #ffffff !important;
+      color: #334155 !important;
+      border: 1px solid #e2e8f0 !important;
+      font-weight: 500 !important;
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.06) !important;
+        border-color: rgba(138, 21, 56, 0.30) !important;
+        color: #8A1538 !important;
+      }
+    }
+
+    // Botones prev/next de paginación
+    .v-pagination__prev,
+    .v-pagination__next,
+    .v-btn.v-pagination__prev,
+    .v-btn.v-pagination__next {
+      background: #ffffff !important;
+      color: #334155 !important;
+      border: 1px solid #e2e8f0 !important;
+
+      .v-icon {
+        color: #334155 !important;
+      }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.06) !important;
+        border-color: rgba(138, 21, 56, 0.30) !important;
+
+        .v-icon { color: #8A1538 !important; }
+      }
+    }
+  }
+
+  // 10. RESPONSIVIDAD EN LAS 3 ESCALAS: LAPTOPS, TABLETS Y CELULARES PEQUEÑOS
+  // ESCALA 1: LAPTOPS Y PANTALLAS GRANDES (>= 1025px)
+  @media (min-width: 1025px) {
+    .kpi-stat-card {
+      padding: 1.25rem !important;
+    }
+
+    .v-dialog > .v-overlay__content {
+      max-width: 900px;
+    }
+  }
+
+  // ESCALA 2: TABLETS (600px - 1024px)
+  @media (min-width: 600px) and (max-width: 1024px) {
+    .kpi-stat-card {
+      padding: 1rem !important;
+      .text-h6 {
+        font-size: 1.1rem !important;
+      }
+    }
+
+    .v-dialog > .v-overlay__content {
+      width: 92% !important;
+      max-width: 720px !important;
+    }
+
+    .v-table {
+      font-size: 0.85rem;
+    }
+  }
+
+  // ESCALA 3: CELULARES PEQUEÑOS (< 600px y hasta 320px)
+  @media (max-width: 599px) {
+    .kpi-stat-card {
+      padding: 0.75rem !important;
+      border-radius: 12px !important;
+
+      .text-h6 {
+        font-size: 1rem !important;
+      }
+
+      .text-caption {
+        font-size: 0.75rem !important;
+      }
+    }
+
+    // Asegurar que en móviles las tarjetas no desborden
+    .v-card {
+      border-radius: 12px !important;
+    }
+
+    // Diálogos en móviles: casi ancho completo con scroll suave
+    .v-dialog > .v-overlay__content {
+      width: 96% !important;
+      margin: 8px !important;
+      max-height: 94vh !important;
+    }
+
+    // Botones táctiles cómodos con alto contraste
+    .v-btn {
+      min-height: 40px !important;
+    }
+
+    // Tablas scrollables con cabecera fija
+    .v-table__wrapper {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
 
 

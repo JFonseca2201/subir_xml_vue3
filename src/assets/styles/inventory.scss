@@ -16,7 +16,9 @@
 .v-theme--light,
 [data-theme="light"],
 [data-theme="light-glass"],
-.v-theme--light-glass {
+.v-theme--light-glass,
+.v-theme--taller,
+[data-theme="taller"] {
   --skeleton-gradient: linear-gradient(90deg, rgba(148, 163, 184, 0.16) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.16) 75%);
   --skeleton-row-bg: transparent;
 }

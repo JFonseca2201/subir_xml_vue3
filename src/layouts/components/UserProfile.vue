@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { PerfectScrollbar } from "vue3-perfect-scrollbar"
 import avatar1 from "@images/avatars/avatar-1.png"
 import { useRouter, useRoute } from "vue-router"
@@ -14,7 +14,11 @@ const loader = useLoaderStore()
 const configStore = useConfigStore()
 const { can, currentUser } = usePermissions()
 
-const user = computed(() => currentUser.value)
+const user = ref(null)
+
+watch(currentUser, updatedUser => {
+  user.value = updatedUser
+}, { immediate: true })
 
 const isMenuOpen = ref(false)
 const isProfileDialogVisible = ref(false)
@@ -55,6 +59,15 @@ const glassThemes = [
   },
 ]
 
+const workshopThemes = [
+  {
+    name: 'taller',
+    label: 'Colores del Taller',
+    icon: 'ri-tools-fill',
+    badge: 'Taller',
+  },
+]
+
 const currentThemeIcon = computed(() => {
   if (configStore.theme === 'system') return 'ri-macbook-line'
   if (configStore.theme === 'light') return 'ri-sun-line'
@@ -62,6 +75,7 @@ const currentThemeIcon = computed(() => {
   if (configStore.theme === 'dark-glass') return 'ri-moon-cloudy-line'
   if (configStore.theme === 'semi-dark-glass') return 'ri-contrast-line'
   if (configStore.theme === 'light-glass') return 'ri-sun-cloudy-line'
+  if (configStore.theme === 'taller') return 'ri-tools-fill'
   return 'ri-palette-line'
 })
 
@@ -72,6 +86,7 @@ const currentThemeLabel = computed(() => {
   if (configStore.theme === 'dark-glass') return 'Oscuro Glass'
   if (configStore.theme === 'semi-dark-glass') return 'Medio Glass'
   if (configStore.theme === 'light-glass') return 'Claro Glass'
+  if (configStore.theme === 'taller') return 'Taller'
   return 'Tema'
 })
 
@@ -114,42 +129,18 @@ const logout = async () => {
 
 <template>
   <div>
-    <VBadge
-      dot
-      bordered
-      location="bottom right"
-      offset-x="3"
-      offset-y="3"
-      color="success"
-      class="user-profile-badge"
-    >
-      <VAvatar
-        class="cursor-pointer elevation-2 transition-swing hover-scale"
-        size="42"
-      >
+    <VBadge dot bordered location="bottom right" offset-x="3" offset-y="3" color="success" class="user-profile-badge">
+      <VAvatar class="cursor-pointer elevation-2 transition-swing hover-scale" size="52">
         <VImg :src="user && user.avatar ? user.avatar : avatar1" />
 
         <!-- SECTION Menu -->
-        <VMenu
-          v-model="isMenuOpen"
-          activator="parent"
-          min-width="320"
-          max-width="calc(100vw - 24px)"
-          location="bottom end"
-          offset="14px"
-          transition="scale-transition"
-          :close-on-content-click="false"
-        >
-          <VList
-            class="pa-0 rounded-2xl overflow-hidden elevation-12 border user-profile-menu-list"
-            style="max-width: 340px; width: 100%;"
-          >
+        <VMenu v-model="isMenuOpen" activator="parent" width="390" min-width="360" max-width="calc(100vw - 24px)"
+          location="bottom end" offset="14px" transition="scale-transition" :close-on-content-click="false">
+          <VList class="pa-0 rounded-2xl overflow-hidden elevation-12 border user-profile-menu-list"
+            style="width: 390px; max-width: 100%;">
             <!-- Modern Profile Header (Tamaño Cómodo Original) -->
             <div class="user-profile-header pa-5 d-flex flex-column align-center text-center position-relative">
-              <VAvatar
-                size="68"
-                class="elevation-4 mb-3 border-avatar"
-              >
+              <VAvatar size="68" class="elevation-4 mb-3 border-avatar">
                 <VImg :src="user && user.avatar ? user.avatar : avatar1" />
               </VAvatar>
               <div v-if="user" class="w-100">
@@ -159,17 +150,8 @@ const logout = async () => {
                 <div class="text-caption text-medium-emphasis mb-2 font-mono text-truncate">
                   {{ user.email }}
                 </div>
-                <VChip
-                  size="small"
-                  color="primary"
-                  variant="tonal"
-                  class="font-weight-bold px-3 text-uppercase"
-                >
-                  <VIcon
-                    start
-                    icon="ri-shield-star-line"
-                    size="14"
-                  />
+                <VChip size="small" color="primary" variant="tonal" class="font-weight-bold px-3 text-uppercase">
+                  <VIcon start icon="ri-shield-star-line" size="14" />
                   {{ typeof user.role === 'object' ? user.role?.name : (user.role || 'Usuario') }}
                 </VChip>
               </div>
@@ -183,33 +165,18 @@ const logout = async () => {
             <VDivider />
 
             <!-- Nav Items (Viñetas y Subviñetas de Temas) -->
-            <PerfectScrollbar
-              :options="{ wheelPropagation: false }"
-              class="px-3 py-2"
-              style="max-height: 380px;"
-            >
-              <VList
-                nav
-                density="compact"
-                class="pa-0"
-              >
+            <PerfectScrollbar :options="{
+              wheelPropagation: false,
+              suppressScrollX: true,
+              minScrollbarLength: 20,
+            }" class="settings-scroll px-3 py-2" style="max-height: 380px;">
+              <VList nav density="compact" class="pa-0">
                 <!-- Viñeta 1: Mi Perfil & Seguridad -->
-                <VListItem
-                  color="primary"
-                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
-                  @click="handleItemClick({ action: 'open_profile' })"
-                >
+                <VListItem color="primary" class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="handleItemClick({ action: 'open_profile' })">
                   <template #prepend>
-                    <VAvatar
-                      color="primary"
-                      variant="tonal"
-                      size="34"
-                      class="me-3 rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-user-settings-line"
-                        size="18"
-                      />
+                    <VAvatar color="primary" variant="tonal" size="34" class="me-3 rounded-lg">
+                      <VIcon icon="ri-user-settings-line" size="18" />
                     </VAvatar>
                   </template>
 
@@ -222,23 +189,12 @@ const logout = async () => {
                 </VListItem>
 
                 <!-- Viñeta 2: Mi Establecimiento (con permiso) -->
-                <VListItem
-                  v-if="can('settings')"
-                  color="primary"
+                <VListItem v-if="can('settings')" color="primary"
                   class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
-                  @click="handleItemClick({ to: '/sucursales' })"
-                >
+                  @click="handleItemClick({ to: '/sucursales' })">
                   <template #prepend>
-                    <VAvatar
-                      color="info"
-                      variant="tonal"
-                      size="34"
-                      class="me-3 rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-store-2-line"
-                        size="18"
-                      />
+                    <VAvatar color="info" variant="tonal" size="34" class="me-3 rounded-lg">
+                      <VIcon icon="ri-store-2-line" size="18" />
                     </VAvatar>
                   </template>
 
@@ -253,34 +209,18 @@ const logout = async () => {
                 <VDivider class="my-2 border-opacity-50" />
 
                 <!-- Viñeta 3: Tema del Sistema (Desplegable con Subviñetas) -->
-                <VListItem
-                  color="primary"
-                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
-                  :class="{ 'theme-active-item': isThemeExpanded }"
-                  @click="isThemeExpanded = !isThemeExpanded"
-                >
+                <VListItem color="primary" class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  :class="{ 'theme-active-item': isThemeExpanded }" @click="isThemeExpanded = !isThemeExpanded">
                   <template #prepend>
-                    <VAvatar
-                      color="warning"
-                      variant="tonal"
-                      size="34"
-                      class="me-3 rounded-lg"
-                    >
-                      <VIcon
-                        :icon="currentThemeIcon"
-                        size="18"
-                      />
+                    <VAvatar color="warning" variant="tonal" size="34" class="me-3 rounded-lg">
+                      <VIcon :icon="currentThemeIcon" size="18" />
                     </VAvatar>
                   </template>
 
                   <VListItemTitle class="font-weight-bold text-body-2 d-flex align-center justify-space-between">
                     <span>Tema / Apariencia</span>
-                    <VChip
-                      size="x-small"
-                      color="warning"
-                      variant="tonal"
-                      class="font-weight-semibold text-caption px-2"
-                    >
+                    <VChip size="x-small" color="warning" variant="tonal"
+                      class="font-weight-semibold text-caption px-2">
                       {{ currentThemeLabel }}
                     </VChip>
                   </VListItemTitle>
@@ -289,38 +229,26 @@ const logout = async () => {
                   </VListItemSubtitle>
 
                   <template #append>
-                    <VIcon
-                      :icon="isThemeExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
-                      size="20"
-                      class="text-medium-emphasis ms-1"
-                    />
+                    <VIcon :icon="isThemeExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" size="20"
+                      class="text-medium-emphasis ms-1" />
                   </template>
                 </VListItem>
 
                 <!-- Subviñetas Desplegables de Temas -->
                 <VExpandTransition>
-                  <div
-                    v-if="isThemeExpanded"
-                    class="theme-subitems-wrapper pa-2 mb-2 rounded-xl border"
-                  >
+                  <div v-if="isThemeExpanded" class="theme-subitems-wrapper pa-2 mb-2 rounded-xl border">
                     <!-- Subviñeta 1: Sistema -->
-                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-1 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                    <div
+                      class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-1 pb-1 text-medium-emphasis d-flex align-center gap-1">
                       <VIcon icon="ri-computer-line" size="13" color="primary" />
                       Sistema
                     </div>
-                    <VListItem
-                      :active="configStore.theme === 'system'"
-                      color="primary"
-                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
-                      @click="selectTheme('system')"
-                    >
+                    <VListItem :active="configStore.theme === 'system'" color="primary"
+                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1" @click="selectTheme('system')">
                       <template #prepend>
-                        <VAvatar
-                          :color="configStore.theme === 'system' ? 'primary' : 'secondary'"
-                          :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'"
-                          size="26"
-                          class="me-2 rounded-md"
-                        >
+                        <VAvatar :color="configStore.theme === 'system' ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === 'system' ? 'elevated' : 'tonal'" size="26"
+                          class="me-2 rounded-md">
                           <VIcon icon="ri-macbook-line" size="15" />
                         </VAvatar>
                       </template>
@@ -328,35 +256,24 @@ const logout = async () => {
                         Predeterminado S.O.
                       </VListItemTitle>
                       <template #append>
-                        <VIcon
-                          v-if="configStore.theme === 'system'"
-                          icon="ri-checkbox-circle-fill"
-                          color="primary"
-                          size="18"
-                        />
+                        <VIcon v-if="configStore.theme === 'system'" icon="ri-checkbox-circle-fill" color="primary"
+                          size="18" />
                       </template>
                     </VListItem>
 
                     <!-- Subviñeta 2: Claro u Oscuro -->
-                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                    <div
+                      class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
                       <VIcon icon="ri-contrast-drop-line" size="13" color="primary" />
                       Claro u Oscuro
                     </div>
-                    <VListItem
-                      v-for="thm in solidThemes"
-                      :key="thm.name"
-                      :active="configStore.theme === thm.name"
-                      color="primary"
-                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
-                      @click="selectTheme(thm.name)"
-                    >
+                    <VListItem v-for="thm in solidThemes" :key="thm.name" :active="configStore.theme === thm.name"
+                      color="primary" class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme(thm.name)">
                       <template #prepend>
-                        <VAvatar
-                          :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
-                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
-                          size="26"
-                          class="me-2 rounded-md"
-                        >
+                        <VAvatar :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'" size="26"
+                          class="me-2 rounded-md">
                           <VIcon :icon="thm.icon" size="15" />
                         </VAvatar>
                       </template>
@@ -364,35 +281,24 @@ const logout = async () => {
                         {{ thm.label }}
                       </VListItemTitle>
                       <template #append>
-                        <VIcon
-                          v-if="configStore.theme === thm.name"
-                          icon="ri-checkbox-circle-fill"
-                          color="primary"
-                          size="18"
-                        />
+                        <VIcon v-if="configStore.theme === thm.name" icon="ri-checkbox-circle-fill" color="primary"
+                          size="18" />
                       </template>
                     </VListItem>
 
                     <!-- Subviñeta 3: Transparentes (Glass) -->
-                    <div class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                    <div
+                      class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
                       <VIcon icon="ri-sparkling-line" size="13" color="primary" />
                       Transparentes (Glass)
                     </div>
-                    <VListItem
-                      v-for="thm in glassThemes"
-                      :key="thm.name"
-                      :active="configStore.theme === thm.name"
-                      color="primary"
-                      class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
-                      @click="selectTheme(thm.name)"
-                    >
+                    <VListItem v-for="thm in glassThemes" :key="thm.name" :active="configStore.theme === thm.name"
+                      color="primary" class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme(thm.name)">
                       <template #prepend>
-                        <VAvatar
-                          :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
-                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'"
-                          size="26"
-                          class="me-2 rounded-md"
-                        >
+                        <VAvatar :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'" size="26"
+                          class="me-2 rounded-md">
                           <VIcon :icon="thm.icon" size="15" />
                         </VAvatar>
                       </template>
@@ -400,12 +306,38 @@ const logout = async () => {
                         {{ thm.label }}
                       </VListItemTitle>
                       <template #append>
-                        <VIcon
-                          v-if="configStore.theme === thm.name"
-                          icon="ri-checkbox-circle-fill"
-                          color="primary"
-                          size="18"
-                        />
+                        <VIcon v-if="configStore.theme === thm.name" icon="ri-checkbox-circle-fill" color="primary"
+                          size="18" />
+                      </template>
+                    </VListItem>
+
+                    <!-- Subviñeta 4: Colores Oficiales del Taller -->
+                    <div
+                      class="theme-group-label text-caption font-weight-bold text-uppercase px-2 pt-2 pb-1 text-medium-emphasis d-flex align-center gap-1">
+                      <VIcon icon="ri-tools-fill" size="13" color="error" />
+                      Colores del Taller
+                    </div>
+                    <VListItem v-for="thm in workshopThemes" :key="thm.name" :active="configStore.theme === thm.name"
+                      color="primary" class="rounded-lg mb-1 subitem-hover cursor-pointer py-1"
+                      @click="selectTheme(thm.name)">
+                      <template #prepend>
+                        <VAvatar :color="configStore.theme === thm.name ? 'primary' : 'secondary'"
+                          :variant="configStore.theme === thm.name ? 'elevated' : 'tonal'" size="26"
+                          class="me-2 rounded-md"
+                          :style="configStore.theme === thm.name ? 'background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important; color: #fff !important;' : ''">
+                          <VIcon :icon="thm.icon" size="15" />
+                        </VAvatar>
+                      </template>
+                      <VListItemTitle class="text-body-2 font-weight-medium d-flex align-center gap-2">
+                        <span>{{ thm.label }}</span>
+                        <VChip v-if="thm.badge" size="x-small" color="error" variant="tonal"
+                          class="font-weight-bold px-1.5" style="font-size: 10px; height: 18px;">
+                          {{ thm.badge }}
+                        </VChip>
+                      </VListItemTitle>
+                      <template #append>
+                        <VIcon v-if="configStore.theme === thm.name" icon="ri-checkbox-circle-fill" color="error"
+                          size="18" />
                       </template>
                     </VListItem>
                   </div>
@@ -414,22 +346,11 @@ const logout = async () => {
                 <VDivider class="my-2 border-opacity-50" />
 
                 <!-- Viñeta 4: Atajos de Teclado & Soporte -->
-                <VListItem
-                  color="primary"
-                  class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
-                  @click="handleItemClick({ action: 'open_shortcuts' })"
-                >
+                <VListItem color="primary" class="rounded-xl mb-1 nav-item-hover cursor-pointer py-2"
+                  @click="handleItemClick({ action: 'open_shortcuts' })">
                   <template #prepend>
-                    <VAvatar
-                      color="cyan"
-                      variant="tonal"
-                      size="34"
-                      class="me-3 rounded-lg"
-                    >
-                      <VIcon
-                        icon="ri-keyboard-line"
-                        size="18"
-                      />
+                    <VAvatar color="cyan" variant="tonal" size="34" class="me-3 rounded-lg">
+                      <VIcon icon="ri-keyboard-line" size="18" />
                     </VAvatar>
                   </template>
 
@@ -446,18 +367,9 @@ const logout = async () => {
             <!-- Logout Button (Siempre Visible en la base) -->
             <VDivider class="border-opacity-50" />
             <div class="pa-3 bg-surface">
-              <VBtn
-                block
-                color="error"
-                variant="tonal"
-                prepend-icon="ri-logout-box-r-line"
-                class="rounded-xl font-weight-bold logout-action-btn"
-                size="large"
-                height="44"
-                :loading="loader.loading"
-                :disabled="loader.loading"
-                @click="logout"
-              >
+              <VBtn block color="error" variant="tonal" prepend-icon="ri-logout-box-r-line"
+                class="rounded-xl font-weight-bold logout-action-btn" size="large" height="44" :loading="loader.loading"
+                :disabled="loader.loading" @click="logout">
                 <span class="text-body-2 font-weight-bold text-uppercase letter-spacing-1">Cerrar Sesión</span>
               </VBtn>
             </div>
@@ -501,8 +413,7 @@ const logout = async () => {
 
             <VRow dense>
               <VCol cols="12" sm="6">
-                <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
+                <div class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Nueva Venta / Factura</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     F2
@@ -510,8 +421,7 @@ const logout = async () => {
                 </div>
               </VCol>
               <VCol cols="12" sm="6">
-                <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
+                <div class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Buscador de Productos</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     F4
@@ -519,8 +429,7 @@ const logout = async () => {
                 </div>
               </VCol>
               <VCol cols="12" sm="6">
-                <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
+                <div class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Imprimir Documento</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     Ctrl + P
@@ -528,8 +437,7 @@ const logout = async () => {
                 </div>
               </VCol>
               <VCol cols="12" sm="6">
-                <div
-                  class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
+                <div class="d-flex align-center justify-space-between p-2 pa-3 bg-surface rounded-lg border mb-2">
                   <span class="text-body-2 font-weight-medium">Cerrar Ventanas</span>
                   <VChip size="x-small" color="primary" variant="elevated" class="font-weight-black font-mono">
                     ESC
@@ -606,6 +514,53 @@ const logout = async () => {
 </template>
 
 <style scoped>
+/* Evita que el menú genere desbordamiento horizontal. */
+.settings-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* PerfectScrollbar crea un rail horizontal aunque no sea necesario. */
+.settings-scroll :deep(.ps__rail-x),
+.settings-scroll :deep(.ps__thumb-x) {
+  display: none !important;
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+.settings-scroll :deep(.ps),
+.settings-scroll :deep(.ps-content),
+.settings-scroll :deep(.v-list) {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-scroll :deep(.v-list) {
+  width: 100%;
+}
+
+.settings-scroll :deep(.v-list-item) {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-scroll :deep(.v-list-item__content) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.settings-scroll :deep(.v-list-item-title),
+.settings-scroll :deep(.v-list-item-subtitle) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .border-avatar {
   border: 2px solid rgba(var(--v-theme-primary), 0.5);
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2);
@@ -621,7 +576,6 @@ const logout = async () => {
 
 .nav-item-hover:hover {
   background: rgba(var(--v-theme-primary), 0.08) !important;
-  transform: translateX(2px);
 }
 
 .theme-active-item {
@@ -643,11 +597,9 @@ const logout = async () => {
 
 .subitem-hover:hover {
   background: rgba(var(--v-theme-primary), 0.08) !important;
-  transform: translateX(2px);
 }
 
 .logout-action-btn {
   letter-spacing: 0.5px;
 }
 </style>
-

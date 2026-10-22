@@ -336,7 +336,7 @@ const buildQueryParams = () => {
   if (searchForm.value.unit_id) {
     query_params += "&unit_id=" + searchForm.value.unit_id
   }
-  
+
   return query_params
 }
 
@@ -367,7 +367,7 @@ onMounted(() => {
 onActivated(() => {
   if (isFirstActivation) {
     isFirstActivation = false
-    
+
     return
   }
   searchProducts()
@@ -398,17 +398,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar
-            size="42"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="me-3"
-          >
-            <VIcon
-              icon="ri-box-3-line"
-              size="26"
-            />
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-box-3-line" size="26" />
           </VAvatar>
           Inventario de Productos
         </h1>
@@ -418,47 +409,22 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          v-if="can('import_xml') || can('register_product')"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="ri-upload-2-line"
-          class="font-weight-medium"
-          @click="importProducts"
-        >
+        <VBtn v-if="can('import_xml') || can('register_product')" color="secondary" variant="tonal"
+          prepend-icon="ri-upload-2-line" class="font-weight-medium" @click="importProducts">
           Importar Excel
         </VBtn>
 
         <!-- Menú Desplegable de Exportación y Reportes -->
-        <VMenu
-          location="bottom end"
-          transition="scale-transition"
-        >
+        <VMenu location="bottom end" transition="scale-transition">
           <template #activator="{ props }">
-            <VBtn
-              v-if="can('export_data') || can('list_product')"
-              v-bind="props"
-              color="secondary"
-              variant="tonal"
-              prepend-icon="ri-download-2-line"
-              append-icon="ri-arrow-down-s-line"
-              class="font-weight-medium"
-            >
+            <VBtn v-if="can('export_data') || can('list_product')" v-bind="props" color="secondary" variant="tonal"
+              prepend-icon="ri-download-2-line" append-icon="ri-arrow-down-s-line" class="font-weight-medium">
               Exportar / Reportes
             </VBtn>
           </template>
-          <VList
-            density="comfortable"
-            class="py-2"
-            elevation="6"
-            rounded="lg"
-            min-width="280"
-          >
-            <VListItem
-              prepend-icon="ri-file-pdf-2-line"
-              class="text-error font-weight-medium cursor-pointer"
-              @click="downloadPdf"
-            >
+          <VList density="comfortable" class="py-2" elevation="6" rounded="lg" min-width="280">
+            <VListItem prepend-icon="ri-file-pdf-2-line" class="text-error font-weight-medium cursor-pointer"
+              @click="downloadPdf">
               <VListItemTitle class="font-weight-bold">
                 Reporte PDF
               </VListItemTitle>
@@ -467,11 +433,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
               </VListItemSubtitle>
             </VListItem>
             <VDivider class="my-1" />
-            <VListItem
-              prepend-icon="ri-file-excel-2-line"
-              class="text-success font-weight-medium cursor-pointer"
-              @click="downloadExcelCategory"
-            >
+            <VListItem prepend-icon="ri-file-excel-2-line" class="text-success font-weight-medium cursor-pointer"
+              @click="downloadExcelCategory">
               <VListItemTitle class="font-weight-bold">
                 Excel por Categorías
               </VListItemTitle>
@@ -479,11 +442,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 Organizado por categorías con subtotales
               </VListItemSubtitle>
             </VListItem>
-            <VListItem
-              prepend-icon="ri-table-line"
-              class="text-primary font-weight-medium cursor-pointer"
-              @click="downloadExcelStandard"
-            >
+            <VListItem prepend-icon="ri-table-line" class="text-primary font-weight-medium cursor-pointer"
+              @click="downloadExcelStandard">
               <VListItemTitle class="font-weight-bold">
                 Excel Estándar / Plantilla
               </VListItemTitle>
@@ -494,13 +454,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           </VList>
         </VMenu>
 
-        <VBtn
-          v-if="can('register_product')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/product/add"
-          class="elevation-2 font-weight-bold"
-        >
+        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" to="/product/add"
+          class="elevation-2 font-weight-bold">
           Agregar Producto
         </VBtn>
       </div>
@@ -508,86 +463,50 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow
-      class="mb-4 d-none d-sm-flex"
-      dense
-    >
-      <VCol
-        cols="12"
-        sm="4"
-      >
+    <VRow class="mb-4 d-none d-sm-flex" dense>
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-box-3-line"
-              size="24"
-            />
+          <VAvatar size="46" color="primary" variant="tonal" rounded="lg">
+            <VIcon icon="ri-box-3-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
               Total Productos
             </div>
             <div class="text-h6 font-weight-bold text-high-emphasis">
-              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en catálogo</span>
+              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en catálogo</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="success"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-line"
-              size="24"
-            />
+          <VAvatar size="46" color="success" variant="tonal" rounded="lg">
+            <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
               Con Stock Disponible
             </div>
             <div class="text-h6 font-weight-bold text-success">
-              {{ inStockCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
+              {{ inStockCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en página</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3">
-          <VAvatar
-            size="46"
-            color="warning"
-            variant="tonal"
-            rounded="lg"
-          >
-            <VIcon
-              icon="ri-alert-line"
-              size="24"
-            />
+          <VAvatar size="46" color="warning" variant="tonal" rounded="lg">
+            <VIcon icon="ri-alert-line" size="24" />
           </VAvatar>
           <div>
             <div class="text-caption text-medium-emphasis font-weight-medium">
               Stock Agotado / Bajo
             </div>
             <div class="text-h6 font-weight-bold text-warning">
-              {{ lowOrNoStockCount }} <span class="text-caption text-disabled font-weight-regular">requieren
+              {{ lowOrNoStockCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp; requieren
                 reposición</span>
             </div>
           </div>
@@ -600,156 +519,63 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon
-              icon="ri-filter-3-line"
-              size="18"
-              color="primary"
-            />
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
             <span>Filtros de Productos</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="resetFilters"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="resetFilters">
             Limpiar Filtros
           </VBtn>
         </div>
 
-        <VRow
-          dense
-          class="gap-y-3"
-        >
-          <VCol
-            cols="12"
-            md="6"
-          >
-            <VTextField
-              v-model="searchForm.search"
-              label="Buscar producto"
-              placeholder="Descripción, SKU, código auxiliar..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="loading"
-            />
+        <VRow dense class="gap-y-3">
+          <VCol cols="12" md="6">
+            <VTextField v-model="searchForm.search" label="Buscar producto"
+              placeholder="Descripción, SKU, código auxiliar..." prepend-inner-icon="ri-search-2-line"
+              variant="outlined" density="comfortable" hide-details="auto" clearable color="primary"
+              :loading="loading" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="4"
-            md="2"
-          >
-            <VSelect
-              v-model="searchForm.categorie_id"
-              :items="categories"
-              item-title="title"
-              item-value="id"
-              label="Categoría"
-              placeholder="Todas"
-              prepend-inner-icon="ri-folder-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="4" md="2">
+            <VSelect v-model="searchForm.categorie_id" :items="categories" item-title="title" item-value="id"
+              label="Categoría" placeholder="Todas" prepend-inner-icon="ri-folder-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="4"
-            md="2"
-          >
-            <VSelect
-              v-model="searchForm.warehouse_id"
-              :items="warehouses"
-              item-title="name"
-              item-value="id"
-              label="Almacén"
-              placeholder="Todos"
-              prepend-inner-icon="ri-store-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="4" md="2">
+            <VSelect v-model="searchForm.warehouse_id" :items="warehouses" item-title="name" item-value="id"
+              label="Almacén" placeholder="Todos" prepend-inner-icon="ri-store-2-line" variant="outlined"
+              density="comfortable" hide-details="auto" clearable color="primary" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="4"
-            md="2"
-          >
-            <VSelect
-              v-model="searchForm.unit_id"
-              :items="units"
-              item-title="name"
-              item-value="id"
-              label="Unidad"
-              placeholder="Todas"
-              prepend-inner-icon="ri-ruler-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-            />
+          <VCol cols="12" sm="4" md="2">
+            <VSelect v-model="searchForm.unit_id" :items="units" item-title="name" item-value="id" label="Unidad"
+              placeholder="Todas" prepend-inner-icon="ri-ruler-line" variant="outlined" density="comfortable"
+              hide-details="auto" clearable color="primary" />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay productos) -->
-    <VCard
-      v-if="!loading && isInitialLoadDone && (!products || products.length === 0)"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
-      <VAvatar
-        size="76"
-        color="primary"
-        variant="tonal"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-box-3-line"
-        />
+    <VCard v-if="!loading && isInitialLoadDone && (!products || products.length === 0)"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-box-3-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron productos
       </h3>
-      <p
-        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
-        style="max-width: 480px;"
-      >
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
         Intenta ajustar los criterios de búsqueda o agrega un nuevo repuesto a tu inventario.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn
-          v-if="hasActiveFilters"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          @click="resetFilters"
-        >
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="resetFilters">
           Restablecer Filtros
         </VBtn>
-        <VBtn
-          v-if="can('register_product')"
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/product/add"
-        >
+        <VBtn v-if="can('register_product')" color="primary" prepend-icon="ri-add-line" to="/product/add">
           Agregar Producto
         </VBtn>
       </div>
@@ -761,16 +587,9 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       <div class="d-md-none d-flex flex-column gap-3 mb-4">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="loading">
-          <VCard
-            v-for="n in 4"
-            :key="'skel-mob-prod-' + n"
-            class="mobile-product-card elevation-0 pa-4"
-          >
+          <VCard v-for="n in 4" :key="'skel-mob-prod-' + n" class="mobile-product-card elevation-0 pa-4">
             <div class="d-flex align-center gap-3 mb-3">
-              <div
-                class="shimmer-button rounded-lg flex-shrink-0"
-                style="width: 48px; height: 48px;"
-              />
+              <div class="shimmer-button rounded-lg flex-shrink-0" style="width: 48px; height: 48px;" />
               <div class="flex-grow-1">
                 <div class="shimmer-line w-40 mb-1.5" />
                 <div class="shimmer-line w-75 mb-1.5" />
@@ -786,33 +605,14 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
         <!-- Tarjetas reales de productos -->
         <template v-else>
-          <VCard
-            v-for="item in products"
-            :key="'mobile-prod-' + item.id"
-            class="mobile-product-card elevation-0"
-          >
+          <VCard v-for="item in products" :key="'mobile-prod-' + item.id" class="mobile-product-card elevation-0">
             <!-- Fila superior: Imagen + Info básica + Estado -->
             <div class="mobile-card-top">
-              <div
-                class="mobile-card-thumb cursor-pointer"
-                @click="viewProduct(item)"
-              >
-                <img
-                  v-if="item.imagen"
-                  :src="item.imagen"
-                  :alt="item.description"
-                  loading="lazy"
-                  style="width: 100%; height: 100%; object-fit: cover;"
-                >
-                <div
-                  v-else
-                  class="w-100 h-100 d-flex align-center justify-center mobile-card-thumb-placeholder"
-                >
-                  <VIcon
-                    icon="ri-box-3-line"
-                    color="primary"
-                    size="24"
-                  />
+              <div class="mobile-card-thumb cursor-pointer" @click="viewProduct(item)">
+                <img v-if="item.imagen" :src="item.imagen" :alt="item.description" loading="lazy"
+                  style="width: 100%; height: 100%; object-fit: cover;">
+                <div v-else class="w-100 h-100 d-flex align-center justify-center mobile-card-thumb-placeholder">
+                  <VIcon icon="ri-box-3-line" color="primary" size="24" />
                 </div>
               </div>
 
@@ -821,41 +621,24 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   <span class="text-caption font-mono font-weight-semibold text-medium-emphasis">
                     SKU: {{ item.sku || 'S/C' }}
                   </span>
-                  <div
-                    class="status-pill-clean"
-                    :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
-                  >
+                  <div class="status-pill-clean" :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'">
                     <span class="status-dot" />
                     <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
                   </div>
                 </div>
 
-                <div
-                  class="mobile-card-title cursor-pointer text-truncate"
-                  :title="decodeProductDescription(item.description)"
-                  @click="viewProduct(item)"
-                >
+                <div class="mobile-card-title cursor-pointer text-truncate"
+                  :title="decodeProductDescription(item.description)" @click="viewProduct(item)">
                   {{ decodeProductDescription(item.description) }}
                 </div>
 
                 <div class="mobile-card-meta">
-                  <VChip
-                    size="x-small"
-                    variant="tonal"
-                    color="primary"
-                    class="font-weight-medium cursor-pointer"
-                    @click="openQuickEdit(item, 'category')"
-                  >
+                  <VChip size="x-small" variant="tonal" color="primary" class="font-weight-medium cursor-pointer"
+                    @click="openQuickEdit(item, 'category')">
                     {{ item.categorie?.title || 'Sin Categoría' }}
                   </VChip>
-                  <VChip
-                    v-if="item.brand"
-                    size="x-small"
-                    variant="outlined"
-                    color="secondary"
-                    class="cursor-pointer"
-                    @click="openQuickEdit(item, 'category')"
-                  >
+                  <VChip v-if="item.brand" size="x-small" variant="outlined" color="secondary" class="cursor-pointer"
+                    @click="openQuickEdit(item, 'category')">
                     {{ item.brand }}
                   </VChip>
                 </div>
@@ -864,128 +647,61 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
             <!-- Cuadrícula de estadísticas: Precio Final y Stock interactivos -->
             <div class="mobile-card-stats-grid">
-              <div
-                class="stat-col cursor-pointer"
-                title="Toca para editar precio de venta"
-                @click="openQuickEdit(item, 'price')"
-              >
+              <div class="stat-col cursor-pointer" title="Toca para editar precio de venta"
+                @click="openQuickEdit(item, 'price')">
                 <div class="d-flex align-center justify-space-between">
                   <span class="stat-label">P.V.P Final</span>
-                  <VIcon
-                    icon="ri-edit-line"
-                    size="14"
-                    color="success"
-                  />
+                  <VIcon icon="ri-edit-line" size="14" color="success" />
                 </div>
                 <span class="stat-val text-success">
                   ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
                 </span>
               </div>
 
-              <div
-                class="stat-col cursor-pointer"
-                title="Toca para ajuste rápido de stock"
-                @click="item.item_type == 1 ? openStockDialog(item) : null"
-              >
+              <div class="stat-col cursor-pointer" title="Toca para ajuste rápido de stock"
+                @click="item.item_type == 1 ? openStockDialog(item) : null">
                 <div class="d-flex align-center justify-space-between">
                   <span class="stat-label">Stock Actual</span>
-                  <VIcon
-                    v-if="item.item_type == 1"
-                    icon="ri-edit-line"
-                    size="14"
-                    color="primary"
-                  />
+                  <VIcon v-if="item.item_type == 1" icon="ri-edit-line" size="14" color="primary" />
                 </div>
-                <span
-                  v-if="item.item_type == 1"
-                  class="stat-val"
-                  :class="(item.stock || 0) > 0 ? 'text-primary' : 'text-error'"
-                >
+                <span v-if="item.item_type == 1" class="stat-val"
+                  :class="(item.stock || 0) > 0 ? 'text-primary' : 'text-error'">
                   {{ item.stock || 0 }} <span class="text-caption text-disabled">{{ item.unit?.name || 'UND' }}</span>
                 </span>
-                <span
-                  v-else
-                  class="stat-val text-medium-emphasis"
-                >Servicio</span>
+                <span v-else class="stat-val text-medium-emphasis">Servicio</span>
               </div>
             </div>
 
             <!-- Acciones en móvil: Botón Edición Rápida + Menú 3 puntos -->
             <div class="mobile-card-actions">
-              <VBtn
-                v-if="can('edit_product')"
-                color="primary"
-                variant="tonal"
-                size="small"
-                prepend-icon="ri-flashlight-line"
-                class="btn-quick-edit font-weight-bold"
-                @click="openQuickEdit(item, 'all')"
-              >
+              <VBtn v-if="can('edit_product')" color="primary" variant="tonal" size="small"
+                prepend-icon="ri-flashlight-line" class="btn-quick-edit font-weight-bold"
+                @click="openQuickEdit(item, 'all')">
                 Edición Rápida
               </VBtn>
 
               <!-- Menú de 3 puntos en tarjeta móvil -->
-              <VBtn
-                size="small"
-                color="secondary"
-                variant="tonal"
-                icon="ri-more-2-line"
-                title="Más Opciones"
-              >
-                <VIcon
-                  icon="ri-more-2-line"
-                  size="18"
-                />
-                <VMenu
-                  activator="parent"
-                  transition="slide-y-transition"
-                  align="end"
-                  location="bottom end"
-                >
-                  <VList
-                    density="compact"
-                    class="py-1 rounded-lg elevation-4 border"
-                    min-width="190"
-                  >
+              <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line" title="Más Opciones">
+                <VIcon icon="ri-more-2-line" size="18" />
+                <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                  <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
                     <!-- Ajustar Stock -->
-                    <VListItem
-                      v-if="can('edit_product') && item.item_type == 1"
-                      prepend-icon="ri-box-3-line"
-                      title="Ajustar Stock"
-                      class="text-body-2"
-                      @click="openStockDialog(item)"
-                    />
+                    <VListItem v-if="can('edit_product') && item.item_type == 1" prepend-icon="ri-box-3-line"
+                      title="Ajustar Stock" class="text-body-2" @click="openStockDialog(item)" />
 
                     <!-- Ver Detalle -->
-                    <VListItem
-                      prepend-icon="ri-eye-line"
-                      title="Ver Detalle"
-                      class="text-body-2"
-                      @click="viewProduct(item)"
-                    />
+                    <VListItem prepend-icon="ri-eye-line" title="Ver Detalle" class="text-body-2"
+                      @click="viewProduct(item)" />
 
                     <!-- Editar Completo -->
-                    <VListItem
-                      v-if="can('edit_product')"
-                      prepend-icon="ri-pencil-line"
-                      title="Editar Completo"
-                      class="text-warning text-body-2"
-                      @click="editProduct(item)"
-                    />
+                    <VListItem v-if="can('edit_product')" prepend-icon="ri-pencil-line" title="Editar Completo"
+                      class="text-warning text-body-2" @click="editProduct(item)" />
 
-                    <VDivider
-                      v-if="can('delete_product')"
-                      class="my-1"
-                    />
+                    <VDivider v-if="can('delete_product')" class="my-1" />
 
                     <!-- Eliminar Producto -->
-                    <VListItem
-                      v-if="can('delete_product')"
-                      prepend-icon="ri-delete-bin-line"
-                      title="Eliminar Producto"
-                      class="text-error text-body-2"
-                      @click="deleteProduct(item)"
-                    />
+                    <VListItem v-if="can('delete_product')" prepend-icon="ri-delete-bin-line" title="Eliminar Producto"
+                      class="text-error text-body-2" @click="deleteProduct(item)" />
                   </VList>
                 </VMenu>
               </VBtn>
@@ -995,58 +711,31 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
       </div>
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="rounded-xl border overflow-hidden elevation-0 bg-surface d-none d-md-block">
-        <VTable
-          hover
-          class="products-modern-table overflow-x-auto"
-        >
+        <VTable hover class="products-modern-table overflow-x-auto">
           <thead>
             <tr>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 70px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 70px;">
                 Img
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 250px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 250px;">
                 Producto / Repuesto
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 150px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 150px;">
                 Categoría & Marca
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 130px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 130px;">
                 Almacén
               </th>
-              <th
-                class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 130px;"
-              >
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 130px;">
                 P.V.P
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 110px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 110px;">
                 Stock
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 120px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Estado
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 90px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 90px;">
                 Acciones
               </th>
             </tr>
@@ -1054,11 +743,7 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
           <tbody>
             <!-- Skeleton Rows en tabla de escritorio -->
             <template v-if="loading">
-              <tr
-                v-for="n in (itemsPerPage || 6)"
-                :key="'skel-row-' + n"
-                class="skeleton-row align-middle"
-              >
+              <tr v-for="n in (itemsPerPage || 6)" :key="'skel-row-' + n" class="skeleton-row align-middle">
                 <td class="py-4 text-center" style="width: 70px;">
                   <div class="shimmer-circle mx-auto" style="width: 36px; height: 36px;" />
                 </td>
@@ -1089,42 +774,17 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
             <!-- Filas reales de productos -->
             <template v-else>
-              <tr
-                v-for="item in products"
-                :key="item.id"
-                class="product-table-row"
-              >
+              <tr v-for="item in products" :key="item.id" class="product-table-row">
                 <!-- Imagen -->
                 <td class="text-center py-3">
-                  <VAvatar
-                    v-if="item.imagen"
-                    size="38"
-                    rounded="lg"
-                    class="cursor-pointer border overflow-hidden"
-                    @click="openProductDialog(item)"
-                  >
-                    <img
-                      :src="item.imagen"
-                      :alt="item.description"
-                      loading="lazy"
-                      decoding="async"
-                      class="w-100 h-100"
-                      style="object-fit: cover;"
-                    >
+                  <VAvatar v-if="item.imagen" size="38" rounded="lg" class="cursor-pointer border overflow-hidden"
+                    @click="openProductDialog(item)">
+                    <img :src="item.imagen" :alt="item.description" loading="lazy" decoding="async" class="w-100 h-100"
+                      style="object-fit: cover;">
                   </VAvatar>
-                  <VAvatar
-                    v-else
-                    color="primary"
-                    variant="tonal"
-                    size="38"
-                    rounded="lg"
-                    class="cursor-pointer"
-                    @click="openProductDialog(item)"
-                  >
-                    <VIcon
-                      icon="ri-box-3-line"
-                      size="20"
-                    />
+                  <VAvatar v-else color="primary" variant="tonal" size="38" rounded="lg" class="cursor-pointer"
+                    @click="openProductDialog(item)">
+                    <VIcon icon="ri-box-3-line" size="20" />
                   </VAvatar>
                 </td>
 
@@ -1133,10 +793,8 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                   <div class="d-flex flex-column gap-0.5">
                     <div
                       class="font-weight-bold text-high-emphasis text-body-2 cursor-pointer hover-underline text-truncate"
-                      style="max-width: 300px;"
-                      :title="decodeProductDescription(item.description)"
-                      @click="viewProduct(item)"
-                    >
+                      style="max-width: 300px;" :title="decodeProductDescription(item.description)"
+                      @click="viewProduct(item)">
                       {{ decodeProductDescription(item.description) }}
                     </div>
                     <div class="d-flex align-center gap-2 text-caption text-medium-emphasis font-mono">
@@ -1149,19 +807,12 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 <!-- Categoría & Marca (Clicable para edición rápida) -->
                 <td class="py-3">
                   <div class="d-flex flex-column gap-0.5">
-                    <span
-                      class="text-body-2 text-medium-emphasis font-weight-medium cursor-pointer hover-underline"
-                      title="Clic para editar categoría"
-                      @click="openQuickEdit(item, 'category')"
-                    >
+                    <span class="text-body-2 text-medium-emphasis font-weight-medium cursor-pointer hover-underline"
+                      title="Clic para editar categoría" @click="openQuickEdit(item, 'category')">
                       {{ item.categorie?.title || 'Sin Categoría' }}
                     </span>
-                    <span
-                      v-if="item.brand"
-                      class="text-caption text-disabled cursor-pointer hover-underline"
-                      title="Clic para editar marca"
-                      @click="openQuickEdit(item, 'category')"
-                    >
+                    <span v-if="item.brand" class="text-caption text-disabled cursor-pointer hover-underline"
+                      title="Clic para editar marca" @click="openQuickEdit(item, 'category')">
                       Marca: <strong>{{ item.brand }}</strong>
                     </span>
                   </div>
@@ -1176,43 +827,28 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
                 <!-- Precio Venta Final (Clicable para editar precio) -->
                 <td class="text-right py-3">
-                  <span
-                    class="font-mono font-weight-bold text-body-1 text-high-emphasis cursor-pointer hover-underline"
-                    title="Clic para editar precio de venta"
-                    @click="openQuickEdit(item, 'price')"
-                  >
+                  <span class="font-mono font-weight-bold text-body-1 text-high-emphasis cursor-pointer hover-underline"
+                    title="Clic para editar precio de venta" @click="openQuickEdit(item, 'price')">
                     ${{ ((item.price_sale || 0) * (1 + (item.tax_rate || 0) / 100)).toFixed(2) }}
                   </span>
                 </td>
 
                 <!-- Stock (Clicable para ajuste rápido de stock) -->
                 <td class="text-center py-3">
-                  <span
-                    v-if="item.item_type == 1"
+                  <span v-if="item.item_type == 1"
                     class="font-mono font-weight-bold text-body-2 px-2 py-0.5 rounded cursor-pointer hover-scale d-inline-block"
                     :class="(item.stock || 0) > 0 ? 'bg-success-lighten-5 text-success' : 'bg-error-lighten-5 text-error'"
-                    title="Clic para ajuste rápido de stock"
-                    @click="openStockDialog(item)"
-                  >
+                    title="Clic para ajuste rápido de stock" @click="openStockDialog(item)">
                     {{ item.stock || 0 }}
                   </span>
-                  <span
-                    v-else
-                    class="text-caption text-medium-emphasis font-weight-medium"
-                  >
+                  <span v-else class="text-caption text-medium-emphasis font-weight-medium">
                     Serv.
                   </span>
                 </td>
 
                 <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-                <td
-                  class="text-center py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    class="status-pill-clean"
-                    :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'"
-                  >
+                <td class="text-center py-3" style="white-space: nowrap;">
+                  <div class="status-pill-clean" :class="parseInt(item.state) === 1 ? 'status-paid' : 'status-pending'">
                     <span class="status-dot" />
                     <span>{{ parseInt(item.state) === 1 ? 'Activo' : 'Inactivo' }}</span>
                   </div>
@@ -1221,76 +857,32 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
                 <!-- Acciones (Menú de 3 puntos desplegable) -->
                 <td class="text-center py-3">
                   <div class="d-flex justify-center align-center">
-                    <VBtn
-                      size="small"
-                      color="secondary"
-                      variant="tonal"
-                      icon="ri-more-2-line"
-                      title="Opciones del Producto"
-                    >
-                      <VIcon
-                        icon="ri-more-2-line"
-                        size="18"
-                      />
-                      <VMenu
-                        activator="parent"
-                        transition="slide-y-transition"
-                        align="end"
-                        location="bottom end"
-                      >
-                        <VList
-                          density="compact"
-                          class="py-1 rounded-lg elevation-4 border"
-                          min-width="190"
-                        >
+                    <VBtn size="small" color="secondary" variant="tonal" icon="ri-more-2-line"
+                      title="Opciones del Producto">
+                      <VIcon icon="ri-more-2-line" size="18" />
+                      <VMenu activator="parent" transition="slide-y-transition" align="end" location="bottom end">
+                        <VList density="compact" class="py-1 rounded-lg elevation-4 border" min-width="190">
                           <!-- Edición Rápida (Stock, Precio, Categoría, Marca) -->
-                          <VListItem
-                            v-if="can('edit_product')"
-                            prepend-icon="ri-flashlight-line"
-                            title="Edición Rápida"
-                            class="text-primary text-body-2 font-weight-medium"
-                            @click="openQuickEdit(item, 'all')"
-                          />
+                          <VListItem v-if="can('edit_product')" prepend-icon="ri-flashlight-line" title="Edición Rápida"
+                            class="text-primary text-body-2 font-weight-medium" @click="openQuickEdit(item, 'all')" />
 
                           <!-- Ajuste Rápido de Stock -->
-                          <VListItem
-                            v-if="can('edit_product') && item.item_type == 1"
-                            prepend-icon="ri-box-3-line"
-                            title="Ajustar Stock"
-                            class="text-body-2"
-                            @click="openStockDialog(item)"
-                          />
+                          <VListItem v-if="can('edit_product') && item.item_type == 1" prepend-icon="ri-box-3-line"
+                            title="Ajustar Stock" class="text-body-2" @click="openStockDialog(item)" />
 
                           <!-- Ver Detalle -->
-                          <VListItem
-                            prepend-icon="ri-eye-line"
-                            title="Ver Detalle"
-                            class="text-body-2"
-                            @click="viewProduct(item)"
-                          />
+                          <VListItem prepend-icon="ri-eye-line" title="Ver Detalle" class="text-body-2"
+                            @click="viewProduct(item)" />
 
                           <!-- Editar Completo -->
-                          <VListItem
-                            v-if="can('edit_product')"
-                            prepend-icon="ri-pencil-line"
-                            title="Editar Completo"
-                            class="text-warning text-body-2"
-                            @click="editProduct(item)"
-                          />
+                          <VListItem v-if="can('edit_product')" prepend-icon="ri-pencil-line" title="Editar Completo"
+                            class="text-warning text-body-2" @click="editProduct(item)" />
 
-                          <VDivider
-                            v-if="can('delete_product')"
-                            class="my-1"
-                          />
+                          <VDivider v-if="can('delete_product')" class="my-1" />
 
                           <!-- Eliminar Producto -->
-                          <VListItem
-                            v-if="can('delete_product')"
-                            prepend-icon="ri-delete-bin-line"
-                            title="Eliminar Producto"
-                            class="text-error text-body-2"
-                            @click="deleteProduct(item)"
-                          />
+                          <VListItem v-if="can('delete_product')" prepend-icon="ri-delete-bin-line"
+                            title="Eliminar Producto" class="text-error text-body-2" @click="deleteProduct(item)" />
                         </VList>
                       </VMenu>
                     </VBtn>
@@ -1304,64 +896,37 @@ watch([() => searchForm.value.search, () => searchForm.value.categorie_id, () =>
 
       <!-- Paginación -->
       <VCard class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+        <div
+          class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ products.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> productos
+            Mostrando <strong class="text-high-emphasis">{{ products.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> productos
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPages"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-            @update:model-value="searchProducts"
-          />
+          <VPagination v-model="currentPage" :length="totalPages" rounded="circle"
+            :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable" color="primary" class="my-0" @update:model-value="searchProducts" />
         </div>
       </VCard>
     </div>
 
     <!-- Diálogo de Detalles del Producto -->
-    <ViewProduct
-      v-model:dialog="productDialog"
-      :product="selectedProduct"
-    />
+    <ViewProduct v-model:dialog="productDialog" :product="selectedProduct" />
 
     <!-- Diálogo de Eliminación de Producto -->
-    <DeleteProduct
-      v-if="productToDelete"
-      :product="productToDelete"
-      :show-dialog="deleteDialog"
-      @update:show-dialog="deleteDialog = $event"
-      @deleted="handleProductDeleted"
-    />
+    <DeleteProduct v-if="productToDelete" :product="productToDelete" :show-dialog="deleteDialog"
+      @update:show-dialog="deleteDialog = $event" @deleted="handleProductDeleted" />
 
     <!-- Diálogo de Importación de Excel -->
-    <ImportProductsDialog
-      v-model:isDialogVisible="importDialog"
-      @imported="handleProductsImported"
-    />
+    <ImportProductsDialog v-model:isDialogVisible="importDialog" @imported="handleProductsImported" />
 
     <!-- Diálogo de Edición Rápida (Stock, Precio Venta Final, Categoría, Marca) -->
-    <ProductQuickEditDialog
-      v-if="selectedQuickProduct"
-      v-model:isDialogVisible="quickEditDialog"
-      :product="selectedQuickProduct"
-      :categories="categories"
-      :brands="brands"
-      :initial-tab="quickEditTab"
-      @updated="handleProductUpdated"
-    />
+    <ProductQuickEditDialog v-if="selectedQuickProduct" v-model:isDialogVisible="quickEditDialog"
+      :product="selectedQuickProduct" :categories="categories" :brands="brands" :initial-tab="quickEditTab"
+      @updated="handleProductUpdated" />
 
     <!-- Diálogo de Ajuste Rápido de Stock -->
-    <ProductStockDialog
-      v-if="selectedStockProduct"
-      v-model:isDialogVisible="stockDialog"
-      :product="selectedStockProduct"
-      @updated="handleProductUpdated"
-    />
+    <ProductStockDialog v-if="selectedStockProduct" v-model:isDialogVisible="stockDialog"
+      :product="selectedStockProduct" @updated="handleProductUpdated" />
   </div>
 </template>
 

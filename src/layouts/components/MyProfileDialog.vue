@@ -46,6 +46,12 @@ const themes = [
     icon: 'ri-sun-cloudy-line',
     desc: 'Glassmorphism luminoso y translúcido',
   },
+  {
+    name: 'taller',
+    label: 'Colores del Taller',
+    icon: 'ri-tools-fill',
+    desc: 'Colores oficiales: Rojo vino, blanco y gris azulado',
+  },
 ]
 
 const props = defineProps({

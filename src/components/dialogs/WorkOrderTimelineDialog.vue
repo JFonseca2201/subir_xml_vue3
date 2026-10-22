@@ -29,21 +29,33 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'update:modelValue', 'close', 'change-status', 'generate-sale'])
-
+const emit = defineEmits(['update:isDialogVisible', 'update:modelValue', 'close', 'change-status', 'generate-sale', 'update:isOpen'])
 // Diálogo reactivo
 const dialog = computed({
-  get: () => props.isDialogVisible || props.modelValue || props.isOpen,
-  set: val => {
-    emit('update:isDialogVisible', val)
-    emit('update:modelValue', val)
-    if (!val) emit('close')
+  get: () =>
+    props.isDialogVisible ||
+    props.modelValue ||
+    props.isOpen,
+
+  set: value => {
+    emit('update:isDialogVisible', value)
+    emit('update:modelValue', value)
+    emit('update:isOpen', value)
+
+    if (!value)
+      emit('close')
   },
 })
 
-// Manejo del cierre del modal
+// Cerrar el modal de forma controlada
 const handleClose = () => {
   dialog.value = false
+}
+
+// Cerrar el modal antes de iniciar la facturación
+const handleGenerateSale = () => {
+  handleClose()
+  emit('generate-sale')
 }
 
 // Objeto de la orden unificado
@@ -54,7 +66,7 @@ const numeroOrden = computed(() => {
   const num = targetOrder.value?.number || targetOrder.value?.id
   if (!num) return 'SIN NÚMERO'
   const str = String(num).trim()
-  
+
   return str.startsWith('#') ? str : (str.includes('-') ? str : '#' + str)
 })
 
@@ -66,10 +78,10 @@ const vehiculoInfo = computed(() => {
     const brand = getBrandNameById(v.brand?.name || v.brand || v.brand_id) || ''
     const model = v.model || ''
     const brandModel = `${brand} ${model}`.trim()
-    
+
     return brandModel ? `${brandModel} • ${plate}` : plate
   }
-  
+
   return 'Vehículo en Taller'
 })
 
@@ -77,10 +89,10 @@ const vehiculoInfo = computed(() => {
 const clienteInfo = computed(() => {
   if (targetOrder.value?.client) {
     const c = targetOrder.value.client
-    
+
     return c.full_name || c.name || ''
   }
-  
+
   return ''
 })
 
@@ -170,7 +182,7 @@ const timelineSteps = computed(() => {
         label: 'Generar Venta / Facturar',
         color: 'success',
         icon: 'ri-shopping-cart-line',
-        handler: () => emit('generate-sale'),
+        handler: handleGenerateSale,
       } : null,
     },
   ]
@@ -178,23 +190,12 @@ const timelineSteps = computed(() => {
 </script>
 
 <template>
-  <VDialog
-    v-model="dialog"
-    max-width="640"
-    :fullscreen="$vuetify.display.smAndDown"
-    scrollable
-    transition="dialog-bottom-transition"
-  >
+  <VDialog v-model="dialog" max-width="640" :fullscreen="$vuetify.display.smAndDown" scrollable
+    transition="dialog-bottom-transition">
     <VCard class="custom-dialog-card elevation-12">
       <!-- Header Banner Primary (Estilo unificado del sistema) -->
       <div class="custom-dialog-header-primary bg-primary text-white">
-        <VBtn
-          icon="ri-close-line"
-          variant="text"
-          size="small"
-          class="custom-dialog-close-btn"
-          @click="handleClose"
-        />
+        <VBtn icon="ri-close-line" variant="text" size="small" class="custom-dialog-close-btn" @click="handleClose" />
         <div class="custom-dialog-avatar">
           <VIcon icon="ri-time-line" />
         </div>
@@ -207,30 +208,17 @@ const timelineSteps = computed(() => {
       </div>
 
       <!-- CUERPO DEL MODAL (LÍNEA DE TIEMPO) -->
-      <VCardText
-        class="pa-6 custom-scrollbar bg-grey-lighten-5"
-        style="background-color: #fafafa; max-height: 60vh;"
-      >
+      <VCardText class="pa-6 custom-scrollbar bg-grey-lighten-5" style="background-color: #fafafa; max-height: 60vh;">
         <div class="timeline-container">
-          <div
-            v-for="(step, index) in timelineSteps"
-            :key="step.id"
-            class="timeline-item"
-            :class="`state-${step.status}`"
-          >
+          <div v-for="(step, index) in timelineSteps" :key="step.id" class="timeline-item"
+            :class="`state-${step.status}`">
             <!-- Línea conectora hacia el siguiente nodo -->
-            <div
-              v-if="index < timelineSteps.length - 1"
-              class="timeline-connector"
-              :class="{ 'completed-line': step.status === 'completed' }"
-            />
+            <div v-if="index < timelineSteps.length - 1" class="timeline-connector"
+              :class="{ 'completed-line': step.status === 'completed' }" />
 
             <!-- Icono Circular del Nodo -->
             <div class="timeline-icon-container">
-              <VIcon
-                :icon="step.icon"
-                size="18"
-              />
+              <VIcon :icon="step.icon" size="18" />
             </div>
 
             <!-- Contenido del Nodo -->
@@ -239,39 +227,21 @@ const timelineSteps = computed(() => {
                 <h4 class="text-subtitle-2 font-weight-bold text-uppercase timeline-title">
                   {{ step.title }}
                 </h4>
-                <span
-                  v-if="step.date"
-                  class="text-caption timeline-date d-flex align-center gap-1"
-                >
-                  <VIcon
-                    icon="ri-time-line"
-                    size="13"
-                  />
+                <span v-if="step.date" class="text-caption timeline-date d-flex align-center gap-1">
+                  <VIcon icon="ri-time-line" size="13" />
                   {{ step.date }}
                 </span>
-                <span
-                  v-else
-                  class="text-caption text-grey-lighten-1"
-                >Por definir</span>
+                <span v-else class="text-caption text-grey-lighten-1">Por definir</span>
               </div>
               <p class="text-caption timeline-description mb-0">
                 {{ step.description }}
               </p>
 
               <!-- Botón de acción si es el paso activo -->
-              <div
-                v-if="step.status === 'active' && step.action"
-                class="mt-3"
-              >
-                <VBtn
-                  :color="step.action.color"
-                  variant="elevated"
-                  size="small"
-                  class="text-none rounded-lg action-btn font-weight-bold"
-                  :prepend-icon="step.action.icon"
-                  :loading="props.isUpdating"
-                  @click="step.action.handler"
-                >
+              <div v-if="step.status === 'active' && step.action" class="mt-3">
+                <VBtn :color="step.action.color" variant="elevated" size="small"
+                  class="text-none rounded-lg action-btn font-weight-bold" :prepend-icon="step.action.icon"
+                  :loading="props.isUpdating" @click="step.action.handler">
                   {{ step.action.label }}
                 </VBtn>
               </div>
@@ -283,18 +253,10 @@ const timelineSteps = computed(() => {
       <VDivider />
 
       <!-- PIE DEL MODAL -->
-      <VCardActions
-        class="pa-4 bg-white d-flex justify-end align-center gap-3"
-        style="position: sticky; bottom: 0; z-index: 2;"
-      >
-        <VBtn
-          color="secondary"
-          variant="outlined"
-          prepend-icon="ri-close-line"
-          class="rounded-lg px-6 font-weight-medium"
-          height="40"
-          @click="handleClose"
-        >
+      <VCardActions class="pa-4 bg-white d-flex justify-end align-center gap-3"
+        style="position: sticky; bottom: 0; z-index: 2;">
+        <VBtn color="secondary" variant="outlined" prepend-icon="ri-close-line"
+          class="rounded-lg px-6 font-weight-medium" height="40" @click="handleClose">
           Cerrar
         </VBtn>
       </VCardActions>

@@ -23,6 +23,7 @@ const currentThemeIcon = computed(() => {
   if (configStore.theme === 'dark-glass') return 'ri-moon-cloudy-line'
   if (configStore.theme === 'semi-dark-glass') return 'ri-contrast-line'
   if (configStore.theme === 'light-glass') return 'ri-sun-cloudy-line'
+  if (configStore.theme === 'taller') return 'ri-tools-fill'
   if (configStore.theme === 'dark') return 'ri-moon-clear-line'
   return 'ri-sun-line'
 })
@@ -37,31 +38,13 @@ const currentThemeLabel = computed(() => {
   <IconBtn class="theme-switcher-btn">
     <VIcon :icon="currentThemeIcon" size="22" />
 
-    <VTooltip
-      activator="parent"
-      open-delay="1000"
-      scroll-strategy="close"
-    >
+    <VTooltip activator="parent" open-delay="1000" scroll-strategy="close">
       <span class="text-capitalize">{{ currentThemeLabel }}</span>
     </VTooltip>
-    <VMenu
-      activator="parent"
-      offset="15px"
-      width="220"
-    >
-      <VList
-        v-model:selected="selectedItem"
-        mandatory
-      >
-        <VListItem
-          v-for="{ name, icon, label } in props.themes"
-          :key="name"
-          :value="name"
-          :prepend-icon="icon"
-          color="primary"
-          class="px-4"
-          @click="() => { configStore.theme = name }"
-        >
+    <VMenu activator="parent" offset="15px" width="220">
+      <VList v-model:selected="selectedItem" mandatory>
+        <VListItem v-for="{ name, icon, label } in props.themes" :key="name" :value="name" :prepend-icon="icon"
+          color="primary" class="px-4" @click="() => { configStore.theme = name }">
           <VListItemTitle>
             {{ label || name }}
           </VListItemTitle>

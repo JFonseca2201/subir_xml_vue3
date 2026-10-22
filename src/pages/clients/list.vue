@@ -295,7 +295,7 @@ onActivated(() => {
               Total Clientes
             </div>
             <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
-              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">en sistema</span>
+              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en sistema</span>
             </div>
           </div>
         </VCard>
@@ -311,7 +311,8 @@ onActivated(() => {
               Personas Naturales
             </div>
             <div class="text-h6 font-weight-bold text-info text-truncate">
-              {{ naturalClientsCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
+              {{ naturalClientsCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en
+                página</span>
             </div>
           </div>
         </VCard>
@@ -327,7 +328,8 @@ onActivated(() => {
               Empresas / Jurídicos
             </div>
             <div class="text-h6 font-weight-bold text-warning text-truncate">
-              {{ companyClientsCount }} <span class="text-caption text-disabled font-weight-regular">en página</span>
+              {{ companyClientsCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp; en
+                página</span>
             </div>
           </div>
         </VCard>

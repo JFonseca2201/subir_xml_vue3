@@ -120,7 +120,7 @@ const showItem = ShowInvoice => {
       confirmButtonColor: '#7367f0',
     })
     showNotification('El documento no existe porque fue anulado', 'warning')
-    
+
     return
   }
 
@@ -219,10 +219,10 @@ const formatDate = dateString => {
     const y = date.getFullYear()
     const m = String(date.getMonth() + 1).padStart(2, '0')
     const d = String(date.getDate()).padStart(2, '0')
-    
+
     return `${y}/${m}/${d}`
   }
-  
+
   return dateString
 }
 
@@ -236,7 +236,7 @@ onMounted(() => {
 onActivated(() => {
   if (isFirstActivation) {
     isFirstActivation = false
-    
+
     return
   }
   list()
@@ -249,17 +249,8 @@ onActivated(() => {
     <div class="d-flex align-center justify-space-between flex-wrap gap-4 mb-5">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 d-flex align-center">
-          <VAvatar
-            size="42"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="me-3"
-          >
-            <VIcon
-              icon="ri-shopping-bag-3-line"
-              size="26"
-            />
+          <VAvatar size="42" color="primary" variant="tonal" rounded="lg" class="me-3">
+            <VIcon icon="ri-shopping-bag-3-line" size="26" />
           </VAvatar>
           Compras y Facturas de Proveedores
         </h1>
@@ -269,87 +260,43 @@ onActivated(() => {
       </div>
 
       <div class="d-flex align-center justify-end gap-2 flex-wrap ms-auto crud-header-actions">
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/invoice/manual-purchase"
-          size="default"
-          class="elevation-2 font-weight-bold order-1 order-sm-3"
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/invoice/manual-purchase" size="default"
+          class="elevation-2 font-weight-bold order-1 order-sm-3">
           Nueva Compra
         </VBtn>
-        <VBtn
-          color="info"
-          variant="tonal"
-          prepend-icon="ri-exchange-dollar-line"
-          to="/invoice/reconciliation"
-          size="default"
-          class="font-weight-medium order-2 order-sm-1"
-        >
+        <VBtn color="info" variant="tonal" prepend-icon="ri-exchange-dollar-line" to="/invoice/reconciliation"
+          size="default" class="font-weight-medium order-2 order-sm-1">
           Conciliación de Pagos
         </VBtn>
-        <VBtn
-          color="success"
-          variant="tonal"
-          prepend-icon="ri-hand-coin-line"
-          to="/invoice/supplier-credits"
-          size="default"
-          class="font-weight-medium order-3 order-sm-2"
-        >
+        <VBtn color="success" variant="tonal" prepend-icon="ri-hand-coin-line" to="/invoice/supplier-credits"
+          size="default" class="font-weight-medium order-3 order-sm-2">
           Saldos a Favor
         </VBtn>
       </div>
     </div>
 
     <!-- Barra de Métricas Rápidas (KPIs) -->
-    <VRow
-      class="mb-4 d-none d-sm-flex"
-      dense
-    >
-      <VCol
-        cols="12"
-        sm="4"
-      >
+    <VRow class="mb-4 d-none d-sm-flex" dense>
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-file-list-3-line"
-              size="24"
-            />
+          <VAvatar size="44" color="primary" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-file-list-3-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Total Facturas
             </div>
             <div class="text-h6 font-weight-bold text-high-emphasis text-truncate">
-              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">registradas</span>
+              {{ totalItems }} <span class="text-caption text-disabled font-weight-regular">&nbsp; registradas</span>
             </div>
           </div>
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="success"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-money-dollar-circle-line"
-              size="24"
-            />
+          <VAvatar size="44" color="success" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-money-dollar-circle-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
@@ -362,29 +309,18 @@ onActivated(() => {
         </VCard>
       </VCol>
 
-      <VCol
-        cols="12"
-        sm="4"
-      >
+      <VCol cols="12" sm="4">
         <VCard class="kpi-stat-card elevation-0 border rounded-xl pa-3.5 bg-surface d-flex align-center gap-3 h-100">
-          <VAvatar
-            size="44"
-            color="info"
-            variant="tonal"
-            rounded="lg"
-            class="flex-shrink-0"
-          >
-            <VIcon
-              icon="ri-checkbox-circle-line"
-              size="24"
-            />
+          <VAvatar size="44" color="info" variant="tonal" rounded="lg" class="flex-shrink-0">
+            <VIcon icon="ri-checkbox-circle-line" size="24" />
           </VAvatar>
           <div class="min-w-0 flex-grow-1">
             <div class="text-caption text-medium-emphasis font-weight-medium text-truncate">
               Facturas Procesadas
             </div>
             <div class="text-h6 font-weight-bold text-info text-truncate">
-              {{ processedInvoicesCount }} <span class="text-caption text-disabled font-weight-regular">ingresadas</span>
+              {{ processedInvoicesCount }} <span class="text-caption text-disabled font-weight-regular">&nbsp;
+                ingresadas</span>
             </div>
           </div>
         </VCard>
@@ -396,129 +332,56 @@ onActivated(() => {
       <VCardText class="pa-4">
         <div class="d-flex align-center justify-space-between mb-3">
           <div class="d-flex align-center gap-2 text-subtitle-2 font-weight-bold text-high-emphasis">
-            <VIcon
-              icon="ri-filter-3-line"
-              size="18"
-              color="primary"
-            />
+            <VIcon icon="ri-filter-3-line" size="18" color="primary" />
             <span>Filtros de Compras</span>
           </div>
 
-          <VBtn
-            v-if="hasActiveFilters"
-            variant="text"
-            color="error"
-            size="small"
-            prepend-icon="ri-filter-off-line"
-            class="font-weight-semibold"
-            @click="refresh"
-          >
+          <VBtn v-if="hasActiveFilters" variant="text" color="error" size="small" prepend-icon="ri-filter-off-line"
+            class="font-weight-semibold" @click="refresh">
             Limpiar Filtros
           </VBtn>
         </div>
 
-        <VRow
-          dense
-          class="gap-y-3"
-        >
-          <VCol
-            cols="12"
-            md="4"
-          >
-            <VTextField
-              v-model="search"
-              label="Buscar factura"
-              placeholder="Número, proveedor, RUC..."
-              prepend-inner-icon="ri-search-2-line"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              clearable
-              color="primary"
-              :loading="isLoading || isSearching"
-            />
+        <VRow dense class="gap-y-3">
+          <VCol cols="12" md="4">
+            <VTextField v-model="search" label="Buscar factura" placeholder="Número, proveedor, RUC..."
+              prepend-inner-icon="ri-search-2-line" variant="outlined" density="comfortable" hide-details="auto"
+              clearable color="primary" :loading="isLoading || isSearching" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <VAutocomplete
-              v-model="supplier_id"
-              label="Proveedor"
-              placeholder="Todos los proveedores"
-              :items="providers"
-              item-title="name"
-              item-value="id"
-              clearable
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              color="primary"
-            />
+          <VCol cols="12" sm="6" md="4">
+            <VAutocomplete v-model="supplier_id" label="Proveedor" placeholder="Todos los proveedores"
+              :items="providers" item-title="name" item-value="id" clearable variant="outlined" density="comfortable"
+              hide-details="auto" color="primary" />
           </VCol>
 
-          <VCol
-            cols="12"
-            sm="6"
-            md="4"
-          >
-            <AppDateTimePicker
-              v-model="range_date"
-              label="Rango de fecha"
-              placeholder="Seleccionar período..."
-              :config="{ mode: 'range' }"
-              variant="outlined"
-              density="comfortable"
-              hide-details="auto"
-              color="primary"
-            />
+          <VCol cols="12" sm="6" md="4">
+            <AppDateTimePicker v-model="range_date" label="Rango de fecha" placeholder="Seleccionar período..."
+              :config="{ mode: 'range' }" variant="outlined" density="comfortable" hide-details="auto"
+              color="primary" />
           </VCol>
         </VRow>
       </VCardText>
     </VCard>
 
     <!-- ESTADO VACÍO (Solo si no está cargando y no hay facturas) -->
-    <VCard
-      v-if="!isLoading && isInitialLoadDone && (!list_invoices || list_invoices.length === 0)"
-      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4"
-    >
-      <VAvatar
-        size="76"
-        color="primary"
-        variant="tonal"
-        class="mb-4"
-      >
-        <VIcon
-          size="38"
-          icon="ri-shopping-bag-3-line"
-        />
+    <VCard v-if="!isLoading && isInitialLoadDone && (!list_invoices || list_invoices.length === 0)"
+      class="rounded-xl border elevation-0 pa-10 text-center bg-surface my-4">
+      <VAvatar size="76" color="primary" variant="tonal" class="mb-4">
+        <VIcon size="38" icon="ri-shopping-bag-3-line" />
       </VAvatar>
       <h3 class="text-h5 font-weight-bold text-high-emphasis mb-2">
         No se encontraron facturas de compra
       </h3>
-      <p
-        class="text-body-1 text-medium-emphasis mb-5 mx-auto"
-        style="max-width: 480px;"
-      >
+      <p class="text-body-1 text-medium-emphasis mb-5 mx-auto" style="max-width: 480px;">
         Prueba cambiando el filtro de búsqueda o registra una nueva compra a proveedores.
       </p>
       <div class="d-flex justify-center gap-3">
-        <VBtn
-          v-if="hasActiveFilters"
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-filter-off-line"
-          @click="refresh"
-        >
+        <VBtn v-if="hasActiveFilters" variant="outlined" color="secondary" prepend-icon="ri-filter-off-line"
+          @click="refresh">
           Restablecer Filtros
         </VBtn>
-        <VBtn
-          color="primary"
-          prepend-icon="ri-add-line"
-          to="/invoice/manual-purchase"
-        >
+        <VBtn color="primary" prepend-icon="ri-add-line" to="/invoice/manual-purchase">
           Nueva Compra
         </VBtn>
       </div>
@@ -530,265 +393,152 @@ onActivated(() => {
       <div class="d-md-none d-flex flex-column gap-3 mb-4 mobile-card-list-container">
         <!-- Skeleton Móvil mientras carga -->
         <template v-if="isLoading">
-          <VCard
-            v-for="n in 4"
-            :key="'mob-skel-inv-' + n"
-            class="mobile-invoice-card elevation-0 pa-4"
-          >
+          <VCard v-for="n in 4" :key="'mob-skel-inv-' + n" class="mobile-invoice-card elevation-0 pa-4">
             <div class="d-flex align-center justify-space-between mb-3 pb-2 border-b">
-              <div
-                class="shimmer-line"
-                style="width: 100px; height: 16px;"
-              />
+              <div class="shimmer-line" style="width: 100px; height: 16px;" />
               <div class="d-flex gap-1 listing-item-actions">
-                <div
-                  class="shimmer-button rounded"
-                  style="width: 34px; height: 34px; border-radius: 8px;"
-                />
-                <div
-                  class="shimmer-button rounded"
-                  style="width: 34px; height: 34px; border-radius: 8px;"
-                />
+                <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
+                <div class="shimmer-button rounded" style="width: 34px; height: 34px; border-radius: 8px;" />
               </div>
             </div>
             <div class="d-flex align-center gap-3 mb-3">
-              <div
-                class="shimmer-circle"
-                style="width: 38px; height: 38px; border-radius: 8px;"
-              />
+              <div class="shimmer-circle" style="width: 38px; height: 38px; border-radius: 8px;" />
               <div class="flex-grow-1">
-                <div
-                  class="shimmer-line w-75 mb-2"
-                  style="height: 16px;"
-                />
-                <div
-                  class="shimmer-line w-40"
-                  style="height: 12px;"
-                />
+                <div class="shimmer-line w-75 mb-2" style="height: 16px;" />
+                <div class="shimmer-line w-40" style="height: 12px;" />
               </div>
             </div>
-            <div
-              class="shimmer-line w-100 mb-2"
-              style="height: 36px; border-radius: 8px;"
-            />
+            <div class="shimmer-line w-100 mb-2" style="height: 36px; border-radius: 8px;" />
             <div class="d-flex justify-space-between pt-2 border-t">
-              <div
-                class="shimmer-line"
-                style="width: 60px; height: 16px;"
-              />
-              <div
-                class="shimmer-chip"
-                style="width: 80px; height: 24px;"
-              />
+              <div class="shimmer-line" style="width: 60px; height: 16px;" />
+              <div class="shimmer-chip" style="width: 80px; height: 24px;" />
             </div>
           </VCard>
         </template>
 
         <!-- Tarjetas reales de facturas -->
         <template v-else>
-          <VCard
-            v-for="(invoice, index) in list_invoices"
-            :key="'mob-inv-' + (invoice.id || index)"
-            class="mobile-invoice-card elevation-0"
-          >
-          <!-- Cabecera Móvil: N° Factura + Fecha + Acciones Rápidas -->
-          <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
-            <div class="d-flex align-center gap-2 min-w-0">
-              <span
-                class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1 text-truncate"
-                @click="showItem(invoice)"
-              >
-                {{ invoice.invoice_number || 'S/N' }}
-              </span>
-              <span class="text-caption text-disabled">•</span>
-              <span class="text-caption text-medium-emphasis text-no-wrap">
-                {{ formatDate(invoice.issue_date) }}
-              </span>
+          <VCard v-for="(invoice, index) in list_invoices" :key="'mob-inv-' + (invoice.id || index)"
+            class="mobile-invoice-card elevation-0">
+            <!-- Cabecera Móvil: N° Factura + Fecha + Acciones Rápidas -->
+            <div class="d-flex align-center justify-space-between gap-2 mb-2 pb-2 border-b">
+              <div class="d-flex align-center gap-2 min-w-0">
+                <span
+                  class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-1 text-truncate"
+                  @click="showItem(invoice)">
+                  {{ invoice.invoice_number || 'S/N' }}
+                </span>
+                <span class="text-caption text-disabled">•</span>
+                <span class="text-caption text-medium-emphasis text-no-wrap">
+                  {{ formatDate(invoice.issue_date) }}
+                </span>
+              </div>
+
+              <!-- Botones de Acción Móvil -->
+              <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
+                <VBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" size="small" color="success"
+                  variant="tonal" icon="ri-check-line" title="Procesar Factura" @click="processInvoice(invoice)" />
+                <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Ficha"
+                  @click="showItem(invoice)" />
+                <VBtn size="small" color="error" variant="tonal" icon="ri-delete-bin-line" title="Eliminar Factura"
+                  @click="deleteInvoice(invoice)" />
+              </div>
             </div>
 
-            <!-- Botones de Acción Móvil -->
-            <div class="d-flex align-center gap-1 flex-shrink-0 listing-item-actions">
-              <VBtn
-                v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                size="small"
-                color="success"
-                variant="tonal"
-                icon="ri-check-line"
-                title="Procesar Factura"
-                @click="processInvoice(invoice)"
-              />
-              <VBtn
-                size="small"
-                color="info"
-                variant="tonal"
-                icon="ri-eye-line"
-                title="Ver Ficha"
-                @click="showItem(invoice)"
-              />
-              <VBtn
-                size="small"
-                color="error"
-                variant="tonal"
-                icon="ri-delete-bin-line"
-                title="Eliminar Factura"
-                @click="deleteInvoice(invoice)"
-              />
+            <!-- Proveedor -->
+            <div class="d-flex align-center gap-3 mb-2.5">
+              <VAvatar size="38" color="primary" variant="tonal" rounded="lg" class="elevation-0 flex-shrink-0 mt-0.5">
+                <VIcon icon="ri-store-2-line" size="20" />
+              </VAvatar>
+              <div class="min-w-0 flex-grow-1">
+                <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                  :title="invoice.supplier?.name">
+                  {{ invoice.supplier?.name || 'Proveedor no registrado' }}
+                </div>
+                <div v-if="invoice.supplier?.ruc" class="text-caption text-medium-emphasis font-mono">
+                  RUC: {{ invoice.supplier.ruc }}
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Proveedor -->
-          <div class="d-flex align-center gap-3 mb-2.5">
-            <VAvatar
-              size="38"
-              color="primary"
-              variant="tonal"
-              rounded="lg"
-              class="elevation-0 flex-shrink-0 mt-0.5"
-            >
-              <VIcon
-                icon="ri-store-2-line"
-                size="20"
-              />
-            </VAvatar>
-            <div class="min-w-0 flex-grow-1">
-              <div
-                class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                :title="invoice.supplier?.name"
-              >
-                {{ invoice.supplier?.name || 'Proveedor no registrado' }}
+            <!-- Grid de Importes: Subtotal, IVA, Total -->
+            <div class="d-flex align-center justify-space-between mb-2.5 px-3 py-2 bg-grey-lighten-4 rounded-lg">
+              <div>
+                <div class="text-caption text-medium-emphasis font-weight-medium" style="font-size: 0.7rem;">
+                  Subtotal
+                </div>
+                <div class="font-mono font-weight-medium text-body-2 text-high-emphasis">
+                  ${{ Number(invoice.subtotal || 0).toFixed(2) }}
+                </div>
               </div>
-              <div
-                v-if="invoice.supplier?.ruc"
-                class="text-caption text-medium-emphasis font-mono"
-              >
-                RUC: {{ invoice.supplier.ruc }}
+              <div>
+                <div class="text-caption text-medium-emphasis font-weight-medium" style="font-size: 0.7rem;">
+                  IVA
+                </div>
+                <div class="font-mono font-weight-medium text-body-2 text-medium-emphasis">
+                  ${{ Number(invoice.tax || 0).toFixed(2) }}
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-caption text-medium-emphasis font-weight-medium" style="font-size: 0.7rem;">
+                  Total Factura
+                </div>
+                <div class="font-mono font-weight-bold text-body-1 text-success">
+                  ${{ Number(invoice.total || 0).toFixed(2) }}
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Grid de Importes: Subtotal, IVA, Total -->
-          <div class="d-flex align-center justify-space-between mb-2.5 px-3 py-2 bg-grey-lighten-4 rounded-lg">
-            <div>
-              <div
-                class="text-caption text-medium-emphasis font-weight-medium"
-                style="font-size: 0.7rem;"
-              >
-                Subtotal
-              </div>
-              <div class="font-mono font-weight-medium text-body-2 text-high-emphasis">
-                ${{ Number(invoice.subtotal || 0).toFixed(2) }}
+            <!-- Pie Móvil: Estado del Proceso -->
+            <div class="d-flex align-center justify-space-between pt-1 border-t">
+              <span class="text-caption text-disabled font-weight-medium">Estado</span>
+              <div class="status-pill-clean" :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'">
+                <span class="status-dot" />
+                <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
               </div>
             </div>
-            <div>
-              <div
-                class="text-caption text-medium-emphasis font-weight-medium"
-                style="font-size: 0.7rem;"
-              >
-                IVA
-              </div>
-              <div class="font-mono font-weight-medium text-body-2 text-medium-emphasis">
-                ${{ Number(invoice.tax || 0).toFixed(2) }}
-              </div>
-            </div>
-            <div class="text-right">
-              <div
-                class="text-caption text-medium-emphasis font-weight-medium"
-                style="font-size: 0.7rem;"
-              >
-                Total Factura
-              </div>
-              <div class="font-mono font-weight-bold text-body-1 text-success">
-                ${{ Number(invoice.total || 0).toFixed(2) }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Pie Móvil: Estado del Proceso -->
-          <div class="d-flex align-center justify-space-between pt-1 border-t">
-            <span class="text-caption text-disabled font-weight-medium">Estado</span>
-            <div
-              class="status-pill-clean"
-              :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
-            >
-              <span class="status-dot" />
-              <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
-            </div>
-          </div>
-        </VCard>
+          </VCard>
         </template>
       </div>
 
       <!-- VISTA ESCRITORIO: TABLA MODERNA (d-none d-md-block) -->
       <VCard class="d-none d-md-block rounded-xl border overflow-hidden elevation-0 bg-surface">
-        <VTable
-          hover
-          class="invoices-modern-table overflow-x-auto"
-        >
+        <VTable hover class="invoices-modern-table overflow-x-auto">
           <thead>
             <tr class="bg-grey-lighten-5">
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 50px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 50px;">
                 #
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="min-width: 220px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="min-width: 220px;">
                 Proveedor
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 160px;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3" style="width: 160px;">
                 N° Factura
               </th>
-              <th
-                class="text-left font-weight-bold text-uppercase py-3"
-                style="width: 145px; min-width: 140px; white-space: nowrap;"
-              >
+              <th class="text-left font-weight-bold text-uppercase py-3"
+                style="width: 145px; min-width: 140px; white-space: nowrap;">
                 Fecha
               </th>
-              <th
-                class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 110px;"
-              >
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px;">
                 Subtotal
               </th>
-              <th
-                class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 110px;"
-              >
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 110px;">
                 IVA
               </th>
-              <th
-                class="text-right font-weight-bold text-uppercase py-3"
-                style="width: 120px;"
-              >
+              <th class="text-right font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Total
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 120px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Estado
               </th>
-              <th
-                class="text-center font-weight-bold text-uppercase py-3"
-                style="width: 120px;"
-              >
+              <th class="text-center font-weight-bold text-uppercase py-3" style="width: 120px;">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody>
             <template v-if="isLoading">
-              <tr
-                v-for="n in 5"
-                :key="'skel-inv-row-' + n"
-                class="skeleton-row align-middle"
-              >
+              <tr v-for="n in 5" :key="'skel-inv-row-' + n" class="skeleton-row align-middle">
                 <td class="py-4 text-center" style="width: 50px;">
                   <div class="shimmer-line mx-auto" style="width: 24px; height: 16px;" />
                 </td>
@@ -829,11 +579,7 @@ onActivated(() => {
               </tr>
             </template>
             <template v-else>
-              <tr
-                v-for="(invoice, index) in list_invoices"
-                :key="invoice.id"
-                class="invoice-table-row"
-              >
+              <tr v-for="(invoice, index) in list_invoices" :key="invoice.id" class="invoice-table-row">
                 <!-- Índice -->
                 <td class="text-center py-3">
                   <span class="text-caption font-mono font-weight-bold text-disabled">
@@ -844,30 +590,16 @@ onActivated(() => {
                 <!-- Proveedor -->
                 <td class="py-3">
                   <div class="d-flex align-center">
-                    <VAvatar
-                      size="36"
-                      color="primary"
-                      variant="tonal"
-                      rounded="lg"
-                      class="elevation-0 flex-shrink-0 me-4"
-                    >
-                      <VIcon
-                        icon="ri-store-2-line"
-                        size="20"
-                      />
+                    <VAvatar size="36" color="primary" variant="tonal" rounded="lg"
+                      class="elevation-0 flex-shrink-0 me-4">
+                      <VIcon icon="ri-store-2-line" size="20" />
                     </VAvatar>
                     <div class="min-w-0">
-                      <div
-                        class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
-                        style="max-width: 260px;"
-                        :title="invoice.supplier?.name || 'Proveedor no registrado'"
-                      >
+                      <div class="font-weight-bold text-high-emphasis text-body-2 text-truncate"
+                        style="max-width: 260px;" :title="invoice.supplier?.name || 'Proveedor no registrado'">
                         {{ invoice.supplier?.name || 'Proveedor no registrado' }}
                       </div>
-                      <div
-                        v-if="invoice.supplier?.ruc"
-                        class="text-caption text-medium-emphasis font-mono"
-                      >
+                      <div v-if="invoice.supplier?.ruc" class="text-caption text-medium-emphasis font-mono">
                         RUC: {{ invoice.supplier.ruc }}
                       </div>
                     </div>
@@ -876,33 +608,19 @@ onActivated(() => {
 
                 <!-- Factura -->
                 <td class="py-3">
-                  <span
-                    class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
-                    @click="showItem(invoice)"
-                  >
+                  <span class="font-mono font-weight-bold text-primary cursor-pointer hover-underline text-body-2"
+                    @click="showItem(invoice)">
                     {{ invoice.invoice_number || 'S/N' }}
                   </span>
                 </td>
 
                 <!-- Fecha -->
-                <td
-                  class="py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
-                    style="white-space: nowrap;"
-                  >
-                    <VIcon
-                      icon="ri-calendar-line"
-                      size="16"
-                      color="medium-emphasis"
-                      class="me-1 flex-shrink-0"
-                    />
-                    <span
-                      class="text-no-wrap font-weight-medium"
-                      style="white-space: nowrap;"
-                    >{{ formatDate(invoice.issue_date) }}</span>
+                <td class="py-3" style="white-space: nowrap;">
+                  <div class="d-flex align-center text-body-2 text-medium-emphasis text-no-wrap"
+                    style="white-space: nowrap;">
+                    <VIcon icon="ri-calendar-line" size="16" color="medium-emphasis" class="me-1 flex-shrink-0" />
+                    <span class="text-no-wrap font-weight-medium" style="white-space: nowrap;">{{
+                      formatDate(invoice.issue_date) }}</span>
                   </div>
                 </td>
 
@@ -928,14 +646,9 @@ onActivated(() => {
                 </td>
 
                 <!-- Estado (Pill limpia aceituna / pastel con punto) -->
-                <td
-                  class="text-center py-3"
-                  style="white-space: nowrap;"
-                >
-                  <div
-                    class="status-pill-clean"
-                    :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'"
-                  >
+                <td class="text-center py-3" style="white-space: nowrap;">
+                  <div class="status-pill-clean"
+                    :class="invoice.invoice_process === 1 ? 'status-paid' : 'status-partial'">
                     <span class="status-dot" />
                     <span>{{ invoice.invoice_process === 1 ? 'Procesada' : 'Pendiente' }}</span>
                   </div>
@@ -945,44 +658,18 @@ onActivated(() => {
                 <td class="text-center py-3">
                   <div class="d-flex justify-center align-center gap-1">
                     <!-- Procesar Factura -->
-                    <VBtn
-                      v-if="!invoice.invoice_process || invoice.invoice_process === 2"
-                      size="small"
-                      color="success"
-                      variant="tonal"
-                      icon="ri-check-line"
-                      title="Procesar Factura"
-                      @click="processInvoice(invoice)"
-                    />
-                    <VBtn
-                      v-else
-                      size="small"
-                      color="success"
-                      variant="tonal"
-                      icon="ri-file-check-line"
-                      title="Factura Procesada"
-                      disabled
-                    />
+                    <VBtn v-if="!invoice.invoice_process || invoice.invoice_process === 2" size="small" color="success"
+                      variant="tonal" icon="ri-check-line" title="Procesar Factura" @click="processInvoice(invoice)" />
+                    <VBtn v-else size="small" color="success" variant="tonal" icon="ri-file-check-line"
+                      title="Factura Procesada" disabled />
 
                     <!-- Ver Detalle -->
-                    <VBtn
-                      size="small"
-                      color="info"
-                      variant="tonal"
-                      icon="ri-eye-line"
-                      title="Ver Factura"
-                      @click="showItem(invoice)"
-                    />
+                    <VBtn size="small" color="info" variant="tonal" icon="ri-eye-line" title="Ver Factura"
+                      @click="showItem(invoice)" />
 
                     <!-- Eliminar Factura -->
-                    <VBtn
-                      size="small"
-                      color="error"
-                      variant="tonal"
-                      icon="ri-delete-bin-line"
-                      title="Eliminar Factura"
-                      @click="deleteInvoice(invoice)"
-                    />
+                    <VBtn size="small" color="error" variant="tonal" icon="ri-delete-bin-line" title="Eliminar Factura"
+                      @click="deleteInvoice(invoice)" />
                   </div>
                 </td>
               </tr>
@@ -992,48 +679,27 @@ onActivated(() => {
       </VCard>
 
       <!-- Paginación -->
-      <VCard
-        v-if="totalPage > 0"
-        class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface"
-      >
-        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
+      <VCard v-if="totalPage > 0" class="mt-4 rounded-xl border elevation-0 pa-4 bg-surface">
+        <div
+          class="d-flex flex-column flex-sm-row align-center justify-space-between gap-3 w-100 text-center text-sm-start">
           <div class="text-body-2 text-medium-emphasis">
-            Mostrando <strong class="text-high-emphasis">{{ list_invoices.length }}</strong> de <strong class="text-high-emphasis">{{ totalItems }}</strong> facturas
+            Mostrando <strong class="text-high-emphasis">{{ list_invoices.length }}</strong> de <strong
+              class="text-high-emphasis">{{ totalItems }}</strong> facturas
           </div>
-          <VPagination
-            v-model="currentPage"
-            :length="totalPage"
-            :disabled="isLoading"
-            rounded="circle"
-            :total-visible="$vuetify.display.xs ? 4 : 7"
-            :size="$vuetify.display.xs ? 'small' : 'default'"
-            density="comfortable"
-            color="primary"
-            class="my-0"
-            @update:model-value="list"
-          />
+          <VPagination v-model="currentPage" :length="totalPage" :disabled="isLoading" rounded="circle"
+            :total-visible="$vuetify.display.xs ? 4 : 7" :size="$vuetify.display.xs ? 'small' : 'default'"
+            density="comfortable" color="primary" class="my-0" @update:model-value="list" />
         </div>
       </VCard>
     </div>
 
     <!-- DIALOGS -->
-    <InvoiceShowDialog
-      v-if="isInvoiceShowDialogVisible"
-      v-model:isDialogVisible="isInvoiceShowDialogVisible"
-      :invoice-selected="invoiceSelected"
-    />
-    <InvoiceDeleteDialog
-      v-if="isInvoiceDeleteDialogVisible"
-      v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
-      :invoice-selected="invoiceSelected"
-      @delete-invoice-success="onDeleteSuccess"
-    />
-    <InvoiceProcessDialog
-      v-if="isInvoiceProcessDialogVisible"
-      v-model:isDialogVisible="isInvoiceProcessDialogVisible"
-      :invoice="invoiceToProcess"
-      @process-success="onProcessSuccess"
-    />
+    <InvoiceShowDialog v-if="isInvoiceShowDialogVisible" v-model:isDialogVisible="isInvoiceShowDialogVisible"
+      :invoice-selected="invoiceSelected" />
+    <InvoiceDeleteDialog v-if="isInvoiceDeleteDialogVisible" v-model:isDialogVisible="isInvoiceDeleteDialogVisible"
+      :invoice-selected="invoiceSelected" @delete-invoice-success="onDeleteSuccess" />
+    <InvoiceProcessDialog v-if="isInvoiceProcessDialogVisible" v-model:isDialogVisible="isInvoiceProcessDialogVisible"
+      :invoice="invoiceToProcess" @process-success="onProcessSuccess" />
   </div>
 </template>
 
@@ -1050,6 +716,7 @@ onActivated(() => {
 
 .invoice-table-row {
   transition: background-color 0.15s ease;
+
   &:hover {
     background-color: rgba(var(--v-theme-primary), 0.02) !important;
   }
@@ -1135,6 +802,7 @@ onActivated(() => {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

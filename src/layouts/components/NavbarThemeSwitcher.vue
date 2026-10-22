@@ -30,6 +30,11 @@ const themes = [
     label: 'Transparente Claro',
     icon: 'ri-sun-cloudy-line',
   },
+  {
+    name: 'taller',
+    label: 'Colores del Taller',
+    icon: 'ri-tools-fill',
+  },
 ]
 </script>
 
