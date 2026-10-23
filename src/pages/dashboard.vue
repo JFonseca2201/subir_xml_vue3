@@ -411,7 +411,7 @@ const chartThemes = computed(() => {
   const isDark = theme.current.value.dark
   const textColor = isDark ? '#CFD3EC' : '#6D788D'
   const borderColor = isDark ? 'rgba(234, 234, 255, 0.12)' : 'rgba(38, 43, 67, 0.12)'
-  const primaryColor = theme.current.value.colors.primary || '#6366F1'
+  const primaryColor = theme.current.value.colors.primary || '#800020'
   const infoColor = theme.current.value.colors.info || '#0EA5E9'
   const tooltipTheme = isDark ? 'dark' : 'light'
 
@@ -428,7 +428,7 @@ const wavyChartOptions = computed(() => {
       selection: { enabled: false },
       background: 'transparent',
     },
-    colors: ['#6366F1', '#06B6D4'],
+    colors: [chartThemes.value.primaryColor, '#06B6D4'],
     dataLabels: { enabled: false },
     stroke: { curve: 'smooth', width: 3 },
     fill: {
@@ -515,7 +515,7 @@ const radialChartOptions = computed(() => {
         },
       },
     },
-    colors: ['#7367F0'],
+    colors: [chartThemes.value.primaryColor],
     stroke: {
       lineCap: 'round',
     },
@@ -538,7 +538,7 @@ const donutChartOptions = computed(() => {
       background: 'transparent',
     },
     labels: ['Ingresos', 'Egresos'],
-    colors: ['#06B6D4', '#6366F1'],
+    colors: ['#06B6D4', chartThemes.value.primaryColor],
     plotOptions: { pie: { donut: { size: '72%' } } },
     dataLabels: { enabled: false },
     legend: { position: 'bottom', labels: { colors: chartThemes.value.textColor } },
@@ -560,7 +560,7 @@ const barChartOptions = computed(() => {
       selection: { enabled: false },
       background: 'transparent',
     },
-    colors: ['#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'],
+    colors: [chartThemes.value.primaryColor, '#06B6D4', '#10B981', '#F59E0B', '#EF4444'],
     plotOptions: { bar: { borderRadius: 6, horizontal: true, distributed: true } },
     dataLabels: { enabled: false },
     xaxis: {
@@ -615,7 +615,7 @@ const purchasedProductsOptions = computed(() => {
       background: 'transparent',
     },
     labels: labels.length > 0 ? labels : ['Sin datos'],
-    colors: ['#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#94A3B8'],
+    colors: [chartThemes.value.primaryColor, '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#94A3B8'],
     dataLabels: {
       enabled: true,
       formatter: val => `${Math.round(val)}%`,
@@ -705,7 +705,7 @@ const otTotalesOptions = computed(() => {
       background: 'transparent',
     },
     labels: labels.length > 0 ? labels : ['Sin datos'],
-    colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#6366F1'],
+    colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
     dataLabels: { enabled: true, style: { fontSize: '10px', fontWeight: 'bold' } },
     plotOptions: { pie: { donut: { size: '60%' } } },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
@@ -731,7 +731,7 @@ const slaOptions = computed(() => {
       background: 'transparent',
     },
     labels: labels.length > 0 ? labels : ['1 día', '2-3 días', '4-7 días', '+8 días'],
-    colors: ['#10B981', '#F59E0B', '#EF4444', '#6366F1'],
+    colors: ['#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
     dataLabels: { enabled: true, style: { fontWeight: 'bold' } },
     legend: { position: 'right', labels: { colors: chartThemes.value.textColor } },
     stroke: { show: false },
@@ -770,7 +770,7 @@ const tecnicosOptions = computed(() => {
       selection: { enabled: false },
       background: 'transparent',
     },
-    colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#6366F1'],
+    colors: ['#06B6D4', '#10B981', '#F59E0B', '#EF4444', chartThemes.value.primaryColor],
     xaxis: {
       categories: categories.length > 0 ? categories : ['Sin datos'],
       labels: { style: { colors: chartThemes.value.textColor, fontSize: '11px', fontWeight: 600 } },
@@ -974,7 +974,6 @@ const tecnicosOptions = computed(() => {
           color="primary"
           :loading="loading"
           class="rounded-xl px-3 text-white font-weight-bold text-caption"
-          style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%) !important; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;"
           @click="fetchDashboardData"
         >
           Actualizar
@@ -1428,7 +1427,7 @@ const tecnicosOptions = computed(() => {
                     </div>
                     <VProgressLinear
                       v-model="balancePercentage"
-                      color="#6366F1"
+                      :color="chartThemes.primaryColor"
                       height="8"
                       rounded
                     />
@@ -1559,7 +1558,7 @@ const tecnicosOptions = computed(() => {
                           backgroundColor: evt.category_color === 'error' ? '#EF4444' :
                             (evt.category_color === 'warning' ? '#F59E0B' :
                               (evt.category_color === 'success' ? '#10B981' :
-                                (evt.category_color === 'info' ? '#0EA5E9' : '#6366F1')))
+                                (evt.category_color === 'info' ? '#0EA5E9' : chartThemes.primaryColor)))
                         }"
                       />
                     </div>
@@ -1608,7 +1607,7 @@ const tecnicosOptions = computed(() => {
                     :key="evt.id"
                     class="d-flex justify-space-between align-center pa-2.5 rounded-lg elevation-1"
                     style="background-color: rgba(var(--v-theme-surface), 1); border: 1px solid rgba(var(--v-theme-on-surface), 0.08); border-left: 4px solid;"
-                    :style="{ borderLeftColor: evt.category_color === 'error' ? '#EF4444' : (evt.category_color === 'warning' ? '#F59E0B' : (evt.category_color === 'success' ? '#10B981' : '#6366F1')) }"
+                    :style="{ borderLeftColor: evt.category_color === 'error' ? '#EF4444' : (evt.category_color === 'warning' ? '#F59E0B' : (evt.category_color === 'success' ? '#10B981' : chartThemes.primaryColor)) }"
                   >
                     <div
                       class="overflow-hidden cursor-pointer"

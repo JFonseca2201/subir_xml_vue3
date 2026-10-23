@@ -112,11 +112,11 @@ $glass-themes: (
   'taller': (
     'name': 'taller',
     'is-dark': false,
-    'bg-app': #f4f6f9,
-    'bg-surface': #ffffff,
+    'bg-app': #f8fafc,
+    'bg-surface': #f1f5f9,
     'bg-sidebar': "linear-gradient(180deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
     'bg-header': "linear-gradient(135deg, #8A1538 0%, #6B0E27 60%, #58081C 100%)",
-    'bg-dialog': #ffffff,
+    'bg-dialog': #f1f5f9,
     'bg-active-item': #ffffff,
     'bg-hover-item': rgba(255, 255, 255, 0.16),
     'border-active': rgba(255, 255, 255, 0.90),
@@ -125,7 +125,7 @@ $glass-themes: (
     'text-secondary': #334155,
     'text-muted': #64748b,
     'icon-color': #ffffff,
-    'border-glass': rgba(226, 232, 240, 0.90),
+    'border-glass': rgba(0, 0, 0, 0.08),
     'input-bg': #ffffff,
     'input-border': #cbd5e1,
     'table-header-bg': #f8fafc,
@@ -3755,8 +3755,8 @@ body[data-theme="semi-dark-glass"],
 //   - Barra superior (Navbar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
 //   - Barra lateral (Sidebar): Rojo vino (#8A1538 / #58081C) con textos e iconos blancos
 //   - Ítem de navegación activo: Píldora blanca pura (#FFFFFF) con letras e icono rojo vino (#7A102B)
-//   - Fondo del área de trabajo: Claro y luminoso (#F4F6F9)
-//   - Tarjetas, paneles, tablas y modales: Blanco puro (#FFFFFF) con bordes suaves (#E2E8F0)
+//   - Fondo del área de trabajo: Claro y luminoso (#F8FAFC)
+//   - Tarjetas y modales: Gris claro (#F1F5F9) con bordes sutiles
 //   - Textos en tarjetas y tablas: Negro / Slate carbón (#0F172A) con contraste absoluto y nitidez total
 //   - Botones primarios: Rojo vino con texto blanco
 //   - Botones secundarios / outlined: Contorno rojo vino con texto rojo vino
@@ -3781,7 +3781,7 @@ body[data-theme="taller"],
   --v-theme-primary-darken-1: 107, 14, 39;
 
   // Fondo luminoso y claro del área de trabajo (no oscuro)
-  background: #f4f6f9 !important;
+  background: #f8fafc !important;
   color: #0f172a !important;
 
   // 1. TOP NAVBAR SUPERIOR: ROJO VINO SÓLIDO (Idéntico a la barra azul del tema predeterminado)
@@ -3981,15 +3981,15 @@ body[data-theme="taller"],
     }
   }
 
-  // 3. TARJETAS, PANELES Y CONTENEDORES: BLANCO PURO (#FFFFFF) Y TEXTO NEGRO (#0F172A)
+  // 3. TARJETAS, PANELES Y CONTENEDORES: GRIS CLARO (#F1F5F9) Y TEXTO OSCURO
   .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav),
   .card,
   .bg-surface,
   .white-card,
   .v-sheet:not(.v-navigation-drawer):not(.layout-vertical-nav) {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
+    background: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
     border-radius: 12px !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
     color: #0f172a !important;
@@ -4015,7 +4015,7 @@ body[data-theme="taller"],
     }
 
     // Iconos en contenedores blancos
-    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info) {
+    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
       color: #0f172a !important;
       fill: #0f172a !important;
       opacity: 1 !important;
@@ -4027,9 +4027,9 @@ body[data-theme="taller"],
   .pepa-kpi-card,
   .stat-glass-card,
   .info-card-flat {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
+    background: #f1f5f9 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
     border-radius: 12px !important;
     box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
     color: #0f172a !important;
@@ -4185,18 +4185,6 @@ body[data-theme="taller"],
 
   // 8. CABECERAS DE PÁGINAS (Encabezado principal con título + avatar icono + botones de acción)
   // Aplica a todas las páginas: clientes, vehículos, ventas, kardex, etc.
-  .client-management-page,
-  .page-header-section,
-  [class*="-management-page"],
-  [class*="-list-page"],
-  [class*="-page"] {
-    // Bloque de encabezado: d-flex align-center justify-space-between
-    > .d-flex.align-center.justify-space-between,
-    > .pa-4 > .d-flex.align-center.justify-space-between,
-    > .pa-sm-6 > .d-flex.align-center.justify-space-between {
-      // No estilizar el bloque de encabezado en sí, sólo los elementos internos
-    }
-  }
 
   // Encabezado principal de página: barra lateral vino tinto translúcida
   .page-title-bar,
@@ -4338,8 +4326,35 @@ body[data-theme="taller"],
   // 9. OVERLAY / SCRIM - Fondo semitransparente al abrir diálogos
   // Evita que la página "desaparezca" completamente al abrir un VDialog
   .v-overlay__scrim {
-    background: rgba(74, 14, 28, 0.30) !important;
+    background-color: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
     opacity: 1 !important;
+  }
+
+  // 9.5. DIÁLOGOS - Desactivar glassmorphism para tema taller
+  .v-dialog .v-card,
+  [role="dialog"] .v-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .user-profile-menu-list {
+    background: #f1f5f9 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #1f2937 !important;
+
+    .user-profile-header {
+      background: #f1f5f9 !important;
+      color: #1f2937 !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: #1f2937 !important;
+      fill: #1f2937 !important;
+    }
   }
 
   // 10. CABECERAS DE DIÁLOGOS Y MODALES (todas las variantes del sistema)
@@ -4390,10 +4405,10 @@ body[data-theme="taller"],
     }
   }
 
-  // Cuerpo de diálogos: fondo blanco puro y letras negras
+  // Cuerpo de diálogos: fondo gris claro y texto oscuro
   .v-dialog .v-card,
   [role="dialog"] .v-card {
-    background: #ffffff !important;
+    background: #f1f5f9 !important;
     color: #0f172a !important;
   }
 
@@ -4546,7 +4561,319 @@ body[data-theme="taller"],
       -webkit-overflow-scrolling: touch;
     }
   }
+
+  // 10. TELÓN DE FONDO (SCRIM) DE DIÁLOGOS - AJUSTE PARA TEMA TALLER
+  // Para que el contenido detrás del diálogo sea visible y no se quede en blanco
+  .v-overlay--active > .v-overlay__scrim {
+    background-color: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    opacity: 1 !important;
+  }
+
+  // Asegurar que el contenido detrás del diálogo mantenga su fondo visible
+  .layout-wrapper,
+  .layout-content-wrapper,
+  .v-main {
+    background: transparent !important;
+  }
+
+  // Cuando hay un overlay activo, asegurar que el body no se vuelva blanco
+  // El contenedor principal debe mantener su fondo
+  .v-application,
+  .v-application__wrap {
+    background: #f8fafc !important;
+  }
+
+  // 11. CABECERAS DE DIÁLOGOS - USAR COLOR DEL TEMA (ROJO VINO)
+  .v-dialog .v-card-title.bg-primary,
+  .v-dialog .v-card-item.bg-primary,
+  .custom-dialog-card .v-card-title.bg-primary,
+  .custom-dialog-card .v-card-item.bg-primary,
+  .v-dialog .v-card > .bg-primary:first-child,
+  .custom-dialog-card > .bg-primary:first-child,
+  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card > div:first-child[class*="dialog-header"],
+  .custom-dialog-header-primary,
+  .custom-dialog-header,
+  .dialog-header-banner {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+    color: #ffffff !important;
+
+    .v-card-title,
+    .v-card-subtitle,
+    .v-card-item,
+    .title-text,
+    .text-subtitle-1,
+    .text-subtitle-2,
+    .text-caption,
+    p,
+    span,
+    label,
+    strong,
+    b,
+    h1, h2, h3, h4, h5, h6 {
+      color: #ffffff !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.30) !important;
+      color: #ffffff !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+      }
+    }
+  }
+
+  // 12. ICONOS EN DIÁLOGOS Y CONTENEDORES - MEJORAR VISIBILIDAD
+  .v-dialog .v-card,
+  .custom-dialog-card {
+    .v-icon:not(.v-btn[style*="linear-gradient"] .v-icon):not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
+    i:not(.v-btn[style*="linear-gradient"] i):not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-chip[class*="bg-"] i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
+      color: #0f172a !important;
+      fill: #0f172a !important;
+      opacity: 1 !important;
+    }
+
+    // Iconos en cabeceras con bg-primary deben ser blancos
+    .bg-primary .v-icon,
+    .bg-primary i,
+    .bg-primary svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // 13. MENÚS Y DROPDOWNS - FONDO BLANCO CON ICONOS VISIBLES
+  .v-menu > .v-overlay__content > .v-list,
+  .v-select__content,
+  .v-autocomplete__content {
+    background: #f1f5f9 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #0f172a !important;
+
+    .v-list-item {
+      color: #0f172a !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.08) !important;
+      }
+
+      &.v-list-item--active {
+        background: rgba(138, 21, 56, 0.12) !important;
+        color: #7A102B !important;
+        border: 1px solid rgba(138, 21, 56, 0.25) !important;
+
+        * {
+          color: #7A102B !important;
+        }
+
+        .v-icon,
+        i,
+        svg {
+          color: #7A102B !important;
+          fill: #7A102B !important;
+        }
+      }
+    }
+  }
+
+  // 14. ICONOS GLOBALES - MEJORAR VISIBILIDAD EN TODO EL SISTEMA
+  // Iconos en general (no en botones con colores específicos, chips, badges, etc.)
+  .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-btn.bg-warning .v-icon):not(.v-btn.bg-info .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not([class*="status-"] .v-icon):not(.v-avatar .v-icon):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
+  i:not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-btn.bg-warning i):not(.v-btn.bg-info i):not(.v-chip[class*="bg-"] i):not([class*="status-"] i):not(.v-avatar i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    opacity: 1 !important;
+  }
+
+  // Iconos en tarjetas y paneles
+  .v-card:not(.v-navigation-drawer):not(.layout-vertical-nav) .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
+  .card .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    opacity: 1 !important;
+  }
+
+  // Iconos en botones outlined/tonal sin color específico
+  .v-btn.variant-outlined .v-icon,
+  .v-btn.variant-tonal .v-icon,
+  .v-btn:not(.bg-primary):not(.bg-error):not(.bg-success):not(.bg-warning):not(.bg-info) .v-icon:not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon) {
+    color: #7A102B !important;
+    fill: #7A102B !important;
+    opacity: 1 !important;
+  }
+
+  // Iconos en tablas
+  .v-data-table .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info),
+  .v-table .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info) {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    opacity: 1 !important;
+  }
 }
 
+// Overrides finales del tema Taller: el scrim y los menús se teletransportan a body,
+// por lo que estas reglas deben resolver la cascada fuera de los contenedores de VApp.
+body[data-theme="taller"] .v-overlay--active > .v-overlay__scrim {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  opacity: 1 !important;
+}
 
+body[data-theme="taller"] .layout-wrapper,
+body[data-theme="taller"] .layout-content-wrapper,
+body[data-theme="taller"] .layout-page-content,
+body[data-theme="taller"] .page-content-container,
+body[data-theme="taller"] .v-main {
+  background: transparent !important;
+}
 
+body[data-theme="taller"] .v-overlay--active.v-menu,
+body[data-theme="taller"] .v-overlay--active.v-menu > .v-overlay__content {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary,
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary,
+body[data-theme="taller"] .v-dialog .custom-dialog-header,
+body[data-theme="taller"] .v-dialog .custom-dialog-header-primary,
+body[data-theme="taller"] .v-dialog .dialog-header-banner,
+body[data-theme="taller"] .v-dialog .dialog-header-workshop {
+  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+  color: #FFFFFF !important;
+
+  .v-card-title,
+  .v-card-subtitle,
+  .v-card-item,
+  .text-subtitle-1,
+  .text-subtitle-2,
+  .text-caption,
+  h1, h2, h3, h4, h5, h6,
+  p, span, label, strong, b,
+  .v-icon,
+  i,
+  svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+    opacity: 1 !important;
+  }
+}
+
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-title.bg-primary *,
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content .v-card-item.bg-primary * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .custom-dialog-header-primary *,
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .custom-dialog-header *,
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .dialog-header-banner *,
+body[data-theme="taller"] .v-overlay--active.v-dialog > .v-overlay__content > .v-card > .dialog-header-workshop * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+body[data-theme="taller"] .v-card-title.bg-primary,
+body[data-theme="taller"] .v-card-item.bg-primary,
+body[data-theme="taller"] .v-toolbar.bg-primary,
+body[data-theme="taller"] .v-dialog .custom-dialog-header-primary,
+body[data-theme="taller"] .v-dialog .custom-dialog-header,
+body[data-theme="taller"] .v-dialog .dialog-header-banner,
+body[data-theme="taller"] .v-dialog .dialog-header-workshop {
+  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+  color: #FFFFFF !important;
+
+  *,
+  .v-toolbar-title,
+  .v-card-title,
+  .v-card-subtitle,
+  .text-subtitle-1,
+  .text-subtitle-2,
+  .text-caption,
+  .v-icon,
+  i,
+  svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+    opacity: 1 !important;
+  }
+}
+
+body[data-theme="taller"] .v-overlay--active.v-menu .user-profile-menu-list {
+  background: #F1F5F9 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1F2937 !important;
+
+  .user-profile-header {
+    background: #F1F5F9 !important;
+    color: #1F2937 !important;
+  }
+
+  .v-list-item:not(.v-list-item--active),
+  .v-list-item-title,
+  .v-list-item-subtitle,
+  .v-icon,
+  i,
+  svg {
+    color: #1F2937 !important;
+    fill: #1F2937 !important;
+  }
+
+  .v-list-item--active,
+  .v-list-item--active .v-icon {
+    color: #8A1538 !important;
+  }
+}
+
+body[data-theme="taller"] .luxury-tabs-nav .luxury-tab-btn.is-active {
+  background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+  box-shadow: 0 4px 16px rgba(138, 21, 56, 0.32) !important;
+  color: #FFFFFF !important;
+
+  .tab-icon-wrap,
+  .tab-title,
+  .v-icon,
+  .active-dot {
+    color: #FFFFFF !important;
+  }
+}
+
+body[data-theme="taller"] .gradient-title {
+  background-image: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}

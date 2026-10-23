@@ -50,7 +50,7 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
         },
       ],
     },
-    theme: 'system',
+    theme: 'taller',
     skin: Skins.Default,
     iconRenderer: VIcon,
   },

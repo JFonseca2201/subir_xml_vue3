@@ -7057,6 +7057,167 @@
 }
 
 // ====================================================================
+// SOPORTE PARA TEMA TALLER (taller)
+// "Dialogos con fondo blanco, cabeceras rojo vino, iconos visibles"
+// ====================================================================
+.v-theme--taller,
+[data-theme="taller"],
+body[data-theme="taller"] {
+  // VDialogs - Fondo blanco con bordes visibles
+  .v-overlay--active.v-dialog > .v-overlay__content,
+  .v-overlay--active.v-dialog > .v-overlay__content > .v-card,
+  .v-overlay--active .v-dialog > .v-card,
+  .v-overlay--active .v-card.modal-glass,
+  .v-overlay--active.v-dialog .v-card,
+  .v-dialog.v-overlay--active .v-card,
+  .v-dialog .v-card,
+  .v-dialog .custom-dialog-card,
+  .custom-dialog-card {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+
+    .v-card-title,
+    .v-card-text,
+    .v-card-item {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: none !important;
+      color: #0f172a !important;
+    }
+
+    .v-card-actions,
+    .sticky-dialog-footer {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+  }
+
+  // Cabeceras de dialogos con bg-primary - Rojo vino
+  .v-dialog .v-card-title.bg-primary,
+  .v-dialog .v-card-item.bg-primary,
+  .custom-dialog-card .v-card-title.bg-primary,
+  .custom-dialog-card .v-card-item.bg-primary,
+  .v-dialog .v-card > .bg-primary:first-child,
+  .custom-dialog-card > .bg-primary:first-child,
+  .v-dialog .v-card > div:first-child[class*="custom-dialog-header"],
+  .v-dialog .v-card > div:first-child[class*="dialog-header"],
+  .custom-dialog-header-primary,
+  .custom-dialog-header,
+  .dialog-header-banner {
+    background: linear-gradient(135deg, #8A1538 0%, #600A1F 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.20) !important;
+    color: #ffffff !important;
+
+    .v-card-title,
+    .v-card-item,
+    .title-text,
+    h1, h2, h3, h4, h5, h6 {
+      color: #ffffff !important;
+    }
+
+    .v-icon,
+    i,
+    svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+
+    .custom-dialog-close-btn,
+    .v-dialog-close-btn {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border: 1px solid rgba(255, 255, 255, 0.30) !important;
+      color: #ffffff !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+      }
+    }
+  }
+
+  // Iconos en dialogos - Visibles en negro
+  .v-dialog .v-card,
+  .custom-dialog-card {
+    .v-icon:not(.v-btn.bg-primary .v-icon):not(.v-btn.bg-error .v-icon):not(.v-btn.bg-success .v-icon):not(.v-chip[class*="bg-"] .v-icon):not(.text-primary):not(.text-error):not(.text-success):not(.text-warning):not(.text-info):not(.custom-dialog-header-primary .v-icon):not(.custom-dialog-header .v-icon):not(.dialog-header-banner .v-icon):not(.dialog-header-workshop .v-icon),
+    i:not(.v-btn.bg-primary i):not(.v-btn.bg-error i):not(.v-btn.bg-success i):not(.v-chip[class*="bg-"] i):not(.custom-dialog-header-primary i):not(.custom-dialog-header i):not(.dialog-header-banner i):not(.dialog-header-workshop i) {
+      color: #0f172a !important;
+      fill: #0f172a !important;
+      opacity: 1 !important;
+    }
+
+    // Iconos en cabeceras con bg-primary deben ser blancos
+    .bg-primary .v-icon,
+    .bg-primary i,
+    .bg-primary svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+      opacity: 1 !important;
+    }
+  }
+
+  // Scrim - Más transparente para ver el contenido detrás
+  .v-overlay--active > .v-overlay__scrim {
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    opacity: 1 !important;
+  }
+
+  // Menús y dropdowns - Fondo blanco
+  .v-menu > .v-overlay__content > .v-list,
+  .v-select__content,
+  .v-autocomplete__content {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+
+    .v-list-item {
+      color: #0f172a !important;
+
+      .v-icon,
+      i,
+      svg {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        opacity: 1 !important;
+      }
+
+      &:hover {
+        background: rgba(138, 21, 56, 0.08) !important;
+      }
+
+      &.v-list-item--active {
+        background: rgba(138, 21, 56, 0.12) !important;
+        color: #7A102B !important;
+        border: 1px solid rgba(138, 21, 56, 0.25) !important;
+
+        * {
+          color: #7A102B !important;
+        }
+
+        .v-icon,
+        i,
+        svg {
+          color: #7A102B !important;
+          fill: #7A102B !important;
+        }
+      }
+    }
+  }
+}
+
+// ====================================================================
 // SOPORTE PARA TEMA TRANSPARENTE CLARO (light-glass)
 // "no se ven iconos, las letras e iconos en este tema deben ser de color negro"
 // ====================================================================
@@ -7188,6 +7349,7 @@
         }
       }
     }
+
   }
 
   // Cajas de Iconos en Operaciones, Taller y Finanzas
@@ -7978,4 +8140,4 @@
       width: 100% !important;
     }
   }
-}
+}
